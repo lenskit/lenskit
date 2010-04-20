@@ -8,7 +8,6 @@ import bak.pcj.map.IntKeyFloatMap;
 
 public class IntUserHistory extends IntRatingVector implements UserHistory<Integer,Integer> {
 	int user;
-	Float averageRating;
 	
 	public IntUserHistory(int user, IntKeyFloatMap ratings) {
 		super(ratings);
@@ -24,23 +23,7 @@ public class IntUserHistory extends IntRatingVector implements UserHistory<Integ
 		return user;
 	}
 	
-	@Override
-	public float getAverageRating() {
-		if (averageRating == null) {
-			float sum = 0;
-			FloatIterator iter = data.values().iterator();
-			while (iter.hasNext()) {
-				sum += iter.next();
-			}
-			averageRating = sum / data.size();
-		}
-		return averageRating;
+	public IntUserHistory copy() {
+		return new IntUserHistory(user, data);
 	}
-	
-	@Override
-	public void addRating(Integer obj, float rating) {
-		super.addRating(obj, rating);
-		averageRating = null;
-	}
-
 }

@@ -140,7 +140,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 					assert idx == itemVectors.size();
 					itemVectors.add(dataFactory.makeItemRatingVector());
 				}
-				itemVectors.get(idx).addRating(user.getUser(), rating.getRating());
+				itemVectors.get(idx).putRating(user.getUser(), rating.getRating());
 			}
 		}
 		itemVectors.trimToSize();
@@ -158,13 +158,13 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 			I other = itemIndexer.getObject(sims.getKey());
 			float s = sims.getValue();
 			if (user.containsObject(other)) {
-				float rating = user.getRating(other) - user.getAverageRating();
+				float rating = user.getRating(other) - user.getAverage();
 				sum += rating * s;
 				totalWeight += Math.abs(s);
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ObjectValue<I>(item, sum / totalWeight + user.getAverageRating());
+			return new ObjectValue<I>(item, sum / totalWeight + user.getAverage());
 		} else {
 			return null;
 		}
@@ -174,7 +174,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	public List<ObjectValue<I>> recommend(UserHistory<U,I> user) {
 		IntKeyFloatMap scores = new IntKeyFloatOpenHashMap();
 		IntKeyFloatMap weights = new IntKeyFloatOpenHashMap();
-		float avg = user.getAverageRating();
+		float avg = user.getAverage();
 		for (ObjectValue<I> rating: user) {
 			int iid = itemIndexer.getIndex(rating.getItem());
 			if (iid >= similarities.length)

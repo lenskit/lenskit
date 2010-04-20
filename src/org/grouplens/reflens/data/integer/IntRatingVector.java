@@ -7,6 +7,7 @@ import java.util.Map;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 
+import bak.pcj.FloatIterator;
 import bak.pcj.adapter.IntKeyFloatMapToMapAdapter;
 import bak.pcj.map.IntKeyFloatMap;
 import bak.pcj.map.IntKeyFloatOpenHashMap;
@@ -14,6 +15,7 @@ import bak.pcj.map.IntKeyFloatOpenHashMap;
 public class IntRatingVector implements RatingVector<Integer> {
 	protected IntKeyFloatMap data;
 	private Map<Integer,Float> wrapper;
+	protected Float averageRating = null;
 	
 	@SuppressWarnings("unchecked")
 	public IntRatingVector() {
@@ -33,6 +35,7 @@ public class IntRatingVector implements RatingVector<Integer> {
 		}
 		wrapper = new IntKeyFloatMapToMapAdapter(data);
 	}
+	
 	@Override
 	public boolean containsObject(Integer object) {
 		return data.containsKey(object);
@@ -53,7 +56,28 @@ public class IntRatingVector implements RatingVector<Integer> {
 	}
 	
 	@Override
-	public void addRating(Integer obj, float rating) {
+	public void putRating(Integer obj, float rating) {
+		averageRating = null;
 		data.put(obj, rating);
+	}
+	
+	@Override
+	public float getAverage() {
+		if (averageRating == null) {
+			float sum = 0;
+			FloatIterator iter = data.values().iterator();
+			while (iter.hasNext()) {
+				sum += iter.next();
+			}
+			averageRating = sum / data.size();
+		}
+		return averageRating;
+	}
+	
+	@Override
+	public IntRatingVector copy() {
+		IntRatingVector v2 = new IntRatingVector(data);
+		v2.averageRating = averageRating;
+		return v2;
 	}
 }
