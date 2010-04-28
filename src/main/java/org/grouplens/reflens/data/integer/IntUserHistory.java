@@ -1,29 +1,18 @@
 package org.grouplens.reflens.data.integer;
 
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+
+import java.util.Map;
+
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.UserHistory;
+import org.grouplens.reflens.data.generic.GenericUserHistory;
 
-import bak.pcj.FloatIterator;
-import bak.pcj.map.IntKeyFloatMap;
-
-public class IntUserHistory extends IntRatingVector implements UserHistory<Integer,Integer> {
-	int user;
+public class IntUserHistory extends GenericUserHistory<Integer,Integer> {
 	
-	public IntUserHistory(int user, IntKeyFloatMap ratings) {
-		super(ratings);
-		this.user = user;
+	public IntUserHistory(int user) {
+		this(user, null);
 	}
-	public IntUserHistory(int user, RatingVector<Integer> ratings) {
-		super(ratings.getRatings());
-		this.user = user;
-	}
-	
-	@Override
-	public Integer getUser() {
-		return user;
-	}
-	
-	public IntUserHistory copy() {
-		return new IntUserHistory(user, data);
+	public IntUserHistory(int user, Map<Integer,Float> ratings) {
+		super(new IntMapFactory(), user, ratings);
 	}
 }

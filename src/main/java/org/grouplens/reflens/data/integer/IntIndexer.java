@@ -1,13 +1,13 @@
 package org.grouplens.reflens.data.integer;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+
 import org.grouplens.reflens.data.Indexer;
 
-import bak.pcj.list.IntArrayList;
-import bak.pcj.map.IntKeyIntMap;
-import bak.pcj.map.IntKeyIntOpenHashMap;
-
 public class IntIndexer implements Indexer<Integer> {
-	private IntKeyIntMap map = new IntKeyIntOpenHashMap();
+	private Int2IntMap map = new Int2IntOpenHashMap();
 	private IntArrayList objects = new IntArrayList();
 	
 	public int getIndex(Integer object) {
@@ -15,7 +15,7 @@ public class IntIndexer implements Indexer<Integer> {
 			return map.get(object);
 		} else {
 			int idx = objects.size();
-			map.put(object, idx);
+			map.put(object.intValue(), idx);
 			objects.add(object);
 			return idx;
 		}

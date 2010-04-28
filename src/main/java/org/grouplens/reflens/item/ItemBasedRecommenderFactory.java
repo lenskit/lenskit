@@ -1,5 +1,7 @@
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+
 import java.util.List;
 
 import org.grouplens.reflens.Normalization;
@@ -9,13 +11,11 @@ import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserHistory;
 import org.grouplens.reflens.data.generic.GenericDataFactory;
 
-import bak.pcj.map.IntKeyFloatMap;
-
 public class ItemBasedRecommenderFactory<U,I> {
 	private int similarityListSize = 0;
 	private Normalization<UserHistory<U,I>> ratingNormalizer = null;
 	private Similarity<RatingVector<U>> itemSimilarity = null;
-	private Normalization<IntKeyFloatMap> itemSimilarityNormalizer = null;
+	private Normalization<Int2FloatMap> itemSimilarityNormalizer = null;
 	private DataFactory<U,I> dataFactory = new GenericDataFactory<U,I>();
 	
 	public ItemBasedRecommender<U,I> create(List<UserHistory<U,I>> data) {
@@ -73,7 +73,7 @@ public class ItemBasedRecommenderFactory<U,I> {
 	/**
 	 * @return the itemSimilarityNormalizer
 	 */
-	public Normalization<IntKeyFloatMap> getItemSimilarityNormalizer() {
+	public Normalization<Int2FloatMap> getItemSimilarityNormalizer() {
 		return itemSimilarityNormalizer;
 	}
 
@@ -81,7 +81,7 @@ public class ItemBasedRecommenderFactory<U,I> {
 	 * @param itemSimilarityNormalizer the itemSimilarityNormalizer to set
 	 */
 	public void setItemSimilarityNormalizer(
-			Normalization<IntKeyFloatMap> itemSimilarityNormalizer) {
+			Normalization<Int2FloatMap> itemSimilarityNormalizer) {
 		this.itemSimilarityNormalizer = itemSimilarityNormalizer;
 	}
 
