@@ -154,7 +154,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		int iid = itemIndexer.getIndex(item);
 		float sum = 0;
 		float totalWeight = 0;
-		for (Map.Entry<Integer, Float> entry: similarities[iid].entrySet()) {
+		for (Int2FloatMap.Entry entry: similarities[iid].int2FloatEntrySet()) {
 			I other = itemIndexer.getObject(entry.getKey());
 			float s = entry.getValue();
 			if (user.containsObject(other)) {
@@ -179,7 +179,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 			int iid = itemIndexer.getIndex(rating.getItem());
 			if (iid >= similarities.length)
 				continue;
-			for (Map.Entry<Integer, Float> entry: similarities[iid].entrySet()) {
+			for (Int2FloatMap.Entry entry: similarities[iid].int2FloatEntrySet()) {
 				int jid = entry.getKey();
 				float val = entry.getValue();
 				if (!user.containsObject(itemIndexer.getObject(jid))) {
