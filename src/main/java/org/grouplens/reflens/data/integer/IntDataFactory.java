@@ -12,8 +12,8 @@ public class IntDataFactory implements DataFactory<Integer, Integer> {
 	}
 
 	@Override
-	public RatingVector<Integer> makeItemRatingVector() {
-		return new IntRatingVector();
+	public RatingVector<Integer,Integer> makeItemRatingVector(Integer item) {
+		return new IntRatingVector(item);
 	}
 
 	@Override

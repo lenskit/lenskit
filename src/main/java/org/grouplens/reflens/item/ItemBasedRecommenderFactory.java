@@ -2,23 +2,22 @@ package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.grouplens.reflens.Normalization;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.data.DataFactory;
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.UserHistory;
 import org.grouplens.reflens.data.generic.GenericDataFactory;
 
 public class ItemBasedRecommenderFactory<U,I> {
 	private int similarityListSize = 0;
-	private Normalization<UserHistory<U,I>> ratingNormalizer = null;
-	private Similarity<RatingVector<U>> itemSimilarity = null;
+	private Normalization<RatingVector<U,I>> ratingNormalizer = null;
+	private Similarity<RatingVector<I,U>> itemSimilarity = null;
 	private Normalization<Int2FloatMap> itemSimilarityNormalizer = null;
 	private DataFactory<U,I> dataFactory = new GenericDataFactory<U,I>();
 	
-	public ItemBasedRecommender<U,I> create(List<UserHistory<U,I>> data) {
+	public ItemBasedRecommender<U,I> create(Collection<RatingVector<U,I>> data) {
 		ItemBasedRecommender<U,I> rec = new ItemBasedRecommender<U,I>(
 				similarityListSize,
 				ratingNormalizer, itemSimilarity, itemSimilarityNormalizer,
@@ -44,7 +43,7 @@ public class ItemBasedRecommenderFactory<U,I> {
 	/**
 	 * @return the ratingNormalizer
 	 */
-	public Normalization<UserHistory<U, I>> getRatingNormalizer() {
+	public Normalization<RatingVector<U, I>> getRatingNormalizer() {
 		return ratingNormalizer;
 	}
 
@@ -52,21 +51,21 @@ public class ItemBasedRecommenderFactory<U,I> {
 	 * @param ratingNormalizer the ratingNormalizer to set
 	 */
 	public void setRatingNormalizer(
-			Normalization<UserHistory<U, I>> ratingNormalizer) {
+			Normalization<RatingVector<U, I>> ratingNormalizer) {
 		this.ratingNormalizer = ratingNormalizer;
 	}
 
 	/**
 	 * @return the itemSimilarity
 	 */
-	public Similarity<RatingVector<U>> getItemSimilarity() {
+	public Similarity<RatingVector<I,U>> getItemSimilarity() {
 		return itemSimilarity;
 	}
 
 	/**
 	 * @param itemSimilarity the itemSimilarity to set
 	 */
-	public void setItemSimilarity(Similarity<RatingVector<U>> itemSimilarity) {
+	public void setItemSimilarity(Similarity<RatingVector<I,U>> itemSimilarity) {
 		this.itemSimilarity = itemSimilarity;
 	}
 

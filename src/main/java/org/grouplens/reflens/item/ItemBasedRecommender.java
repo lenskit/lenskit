@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.grouplens.reflens.Normalization;
@@ -21,11 +20,10 @@ import org.grouplens.reflens.data.DataFactory;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.UserHistory;
 
 public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
-	private Normalization<UserHistory<U,I>> ratingNormalizer;
-	private Similarity<RatingVector<U>> itemSimilarity;
+	private Normalization<RatingVector<U,I>> ratingNormalizer;
+	private Similarity<RatingVector<I,U>> itemSimilarity;
 	private Normalization<Int2FloatMap> itemSimilarityNormalizer;
 	private int neighborhoodSize;
 	
@@ -36,8 +34,8 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private Int2FloatMap[] similarities;
 
 	ItemBasedRecommender(int neighborhoodSize,
-			Normalization<UserHistory<U, I>> ratingNormalizer,
-			Similarity<RatingVector<U>> itemSimilarity,
+			Normalization<RatingVector<U, I>> ratingNormalizer,
+			Similarity<RatingVector<I,U>> itemSimilarity,
 			Normalization<Int2FloatMap> itemSimilarityNormalizer,
 			DataFactory<U,I> dataFactory) {
 		this.neighborhoodSize = neighborhoodSize;
@@ -54,8 +52,8 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	 * histories.
 	 * @param ratings
 	 */
-	void buildModel(Collection<UserHistory<U,I>> ratings) {
-		List<RatingVector<U>> itemRatings = buildItemRatings(ratings);
+	void buildModel(Collection<RatingVector<U,I>> ratings) {
+		List<RatingVector<I,U>> itemRatings = buildItemRatings(ratings);
 		
 		// prepare the similarity matrix
 		similarities = new Int2FloatMap[itemRatings.size()];
@@ -131,27 +129,32 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<RatingVector<U>> buildItemRatings(Collection<UserHistory<U,I>> ratings) {
-		ArrayList<RatingVector<U>> itemVectors = new ArrayList<RatingVector<U>>();
-		for (UserHistory<U,I> user: ratings) {
+	private List<RatingVector<I,U>> buildItemRatings(Collection<RatingVector<U,I>> ratings) {
+		ArrayList<RatingVector<I,U>> itemVectors = new ArrayList<RatingVector<I,U>>();
+		for (RatingVector<U,I> user: ratings) {
 			user = ratingNormalizer.normalize(user);
 			for (ObjectValue<I> rating: user) {
-				int idx = itemIndexer.getIndex(rating.getItem());
-				if (idx > itemVectors.size()) {
+				I item = rating.getItem();
+				int idx = itemIndexer.getIndex(item);
+				if (idx >= itemVectors.size()) {
 					// it's a new item - add one
 					assert idx == itemVectors.size();
-					itemVectors.add(dataFactory.makeItemRatingVector());
+					itemVectors.add(dataFactory.makeItemRatingVector(item));
 				}
-				itemVectors.get(idx).putRating(user.getUser(), rating.getRating());
+				itemVectors.get(idx).putRating(user.getOwner(), rating.getRating());
 			}
 		}
 		itemVectors.trimToSize();
 		return itemVectors;
 	}
 
+	// TODO: Support multiple simultaneous predictions
 	@Override
-	public ObjectValue<I> predict(UserHistory<U,I> user, I item) {
+	public ObjectValue<I> predict(RatingVector<U,I> user, I item) {
 		int iid = itemIndexer.getIndex(item);
+		if (iid >= similarities.length)
+			return null;
+
 		float sum = 0;
 		float totalWeight = 0;
 		for (Int2FloatMap.Entry entry: similarities[iid].int2FloatEntrySet()) {
@@ -171,7 +174,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	}
 
 	@Override
-	public List<ObjectValue<I>> recommend(UserHistory<U,I> user) {
+	public List<ObjectValue<I>> recommend(RatingVector<U,I> user) {
 		Int2FloatMap scores = new Int2FloatOpenHashMap();
 		Int2FloatMap weights = new Int2FloatOpenHashMap();
 		float avg = user.getAverage();

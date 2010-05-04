@@ -14,6 +14,10 @@ import org.grouplens.reflens.data.generic.MapFactory;
  *
  */
 public class IntMapFactory implements MapFactory<Integer, Float> {
+	private static final IntMapFactory instance = new IntMapFactory();
+	public static IntMapFactory getInstance() {
+		return instance;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.data.generic.MapFactory#copy(java.util.Map)

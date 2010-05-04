@@ -17,8 +17,8 @@ public class GenericDataFactory<U,I> implements DataFactory<U,I> {
 	}
 
 	@Override
-	public RatingVector<U> makeItemRatingVector() {
-		return new GenericRatingVector<U>();
+	public RatingVector<I,U> makeItemRatingVector(I item) {
+		return new GenericRatingVector<I,U>(item);
 	}
 
 }

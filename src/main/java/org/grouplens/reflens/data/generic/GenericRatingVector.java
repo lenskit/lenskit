@@ -6,20 +6,26 @@ import java.util.Map;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 
-public class GenericRatingVector<T> implements RatingVector<T> {
+public class GenericRatingVector<S, T> implements RatingVector<S, T> {
 	protected MapFactory<T, Float> factory;
 	protected Map<T, Float> ratings;
 	protected Float average = null;
+	protected final S owner;
 	
 	public GenericRatingVector() {
-		this(new GenericMapFactory<T>(), null);
+		this(null);
 	}
 	
-	public GenericRatingVector(Map<T,Float> ratings) {
-		this(new GenericMapFactory<T>(), ratings);
+	public GenericRatingVector(S owner) {
+		this(new GenericMapFactory<T>(), owner, null);
 	}
 	
-	protected GenericRatingVector(MapFactory<T,Float> factory, Map<T,Float> ratings) {
+	public GenericRatingVector(S owner, Map<T,Float> ratings) {
+		this(new GenericMapFactory<T>(), owner, ratings);
+	}
+	
+	protected GenericRatingVector(MapFactory<T,Float> factory, S owner, Map<T,Float> ratings) {
+		this.owner = owner;
 		this.factory = factory;
 		if (ratings == null) {
 			this.ratings = factory.create();
@@ -28,6 +34,11 @@ public class GenericRatingVector<T> implements RatingVector<T> {
 		}
 	}
 
+	@Override
+	public S getOwner() {
+		return owner;
+	}
+	
 	@Override
 	public void putRating(T obj, float rating) {
 		average = null;
@@ -67,8 +78,8 @@ public class GenericRatingVector<T> implements RatingVector<T> {
 	}
 	
 	@Override
-	public GenericRatingVector<T> copy() {
-		GenericRatingVector<T> v2 = new GenericRatingVector<T>(ratings);
+	public GenericRatingVector<S, T> copy() {
+		GenericRatingVector<S, T> v2 = new GenericRatingVector<S,T>(factory, owner, ratings);
 		v2.average = average;
 		return v2;
 	}

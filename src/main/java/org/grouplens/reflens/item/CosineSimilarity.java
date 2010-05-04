@@ -12,7 +12,7 @@ import org.grouplens.reflens.data.RatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CosineSimilarity<I, V extends RatingVector<I>> implements Similarity<V> {
+public class CosineSimilarity<I, V extends RatingVector<?,I>> implements Similarity<V> {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Similarity#isSymmetric()

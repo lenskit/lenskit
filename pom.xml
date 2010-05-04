@@ -16,6 +16,20 @@
       <target>1.5</target>
     </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>org.grouplens.reflens.bench.BenchmarkRunner</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
   </plugins>
   </build>
   <dependencies>
@@ -23,6 +37,12 @@
   		<groupId>it.unimi.dsi</groupId>
   		<artifactId>fastutil</artifactId>
   		<version>5.1.5</version>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>uk.co.flamingpenguin.jewelcli</groupId>
+  		<artifactId>jewelcli</artifactId>
+  		<version>0.59</version>
   		<scope>compile</scope>
   	</dependency>
   </dependencies>
