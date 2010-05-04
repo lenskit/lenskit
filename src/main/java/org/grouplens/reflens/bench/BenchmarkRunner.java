@@ -10,11 +10,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
@@ -25,7 +26,7 @@ import uk.co.flamingpenguin.jewel.cli.CliFactory;
  *
  */
 public final class BenchmarkRunner {
-	private static Logger logger = Logger.getLogger(BenchmarkRunner.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(BenchmarkRunner.class);
 	
 	private static void fail(int code, String msg) {
 		fail(code, msg, null);

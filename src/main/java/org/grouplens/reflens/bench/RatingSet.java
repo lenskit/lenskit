@@ -10,9 +10,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 
 import org.grouplens.reflens.data.RatingVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a train/test ratings set. It takes care of partitioning the
@@ -24,7 +25,7 @@ import org.grouplens.reflens.data.RatingVector;
  * 
  */
 class RatingSet<U,I> {
-	private static Logger logger = Logger.getLogger(RatingSet.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(RatingSet.class);
 	private ArrayList<Collection<RatingVector<U,I>>> chunks;
 
 	/**

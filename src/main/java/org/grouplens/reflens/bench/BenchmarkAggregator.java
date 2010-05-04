@@ -4,12 +4,13 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Logger;
 
 import org.grouplens.reflens.Recommender;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class to aggregate benchmarking runs.
@@ -17,7 +18,7 @@ import org.grouplens.reflens.data.integer.IntRatingVector;
  *
  */
 public class BenchmarkAggregator {
-	private static Logger logger = Logger.getLogger(BenchmarkAggregator.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
 	private RecommenderFactory factory;
 	private int numRuns = 0;
 	private float tMAE = 0.0f;
@@ -37,10 +38,10 @@ public class BenchmarkAggregator {
 	public void addBenchmark(
 			Collection<RatingVector<Integer,Integer>> trainUsers,
 			Collection<RatingVector<Integer,Integer>> testUsers) {
-		logger.info(String.format("Building model with %d users", trainUsers.size()));
+		logger.debug("Building model with {} users", trainUsers.size());
 		Recommender<Integer, Integer> model = factory.buildRecommender(trainUsers);
 		
-		logger.info(String.format("Testing model with %d users", testUsers.size()));
+		logger.debug("Testing model with {} users", testUsers.size());
 		float accumErr = 0.0f;
 		float accumSqErr = 0.0f;
 		int nitems = 0;
