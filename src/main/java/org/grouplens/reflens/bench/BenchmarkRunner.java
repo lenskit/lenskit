@@ -94,7 +94,7 @@ public final class BenchmarkRunner {
 	}
 	
 	private void run() {
-		RecommenderFactory factory = getRecommenderFactory(options.getRecEngine());
+		RecommenderFactory factory = ObjectLoader.makeInstance(options.getRecEngine());
 		RatingSet<Integer,Integer> data = null;
 		try {
 			data = new RatingSet<Integer,Integer>(
