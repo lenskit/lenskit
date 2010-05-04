@@ -57,7 +57,7 @@
   		<artifactId>logback-classic</artifactId>
   		<version>0.9.20</version>
   		<type>jar</type>
-  		<scope>runtime</scope>
+  		<scope>test</scope>
   	</dependency>
   </dependencies>
 </project>
