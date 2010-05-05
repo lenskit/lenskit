@@ -50,6 +50,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 
 	private float userFeatures[][];
 	private float itemFeatures[][];
+	private float singularValues[];
 	
 	private FloatList itemAverages;
 	private FloatList userAvgOffsets;
@@ -122,6 +123,36 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		itemFeatures = new float[numFeatures][itemIndexer.getObjectCount()];
 		for (int feature = 0; feature < numFeatures; feature++) {
 			trainFeature(feature, ratings);
+		}
+		
+		logger.debug("Extracting singular values");
+		singularValues = new float[numFeatures];
+		for (int feature = 0; feature < numFeatures; feature++) {
+			float ussq = 0;
+			int numUsers = userIndexer.getObjectCount();
+			for (int i = 0; i < numUsers; i++) {
+				float uf = userFeatures[feature][i];
+				ussq += uf * uf;
+			}
+			float unrm = (float) Math.sqrt(ussq);
+			if (unrm > 0.0001f) {
+				for (int i = 0; i < numUsers; i++) {
+					userFeatures[feature][i] /= unrm;
+				}
+			}
+			float issq = 0;
+			int numItems = itemIndexer.getObjectCount();
+			for (int i = 0; i < numItems; i++) {
+				float fv = itemFeatures[feature][i];
+				issq += fv * fv;
+			}
+			float inrm = (float) Math.sqrt(issq);
+			if (inrm > 0.0001f) {
+				for (int i = 0; i < numItems; i++) {
+					itemFeatures[feature][i] /= inrm;
+				}
+			}
+			singularValues[feature] = unrm * inrm;
 		}
 	}
 	
@@ -212,7 +243,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 			if (iid < 0) continue;
 			float r = rating.getRating() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
-				featurePrefs[f] += r * itemFeatures[f][iid];
+				featurePrefs[f] += r * itemFeatures[f][iid] / singularValues[f];
 			}
 		}
 		
@@ -247,7 +278,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		
 		float score = itemAverages.get(iid) + dev;
 		for (int f = 0; f < numFeatures; f++) {
-			score += uprefs[f] * itemFeatures[f][iid];
+			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 		}
 		return new ObjectValue<I>(item, score);
 	}
@@ -263,7 +294,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 			if (iid < 0) continue;
 			float score = itemAverages.get(iid) + adev;
 			for (int f = 0; f < numFeatures; f++) {
-				score += uprefs[f] * itemFeatures[f][iid];
+				score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 			}
 			results.put(item, score);
 		}
