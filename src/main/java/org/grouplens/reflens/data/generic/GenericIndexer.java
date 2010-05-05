@@ -12,17 +12,27 @@ public class GenericIndexer<T> extends Object implements Indexer<T> {
 	private List<T> objs = new ArrayList<T>();
 	
 	public int getIndex(T obj) {
+		return getIndex(obj, true);
+	}
+	
+	public int getIndex(T obj, boolean insert) {
 		if (map.containsKey(obj)) {
 			return map.get(obj);
-		} else {
+		} else if (insert) {
 			int idx = objs.size();
 			map.put(obj, idx);
 			objs.add(obj);
 			return idx;
+		} else {
+			return -1;
 		}
 	}
 	
 	public T getObject(int idx) {
 		return objs.get(idx);
+	}
+	
+	public int getObjectCount() {
+		return objs.size();
 	}
 }
