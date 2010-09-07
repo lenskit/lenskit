@@ -105,6 +105,7 @@ public final class BenchmarkRunner {
 		
 		// We now have data and a factory. Let's go to town!
 		BenchmarkAggregator agg = new BenchmarkAggregator(factory);
+		agg.setHoldoutFraction(options.getHoldoutFraction());
 		for (int i = 0; i < data.getChunkCount(); i++) {
 			logger.info(String.format("Running benchmark set %d", i));
 			agg.addBenchmark(data.trainingSet(i), data.testSet(i));

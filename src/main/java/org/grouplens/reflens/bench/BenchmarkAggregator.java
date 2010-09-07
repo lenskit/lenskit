@@ -24,9 +24,20 @@ public class BenchmarkAggregator {
 	private float tMAE = 0.0f;
 	private float tRMSE = 0.0f;
 	private float tCov = 0.0f;
+	private double holdout = 0.33333333;
 	
 	public BenchmarkAggregator(BenchmarkRecommenderFactory factory) {
 		this.factory = factory;
+	}
+	
+	public double holdoutFraction() {
+		return holdout;
+	}
+	public void setHoldoutFraction(double fraction) {
+		if (fraction <= 0 || fraction >= 1) {
+			throw new RuntimeException("Invalid holdout fraction");
+		}
+		holdout = fraction;
 	}
 	
 	/**
@@ -48,7 +59,7 @@ public class BenchmarkAggregator {
 		int ngood = 0;
 		for (RatingVector<Integer,Integer> user: testUsers) {
 			IntArrayList ratedItems = new IntArrayList(user.getRatings().keySet());
-			int midpt = ratedItems.size() * 2 / 3;
+			int midpt = (int) Math.round(ratedItems.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratedItems);
 			IntRatingVector partialHistory = new IntRatingVector(user.getOwner());

@@ -31,6 +31,9 @@ interface BenchmarkOptions {
 	 */
 	@Option(longName="num-folds", shortName="n", defaultValue="10")
 	int getNumFolds();
+	
+	@Option(longName="holdout-fraction", defaultValue="0.3333333")
+	double getHoldoutFraction();
 
 	/**
 	 * @return A list of files to use as input data.
