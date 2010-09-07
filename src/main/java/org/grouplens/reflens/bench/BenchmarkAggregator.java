@@ -19,13 +19,13 @@ import org.slf4j.LoggerFactory;
  */
 public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
-	private RecommenderFactory factory;
+	private BenchmarkRecommenderFactory factory;
 	private int numRuns = 0;
 	private float tMAE = 0.0f;
 	private float tRMSE = 0.0f;
 	private float tCov = 0.0f;
 	
-	public BenchmarkAggregator(RecommenderFactory factory) {
+	public BenchmarkAggregator(BenchmarkRecommenderFactory factory) {
 		this.factory = factory;
 	}
 	

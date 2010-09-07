@@ -3,11 +3,11 @@ package org.grouplens.reflens.svd;
 import java.util.Collection;
 
 import org.grouplens.reflens.Recommender;
-import org.grouplens.reflens.bench.RecommenderFactory;
+import org.grouplens.reflens.bench.BenchmarkRecommenderFactory;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntDataFactory;
 
-public class FunkSVDFactory implements RecommenderFactory {
+public class FunkSVDFactory implements BenchmarkRecommenderFactory {
 
 	@Override
 	public Recommender<Integer, Integer> buildRecommender(

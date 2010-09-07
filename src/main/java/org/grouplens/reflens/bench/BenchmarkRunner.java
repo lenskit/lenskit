@@ -72,12 +72,12 @@ public final class BenchmarkRunner {
 	 * @param className The name of the recommender factory class to load.
 	 * @return A factory for building recommender engines.
 	 */
-	private RecommenderFactory getRecommenderFactory(String className) {
+	private BenchmarkRecommenderFactory getRecommenderFactory(String className) {
 		try {
 			@SuppressWarnings("unchecked")
-			Class<RecommenderFactory> factClass =
-				(Class<RecommenderFactory>) Class.forName(className);
-			Constructor<RecommenderFactory> ctor = factClass.getConstructor();
+			Class<BenchmarkRecommenderFactory> factClass =
+				(Class<BenchmarkRecommenderFactory>) Class.forName(className);
+			Constructor<BenchmarkRecommenderFactory> ctor = factClass.getConstructor();
 			return ctor.newInstance();
 		} catch (ClassNotFoundException e) {
 			fail(1, "Recommender not found", e);
@@ -94,7 +94,7 @@ public final class BenchmarkRunner {
 	}
 	
 	private void run() {
-		RecommenderFactory factory = ObjectLoader.makeInstance(options.getRecEngine());
+		BenchmarkRecommenderFactory factory = ObjectLoader.makeInstance(options.getRecEngine());
 		RatingSet<Integer,Integer> data = null;
 		try {
 			data = new RatingSet<Integer,Integer>(

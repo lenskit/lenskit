@@ -10,7 +10,7 @@ import org.grouplens.reflens.data.RatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface RecommenderFactory {
+public interface BenchmarkRecommenderFactory {
 	/**
 	 * Construct a new recommender engine trained on the provided ratings.
 	 * @param ratings The set of initial ratings with which to seed the

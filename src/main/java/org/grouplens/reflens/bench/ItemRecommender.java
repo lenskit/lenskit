@@ -8,7 +8,7 @@ import org.grouplens.reflens.item.CosineSimilarity;
 import org.grouplens.reflens.item.ItemBasedRecommenderFactory;
 import org.grouplens.reflens.item.MeanNormalization;
 
-public class ItemRecommender implements RecommenderFactory {
+public class ItemRecommender implements BenchmarkRecommenderFactory {
 	private ItemBasedRecommenderFactory<Integer,Integer> factory;
 	
 	public ItemRecommender() {
