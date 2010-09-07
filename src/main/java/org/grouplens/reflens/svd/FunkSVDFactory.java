@@ -13,8 +13,10 @@ public class FunkSVDFactory implements BenchmarkRecommenderFactory {
 	public Recommender<Integer, Integer> buildRecommender(
 			Collection<RatingVector<Integer, Integer>> ratings) {
 		String numFeatures = System.getProperty("org.grouplens.reflens.svd.rank", "50");
-		int nf = Integer.parseInt(numFeatures);
-		return new FunkSVD<Integer,Integer>(new IntDataFactory(), ratings, nf, 0.001f);
+		String learningRate = System.getProperty("org.grouplens.reflens.svd.learningRate", "0.001");
+		return new FunkSVD<Integer,Integer>(new IntDataFactory(), ratings,
+				Integer.parseInt(numFeatures),
+				Float.parseFloat(learningRate));
 	}
 
 }
