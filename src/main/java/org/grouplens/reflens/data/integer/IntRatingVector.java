@@ -17,14 +17,14 @@ import org.grouplens.reflens.data.generic.GenericRatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class IntRatingVector extends GenericRatingVector<Integer,Integer> {
-	public IntRatingVector(Integer owner) {
+public class IntRatingVector<E> extends GenericRatingVector<E,Integer> {
+	public IntRatingVector(E owner) {
 		super(IntMapFactory.getInstance(), owner, null);
 	}
-	public IntRatingVector(Integer owner, Map<Integer,Float> ratings) {
+	public IntRatingVector(E owner, Map<Integer,Float> ratings) {
 		super(IntMapFactory.getInstance(), owner, ratings);
 	}
-	public IntRatingVector(Integer owner, Int2FloatMap ratings) {
+	public IntRatingVector(E owner, Int2FloatMap ratings) {
 		this(owner);
 		this.ratings = new Int2FloatOpenHashMap(ratings);
 	}

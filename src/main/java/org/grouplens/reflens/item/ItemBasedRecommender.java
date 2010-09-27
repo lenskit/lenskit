@@ -16,35 +16,36 @@ import java.util.Set;
 import org.grouplens.reflens.Normalization;
 import org.grouplens.reflens.Recommender;
 import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.data.DataFactory;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.RatingVectorFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private Normalization<RatingVector<U,I>> ratingNormalizer;
 	private Similarity<RatingVector<I,U>> itemSimilarity;
-	private Normalization<Int2FloatMap> itemSimilarityNormalizer;
 	private int neighborhoodSize;
 	
-	private DataFactory<U, I> dataFactory;
-	private Indexer<U> userIndexer;
+	private RatingVectorFactory<I,U> itemVectorFactory;
 	private Indexer<I> itemIndexer;
 	
 	private Int2FloatMap[] similarities;
 
-	ItemBasedRecommender(int neighborhoodSize,
-			Normalization<RatingVector<U, I>> ratingNormalizer,
-			Similarity<RatingVector<I,U>> itemSimilarity,
-			Normalization<Int2FloatMap> itemSimilarityNormalizer,
-			DataFactory<U,I> dataFactory) {
+	@Inject
+	ItemBasedRecommender(
+			@Named("RatingNorm") Normalization<RatingVector<U,I>> ratingNormalizer,
+			@Named("ItemSim") Similarity<RatingVector<I,U>> itemSimilarity,
+			Indexer<I> itemIndexer,
+			RatingVectorFactory<I, U> itemVectorFactory,
+			@Named("NeighborhoodSize") int neighborhoodSize) {
 		this.neighborhoodSize = neighborhoodSize;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
-		this.itemSimilarityNormalizer = itemSimilarityNormalizer;
-		this.dataFactory = dataFactory;
-		this.userIndexer = dataFactory.makeUserIndexer();
-		this.itemIndexer = dataFactory.makeItemIndexer();
+		this.itemVectorFactory = itemVectorFactory;
+		this.itemIndexer = itemIndexer;
 	}
 
 	/** 
@@ -88,8 +89,6 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		for (int i = 0; i < similarities.length; i++) {
 			Int2FloatMap sims = similarities[i];
 			// Normalize the similarity list if we have one
-			if (itemSimilarityNormalizer != null)
-				sims = itemSimilarityNormalizer.normalize(sims);
 			
 			// Truncate the similarity list if a neighborhood size is specified.
 			// Use a heap for O(n lg nsims) performance.
@@ -139,7 +138,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 				if (idx >= itemVectors.size()) {
 					// it's a new item - add one
 					assert idx == itemVectors.size();
-					itemVectors.add(dataFactory.makeItemRatingVector(item));
+					itemVectors.add(itemVectorFactory.make(item));
 				}
 				itemVectors.get(idx).putRating(user.getOwner(), rating.getRating());
 			}

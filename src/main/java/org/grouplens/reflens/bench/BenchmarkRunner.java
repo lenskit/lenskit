@@ -5,13 +5,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import org.grouplens.reflens.RecommenderFactory;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
 import org.slf4j.Logger;
@@ -19,6 +18,13 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
+
+import com.google.inject.CreationException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
@@ -61,46 +67,28 @@ public final class BenchmarkRunner {
 	}
 	
 	private BenchmarkOptions options;
-
+	private Injector injector;
 	
 	private BenchmarkRunner(BenchmarkOptions options) {
 		this.options = options;
 	}
 	
-	/**
-	 * Load the recommender factory named by className.
-	 * @param className The name of the recommender factory class to load.
-	 * @return A factory for building recommender engines.
-	 */
-	private BenchmarkRecommenderFactory getRecommenderFactory(String className) {
-		try {
-			@SuppressWarnings("unchecked")
-			Class<BenchmarkRecommenderFactory> factClass =
-				(Class<BenchmarkRecommenderFactory>) Class.forName(className);
-			Constructor<BenchmarkRecommenderFactory> ctor = factClass.getConstructor();
-			return ctor.newInstance();
-		} catch (ClassNotFoundException e) {
-			fail(1, "Recommender not found", e);
-			return null; /* never executed */
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		}
-	}
-	
 	private void run() {
-		BenchmarkRecommenderFactory factory = ObjectLoader.makeInstance(options.getRecEngine());
+		Module recModule = ObjectLoader.makeInstance(options.getModule());
+		injector = Guice.createInjector(recModule);
 		RatingSet<Integer,Integer> data = null;
 		try {
 			data = new RatingSet<Integer,Integer>(
 					options.getNumFolds(), readRatingsData());
 		} catch (FileNotFoundException e) {
 			fail(3, e);
+		}
+		
+		RecommenderFactory<Integer, Integer> factory = null;
+		try {
+			factory = injector.getInstance(Key.get(new TypeLiteral<RecommenderFactory<Integer,Integer>>(){}));
+		} catch (CreationException e) {
+			fail(2, e.getMessage());
 		}
 		
 		// We now have data and a factory. Let's go to town!

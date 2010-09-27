@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.RecommenderFactory;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
@@ -19,14 +20,14 @@ import org.slf4j.LoggerFactory;
  */
 public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
-	private BenchmarkRecommenderFactory factory;
+	private RecommenderFactory<Integer,Integer> factory;
 	private int numRuns = 0;
 	private float tMAE = 0.0f;
 	private float tRMSE = 0.0f;
 	private float tCov = 0.0f;
 	private double holdout = 0.33333333;
 	
-	public BenchmarkAggregator(BenchmarkRecommenderFactory factory) {
+	public BenchmarkAggregator(RecommenderFactory<Integer,Integer> factory) {
 		this.factory = factory;
 	}
 	
@@ -50,7 +51,7 @@ public class BenchmarkAggregator {
 			Collection<RatingVector<Integer,Integer>> trainUsers,
 			Collection<RatingVector<Integer,Integer>> testUsers) {
 		logger.debug("Building model with {} users", trainUsers.size());
-		Recommender<Integer, Integer> model = factory.buildRecommender(trainUsers);
+		Recommender<Integer, Integer> model = factory.build(trainUsers);
 		
 		logger.debug("Testing model with {} users", testUsers.size());
 		float accumErr = 0.0f;
@@ -62,7 +63,7 @@ public class BenchmarkAggregator {
 			int midpt = (int) Math.round(ratedItems.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratedItems);
-			IntRatingVector partialHistory = new IntRatingVector(user.getOwner());
+			IntRatingVector<Integer> partialHistory = new IntRatingVector<Integer>(user.getOwner());
 			for (int i = 0; i < midpt; i++) {
 				int iid = ratedItems.getInt(i);
 				partialHistory.putRating(iid, user.getRating(iid));

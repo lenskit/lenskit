@@ -1,3 +1,4 @@
+
 /**
  * 
  */
@@ -14,12 +15,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.grouplens.reflens.Recommender;
-import org.grouplens.reflens.data.DataFactory;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
 
 /**
  * Do recommendations using Funk's SVD algorithm.
@@ -41,12 +45,12 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	private static final float MIN_EPOCHS = 50;
 	private static final float TRAINING_BLEND = 0.015f; // Funk's K
 	
-	private DataFactory<U,I> dataFactory;
 	private final float learningRate;
 	private final int numFeatures;
 	
 	private Indexer<U> userIndexer;
 	private Indexer<I> itemIndexer;
+	private Provider<Map<I,Float>> itemMapProvider;
 
 	private float userFeatures[][];
 	private float itemFeatures[][];
@@ -55,12 +59,18 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	private FloatList itemAverages;
 	private FloatList userAvgOffsets;
 	
-	public FunkSVD(DataFactory<U,I> factory, Collection<RatingVector<U,I>> users,
-			int features, float lrate) {
-		dataFactory = factory;
+	@Inject
+	FunkSVD(
+			@Named("UserIndexer") Indexer<U> userIndexer,
+			@Named("ItemIndexer") Indexer<I> itemIndexer,
+			Provider<Map<I,Float>> itemMapProvider, 
+			@Named("FeatureCount") int features,
+			@Named("LearningRate") float lrate) {
 		learningRate = lrate;
 		numFeatures = features;
-		build(users);
+		this.userIndexer = userIndexer;
+		this.itemIndexer = itemIndexer;
+		this.itemMapProvider = itemMapProvider;
 	}
 	
 	private void computeItemAverages(Collection<Rating> ratings) {
@@ -100,10 +110,8 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		}
 	}
 	
-	private void build(Collection<RatingVector<U,I>> users) {
+	void build(Collection<RatingVector<U,I>> users) {
 		logger.debug("Building SVD with {} features", numFeatures);
-		itemIndexer = dataFactory.makeItemIndexer();
-		userIndexer = dataFactory.makeUserIndexer();
 		
 		// build a list of ratings
 		List<Rating> ratings = new ArrayList<Rating>(users.size() * 5);
@@ -287,7 +295,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		float adev = averageDeviation(user);
 		float uprefs[] = foldIn(user, adev);
 
-		Map<I,Float> results = dataFactory.makeItemFloatMap();
+		Map<I,Float> results = itemMapProvider.get();
 		
 		for (I item: items) {
 			int iid = itemIndexer.getIndex(item, false);

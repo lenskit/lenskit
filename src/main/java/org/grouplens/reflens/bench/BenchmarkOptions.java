@@ -20,10 +20,10 @@ interface BenchmarkOptions {
 	String getDelimiter();
 
 	/**
-	 * @return The name of the recommender engine class to use.
+	 * @return The name of the recommender module class to use.
 	 */
-	@Option(longName = "rec-engine", shortName = "r", defaultValue = "")
-	String getRecEngine();
+	@Option(longName = "module", shortName = "m", defaultValue = "")
+	String getModule();
 
 	/**
 	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test
