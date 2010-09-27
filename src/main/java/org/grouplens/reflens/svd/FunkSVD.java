@@ -18,6 +18,8 @@ import org.grouplens.reflens.Recommender;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.svd.params.FeatureCount;
+import org.grouplens.reflens.svd.params.LearningRate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,12 +62,10 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	private FloatList userAvgOffsets;
 	
 	@Inject
-	FunkSVD(
-			@Named("UserIndexer") Indexer<U> userIndexer,
-			@Named("ItemIndexer") Indexer<I> itemIndexer,
+	FunkSVD(Indexer<U> userIndexer, Indexer<I> itemIndexer,
 			Provider<Map<I,Float>> itemMapProvider, 
-			@Named("FeatureCount") int features,
-			@Named("LearningRate") float lrate) {
+			@FeatureCount int features,
+			@LearningRate float lrate) {
 		learningRate = lrate;
 		numFeatures = features;
 		this.userIndexer = userIndexer;
