@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.grouplens.reflens.data.Indexer;
 
-public class GenericIndexer<T> extends Object implements Indexer<T> {
+public class GenericIndexer<T> implements Indexer<T> {
 	private Map<T,Integer> map = new HashMap<T,Integer>();
 	private List<T> objs = new ArrayList<T>();
 	
