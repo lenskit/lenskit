@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.grouplens.reflens.RecommenderFactory;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.data.integer.IntRatingVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ public final class BenchmarkRunner {
 	
 	private void run() {
 		Module recModule = ObjectLoader.makeInstance(options.getModule());
-		injector = Guice.createInjector(recModule);
+		injector = Guice.createInjector(new IntDataModule(), recModule);
 		RatingSet<Integer,Integer> data = null;
 		try {
 			data = new RatingSet<Integer,Integer>(
@@ -120,7 +121,7 @@ public final class BenchmarkRunner {
 				if (users.containsKey(uid)) {
 					history = users.get(uid);
 				} else {
-					history = new IntRatingVector(uid);
+					history = new IntRatingVector<Integer>(uid);
 					users.put(uid, history);
 				}
 				history.putRating(iid, rating);
