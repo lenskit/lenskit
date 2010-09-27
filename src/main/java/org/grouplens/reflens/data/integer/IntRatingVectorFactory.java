@@ -10,10 +10,10 @@ import org.grouplens.reflens.data.RatingVectorFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IntRatingVectorFactory<E> implements RatingVectorFactory<E, Integer> {
+public class IntRatingVectorFactory<S> implements RatingVectorFactory<S, Integer> {
 
 	@Override
-	public RatingVector<E, Integer> make(E entity) {
-		return new IntRatingVector<E>(entity);
+	public RatingVector<S, Integer> make(S owner) {
+		return new IntRatingVector<S>(owner);
 	}	
 }

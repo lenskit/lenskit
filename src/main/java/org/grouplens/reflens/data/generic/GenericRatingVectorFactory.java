@@ -10,15 +10,15 @@ import org.grouplens.reflens.data.RatingVectorFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GenericRatingVectorFactory<E, T> implements
-		RatingVectorFactory<E, T> {
+public class GenericRatingVectorFactory<S, T> implements
+		RatingVectorFactory<S, T> {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.data.RatingVectorFactory#make(java.lang.Object)
 	 */
 	@Override
-	public RatingVector<E, T> make(E entity) {
-		return new GenericRatingVector<E,T>(entity);
+	public RatingVector<S, T> make(S owner) {
+		return new GenericRatingVector<S,T>(owner);
 	}
 
 }
