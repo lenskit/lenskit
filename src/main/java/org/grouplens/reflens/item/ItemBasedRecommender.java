@@ -190,10 +190,12 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 					float w = 0.0f;
 					if (scores.containsKey(jid)) {
 						s = scores.get(jid);
-						w = scores.get(jid);
+						w = weights.get(jid);
 					}
 					s += val * (rating.getRating() - avg);
 					w += Math.abs(val);
+					scores.put(jid, s);
+					weights.put(jid, w);
 				}
 			}
 		}
