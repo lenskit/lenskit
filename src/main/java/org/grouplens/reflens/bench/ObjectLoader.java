@@ -17,6 +17,18 @@ import org.slf4j.LoggerFactory;
 public class ObjectLoader {
 	private static Logger logger = LoggerFactory.getLogger(ObjectLoader.class);
 	
+	public static <T> Class<T> getClass(String name) {
+		try {
+			@SuppressWarnings("unchecked")
+			Class<T> factClass =
+				(Class<T>) Class.forName(name);
+			logger.debug("Loaded class {}", factClass.getName());
+			return factClass;
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Class not found", e);
+		}
+	}
+	
 	/**
 	 * Cosntruct a new instance of the class named by <tt>name</tt>.
 	 * @param <T> A supertype of the class to construct.
@@ -25,14 +37,9 @@ public class ObjectLoader {
 	 */
 	public static <T> T makeInstance(String name) {
 		try {
-			@SuppressWarnings("unchecked")
-			Class<T> factClass =
-				(Class<T>) Class.forName(name);
-			logger.debug("Loaded class {}", factClass.getName());
+			Class<T> factClass = getClass(name);
 			Constructor<T> ctor = factClass.getConstructor();
 			return ctor.newInstance();
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Class not found", e);
 		} catch (InstantiationException e) {
 			throw new RuntimeException("Invalid recommender fatory", e);
 		} catch (IllegalAccessException e) {
