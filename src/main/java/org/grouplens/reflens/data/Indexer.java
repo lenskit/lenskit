@@ -4,7 +4,7 @@ import org.grouplens.reflens.data.generic.GenericIndexer;
 
 import com.google.inject.ImplementedBy;
 
-@ImplementedBy(value=GenericIndexer.class)
+@ImplementedBy(GenericIndexer.class)
 public interface Indexer<I> {
 	public int getIndex(I obj);
 	public int getIndex(I obj, boolean insert);
