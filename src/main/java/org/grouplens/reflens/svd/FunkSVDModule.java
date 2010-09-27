@@ -17,7 +17,6 @@ public class FunkSVDModule extends AbstractModule {
 	protected void configure() {
 		bind(int.class).annotatedWith(FeatureCount.class).toInstance(50);
 		bind(float.class).annotatedWith(LearningRate.class).toInstance(0.001f);
-		bind(new TypeLiteral<Map<Integer,Float>>(){}).to(Int2FloatOpenHashMap.class);
 		bind(new TypeLiteral<RecommenderFactory<Integer,Integer>>(){}).to(new TypeLiteral<FunkSVDFactory<Integer,Integer>>(){});
 	}
 
