@@ -20,6 +20,9 @@ import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.RatingVectorFactory;
+import org.grouplens.reflens.item.params.ItemSimilarity;
+import org.grouplens.reflens.item.params.NeighborhoodSize;
+import org.grouplens.reflens.item.params.RatingNormalization;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -36,11 +39,11 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 
 	@Inject
 	ItemBasedRecommender(
-			@Named("RatingNorm") Normalization<RatingVector<U,I>> ratingNormalizer,
-			@Named("ItemSim") Similarity<RatingVector<I,U>> itemSimilarity,
+			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
+			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
 			Indexer<I> itemIndexer,
 			RatingVectorFactory<I, U> itemVectorFactory,
-			@Named("NeighborhoodSize") int neighborhoodSize) {
+			@NeighborhoodSize int neighborhoodSize) {
 		this.neighborhoodSize = neighborhoodSize;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
