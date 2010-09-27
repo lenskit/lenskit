@@ -11,14 +11,6 @@ package org.grouplens.reflens;
  */
 public interface Similarity<V> {
 	/**
-	 * Method indicating whether this similarity measurement is symmetric.  Some
-	 * similarity schemes are asymmetric (sim(a,b) != sim(b,a)).
-	 * 
-	 * @return true if the similarity metric is symmetric.
-	 */
-	boolean isSymmetric();
-	
-	/**
 	 * Compute the similarity between two vectors.
 	 * @param vec1
 	 * @param vec2

@@ -16,6 +16,7 @@ import java.util.Set;
 import org.grouplens.reflens.Normalization;
 import org.grouplens.reflens.Recommender;
 import org.grouplens.reflens.Similarity;
+import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
@@ -25,15 +26,14 @@ import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
-	private Normalization<RatingVector<U,I>> ratingNormalizer;
-	private Similarity<RatingVector<I,U>> itemSimilarity;
-	private int neighborhoodSize;
+	private final Normalization<RatingVector<U,I>> ratingNormalizer;
+	private final Similarity<RatingVector<I,U>> itemSimilarity;
+	private final int neighborhoodSize;
 	
-	private RatingVectorFactory<I,U> itemVectorFactory;
-	private Indexer<I> itemIndexer;
+	private final RatingVectorFactory<I,U> itemVectorFactory;
+	private final Indexer<I> itemIndexer;
 	
 	private Int2FloatMap[] similarities;
 
@@ -66,7 +66,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		}
 		
 		// compute the similarity matrix
-		if (itemSimilarity.isSymmetric()) {
+		if (itemSimilarity instanceof SymmetricBinaryFunction) {
 			// we can compute equivalent symmetries at the same time
 			for (int i = 0; i < itemRatings.size(); i++) {
 				for (int j = i+1; j < itemRatings.size(); j++) {

@@ -6,21 +6,15 @@ package org.grouplens.reflens.item;
 import java.util.Map;
 
 import org.grouplens.reflens.Similarity;
+import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.RatingVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CosineSimilarity<I, V extends RatingVector<?,I>> implements Similarity<V> {
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.Similarity#isSymmetric()
-	 */
-	@Override
-	public boolean isSymmetric() {
-		return true;
-	}
+public class CosineSimilarity<I, V extends RatingVector<?,I>>
+	implements Similarity<V>, SymmetricBinaryFunction {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
