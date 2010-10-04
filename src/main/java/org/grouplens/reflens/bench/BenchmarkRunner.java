@@ -1,3 +1,21 @@
+/* RefLens, a reference implementation of recommender algorithms.
+ * Copyright 2010 Michael Ekstrand <ekstrand@cs.umn.edu>
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+
 package org.grouplens.reflens.bench;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -29,20 +47,22 @@ import com.google.inject.TypeLiteral;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 public final class BenchmarkRunner {
-	private static Logger logger = LoggerFactory.getLogger(BenchmarkRunner.class);
-	
+	private static Logger logger = LoggerFactory
+			.getLogger(BenchmarkRunner.class);
+
 	private static void fail(int code, String msg) {
 		fail(code, msg, null);
 	}
-	
+
 	private static void fail(int code, Exception err) {
 		fail(code, null, err);
 	}
-	
+
 	private static void fail(int code, String msg, Exception err) {
 		if (msg != null)
 			System.err.println(msg);
@@ -54,11 +74,11 @@ public final class BenchmarkRunner {
 	public static void main(String[] args) {
 		BenchmarkOptions options = null;
 		try {
-			 options = CliFactory.parseArguments(BenchmarkOptions.class, args);
+			options = CliFactory.parseArguments(BenchmarkOptions.class, args);
 		} catch (ArgumentValidationException e) {
 			fail(1, e);
 		}
-		
+
 		BenchmarkRunner runner = new BenchmarkRunner(options);
 		try {
 			runner.run();
@@ -66,32 +86,35 @@ public final class BenchmarkRunner {
 			fail(2, "Error running recommender benchmark", e);
 		}
 	}
-	
+
 	private BenchmarkOptions options;
 	private Injector injector;
-	
+
 	private BenchmarkRunner(BenchmarkOptions options) {
 		this.options = options;
 	}
-	
+
 	private void run() {
 		Module recModule = ObjectLoader.makeInstance(options.getModule());
 		injector = Guice.createInjector(new IntDataModule(), recModule);
-		RatingSet<Integer,Integer> data = null;
+		RatingSet<Integer, Integer> data = null;
 		try {
-			data = new RatingSet<Integer,Integer>(
-					options.getNumFolds(), readRatingsData());
+			data = new RatingSet<Integer, Integer>(options.getNumFolds(),
+					readRatingsData());
 		} catch (FileNotFoundException e) {
 			fail(3, e);
 		}
-		
+
 		RecommenderFactory<Integer, Integer> factory = null;
 		try {
-			factory = injector.getInstance(Key.get(new TypeLiteral<RecommenderFactory<Integer,Integer>>(){}));
+			factory = injector
+					.getInstance(Key
+							.get(new TypeLiteral<RecommenderFactory<Integer, Integer>>() {
+							}));
 		} catch (CreationException e) {
 			fail(2, e.getMessage());
 		}
-		
+
 		// We now have data and a factory. Let's go to town!
 		BenchmarkAggregator agg = new BenchmarkAggregator(factory);
 		agg.setHoldoutFraction(options.getHoldoutFraction());
@@ -101,12 +124,13 @@ public final class BenchmarkRunner {
 		}
 		agg.printResults();
 	}
-	
-	private List<RatingVector<Integer,Integer>> readRatingsData() throws FileNotFoundException {
-		Int2ObjectMap<RatingVector<Integer,Integer>> users =
-			new Int2ObjectOpenHashMap<RatingVector<Integer,Integer>>();
-		Pattern splitter = Pattern.compile(Pattern.quote(options.getDelimiter()));
-		for (String file: options.getFiles()) {
+
+	private List<RatingVector<Integer, Integer>> readRatingsData()
+			throws FileNotFoundException {
+		Int2ObjectMap<RatingVector<Integer, Integer>> users = new Int2ObjectOpenHashMap<RatingVector<Integer, Integer>>();
+		Pattern splitter = Pattern.compile(Pattern
+				.quote(options.getDelimiter()));
+		for (String file : options.getFiles()) {
 			Scanner s = new Scanner(new File(file));
 			while (s.hasNextLine()) {
 				String line = s.nextLine();
@@ -117,7 +141,7 @@ public final class BenchmarkRunner {
 				int uid = Integer.parseInt(fields[0]);
 				int iid = Integer.parseInt(fields[1]);
 				float rating = Float.parseFloat(fields[2]);
-				RatingVector<Integer,Integer> history = null;
+				RatingVector<Integer, Integer> history = null;
 				if (users.containsKey(uid)) {
 					history = users.get(uid);
 				} else {
@@ -128,6 +152,6 @@ public final class BenchmarkRunner {
 			}
 			s.close();
 		}
-		return new ArrayList<RatingVector<Integer,Integer>>(users.values());
+		return new ArrayList<RatingVector<Integer, Integer>>(users.values());
 	}
 }
