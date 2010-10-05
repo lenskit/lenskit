@@ -40,6 +40,7 @@ import java.util.NoSuchElementException;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
+import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -48,7 +49,7 @@ import com.google.inject.assistedinject.Assisted;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PQueueSimilarityMatrix implements SimilarityMatrix {
+public class PQueueSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
 	private static class Score implements IndexedItemScore, Comparable<Score> {
 		private final int index;
 		private final float score;
@@ -108,16 +109,37 @@ public class PQueueSimilarityMatrix implements SimilarityMatrix {
 		
 	}
 	
+	private static class Matrix implements SimilarityMatrix {
+		private ScoreQueue[] rows;
+		public Matrix(ScoreQueue[] rows) {
+			this.rows = rows;
+		}
+		@Override
+		public Iterable<IndexedItemScore> getNeighbors(int i) {
+			return rows[i];
+		}
+		@Override
+		public int size() {
+			return rows.length;
+		}
+	}
+	
 	private ScoreQueue[] rows;
 	private final int maxNeighbors;
+	private final int itemCount;
 	
 	@Inject
-	public PQueueSimilarityMatrix(
+	public PQueueSimilarityMatrixBuilder(
 			@NeighborhoodSize int neighborhoodSize,
 			@Assisted int nitems) {
 		maxNeighbors = neighborhoodSize;
-		rows = new ScoreQueue[nitems];
-		for (int i = 0; i < nitems; i++) {
+		this.itemCount = nitems;
+		setup();
+	}
+	
+	private void setup() {
+		rows = new ScoreQueue[itemCount];
+		for (int i = 0; i < itemCount; i++) {
 			rows[i] = new ScoreQueue();
 		}
 	}
@@ -126,18 +148,13 @@ public class PQueueSimilarityMatrix implements SimilarityMatrix {
 	 * @see org.grouplens.reflens.util.SimilarityMatrix#finish()
 	 */
 	@Override
-	public void finish() {
+	public SimilarityMatrix build() {
 		for (int i = 0; i < rows.length; i++) {
 			rows[i].trim();
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.util.SimilarityMatrix#getNeighbors(int)
-	 */
-	@Override
-	public Iterable<IndexedItemScore> getNeighbors(int i) {
-		return rows[i];
+		Matrix m = new Matrix(rows);
+		rows = null;
+		return m;
 	}
 
 	/* (non-Javadoc)
@@ -154,13 +171,4 @@ public class PQueueSimilarityMatrix implements SimilarityMatrix {
 				q.dequeue();
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.util.SimilarityMatrix#size()
-	 */
-	@Override
-	public int size() {
-		return rows.length;
-	}
-
 }

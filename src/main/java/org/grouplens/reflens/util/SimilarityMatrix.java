@@ -32,32 +32,11 @@ package org.grouplens.reflens.util;
  */
 public interface SimilarityMatrix {
 	/**
-	 * The number of entities for which this matrix can store similarities.
+	 * The number of entities for which this matrix has similarities.
 	 * 
 	 * @return
 	 */
 	public int size();
-
-	/**
-	 * Store the similarity between two entities.  This is thread-safe until
-	 * {@link #finish()} has been called, at which point it cannot be called
-	 * at all.  Only one similary should be stored for each ordered pair of
-	 * entities, as the implementation may not de-duplicate the matrix.
-	 * 
-	 * @param i1
-	 *            The index of the first entity.
-	 * @param i2
-	 *            The index of the second entity.
-	 * @param sim
-	 *            The similarity score.
-	 * @throws IndexOutOfBoundsException
-	 *             if an index is out of bounds (<0 or >{@link #size()}).
-	 * @throws RuntimeException
-	 *             may be thrown if {@link #finish()} has been called. Throwing
-	 *             this exception is optional; some implementations may not
-	 *             check and throw it.
-	 */
-	public void put(int i1, int i2, float sim);
 
 	/**
 	 * Retrieve the neighbors for an item.
@@ -69,14 +48,6 @@ public interface SimilarityMatrix {
 	 * @return A map of neighbors to similarity scores.
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is invalid.
-	 * @throws RuntimeException
-	 *             may be thrown if {@link #finish()} has not been called.
 	 */
 	public Iterable<IndexedItemScore> getNeighbors(int i);
-
-	/**
-	 * Finalize the matrix after all entries have been added. It is an error to
-	 * call {@link #put(int, int, float)} after calling this method.
-	 */
-	public void finish();
 }

@@ -36,6 +36,6 @@ package org.grouplens.reflens.util;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface SimilarityMatrixFactory {
-	public SimilarityMatrix create(int nrows);
+public interface SimilarityMatrixBuilderFactory {
+	public SimilarityMatrixBuilder create(int nrows);
 }

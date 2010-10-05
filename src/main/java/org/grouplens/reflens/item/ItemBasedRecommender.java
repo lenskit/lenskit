@@ -44,7 +44,8 @@ import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
-import org.grouplens.reflens.util.SimilarityMatrixFactory;
+import org.grouplens.reflens.util.SimilarityMatrixBuilder;
+import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 
 import com.google.inject.Inject;
 
@@ -53,7 +54,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private final Similarity<RatingVector<I,U>> itemSimilarity;
 	private final int neighborhoodSize;
 	
-	private final SimilarityMatrixFactory matrixFactory;
+	private final SimilarityMatrixBuilderFactory matrixFactory;
 	private final RatingVectorFactory<I,U> itemVectorFactory;
 	private final Indexer<I> itemIndexer;
 	
@@ -63,7 +64,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	ItemBasedRecommender(
 			Indexer<I> itemIndexer,
 			RatingVectorFactory<I, U> itemVectorFactory,
-			SimilarityMatrixFactory matrixFactory,
+			SimilarityMatrixBuilderFactory matrixFactory,
 			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
 			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
 			@NeighborhoodSize int neighborhoodSize) {
@@ -84,7 +85,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		List<RatingVector<I,U>> itemRatings = buildItemRatings(ratings);
 		
 		// prepare the similarity matrix
-		matrix = matrixFactory.create(itemRatings.size());
+		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
 		
 		// compute the similarity matrix
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
@@ -93,8 +94,8 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 				for (int j = i+1; j < itemRatings.size(); j++) {
 					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0) {
-						matrix.put(i, j, sim);
-						matrix.put(j, i, sim);
+						builder.put(i, j, sim);
+						builder.put(j, i, sim);
 					}
 				}
 			}
@@ -104,12 +105,12 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 				for (int j = 0; j < itemRatings.size(); j++) {
 					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0)
-						matrix.put(i, j, sim);
+						builder.put(i, j, sim);
 				}
 			}
 		}
 		
-		matrix.finish();
+		matrix = builder.build();
 	}
 	
 	/** 
