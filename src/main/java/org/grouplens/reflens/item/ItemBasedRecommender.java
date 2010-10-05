@@ -42,6 +42,9 @@ import org.grouplens.reflens.data.RatingVectorFactory;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.util.IndexedItemScore;
+import org.grouplens.reflens.util.SimilarityMatrix;
+import org.grouplens.reflens.util.SimilarityMatrixFactory;
 
 import com.google.inject.Inject;
 
@@ -50,23 +53,26 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private final Similarity<RatingVector<I,U>> itemSimilarity;
 	private final int neighborhoodSize;
 	
+	private final SimilarityMatrixFactory matrixFactory;
 	private final RatingVectorFactory<I,U> itemVectorFactory;
 	private final Indexer<I> itemIndexer;
 	
-	private Int2FloatMap[] similarities;
+	private SimilarityMatrix matrix;
 
 	@Inject
 	ItemBasedRecommender(
-			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
-			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
 			Indexer<I> itemIndexer,
 			RatingVectorFactory<I, U> itemVectorFactory,
+			SimilarityMatrixFactory matrixFactory,
+			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
+			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
 			@NeighborhoodSize int neighborhoodSize) {
 		this.neighborhoodSize = neighborhoodSize;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
 		this.itemVectorFactory = itemVectorFactory;
 		this.itemIndexer = itemIndexer;
+		this.matrixFactory = matrixFactory;
 	}
 
 	/** 
@@ -78,10 +84,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		List<RatingVector<I,U>> itemRatings = buildItemRatings(ratings);
 		
 		// prepare the similarity matrix
-		similarities = new Int2FloatMap[itemRatings.size()];
-		for (int i = 0; i < itemRatings.size(); i++) {
-			similarities[i] = new Int2FloatOpenHashMap();
-		}
+		matrix = matrixFactory.create(itemRatings.size());
 		
 		// compute the similarity matrix
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
@@ -90,8 +93,8 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 				for (int j = i+1; j < itemRatings.size(); j++) {
 					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0) {
-						similarities[i].put(j, sim);
-						similarities[j].put(i, sim);
+						matrix.put(i, j, sim);
+						matrix.put(j, i, sim);
 					}
 				}
 			}
@@ -101,48 +104,12 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 				for (int j = 0; j < itemRatings.size(); j++) {
 					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0)
-						similarities[i].put(j, sim);
+						matrix.put(i, j, sim);
 				}
 			}
 		}
 		
-		// Normalize and truncate similarity lists
-		for (int i = 0; i < similarities.length; i++) {
-			Int2FloatMap sims = similarities[i];
-			// Normalize the similarity list if we have one
-			
-			// Truncate the similarity list if a neighborhood size is specified.
-			// Use a heap for O(n lg nsims) performance.
-			if (neighborhoodSize > 0) {
-				IntPriorityQueue pq = new IntHeapPriorityQueue(neighborhoodSize + 1,
-						new SimilarityComparator(sims));
-				IntIterator iter = sims.keySet().iterator();
-				while (iter.hasNext()) {
-					pq.enqueue(iter.nextInt());
-					while (pq.size() > neighborhoodSize) {
-						pq.dequeueInt();
-					}
-				}
-				Int2FloatMap oldSims = sims;
-				sims = new Int2FloatOpenHashMap();
-				while (!pq.isEmpty()) {
-					int iid = pq.dequeueInt();
-					sims.put(iid, oldSims.get(iid));
-				}
-			}
-			similarities[i] = sims;
-		}
-	}
-	
-	private static class SimilarityComparator extends AbstractIntComparator {
-		private Int2FloatMap sims;
-		public SimilarityComparator(Int2FloatMap sims) {
-			this.sims = sims;
-		}
-		@Override
-		public int compare(int i1, int i2) {
-			return Float.compare(sims.get(i1), sims.get(i2));
-		}
+		matrix.finish();
 	}
 	
 	/** 
@@ -172,14 +139,14 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	@Override
 	public ObjectValue<I> predict(RatingVector<U,I> user, I item) {
 		int iid = itemIndexer.getIndex(item);
-		if (iid >= similarities.length)
+		if (iid >= matrix.size())
 			return null;
 
 		float sum = 0;
 		float totalWeight = 0;
-		for (Int2FloatMap.Entry entry: similarities[iid].int2FloatEntrySet()) {
-			I other = itemIndexer.getObject(entry.getKey());
-			float s = entry.getValue();
+		for (IndexedItemScore score: matrix.getNeighbors(iid)) {
+			I other = itemIndexer.getObject(score.getIndex());
+			float s = score.getScore();
 			if (user.containsObject(other)) {
 				float rating = user.getRating(other) - user.getAverage();
 				sum += rating * s;
@@ -200,11 +167,11 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		float avg = user.getAverage();
 		for (ObjectValue<I> rating: user) {
 			int iid = itemIndexer.getIndex(rating.getItem());
-			if (iid >= similarities.length)
+			if (iid >= matrix.size())
 				continue;
-			for (Int2FloatMap.Entry entry: similarities[iid].int2FloatEntrySet()) {
-				int jid = entry.getKey();
-				float val = entry.getValue();
+			for (IndexedItemScore score: matrix.getNeighbors(iid)) {
+				int jid = score.getIndex();
+				float val = score.getScore();
 				if (!user.containsObject(itemIndexer.getObject(jid))) {
 					float s = 0.0f;
 					float w = 0.0f;
