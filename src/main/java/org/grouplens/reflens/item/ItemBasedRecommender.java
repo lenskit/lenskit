@@ -18,12 +18,9 @@
 
 package org.grouplens.reflens.item;
 
-import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +37,6 @@ import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.RatingVectorFactory;
 import org.grouplens.reflens.item.params.ItemSimilarity;
-import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
@@ -52,7 +48,6 @@ import com.google.inject.Inject;
 public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private final Normalization<RatingVector<U,I>> ratingNormalizer;
 	private final Similarity<RatingVector<I,U>> itemSimilarity;
-	private final int neighborhoodSize;
 	
 	private final SimilarityMatrixBuilderFactory matrixFactory;
 	private final RatingVectorFactory<I,U> itemVectorFactory;
@@ -66,14 +61,21 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 			RatingVectorFactory<I, U> itemVectorFactory,
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
-			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
-			@NeighborhoodSize int neighborhoodSize) {
-		this.neighborhoodSize = neighborhoodSize;
+			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity) {
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
 		this.itemVectorFactory = itemVectorFactory;
 		this.itemIndexer = itemIndexer;
 		this.matrixFactory = matrixFactory;
+	}
+	
+	public ItemBasedRecommender(Indexer<I> indexer, SimilarityMatrix matrix) {
+		ratingNormalizer = null;
+		itemSimilarity = null;
+		matrixFactory = null;
+		itemVectorFactory = null;
+		this.itemIndexer = indexer;
+		this.matrix = matrix;
 	}
 
 	/** 
