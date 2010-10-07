@@ -48,6 +48,6 @@ public class ItemRecommenderModule extends AbstractModule {
 		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(100);
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, PQueueSimilarityMatrixBuilder.class));
-		bind(new TypeLiteral<RecommenderFactory<Integer, Integer>>() {}).to(new TypeLiteral<ItemBasedRecommenderFactory<Integer,Integer>>() {});
+		bind(new TypeLiteral<RecommenderFactory<Integer, Integer>>() {}).to(new TypeLiteral<ItemItemRecommenderFactory<Integer,Integer>>() {});
 	}
 }

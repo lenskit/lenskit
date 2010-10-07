@@ -45,7 +45,7 @@ import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 
 import com.google.inject.Inject;
 
-public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
+public class ItemItemRecommender<U,I> implements Recommender<U,I> {
 	private final Normalization<RatingVector<U,I>> ratingNormalizer;
 	private final Similarity<RatingVector<I,U>> itemSimilarity;
 	
@@ -56,7 +56,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 	private SimilarityMatrix matrix;
 
 	@Inject
-	ItemBasedRecommender(
+	ItemItemRecommender(
 			Indexer<I> itemIndexer,
 			RatingVectorFactory<I, U> itemVectorFactory,
 			SimilarityMatrixBuilderFactory matrixFactory,
@@ -69,7 +69,7 @@ public class ItemBasedRecommender<U,I> implements Recommender<U,I> {
 		this.matrixFactory = matrixFactory;
 	}
 	
-	public ItemBasedRecommender(Indexer<I> indexer, SimilarityMatrix matrix) {
+	public ItemItemRecommender(Indexer<I> indexer, SimilarityMatrix matrix) {
 		ratingNormalizer = null;
 		itemSimilarity = null;
 		matrixFactory = null;
