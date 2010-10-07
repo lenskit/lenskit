@@ -22,133 +22,32 @@ import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.grouplens.reflens.Normalization;
 import org.grouplens.reflens.Recommender;
-import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.SymmetricBinaryFunction;
-import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.RatingVectorFactory;
-import org.grouplens.reflens.item.params.ItemSimilarity;
-import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.util.IndexedItemScore;
-import org.grouplens.reflens.util.SimilarityMatrix;
-import org.grouplens.reflens.util.SimilarityMatrixBuilder;
-import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 
-import com.google.inject.Inject;
-
-public class ItemItemRecommender<U,I> implements Recommender<U,I> {
-	private final Normalization<RatingVector<U,I>> ratingNormalizer;
-	private final Similarity<RatingVector<I,U>> itemSimilarity;
+public class ItemItemRecommender<U,I> implements Recommender<U,I>, Serializable {
+	private static final long serialVersionUID = 3157980766584927863L;
+	private final ItemItemModel<U,I> model;
 	
-	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final RatingVectorFactory<I,U> itemVectorFactory;
-	private final Indexer<I> itemIndexer;
-	
-	private SimilarityMatrix matrix;
-
-	@Inject
-	ItemItemRecommender(
-			Indexer<I> itemIndexer,
-			RatingVectorFactory<I, U> itemVectorFactory,
-			SimilarityMatrixBuilderFactory matrixFactory,
-			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
-			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity) {
-		this.ratingNormalizer = ratingNormalizer;
-		this.itemSimilarity = itemSimilarity;
-		this.itemVectorFactory = itemVectorFactory;
-		this.itemIndexer = itemIndexer;
-		this.matrixFactory = matrixFactory;
-	}
-	
-	public ItemItemRecommender(Indexer<I> indexer, SimilarityMatrix matrix) {
-		ratingNormalizer = null;
-		itemSimilarity = null;
-		matrixFactory = null;
-		itemVectorFactory = null;
-		this.itemIndexer = indexer;
-		this.matrix = matrix;
-	}
-
-	/** 
-	 * Build the item-item similarity model from a list of user rating
-	 * histories.
-	 * @param ratings
-	 */
-	void buildModel(Collection<RatingVector<U,I>> ratings) {
-		List<RatingVector<I,U>> itemRatings = buildItemRatings(ratings);
-		
-		// prepare the similarity matrix
-		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
-		
-		// compute the similarity matrix
-		if (itemSimilarity instanceof SymmetricBinaryFunction) {
-			// we can compute equivalent symmetries at the same time
-			for (int i = 0; i < itemRatings.size(); i++) {
-				for (int j = i+1; j < itemRatings.size(); j++) {
-					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
-					if (sim > 0.0) {
-						builder.put(i, j, sim);
-						builder.put(j, i, sim);
-					}
-				}
-			}
-		} else {
-			// less efficient route
-			for (int i = 0; i < itemRatings.size(); i++) {
-				for (int j = 0; j < itemRatings.size(); j++) {
-					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
-					if (sim > 0.0)
-						builder.put(i, j, sim);
-				}
-			}
-		}
-		
-		matrix = builder.build();
-	}
-	
-	/** 
-	 * Transpose the ratings matrix so we have a list of item rating vectors.
-	 * @return
-	 */
-	private List<RatingVector<I,U>> buildItemRatings(Collection<RatingVector<U,I>> ratings) {
-		ArrayList<RatingVector<I,U>> itemVectors = new ArrayList<RatingVector<I,U>>();
-		for (RatingVector<U,I> user: ratings) {
-			user = ratingNormalizer.normalize(user);
-			for (ObjectValue<I> rating: user) {
-				I item = rating.getItem();
-				int idx = itemIndexer.getIndex(item);
-				if (idx >= itemVectors.size()) {
-					// it's a new item - add one
-					assert idx == itemVectors.size();
-					itemVectors.add(itemVectorFactory.make(item));
-				}
-				itemVectors.get(idx).putRating(user.getOwner(), rating.getRating());
-			}
-		}
-		itemVectors.trimToSize();
-		return itemVectors;
+	public ItemItemRecommender(ItemItemModel<U,I> model) {
+		this.model = model;
 	}
 
 	// TODO: Support multiple simultaneous predictions
 	@Override
 	public ObjectValue<I> predict(RatingVector<U,I> user, I item) {
-		int iid = itemIndexer.getIndex(item);
-		if (iid >= matrix.size())
-			return null;
-
 		float sum = 0;
 		float totalWeight = 0;
-		for (IndexedItemScore score: matrix.getNeighbors(iid)) {
-			I other = itemIndexer.getObject(score.getIndex());
+		for (IndexedItemScore score: model.getNeighbors(item)) {
+			I other = model.getItem(score.getIndex());
 			float s = score.getScore();
 			if (user.containsObject(other)) {
 				float rating = user.getRating(other) - user.getAverage();
@@ -169,13 +68,10 @@ public class ItemItemRecommender<U,I> implements Recommender<U,I> {
 		Int2FloatMap weights = new Int2FloatOpenHashMap();
 		float avg = user.getAverage();
 		for (ObjectValue<I> rating: user) {
-			int iid = itemIndexer.getIndex(rating.getItem());
-			if (iid >= matrix.size())
-				continue;
-			for (IndexedItemScore score: matrix.getNeighbors(iid)) {
+			for (IndexedItemScore score: model.getNeighbors(rating.getItem())) {
 				int jid = score.getIndex();
 				float val = score.getScore();
-				if (!user.containsObject(itemIndexer.getObject(jid))) {
+				if (!user.containsObject(model.getItem(jid))) {
 					float s = 0.0f;
 					float w = 0.0f;
 					if (scores.containsKey(jid)) {
@@ -195,7 +91,7 @@ public class ItemItemRecommender<U,I> implements Recommender<U,I> {
 			int iid = iids.next();
 			float w = weights.get(iid);
 			if (w >= 0.1) {
-				I item = itemIndexer.getObject(iid);
+				I item = model.getItem(iid);
 				float pred = scores.get(iid) / w;
 				results.add(new ObjectValue<I>(item, pred + avg));
 			}

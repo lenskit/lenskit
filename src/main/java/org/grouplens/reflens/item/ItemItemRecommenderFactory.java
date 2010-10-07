@@ -18,26 +18,105 @@
 
 package org.grouplens.reflens.item;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import org.grouplens.reflens.Normalization;
 import org.grouplens.reflens.RecommenderFactory;
+import org.grouplens.reflens.Similarity;
+import org.grouplens.reflens.SymmetricBinaryFunction;
+import org.grouplens.reflens.data.Indexer;
+import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.RatingVectorFactory;
+import org.grouplens.reflens.item.params.ItemSimilarity;
+import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.util.SimilarityMatrix;
+import org.grouplens.reflens.util.SimilarityMatrixBuilder;
+import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 public class ItemItemRecommenderFactory<U,I> implements RecommenderFactory<U, I> {
-	Provider<ItemItemRecommender<U,I>> recProvider;
 	
+	private Provider<Indexer<I>> indexProvider;
+	private RatingVectorFactory<I, U> itemVectorFactory;
+	private SimilarityMatrixBuilderFactory matrixFactory;
+	private Normalization<RatingVector<U, I>> ratingNormalizer;
+	private Similarity<RatingVector<I, U>> itemSimilarity;
+
 	@Inject
-	ItemItemRecommenderFactory(Provider<ItemItemRecommender<U,I>> recProvider) {
-		this.recProvider = recProvider;
+	ItemItemRecommenderFactory(
+			Provider<Indexer<I>> indexProvider,
+			RatingVectorFactory<I, U> itemVectorFactory,
+			SimilarityMatrixBuilderFactory matrixFactory,
+			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
+			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity) {
+		this.indexProvider = indexProvider;
+		this.itemVectorFactory = itemVectorFactory;
+		this.matrixFactory = matrixFactory;
+		this.ratingNormalizer = ratingNormalizer;
+		this.itemSimilarity = itemSimilarity;
 	}
 	
 	@Override
 	public ItemItemRecommender<U,I> build(Collection<RatingVector<U,I>> data) {
-		ItemItemRecommender<U,I> rec = recProvider.get();
-		rec.buildModel(data);
-		return rec;
+		Indexer<I> indexer = indexProvider.get();
+		List<RatingVector<I,U>> itemRatings = buildItemRatings(indexer, data);
+		
+		// prepare the similarity matrix
+		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
+		
+		// compute the similarity matrix
+		if (itemSimilarity instanceof SymmetricBinaryFunction) {
+			// we can compute equivalent symmetries at the same time
+			for (int i = 0; i < itemRatings.size(); i++) {
+				for (int j = i+1; j < itemRatings.size(); j++) {
+					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
+					if (sim > 0.0) {
+						builder.put(i, j, sim);
+						builder.put(j, i, sim);
+					}
+				}
+			}
+		} else {
+			// less efficient route
+			for (int i = 0; i < itemRatings.size(); i++) {
+				for (int j = 0; j < itemRatings.size(); j++) {
+					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
+					if (sim > 0.0)
+						builder.put(i, j, sim);
+				}
+			}
+		}
+		
+		SimilarityMatrix matrix = builder.build();
+		ItemItemModel<U,I> model = new ItemItemModel<U,I>(indexer, matrix);
+		return new ItemItemRecommender<U,I>(model);
+	}
+	
+	/** 
+	 * Transpose the ratings matrix so we have a list of item rating vectors.
+	 * @return
+	 */
+	private List<RatingVector<I,U>> buildItemRatings(Indexer<I> indexer, Collection<RatingVector<U,I>> ratings) {
+		ArrayList<RatingVector<I,U>> itemVectors = new ArrayList<RatingVector<I,U>>();
+		for (RatingVector<U,I> user: ratings) {
+			user = ratingNormalizer.normalize(user);
+			for (ObjectValue<I> rating: user) {
+				I item = rating.getItem();
+				int idx = indexer.getIndex(item);
+				if (idx >= itemVectors.size()) {
+					// it's a new item - add one
+					assert idx == itemVectors.size();
+					itemVectors.add(itemVectorFactory.make(item));
+				}
+				itemVectors.get(idx).putRating(user.getOwner(), rating.getRating());
+			}
+		}
+		itemVectors.trimToSize();
+		return itemVectors;
 	}
 }
