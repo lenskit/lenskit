@@ -34,5 +34,5 @@ public interface RecommenderBuilder<U,I> {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public Recommender<U,I> build(Collection<RatingVector<U,I>> ratings);
+	public RecommendationEngine<U,I> build(Collection<RatingVector<U,I>> ratings);
 }

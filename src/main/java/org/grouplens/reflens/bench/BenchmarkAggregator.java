@@ -23,7 +23,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
@@ -69,7 +70,8 @@ public class BenchmarkAggregator {
 			Collection<RatingVector<Integer,Integer>> trainUsers,
 			Collection<RatingVector<Integer,Integer>> testUsers) {
 		logger.debug("Building model with {} users", trainUsers.size());
-		Recommender<Integer, Integer> model = factory.build(trainUsers);
+		RecommendationEngine<Integer, Integer> engine = factory.build(trainUsers);
+		RatingPredictor<Integer, Integer> rec = engine.getRatingPredictor();
 		
 		logger.debug("Testing model with {} users", testUsers.size());
 		float accumErr = 0.0f;
@@ -88,7 +90,7 @@ public class BenchmarkAggregator {
 			}
 			for (int i = midpt; i < ratedItems.size(); i++) {
 				int iid = ratedItems.getInt(i);
-				ObjectValue<Integer> prediction = model.predict(partialHistory, iid);
+				ObjectValue<Integer> prediction = rec.predict(partialHistory, iid);
 				nitems++;
 				if (prediction != null) {
 					float err = prediction.getRating() - user.getRating(iid);

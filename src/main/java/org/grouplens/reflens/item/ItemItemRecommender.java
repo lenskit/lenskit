@@ -26,14 +26,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.BasketRecommender;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RatingRecommender;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.util.IndexedItemScore;
 
-public class ItemItemRecommender<U,I> implements Recommender<U,I>, Serializable {
+public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, RatingRecommender<U,I>, RatingPredictor<U,I>, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	private final ItemItemModel<U,I> model;
 	
@@ -101,8 +103,18 @@ public class ItemItemRecommender<U,I> implements Recommender<U,I>, Serializable 
 	}
 
 	@Override
-	public List<ObjectValue<I>> recommend(Set<I> basket) {
-		// TODO Auto-generated method stub
+	public BasketRecommender<U, I> getBasketRecommender() {
+		// TODO Support basket recommendations
 		return null;
+	}
+
+	@Override
+	public RatingPredictor<U, I> getRatingPredictor() {
+		return this;
+	}
+
+	@Override
+	public RatingRecommender<U, I> getRatingRecommender() {
+		return this;
 	}
 }

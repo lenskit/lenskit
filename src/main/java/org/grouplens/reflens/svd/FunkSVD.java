@@ -28,7 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.BasketRecommender;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RatingRecommender;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
@@ -40,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.name.Named;
 
 /**
  * Do recommendations using Funk's SVD algorithm.
@@ -55,7 +57,7 @@ import com.google.inject.name.Named;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVD<U, I> implements Recommender<U, I> {
+public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommender<U, I>, RatingPredictor<U,I> {
 	private static Logger logger = LoggerFactory.getLogger(FunkSVD.class);
 	private static final float DEFAULT_FEATURE_VALUE = 0.1f;
 	private static final float FEATURE_EPSILON = 0.0001f;
@@ -334,13 +336,19 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.Recommender#recommend(java.util.Set)
-	 */
 	@Override
-	public List<ObjectValue<I>> recommend(Set<I> basket) {
+	public BasketRecommender<U, I> getBasketRecommender() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public RatingPredictor<U, I> getRatingPredictor() {
+		return this;
+	}
+
+	@Override
+	public RatingRecommender<U, I> getRatingRecommender() {
+		return this;
+	}
 }

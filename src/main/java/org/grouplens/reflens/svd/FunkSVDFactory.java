@@ -20,7 +20,7 @@ package org.grouplens.reflens.svd;
 
 import java.util.Collection;
 
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.RatingVector;
 
@@ -36,7 +36,7 @@ public class FunkSVDFactory<U,I> implements RecommenderBuilder<U,I> {
 	}
 
 	@Override
-	public Recommender<U, I> build(
+	public RecommendationEngine<U, I> build(
 			Collection<RatingVector<U, I>> ratings) {
 		FunkSVD<U,I> rec = svdProvider.get();
 		rec.build(ratings);
