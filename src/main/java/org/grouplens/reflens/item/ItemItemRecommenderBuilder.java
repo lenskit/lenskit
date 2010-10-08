@@ -26,7 +26,6 @@ import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
-import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;

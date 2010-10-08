@@ -19,7 +19,6 @@
 package org.grouplens.reflens;
 
 import java.util.List;
-import java.util.Set;
 
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;

@@ -18,10 +18,6 @@
 
 package org.grouplens.reflens.svd;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
-
-import java.util.Map;
-
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.LearningRate;
