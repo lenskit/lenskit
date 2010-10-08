@@ -30,7 +30,6 @@ import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
-import com.google.inject.name.Names;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
