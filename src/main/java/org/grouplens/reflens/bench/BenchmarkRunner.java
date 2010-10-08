@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.grouplens.reflens.RecommenderFactory;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.data.integer.IntRatingVector;
@@ -105,11 +105,11 @@ public final class BenchmarkRunner {
 			fail(3, e);
 		}
 
-		RecommenderFactory<Integer, Integer> factory = null;
+		RecommenderBuilder<Integer, Integer> factory = null;
 		try {
 			factory = injector
 					.getInstance(Key
-							.get(new TypeLiteral<RecommenderFactory<Integer, Integer>>() {
+							.get(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {
 							}));
 		} catch (CreationException e) {
 			fail(2, e.getMessage());

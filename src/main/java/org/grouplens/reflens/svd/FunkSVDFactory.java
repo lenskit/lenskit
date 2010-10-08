@@ -21,13 +21,13 @@ package org.grouplens.reflens.svd;
 import java.util.Collection;
 
 import org.grouplens.reflens.Recommender;
-import org.grouplens.reflens.RecommenderFactory;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.RatingVector;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class FunkSVDFactory<U,I> implements RecommenderFactory<U,I> {
+public class FunkSVDFactory<U,I> implements RecommenderBuilder<U,I> {
 	
 	private Provider<FunkSVD<U,I>> svdProvider;
 	@Inject

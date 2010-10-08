@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.grouplens.reflens.Recommender;
-import org.grouplens.reflens.RecommenderFactory;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
@@ -38,14 +38,14 @@ import org.slf4j.LoggerFactory;
  */
 public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
-	private RecommenderFactory<Integer,Integer> factory;
+	private RecommenderBuilder<Integer,Integer> factory;
 	private int numRuns = 0;
 	private float tMAE = 0.0f;
 	private float tRMSE = 0.0f;
 	private float tCov = 0.0f;
 	private double holdout = 0.33333333;
 	
-	public BenchmarkAggregator(RecommenderFactory<Integer,Integer> factory) {
+	public BenchmarkAggregator(RecommenderBuilder<Integer,Integer> factory) {
 		this.factory = factory;
 	}
 	
