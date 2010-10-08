@@ -50,7 +50,7 @@ import com.google.inject.assistedinject.Assisted;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PQueueSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
+public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
 	private static class Score implements IndexedItemScore, Comparable<Score> {
 		private final int index;
 		private final float score;
@@ -131,7 +131,7 @@ public class PQueueSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
 	private final int itemCount;
 	
 	@Inject
-	public PQueueSimilarityMatrixBuilder(
+	public TruncatingSimilarityMatrixBuilder(
 			@NeighborhoodSize int neighborhoodSize,
 			@Assisted int nitems) {
 		maxNeighbors = neighborhoodSize;

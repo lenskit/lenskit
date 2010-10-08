@@ -46,7 +46,7 @@ public class ItemRecommenderModule extends AbstractModule {
 		bind(new TypeLiteral<Normalizer<RatingVector<Integer,Integer>>>() {}).annotatedWith(RatingNormalization.class).to(new TypeLiteral<MeanNormalization<Integer, Integer>>(){});
 		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(100);
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
-				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, PQueueSimilarityMatrixBuilder.class));
+				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, TruncatingSimilarityMatrixBuilder.class));
 		bind(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {}).to(new TypeLiteral<ItemItemRecommenderBuilder<Integer,Integer>>() {});
 	}
 }
