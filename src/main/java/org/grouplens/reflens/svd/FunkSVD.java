@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
@@ -64,7 +65,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	private final float learningRate;
 	private final int numFeatures;
 	
-	private Indexer<U> userIndexer;
+	private Index<U> userIndexer;
 	private Indexer<I> itemIndexer;
 	private Provider<Map<I,Float>> itemMapProvider;
 
@@ -76,7 +77,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	private FloatList userAvgOffsets;
 	
 	@Inject
-	FunkSVD(Indexer<U> userIndexer, Indexer<I> itemIndexer,
+	FunkSVD(Index<U> userIndexer, Indexer<I> itemIndexer,
 			Provider<Map<I,Float>> itemMapProvider, 
 			@FeatureCount int features,
 			@LearningRate float lrate) {
@@ -261,7 +262,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		FloatArrays.fill(featurePrefs, 0.0f);
 		
 		for (ObjectValue<I> rating: user) {
-			int iid = itemIndexer.getIndex(rating.getItem(), false);
+			int iid = itemIndexer.getIndex(rating.getItem());
 			if (iid < 0) continue;
 			float r = rating.getRating() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
@@ -276,7 +277,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		float dev = 0.0f;
 		int n = 0;
 		for (ObjectValue<I> rating: user) {
-			int iid = itemIndexer.getIndex(rating.getItem(), false);
+			int iid = itemIndexer.getIndex(rating.getItem());
 			if (iid < 0) continue;
 			dev += rating.getRating() - itemAverages.getFloat(iid);
 			n++;
@@ -294,7 +295,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 	public ObjectValue<I> predict(RatingVector<U, I> user, I item) {
 		float dev = averageDeviation(user);
 		float uprefs[] = foldIn(user, dev);
-		int iid = itemIndexer.getIndex(item, false);
+		int iid = itemIndexer.getIndex(item);
 		if (iid < 0)
 			return null;
 		
@@ -312,7 +313,7 @@ public class FunkSVD<U, I> implements Recommender<U, I> {
 		Map<I,Float> results = itemMapProvider.get();
 		
 		for (I item: items) {
-			int iid = itemIndexer.getIndex(item, false);
+			int iid = itemIndexer.getIndex(item);
 			if (iid < 0) continue;
 			float score = itemAverages.get(iid) + adev;
 			for (int f = 0; f < numFeatures; f++) {

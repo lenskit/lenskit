@@ -32,9 +32,11 @@
  */
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.objects.ObjectCollections;
+
 import java.io.Serializable;
 
-import org.grouplens.reflens.data.Indexer;
+import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
 
@@ -46,19 +48,28 @@ public class ItemItemModel<U,I> implements Serializable {
 
 	private static final long serialVersionUID = 7040201805529926395L;
 	
-	private final Indexer<I> itemIndexer;
+	private final Index<I> itemIndexer;
 	private final SimilarityMatrix matrix;
 	
-	public ItemItemModel(Indexer<I> indexer, SimilarityMatrix matrix) {
+	public ItemItemModel(Index<I> indexer, SimilarityMatrix matrix) {
 		this.itemIndexer = indexer;
 		this.matrix = matrix;
 	}
 	
 	public Iterable<IndexedItemScore> getNeighbors(I item) {
-		return matrix.getNeighbors(itemIndexer.getIndex(item));
+		int idx = itemIndexer.getIndex(item);
+		if (idx >= 0) {
+			return matrix.getNeighbors(itemIndexer.getIndex(item));
+		} else {
+			return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
+		}
 	}
 	
 	public I getItem(int idx) {
-		return itemIndexer.getObject(idx);
+		try {
+			return itemIndexer.getObject(idx);
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
 	}
 }

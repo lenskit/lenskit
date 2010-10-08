@@ -29,10 +29,10 @@ public class IntIndexer implements Indexer<Integer> {
 	private IntArrayList objects = new IntArrayList();
 	
 	public int getIndex(Integer obj) {
-		return getIndex(obj, true);
+		return getIndex(obj, false);
 	}
 	
-	public int getIndex(Integer object, boolean insert) {
+	private int getIndex(Integer object, boolean insert) {
 		if (map.containsKey(object)) {
 			return map.get(object);
 		} else if (insert) {
@@ -43,6 +43,10 @@ public class IntIndexer implements Indexer<Integer> {
 		} else {
 			return -1;
 		}
+	}
+	
+	public int internObject(Integer object) {
+		return getIndex(object, true);
 	}
 	
 	public Integer getObject(int idx) {

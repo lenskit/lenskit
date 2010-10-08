@@ -34,6 +34,7 @@ package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -109,7 +110,8 @@ public class PQueueSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
 		
 	}
 	
-	private static class Matrix implements SimilarityMatrix {
+	private static class Matrix implements SimilarityMatrix, Serializable {
+		private static final long serialVersionUID = 6721870011265541987L;
 		private ScoreQueue[] rows;
 		public Matrix(ScoreQueue[] rows) {
 			this.rows = rows;

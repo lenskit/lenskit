@@ -26,6 +26,7 @@ import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
+import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ObjectValue;
 import org.grouplens.reflens.data.RatingVector;
@@ -107,7 +108,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 			user = ratingNormalizer.normalize(user);
 			for (ObjectValue<I> rating: user) {
 				I item = rating.getItem();
-				int idx = indexer.getIndex(item);
+				int idx = indexer.internObject(item);
 				if (idx >= itemVectors.size()) {
 					// it's a new item - add one
 					assert idx == itemVectors.size();

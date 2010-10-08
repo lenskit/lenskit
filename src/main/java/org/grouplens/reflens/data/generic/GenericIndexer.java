@@ -30,19 +30,21 @@ public class GenericIndexer<T> implements Indexer<T> {
 	private List<T> objs = new ArrayList<T>();
 	
 	public int getIndex(T obj) {
-		return getIndex(obj, true);
-	}
-	
-	public int getIndex(T obj, boolean insert) {
 		if (map.containsKey(obj)) {
 			return map.get(obj);
-		} else if (insert) {
+		} else {
+			return -1;
+		}
+	}
+	
+	public int internObject(T obj) {
+		if (map.containsKey(obj)) {
+			return map.get(obj);
+		} else {
 			int idx = objs.size();
 			map.put(obj, idx);
 			objs.add(obj);
 			return idx;
-		} else {
-			return -1;
 		}
 	}
 	
