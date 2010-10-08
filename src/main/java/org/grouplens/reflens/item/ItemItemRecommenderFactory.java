@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.reflens.Normalization;
+import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderFactory;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
@@ -44,7 +44,7 @@ public class ItemItemRecommenderFactory<U,I> implements RecommenderFactory<U, I>
 	private Provider<Indexer<I>> indexProvider;
 	private RatingVectorFactory<I, U> itemVectorFactory;
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalization<RatingVector<U, I>> ratingNormalizer;
+	private Normalizer<RatingVector<U, I>> ratingNormalizer;
 	private Similarity<RatingVector<I, U>> itemSimilarity;
 
 	@Inject
@@ -52,7 +52,7 @@ public class ItemItemRecommenderFactory<U,I> implements RecommenderFactory<U, I>
 			Provider<Indexer<I>> indexProvider,
 			RatingVectorFactory<I, U> itemVectorFactory,
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@RatingNormalization Normalization<RatingVector<U,I>> ratingNormalizer,
+			@RatingNormalization Normalizer<RatingVector<U,I>> ratingNormalizer,
 			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity) {
 		this.indexProvider = indexProvider;
 		this.itemVectorFactory = itemVectorFactory;

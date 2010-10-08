@@ -20,14 +20,14 @@ package org.grouplens.reflens.item;
 
 import java.util.Map;
 
-import org.grouplens.reflens.Normalization;
+import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.data.RatingVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MeanNormalization<S,T> implements Normalization<RatingVector<S,T>> {
+public class MeanNormalization<S,T> implements Normalizer<RatingVector<S,T>> {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Normalization#normalize(java.lang.Object)

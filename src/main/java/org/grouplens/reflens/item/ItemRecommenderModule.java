@@ -18,7 +18,7 @@
 
 package org.grouplens.reflens.item;
 
-import org.grouplens.reflens.Normalization;
+import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderFactory;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.data.RatingVector;
@@ -44,7 +44,7 @@ public class ItemRecommenderModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(new TypeLiteral<Similarity<RatingVector<Integer, Integer>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer, RatingVector<Integer,Integer>>>() {});
-		bind(new TypeLiteral<Normalization<RatingVector<Integer,Integer>>>() {}).annotatedWith(RatingNormalization.class).to(new TypeLiteral<MeanNormalization<Integer, Integer>>(){});
+		bind(new TypeLiteral<Normalizer<RatingVector<Integer,Integer>>>() {}).annotatedWith(RatingNormalization.class).to(new TypeLiteral<MeanNormalization<Integer, Integer>>(){});
 		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(100);
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, PQueueSimilarityMatrixBuilder.class));
