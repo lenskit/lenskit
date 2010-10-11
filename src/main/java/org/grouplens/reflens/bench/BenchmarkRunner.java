@@ -32,6 +32,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.data.integer.IntRatingVector;
+import org.grouplens.reflens.util.ObjectLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
