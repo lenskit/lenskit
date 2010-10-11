@@ -71,26 +71,74 @@ public class ItemRecommenderModule extends AbstractModule {
 	 */
 	@Override
 	protected void configure() {
-		bind(new TypeLiteral<Similarity<RatingVector<Integer, Integer>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer, RatingVector<Integer,Integer>>>() {});
+		configureSimilarityMatrix();
 		
-		String rnorm = properties.getProperty(RatingNormalization.PROPERTY_NAME);
+		configureUserNormalizer();
+		configureNeighborhoodSize();
+
+		configureItemSimilarity();
+		configureRecommenderBuilder();
+	}
+
+	/**
+	 * 
+	 */
+	private void configureRecommenderBuilder() {
+		bind(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {}).to(new TypeLiteral<ItemItemRecommenderBuilder<Integer,Integer>>() {});
+	}
+
+	/**
+	 * 
+	 */
+	protected void configureSimilarityMatrix() {
+		bind(SimilarityMatrixBuilderFactory.class).toProvider(
+				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, TruncatingSimilarityMatrixBuilder.class));
+	}
+
+	/**
+	 * 
+	 */
+	protected void configureNeighborhoodSize() {
+		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(
+				Integer.parseInt(properties.getProperty(NeighborhoodSize.PROPERTY_NAME, "100"), 10));
+	}
+
+	/**
+	 * 
+	 */
+	protected void configureUserNormalizer() {
 		Type rvType = Types.newParameterizedType(RatingVector.class, userType(), itemType());
 		Type rnType = Types.newParameterizedType(Normalizer.class, rvType);
 		Key rnKey = Key.get(rnType, RatingNormalization.class);
 		logger.debug("Using rating norm key {}", rnKey.toString());
-		if (rnorm != null) {
-			logger.info("Using rating normalizer {}", rnorm);
-			Class rnclass = ObjectLoader.getClass(rnorm);
-			bind(rnKey).to(rnclass);
-		} else {
-			logger.debug("Using no rating normalizer");
-			bind(rnKey).toProvider(Providers.of(null));
-		}
-		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(
-				Integer.parseInt(properties.getProperty(NeighborhoodSize.PROPERTY_NAME, "100"), 10));
+		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
+	}
+	
+	protected void bindClassFromProperty(Key key, String propName) {
+		bindClassFromProperty(key, propName, null);
+	}
 
-		bind(SimilarityMatrixBuilderFactory.class).toProvider(
-				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, TruncatingSimilarityMatrixBuilder.class));
-		bind(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {}).to(new TypeLiteral<ItemItemRecommenderBuilder<Integer,Integer>>() {});
+	/**
+	 * @param propName
+	 * @param key
+	 */
+	protected void bindClassFromProperty(Key key, String propName, Class dftClass) {
+		String rnorm = properties.getProperty(propName);
+		Class target = dftClass;
+		if (rnorm != null) {
+			logger.debug("Binding {} to {}", key.toString(), propName);
+			target = ObjectLoader.getClass(rnorm);
+		}
+		
+		if (target != null) {
+			bind(key).to(target);
+		} else {
+			logger.debug("Binding {} to null", key.toString());
+			bind(key).toProvider(Providers.of(null));
+		}
+	}
+	
+	protected void configureItemSimilarity() {
+		bind(new TypeLiteral<Similarity<RatingVector<Integer, Integer>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer, RatingVector<Integer,Integer>>>() {});
 	}
 }
