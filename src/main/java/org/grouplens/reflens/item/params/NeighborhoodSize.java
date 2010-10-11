@@ -29,5 +29,5 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NeighborhoodSize {
-
+	public static final String PROPERTY_NAME = "org.grouplens.reflens.item.NeighborhoodSize";
 }

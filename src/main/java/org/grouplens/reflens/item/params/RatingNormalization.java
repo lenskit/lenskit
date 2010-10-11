@@ -29,5 +29,6 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RatingNormalization {
-
+	public static final String PROPERTY_NAME =
+		"org.grouplens.reflens.item.RatingNormalization";
 }

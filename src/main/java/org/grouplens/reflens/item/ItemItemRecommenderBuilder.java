@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
@@ -52,8 +54,8 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 			Provider<Indexer<I>> indexProvider,
 			RatingVectorFactory<I, U> itemVectorFactory,
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@RatingNormalization Normalizer<RatingVector<U,I>> ratingNormalizer,
-			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity) {
+			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
+			@Nullable @RatingNormalization Normalizer<RatingVector<U,I>> ratingNormalizer) {
 		this.indexProvider = indexProvider;
 		this.itemVectorFactory = itemVectorFactory;
 		this.matrixFactory = matrixFactory;
@@ -104,7 +106,8 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	private List<RatingVector<I,U>> buildItemRatings(Indexer<I> indexer, Collection<RatingVector<U,I>> ratings) {
 		ArrayList<RatingVector<I,U>> itemVectors = new ArrayList<RatingVector<I,U>>();
 		for (RatingVector<U,I> user: ratings) {
-			user = ratingNormalizer.normalize(user);
+			if (ratingNormalizer != null)
+				user = ratingNormalizer.normalize(user);
 			for (ObjectValue<I> rating: user) {
 				I item = rating.getItem();
 				int idx = indexer.internObject(item);
