@@ -43,7 +43,6 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 		this.model = model;
 	}
 
-	// TODO: Support multiple simultaneous predictions
 	@Override
 	public ObjectValue<I> predict(RatingVector<U,I> user, I item) {
 		float sum = 0;

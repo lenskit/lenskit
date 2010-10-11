@@ -37,7 +37,7 @@ import org.grouplens.reflens.data.RatingVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * TODO: Support multiple simultaneous predictions
  */
 public interface RatingPredictor<U, I> extends RatingRecommender<U,I> {
 	public ObjectValue<I> predict(RatingVector<U,I> user, I item);
