@@ -29,7 +29,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Indexer;
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.RatingVectorFactory;
 import org.grouplens.reflens.item.params.ItemSimilarity;
@@ -108,15 +108,15 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 		for (RatingVector<U,I> user: ratings) {
 			if (ratingNormalizer != null)
 				user = ratingNormalizer.normalize(user);
-			for (ObjectValue<I> rating: user) {
-				I item = rating.getItem();
+			for (ScoredObject<I> rating: user) {
+				I item = rating.getObject();
 				int idx = indexer.internObject(item);
 				if (idx >= itemVectors.size()) {
 					// it's a new item - add one
 					assert idx == itemVectors.size();
 					itemVectors.add(itemVectorFactory.make(item));
 				}
-				itemVectors.get(idx).putRating(user.getOwner(), rating.getRating());
+				itemVectors.get(idx).putRating(user.getOwner(), rating.getScore());
 			}
 		}
 		itemVectors.trimToSize();

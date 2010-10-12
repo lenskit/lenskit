@@ -21,7 +21,7 @@ package org.grouplens.reflens.data.generic;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 
 public class GenericRatingVector<S, T> implements RatingVector<S, T> {
@@ -79,8 +79,8 @@ public class GenericRatingVector<S, T> implements RatingVector<S, T> {
 	}
 
 	@Override
-	public Iterator<ObjectValue<T>> iterator() {
-		return ObjectValue.wrap(ratings.entrySet()).iterator();
+	public Iterator<ScoredObject<T>> iterator() {
+		return ScoredObject.wrap(ratings.entrySet()).iterator();
 	}
 
 	@Override

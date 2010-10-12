@@ -26,7 +26,7 @@ import java.util.Collections;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.integer.IntRatingVector;
 import org.slf4j.Logger;
@@ -90,10 +90,10 @@ public class BenchmarkAggregator {
 			}
 			for (int i = midpt; i < ratedItems.size(); i++) {
 				int iid = ratedItems.getInt(i);
-				ObjectValue<Integer> prediction = rec.predict(partialHistory, iid);
+				ScoredObject<Integer> prediction = rec.predict(partialHistory, iid);
 				nitems++;
 				if (prediction != null) {
-					float err = prediction.getRating() - user.getRating(iid);
+					float err = prediction.getScore() - user.getRating(iid);
 					ngood++;
 					accumErr += Math.abs(err);
 					accumSqErr += err * err;

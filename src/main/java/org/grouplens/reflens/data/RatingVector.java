@@ -32,7 +32,7 @@ import java.util.Map;
  * @param <S> The rating owner type.
  * @param <T> The type of rating subjects.
  */
-public interface RatingVector<S, T> extends Iterable<ObjectValue<T>> {
+public interface RatingVector<S, T> extends Iterable<ScoredObject<T>> {
 	public S getOwner();
 	public boolean containsObject(T object);
 	public float getRating(T object);

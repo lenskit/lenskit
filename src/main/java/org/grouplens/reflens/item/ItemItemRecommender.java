@@ -31,7 +31,7 @@ import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.util.IndexedItemScore;
 
@@ -44,7 +44,7 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 	}
 
 	@Override
-	public ObjectValue<I> predict(RatingVector<U,I> user, I item) {
+	public ScoredObject<I> predict(RatingVector<U,I> user, I item) {
 		float sum = 0;
 		float totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
@@ -57,19 +57,19 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ObjectValue<I>(item, sum / totalWeight + user.getAverage());
+			return new ScoredObject<I>(item, sum / totalWeight + user.getAverage());
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<ObjectValue<I>> recommend(RatingVector<U,I> user) {
+	public List<ScoredObject<I>> recommend(RatingVector<U,I> user) {
 		Int2FloatMap scores = new Int2FloatOpenHashMap();
 		Int2FloatMap weights = new Int2FloatOpenHashMap();
 		float avg = user.getAverage();
-		for (ObjectValue<I> rating: user) {
-			for (IndexedItemScore score: model.getNeighbors(rating.getItem())) {
+		for (ScoredObject<I> rating: user) {
+			for (IndexedItemScore score: model.getNeighbors(rating.getObject())) {
 				int jid = score.getIndex();
 				float val = score.getScore();
 				if (!user.containsObject(model.getItem(jid))) {
@@ -79,14 +79,14 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 						s = scores.get(jid);
 						w = weights.get(jid);
 					}
-					s += val * (rating.getRating() - avg);
+					s += val * (rating.getScore() - avg);
 					w += Math.abs(val);
 					scores.put(jid, s);
 					weights.put(jid, w);
 				}
 			}
 		}
-		ArrayList<ObjectValue<I>> results = new ArrayList<ObjectValue<I>>(scores.size());
+		ArrayList<ScoredObject<I>> results = new ArrayList<ScoredObject<I>>(scores.size());
 		IntIterator iids = scores.keySet().iterator();
 		while (iids.hasNext()) {
 			int iid = iids.next();
@@ -94,7 +94,7 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 			if (w >= 0.1) {
 				I item = model.getItem(iid);
 				float pred = scores.get(iid) / w;
-				results.add(new ObjectValue<I>(item, pred + avg));
+				results.add(new ScoredObject<I>(item, pred + avg));
 			}
 		}
 		Collections.sort(results);

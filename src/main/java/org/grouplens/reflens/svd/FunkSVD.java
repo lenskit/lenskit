@@ -34,7 +34,7 @@ import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.LearningRate;
@@ -134,9 +134,9 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 		List<Rating> ratings = new ArrayList<Rating>(users.size() * 5);
 		for (RatingVector<U,I> user: users) {
 			int uid = userIndexer.getIndex(user.getOwner());
-			for (ObjectValue<I> rating: user) {
-				int iid = itemIndexer.getIndex(rating.getItem());
-				Rating r = new Rating(uid, iid, rating.getRating());
+			for (ScoredObject<I> rating: user) {
+				int iid = itemIndexer.getIndex(rating.getObject());
+				Rating r = new Rating(uid, iid, rating.getScore());
 				ratings.add(r);
 			}
 		}
@@ -263,10 +263,10 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 		float featurePrefs[] = new float[numFeatures];
 		FloatArrays.fill(featurePrefs, 0.0f);
 		
-		for (ObjectValue<I> rating: user) {
-			int iid = itemIndexer.getIndex(rating.getItem());
+		for (ScoredObject<I> rating: user) {
+			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
-			float r = rating.getRating() - avgDeviation - itemAverages.get(iid);
+			float r = rating.getScore() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
 				featurePrefs[f] += r * itemFeatures[f][iid] / singularValues[f];
 			}
@@ -278,10 +278,10 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 	protected float averageDeviation(RatingVector<U,I> user) {
 		float dev = 0.0f;
 		int n = 0;
-		for (ObjectValue<I> rating: user) {
-			int iid = itemIndexer.getIndex(rating.getItem());
+		for (ScoredObject<I> rating: user) {
+			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
-			dev += rating.getRating() - itemAverages.getFloat(iid);
+			dev += rating.getScore() - itemAverages.getFloat(iid);
 			n++;
 		}
 		if (n == 0)
@@ -294,7 +294,7 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 	 * @see org.grouplens.reflens.Recommender#predict(org.grouplens.reflens.data.RatingVector, java.lang.Object)
 	 */
 	@Override
-	public ObjectValue<I> predict(RatingVector<U, I> user, I item) {
+	public ScoredObject<I> predict(RatingVector<U, I> user, I item) {
 		float dev = averageDeviation(user);
 		float uprefs[] = foldIn(user, dev);
 		int iid = itemIndexer.getIndex(item);
@@ -305,7 +305,7 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 		for (int f = 0; f < numFeatures; f++) {
 			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 		}
-		return new ObjectValue<I>(item, score);
+		return new ScoredObject<I>(item, score);
 	}
 	
 	public Map<I,Float> predict(RatingVector<U,I> user, Set<I> items) {
@@ -331,7 +331,7 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingRecommend
 	 * @see org.grouplens.reflens.Recommender#recommend(org.grouplens.reflens.data.RatingVector)
 	 */
 	@Override
-	public List<ObjectValue<I>> recommend(RatingVector<U, I> user) {
+	public List<ScoredObject<I>> recommend(RatingVector<U, I> user) {
 		// TODO Auto-generated method stub
 		return null;
 	}

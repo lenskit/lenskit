@@ -32,7 +32,7 @@
  */
 package org.grouplens.reflens;
 
-import org.grouplens.reflens.data.ObjectValue;
+import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.RatingVector;
 
 /**
@@ -40,5 +40,5 @@ import org.grouplens.reflens.data.RatingVector;
  * TODO: Support multiple simultaneous predictions
  */
 public interface RatingPredictor<U, I> extends RatingRecommender<U,I> {
-	public ObjectValue<I> predict(RatingVector<U,I> user, I item);
+	public ScoredObject<I> predict(RatingVector<U,I> user, I item);
 }
