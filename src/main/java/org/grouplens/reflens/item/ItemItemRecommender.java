@@ -26,13 +26,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.ScoredObject;
-import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.util.IndexedItemScore;
 
 public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, RatingRecommender<U,I>, RatingPredictor<U,I>, Serializable {
@@ -44,42 +44,43 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 	}
 
 	@Override
-	public ScoredObject<I> predict(RatingVector<U,I> user, I item) {
+	public ScoredObject<I> predict(U user, Map<I,Float> ratings, I item) {
 		float sum = 0;
 		float totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
 			I other = model.getItem(score.getIndex());
 			float s = score.getScore();
-			if (user.containsObject(other)) {
-				float rating = user.getRating(other) - user.getAverage();
+			if (ratings.containsKey(other)) {
+				// FIXME this goes wacky with negative similarities
+				float rating = ratings.get(other);
 				sum += rating * s;
 				totalWeight += Math.abs(s);
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ScoredObject<I>(item, sum / totalWeight + user.getAverage());
+			return new ScoredObject<I>(item, sum / totalWeight);
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<ScoredObject<I>> recommend(RatingVector<U,I> user) {
+	public List<ScoredObject<I>> recommend(U user, Map<I,Float> ratings) {
 		Int2FloatMap scores = new Int2FloatOpenHashMap();
 		Int2FloatMap weights = new Int2FloatOpenHashMap();
-		float avg = user.getAverage();
-		for (ScoredObject<I> rating: user) {
+		for (ScoredObject<I> rating: ScoredObject.wrap(ratings.entrySet())) {
 			for (IndexedItemScore score: model.getNeighbors(rating.getObject())) {
 				int jid = score.getIndex();
 				float val = score.getScore();
-				if (!user.containsObject(model.getItem(jid))) {
+				if (!ratings.containsKey(model.getItem(jid))) {
 					float s = 0.0f;
 					float w = 0.0f;
 					if (scores.containsKey(jid)) {
 						s = scores.get(jid);
 						w = weights.get(jid);
 					}
-					s += val * (rating.getScore() - avg);
+					// FIXME audit for behavior w/ negative similarities
+					s += val * rating.getScore();
 					w += Math.abs(val);
 					scores.put(jid, s);
 					weights.put(jid, w);
@@ -94,7 +95,7 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 			if (w >= 0.1) {
 				I item = model.getItem(iid);
 				float pred = scores.get(iid) / w;
-				results.add(new ScoredObject<I>(item, pred + avg));
+				results.add(new ScoredObject<I>(item, pred));
 			}
 		}
 		Collections.sort(results);

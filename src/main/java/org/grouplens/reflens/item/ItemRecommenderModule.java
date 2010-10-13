@@ -19,12 +19,13 @@
 package org.grouplens.reflens.item;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Properties;
 
 import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
@@ -107,7 +108,7 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureUserNormalizer() {
-		Type rvType = Types.newParameterizedType(RatingVector.class, userType(), itemType());
+		Type rvType = Types.newParameterizedType(UserRatingProfile.class, userType(), itemType());
 		Type rnType = Types.newParameterizedType(Normalizer.class, rvType);
 		Key rnKey = Key.get(rnType, RatingNormalization.class);
 		logger.debug("Using rating norm key {}", rnKey.toString());
@@ -139,6 +140,6 @@ public class ItemRecommenderModule extends AbstractModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		bind(new TypeLiteral<Similarity<RatingVector<Integer, Integer>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer, RatingVector<Integer,Integer>>>() {});
+		bind(new TypeLiteral<Similarity<Map<Integer, Float>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer>>() {});
 	}
 }

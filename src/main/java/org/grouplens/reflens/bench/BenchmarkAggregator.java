@@ -18,17 +18,20 @@
 
 package org.grouplens.reflens.bench;
 
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.ScoredObject;
-import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.integer.IntRatingVector;
+import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +70,8 @@ public class BenchmarkAggregator {
 	 * are tested by holding back 1/3 of their ratings.
 	 */
 	public void addBenchmark(
-			Collection<RatingVector<Integer,Integer>> trainUsers,
-			Collection<RatingVector<Integer,Integer>> testUsers) {
+			Collection<UserRatingProfile<Integer,Integer>> trainUsers,
+			Collection<UserRatingProfile<Integer,Integer>> testUsers) {
 		logger.debug("Building model with {} users", trainUsers.size());
 		RecommendationEngine<Integer, Integer> engine = factory.build(trainUsers);
 		RatingPredictor<Integer, Integer> rec = engine.getRatingPredictor();
@@ -78,19 +81,20 @@ public class BenchmarkAggregator {
 		float accumSqErr = 0.0f;
 		int nitems = 0;
 		int ngood = 0;
-		for (RatingVector<Integer,Integer> user: testUsers) {
-			IntArrayList ratedItems = new IntArrayList(user.getRatings().keySet());
-			int midpt = (int) Math.round(ratedItems.size() * (1.0 - holdout));
+		for (UserRatingProfile<Integer,Integer> user: testUsers) {
+			List<ScoredObject<Integer>> ratings = new ArrayList<ScoredObject<Integer>>(
+					ScoredObject.wrap(user.getRatings()));
+			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
-			Collections.shuffle(ratedItems);
-			IntRatingVector<Integer> partialHistory = new IntRatingVector<Integer>(user.getOwner());
+			Collections.shuffle(ratings);
+			Int2FloatMap queryRatings = new Int2FloatOpenHashMap();
 			for (int i = 0; i < midpt; i++) {
-				int iid = ratedItems.getInt(i);
-				partialHistory.putRating(iid, user.getRating(iid));
+				ScoredObject<Integer> rating = ratings.get(i);
+				queryRatings.put((int) rating.getObject(), rating.getScore());
 			}
-			for (int i = midpt; i < ratedItems.size(); i++) {
-				int iid = ratedItems.getInt(i);
-				ScoredObject<Integer> prediction = rec.predict(partialHistory, iid);
+			for (int i = midpt; i < ratings.size(); i++) {
+				int iid = ratings.get(i).getObject();
+				ScoredObject<Integer> prediction = rec.predict(user.getUser(), queryRatings, iid);
 				nitems++;
 				if (prediction != null) {
 					float err = prediction.getScore() - user.getRating(iid);

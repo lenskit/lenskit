@@ -1,5 +1,5 @@
 /* RefLens, a reference implementation of recommender algorithms.
- * Copyright 2010 Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Copyright 2010 <AUTHOR> (TODO: insert author name)
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,16 +30,17 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens;
+package org.grouplens.reflens.data;
 
 import java.util.Map;
 
-import org.grouplens.reflens.data.ScoredObject;
-
 /**
+ * Represents a user profile, associating ratings with a user.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * TODO: Support multiple simultaneous predictions
+ *
  */
-public interface RatingPredictor<U, I> {
-	public ScoredObject<I> predict(U user, Map<I,Float> ratings, I item);
+public interface UserRatingProfile<U, I> {
+	public U getUser();
+	public Map<I,Float> getRatings();
+	public float getRating(I item);
 }

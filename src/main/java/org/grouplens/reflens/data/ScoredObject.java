@@ -18,6 +18,8 @@
 
 package org.grouplens.reflens.data;
 
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -31,8 +33,8 @@ import java.util.Map;
  * @param <T> The type of object to score.
  */
 public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
-	private final T object;
-	private final float score;
+	private T object;
+	private float score;
 	
 	/**
 	 * Construct a new scored object.
@@ -42,6 +44,10 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	public ScoredObject(T object, float score) {
 		this.object = object;
 		this.score = score;
+	}
+	
+	public ScoredObject(Map.Entry<? extends T, Float> entry) {
+		this(entry.getKey(), entry.getValue());
 	}
 	
 	/**
@@ -64,34 +70,113 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * Convert map entries to scored objects en masse.
 	 * @param <T> The type of keys.
 	 * @param entries A collection of map entries.
-	 * @return An interable allowing iteration of the map entries as scored
-	 * objects.
+	 * @return A collection representing the map entries as scored objects.
 	 */
-	public static <T> Iterable<ScoredObject<T>> wrap(final Iterable<Map.Entry<T,Float>> entries) {
-		return new Iterable<ScoredObject<T>>() {
+	public static <T> Collection<ScoredObject<T>> wrap(final Collection<Map.Entry<T,Float>> entries) {
+		return new AbstractCollection<ScoredObject<T>>() {
+
+			@Override
 			public Iterator<ScoredObject<T>> iterator() {
-				return wrap(entries.iterator());
+				return new IteratorWrapper<T>(entries.iterator());
 			}
+
+			@Override
+			public int size() {
+				return entries.size();
+			}
+			
 		};
 	}
 	
-	private static <I> Iterator<ScoredObject<I>> wrap(final Iterator<Map.Entry<I, Float>> iter) {
-		return new Iterator<ScoredObject<I>>() {
-			public boolean hasNext() {
-				return iter.hasNext();
+	public static <T> Collection<ScoredObject<T>> wrap(final Map<T,Float> entries) {
+		return wrap(entries.entrySet());
+	}
+	
+	/**
+	 * Convert map entries to scored objects en masse.  Iterators on the resulting
+	 * collection are <i>fast</i> - that is, they mutate and return the same
+	 * ScoredObject instance.
+	 * @param <T> The type of keys.
+	 * @param entries A collection of map entries.
+	 * @return A collection representing the map entries as scored objects.
+	 */
+	public static <T> Collection<ScoredObject<T>> fastWrap(final Collection<Map.Entry<T,Float>> entries) {
+		return new AbstractCollection<ScoredObject<T>>() {
+
+			@Override
+			public Iterator<ScoredObject<T>> iterator() {
+				return new FastIteratorWrapper<T>(entries.iterator());
 			}
-			public ScoredObject<I> next() {
-				Map.Entry<I, Float> next = iter.next();
-				return new ScoredObject<I>(next.getKey(), next.getValue());
+
+			@Override
+			public int size() {
+				return entries.size();
 			}
-			public void remove() {
-				iter.remove();
-			}
+			
 		};
+	}
+	
+	public static <T> Collection<ScoredObject<T>> fastWrap(final Map<T,Float> entries) {
+		return fastWrap(entries.entrySet());
+	}
+	
+	private static class IteratorWrapper<I> implements Iterator<ScoredObject<I>> {
+		private final Iterator<Map.Entry<I, Float>> iter;
+		public IteratorWrapper(Iterator<Map.Entry<I, Float>> iter) {
+			this.iter = iter;
+		}
+		
+		public boolean hasNext() {
+			return iter.hasNext();
+		}
+		public ScoredObject<I> next() {
+			Map.Entry<I, Float> next = iter.next();
+			return new ScoredObject<I>(next);
+		}
+		public void remove() {
+			iter.remove();
+		}
+	}
+	
+	private static class FastIteratorWrapper<I> implements Iterator<ScoredObject<I>> {
+		private final Iterator<Map.Entry<I, Float>> iter;
+		private ScoredObject<I> obj = new ScoredObject<I>(null, Float.NaN);
+		
+		public FastIteratorWrapper(Iterator<Map.Entry<I, Float>> iter) {
+			this.iter = iter;
+		}
+		
+		public boolean hasNext() {
+			return iter.hasNext();
+		}
+		public ScoredObject<I> next() {
+			Map.Entry<I, Float> next = iter.next();
+			obj.object = next.getKey();
+			obj.score = next.getValue();
+			return obj;
+		}
+		public void remove() {
+			iter.remove();
+		}
 	}
 	
 	@Override
 	public int compareTo(ScoredObject<T> other) {
 		return Float.compare(score, other.getScore());
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof ScoredObject<?>) {
+			ScoredObject<?> os = (ScoredObject<?>) o;
+			return object.equals(os.object) && score == os.score;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return object != null ? object.hashCode() : 0;
 	}
 }

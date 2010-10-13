@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,25 +41,25 @@ import org.slf4j.LoggerFactory;
  */
 class RatingSet<U,I> {
 	private static Logger logger = LoggerFactory.getLogger(RatingSet.class);
-	private ArrayList<Collection<RatingVector<U,I>>> chunks;
+	private ArrayList<Collection<UserRatingProfile<U,I>>> chunks;
 
 	/**
 	 * Construct a new train/test ratings set.
 	 * @param folds The number of portions to divide the data set into.
 	 * @param ratings The ratings data to partition.
 	 */
-	public RatingSet(int folds, List<RatingVector<U,I>> ratings) {
+	public RatingSet(int folds, List<UserRatingProfile<U,I>> ratings) {
 		logger.info(String.format("Creating rating set with %d folds", folds));
-		chunks = new ArrayList<Collection<RatingVector<U,I>>>(folds);
+		chunks = new ArrayList<Collection<UserRatingProfile<U,I>>>(folds);
 		
 		int chunkSize = ratings.size() / folds + 1;
 		for (int i = 0; i < folds; i++) {
-			chunks.add(new ArrayList<RatingVector<U,I>>(chunkSize));
+			chunks.add(new ArrayList<UserRatingProfile<U,I>>(chunkSize));
 		}	
 		
 		Collections.shuffle(ratings);
 		int chunk = 0;
-		for (RatingVector<U,I> user: ratings) {
+		for (UserRatingProfile<U,I> user: ratings) {
 			chunks.get(chunk % folds).add(user);
 			chunk++;
 		}
@@ -75,7 +75,7 @@ class RatingSet<U,I> {
 	 * @param testIndex The index of the test set to use.
 	 * @return The union of all data partitions except testIndex.
 	 */
-	public Collection<RatingVector<U,I>> trainingSet(int testIndex) {
+	public Collection<UserRatingProfile<U,I>> trainingSet(int testIndex) {
 		return new TrainCollection(testIndex);
 	}
 	
@@ -84,11 +84,11 @@ class RatingSet<U,I> {
 	 * @param testIndex The index of the test set to use.
 	 * @return The test set of users.
 	 */
-	public Collection<RatingVector<U,I>> testSet(int testIndex) {
+	public Collection<UserRatingProfile<U,I>> testSet(int testIndex) {
 		return chunks.get(testIndex);
 	}
 	
-	private class TrainCollection extends AbstractCollection<RatingVector<U,I>> {
+	private class TrainCollection extends AbstractCollection<UserRatingProfile<U,I>> {
 		private int size;
 		private int testSetIndex;
 		
@@ -102,7 +102,7 @@ class RatingSet<U,I> {
 		}
 
 		@Override
-		public Iterator<RatingVector<U, I>> iterator() {
+		public Iterator<UserRatingProfile<U, I>> iterator() {
 			return new TrainIterator(testSetIndex);
 		}
 
@@ -121,10 +121,10 @@ class RatingSet<U,I> {
 	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
 	 *
 	 */
-	private class TrainIterator implements Iterator<RatingVector<U,I>> {
+	private class TrainIterator implements Iterator<UserRatingProfile<U,I>> {
 		private int testSetIndex;
 		private int currentChunk;
-		private Iterator<RatingVector<U,I>> baseIter;
+		private Iterator<UserRatingProfile<U,I>> baseIter;
 		
 		public TrainIterator(int testSet) {
 			testSetIndex = testSet;
@@ -149,9 +149,9 @@ class RatingSet<U,I> {
 		}
 
 		@Override
-		public RatingVector<U, I> next() {
+		public UserRatingProfile<U, I> next() {
 			if (baseIter != null && baseIter.hasNext()) {
-				RatingVector<U,I> h = baseIter.next();
+				UserRatingProfile<U,I> h = baseIter.next();
 				while (baseIter != null && !baseIter.hasNext()) {
 					// we need to advance the underlying iterator
 					currentChunk++;

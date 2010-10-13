@@ -18,6 +18,8 @@
 
 package org.grouplens.reflens.bench;
 
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
+import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -25,13 +27,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.BasicUserRatingProfile;
+import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.integer.IntDataModule;
-import org.grouplens.reflens.data.integer.IntRatingVector;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,9 +129,9 @@ public final class BenchmarkRunner {
 		agg.printResults();
 	}
 
-	private List<RatingVector<Integer, Integer>> readRatingsData()
+	private List<UserRatingProfile<Integer, Integer>> readRatingsData()
 			throws FileNotFoundException {
-		Int2ObjectMap<RatingVector<Integer, Integer>> users = new Int2ObjectOpenHashMap<RatingVector<Integer, Integer>>();
+		Int2ObjectMap<Int2FloatMap> users = new Int2ObjectOpenHashMap<Int2FloatMap>();
 		Pattern splitter = Pattern.compile(Pattern
 				.quote(options.getDelimiter()));
 		for (String file : options.getFiles()) {
@@ -142,17 +145,24 @@ public final class BenchmarkRunner {
 				int uid = Integer.parseInt(fields[0]);
 				int iid = Integer.parseInt(fields[1]);
 				float rating = Float.parseFloat(fields[2]);
-				RatingVector<Integer, Integer> history = null;
+				Int2FloatMap history = null;
 				if (users.containsKey(uid)) {
 					history = users.get(uid);
 				} else {
-					history = new IntRatingVector<Integer>(uid);
+					history = new Int2FloatOpenHashMap();
 					users.put(uid, history);
 				}
-				history.putRating(iid, rating);
+				history.put(iid, rating);
 			}
 			s.close();
 		}
-		return new ArrayList<RatingVector<Integer, Integer>>(users.values());
+		List<UserRatingProfile<Integer, Integer>> profiles =
+			new ArrayList<UserRatingProfile<Integer,Integer>>();
+		for (Map.Entry<Integer, Int2FloatMap> user: users.entrySet()) {
+			UserRatingProfile<Integer,Integer> p =
+				new BasicUserRatingProfile<Integer, Integer>(user);
+			profiles.add(p);
+		}
+		return profiles;
 	}
 }

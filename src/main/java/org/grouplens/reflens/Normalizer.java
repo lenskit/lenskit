@@ -18,6 +18,6 @@
 
 package org.grouplens.reflens;
 
-public interface Normalizer<V> {
-	public V normalize(V src);
+public interface Normalizer<S,V> {
+	public V normalize(S owner, V src);
 }

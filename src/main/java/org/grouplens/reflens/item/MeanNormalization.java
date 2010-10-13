@@ -18,27 +18,74 @@
 
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.floats.FloatCollection;
+import it.unimi.dsi.fastutil.floats.FloatIterator;
+
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.grouplens.reflens.Normalizer;
-import org.grouplens.reflens.data.RatingVector;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MeanNormalization<S,T> implements Normalizer<RatingVector<S,T>> {
+public class MeanNormalization<S,T> implements Normalizer<S,Map<T,Float>> {
+	private final Provider<Map<T,Float>> mapProvider;
+	
+	public MeanNormalization() {
+		// TODO: do we really want this?
+		mapProvider = new Provider<Map<T,Float>>() {
+			public Map<T,Float> get() {
+				return new HashMap<T, Float>();
+			}
+		};
+	}
+	
+	@Inject
+	MeanNormalization(Provider<Map<T,Float>> mapP) {
+		mapProvider = mapP;
+	}
+	
+	/**
+	 * Computes the mean of the vector.
+	 * @param vector
+	 * @return
+	 */
+	private float computeMean(Map<T,Float> vector) {
+		float sum = 0.0f;
+		
+		// if the value collection is a float collection, we can avoid boxing
+		Collection<Float> values = vector.values();
+		if (values instanceof FloatCollection) {
+			FloatCollection vfast = (FloatCollection) values;
+			FloatIterator iter = vfast.iterator();
+			while (iter.hasNext()) {
+				sum += iter.nextFloat();
+			}
+		} else {
+			for (Float v: values) {
+				sum += v;
+			}
+		}
+		
+		return sum / values.size();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Normalization#normalize(java.lang.Object)
 	 */
 	@Override
-	public RatingVector<S,T> normalize(RatingVector<S,T> src) {
-		RatingVector<S,T> v2 = src.copy();
-		float mean = src.getAverage();
-		for (Map.Entry<T, Float> e: src.getRatings().entrySet()) {
-			v2.putRating(e.getKey(), e.getValue() - mean);
+	public Map<T,Float> normalize(S owner, Map<T,Float> ratings) {
+		Map<T,Float> normed = mapProvider.get();
+		float mean = computeMean(ratings);
+		for (Map.Entry<T, Float> e: ratings.entrySet()) {
+			normed.put(e.getKey(), e.getValue() - mean);
 		}
-		return v2;
+		return normed;
 	}
 }

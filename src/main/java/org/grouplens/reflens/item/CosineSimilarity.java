@@ -22,32 +22,32 @@ import java.util.Map;
 
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.UserRatingProfile;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CosineSimilarity<I, V extends RatingVector<?,I>>
-	implements Similarity<V>, SymmetricBinaryFunction {
+public class CosineSimilarity<I>
+	implements Similarity<Map<I,Float>>, SymmetricBinaryFunction {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public float similarity(V vec1, V vec2) {
+	public float similarity(Map<I,Float> vec1, Map<I,Float> vec2) {
 		float dot = 0.0f;
 		float ssq1 = 0.0f;
 		float ssq2 = 0.0f;
-		for (Map.Entry<I,Float> e: vec1.getRatings().entrySet()) {
+		for (Map.Entry<I,Float> e: vec1.entrySet()) {
 			I i = e.getKey();
 			float v = e.getValue();
-			if (vec2.containsObject(i)) {
-				dot += v * vec2.getRating(i);
+			if (vec2.containsKey(i)) {
+				dot += v * vec2.get(i);
 			}
 			ssq1 += v * v;
 		}
-		for (Float v: vec2.getRatings().values()) {
+		for (Float v: vec2.values()) {
 			ssq2 += v * v;
 		}
 		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2);

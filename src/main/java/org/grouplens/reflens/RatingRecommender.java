@@ -19,10 +19,10 @@
 package org.grouplens.reflens;
 
 import java.util.List;
+import java.util.Map;
 
 import org.grouplens.reflens.data.ScoredObject;
-import org.grouplens.reflens.data.RatingVector;
 
 public interface RatingRecommender<U,I> {
-	public List<ScoredObject<I>> recommend(RatingVector<U,I> user);
+	public List<ScoredObject<I>> recommend(U user, Map<I,Float> ratings);
 }

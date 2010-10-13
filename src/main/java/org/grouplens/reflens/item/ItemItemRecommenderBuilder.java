@@ -21,6 +21,7 @@ package org.grouplens.reflens.item;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -29,9 +30,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Indexer;
-import org.grouplens.reflens.data.ScoredObject;
-import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.data.RatingVectorFactory;
+import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.util.SimilarityMatrix;
@@ -44,29 +43,29 @@ import com.google.inject.Provider;
 public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I> {
 	
 	private Provider<Indexer<I>> indexProvider;
-	private RatingVectorFactory<I, U> itemVectorFactory;
+	private Provider<Map<U,Float>> itemMapProvider;
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<RatingVector<U, I>> ratingNormalizer;
-	private Similarity<RatingVector<I, U>> itemSimilarity;
+	private Normalizer<U, Map<I,Float>> ratingNormalizer;
+	private Similarity<Map<U,Float>> itemSimilarity;
 
 	@Inject
 	ItemItemRecommenderBuilder(
 			Provider<Indexer<I>> indexProvider,
-			RatingVectorFactory<I, U> itemVectorFactory,
+			Provider<Map<U,Float>> itemMapProvider,
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<RatingVector<I,U>> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<RatingVector<U,I>> ratingNormalizer) {
+			@ItemSimilarity Similarity<Map<U,Float>> itemSimilarity,
+			@Nullable @RatingNormalization Normalizer<U,Map<I,Float>> ratingNormalizer) {
 		this.indexProvider = indexProvider;
-		this.itemVectorFactory = itemVectorFactory;
+		this.itemMapProvider = itemMapProvider;
 		this.matrixFactory = matrixFactory;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
 	}
 	
 	@Override
-	public ItemItemRecommender<U,I> build(Collection<RatingVector<U,I>> data) {
+	public ItemItemRecommender<U,I> build(Collection<UserRatingProfile<U,I>> data) {
 		Indexer<I> indexer = indexProvider.get();
-		List<RatingVector<I,U>> itemRatings = buildItemRatings(indexer, data);
+		List<Map<U,Float>> itemRatings = buildItemRatings(indexer, data);
 		
 		// prepare the similarity matrix
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
@@ -103,20 +102,21 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<RatingVector<I,U>> buildItemRatings(Indexer<I> indexer, Collection<RatingVector<U,I>> ratings) {
-		ArrayList<RatingVector<I,U>> itemVectors = new ArrayList<RatingVector<I,U>>();
-		for (RatingVector<U,I> user: ratings) {
+	private List<Map<U,Float>> buildItemRatings(Indexer<I> indexer, Collection<UserRatingProfile<U,I>> data) {
+		ArrayList<Map<U,Float>> itemVectors = new ArrayList<Map<U,Float>>();
+		for (UserRatingProfile<U,I> user: data) {
+			Map<I,Float> ratings = user.getRatings();
 			if (ratingNormalizer != null)
-				user = ratingNormalizer.normalize(user);
-			for (ScoredObject<I> rating: user) {
-				I item = rating.getObject();
+				ratings = ratingNormalizer.normalize(user.getUser(), ratings);
+			for (Map.Entry<I, Float> rating: ratings.entrySet()) {
+				I item = rating.getKey();
 				int idx = indexer.internObject(item);
 				if (idx >= itemVectors.size()) {
 					// it's a new item - add one
 					assert idx == itemVectors.size();
-					itemVectors.add(itemVectorFactory.make(item));
+					itemVectors.add(itemMapProvider.get());
 				}
-				itemVectors.get(idx).putRating(user.getOwner(), rating.getScore());
+				itemVectors.get(idx).put(user.getUser(), rating.getValue());
 			}
 		}
 		itemVectors.trimToSize();

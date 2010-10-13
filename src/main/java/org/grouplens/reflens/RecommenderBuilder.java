@@ -20,7 +20,7 @@ package org.grouplens.reflens;
 
 import java.util.Collection;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.UserRatingProfile;
 
 /**
  * Interface for recommender factories for the benchmarker to use.
@@ -34,5 +34,5 @@ public interface RecommenderBuilder<U,I> {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public RecommendationEngine<U,I> build(Collection<RatingVector<U,I>> ratings);
+	public RecommendationEngine<U,I> build(Collection<UserRatingProfile<U,I>> ratings);
 }
