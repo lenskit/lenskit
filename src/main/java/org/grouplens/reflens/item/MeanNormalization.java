@@ -38,7 +38,6 @@ public class MeanNormalization<S,T> implements Normalizer<S,Map<T,Float>> {
 	private final Provider<Map<T,Float>> mapProvider;
 	
 	public MeanNormalization() {
-		// TODO: do we really want this?
 		mapProvider = new Provider<Map<T,Float>>() {
 			public Map<T,Float> get() {
 				return new HashMap<T, Float>();

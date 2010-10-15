@@ -329,7 +329,6 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 
 	@Override
 	public BasketRecommender<U, I> getBasketRecommender() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

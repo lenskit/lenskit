@@ -80,7 +80,8 @@ public final class BenchmarkRunner {
 		try {
 			options = CliFactory.parseArguments(BenchmarkOptions.class, args);
 		} catch (ArgumentValidationException e) {
-			fail(1, e);
+			System.err.println(e.getMessage());
+			System.exit(1);
 		}
 
 		BenchmarkRunner runner = new BenchmarkRunner(options);

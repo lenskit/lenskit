@@ -1,5 +1,5 @@
 /* RefLens, a reference implementation of recommender algorithms.
- * Copyright 2010 <AUTHOR> (TODO: insert author name)
+ * Copyright 2010 Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
