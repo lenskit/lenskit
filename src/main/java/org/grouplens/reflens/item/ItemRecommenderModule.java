@@ -18,28 +18,33 @@
 
 package org.grouplens.reflens.item;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
 import com.google.inject.util.Providers;
-import com.google.inject.util.Types;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -57,14 +62,6 @@ public class ItemRecommenderModule extends AbstractModule {
 
 	public ItemRecommenderModule(Properties props) {
 		this.properties = props;
-	}
-	
-	protected Type userType() {
-		return Integer.class;
-	}
-	
-	protected Type itemType() {
-		return Integer.class;
 	}
 
 	/* (non-Javadoc)
@@ -93,7 +90,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 */
 	protected void configureSimilarityMatrix() {
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
-				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class, TruncatingSimilarityMatrixBuilder.class));
+				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
+						TruncatingSimilarityMatrixBuilder.class));
 	}
 
 	/**
@@ -108,38 +106,50 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureUserNormalizer() {
-		Type rvType = Types.newParameterizedType(UserRatingProfile.class, userType(), itemType());
-		Type rnType = Types.newParameterizedType(Normalizer.class, rvType);
-		Key rnKey = Key.get(rnType, RatingNormalization.class);
-		logger.debug("Using rating norm key {}", rnKey.toString());
+		Key<Normalizer<Integer,Map<Integer,Float>>> rnKey =
+			Key.get(new TypeLiteral<Normalizer<Integer,Map<Integer,Float>>>() {},
+					RatingNormalization.class);
 		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
 	}
 	
-	protected void bindClassFromProperty(Key key, String propName) {
+	protected <T> void bindClassFromProperty(Key<T> key, String propName) {
 		bindClassFromProperty(key, propName, null);
 	}
 
 	/**
-	 * @param propName
-	 * @param key
+	 * Bind a dependency using a class read from a property.
+	 * 
+	 * @param key The Guice dependency key to bind.
+	 * @param propName The name of the property containing the class name.
+	 * @param dftClass The implementation to bind if the property is not set.
+	 * If <tt>null</tt>, then null will be bound (and the dependency must have
+	 * the {@link Nullable} annotation).  This parameter has a bare type to make
+	 * it easier to use in the face of type erasure.
 	 */
-	protected void bindClassFromProperty(Key key, String propName, Class dftClass) {
+	@SuppressWarnings("unchecked")
+	protected <T> void bindClassFromProperty(Key<T> key, String propName, Class dftClass) {
 		String rnorm = properties.getProperty(propName);
 		Class target = dftClass;
 		if (rnorm != null) {
-			logger.debug("Binding {} to {}", key.toString(), propName);
 			target = ObjectLoader.getClass(rnorm);
 		}
 		
 		if (target != null) {
-			bind(key).to(target);
+			logger.debug("Binding {} to {}", key.toString(), target.getName());
+			Type tgtType = TypeUtils.reifyType(key.getTypeLiteral().getType(), target);
+			logger.debug("Reified {} to {}", target, tgtType);
+			bind(key).to((Key) Key.get(tgtType));
 		} else {
 			logger.debug("Binding {} to null", key.toString());
-			bind(key).toProvider(Providers.of(null));
+			bind(key).toProvider(Providers.of((T) null));
 		}
 	}
 	
 	protected void configureItemSimilarity() {
-		bind(new TypeLiteral<Similarity<Map<Integer, Float>>>() {}).annotatedWith(ItemSimilarity.class).to(new TypeLiteral<CosineSimilarity<Integer>>() {});
+		Key<Similarity<Map<Integer,Float>>> key =
+			Key.get(new TypeLiteral<Similarity<Map<Integer,Float>>>() {},
+					ItemSimilarity.class);
+		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
+				CosineSimilarity.class);
 	}
 }
