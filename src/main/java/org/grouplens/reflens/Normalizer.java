@@ -18,6 +18,17 @@
 
 package org.grouplens.reflens;
 
+/**
+ * Interface for normalization functions.  The normalizer takes an "owner" and
+ * an object (such as a user and their rating vector) and returns the normalized
+ * version.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @param <S> The type of owner objects.
+ * @param <V> The type of to-be-normalized values.
+ * 
+ * TODO enhance this to support reversible normalizations (see issue #23).
+ */
 public interface Normalizer<S,V> {
 	public V normalize(S owner, V src);
 }
