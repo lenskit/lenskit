@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
-import org.grouplens.reflens.data.UserRatingProfile;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

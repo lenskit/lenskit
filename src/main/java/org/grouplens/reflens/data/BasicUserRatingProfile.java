@@ -1,6 +1,5 @@
 package org.grouplens.reflens.data;
 
-import java.util.Collection;
 import java.util.Map;
 
 public class BasicUserRatingProfile<U, I> implements UserRatingProfile<U, I> {
