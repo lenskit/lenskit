@@ -42,7 +42,7 @@ public interface SimilarityMatrixBuilder {
 	 * Store the similarity between two entities. Calls to this method are
 	 * thread-safe with each other. Only one similary should be stored for each
 	 * ordered pair of entities, as the implementation may not de-duplicate the
-	 * matrix.
+	 * matrix.  {@link #build()} cannot be called concurrently with this method.
 	 * 
 	 * @param i1
 	 *            The index of the first entity.
@@ -57,8 +57,15 @@ public interface SimilarityMatrixBuilder {
 	
 	/**
 	 * Finish building the matrix and return it.  The builder can no longer be
-	 * used after this.
+	 * used after this.  This method cannot be called concurrently with
+	 * {@link #put(int, int, float)}.
 	 * @return The finalized similarity matrix.
 	 */
 	public SimilarityMatrix build();
+	
+	/**
+	 * Query the number of rows in the underlying similarity matrix builder.
+	 * @return The number of valid rows (or -1 if this is unknown or unlimited).
+	 */
+	public int size();
 }

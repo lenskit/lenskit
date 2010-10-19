@@ -173,4 +173,9 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 				q.dequeue();
 		}
 	}
+	
+	@Override
+	public int size() {
+		return itemCount;
+	}
 }
