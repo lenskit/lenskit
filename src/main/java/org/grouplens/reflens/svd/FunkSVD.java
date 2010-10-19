@@ -38,6 +38,8 @@ import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.LearningRate;
+import org.grouplens.reflens.util.Cursor;
+import org.grouplens.reflens.util.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,18 +129,23 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		}
 	}
 	
-	void build(Collection<UserRatingProfile<U,I>> users) {
+	void build(DataSource<UserRatingProfile<U,I>> users) {
 		logger.debug("Building SVD with {} features", numFeatures);
 		
 		// build a list of ratings
-		List<Rating> ratings = new ArrayList<Rating>(users.size() * 5);
-		for (UserRatingProfile<U,I> user: users) {
-			int uid = userIndexer.getIndex(user.getUser());
-			for (ScoredObject<I> rating: ScoredObject.fastWrap(user.getRatings())) {
-				int iid = itemIndexer.getIndex(rating.getObject());
-				Rating r = new Rating(uid, iid, rating.getScore());
-				ratings.add(r);
+		List<Rating> ratings = new ArrayList<Rating>(users.getRowCount() * 5);
+		Cursor<UserRatingProfile<U, I>> cursor = users.cursor();
+		try {
+			for (UserRatingProfile<U,I> user: cursor) {
+				int uid = userIndexer.getIndex(user.getUser());
+				for (ScoredObject<I> rating: ScoredObject.fastWrap(user.getRatings())) {
+					int iid = itemIndexer.getIndex(rating.getObject());
+					Rating r = new Rating(uid, iid, rating.getScore());
+					ratings.add(r);
+				}
 			}
+		} finally {
+			cursor.close();
 		}
 		
 		computeItemAverages(ratings);

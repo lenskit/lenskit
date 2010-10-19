@@ -19,7 +19,6 @@
 package org.grouplens.reflens.item;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,8 @@ import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.util.Cursor;
+import org.grouplens.reflens.util.DataSource;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
@@ -63,7 +64,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	}
 	
 	@Override
-	public ItemItemRecommender<U,I> build(Collection<UserRatingProfile<U,I>> data) {
+	public ItemItemRecommender<U,I> build(DataSource<UserRatingProfile<U,I>> data) {
 		Indexer<I> indexer = indexProvider.get();
 		List<Map<U,Float>> itemRatings = buildItemRatings(indexer, data);
 		
@@ -102,22 +103,27 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Map<U,Float>> buildItemRatings(Indexer<I> indexer, Collection<UserRatingProfile<U,I>> data) {
+	private List<Map<U,Float>> buildItemRatings(Indexer<I> indexer, DataSource<UserRatingProfile<U,I>> data) {
 		ArrayList<Map<U,Float>> itemVectors = new ArrayList<Map<U,Float>>();
-		for (UserRatingProfile<U,I> user: data) {
-			Map<I,Float> ratings = user.getRatings();
-			if (ratingNormalizer != null)
-				ratings = ratingNormalizer.normalize(user.getUser(), ratings);
-			for (Map.Entry<I, Float> rating: ratings.entrySet()) {
-				I item = rating.getKey();
-				int idx = indexer.internObject(item);
-				if (idx >= itemVectors.size()) {
-					// it's a new item - add one
-					assert idx == itemVectors.size();
-					itemVectors.add(itemMapProvider.get());
+		Cursor<UserRatingProfile<U, I>> cursor = data.cursor();
+		try {
+			for (UserRatingProfile<U,I> user: cursor) {
+				Map<I,Float> ratings = user.getRatings();
+				if (ratingNormalizer != null)
+					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
+				for (Map.Entry<I, Float> rating: ratings.entrySet()) {
+					I item = rating.getKey();
+					int idx = indexer.internObject(item);
+					if (idx >= itemVectors.size()) {
+						// it's a new item - add one
+						assert idx == itemVectors.size();
+						itemVectors.add(itemMapProvider.get());
+					}
+					itemVectors.get(idx).put(user.getUser(), rating.getValue());
 				}
-				itemVectors.get(idx).put(user.getUser(), rating.getValue());
 			}
+		} finally {
+			cursor.close();
 		}
 		itemVectors.trimToSize();
 		return itemVectors;

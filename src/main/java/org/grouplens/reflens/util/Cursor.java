@@ -18,10 +18,31 @@
 
 package org.grouplens.reflens.util;
 
-import java.io.Closeable;
-import java.util.Iterator;
+import java.util.NoSuchElementException;
 
-public interface CloseableIterator<T> extends Iterator<T>, Closeable,
-		Iterable<T> {
 
+public interface Cursor<T> extends Iterable<T> {
+	/**
+	 * Query whether the cursor has any more items.  If the cursor or underlying
+	 * source has been closed, this may return even if the end has not been
+	 * reached.
+	 * @return <tt>true</tt> if there remains another item to fetch.
+	 */
+	public boolean hasNext();
+	
+	/**
+	 * Fetch the next item from the cursor.
+	 * @return The next item in the cursor.
+	 * @throws NoSuchElementException if there are no more elements.
+	 * @throws RuntimeException if the cursor or its data source have been
+	 * closed (optional).
+	 */
+	public T next();
+	
+	/**
+	 * Close the cursor.  This invalidates the cursor; no more elements may be
+	 * fetched after a call to <tt>close()</tt> (although implementations are
+	 * not required to enforce this).
+	 */
+	public void close();
 }

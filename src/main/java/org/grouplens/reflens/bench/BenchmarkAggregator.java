@@ -31,6 +31,8 @@ import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.util.CollectionDataSource;
+import org.grouplens.reflens.util.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +74,14 @@ public class BenchmarkAggregator {
 			Collection<UserRatingProfile<Integer,Integer>> trainUsers,
 			Collection<UserRatingProfile<Integer,Integer>> testUsers) {
 		logger.debug("Building model with {} users", trainUsers.size());
-		RecommendationEngine<Integer, Integer> engine = factory.build(trainUsers);
+		DataSource<UserRatingProfile<Integer, Integer>> trainingSource =
+			new CollectionDataSource<UserRatingProfile<Integer,Integer>>(trainUsers);
+		RecommendationEngine<Integer, Integer> engine;
+		try {
+			engine = factory.build(trainingSource);
+		} finally {
+			trainingSource.close();
+		}
 		RatingPredictor<Integer, Integer> rec = engine.getRatingPredictor();
 		
 		logger.debug("Testing model with {} users", testUsers.size());

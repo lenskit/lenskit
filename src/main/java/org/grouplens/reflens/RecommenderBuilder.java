@@ -18,9 +18,8 @@
 
 package org.grouplens.reflens;
 
-import java.util.Collection;
-
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.util.DataSource;
 
 /**
  * Interface for recommender factories for the benchmarker to use.
@@ -30,9 +29,13 @@ import org.grouplens.reflens.data.UserRatingProfile;
 public interface RecommenderBuilder<U,I> {
 	/**
 	 * Construct a new recommender engine trained on the provided ratings.
+	 * 
+	 * The caller is responsible for closing the data source once the recommender
+	 * has been built.
+	 * 
 	 * @param ratings The set of initial ratings with which to seed the
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public RecommendationEngine<U,I> build(Collection<UserRatingProfile<U,I>> ratings);
+	public RecommendationEngine<U,I> build(DataSource<UserRatingProfile<U,I>> ratings);
 }
