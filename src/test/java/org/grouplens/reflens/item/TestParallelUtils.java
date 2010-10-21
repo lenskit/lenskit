@@ -44,7 +44,7 @@ import org.junit.Test;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ParallelUtilTests {
+public class TestParallelUtils {
 	private SymmetricRowCounter counter;
 	
 	@Before

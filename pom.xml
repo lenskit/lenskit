@@ -5,6 +5,15 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>RefLens</name>
   <description>Reference implementation of collaborative filtering recommender systems.</description>
+  <issueManagement>
+  	<system>BitBucket</system>
+  	<url>http://bitbucket.org/elehack/reflens-dev/issues</url>
+  </issueManagement>
+  <scm>
+  	<connection>scm:hg:http://bitbucket.org/elehack/reflens-dev</connection>
+  	<developerConnection>scm:hg:https://bitbucket.org/elehack/reflens-dev</developerConnection>
+  	<url>http://bitbucket.org/elehack/reflens-dev</url>
+  </scm>
   <build>
   <plugins>
         <plugin>
@@ -88,7 +97,31 @@
   		<scope>test</scope>
   	</dependency>
   </dependencies>
+  <reporting>
+  	<plugins>
+  	  <plugin>
+  	    <groupId>org.apache.maven.plugins</groupId>
+  	    <artifactId>maven-project-info-reports-plugin</artifactId>
+  	    <version>2.0.1</version>
+  	    <reportSets>
+  	      <reportSet>
+  	      	<id>main</id>
+  	      	<reports>
+  	      	  <report>index</report>
+  	          <report>summary</report>
+  	          <report>license</report>  	        
+  	          <report>issue-tracking</report>
+  	          <report>scm</report>
+  	          <report>dependencies</report>
+  	        </reports>
+  	      </reportSet>
+  	    </reportSets>
+  	  </plugin>
+  	</plugins>
+  </reporting>
   <properties>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <modules>
+  </modules>
 </project>
