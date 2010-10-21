@@ -85,7 +85,7 @@ public class IntegerTaskQueue {
 				this.progress.setProgress(this.nextTask.get(), this.taskCount);
 			Thread t = (Thread)threads.element();
 			try {
-				t.join(100L);
+				t.join(100);
 				if (!t.isAlive())
 					threads.remove();
 			}

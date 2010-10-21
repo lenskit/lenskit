@@ -6,11 +6,11 @@ public abstract class AbstractProgressReporter implements ProgressReporter
 
 	public void setProgress(long current)
 	{
-		setProgress(current, this.totalJobs);
+		setProgress(current, Math.max(totalJobs, current));
 	}
 
 	public void setTotal(long total)
 	{
-		this.totalJobs = total;
+		totalJobs = total;
 	}
 }

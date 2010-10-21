@@ -138,7 +138,10 @@ public class ParallelItemItemRecommenderBuilder implements
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
 			logger.debug("Computing similarities (symmetric builder)");
 			worker = new SymmetricWorkerFactory(itemRatings, builder);
-			queue = new IntegerTaskQueue(rep, arithSum(itemRatings.length));
+			if (rep != null) {
+				rep = new ExpandedProgressReporter(rep);
+			}
+			queue = new IntegerTaskQueue(rep, itemRatings.length);
 		} else {
 			logger.debug("Computing similarities (asymmetric builder)");
 			worker = new AsymmetricWorkerFactory(itemRatings, builder);
@@ -155,6 +158,32 @@ public class ParallelItemItemRecommenderBuilder implements
 	
 	static int arithSum(int n) {
 		return (n * (n + 1)) >> 1; // bake-in the strength reduction
+	}
+	static long arithSum(long n) {
+		return (n * (n + 1)) >> 1; // bake-in the strength reduction
+	}
+	
+	static class ExpandedProgressReporter implements ProgressReporter {
+		private final ProgressReporter base;
+		public ExpandedProgressReporter(ProgressReporter base) {
+			this.base = base;
+		}
+		@Override
+		public void finish() {
+			base.finish();
+		}
+		@Override
+		public void setProgress(long current) {
+			base.setProgress(arithSum(current));
+		}
+		@Override
+		public void setProgress(long current, long total) {
+			base.setProgress(arithSum(current), arithSum(total));
+		}
+		@Override
+		public void setTotal(long total) {
+			base.setTotal(arithSum(total));
+		}
 	}
 	
 	// private helper method to isolate the unchecked cast warning
@@ -176,7 +205,13 @@ public class ParallelItemItemRecommenderBuilder implements
 		Cursor<UserRatingProfile<Integer, Integer>> cursor = data.cursor();
 		
 		try {		
-			IteratorTaskQueue.parallelDo(cursor.iterator(), threadCount,
+			ProgressReporter progress = null;
+			if (progressFactory != null) {
+				progress = progressFactory.create("normalize");
+				if (progress != null)
+					progress.setTotal(data.getRowCount());
+			}
+			IteratorTaskQueue.parallelDo(progress, cursor.iterator(), threadCount,
 					new WorkerFactory<ObjectWorker<UserRatingProfile<Integer,Integer>>>() {
 				@Override
 				public ObjectWorker<UserRatingProfile<Integer, Integer>> create(
@@ -211,25 +246,20 @@ public class ParallelItemItemRecommenderBuilder implements
 	private class SymmetricSimWorker implements IntWorker {
 		private final Map<Integer,Double>[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
-		private final SymmetricRowCounter counter;
 		
 		public SymmetricSimWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
-			counter = new SymmetricRowCounter();
 		}
 
 		@Override
 		public void doJob(long job) {
-			counter.advance(job);
-			int row = counter.getRow();
-			int col = counter.getColumn();
-			if (row == col)
-				return;
-			
-			double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
-			builder.put(row, col, sim);
-			builder.put(col, row, sim);
+			int row = (int) job;
+			for (int col = 0; col < row; col++) {
+				double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
+				builder.put(row, col, sim);
+				builder.put(col, row, sim);
+			}
 		}
 
 		@Override
