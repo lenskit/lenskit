@@ -100,10 +100,13 @@ public final class BenchmarkRunner {
 	}
 
 	private void run() {
-		Module recModule = ObjectLoader.makeInstance(options.getModule());
+		String moduleName = options.getModule();
+		logger.debug("Loading module {}", moduleName);
+		Module recModule = ObjectLoader.makeInstance(moduleName);
 		injector = Guice.createInjector(new IntDataModule(), recModule);
 		RatingSet<Integer, Integer> data = null;
 		try {
+			logger.debug("Loading ratings data");
 			data = new RatingSet<Integer, Integer>(options.getNumFolds(),
 					readRatingsData());
 		} catch (FileNotFoundException e) {
