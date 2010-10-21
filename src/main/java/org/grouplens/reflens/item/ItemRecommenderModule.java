@@ -86,7 +86,7 @@ public class ItemRecommenderModule extends AbstractModule {
 		} catch (NumberFormatException e) {
 			logger.warn("Invalid integer {}", cfg);
 		}
-		bind(int.class).annotatedWith(ThreadCount.class).toInstance(Runtime.getRuntime().availableProcessors());
+		bind(int.class).annotatedWith(ThreadCount.class).toInstance(count);
 	}
 
 	/**
