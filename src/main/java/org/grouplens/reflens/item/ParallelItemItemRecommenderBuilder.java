@@ -141,12 +141,18 @@ public class ParallelItemItemRecommenderBuilder implements
 		return (n * (n + 1)) >> 1; // bake-in the strength reduction
 	}
 	
+	// private helper method to isolate the unchecked cast warning
+	@SuppressWarnings("unchecked")
+	private static <K,V> Map<K,V>[] makeMapArray(int n) {
+		return new Map[n];
+	}
+	
 	/** 
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
 	private Map<Integer,Double>[] buildItemRatings(final Index<Integer> index, DataSource<UserRatingProfile<Integer,Integer>> data) {
-		final Map<Integer,Double>[] itemVectors = new Map[index.getObjectCount()];
+		final Map<Integer,Double>[] itemVectors = makeMapArray(index.getObjectCount());
 		for (int i = 0; i < itemVectors.length; i++) {
 			itemVectors[i] = itemMapProvider.get();
 		}
