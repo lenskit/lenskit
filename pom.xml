@@ -96,6 +96,13 @@
   		<type>jar</type>
   		<scope>test</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>jline</groupId>
+  		<artifactId>jline</artifactId>
+  		<version>0.9.94</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
   </dependencies>
   <reporting>
   	<plugins>

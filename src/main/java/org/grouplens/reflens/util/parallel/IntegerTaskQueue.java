@@ -34,8 +34,9 @@ package org.grouplens.reflens.util.parallel;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.grouplens.reflens.util.ProgressReporter;
 
 /**
  * A task queue that returns (long) integer task IDs.
@@ -52,11 +53,19 @@ import java.util.concurrent.atomic.AtomicLong;
 public class IntegerTaskQueue {
 	private final long taskCount;
 	private AtomicLong nextTask;
+	private ProgressReporter progress;
 	
-	public IntegerTaskQueue(long ntasks) {
-		taskCount = ntasks;
-		nextTask = new AtomicLong();
+	public IntegerTaskQueue(int ntasks)
+	{
+		this(null, ntasks);
 	}
+
+	public IntegerTaskQueue(ProgressReporter progress, long ntasks) {
+		this.progress = progress;
+		this.taskCount = ntasks;
+		this.nextTask = new AtomicLong();
+	}
+
 	
 	public long getTaskCount() {
 		return taskCount;
@@ -72,14 +81,20 @@ public class IntegerTaskQueue {
 			t.start();
 		}
 		while (!threads.isEmpty()) {
-			Thread t = threads.element();
+			if (this.progress != null)
+				this.progress.setProgress(this.nextTask.get(), this.taskCount);
+			Thread t = (Thread)threads.element();
 			try {
-				t.join();
-				threads.remove();
-			} catch (InterruptedException e) {
-				/* no-op, try again */;
+				t.join(100L);
+				if (!t.isAlive())
+					threads.remove();
+			}
+			catch (InterruptedException localInterruptedException) {
+				/* no-op */;
 			}
 		}
+		if (this.progress != null)
+			this.progress.finish(); 
 	}
 	
 	private class TaskThread<W extends IntWorker> extends Thread {

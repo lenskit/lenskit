@@ -48,6 +48,8 @@ import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.item.params.ThreadCount;
 import org.grouplens.reflens.util.Cursor;
 import org.grouplens.reflens.util.DataSource;
+import org.grouplens.reflens.util.ProgressReporter;
+import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
@@ -74,8 +76,11 @@ public class ParallelItemItemRecommenderBuilder implements
 	private Provider<Indexer<Integer>> indexProvider;
 	private Provider<Map<Integer,Double>> itemMapProvider;
 	private SimilarityMatrixBuilderFactory matrixFactory;
+	@Nullable
 	private Normalizer<Integer, Map<Integer,Double>> ratingNormalizer;
 	private Similarity<Map<Integer,Double>> itemSimilarity;
+	@Nullable
+	private final ProgressReporterFactory progressFactory;
 	private final int threadCount;
 
 	@Inject
@@ -83,9 +88,11 @@ public class ParallelItemItemRecommenderBuilder implements
 			Provider<Indexer<Integer>> indexProvider,
 			Provider<Map<Integer,Double>> itemMapProvider,
 			SimilarityMatrixBuilderFactory matrixFactory,
+			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
 			@ItemSimilarity Similarity<Map<Integer,Double>> itemSimilarity,
 			@Nullable @RatingNormalization Normalizer<Integer,Map<Integer,Double>> ratingNormalizer) {
+		this.progressFactory = progressFactory;
 		this.indexProvider = indexProvider;
 		this.itemMapProvider = itemMapProvider;
 		this.matrixFactory = matrixFactory;
@@ -125,14 +132,17 @@ public class ParallelItemItemRecommenderBuilder implements
 		IntegerTaskQueue queue;
 		
 		// compute the similarity matrix
+		ProgressReporter rep = null;
+		if (progressFactory != null)
+			rep = progressFactory.create("similarity");
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
 			logger.debug("Computing similarities (symmetric builder)");
 			worker = new SymmetricWorkerFactory(itemRatings, builder);
-			queue = new IntegerTaskQueue(arithSum(itemRatings.length));
+			queue = new IntegerTaskQueue(rep, arithSum(itemRatings.length));
 		} else {
 			logger.debug("Computing similarities (asymmetric builder)");
 			worker = new AsymmetricWorkerFactory(itemRatings, builder);
-			queue = new IntegerTaskQueue(itemRatings.length * itemRatings.length);
+			queue = new IntegerTaskQueue(rep, itemRatings.length * itemRatings.length);
 		}
 		
 		queue.run(worker, threadCount);

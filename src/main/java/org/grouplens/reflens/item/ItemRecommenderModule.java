@@ -32,7 +32,9 @@ import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.item.params.ThreadCount;
 import org.grouplens.reflens.util.ObjectLoader;
+import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.util.TerminalProgressReporter;
 import org.grouplens.reflens.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,7 @@ public class ItemRecommenderModule extends AbstractModule {
 	 */
 	@Override
 	protected void configure() {
+		configureUIElements();
 		configureThreadCount();
 		
 		configureSimilarityMatrix();
@@ -88,6 +91,17 @@ public class ItemRecommenderModule extends AbstractModule {
 		}
 		bind(int.class).annotatedWith(ThreadCount.class).toInstance(count);
 	}
+	
+	protected void configureUIElements() {
+		configureProgressReporter();
+	}
+
+	protected void configureProgressReporter() {
+		bind(ProgressReporterFactory.class).toProvider(
+				FactoryProvider.newFactory(ProgressReporterFactory.class, 
+						TerminalProgressReporter.class));
+	}
+
 
 	/**
 	 * 
