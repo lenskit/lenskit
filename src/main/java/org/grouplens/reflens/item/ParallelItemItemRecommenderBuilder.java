@@ -111,11 +111,14 @@ public class ParallelItemItemRecommenderBuilder implements
 	
 	@Override
 	public ItemItemRecommender<Integer,Integer> build(DataSource<UserRatingProfile<Integer,Integer>> data) {
-		logger.debug("Building model for {} ratings with {} threads", data.getRowCount(), threadCount);
+		logger.info("Building model for {} ratings with {} threads", data.getRowCount(), threadCount);
+		logger.debug("Indexing items");
 		Index<Integer> itemIndex = indexItems(data);
+		logger.debug("Normalizing and transposing ratings matrix");
 		Map<Integer,Double>[] itemRatings = buildItemRatings(itemIndex, data);
 		
 		// prepare the similarity matrix
+		logger.debug("Initializing similarity matrix");
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
 		
 		WorkerFactory<IntWorker> worker;
@@ -123,15 +126,18 @@ public class ParallelItemItemRecommenderBuilder implements
 		
 		// compute the similarity matrix
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
+			logger.debug("Computing similarities (symmetric builder)");
 			worker = new SymmetricWorkerFactory(itemRatings, builder);
 			queue = new IntegerTaskQueue(arithSum(itemRatings.length));
 		} else {
+			logger.debug("Computing similarities (asymmetric builder)");
 			worker = new AsymmetricWorkerFactory(itemRatings, builder);
 			queue = new IntegerTaskQueue(itemRatings.length * itemRatings.length);
 		}
 		
 		queue.run(worker, threadCount);
 		
+		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
 		ItemItemModel<Integer,Integer> model = new ItemItemModel<Integer,Integer>(itemIndex, matrix);
 		return new ItemItemRecommender<Integer,Integer>(model);
