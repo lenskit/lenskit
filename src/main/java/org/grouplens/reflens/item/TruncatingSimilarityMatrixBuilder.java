@@ -166,7 +166,9 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	public void put(int i1, int i2, float sim) {
 		if (i2 < 0 || i2 >= rows.length)
 			throw new IndexOutOfBoundsException();
+		// concurrent read-only array access permitted
 		ScoreQueue q = rows[i1];
+		// synchronize on this row to add item
 		synchronized (q) {
 			q.enqueue(new Score(i2, sim));
 			while (q.size() > maxNeighbors)

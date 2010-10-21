@@ -30,6 +30,7 @@ import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.item.params.ThreadCount;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.util.TypeUtils;
@@ -65,6 +66,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 */
 	@Override
 	protected void configure() {
+		configureThreadCount();
+		
 		configureSimilarityMatrix();
 		
 		configureUserNormalizer();
@@ -73,12 +76,26 @@ public class ItemRecommenderModule extends AbstractModule {
 		configureItemSimilarity();
 		configureRecommenderBuilder();
 	}
+	
+	protected void configureThreadCount() {
+		int count = Runtime.getRuntime().availableProcessors();
+		String cfg = properties.getProperty(ThreadCount.PROPERTY_NAME);
+		try {
+			if (cfg != null)
+				count = Integer.parseInt(cfg, 10);
+		} catch (NumberFormatException e) {
+			logger.warn("Invalid integer {}", cfg);
+		}
+		bind(int.class).annotatedWith(ThreadCount.class).toInstance(Runtime.getRuntime().availableProcessors());
+	}
 
 	/**
 	 * 
 	 */
-	private void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {}).to(new TypeLiteral<ItemItemRecommenderBuilder<Integer,Integer>>() {});
+	protected void configureRecommenderBuilder() {
+		bindClassFromProperty(Key.get(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}),
+				"org.grouplens.reflens.item.RecommenderBuilder",
+				ItemItemRecommenderBuilder.class);
 	}
 
 	/**
