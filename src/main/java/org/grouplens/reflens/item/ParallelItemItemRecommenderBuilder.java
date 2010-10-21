@@ -210,7 +210,7 @@ public class ParallelItemItemRecommenderBuilder implements
 		}
 
 		@Override
-		public void doJob(int job) {
+		public void doJob(long job) {
 			counter.advance(job);
 			int row = counter.getRow();
 			int col = counter.getColumn();
@@ -238,18 +238,18 @@ public class ParallelItemItemRecommenderBuilder implements
 	static class SymmetricRowCounter {
 		private int row;
 		private int column;
-		private int fullDone;
+		private long fullDone;
 		public SymmetricRowCounter() {
 			row = 0;
 			fullDone = 0;
 		}
 		
-		public void advance(int job) {
+		public void advance(long job) {
 			while (job >= fullDone + row + 1) {
 				row += 1;
 				fullDone = arithSum(row);
 			}
-			column = job - fullDone;
+			column = (int) (job - fullDone);
 		}
 		
 		public int getRow() {
@@ -287,9 +287,9 @@ public class ParallelItemItemRecommenderBuilder implements
 		}
 
 		@Override
-		public void doJob(int job) {
-			int i1 = job / itemVectors.length;
-			int i2 = job % itemVectors.length;
+		public void doJob(long job) {
+			int i1 = (int) (job / itemVectors.length);
+			int i2 = (int) (job % itemVectors.length);
 			if (i1 == i2)
 				return;
 			double sim = itemSimilarity.similarity(itemVectors[i1], itemVectors[i2]);

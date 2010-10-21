@@ -35,9 +35,10 @@ package org.grouplens.reflens.util.parallel;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A task queue that returns integer task IDs.
+ * A task queue that returns (long) integer task IDs.
  * 
  * This task queue represents tasks as consecutive, increasing integer IDs,
  * starting with 0.  All active iterators are considered threads, and each one
@@ -49,15 +50,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public class IntegerTaskQueue {
-	private final int taskCount;
-	private AtomicInteger nextTask;
+	private final long taskCount;
+	private AtomicLong nextTask;
 	
-	public IntegerTaskQueue(int ntasks) {
+	public IntegerTaskQueue(long ntasks) {
 		taskCount = ntasks;
-		nextTask = new AtomicInteger();
+		nextTask = new AtomicLong();
 	}
 	
-	public int getTaskCount() {
+	public long getTaskCount() {
 		return taskCount;
 	}
 	
@@ -91,8 +92,8 @@ public class IntegerTaskQueue {
 		@Override
 		public void run() {
 			IntWorker worker = factory.create(this);
-			for (int job = nextTask.getAndIncrement(); job < taskCount;
-					 job = nextTask.getAndIncrement()) {
+			for (long job = nextTask.getAndIncrement(); job < taskCount;
+					  job = nextTask.getAndIncrement()) {
 				worker.doJob(job);
 			}
 			worker.finish();
