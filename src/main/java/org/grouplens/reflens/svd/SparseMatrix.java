@@ -18,9 +18,9 @@
 
 package org.grouplens.reflens.svd;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatMaps;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMaps;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.util.List;
@@ -30,43 +30,43 @@ import java.util.List;
  *
  */
 public class SparseMatrix {
-	private List<Int2FloatMap> data;
+	private List<Int2DoubleMap> data;
 	
 	public SparseMatrix() {
-		data = new ObjectArrayList<Int2FloatMap>();
+		data = new ObjectArrayList<Int2DoubleMap>();
 	}
 	
 	public SparseMatrix (int nrows) {
-		data = new ObjectArrayList<Int2FloatMap>(nrows);
+		data = new ObjectArrayList<Int2DoubleMap>(nrows);
 		for (int i = 0; i < nrows; i++) {
-			Int2FloatMap m = new Int2FloatOpenHashMap();
-			m.defaultReturnValue(Float.NaN);
+			Int2DoubleMap m = new Int2DoubleOpenHashMap();
+			m.defaultReturnValue(Double.NaN);
 			data.add(m);
 		}
 	}
 	
-	public void set(int row, int col, float value) {
+	public void set(int row, int col, double value) {
 		while (row >= data.size()) {
-			Int2FloatMap m = new Int2FloatOpenHashMap();
-			m.defaultReturnValue(Float.NaN);
+			Int2DoubleMap m = new Int2DoubleOpenHashMap();
+			m.defaultReturnValue(Double.NaN);
 			data.add(m);
 		}
 		data.get(row).put(col, value);
 	}
 	
-	public float get(int row, int col) {
+	public double get(int row, int col) {
 		if (row >= data.size()) {
-			return Float.NaN;
+			return Double.NaN;
 		} else {
 			return data.get(row).get(col);
 		}
 	}
 	
-	public Int2FloatMap row(int row) {
+	public Int2DoubleMap row(int row) {
 		if (row >= data.size()) {
-			return Int2FloatMaps.EMPTY_MAP;
+			return Int2DoubleMaps.EMPTY_MAP;
 		} else {
-			return Int2FloatMaps.unmodifiable(data.get(row));
+			return Int2DoubleMaps.unmodifiable(data.get(row));
 		}
 	}
 }

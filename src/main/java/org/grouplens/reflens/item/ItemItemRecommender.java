@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens.item;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 
 import java.io.Serializable;
@@ -44,15 +44,15 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 	}
 
 	@Override
-	public ScoredObject<I> predict(U user, Map<I,Float> ratings, I item) {
-		float sum = 0;
-		float totalWeight = 0;
+	public ScoredObject<I> predict(U user, Map<I,Double> ratings, I item) {
+		double sum = 0;
+		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
 			I other = model.getItem(score.getIndex());
-			float s = score.getScore();
+			double s = score.getScore();
 			if (ratings.containsKey(other)) {
 				// FIXME this goes wacky with negative similarities
-				float rating = ratings.get(other);
+				double rating = ratings.get(other);
 				sum += rating * s;
 				totalWeight += Math.abs(s);
 			}
@@ -65,16 +65,16 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 	}
 
 	@Override
-	public List<ScoredObject<I>> recommend(U user, Map<I,Float> ratings) {
-		Int2FloatMap scores = new Int2FloatOpenHashMap();
-		Int2FloatMap weights = new Int2FloatOpenHashMap();
+	public List<ScoredObject<I>> recommend(U user, Map<I,Double> ratings) {
+		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
+		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		for (ScoredObject<I> rating: ScoredObject.wrap(ratings.entrySet())) {
 			for (IndexedItemScore score: model.getNeighbors(rating.getObject())) {
 				int jid = score.getIndex();
-				float val = score.getScore();
+				double val = score.getScore();
 				if (!ratings.containsKey(model.getItem(jid))) {
-					float s = 0.0f;
-					float w = 0.0f;
+					double s = 0.0f;
+					double w = 0.0f;
 					if (scores.containsKey(jid)) {
 						s = scores.get(jid);
 						w = weights.get(jid);
@@ -91,10 +91,10 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 		IntIterator iids = scores.keySet().iterator();
 		while (iids.hasNext()) {
 			int iid = iids.next();
-			float w = weights.get(iid);
+			double w = weights.get(iid);
 			if (w >= 0.1) {
 				I item = model.getItem(iid);
-				float pred = scores.get(iid) / w;
+				double pred = scores.get(iid) / w;
 				results.add(new ScoredObject<I>(item, pred));
 			}
 		}

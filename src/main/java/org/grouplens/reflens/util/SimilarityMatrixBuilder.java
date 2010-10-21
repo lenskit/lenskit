@@ -53,12 +53,12 @@ public interface SimilarityMatrixBuilder {
 	 * @throws IndexOutOfBoundsException
 	 *             if an index is out of bounds (<0 or >{@link #size()}).
 	 */
-	public void put(int i1, int i2, float sim);
+	public void put(int i1, int i2, double sim);
 	
 	/**
 	 * Finish building the matrix and return it.  The builder can no longer be
 	 * used after this.  This method cannot be called concurrently with
-	 * {@link #put(int, int, float)}.
+	 * {@link #put(int, int, double)}.
 	 * @return The finalized similarity matrix.
 	 */
 	public SimilarityMatrix build();

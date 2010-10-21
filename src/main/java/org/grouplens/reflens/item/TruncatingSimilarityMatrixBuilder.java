@@ -53,9 +53,9 @@ import com.google.inject.assistedinject.Assisted;
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
 	private static class Score implements IndexedItemScore, Comparable<Score> {
 		private final int index;
-		private final float score;
+		private final double score;
 		
-		public Score(int i, float s) {
+		public Score(int i, double s) {
 			index = i;
 			score = s;
 		}
@@ -64,12 +64,12 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 			return index;
 		}
 		
-		public float getScore() {
+		public double getScore() {
 			return score;
 		}
 		
 		public int compareTo(Score other) {
-			return Float.compare(score, other.score);
+			return Double.compare(score, other.score);
 		}
 	}
 	
@@ -160,10 +160,10 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.util.SimilarityMatrix#put(int, int, float)
+	 * @see org.grouplens.reflens.util.SimilarityMatrix#put(int, int, double)
 	 */
 	@Override
-	public void put(int i1, int i2, float sim) {
+	public void put(int i1, int i2, double sim) {
 		if (i2 < 0 || i2 >= rows.length)
 			throw new IndexOutOfBoundsException();
 		// concurrent read-only array access permitted

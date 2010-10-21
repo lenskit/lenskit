@@ -44,7 +44,7 @@ public interface SimilarityMatrix {
 	 * @param i
 	 *            All neighbors for item <tt>i</tt>. This is all similarity
 	 *            scores for which <tt>i</tt> was passed as the first argument
-	 *            to {@link #put(int, int, float)}.
+	 *            to {@link #put(int, int, double)}.
 	 * @return A map of neighbors to similarity scores.
 	 * @throws IndexOutOfBoundsException
 	 *             if the index is invalid.

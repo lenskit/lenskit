@@ -41,6 +41,6 @@ import java.util.Map;
  */
 public interface UserRatingProfile<U, I> {
 	public U getUser();
-	public Map<I,Float> getRatings();
-	public float getRating(I item);
+	public Map<I,Double> getRatings();
+	public double getRating(I item);
 }

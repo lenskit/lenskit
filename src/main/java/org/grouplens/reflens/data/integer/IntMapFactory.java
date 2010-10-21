@@ -18,7 +18,7 @@
 
 package org.grouplens.reflens.data.integer;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ import org.grouplens.reflens.data.generic.MapFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IntMapFactory implements MapFactory<Integer, Float> {
+public class IntMapFactory implements MapFactory<Integer, Double> {
 	private static final IntMapFactory instance = new IntMapFactory();
 	public static IntMapFactory getInstance() {
 		return instance;
@@ -38,16 +38,16 @@ public class IntMapFactory implements MapFactory<Integer, Float> {
 	 * @see org.grouplens.reflens.data.generic.MapFactory#copy(java.util.Map)
 	 */
 	@Override
-	public Map<Integer, Float> copy(Map<Integer, Float> map) {
-		return new Int2FloatOpenHashMap(map);
+	public Map<Integer, Double> copy(Map<Integer, Double> map) {
+		return new Int2DoubleOpenHashMap(map);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.data.generic.MapFactory#create()
 	 */
 	@Override
-	public Map<Integer, Float> create() {
-		return new Int2FloatOpenHashMap();
+	public Map<Integer, Double> create() {
+		return new Int2DoubleOpenHashMap();
 	}
 
 }

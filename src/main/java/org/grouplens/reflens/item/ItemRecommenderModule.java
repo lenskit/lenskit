@@ -119,8 +119,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureUserNormalizer() {
-		Key<Normalizer<Integer,Map<Integer,Float>>> rnKey =
-			Key.get(new TypeLiteral<Normalizer<Integer,Map<Integer,Float>>>() {},
+		Key<Normalizer<Integer,Map<Integer,Double>>> rnKey =
+			Key.get(new TypeLiteral<Normalizer<Integer,Map<Integer,Double>>>() {},
 					RatingNormalization.class);
 		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
 	}
@@ -159,8 +159,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		Key<Similarity<Map<Integer,Float>>> key =
-			Key.get(new TypeLiteral<Similarity<Map<Integer,Float>>>() {},
+		Key<Similarity<Map<Integer,Double>>> key =
+			Key.get(new TypeLiteral<Similarity<Map<Integer,Double>>>() {},
 					ItemSimilarity.class);
 		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
 				CosineSimilarity.class);

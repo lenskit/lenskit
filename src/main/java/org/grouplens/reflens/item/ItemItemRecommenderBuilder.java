@@ -44,18 +44,18 @@ import com.google.inject.Provider;
 public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I> {
 	
 	private Provider<Indexer<I>> indexProvider;
-	private Provider<Map<U,Float>> itemMapProvider;
+	private Provider<Map<U,Double>> itemMapProvider;
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<U, Map<I,Float>> ratingNormalizer;
-	private Similarity<Map<U,Float>> itemSimilarity;
+	private Normalizer<U, Map<I,Double>> ratingNormalizer;
+	private Similarity<Map<U,Double>> itemSimilarity;
 
 	@Inject
 	ItemItemRecommenderBuilder(
 			Provider<Indexer<I>> indexProvider,
-			Provider<Map<U,Float>> itemMapProvider,
+			Provider<Map<U,Double>> itemMapProvider,
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<Map<U,Float>> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<U,Map<I,Float>> ratingNormalizer) {
+			@ItemSimilarity Similarity<Map<U,Double>> itemSimilarity,
+			@Nullable @RatingNormalization Normalizer<U,Map<I,Double>> ratingNormalizer) {
 		this.indexProvider = indexProvider;
 		this.itemMapProvider = itemMapProvider;
 		this.matrixFactory = matrixFactory;
@@ -66,7 +66,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	@Override
 	public ItemItemRecommender<U,I> build(DataSource<UserRatingProfile<U,I>> data) {
 		Indexer<I> indexer = indexProvider.get();
-		List<Map<U,Float>> itemRatings = buildItemRatings(indexer, data);
+		List<Map<U,Double>> itemRatings = buildItemRatings(indexer, data);
 		
 		// prepare the similarity matrix
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
@@ -76,7 +76,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 			// we can compute equivalent symmetries at the same time
 			for (int i = 0; i < itemRatings.size(); i++) {
 				for (int j = i+1; j < itemRatings.size(); j++) {
-					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
+					double sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0) {
 						builder.put(i, j, sim);
 						builder.put(j, i, sim);
@@ -87,7 +87,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 			// less efficient route
 			for (int i = 0; i < itemRatings.size(); i++) {
 				for (int j = 0; j < itemRatings.size(); j++) {
-					float sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
+					double sim = itemSimilarity.similarity(itemRatings.get(i), itemRatings.get(j));
 					if (sim > 0.0)
 						builder.put(i, j, sim);
 				}
@@ -103,15 +103,15 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Map<U,Float>> buildItemRatings(Indexer<I> indexer, DataSource<UserRatingProfile<U,I>> data) {
-		ArrayList<Map<U,Float>> itemVectors = new ArrayList<Map<U,Float>>();
+	private List<Map<U,Double>> buildItemRatings(Indexer<I> indexer, DataSource<UserRatingProfile<U,I>> data) {
+		ArrayList<Map<U,Double>> itemVectors = new ArrayList<Map<U,Double>>();
 		Cursor<UserRatingProfile<U, I>> cursor = data.cursor();
 		try {
 			for (UserRatingProfile<U,I> user: cursor) {
-				Map<I,Float> ratings = user.getRatings();
+				Map<I,Double> ratings = user.getRatings();
 				if (ratingNormalizer != null)
 					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
-				for (Map.Entry<I, Float> rating: ratings.entrySet()) {
+				for (Map.Entry<I, Double> rating: ratings.entrySet()) {
 					I item = rating.getKey();
 					int idx = indexer.internObject(item);
 					if (idx >= itemVectors.size()) {

@@ -28,32 +28,32 @@ import org.grouplens.reflens.SymmetricBinaryFunction;
  *
  */
 public class CosineSimilarity<I>
-	implements Similarity<Map<I,Float>>, SymmetricBinaryFunction {
+	implements Similarity<Map<I,Double>>, SymmetricBinaryFunction {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public float similarity(Map<I,Float> vec1, Map<I,Float> vec2) {
-		float dot = 0.0f;
-		float ssq1 = 0.0f;
-		float ssq2 = 0.0f;
-		for (Map.Entry<I,Float> e: vec1.entrySet()) {
+	public double similarity(Map<I,Double> vec1, Map<I,Double> vec2) {
+		double dot = 0.0f;
+		double ssq1 = 0.0f;
+		double ssq2 = 0.0f;
+		for (Map.Entry<I,Double> e: vec1.entrySet()) {
 			I i = e.getKey();
-			float v = e.getValue();
+			double v = e.getValue();
 			if (vec2.containsKey(i)) {
 				dot += v * vec2.get(i);
 			}
 			ssq1 += v * v;
 		}
-		for (Float v: vec2.values()) {
+		for (double v: vec2.values()) {
 			ssq2 += v * v;
 		}
 		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2);
 		if (denom == 0.0f) {
-			return Float.NaN;
+			return Double.NaN;
 		} else { 
-			return dot / (float) denom;
+			return dot / (double) denom;
 		}
 	}
 

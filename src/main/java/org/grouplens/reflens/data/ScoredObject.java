@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Associate a floating-point score with an object.
+ * Associate a doubleing-point score with an object.
  * 
  * This class implements {@link Comparable}.  Instances are sorted by score.
  * 
@@ -34,19 +34,19 @@ import java.util.Map;
  */
 public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	private T object;
-	private float score;
+	private double score;
 	
 	/**
 	 * Construct a new scored object.
 	 * @param object The object to score.
 	 * @param score The object's score.
 	 */
-	public ScoredObject(T object, float score) {
+	public ScoredObject(T object, double score) {
 		this.object = object;
 		this.score = score;
 	}
 	
-	public ScoredObject(Map.Entry<? extends T, Float> entry) {
+	public ScoredObject(Map.Entry<? extends T, Double> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 	
@@ -62,7 +62,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * Get the object's score.
 	 * @return
 	 */
-	public float getScore() {
+	public double getScore() {
 		return score;
 	}
 	
@@ -72,7 +72,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * @param entries A collection of map entries.
 	 * @return A collection representing the map entries as scored objects.
 	 */
-	public static <T> Collection<ScoredObject<T>> wrap(final Collection<Map.Entry<T,Float>> entries) {
+	public static <T> Collection<ScoredObject<T>> wrap(final Collection<Map.Entry<T,Double>> entries) {
 		return new AbstractCollection<ScoredObject<T>>() {
 
 			@Override
@@ -88,7 +88,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 		};
 	}
 	
-	public static <T> Collection<ScoredObject<T>> wrap(final Map<T,Float> entries) {
+	public static <T> Collection<ScoredObject<T>> wrap(final Map<T,Double> entries) {
 		return wrap(entries.entrySet());
 	}
 	
@@ -100,7 +100,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * @param entries A collection of map entries.
 	 * @return A collection representing the map entries as scored objects.
 	 */
-	public static <T> Collection<ScoredObject<T>> fastWrap(final Collection<Map.Entry<T,Float>> entries) {
+	public static <T> Collection<ScoredObject<T>> fastWrap(final Collection<Map.Entry<T,Double>> entries) {
 		return new AbstractCollection<ScoredObject<T>>() {
 
 			@Override
@@ -116,13 +116,13 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 		};
 	}
 	
-	public static <T> Collection<ScoredObject<T>> fastWrap(final Map<T,Float> entries) {
+	public static <T> Collection<ScoredObject<T>> fastWrap(final Map<T,Double> entries) {
 		return fastWrap(entries.entrySet());
 	}
 	
 	private static class IteratorWrapper<I> implements Iterator<ScoredObject<I>> {
-		private final Iterator<Map.Entry<I, Float>> iter;
-		public IteratorWrapper(Iterator<Map.Entry<I, Float>> iter) {
+		private final Iterator<Map.Entry<I, Double>> iter;
+		public IteratorWrapper(Iterator<Map.Entry<I, Double>> iter) {
 			this.iter = iter;
 		}
 		
@@ -130,7 +130,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 			return iter.hasNext();
 		}
 		public ScoredObject<I> next() {
-			Map.Entry<I, Float> next = iter.next();
+			Map.Entry<I, Double> next = iter.next();
 			return new ScoredObject<I>(next);
 		}
 		public void remove() {
@@ -139,10 +139,10 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	}
 	
 	private static class FastIteratorWrapper<I> implements Iterator<ScoredObject<I>> {
-		private final Iterator<Map.Entry<I, Float>> iter;
-		private ScoredObject<I> obj = new ScoredObject<I>(null, Float.NaN);
+		private final Iterator<Map.Entry<I, Double>> iter;
+		private ScoredObject<I> obj = new ScoredObject<I>(null, Double.NaN);
 		
-		public FastIteratorWrapper(Iterator<Map.Entry<I, Float>> iter) {
+		public FastIteratorWrapper(Iterator<Map.Entry<I, Double>> iter) {
 			this.iter = iter;
 		}
 		
@@ -150,7 +150,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 			return iter.hasNext();
 		}
 		public ScoredObject<I> next() {
-			Map.Entry<I, Float> next = iter.next();
+			Map.Entry<I, Double> next = iter.next();
 			obj.object = next.getKey();
 			obj.score = next.getValue();
 			return obj;
@@ -162,7 +162,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	
 	@Override
 	public int compareTo(ScoredObject<T> other) {
-		return Float.compare(score, other.getScore());
+		return Double.compare(score, other.getScore());
 	}
 	
 	@Override

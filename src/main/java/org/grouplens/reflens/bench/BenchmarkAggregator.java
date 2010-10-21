@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,9 +45,9 @@ public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
 	private RecommenderBuilder<Integer,Integer> factory;
 	private int numRuns = 0;
-	private float tMAE = 0.0f;
-	private float tRMSE = 0.0f;
-	private float tCov = 0.0f;
+	private double tMAE = 0.0f;
+	private double tRMSE = 0.0f;
+	private double tCov = 0.0f;
 	private double holdout = 0.33333333;
 	
 	public BenchmarkAggregator(RecommenderBuilder<Integer,Integer> factory) {
@@ -85,8 +85,8 @@ public class BenchmarkAggregator {
 		RatingPredictor<Integer, Integer> rec = engine.getRatingPredictor();
 		
 		logger.debug("Testing model with {} users", testUsers.size());
-		float accumErr = 0.0f;
-		float accumSqErr = 0.0f;
+		double accumErr = 0.0f;
+		double accumSqErr = 0.0f;
 		int nitems = 0;
 		int ngood = 0;
 		for (UserRatingProfile<Integer,Integer> user: testUsers) {
@@ -95,7 +95,7 @@ public class BenchmarkAggregator {
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratings);
-			Int2FloatMap queryRatings = new Int2FloatOpenHashMap();
+			Int2DoubleMap queryRatings = new Int2DoubleOpenHashMap();
 			for (int i = 0; i < midpt; i++) {
 				ScoredObject<Integer> rating = ratings.get(i);
 				queryRatings.put((int) rating.getObject(), rating.getScore());
@@ -105,7 +105,7 @@ public class BenchmarkAggregator {
 				ScoredObject<Integer> prediction = rec.predict(user.getUser(), queryRatings, iid);
 				nitems++;
 				if (prediction != null) {
-					float err = prediction.getScore() - user.getRating(iid);
+					double err = prediction.getScore() - user.getRating(iid);
 					ngood++;
 					accumErr += Math.abs(err);
 					accumSqErr += err * err;
@@ -118,7 +118,7 @@ public class BenchmarkAggregator {
 		numRuns++;
 		tMAE += accumErr / ngood;
 		tRMSE += Math.sqrt(accumSqErr / ngood);
-		tCov += (float) ngood / nitems;
+		tCov += (double) ngood / nitems;
 	}
 	
 	public void printResults() {

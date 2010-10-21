@@ -20,5 +20,5 @@ package org.grouplens.reflens.util;
 
 public interface IndexedItemScore {
 	public int getIndex();
-	public float getScore();
+	public double getScore();
 }

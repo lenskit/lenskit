@@ -18,31 +18,31 @@
 
 package org.grouplens.reflens.data.generic;
 
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 import java.util.Map;
 
 /**
- * Create generic maps from keys to floats.
+ * Create generic maps from keys to doubles.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GenericMapFactory<K> implements MapFactory<K, Float> {
+public class GenericMapFactory<K> implements MapFactory<K, Double> {
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.data.generic.MapFactory#copy(java.util.Map)
 	 */
 	@Override
-	public Map<K, Float> copy(Map<K, Float> map) {
-		return new Object2FloatOpenHashMap<K>(map);
+	public Map<K, Double> copy(Map<K, Double> map) {
+		return new Object2DoubleOpenHashMap<K>(map);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.data.generic.MapFactory#create()
 	 */
 	@Override
-	public Map<K, Float> create() {
-		return new Object2FloatOpenHashMap<K>();
+	public Map<K, Double> create() {
+		return new Object2DoubleOpenHashMap<K>();
 	}
 
 }

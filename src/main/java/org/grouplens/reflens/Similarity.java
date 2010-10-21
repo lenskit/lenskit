@@ -31,5 +31,5 @@ public interface Similarity<V> {
 	 * @param vec2
 	 * @return The similarity, in the range [-1,1].
 	 */
-	float similarity(V vec1, V vec2);
+	double similarity(V vec1, V vec2);
 }

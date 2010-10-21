@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -132,7 +132,7 @@ public final class BenchmarkRunner {
 
 	private List<UserRatingProfile<Integer, Integer>> readRatingsData()
 			throws FileNotFoundException {
-		Int2ObjectMap<Int2FloatMap> users = new Int2ObjectOpenHashMap<Int2FloatMap>();
+		Int2ObjectMap<Int2DoubleMap> users = new Int2ObjectOpenHashMap<Int2DoubleMap>();
 		Pattern splitter = Pattern.compile(Pattern
 				.quote(options.getDelimiter()));
 		for (String file : options.getFiles()) {
@@ -145,12 +145,12 @@ public final class BenchmarkRunner {
 				}
 				int uid = Integer.parseInt(fields[0]);
 				int iid = Integer.parseInt(fields[1]);
-				float rating = Float.parseFloat(fields[2]);
-				Int2FloatMap history = null;
+				double rating = Double.parseDouble(fields[2]);
+				Int2DoubleMap history = null;
 				if (users.containsKey(uid)) {
 					history = users.get(uid);
 				} else {
-					history = new Int2FloatOpenHashMap();
+					history = new Int2DoubleOpenHashMap();
 					users.put(uid, history);
 				}
 				history.put(iid, rating);
@@ -159,7 +159,7 @@ public final class BenchmarkRunner {
 		}
 		List<UserRatingProfile<Integer, Integer>> profiles =
 			new ArrayList<UserRatingProfile<Integer,Integer>>();
-		for (Map.Entry<Integer, Int2FloatMap> user: users.entrySet()) {
+		for (Map.Entry<Integer, Int2DoubleMap> user: users.entrySet()) {
 			UserRatingProfile<Integer,Integer> p =
 				new BasicUserRatingProfile<Integer, Integer>(user);
 			profiles.add(p);

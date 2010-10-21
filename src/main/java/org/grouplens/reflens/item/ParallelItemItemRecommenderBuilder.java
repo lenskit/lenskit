@@ -72,20 +72,20 @@ public class ParallelItemItemRecommenderBuilder implements
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private Provider<Indexer<Integer>> indexProvider;
-	private Provider<Map<Integer,Float>> itemMapProvider;
+	private Provider<Map<Integer,Double>> itemMapProvider;
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<Integer, Map<Integer,Float>> ratingNormalizer;
-	private Similarity<Map<Integer,Float>> itemSimilarity;
+	private Normalizer<Integer, Map<Integer,Double>> ratingNormalizer;
+	private Similarity<Map<Integer,Double>> itemSimilarity;
 	private final int threadCount;
 
 	@Inject
 	public ParallelItemItemRecommenderBuilder(
 			Provider<Indexer<Integer>> indexProvider,
-			Provider<Map<Integer,Float>> itemMapProvider,
+			Provider<Map<Integer,Double>> itemMapProvider,
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity Similarity<Map<Integer,Float>> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<Integer,Map<Integer,Float>> ratingNormalizer) {
+			@ItemSimilarity Similarity<Map<Integer,Double>> itemSimilarity,
+			@Nullable @RatingNormalization Normalizer<Integer,Map<Integer,Double>> ratingNormalizer) {
 		this.indexProvider = indexProvider;
 		this.itemMapProvider = itemMapProvider;
 		this.matrixFactory = matrixFactory;
@@ -113,7 +113,7 @@ public class ParallelItemItemRecommenderBuilder implements
 	public ItemItemRecommender<Integer,Integer> build(DataSource<UserRatingProfile<Integer,Integer>> data) {
 		logger.debug("Building model for {} ratings with {} threads", data.getRowCount(), threadCount);
 		Index<Integer> itemIndex = indexItems(data);
-		Map<Integer,Float>[] itemRatings = buildItemRatings(itemIndex, data);
+		Map<Integer,Double>[] itemRatings = buildItemRatings(itemIndex, data);
 		
 		// prepare the similarity matrix
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
@@ -145,8 +145,8 @@ public class ParallelItemItemRecommenderBuilder implements
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
-	private Map<Integer,Float>[] buildItemRatings(final Index<Integer> index, DataSource<UserRatingProfile<Integer,Integer>> data) {
-		final Map<Integer,Float>[] itemVectors = new Map[index.getObjectCount()];
+	private Map<Integer,Double>[] buildItemRatings(final Index<Integer> index, DataSource<UserRatingProfile<Integer,Integer>> data) {
+		final Map<Integer,Double>[] itemVectors = new Map[index.getObjectCount()];
 		for (int i = 0; i < itemVectors.length; i++) {
 			itemVectors[i] = itemMapProvider.get();
 		}
@@ -162,14 +162,14 @@ public class ParallelItemItemRecommenderBuilder implements
 					return new ObjectWorker<UserRatingProfile<Integer, Integer>>() {
 						@Override
 						public void doJob(UserRatingProfile<Integer, Integer> profile) {
-							Map<Integer,Float> ratings = profile.getRatings();
+							Map<Integer,Double> ratings = profile.getRatings();
 							if (ratingNormalizer != null)
 								ratings = ratingNormalizer.normalize(profile.getUser(), ratings);
-							for (Map.Entry<Integer, Float> rating: ratings.entrySet()) {
+							for (Map.Entry<Integer, Double> rating: ratings.entrySet()) {
 								int item = rating.getKey();
 								int idx = index.getIndex(item);
 								assert idx >= 0;
-								Map<Integer,Float> v = itemVectors[idx];
+								Map<Integer,Double> v = itemVectors[idx];
 								synchronized (v) {
 									v.put(profile.getUser(), rating.getValue());
 								}
@@ -187,11 +187,11 @@ public class ParallelItemItemRecommenderBuilder implements
 	}
 	
 	private class SymmetricSimWorker implements IntWorker {
-		private final Map<Integer,Float>[] itemVectors;
+		private final Map<Integer,Double>[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
 		private final SymmetricRowCounter counter;
 		
-		public SymmetricSimWorker(Map<Integer,Float>[] items, SimilarityMatrixBuilder builder) {
+		public SymmetricSimWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
 			counter = new SymmetricRowCounter();
@@ -205,7 +205,7 @@ public class ParallelItemItemRecommenderBuilder implements
 			if (row == col)
 				return;
 			
-			float sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
+			double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
 			builder.put(row, col, sim);
 			builder.put(col, row, sim);
 		}
@@ -251,10 +251,10 @@ public class ParallelItemItemRecommenderBuilder implements
 	
 	public class SymmetricWorkerFactory implements WorkerFactory<IntWorker> {
 
-		private final Map<Integer, Float>[] itemVector;
+		private final Map<Integer, Double>[] itemVector;
 		private final SimilarityMatrixBuilder builder;
 		
-		public SymmetricWorkerFactory(Map<Integer,Float>[] items, SimilarityMatrixBuilder builder) {
+		public SymmetricWorkerFactory(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
 		}
@@ -266,10 +266,10 @@ public class ParallelItemItemRecommenderBuilder implements
 	}
 	
 	private class AsymmetricSimWorker implements IntWorker {
-		private final Map<Integer,Float>[] itemVectors;
+		private final Map<Integer,Double>[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
 		
-		public AsymmetricSimWorker(Map<Integer,Float>[] items, SimilarityMatrixBuilder builder) {
+		public AsymmetricSimWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
 		}
@@ -280,7 +280,7 @@ public class ParallelItemItemRecommenderBuilder implements
 			int i2 = job % itemVectors.length;
 			if (i1 == i2)
 				return;
-			float sim = itemSimilarity.similarity(itemVectors[i1], itemVectors[i2]);
+			double sim = itemSimilarity.similarity(itemVectors[i1], itemVectors[i2]);
 			builder.put(i1, i2, sim);
 		}
 
@@ -291,10 +291,10 @@ public class ParallelItemItemRecommenderBuilder implements
 	
 	public class AsymmetricWorkerFactory implements WorkerFactory<IntWorker> {
 
-		private final Map<Integer, Float>[] itemVector;
+		private final Map<Integer, Double>[] itemVector;
 		private final SimilarityMatrixBuilder builder;
 		
-		public AsymmetricWorkerFactory(Map<Integer,Float>[] items, SimilarityMatrixBuilder builder) {
+		public AsymmetricWorkerFactory(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
 		}

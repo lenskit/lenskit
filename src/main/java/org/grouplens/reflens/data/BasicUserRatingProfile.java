@@ -5,28 +5,28 @@ import java.util.Map;
 public class BasicUserRatingProfile<U, I> implements UserRatingProfile<U, I> {
 	
 	private U user;
-	private Map<I, Float> ratings;
+	private Map<I, Double> ratings;
 
-	public BasicUserRatingProfile(U user, Map<I,Float> ratings) {
+	public BasicUserRatingProfile(U user, Map<I,Double> ratings) {
 		this.user = user;
 		this.ratings = ratings;
 	}
 	
-	public BasicUserRatingProfile(Map.Entry<? extends U, ? extends Map<I,Float>> entry) {
+	public BasicUserRatingProfile(Map.Entry<? extends U, ? extends Map<I,Double>> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 
 	@Override
-	public float getRating(I item) {
-		Float r = ratings.get(item);
+	public double getRating(I item) {
+		Double r = ratings.get(item);
 		if (r == null)
-			return Float.NaN;
+			return Double.NaN;
 		else
 			return r;
 	}
 
 	@Override
-	public Map<I,Float> getRatings() {
+	public Map<I,Double> getRatings() {
 		return ratings;
 	}
 

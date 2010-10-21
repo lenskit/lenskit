@@ -18,9 +18,9 @@
 
 package org.grouplens.reflens.svd;
 
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import it.unimi.dsi.fastutil.floats.FloatArrays;
-import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,30 +61,30 @@ import com.google.inject.Provider;
  */
 public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor<U,I> {
 	private static Logger logger = LoggerFactory.getLogger(FunkSVD.class);
-	private static final float DEFAULT_FEATURE_VALUE = 0.1f;
-	private static final float FEATURE_EPSILON = 0.0001f;
-	private static final float MIN_EPOCHS = 50;
-	private static final float TRAINING_BLEND = 0.015f; // Funk's K
+	private static final double DEFAULT_FEATURE_VALUE = 0.1f;
+	private static final double FEATURE_EPSILON = 0.0001f;
+	private static final double MIN_EPOCHS = 50;
+	private static final double TRAINING_BLEND = 0.015f; // Funk's K
 	
-	private final float learningRate;
+	private final double learningRate;
 	private final int numFeatures;
 	
 	private Index<U> userIndexer;
 	private Indexer<I> itemIndexer;
-	private Provider<Map<I,Float>> itemMapProvider;
+	private Provider<Map<I,Double>> itemMapProvider;
 
-	private float userFeatures[][];
-	private float itemFeatures[][];
-	private float singularValues[];
+	private double userFeatures[][];
+	private double itemFeatures[][];
+	private double singularValues[];
 	
-	private FloatList itemAverages;
-	private FloatList userAvgOffsets;
+	private DoubleList itemAverages;
+	private DoubleList userAvgOffsets;
 	
 	@Inject
 	FunkSVD(Index<U> userIndexer, Indexer<I> itemIndexer,
-			Provider<Map<I,Float>> itemMapProvider, 
+			Provider<Map<I,Double>> itemMapProvider, 
 			@FeatureCount int features,
-			@LearningRate float lrate) {
+			@LearningRate double lrate) {
 		learningRate = lrate;
 		numFeatures = features;
 		this.userIndexer = userIndexer;
@@ -93,37 +93,37 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	}
 	
 	private void computeItemAverages(Collection<Rating> ratings) {
-		itemAverages = new FloatArrayList();
+		itemAverages = new DoubleArrayList();
 		int ircounts[] = new int[itemIndexer.getObjectCount()];
 		itemAverages.size(itemIndexer.getObjectCount());
-		float globalAvg = 0.0f;
+		double globalAvg = 0.0f;
 		for (Rating r: ratings) {
-			itemAverages.set(r.item, itemAverages.getFloat(r.item) + r.value);
+			itemAverages.set(r.item, itemAverages.getDouble(r.item) + r.value);
 			ircounts[r.item]++;
 			globalAvg += r.value;
 		}
 		globalAvg /= ratings.size();
 		for (int i = 0; i < ircounts.length; i++) {
-			float avg = globalAvg * 25 + itemAverages.get(i);
+			double avg = globalAvg * 25 + itemAverages.get(i);
 			avg = avg / (ircounts[i] + 25);
 			itemAverages.set(i, avg);
 		}
 	}
 	
 	private void computeUserAverageOffsets(Collection<Rating> ratings) {
-		userAvgOffsets = new FloatArrayList();
+		userAvgOffsets = new DoubleArrayList();
 		int urcounts[] = new int[userIndexer.getObjectCount()];
 		userAvgOffsets.size(userIndexer.getObjectCount());
-		float globalAvg = 0.0f;
+		double globalAvg = 0.0f;
 		for (Rating r: ratings) {
-			float offset = r.value - itemAverages.get(r.item);
-			userAvgOffsets.set(r.user, userAvgOffsets.getFloat(r.user) + offset);
+			double offset = r.value - itemAverages.get(r.item);
+			userAvgOffsets.set(r.user, userAvgOffsets.getDouble(r.user) + offset);
 			urcounts[r.user]++;
 			globalAvg += offset;
 		}
 		globalAvg /= ratings.size();
 		for (int i = 0; i < urcounts.length; i++) {
-			float avg = globalAvg * 25 + userAvgOffsets.get(i);
+			double avg = globalAvg * 25 + userAvgOffsets.get(i);
 			avg = avg / (urcounts[i] + 25);
 			userAvgOffsets.set(i, avg);
 		}
@@ -151,34 +151,34 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		computeItemAverages(ratings);
 		computeUserAverageOffsets(ratings);
 		
-		userFeatures = new float[numFeatures][userIndexer.getObjectCount()];
-		itemFeatures = new float[numFeatures][itemIndexer.getObjectCount()];
+		userFeatures = new double[numFeatures][userIndexer.getObjectCount()];
+		itemFeatures = new double[numFeatures][itemIndexer.getObjectCount()];
 		for (int feature = 0; feature < numFeatures; feature++) {
 			trainFeature(feature, ratings);
 		}
 		
 		logger.debug("Extracting singular values");
-		singularValues = new float[numFeatures];
+		singularValues = new double[numFeatures];
 		for (int feature = 0; feature < numFeatures; feature++) {
-			float ussq = 0;
+			double ussq = 0;
 			int numUsers = userIndexer.getObjectCount();
 			for (int i = 0; i < numUsers; i++) {
-				float uf = userFeatures[feature][i];
+				double uf = userFeatures[feature][i];
 				ussq += uf * uf;
 			}
-			float unrm = (float) Math.sqrt(ussq);
+			double unrm = (double) Math.sqrt(ussq);
 			if (unrm > 0.0001f) {
 				for (int i = 0; i < numUsers; i++) {
 					userFeatures[feature][i] /= unrm;
 				}
 			}
-			float issq = 0;
+			double issq = 0;
 			int numItems = itemIndexer.getObjectCount();
 			for (int i = 0; i < numItems; i++) {
-				float fv = itemFeatures[feature][i];
+				double fv = itemFeatures[feature][i];
 				issq += fv * fv;
 			}
-			float inrm = (float) Math.sqrt(issq);
+			double inrm = (double) Math.sqrt(issq);
 			if (inrm > 0.0001f) {
 				for (int i = 0; i < numItems; i++) {
 					itemFeatures[feature][i] /= inrm;
@@ -189,34 +189,34 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	}
 	
 	private void trainFeature(int feature, Collection<Rating> ratings) {
-		float ufv[] = userFeatures[feature];
-		float ifv[] = itemFeatures[feature];
-		FloatArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
-		FloatArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
+		double ufv[] = userFeatures[feature];
+		double ifv[] = itemFeatures[feature];
+		DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
+		DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
 				
 		logger.debug("Training feature {}", feature);
 		
-		float rmse = 2.0f, oldRmse = 0.0f;
+		double rmse = 2.0f, oldRmse = 0.0f;
 		int epoch;
 		for (epoch = 0; epoch < MIN_EPOCHS || rmse < oldRmse - FEATURE_EPSILON; epoch++) {
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
 			oldRmse = rmse;
-			float ssq = 0;
+			double ssq = 0;
 			for (Rating r: ratings) {
-				float err = r.value - r.predict(feature);
+				double err = r.value - r.predict(feature);
 				ssq += err * err;
 				
 				// save values
-				float ouf = ufv[r.user];
-				float oif = ifv[r.item];
+				double ouf = ufv[r.user];
+				double oif = ifv[r.item];
 				// update user feature preference
-				float udelta = err * oif - TRAINING_BLEND * ouf;
+				double udelta = err * oif - TRAINING_BLEND * ouf;
 				ufv[r.user] += udelta * learningRate;
 				// update item feature relevance
-				float idelta = err * ouf - TRAINING_BLEND * oif;
+				double idelta = err * ouf - TRAINING_BLEND * oif;
 				ifv[r.item] += idelta * learningRate;
 			}
-			rmse = (float) Math.sqrt(ssq / ratings.size());
+			rmse = (double) Math.sqrt(ssq / ratings.size());
 			logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
 		}
 		
@@ -229,10 +229,10 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	private class Rating {
 		public final int user;
 		public final int item;
-		public final float value;
-		private float cachedValue = Float.NaN;
+		public final double value;
+		private double cachedValue = Double.NaN;
 		
-		public Rating(int user, int item, float value) {
+		public Rating(int user, int item, double value) {
 			this.user = user;
 			this.item = item;
 			this.value = value;
@@ -244,10 +244,10 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		 * @param feature
 		 * @return
 		 */
-		public float predict(int feature) {
-			float sum;
-			if (Float.isNaN(cachedValue))
-				sum = itemAverages.getFloat(item) + userAvgOffsets.getFloat(user);
+		public double predict(int feature) {
+			double sum;
+			if (Double.isNaN(cachedValue))
+				sum = itemAverages.getDouble(item) + userAvgOffsets.getDouble(user);
 			else
 				sum = cachedValue;
 			
@@ -266,14 +266,14 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		}
 	}
 	
-	protected float[] foldIn(Map<I,Float> ratings, float avgDeviation) {
-		float featurePrefs[] = new float[numFeatures];
-		FloatArrays.fill(featurePrefs, 0.0f);
+	protected double[] foldIn(Map<I,Double> ratings, double avgDeviation) {
+		double featurePrefs[] = new double[numFeatures];
+		DoubleArrays.fill(featurePrefs, 0.0f);
 		
 		for (ScoredObject<I> rating: ScoredObject.fastWrap(ratings)) {
 			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
-			float r = rating.getScore() - avgDeviation - itemAverages.get(iid);
+			double r = rating.getScore() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
 				featurePrefs[f] += r * itemFeatures[f][iid] / singularValues[f];
 			}
@@ -282,13 +282,13 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		return featurePrefs;
 	}
 	
-	protected float averageDeviation(Map<I,Float> ratings) {
-		float dev = 0.0f;
+	protected double averageDeviation(Map<I,Double> ratings) {
+		double dev = 0.0f;
 		int n = 0;
 		for (ScoredObject<I> rating: ScoredObject.fastWrap(ratings)) {
 			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
-			dev += rating.getScore() - itemAverages.getFloat(iid);
+			dev += rating.getScore() - itemAverages.getDouble(iid);
 			n++;
 		}
 		if (n == 0)
@@ -301,30 +301,30 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	 * @see org.grouplens.reflens.Recommender#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
-	public ScoredObject<I> predict(U user, Map<I, Float> ratings, I item) {
-		float dev = averageDeviation(ratings);
-		float uprefs[] = foldIn(ratings, dev);
+	public ScoredObject<I> predict(U user, Map<I, Double> ratings, I item) {
+		double dev = averageDeviation(ratings);
+		double uprefs[] = foldIn(ratings, dev);
 		int iid = itemIndexer.getIndex(item);
 		if (iid < 0)
 			return null;
 		
-		float score = itemAverages.get(iid) + dev;
+		double score = itemAverages.get(iid) + dev;
 		for (int f = 0; f < numFeatures; f++) {
 			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 		}
 		return new ScoredObject<I>(item, score);
 	}
 	
-	public Map<I,Float> predict(UserRatingProfile<U,I> user, Set<I> items) {
-		float adev = averageDeviation(user.getRatings());
-		float uprefs[] = foldIn(user.getRatings(), adev);
+	public Map<I,Double> predict(UserRatingProfile<U,I> user, Set<I> items) {
+		double adev = averageDeviation(user.getRatings());
+		double uprefs[] = foldIn(user.getRatings(), adev);
 
-		Map<I,Float> results = itemMapProvider.get();
+		Map<I,Double> results = itemMapProvider.get();
 		
 		for (I item: items) {
 			int iid = itemIndexer.getIndex(item);
 			if (iid < 0) continue;
-			float score = itemAverages.get(iid) + adev;
+			double score = itemAverages.get(iid) + adev;
 			for (int f = 0; f < numFeatures; f++) {
 				score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 			}

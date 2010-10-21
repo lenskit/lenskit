@@ -18,7 +18,7 @@
 
 package org.grouplens.reflens.data.integer;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public class IntDataModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		bind(new TypeLiteral<Indexer<Integer>>() {}).to(IntIndexer.class);
-		bind(new TypeLiteral<Map<Integer,Float>>(){}).to(Int2FloatOpenHashMap.class);
+		bind(new TypeLiteral<Map<Integer,Double>>(){}).to(Int2DoubleOpenHashMap.class);
 	}
 
 }
