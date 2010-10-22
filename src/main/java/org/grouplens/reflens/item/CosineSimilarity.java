@@ -22,6 +22,9 @@ import java.util.Map;
 
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
+import org.grouplens.reflens.item.params.SimilarityDamper;
+
+import com.google.inject.Inject;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -29,6 +32,17 @@ import org.grouplens.reflens.SymmetricBinaryFunction;
  */
 public class CosineSimilarity<I>
 	implements Similarity<Map<I,Double>>, SymmetricBinaryFunction {
+	
+	private final double dampingFactor;
+	
+	public CosineSimilarity() {
+		this(0.0);
+	}
+	
+	@Inject
+	public CosineSimilarity(@SimilarityDamper double dampingFactor) {
+		this.dampingFactor = dampingFactor;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
@@ -49,7 +63,7 @@ public class CosineSimilarity<I>
 		for (double v: vec2.values()) {
 			ssq2 += v * v;
 		}
-		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2);
+		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2) + dampingFactor;
 		if (denom == 0.0f) {
 			return Double.NaN;
 		} else { 

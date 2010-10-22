@@ -30,6 +30,7 @@ import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.item.params.SimilarityDamper;
 import org.grouplens.reflens.item.params.ThreadCount;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
@@ -73,7 +74,8 @@ public class ItemRecommenderModule extends AbstractModule {
 		configureSimilarityMatrix();
 		
 		configureUserNormalizer();
-		configureNeighborhoodSize();
+		
+		configureParameters();
 
 		configureItemSimilarity();
 		configureRecommenderBuilder();
@@ -89,6 +91,11 @@ public class ItemRecommenderModule extends AbstractModule {
 			logger.warn("Invalid integer {}", cfg);
 		}
 		bind(int.class).annotatedWith(ThreadCount.class).toInstance(count);
+	}
+	
+	protected void configureParameters() {
+		configureNeighborhoodSize();
+		configureSimilarityDamper();
 	}
 
 	/**
@@ -115,6 +122,11 @@ public class ItemRecommenderModule extends AbstractModule {
 	protected void configureNeighborhoodSize() {
 		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(
 				Integer.parseInt(properties.getProperty(NeighborhoodSize.PROPERTY_NAME, "100"), 10));
+	}
+	
+	protected void configureSimilarityDamper() {
+		bind(int.class).annotatedWith(SimilarityDamper.class).toInstance(
+				Integer.parseInt(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100"), 10));
 	}
 
 	/**
