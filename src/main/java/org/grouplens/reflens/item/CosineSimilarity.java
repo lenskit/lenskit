@@ -18,6 +18,11 @@
 
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+
 import java.util.Map;
 
 import org.grouplens.reflens.OptimizableMapSimilarity;
@@ -50,6 +55,9 @@ public class CosineSimilarity<I>
 	 */
 	@Override
 	public double similarity(Map<I,Double> vec1, Map<I,Double> vec2) {
+		if (vec1 instanceof Int2DoubleMap && vec2 instanceof Int2DoubleMap)
+			return fastSimilarity((Int2DoubleMap) vec1, (Int2DoubleMap) vec2);
+		
 		double dot = 0.0f;
 		double ssq1 = 0.0f;
 		double ssq2 = 0.0f;
@@ -64,6 +72,41 @@ public class CosineSimilarity<I>
 		for (double v: vec2.values()) {
 			ssq2 += v * v;
 		}
+		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2) + dampingFactor;
+		if (denom == 0.0f) {
+			return Double.NaN;
+		} else { 
+			return dot / (double) denom;
+		}
+	}
+	
+	private final double fastSimilarity(Int2DoubleMap vec1, Int2DoubleMap vec2) {
+		double dot = 0.0f;
+		double ssq1 = 0.0f;
+		double ssq2 = 0.0f;
+		
+		ObjectSet<Int2DoubleMap.Entry> v1entries = vec1.int2DoubleEntrySet();
+		ObjectIterator<Int2DoubleMap.Entry> v1iter;
+		try {
+			v1iter = ((Int2DoubleMap.FastEntrySet) v1entries).fastIterator();
+		} catch (ClassCastException e) {
+			v1iter = v1entries.iterator();
+		}
+		while (v1iter.hasNext()) {
+			Int2DoubleMap.Entry e = v1iter.next();
+			int k = e.getIntKey();
+			double v = e.getDoubleValue();
+			if (vec2.containsKey(k)) {
+				dot += v * vec2.get(k);
+			}
+			ssq1 += v * v;
+		}
+		DoubleIterator v2iter = vec2.values().iterator();
+		while (v2iter.hasNext()) {
+			double v = v2iter.nextDouble();
+			ssq2 += v * v;
+		}
+		
 		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2) + dampingFactor;
 		if (denom == 0.0f) {
 			return Double.NaN;
