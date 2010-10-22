@@ -125,8 +125,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	}
 	
 	protected void configureSimilarityDamper() {
-		bind(int.class).annotatedWith(SimilarityDamper.class).toInstance(
-				Integer.parseInt(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100"), 10));
+		bind(double.class).annotatedWith(SimilarityDamper.class).toInstance(
+				Double.parseDouble(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100")));
 	}
 
 	/**
