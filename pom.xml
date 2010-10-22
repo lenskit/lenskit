@@ -7,6 +7,16 @@
   <name>RefLens</name>
   <description>Reference implementation of collaborative filtering
   recommender systems.</description>
+  <url>http://www-users.cs.umn.edu/~ekstrand/reflens</url>
+  <licenses>
+    <license>
+      <name>GPLv2+</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>Linking against Apache Public License version 2.0
+      software is permitted.</comments>
+    </license>
+  </licenses>
   <issueManagement>
     <system>BitBucket</system>
     <url>http://bitbucket.org/elehack/reflens-dev/issues</url>
