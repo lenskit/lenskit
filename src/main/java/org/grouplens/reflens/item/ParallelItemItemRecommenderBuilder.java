@@ -32,11 +32,20 @@
  */
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
+
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.Normalizer;
+import org.grouplens.reflens.OptimizableMapSimilarity;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
@@ -82,6 +91,7 @@ public class ParallelItemItemRecommenderBuilder implements
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	private final int threadCount;
+	private Int2ObjectMap<IntSet> userItemMap;
 
 	@Inject
 	public ParallelItemItemRecommenderBuilder(
@@ -90,7 +100,7 @@ public class ParallelItemItemRecommenderBuilder implements
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity Similarity<Map<Integer,Double>> itemSimilarity,
+			@ItemSimilarity OptimizableMapSimilarity<Integer,Double> itemSimilarity,
 			@Nullable @RatingNormalization Normalizer<Integer,Map<Integer,Double>> ratingNormalizer) {
 		this.progressFactory = progressFactory;
 		this.indexProvider = indexProvider;
@@ -102,12 +112,16 @@ public class ParallelItemItemRecommenderBuilder implements
 	}
 	
 	private Index<Integer> indexItems(DataSource<UserRatingProfile<Integer, Integer>> data) {
+		userItemMap = new Int2ObjectOpenHashMap<IntSet>();
 		Indexer<Integer> indexer = indexProvider.get();
 		Cursor<UserRatingProfile<Integer, Integer>> cursor = data.cursor();
 		try {
 			for (UserRatingProfile<Integer,Integer> profile: cursor) {
+				IntSet s = new IntOpenHashSet(97);
+				userItemMap.put(profile.getUser(), s);
 				for (Integer item: profile.getRatings().keySet()) {
-					indexer.internObject(item);
+					int idx = indexer.internObject(item);
+					s.add(idx);
 				}
 			}
 		} finally {
@@ -128,26 +142,19 @@ public class ParallelItemItemRecommenderBuilder implements
 		logger.debug("Initializing similarity matrix");
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
 		
-		WorkerFactory<IntWorker> worker;
-		IntegerTaskQueue queue;
-		
 		// compute the similarity matrix
 		ProgressReporter rep = null;
 		if (progressFactory != null)
 			rep = progressFactory.create("similarity");
+		WorkerFactory<IntWorker> worker = new SimilarityWorkerFactory(itemRatings, builder);
 		if (itemSimilarity instanceof SymmetricBinaryFunction) {
-			logger.debug("Computing similarities (symmetric builder)");
-			worker = new SymmetricWorkerFactory(itemRatings, builder);
 			if (rep != null) {
 				rep = new ExpandedProgressReporter(rep);
 			}
-			queue = new IntegerTaskQueue(rep, itemRatings.length);
-		} else {
-			logger.debug("Computing similarities (asymmetric builder)");
-			worker = new AsymmetricWorkerFactory(itemRatings, builder);
-			queue = new IntegerTaskQueue(rep, itemRatings.length * itemRatings.length);
 		}
+		IntegerTaskQueue queue = new IntegerTaskQueue(rep, itemRatings.length);
 		
+		logger.debug("Computing similarities");
 		queue.run(worker, threadCount);
 		
 		logger.debug("Finalizing recommender model");
@@ -243,22 +250,38 @@ public class ParallelItemItemRecommenderBuilder implements
 		return itemVectors;
 	}
 	
-	private class SymmetricSimWorker implements IntWorker {
+	private class SimilarityWorker implements IntWorker {
 		private final Map<Integer,Double>[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
+		private final boolean symmetric;
 		
-		public SymmetricSimWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
+			this.symmetric = itemSimilarity instanceof SymmetricBinaryFunction;
 		}
 
 		@Override
 		public void doJob(long job) {
 			int row = (int) job;
-			for (int col = 0; col < row; col++) {
+			
+			IntSortedSet candidates = new IntRBTreeSet();
+			for (Integer u: itemVectors[row].keySet()) {
+				candidates.addAll(userItemMap.get(u));
+			}
+			
+			IntIterator iter = candidates.iterator();
+			while (iter.hasNext()) {
+				int col = iter.nextInt();
+				if (col == row)
+					continue;
+				if (symmetric && col >= row)
+					break;
+				
 				double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
 				builder.put(row, col, sim);
-				builder.put(col, row, sim);
+				if (symmetric)
+					builder.put(col, row, sim);
 			}
 		}
 
@@ -267,95 +290,20 @@ public class ParallelItemItemRecommenderBuilder implements
 		}
 	}
 	
-	/**
-	 * Counter class for keeping track of rows and columns for symmetric processing.
-	 * 
-	 * This class maintains the invariant that <var>fullDone</var> is the
-	 * number of cells in full rows up until <var>row</var>.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	static class SymmetricRowCounter {
-		private int row;
-		private int column;
-		private long fullDone;
-		public SymmetricRowCounter() {
-			row = 0;
-			fullDone = 0;
-		}
-		
-		public void advance(long job) {
-			while (job >= fullDone + row + 1) {
-				row += 1;
-				fullDone = arithSum(row);
-			}
-			column = (int) (job - fullDone);
-		}
-		
-		public int getRow() {
-			return row;
-		}
-		
-		public int getColumn() {
-			return column;
-		}
-	}
-	
-	public class SymmetricWorkerFactory implements WorkerFactory<IntWorker> {
+	public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
 
 		private final Map<Integer, Double>[] itemVector;
 		private final SimilarityMatrixBuilder builder;
 		
-		public SymmetricWorkerFactory(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorkerFactory(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
 		}
 		@Override
-		public SymmetricSimWorker create(Thread owner) {
-			return new SymmetricSimWorker(itemVector, builder);
+		public SimilarityWorker create(Thread owner) {
+			return new SimilarityWorker(itemVector, builder);
 		}
 		
 	}
-	
-	private class AsymmetricSimWorker implements IntWorker {
-		private final Map<Integer,Double>[] itemVectors;
-		private final SimilarityMatrixBuilder builder;
-		
-		public AsymmetricSimWorker(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
-			this.itemVectors = items;
-			this.builder = builder;
-		}
-
-		@Override
-		public void doJob(long job) {
-			int i1 = (int) (job / itemVectors.length);
-			int i2 = (int) (job % itemVectors.length);
-			if (i1 == i2)
-				return;
-			double sim = itemSimilarity.similarity(itemVectors[i1], itemVectors[i2]);
-			builder.put(i1, i2, sim);
-		}
-
-		@Override
-		public void finish() {
-		}
-	}
-	
-	public class AsymmetricWorkerFactory implements WorkerFactory<IntWorker> {
-
-		private final Map<Integer, Double>[] itemVector;
-		private final SimilarityMatrixBuilder builder;
-		
-		public AsymmetricWorkerFactory(Map<Integer,Double>[] items, SimilarityMatrixBuilder builder) {
-			this.itemVector = items;
-			this.builder = builder;
-		}
-		@Override
-		public AsymmetricSimWorker create(Thread owner) {
-			return new AsymmetricSimWorker(itemVector, builder);
-		}
-		
-	}
-
 
 }

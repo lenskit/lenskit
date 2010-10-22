@@ -102,9 +102,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bindClassFromProperty(Key.get(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}),
-				"org.grouplens.reflens.item.RecommenderBuilder",
-				ItemItemRecommenderBuilder.class);
+		bind(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}).to(
+				new TypeLiteral<ItemItemRecommenderBuilder<Integer, Integer>>(){});
 	}
 
 	/**

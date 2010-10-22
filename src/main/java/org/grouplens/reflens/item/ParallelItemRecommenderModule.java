@@ -32,81 +32,47 @@
  */
 package org.grouplens.reflens.item;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Map;
+import java.util.Properties;
 
-import java.util.Random;
+import org.grouplens.reflens.OptimizableMapSimilarity;
+import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.Similarity;
+import org.grouplens.reflens.item.params.ItemSimilarity;
 
-import org.grouplens.reflens.item.ParallelItemItemRecommenderBuilder.SymmetricRowCounter;
-import org.junit.Before;
-import org.junit.Test;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestParallelUtils {
-	private SymmetricRowCounter counter;
-	
-	@Before
-	public void makeCounter() {
-		counter = new SymmetricRowCounter();
+public class ParallelItemRecommenderModule extends ItemRecommenderModule {
+
+	/**
+	 * 
+	 */
+	public ParallelItemRecommenderModule() {
+	}
+
+	/**
+	 * @param props
+	 */
+	public ParallelItemRecommenderModule(Properties props) {
+		super(props);
+	}
+
+	@Override
+	protected void configureRecommenderBuilder() {
+		bind(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}).to(ParallelItemItemRecommenderBuilder.class);
 	}
 	
-	@Test
-	public void initial() {
-		assertEquals(0, counter.getRow());
-		assertEquals(0, counter.getColumn());
-	}
-	
-	@Test
-	public void advanceZero() {
-		counter.advance(0);
-		assertEquals(0, counter.getRow());
-		assertEquals(0, counter.getColumn());
-	}
-	
-	@Test
-	public void advanceOne() {
-		counter.advance(1);
-		assertEquals(1, counter.getRow());
-		assertEquals(0, counter.getColumn());
-	}
-	
-	@Test
-	public void advanceTwice() {
-		counter.advance(1);
-		counter.advance(2);
-		assertEquals(1, counter.getRow());
-		assertEquals(1, counter.getColumn());
-	}
-	
-	@Test
-	public void advanceTwo() {
-		counter.advance(2);
-		assertEquals(1, counter.getRow());
-		assertEquals(1, counter.getColumn());
-	}
-	
-	@Test
-	public void advanceThree() {
-		counter.advance(3);
-		assertEquals(2, counter.getRow());
-		assertEquals(0, counter.getColumn());
-	}
-	
-	@Test
-	public void randomMany() {
-		Random rand = new Random();
-		int job = 0;
-		for (int row = 0; row < 1000; row++) {
-			for (int col = 0; col <= row; col++) {
-				if (rand.nextBoolean()) {
-					counter.advance(job);
-					assertEquals(row, counter.getRow());
-					assertEquals(col, counter.getColumn());
-				}
-				job++;
-			}
-		}
+	@Override
+	protected void configureItemSimilarity() {
+		Key<OptimizableMapSimilarity<Integer,Double>> key =
+			Key.get(new TypeLiteral<OptimizableMapSimilarity<Integer,Double>>() {},
+					ItemSimilarity.class);
+		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
+				CosineSimilarity.class);
 	}
 }

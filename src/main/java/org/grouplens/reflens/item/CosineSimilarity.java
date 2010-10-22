@@ -20,6 +20,7 @@ package org.grouplens.reflens.item;
 
 import java.util.Map;
 
+import org.grouplens.reflens.OptimizableMapSimilarity;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.item.params.SimilarityDamper;
@@ -31,7 +32,7 @@ import com.google.inject.Inject;
  *
  */
 public class CosineSimilarity<I>
-	implements Similarity<Map<I,Double>>, SymmetricBinaryFunction {
+	implements OptimizableMapSimilarity<I,Double>, SymmetricBinaryFunction {
 	
 	private final double dampingFactor;
 	
