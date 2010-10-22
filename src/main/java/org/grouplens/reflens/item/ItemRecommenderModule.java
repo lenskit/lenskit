@@ -68,7 +68,6 @@ public class ItemRecommenderModule extends AbstractModule {
 	 */
 	@Override
 	protected void configure() {
-		configureUIElements();
 		configureThreadCount();
 		
 		configureSimilarityMatrix();
@@ -91,17 +90,6 @@ public class ItemRecommenderModule extends AbstractModule {
 		}
 		bind(int.class).annotatedWith(ThreadCount.class).toInstance(count);
 	}
-	
-	protected void configureUIElements() {
-		configureProgressReporter();
-	}
-
-	protected void configureProgressReporter() {
-		bind(ProgressReporterFactory.class).toProvider(
-				FactoryProvider.newFactory(ProgressReporterFactory.class, 
-						TerminalProgressReporter.class));
-	}
-
 
 	/**
 	 * 

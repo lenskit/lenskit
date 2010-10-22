@@ -36,18 +36,24 @@ import org.grouplens.reflens.data.BasicUserRatingProfile;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.util.ObjectLoader;
+import org.grouplens.reflens.util.ProgressReporterFactory;
+import org.grouplens.reflens.util.TerminalProgressReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
+import com.google.inject.assistedinject.FactoryProvider;
+import com.google.inject.util.Providers;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
@@ -103,7 +109,17 @@ public final class BenchmarkRunner {
 		String moduleName = options.getModule();
 		logger.debug("Loading module {}", moduleName);
 		Module recModule = ObjectLoader.makeInstance(moduleName);
-		injector = Guice.createInjector(new IntDataModule(), recModule);
+		injector = Guice.createInjector(new AbstractModule() {
+			protected void configure() {
+				if (options.showProgress()) {
+					bind(ProgressReporterFactory.class).toProvider(
+							FactoryProvider.newFactory(ProgressReporterFactory.class,
+									TerminalProgressReporter.class));
+				} else {
+					bind(ProgressReporterFactory.class).toProvider((Provider) Providers.of(null));
+				}
+			}
+		}, new IntDataModule(), recModule);
 		RatingSet<Integer, Integer> data = null;
 		try {
 			logger.debug("Loading ratings data");
