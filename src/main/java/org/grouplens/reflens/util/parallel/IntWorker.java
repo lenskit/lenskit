@@ -37,5 +37,5 @@ package org.grouplens.reflens.util.parallel;
  *
  */
 public interface IntWorker extends Worker {
-	public void doJob(long job);
+	public void doJob(int job);
 }

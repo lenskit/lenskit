@@ -34,7 +34,7 @@ package org.grouplens.reflens.util.parallel;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.grouplens.reflens.util.ProgressReporter;
 
@@ -52,7 +52,7 @@ import org.grouplens.reflens.util.ProgressReporter;
  */
 public class IntegerTaskQueue {
 	private final long taskCount;
-	private AtomicLong nextTask;
+	private AtomicInteger nextTask;
 	private ProgressReporter progress;
 	
 	public IntegerTaskQueue(int ntasks)
@@ -63,7 +63,7 @@ public class IntegerTaskQueue {
 	public IntegerTaskQueue(ProgressReporter progress, long ntasks) {
 		this.progress = progress;
 		this.taskCount = ntasks;
-		this.nextTask = new AtomicLong();
+		this.nextTask = new AtomicInteger();
 	}
 
 	
@@ -107,8 +107,8 @@ public class IntegerTaskQueue {
 		@Override
 		public void run() {
 			IntWorker worker = factory.create(this);
-			for (long job = nextTask.getAndIncrement(); job < taskCount;
-					  job = nextTask.getAndIncrement()) {
+			for (int job = nextTask.getAndIncrement(); job < taskCount;
+					 job = nextTask.getAndIncrement()) {
 				worker.doJob(job);
 			}
 			worker.finish();

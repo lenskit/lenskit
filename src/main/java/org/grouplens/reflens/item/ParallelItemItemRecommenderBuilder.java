@@ -262,7 +262,7 @@ public class ParallelItemItemRecommenderBuilder implements
 		}
 
 		@Override
-		public void doJob(long job) {
+		public void doJob(int job) {
 			int row = (int) job;
 			
 			IntSortedSet candidates = new IntRBTreeSet();
