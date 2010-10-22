@@ -34,6 +34,7 @@ package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
@@ -91,7 +92,7 @@ public class ParallelItemItemRecommenderBuilder implements
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	private final int threadCount;
-	private Int2ObjectMap<IntSet> userItemMap;
+	private Int2ObjectMap<IntSortedSet> userItemMap;
 
 	@Inject
 	public ParallelItemItemRecommenderBuilder(
@@ -112,12 +113,12 @@ public class ParallelItemItemRecommenderBuilder implements
 	}
 	
 	private Index<Integer> indexItems(DataSource<UserRatingProfile<Integer, Integer>> data) {
-		userItemMap = new Int2ObjectOpenHashMap<IntSet>();
+		userItemMap = new Int2ObjectOpenHashMap<IntSortedSet>();
 		Indexer<Integer> indexer = indexProvider.get();
 		Cursor<UserRatingProfile<Integer, Integer>> cursor = data.cursor();
 		try {
 			for (UserRatingProfile<Integer,Integer> profile: cursor) {
-				IntSet s = new IntOpenHashSet(97);
+				IntSortedSet s = new IntRBTreeSet();
 				userItemMap.put(profile.getUser(), s);
 				for (Integer item: profile.getRatings().keySet()) {
 					int idx = indexer.internObject(item);
@@ -264,19 +265,21 @@ public class ParallelItemItemRecommenderBuilder implements
 		@Override
 		public void doJob(int job) {
 			int row = (int) job;
+			int max = symmetric ? row : itemVectors.length;
 			
-			IntSortedSet candidates = new IntRBTreeSet();
+			IntSet candidates = new IntOpenHashSet();
 			for (Integer u: itemVectors[row].keySet()) {
-				candidates.addAll(userItemMap.get(u));
+				IntIterator is = userItemMap.get(u).iterator();
+				while (is.hasNext()) {
+					int i = is.nextInt();
+					if (i >= max) break;
+					candidates.add(i);
+				}
 			}
 			
 			IntIterator iter = candidates.iterator();
 			while (iter.hasNext()) {
 				int col = iter.nextInt();
-				if (col == row)
-					continue;
-				if (symmetric && col >= row)
-					break;
 				
 				double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
 				builder.put(row, col, sim);
