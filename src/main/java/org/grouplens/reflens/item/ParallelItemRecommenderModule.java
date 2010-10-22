@@ -32,12 +32,10 @@
  */
 package org.grouplens.reflens.item;
 
-import java.util.Map;
 import java.util.Properties;
 
 import org.grouplens.reflens.OptimizableMapSimilarity;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 
 import com.google.inject.Key;

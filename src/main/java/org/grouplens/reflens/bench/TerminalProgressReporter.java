@@ -1,20 +1,18 @@
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.bench;
 
 import java.io.IOException;
 
 import javax.annotation.Nullable;
 
-import jline.Terminal;
+import org.grouplens.reflens.util.AbstractProgressReporter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jline.Terminal;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 public class TerminalProgressReporter extends AbstractProgressReporter
 {
-	private static final Logger logger = LoggerFactory.getLogger(TerminalProgressReporter.class);
 	private int columnCount;
 	private final String label;
 
@@ -80,6 +78,7 @@ public class TerminalProgressReporter extends AbstractProgressReporter
 
 	public static class EscapeException extends IOException
 	{
+		private static final long serialVersionUID = 1497686117319985433L;
 		public EscapeException()
 		{
 		}

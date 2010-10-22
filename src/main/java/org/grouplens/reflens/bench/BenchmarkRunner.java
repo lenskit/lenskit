@@ -37,7 +37,6 @@ import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
-import org.grouplens.reflens.util.TerminalProgressReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
 import com.google.inject.util.Providers;
@@ -116,7 +114,8 @@ public final class BenchmarkRunner {
 							FactoryProvider.newFactory(ProgressReporterFactory.class,
 									TerminalProgressReporter.class));
 				} else {
-					bind(ProgressReporterFactory.class).toProvider((Provider) Providers.of(null));
+					bind(ProgressReporterFactory.class).toProvider(
+							Providers.of((ProgressReporterFactory) null));
 				}
 			}
 		}, new IntDataModule(), recModule);

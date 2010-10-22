@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import java.util.Map;
 
 import org.grouplens.reflens.OptimizableMapSimilarity;
-import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.item.params.SimilarityDamper;
 
