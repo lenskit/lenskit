@@ -56,14 +56,12 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>0.9.20</version>
-      <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
       <version>0.9.94</version>
-      <type>jar</type>
       <scope>compile</scope>
     </dependency>
   </dependencies>

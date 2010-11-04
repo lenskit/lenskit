@@ -43,7 +43,6 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.5.11</version>
-      <type>jar</type>
       <scope>compile</scope>
     </dependency>
   </dependencies>
