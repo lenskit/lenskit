@@ -33,7 +33,7 @@ public class ConstantBaselinePredictor<U, I> implements RatingPredictor<U, I> {
 			= "org.grouplens.reflens.baseline.constant.value";
 	}
 	
-	private ConstantBaselinePredictor(double value) {
+	protected ConstantBaselinePredictor(double value) {
 		this.value = value;
 	}
 
