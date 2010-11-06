@@ -29,7 +29,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSource;
+import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
@@ -64,7 +64,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	}
 	
 	@Override
-	public ItemItemRecommender<U,I> build(DataSource<UserRatingProfile<U,I>> data) {
+	public ItemItemRecommender<U,I> build(DataSet<UserRatingProfile<U,I>> data) {
 		Indexer<I> indexer = indexProvider.get();
 		List<Map<U,Double>> itemRatings = buildItemRatings(indexer, data);
 		
@@ -103,7 +103,7 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Map<U,Double>> buildItemRatings(Indexer<I> indexer, DataSource<UserRatingProfile<U,I>> data) {
+	private List<Map<U,Double>> buildItemRatings(Indexer<I> indexer, DataSet<UserRatingProfile<U,I>> data) {
 		ArrayList<Map<U,Double>> itemVectors = new ArrayList<Map<U,Double>>();
 		Cursor<UserRatingProfile<U, I>> cursor = data.cursor();
 		try {

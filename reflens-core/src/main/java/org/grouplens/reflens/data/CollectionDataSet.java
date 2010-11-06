@@ -38,11 +38,11 @@ import java.util.Collection;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CollectionDataSource<T> implements DataSource<T> {
+public class CollectionDataSet<T> implements DataSet<T> {
 	
 	private final Collection<T> collection;
 	
-	public CollectionDataSource(Collection<T> col) {
+	public CollectionDataSet(Collection<T> col) {
 		collection = col;
 	}
 

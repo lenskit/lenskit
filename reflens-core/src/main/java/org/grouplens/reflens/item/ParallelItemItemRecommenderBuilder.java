@@ -50,7 +50,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSource;
+import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.UserRatingProfile;
@@ -111,7 +111,7 @@ public class ParallelItemItemRecommenderBuilder implements
 		this.threadCount = threadCount;
 	}
 	
-	private Index<Integer> indexItems(DataSource<UserRatingProfile<Integer, Integer>> data) {
+	private Index<Integer> indexItems(DataSet<UserRatingProfile<Integer, Integer>> data) {
 		userItemMap = new Int2ObjectOpenHashMap<IntSortedSet>();
 		Indexer<Integer> indexer = indexProvider.get();
 		Cursor<UserRatingProfile<Integer, Integer>> cursor = data.cursor();
@@ -131,7 +131,7 @@ public class ParallelItemItemRecommenderBuilder implements
 	}
 	
 	@Override
-	public ItemItemRecommender<Integer,Integer> build(DataSource<UserRatingProfile<Integer,Integer>> data) {
+	public ItemItemRecommender<Integer,Integer> build(DataSet<UserRatingProfile<Integer,Integer>> data) {
 		logger.info("Building model for {} ratings with {} threads", data.getRowCount(), threadCount);
 		logger.debug("Indexing items");
 		Index<Integer> itemIndex = indexItems(data);
@@ -203,7 +203,7 @@ public class ParallelItemItemRecommenderBuilder implements
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
-	private Map<Integer,Double>[] buildItemRatings(final Index<Integer> index, DataSource<UserRatingProfile<Integer,Integer>> data) {
+	private Map<Integer,Double>[] buildItemRatings(final Index<Integer> index, DataSet<UserRatingProfile<Integer,Integer>> data) {
 		final Map<Integer,Double>[] itemVectors = makeMapArray(index.getObjectCount());
 		for (int i = 0; i < itemVectors.length; i++) {
 			itemVectors[i] = itemMapProvider.get();

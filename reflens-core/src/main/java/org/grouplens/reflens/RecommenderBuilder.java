@@ -18,7 +18,7 @@
 
 package org.grouplens.reflens;
 
-import org.grouplens.reflens.data.DataSource;
+import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.UserRatingProfile;
 
 /**
@@ -37,5 +37,5 @@ public interface RecommenderBuilder<U,I> {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public RecommendationEngine<U,I> build(DataSource<UserRatingProfile<U,I>> ratings);
+	public RecommendationEngine<U,I> build(DataSet<UserRatingProfile<U,I>> ratings);
 }

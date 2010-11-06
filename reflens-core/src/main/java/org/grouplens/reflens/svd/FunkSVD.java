@@ -33,7 +33,7 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSource;
+import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.ScoredObject;
@@ -129,7 +129,7 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		}
 	}
 	
-	void build(DataSource<UserRatingProfile<U,I>> users) {
+	void build(DataSet<UserRatingProfile<U,I>> users) {
 		logger.debug("Building SVD with {} features", numFeatures);
 		
 		// build a list of ratings

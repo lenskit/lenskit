@@ -53,7 +53,7 @@ import java.util.Collection;
  *
  * @param T The type of data returned.
  */
-public interface DataSource<T> {
+public interface DataSet<T> {
 	/**
 	 * Get the number of items in this data source.
 	 * @return The number of items in the data source.  This should be exactly
