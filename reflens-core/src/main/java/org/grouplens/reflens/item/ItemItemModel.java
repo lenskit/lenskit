@@ -44,19 +44,19 @@ import org.grouplens.reflens.util.SimilarityMatrix;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemModel<U,I> implements Serializable {
+public class ItemItemModel implements Serializable {
 
 	private static final long serialVersionUID = 7040201805529926395L;
 	
-	private final Index<I> itemIndexer;
+	private final Index itemIndexer;
 	private final SimilarityMatrix matrix;
 	
-	public ItemItemModel(Index<I> indexer, SimilarityMatrix matrix) {
+	public ItemItemModel(Index indexer, SimilarityMatrix matrix) {
 		this.itemIndexer = indexer;
 		this.matrix = matrix;
 	}
 	
-	public Iterable<IndexedItemScore> getNeighbors(I item) {
+	public Iterable<IndexedItemScore> getNeighbors(long item) {
 		int idx = itemIndexer.getIndex(item);
 		if (idx >= 0) {
 			return matrix.getNeighbors(itemIndexer.getIndex(item));
@@ -65,11 +65,7 @@ public class ItemItemModel<U,I> implements Serializable {
 		}
 	}
 	
-	public I getItem(int idx) {
-		try {
-			return itemIndexer.getObject(idx);
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
+	public long getItem(int idx) {
+		return itemIndexer.getId(idx);
 	}
 }

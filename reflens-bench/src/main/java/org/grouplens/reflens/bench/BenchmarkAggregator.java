@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,14 +43,14 @@ import org.slf4j.LoggerFactory;
  */
 public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
-	private RecommenderBuilder<Integer,Integer> factory;
+	private RecommenderBuilder factory;
 	private int numRuns = 0;
 	private double tMAE = 0.0f;
 	private double tRMSE = 0.0f;
 	private double tCov = 0.0f;
 	private double holdout = 0.33333333;
 	
-	public BenchmarkAggregator(RecommenderBuilder<Integer,Integer> factory) {
+	public BenchmarkAggregator(RecommenderBuilder factory) {
 		this.factory = factory;
 	}
 	
@@ -71,38 +71,38 @@ public class BenchmarkAggregator {
 	 * are tested by holding back 1/3 of their ratings.
 	 */
 	public void addBenchmark(
-			Collection<UserRatingProfile<Integer,Integer>> trainUsers,
-			Collection<UserRatingProfile<Integer,Integer>> testUsers) {
+			Collection<UserRatingProfile> trainUsers,
+			Collection<UserRatingProfile> testUsers) {
 		logger.debug("Building model with {} users", trainUsers.size());
-		DataSet<UserRatingProfile<Integer, Integer>> trainingSource =
-			new CollectionDataSet<UserRatingProfile<Integer,Integer>>(trainUsers);
-		RecommendationEngine<Integer, Integer> engine;
+		DataSet<UserRatingProfile> trainingSource =
+			new CollectionDataSet<UserRatingProfile>(trainUsers);
+		RecommendationEngine engine;
 		try {
 			engine = factory.build(trainingSource);
 		} finally {
 			trainingSource.close();
 		}
-		RatingPredictor<Integer, Integer> rec = engine.getRatingPredictor();
+		RatingPredictor rec = engine.getRatingPredictor();
 		
 		logger.debug("Testing model with {} users", testUsers.size());
 		double accumErr = 0.0f;
 		double accumSqErr = 0.0f;
 		int nitems = 0;
 		int ngood = 0;
-		for (UserRatingProfile<Integer,Integer> user: testUsers) {
-			List<ScoredObject<Integer>> ratings = new ArrayList<ScoredObject<Integer>>(
+		for (UserRatingProfile user: testUsers) {
+			List<ScoredObject<Long>> ratings = new ArrayList<ScoredObject<Long>>(
 					ScoredObject.wrap(user.getRatings()));
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratings);
-			Int2DoubleMap queryRatings = new Int2DoubleOpenHashMap();
+			Long2DoubleMap queryRatings = new Long2DoubleOpenHashMap();
 			for (int i = 0; i < midpt; i++) {
-				ScoredObject<Integer> rating = ratings.get(i);
-				queryRatings.put((int) rating.getObject(), rating.getScore());
+				ScoredObject<Long> rating = ratings.get(i);
+				queryRatings.put(rating.getObject().longValue(), rating.getScore());
 			}
 			for (int i = midpt; i < ratings.size(); i++) {
-				int iid = ratings.get(i).getObject();
-				ScoredObject<Integer> prediction = rec.predict(user.getUser(), queryRatings, iid);
+				long iid = ratings.get(i).getObject();
+				ScoredObject prediction = rec.predict(user.getUser(), queryRatings, iid);
 				nitems++;
 				if (prediction != null) {
 					double err = prediction.getScore() - user.getRating(iid);

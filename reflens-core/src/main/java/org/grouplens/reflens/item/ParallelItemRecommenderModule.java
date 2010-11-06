@@ -62,7 +62,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 
 	@Override
 	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}).to(ParallelItemItemRecommenderBuilder.class);
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
 	}
 	
 	@Override

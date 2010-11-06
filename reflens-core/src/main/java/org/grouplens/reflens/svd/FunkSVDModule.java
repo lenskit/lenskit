@@ -31,7 +31,7 @@ public class FunkSVDModule extends AbstractModule {
 	protected void configure() {
 		bind(int.class).annotatedWith(FeatureCount.class).toInstance(50);
 		bind(double.class).annotatedWith(LearningRate.class).toInstance(0.001);
-		bind(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}).to(new TypeLiteral<FunkSVDFactory<Integer,Integer>>(){});
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(new TypeLiteral<FunkSVDFactory>(){});
 	}
 
 }

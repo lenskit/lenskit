@@ -21,6 +21,8 @@ package org.grouplens.reflens.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Do recommendations using Funk's SVD algorithm.
@@ -59,7 +60,7 @@ import com.google.inject.Provider;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor<U,I> {
+public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	private static Logger logger = LoggerFactory.getLogger(FunkSVD.class);
 	private static final double DEFAULT_FEATURE_VALUE = 0.1f;
 	private static final double FEATURE_EPSILON = 0.0001f;
@@ -69,9 +70,8 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	private final double learningRate;
 	private final int numFeatures;
 	
-	private Index<U> userIndexer;
-	private Indexer<I> itemIndexer;
-	private Provider<Map<I,Double>> itemMapProvider;
+	private Index userIndexer;
+	private Indexer itemIndexer;
 
 	private double userFeatures[][];
 	private double itemFeatures[][];
@@ -81,15 +81,13 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	private DoubleList userAvgOffsets;
 	
 	@Inject
-	FunkSVD(Index<U> userIndexer, Indexer<I> itemIndexer,
-			Provider<Map<I,Double>> itemMapProvider, 
+	FunkSVD(Index userIndexer, Indexer itemIndexer,
 			@FeatureCount int features,
 			@LearningRate double lrate) {
 		learningRate = lrate;
 		numFeatures = features;
 		this.userIndexer = userIndexer;
 		this.itemIndexer = itemIndexer;
-		this.itemMapProvider = itemMapProvider;
 	}
 	
 	private void computeItemAverages(Collection<Rating> ratings) {
@@ -129,16 +127,16 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		}
 	}
 	
-	void build(DataSet<UserRatingProfile<U,I>> users) {
+	void build(DataSet<UserRatingProfile> users) {
 		logger.debug("Building SVD with {} features", numFeatures);
 		
 		// build a list of ratings
 		List<Rating> ratings = new ArrayList<Rating>(users.getRowCount() * 5);
-		Cursor<UserRatingProfile<U, I>> cursor = users.cursor();
+		Cursor<UserRatingProfile> cursor = users.cursor();
 		try {
-			for (UserRatingProfile<U,I> user: cursor) {
+			for (UserRatingProfile user: cursor) {
 				int uid = userIndexer.getIndex(user.getUser());
-				for (ScoredObject<I> rating: ScoredObject.fastWrap(user.getRatings())) {
+				for (ScoredObject<Long> rating: ScoredObject.fastWrap(user.getRatings())) {
 					int iid = itemIndexer.getIndex(rating.getObject());
 					Rating r = new Rating(uid, iid, rating.getScore());
 					ratings.add(r);
@@ -266,11 +264,11 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		}
 	}
 	
-	protected double[] foldIn(Map<I,Double> ratings, double avgDeviation) {
+	protected double[] foldIn(Map<Long,Double> ratings, double avgDeviation) {
 		double featurePrefs[] = new double[numFeatures];
 		DoubleArrays.fill(featurePrefs, 0.0f);
 		
-		for (ScoredObject<I> rating: ScoredObject.fastWrap(ratings)) {
+		for (ScoredObject<Long> rating: ScoredObject.fastWrap(ratings)) {
 			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
 			double r = rating.getScore() - avgDeviation - itemAverages.get(iid);
@@ -282,10 +280,10 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		return featurePrefs;
 	}
 	
-	protected double averageDeviation(Map<I,Double> ratings) {
+	protected double averageDeviation(Map<Long,Double> ratings) {
 		double dev = 0.0f;
 		int n = 0;
-		for (ScoredObject<I> rating: ScoredObject.fastWrap(ratings)) {
+		for (ScoredObject<Long> rating: ScoredObject.fastWrap(ratings)) {
 			int iid = itemIndexer.getIndex(rating.getObject());
 			if (iid < 0) continue;
 			dev += rating.getScore() - itemAverages.getDouble(iid);
@@ -301,7 +299,7 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	 * @see org.grouplens.reflens.Recommender#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
-	public ScoredObject<I> predict(U user, Map<I, Double> ratings, I item) {
+	public ScoredObject<Long> predict(long user, Map<Long, Double> ratings, long item) {
 		double dev = averageDeviation(ratings);
 		double uprefs[] = foldIn(ratings, dev);
 		int iid = itemIndexer.getIndex(item);
@@ -312,16 +310,16 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 		for (int f = 0; f < numFeatures; f++) {
 			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 		}
-		return new ScoredObject<I>(item, score);
+		return new ScoredObject<Long>(item, score);
 	}
 	
-	public Map<I,Double> predict(UserRatingProfile<U,I> user, Set<I> items) {
+	public Map<Long,Double> predict(UserRatingProfile user, Set<Long> items) {
 		double adev = averageDeviation(user.getRatings());
 		double uprefs[] = foldIn(user.getRatings(), adev);
 
-		Map<I,Double> results = itemMapProvider.get();
+		Long2DoubleMap results = new Long2DoubleOpenHashMap();
 		
-		for (I item: items) {
+		for (long item: items) {
 			int iid = itemIndexer.getIndex(item);
 			if (iid < 0) continue;
 			double score = itemAverages.get(iid) + adev;
@@ -335,17 +333,17 @@ public class FunkSVD<U, I> implements RecommendationEngine<U,I>, RatingPredictor
 	}
 
 	@Override
-	public BasketRecommender<U, I> getBasketRecommender() {
+	public BasketRecommender getBasketRecommender() {
 		return null;
 	}
 
 	@Override
-	public RatingPredictor<U, I> getRatingPredictor() {
+	public RatingPredictor getRatingPredictor() {
 		return this;
 	}
 
 	@Override
-	public RatingRecommender<U, I> getRatingRecommender() {
+	public RatingRecommender getRatingRecommender() {
 		return null;
 	}
 }

@@ -39,27 +39,27 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-class RatingSet<U,I> {
+class RatingSet {
 	private static Logger logger = LoggerFactory.getLogger(RatingSet.class);
-	private ArrayList<Collection<UserRatingProfile<U,I>>> chunks;
+	private ArrayList<Collection<UserRatingProfile>> chunks;
 
 	/**
 	 * Construct a new train/test ratings set.
 	 * @param folds The number of portions to divide the data set into.
 	 * @param ratings The ratings data to partition.
 	 */
-	public RatingSet(int folds, List<UserRatingProfile<U,I>> ratings) {
+	public RatingSet(int folds, List<UserRatingProfile> ratings) {
 		logger.info(String.format("Creating rating set with %d folds", folds));
-		chunks = new ArrayList<Collection<UserRatingProfile<U,I>>>(folds);
+		chunks = new ArrayList<Collection<UserRatingProfile>>(folds);
 		
 		int chunkSize = ratings.size() / folds + 1;
 		for (int i = 0; i < folds; i++) {
-			chunks.add(new ArrayList<UserRatingProfile<U,I>>(chunkSize));
+			chunks.add(new ArrayList<UserRatingProfile>(chunkSize));
 		}	
 		
 		Collections.shuffle(ratings);
 		int chunk = 0;
-		for (UserRatingProfile<U,I> user: ratings) {
+		for (UserRatingProfile user: ratings) {
 			chunks.get(chunk % folds).add(user);
 			chunk++;
 		}
@@ -75,7 +75,7 @@ class RatingSet<U,I> {
 	 * @param testIndex The index of the test set to use.
 	 * @return The union of all data partitions except testIndex.
 	 */
-	public Collection<UserRatingProfile<U,I>> trainingSet(int testIndex) {
+	public Collection<UserRatingProfile> trainingSet(int testIndex) {
 		return new TrainCollection(testIndex);
 	}
 	
@@ -84,11 +84,11 @@ class RatingSet<U,I> {
 	 * @param testIndex The index of the test set to use.
 	 * @return The test set of users.
 	 */
-	public Collection<UserRatingProfile<U,I>> testSet(int testIndex) {
+	public Collection<UserRatingProfile> testSet(int testIndex) {
 		return chunks.get(testIndex);
 	}
 	
-	private class TrainCollection extends AbstractCollection<UserRatingProfile<U,I>> {
+	private class TrainCollection extends AbstractCollection<UserRatingProfile> {
 		private int size;
 		private int testSetIndex;
 		
@@ -102,7 +102,7 @@ class RatingSet<U,I> {
 		}
 
 		@Override
-		public Iterator<UserRatingProfile<U, I>> iterator() {
+		public Iterator<UserRatingProfile> iterator() {
 			return new TrainIterator(testSetIndex);
 		}
 
@@ -121,10 +121,10 @@ class RatingSet<U,I> {
 	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
 	 *
 	 */
-	private class TrainIterator implements Iterator<UserRatingProfile<U,I>> {
+	private class TrainIterator implements Iterator<UserRatingProfile> {
 		private int testSetIndex;
 		private int currentChunk;
-		private Iterator<UserRatingProfile<U,I>> baseIter;
+		private Iterator<UserRatingProfile> baseIter;
 		
 		public TrainIterator(int testSet) {
 			testSetIndex = testSet;
@@ -149,9 +149,9 @@ class RatingSet<U,I> {
 		}
 
 		@Override
-		public UserRatingProfile<U, I> next() {
+		public UserRatingProfile next() {
 			if (baseIter != null && baseIter.hasNext()) {
-				UserRatingProfile<U,I> h = baseIter.next();
+				UserRatingProfile h = baseIter.next();
 				while (baseIter != null && !baseIter.hasNext()) {
 					// we need to advance the underlying iterator
 					currentChunk++;

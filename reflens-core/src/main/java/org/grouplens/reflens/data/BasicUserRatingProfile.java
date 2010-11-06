@@ -2,22 +2,22 @@ package org.grouplens.reflens.data;
 
 import java.util.Map;
 
-public class BasicUserRatingProfile<U, I> implements UserRatingProfile<U, I> {
+public class BasicUserRatingProfile implements UserRatingProfile {
 	
-	private U user;
-	private Map<I, Double> ratings;
+	private long user;
+	private Map<Long, Double> ratings;
 
-	public BasicUserRatingProfile(U user, Map<I,Double> ratings) {
+	public BasicUserRatingProfile(long user, Map<Long,Double> ratings) {
 		this.user = user;
 		this.ratings = ratings;
 	}
 	
-	public BasicUserRatingProfile(Map.Entry<? extends U, ? extends Map<I,Double>> entry) {
+	public BasicUserRatingProfile(Map.Entry<Long, ? extends Map<Long,Double>> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 
 	@Override
-	public double getRating(I item) {
+	public double getRating(long item) {
 		Double r = ratings.get(item);
 		if (r == null)
 			return Double.NaN;
@@ -26,12 +26,12 @@ public class BasicUserRatingProfile<U, I> implements UserRatingProfile<U, I> {
 	}
 
 	@Override
-	public Map<I,Double> getRatings() {
+	public Map<Long,Double> getRatings() {
 		return ratings;
 	}
 
 	@Override
-	public U getUser() {
+	public long getUser() {
 		return user;
 	}
 

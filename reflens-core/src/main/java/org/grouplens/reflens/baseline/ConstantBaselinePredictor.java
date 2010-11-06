@@ -22,7 +22,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ConstantBaselinePredictor<U, I> implements RatingPredictor<U, I> {
+public class ConstantBaselinePredictor implements RatingPredictor {
 	private final double value;
 	
 	@BindingAnnotation
@@ -41,20 +41,19 @@ public class ConstantBaselinePredictor<U, I> implements RatingPredictor<U, I> {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
 	 */
 	@Override
-	public ScoredObject<I> predict(U user, Map<I, Double> ratings, I item) {
-		return new ScoredObject<I>(item, value);
+	public ScoredObject<Long> predict(long user, Map<Long, Double> ratings, long item) {
+		return new ScoredObject<Long>(item, value);
 	}
 
-	public static class Builder<U,I> implements RatingPredictorBuilder<U, I> {
+	public static class Builder implements RatingPredictorBuilder {
 		private final double value;
 		@Inject
 		public Builder(@Value double value) {
 			this.value = value;
 		}
 		@Override
-		public RatingPredictor<U, I> build(
-				DataSet<UserRatingProfile<U, I>> data) {
-			return new ConstantBaselinePredictor<U, I>(value);
+		public RatingPredictor build(DataSet<UserRatingProfile> data) {
+			return new ConstantBaselinePredictor(value);
 		}
 	}
 }

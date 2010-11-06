@@ -40,6 +40,6 @@ import org.grouplens.reflens.data.ScoredObject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * TODO: Support multiple simultaneous predictions
  */
-public interface RatingPredictor<U, I> {
-	public ScoredObject<I> predict(U user, Map<I,Double> ratings, I item);
+public interface RatingPredictor {
+	public ScoredObject<Long> predict(long user, Map<Long,Double> ratings, long item);
 }

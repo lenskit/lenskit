@@ -23,6 +23,6 @@ import java.util.Map;
 
 import org.grouplens.reflens.data.ScoredObject;
 
-public interface RatingRecommender<U,I> {
-	public List<ScoredObject<I>> recommend(U user, Map<I,Double> ratings);
+public interface RatingRecommender {
+	public List<ScoredObject<Long>> recommend(long user, Map<Long,Double> ratings);
 }

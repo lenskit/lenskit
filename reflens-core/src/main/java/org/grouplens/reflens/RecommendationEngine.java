@@ -47,23 +47,23 @@ package org.grouplens.reflens;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface RecommendationEngine<U,I> {
+public interface RecommendationEngine {
 	/**
 	 * Retrieve the rating recommender from this engine.
 	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based
 	 * recommendations are not supported.
 	 */
-	RatingRecommender<U, I> getRatingRecommender();
+	RatingRecommender getRatingRecommender();
 	/**
 	 * Retrieve the rating predictor from this engine.
 	 * @return a rating predictor, or <tt>null</tt> if ratings cannot be
 	 * predicted.
 	 */
-	RatingPredictor<U, I> getRatingPredictor();
+	RatingPredictor getRatingPredictor();
 	/**
 	 * Retrieve the basket-based recommender for this engine.
 	 * @return a basket recommender, or <tt>null</tt> if basket-based
 	 * recommendation is not supported.
 	 */
-	BasketRecommender<U,I> getBasketRecommender();
+	BasketRecommender getBasketRecommender();
 }

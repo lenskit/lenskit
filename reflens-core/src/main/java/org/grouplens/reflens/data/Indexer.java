@@ -18,11 +18,42 @@
 
 package org.grouplens.reflens.data;
 
-import org.grouplens.reflens.data.generic.GenericIndexer;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-import com.google.inject.ImplementedBy;
+public class Indexer implements Index {
+	private Long2IntMap indexes;
+	private LongArrayList ids;
+	
+	public Indexer() {
+		indexes = new Long2IntOpenHashMap();
+		indexes.defaultReturnValue(-1);
+		ids = new LongArrayList();
+	}
 
-@ImplementedBy(GenericIndexer.class)
-public interface Indexer<I> extends Index<I> {
-	public int internObject(I obj);
+	@Override
+	public long getId(int idx) {
+		return ids.getLong(idx);
+	}
+
+	@Override
+	public int getIndex(long id) {
+		return indexes.get(id);
+	}
+
+	@Override
+	public int getObjectCount() {
+		return ids.size();
+	}
+	
+	public int internObject(long obj) {
+		int idx = getIndex(obj);
+		if (idx < 0) {
+			idx = ids.size();
+			ids.add(obj);
+			indexes.put(obj, idx);
+		}
+		return idx;
+	}
 }

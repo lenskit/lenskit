@@ -18,6 +18,9 @@
 
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,34 +42,27 @@ import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
-public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I> {
+public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	
-	private Provider<Indexer<I>> indexProvider;
-	private Provider<Map<U,Double>> itemMapProvider;
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<U, Map<I,Double>> ratingNormalizer;
-	private Similarity<Map<U,Double>> itemSimilarity;
+	private Normalizer<Long, Map<Long,Double>> ratingNormalizer;
+	private Similarity<? super Long2DoubleMap> itemSimilarity;
 
 	@Inject
 	ItemItemRecommenderBuilder(
-			Provider<Indexer<I>> indexProvider,
-			Provider<Map<U,Double>> itemMapProvider,
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<Map<U,Double>> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<U,Map<I,Double>> ratingNormalizer) {
-		this.indexProvider = indexProvider;
-		this.itemMapProvider = itemMapProvider;
+			@ItemSimilarity Similarity<? super Long2DoubleMap> itemSimilarity,
+			@Nullable @RatingNormalization Normalizer<Long,Map<Long,Double>> ratingNormalizer) {
 		this.matrixFactory = matrixFactory;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
 	}
 	
 	@Override
-	public ItemItemRecommender<U,I> build(DataSet<UserRatingProfile<U,I>> data) {
-		Indexer<I> indexer = indexProvider.get();
-		List<Map<U,Double>> itemRatings = buildItemRatings(indexer, data);
+	public ItemItemRecommender build(DataSet<UserRatingProfile> data) {
+		Indexer indexer = new Indexer();
+		List<Long2DoubleMap> itemRatings = buildItemRatings(indexer, data);
 		
 		// prepare the similarity matrix
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
@@ -95,31 +91,31 @@ public class ItemItemRecommenderBuilder<U,I> implements RecommenderBuilder<U, I>
 		}
 		
 		SimilarityMatrix matrix = builder.build();
-		ItemItemModel<U,I> model = new ItemItemModel<U,I>(indexer, matrix);
-		return new ItemItemRecommender<U,I>(model);
+		ItemItemModel model = new ItemItemModel(indexer, matrix);
+		return new ItemItemRecommender(model);
 	}
 	
 	/** 
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Map<U,Double>> buildItemRatings(Indexer<I> indexer, DataSet<UserRatingProfile<U,I>> data) {
-		ArrayList<Map<U,Double>> itemVectors = new ArrayList<Map<U,Double>>();
-		Cursor<UserRatingProfile<U, I>> cursor = data.cursor();
+	private List<Long2DoubleMap> buildItemRatings(Indexer indexer, DataSet<UserRatingProfile> data) {
+		ArrayList<Long2DoubleMap> itemVectors = new ArrayList<Long2DoubleMap>();
+		Cursor<UserRatingProfile> cursor = data.cursor();
 		try {
-			for (UserRatingProfile<U,I> user: cursor) {
-				Map<I,Double> ratings = user.getRatings();
+			for (UserRatingProfile user: cursor) {
+				Map<Long,Double> ratings = user.getRatings();
 				if (ratingNormalizer != null)
 					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
-				for (Map.Entry<I, Double> rating: ratings.entrySet()) {
-					I item = rating.getKey();
+				for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
+					long item = rating.getKey();
 					int idx = indexer.internObject(item);
 					if (idx >= itemVectors.size()) {
 						// it's a new item - add one
 						assert idx == itemVectors.size();
-						itemVectors.add(itemMapProvider.get());
+						itemVectors.add(new Long2DoubleOpenHashMap());
 					}
-					itemVectors.get(idx).put(user.getUser(), rating.getValue());
+					itemVectors.get(idx).put(user.getUser(), (double) rating.getValue());
 				}
 			}
 		} finally {

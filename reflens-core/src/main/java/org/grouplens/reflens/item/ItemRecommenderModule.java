@@ -100,8 +100,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder<Integer,Integer>>(){}).to(
-				new TypeLiteral<ItemItemRecommenderBuilder<Integer, Integer>>(){});
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(
+				new TypeLiteral<ItemItemRecommenderBuilder>(){});
 	}
 
 	/**

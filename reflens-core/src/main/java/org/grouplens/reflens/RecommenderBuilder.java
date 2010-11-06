@@ -26,7 +26,7 @@ import org.grouplens.reflens.data.UserRatingProfile;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface RecommenderBuilder<U,I> {
+public interface RecommenderBuilder {
 	/**
 	 * Construct a new recommender engine trained on the provided ratings.
 	 * 
@@ -37,5 +37,5 @@ public interface RecommenderBuilder<U,I> {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public RecommendationEngine<U,I> build(DataSet<UserRatingProfile<U,I>> ratings);
+	public RecommendationEngine build(DataSet<UserRatingProfile> ratings);
 }

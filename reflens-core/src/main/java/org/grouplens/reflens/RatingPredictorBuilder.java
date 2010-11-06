@@ -21,20 +21,20 @@ package org.grouplens.reflens;
 import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.UserRatingProfile;
 
-public interface RatingPredictorBuilder<U,I> {
+public interface RatingPredictorBuilder {
 
-	public RatingPredictor<U, I> build(DataSet<UserRatingProfile<U, I>> data);
+	public RatingPredictor build(DataSet<UserRatingProfile> data);
 	
-	public static class RecEngineBuilderWrapper<U,I> implements RatingPredictorBuilder<U, I> {
-		private final RecommenderBuilder<U, I> builder;
+	public static class RecEngineBuilderWrapper implements RatingPredictorBuilder {
+		private final RecommenderBuilder builder;
 
-		public RecEngineBuilderWrapper(RecommenderBuilder<U, I> builder) {
+		public RecEngineBuilderWrapper(RecommenderBuilder builder) {
 			this.builder = builder;
 		}
 		
-		public RatingPredictor<U, I> build(DataSet<UserRatingProfile<U, I>> data) {
-			RecommendationEngine<U, I> engine = builder.build(data);
-			RatingPredictor<U, I> pred = engine.getRatingPredictor();
+		public RatingPredictor build(DataSet<UserRatingProfile> data) {
+			RecommendationEngine engine = builder.build(data);
+			RatingPredictor pred = engine.getRatingPredictor();
 			if (pred != null)
 				return pred;
 			else

@@ -26,18 +26,17 @@ import org.grouplens.reflens.data.UserRatingProfile;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class FunkSVDFactory<U,I> implements RecommenderBuilder<U,I> {
+public class FunkSVDFactory implements RecommenderBuilder {
 	
-	private Provider<FunkSVD<U,I>> svdProvider;
+	private Provider<FunkSVD> svdProvider;
 	@Inject
-	public FunkSVDFactory(Provider<FunkSVD<U,I>> provider) {
+	public FunkSVDFactory(Provider<FunkSVD> provider) {
 		svdProvider = provider;
 	}
 
 	@Override
-	public RecommendationEngine<U, I> build(
-			DataSet<UserRatingProfile<U, I>> ratings) {
-		FunkSVD<U,I> rec = svdProvider.get();
+	public RecommendationEngine build(DataSet<UserRatingProfile> ratings) {
+		FunkSVD rec = svdProvider.get();
 		rec.build(ratings);
 		return rec;
 	}

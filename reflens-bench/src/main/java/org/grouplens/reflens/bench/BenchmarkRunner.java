@@ -18,10 +18,10 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.BasicUserRatingProfile;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.data.integer.IntDataModule;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.slf4j.Logger;
@@ -47,9 +46,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
 import com.google.inject.util.Providers;
 
@@ -118,22 +115,18 @@ public final class BenchmarkRunner {
 							Providers.of((ProgressReporterFactory) null));
 				}
 			}
-		}, new IntDataModule(), recModule);
-		RatingSet<Integer, Integer> data = null;
+		}, recModule);
+		RatingSet data = null;
 		try {
 			logger.debug("Loading ratings data");
-			data = new RatingSet<Integer, Integer>(options.getNumFolds(),
-					readRatingsData());
+			data = new RatingSet(options.getNumFolds(),	readRatingsData());
 		} catch (FileNotFoundException e) {
 			fail(3, e);
 		}
 
-		RecommenderBuilder<Integer, Integer> factory = null;
+		RecommenderBuilder factory = null;
 		try {
-			factory = injector
-					.getInstance(Key
-							.get(new TypeLiteral<RecommenderBuilder<Integer, Integer>>() {
-							}));
+			factory = injector.getInstance(RecommenderBuilder.class);
 		} catch (CreationException e) {
 			fail(2, e.getMessage());
 		}
@@ -148,9 +141,9 @@ public final class BenchmarkRunner {
 		agg.printResults();
 	}
 
-	private List<UserRatingProfile<Integer, Integer>> readRatingsData()
+	private List<UserRatingProfile> readRatingsData()
 			throws FileNotFoundException {
-		Int2ObjectMap<Int2DoubleMap> users = new Int2ObjectOpenHashMap<Int2DoubleMap>();
+		Long2ObjectMap<Long2DoubleMap> users = new Long2ObjectOpenHashMap<Long2DoubleMap>();
 		Pattern splitter = Pattern.compile(Pattern
 				.quote(options.getDelimiter()));
 		for (String file : options.getFiles()) {
@@ -164,22 +157,21 @@ public final class BenchmarkRunner {
 				int uid = Integer.parseInt(fields[0]);
 				int iid = Integer.parseInt(fields[1]);
 				double rating = Double.parseDouble(fields[2]);
-				Int2DoubleMap history = null;
+				Long2DoubleMap history = null;
 				if (users.containsKey(uid)) {
 					history = users.get(uid);
 				} else {
-					history = new Int2DoubleOpenHashMap();
+					history = new Long2DoubleOpenHashMap();
 					users.put(uid, history);
 				}
 				history.put(iid, rating);
 			}
 			s.close();
 		}
-		List<UserRatingProfile<Integer, Integer>> profiles =
-			new ArrayList<UserRatingProfile<Integer,Integer>>();
-		for (Map.Entry<Integer, Int2DoubleMap> user: users.entrySet()) {
-			UserRatingProfile<Integer,Integer> p =
-				new BasicUserRatingProfile<Integer, Integer>(user);
+		List<UserRatingProfile> profiles =
+			new ArrayList<UserRatingProfile>();
+		for (Map.Entry<Long, Long2DoubleMap> user: users.entrySet()) {
+			UserRatingProfile p = new BasicUserRatingProfile(user);
 			profiles.add(p);
 		}
 		return profiles;

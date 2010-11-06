@@ -35,20 +35,20 @@ import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.util.IndexedItemScore;
 
-public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, RatingRecommender<U,I>, RatingPredictor<U,I>, Serializable {
+public class ItemItemRecommender implements RecommendationEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
-	private final ItemItemModel<U,I> model;
+	private final ItemItemModel model;
 	
-	public ItemItemRecommender(ItemItemModel<U,I> model) {
+	public ItemItemRecommender(ItemItemModel model) {
 		this.model = model;
 	}
 
 	@Override
-	public ScoredObject<I> predict(U user, Map<I,Double> ratings, I item) {
+	public ScoredObject<Long> predict(long user, Map<Long,Double> ratings, long item) {
 		double sum = 0;
 		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
-			I other = model.getItem(score.getIndex());
+			long other = model.getItem(score.getIndex());
 			double s = score.getScore();
 			if (ratings.containsKey(other)) {
 				// FIXME this goes wacky with negative similarities
@@ -58,17 +58,17 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ScoredObject<I>(item, sum / totalWeight);
+			return new ScoredObject<Long>(item, sum / totalWeight);
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<ScoredObject<I>> recommend(U user, Map<I,Double> ratings) {
+	public List<ScoredObject<Long>> recommend(long user, Map<Long,Double> ratings) {
 		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
-		for (ScoredObject<I> rating: ScoredObject.wrap(ratings.entrySet())) {
+		for (ScoredObject<Long> rating: ScoredObject.wrap(ratings.entrySet())) {
 			for (IndexedItemScore score: model.getNeighbors(rating.getObject())) {
 				int jid = score.getIndex();
 				double val = score.getScore();
@@ -87,15 +87,15 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 				}
 			}
 		}
-		ArrayList<ScoredObject<I>> results = new ArrayList<ScoredObject<I>>(scores.size());
+		ArrayList<ScoredObject<Long>> results = new ArrayList<ScoredObject<Long>>(scores.size());
 		IntIterator iids = scores.keySet().iterator();
 		while (iids.hasNext()) {
 			int iid = iids.next();
 			double w = weights.get(iid);
 			if (w >= 0.1) {
-				I item = model.getItem(iid);
+				long item = model.getItem(iid);
 				double pred = scores.get(iid) / w;
-				results.add(new ScoredObject<I>(item, pred));
+				results.add(new ScoredObject<Long>(item, pred));
 			}
 		}
 		Collections.sort(results);
@@ -103,18 +103,18 @@ public class ItemItemRecommender<U,I> implements RecommendationEngine<U,I>, Rati
 	}
 
 	@Override
-	public BasketRecommender<U, I> getBasketRecommender() {
+	public BasketRecommender getBasketRecommender() {
 		// TODO Support basket recommendations
 		return null;
 	}
 
 	@Override
-	public RatingPredictor<U, I> getRatingPredictor() {
+	public RatingPredictor getRatingPredictor() {
 		return this;
 	}
 
 	@Override
-	public RatingRecommender<U, I> getRatingRecommender() {
+	public RatingRecommender getRatingRecommender() {
 		return this;
 	}
 }

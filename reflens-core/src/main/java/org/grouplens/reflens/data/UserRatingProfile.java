@@ -39,8 +39,8 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface UserRatingProfile<U, I> {
-	public U getUser();
-	public Map<I,Double> getRatings();
-	public double getRating(I item);
+public interface UserRatingProfile {
+	public long getUser();
+	public Map<Long,Double> getRatings();
+	public double getRating(long item);
 }
