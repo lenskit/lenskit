@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.reflens.util.AbstractProgressReporter;
+import org.grouplens.reflens.data.AbstractProgressReporter;
 
 import jline.Terminal;
 

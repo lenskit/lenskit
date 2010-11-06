@@ -30,7 +30,7 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.data;
 
 import java.util.Iterator;
 
@@ -38,27 +38,36 @@ import java.util.Iterator;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IteratorCursor<T> extends AbstractCursor<T> {
+public class CursorIterator<T> implements Iterator<T> {
 	
-	private Iterator<T> iterator;
+	private Cursor<T> cursor;
 
-	public IteratorCursor(Iterator<T> iter) {
-		iterator = iter;
+	public CursorIterator(Cursor<T> cursor) {
+		this.cursor = cursor;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
 	@Override
 	public boolean hasNext() {
-		return iterator.hasNext();
+		return cursor.hasNext();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#next()
+	 */
 	@Override
 	public T next() {
-		return iterator.next();
+		return cursor.next();
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#remove()
+	 */
 	@Override
-	public Iterator<T> iterator() {
-		return iterator;
+	public void remove() {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -30,44 +30,44 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.data;
 
-import java.util.Iterator;
+import java.util.Collection;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CursorIterator<T> implements Iterator<T> {
+public class CollectionDataSource<T> implements DataSource<T> {
 	
-	private Cursor<T> cursor;
-
-	public CursorIterator(Cursor<T> cursor) {
-		this.cursor = cursor;
+	private final Collection<T> collection;
+	
+	public CollectionDataSource(Collection<T> col) {
+		collection = col;
 	}
 
 	/* (non-Javadoc)
-	 * @see java.util.Iterator#hasNext()
+	 * @see org.grouplens.reflens.util.DataSource#cursor()
 	 */
 	@Override
-	public boolean hasNext() {
-		return cursor.hasNext();
+	public Cursor<T> cursor() {
+		return new IteratorCursor<T>(collection.iterator());
 	}
 
 	/* (non-Javadoc)
-	 * @see java.util.Iterator#next()
+	 * @see org.grouplens.reflens.util.DataSource#getRowCount()
 	 */
 	@Override
-	public T next() {
-		return cursor.next();
+	public int getRowCount() {
+		return collection.size();
 	}
 
 	/* (non-Javadoc)
-	 * @see java.util.Iterator#remove()
+	 * @see java.io.Closeable#close()
 	 */
 	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
+	public void close() {
+		// no-op
 	}
 
 }

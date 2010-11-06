@@ -11,9 +11,9 @@ import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
+import org.grouplens.reflens.data.DataSource;
 import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.util.DataSource;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;

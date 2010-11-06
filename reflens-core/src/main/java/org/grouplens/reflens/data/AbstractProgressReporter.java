@@ -1,4 +1,6 @@
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.data;
+
+import org.grouplens.reflens.util.ProgressReporter;
 
 public abstract class AbstractProgressReporter implements ProgressReporter
 {

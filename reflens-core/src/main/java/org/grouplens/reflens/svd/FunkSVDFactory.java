@@ -20,8 +20,8 @@ package org.grouplens.reflens.svd;
 
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.data.DataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.util.DataSource;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

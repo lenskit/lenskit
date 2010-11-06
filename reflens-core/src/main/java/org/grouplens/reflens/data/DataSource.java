@@ -30,30 +30,46 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.data;
 
-import java.util.Iterator;
+import java.util.Collection;
+
 
 /**
+ * Data sources for sequences of items.
+ * 
+ * <tt>DataSource</tt> is effectively an immutable, closeable variant of
+ * {@link Collection}.  Objects can be counted and iterated, and it can be
+ * closed (for instance, to close an underlying database connection).
+ * 
+ * Implementers are responsible to make sure that the view presented of the
+ * underlying data does not change from when a data source is opened (or created)
+ * to when it is closed, as recommender builders may take multiple passes over
+ * the data source to do the job.  This can be accomplished with in-memory
+ * caching, using the transactional semantics of the underlying storage system,
+ * or by some other backend-dependent means.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @param T The type of data returned.
  */
-public abstract class AbstractCursor<T> implements Cursor<T> {
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.util.Cursor#close()
-	 */
-	@Override
-	public void close() {
-		// no-op
-	}
-
+public interface DataSource<T> {
 	/**
-	 * Get the iterator.  This method just returns <tt>this</tt>, so for-each
-	 * loops can be used over cursors.
-	 * @see java.lang.Iterable#iterator()
+	 * Get the number of items in this data source.
+	 * @return The number of items in the data source.  This should be exactly
+	 * the number of items accessed by iterating over the return value of {@link #cursor()}.
 	 */
-	@Override
-	public Iterator<T> iterator() {
-		return new CursorIterator<T>(this);
-	}
+	public int getRowCount();
+	
+	/**
+	 * Create a new cursor over the data source.
+	 * @return A new cursor that iterates over the data source from the
+	 * beginning.
+	 */
+	public Cursor<T> cursor();
+	
+	/**
+	 * Close the data source.  All open cursors will be invalidated.
+	 */
+	public void close();
 }

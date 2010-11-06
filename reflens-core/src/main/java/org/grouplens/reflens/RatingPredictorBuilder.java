@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens;
 
+import org.grouplens.reflens.data.DataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.util.DataSource;
 
 public interface RatingPredictorBuilder<U,I> {
 

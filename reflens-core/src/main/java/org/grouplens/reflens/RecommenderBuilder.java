@@ -18,8 +18,8 @@
 
 package org.grouplens.reflens;
 
+import org.grouplens.reflens.data.DataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.util.DataSource;
 
 /**
  * Interface for recommender factories for the benchmarker to use.

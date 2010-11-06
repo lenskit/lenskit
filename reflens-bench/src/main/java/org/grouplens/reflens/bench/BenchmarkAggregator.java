@@ -29,10 +29,10 @@ import java.util.List;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.data.CollectionDataSource;
+import org.grouplens.reflens.data.DataSource;
 import org.grouplens.reflens.data.ScoredObject;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.util.CollectionDataSource;
-import org.grouplens.reflens.util.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

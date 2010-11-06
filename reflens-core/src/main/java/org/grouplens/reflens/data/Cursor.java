@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.data;
 
 import java.util.NoSuchElementException;
 
