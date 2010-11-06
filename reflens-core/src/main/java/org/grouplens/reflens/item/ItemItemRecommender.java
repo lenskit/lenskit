@@ -42,6 +42,27 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 	public ItemItemRecommender(ItemItemModel model) {
 		this.model = model;
 	}
+	
+	@Override
+	public Map<I,Double> predict(U user, Map<I,Double> ratings, Collection<I> items) {
+		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
+		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
+		sums.defaultReturnValue(0);
+		weights.defaultReturnValue(0);
+		for (Map.Entry<I, Double> rating: ratings.entrySet()) {
+			final double r = rating.getValue();
+			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
+				double s = score.getScore();
+				int i = score.getIndex();
+				weights.put(i, weights.get(i) + s);
+				sums.put(i, sums.get(i) + s*r);
+			}
+		}
+		Map<I,Double> preds;
+		for (I item: items) {
+			
+		}
+	}
 
 	@Override
 	public ScoredId predict(long user, Map<Long,Double> ratings, long item) {

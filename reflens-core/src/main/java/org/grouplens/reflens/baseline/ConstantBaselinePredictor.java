@@ -7,6 +7,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collection;
 import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
@@ -17,6 +18,7 @@ import org.grouplens.reflens.data.UserRatingProfile;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -35,6 +37,14 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 	
 	protected ConstantBaselinePredictor(double value) {
 		this.value = value;
+	}
+	
+	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
+		Map<Long,Double> preds = mapProvider.get();
+		for (Long item: items) {
+			preds.put(item, value);
+		}
+		return preds;
 	}
 
 	/* (non-Javadoc)

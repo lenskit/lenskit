@@ -32,6 +32,7 @@
  */
 package org.grouplens.reflens;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.grouplens.reflens.data.ScoredId;
@@ -41,5 +42,6 @@ import org.grouplens.reflens.data.ScoredId;
  * TODO: Support multiple simultaneous predictions
  */
 public interface RatingPredictor {
+	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items);
 	public ScoredId predict(long user, Map<Long,Double> ratings, long item);
 }
