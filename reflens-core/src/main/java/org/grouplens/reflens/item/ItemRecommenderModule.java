@@ -18,6 +18,8 @@
 
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Properties;
@@ -130,8 +132,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureUserNormalizer() {
-		Key<Normalizer<Integer,Map<Integer,Double>>> rnKey =
-			Key.get(new TypeLiteral<Normalizer<Integer,Map<Integer,Double>>>() {},
+		Key<Normalizer<Long,Map<Long,Double>>> rnKey =
+			Key.get(new TypeLiteral<Normalizer<Long,Map<Long,Double>>>() {},
 					RatingNormalization.class);
 		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
 	}
@@ -155,7 +157,11 @@ public class ItemRecommenderModule extends AbstractModule {
 		String rnorm = properties.getProperty(propName);
 		Class target = dftClass;
 		if (rnorm != null) {
-			target = ObjectLoader.getClass(rnorm);
+			try {
+				target = ObjectLoader.getClass(rnorm);
+			} catch (ClassNotFoundException e) {
+				logger.error("Class {} (from {}) not found", rnorm, propName);
+			}
 		}
 		
 		if (target != null) {
@@ -170,8 +176,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		Key<Similarity<Map<Integer,Double>>> key =
-			Key.get(new TypeLiteral<Similarity<Map<Integer,Double>>>() {},
+		Key<Similarity<Long2DoubleMap>> key =
+			Key.get(new TypeLiteral<Similarity<Long2DoubleMap>>() {},
 					ItemSimilarity.class);
 		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
 				CosineSimilarity.class);

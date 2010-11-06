@@ -20,6 +20,7 @@ package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,28 +35,13 @@ import com.google.inject.Provider;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MeanNormalization<S,T> implements Normalizer<S,Map<T,Double>> {
-	private final Provider<Map<T,Double>> mapProvider;
-	
-	public MeanNormalization() {
-		mapProvider = new Provider<Map<T,Double>>() {
-			public Map<T,Double> get() {
-				return new HashMap<T, Double>();
-			}
-		};
-	}
-	
-	@Inject
-	MeanNormalization(Provider<Map<T,Double>> mapP) {
-		mapProvider = mapP;
-	}
-	
+public class MeanNormalization implements Normalizer<Long,Map<Long,Double>> {
 	/**
 	 * Computes the mean of the vector.
 	 * @param vector
 	 * @return
 	 */
-	private double computeMean(Map<T,Double> vector) {
+	private double computeMean(Map<Long,Double> vector) {
 		double sum = 0.0f;
 		
 		// if the value collection is a double collection, we can avoid boxing
@@ -79,10 +65,10 @@ public class MeanNormalization<S,T> implements Normalizer<S,Map<T,Double>> {
 	 * @see org.grouplens.reflens.Normalization#normalize(java.lang.Object)
 	 */
 	@Override
-	public Map<T,Double> normalize(S owner, Map<T,Double> ratings) {
-		Map<T,Double> normed = mapProvider.get();
+	public Map<Long,Double> normalize(Long owner, Map<Long,Double> ratings) {
+		Map<Long,Double> normed = new Long2DoubleOpenHashMap();
 		double mean = computeMean(ratings);
-		for (Map.Entry<T, Double> e: ratings.entrySet()) {
+		for (Map.Entry<Long, Double> e: ratings.entrySet()) {
 			normed.put(e.getKey(), e.getValue() - mean);
 		}
 		return normed;

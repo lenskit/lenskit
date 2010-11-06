@@ -61,6 +61,7 @@ public final class BenchmarkRunner {
 			.getLogger(BenchmarkRunner.class);
 
 	private static void fail(int code, String msg) {
+		// look for a no-return annotation for this method
 		fail(code, msg, null);
 	}
 
@@ -103,7 +104,14 @@ public final class BenchmarkRunner {
 	private void run() {
 		String moduleName = options.getModule();
 		logger.debug("Loading module {}", moduleName);
-		Module recModule = ObjectLoader.makeInstance(moduleName);
+		Module recModule;
+		try {
+			recModule = ObjectLoader.makeInstance(moduleName);
+		} catch (ClassNotFoundException e) {
+			logger.error("Cannot find module {}", moduleName);
+			fail(3, "Cannot find module " + moduleName);
+			return; /* fail will exit */
+		}
 		injector = Guice.createInjector(new AbstractModule() {
 			protected void configure() {
 				if (options.showProgress()) {

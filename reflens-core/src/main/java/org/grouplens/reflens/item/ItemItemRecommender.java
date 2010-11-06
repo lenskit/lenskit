@@ -21,9 +21,12 @@ package org.grouplens.reflens.item;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +47,12 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 	}
 	
 	@Override
-	public Map<I,Double> predict(U user, Map<I,Double> ratings, Collection<I> items) {
+	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
 		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		sums.defaultReturnValue(0);
 		weights.defaultReturnValue(0);
-		for (Map.Entry<I, Double> rating: ratings.entrySet()) {
+		for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
 			final double r = rating.getValue();
 			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
 				double s = score.getScore();
@@ -58,10 +61,15 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 				sums.put(i, sums.get(i) + s*r);
 			}
 		}
-		Map<I,Double> preds;
-		for (I item: items) {
-			
+		Long2DoubleMap preds = new Long2DoubleOpenHashMap();
+		for (long item: items) {
+			int idx = model.getItemIndex(item);
+			double w = weights.get(idx);
+			if (w > 0) {
+				preds.put(item, sums.get(idx) / w);
+			}
 		}
+		return preds;
 	}
 
 	@Override

@@ -65,6 +65,10 @@ public class ItemItemModel implements Serializable {
 		}
 	}
 	
+	public int getItemIndex(long id) {
+		return itemIndexer.getIndex(id);
+	}
+	
 	public long getItem(int idx) {
 		return itemIndexer.getId(idx);
 	}

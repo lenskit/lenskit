@@ -3,6 +3,8 @@
  */
 package org.grouplens.reflens.baseline;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,8 +42,8 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 	}
 	
 	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
-		Map<Long,Double> preds = mapProvider.get();
-		for (Long item: items) {
+		Map<Long,Double> preds = new Long2DoubleOpenHashMap();
+		for (long item: items) {
 			preds.put(item, value);
 		}
 		return preds;

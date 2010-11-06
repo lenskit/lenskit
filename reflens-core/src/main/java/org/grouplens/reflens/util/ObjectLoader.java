@@ -32,16 +32,12 @@ import org.slf4j.LoggerFactory;
 public class ObjectLoader {
 	private static Logger logger = LoggerFactory.getLogger(ObjectLoader.class);
 	
-	public static <T> Class<T> getClass(String name) {
-		try {
-			@SuppressWarnings("unchecked")
-			Class<T> factClass =
-				(Class<T>) Class.forName(name);
-			logger.debug("Loaded class {}", factClass.getName());
-			return factClass;
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Class not found", e);
-		}
+	public static <T> Class<T> getClass(String name) throws ClassNotFoundException {
+		@SuppressWarnings("unchecked")
+		Class<T> factClass =
+			(Class<T>) Class.forName(name);
+		logger.debug("Loaded class {}", factClass.getName());
+		return factClass;
 	}
 	
 	/**
@@ -50,7 +46,7 @@ public class ObjectLoader {
 	 * @param name The name of the class to construct.
 	 * @return A new instance of the class <tt>name</tt>.
 	 */
-	public static <T> T makeInstance(String name) {
+	public static <T> T makeInstance(String name) throws ClassNotFoundException {
 		try {
 			Class<T> factClass = getClass(name);
 			Constructor<T> ctor = factClass.getConstructor();

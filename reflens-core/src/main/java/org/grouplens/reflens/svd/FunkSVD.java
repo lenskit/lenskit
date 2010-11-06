@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -300,17 +301,34 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	 */
 	@Override
 	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+		LongArrayList items = new LongArrayList(1);
+		items.add(item);
+		Map<Long,Double> scores = predict(user, ratings, items);
+		
+		if (scores.containsKey(item))
+			return new ScoredId(item, scores.get(item));
+		else
+			return null;
+	}
+	
+	@Override
+	public Map<Long,Double> predict(long user, Map<Long, Double> ratings, Collection<Long> items) {
 		double dev = averageDeviation(ratings);
 		double uprefs[] = foldIn(ratings, dev);
-		int iid = itemIndexer.getIndex(item);
-		if (iid < 0)
-			return null;
 		
-		double score = itemAverages.get(iid) + dev;
-		for (int f = 0; f < numFeatures; f++) {
-			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
+		Long2DoubleMap preds = new Long2DoubleOpenHashMap();
+		for (long item: items) {
+			int iid = itemIndexer.getIndex(item);
+			if (iid < 0)
+				continue;
+
+			double score = itemAverages.get(iid) + dev;
+			for (int f = 0; f < numFeatures; f++) {
+				score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
+			}
+			preds.put(item, score);
 		}
-		return new ScoredId(item, score);
+		return preds;
 	}
 	
 	public Map<Long,Double> predict(UserRatingProfile user, Set<Long> items) {
