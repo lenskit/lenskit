@@ -85,7 +85,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	private SimilarityMatrixBuilderFactory matrixFactory;
 	@Nullable
 	private Normalizer<Long, Map<Long,Double>> ratingNormalizer;
-	private Similarity<Map<Long,Double>> itemSimilarity;
+	private Similarity<Long2DoubleMap> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	private final int threadCount;
@@ -96,7 +96,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableMapSimilarity<Long,Double> itemSimilarity,
+			@ItemSimilarity OptimizableMapSimilarity<Long,Double, Long2DoubleMap> itemSimilarity,
 			@Nullable @RatingNormalization Normalizer<Long,Map<Long,Double>> ratingNormalizer) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;

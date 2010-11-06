@@ -38,6 +38,6 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface OptimizableMapSimilarity<K, V> extends Similarity<Map<K, V>> {
+public interface OptimizableMapSimilarity<K,V,M extends Map<K,V>> extends Similarity<M> {
 
 }

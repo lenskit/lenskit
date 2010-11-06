@@ -32,6 +32,8 @@
  */
 package org.grouplens.reflens.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
 import java.util.Properties;
 
 import org.grouplens.reflens.OptimizableMapSimilarity;
@@ -67,8 +69,8 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 	
 	@Override
 	protected void configureItemSimilarity() {
-		Key<OptimizableMapSimilarity<Integer,Double>> key =
-			Key.get(new TypeLiteral<OptimizableMapSimilarity<Integer,Double>>() {},
+		Key<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>> key =
+			Key.get(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>() {},
 					ItemSimilarity.class);
 		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
 				CosineSimilarity.class);

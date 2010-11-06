@@ -47,12 +47,13 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	
 	private SimilarityMatrixBuilderFactory matrixFactory;
 	private Normalizer<Long, Map<Long,Double>> ratingNormalizer;
-	private Similarity<? super Long2DoubleMap> itemSimilarity;
+	// TODO Make this Similarity<? super Long2DoubleMap> if we can w/ Guice
+	private Similarity<Long2DoubleMap> itemSimilarity;
 
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<? super Long2DoubleMap> itemSimilarity,
+			@ItemSimilarity Similarity<Long2DoubleMap> itemSimilarity,
 			@Nullable @RatingNormalization Normalizer<Long,Map<Long,Double>> ratingNormalizer) {
 		this.matrixFactory = matrixFactory;
 		this.ratingNormalizer = ratingNormalizer;
