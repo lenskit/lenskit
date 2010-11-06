@@ -51,7 +51,7 @@ import org.grouplens.reflens.util.ProgressReporter;
  *
  */
 public class IntegerTaskQueue {
-	private final long taskCount;
+	private final int taskCount;
 	private AtomicInteger nextTask;
 	private ProgressReporter progress;
 	
@@ -60,7 +60,7 @@ public class IntegerTaskQueue {
 		this(null, ntasks);
 	}
 
-	public IntegerTaskQueue(ProgressReporter progress, long ntasks) {
+	public IntegerTaskQueue(ProgressReporter progress, int ntasks) {
 		this.progress = progress;
 		this.taskCount = ntasks;
 		this.nextTask = new AtomicInteger();
