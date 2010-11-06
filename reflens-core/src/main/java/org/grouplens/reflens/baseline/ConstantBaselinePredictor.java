@@ -20,7 +20,6 @@ import org.grouplens.reflens.data.UserRatingProfile;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

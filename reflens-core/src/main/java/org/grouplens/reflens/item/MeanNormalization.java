@@ -23,13 +23,9 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.grouplens.reflens.Normalizer;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

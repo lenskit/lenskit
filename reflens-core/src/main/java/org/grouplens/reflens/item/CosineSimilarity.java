@@ -19,12 +19,9 @@
 package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-
-import java.util.Map;
 
 import org.grouplens.reflens.OptimizableMapSimilarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
