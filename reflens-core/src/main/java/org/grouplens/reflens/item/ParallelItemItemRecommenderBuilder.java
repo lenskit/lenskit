@@ -114,7 +114,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 				IntSortedSet s = new IntRBTreeSet();
 				userItemMap.put(profile.getUser(), s);
 				for (long item: profile.getRatings().keySet()) {
-					int idx = indexer.internObject(item);
+					int idx = indexer.internId(item);
 					s.add(idx);
 				}
 			}

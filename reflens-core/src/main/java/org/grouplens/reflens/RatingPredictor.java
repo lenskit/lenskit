@@ -34,12 +34,12 @@ package org.grouplens.reflens;
 
 import java.util.Map;
 
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * TODO: Support multiple simultaneous predictions
  */
 public interface RatingPredictor {
-	public ScoredObject<Long> predict(long user, Map<Long,Double> ratings, long item);
+	public ScoredId predict(long user, Map<Long,Double> ratings, long item);
 }

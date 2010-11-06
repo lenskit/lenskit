@@ -31,7 +31,7 @@ import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.CollectionDataSet;
 import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,19 +90,19 @@ public class BenchmarkAggregator {
 		int nitems = 0;
 		int ngood = 0;
 		for (UserRatingProfile user: testUsers) {
-			List<ScoredObject<Long>> ratings = new ArrayList<ScoredObject<Long>>(
-					ScoredObject.wrap(user.getRatings()));
+			List<ScoredId> ratings = new ArrayList<ScoredId>(
+					ScoredId.wrap(user.getRatings()));
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratings);
 			Long2DoubleMap queryRatings = new Long2DoubleOpenHashMap();
 			for (int i = 0; i < midpt; i++) {
-				ScoredObject<Long> rating = ratings.get(i);
-				queryRatings.put(rating.getObject().longValue(), rating.getScore());
+				ScoredId rating = ratings.get(i);
+				queryRatings.put(rating.getId(), rating.getScore());
 			}
 			for (int i = midpt; i < ratings.size(); i++) {
-				long iid = ratings.get(i).getObject();
-				ScoredObject prediction = rec.predict(user.getUser(), queryRatings, iid);
+				long iid = ratings.get(i).getId();
+				ScoredId prediction = rec.predict(user.getUser(), queryRatings, iid);
 				nitems++;
 				if (prediction != null) {
 					double err = prediction.getScore() - user.getRating(iid);

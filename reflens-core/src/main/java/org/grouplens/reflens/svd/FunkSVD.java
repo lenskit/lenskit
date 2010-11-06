@@ -38,7 +38,7 @@ import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.LearningRate;
@@ -136,8 +136,8 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		try {
 			for (UserRatingProfile user: cursor) {
 				int uid = userIndexer.getIndex(user.getUser());
-				for (ScoredObject<Long> rating: ScoredObject.fastWrap(user.getRatings())) {
-					int iid = itemIndexer.getIndex(rating.getObject());
+				for (ScoredId rating: ScoredId.fastWrap(user.getRatings())) {
+					int iid = itemIndexer.getIndex(rating.getId());
 					Rating r = new Rating(uid, iid, rating.getScore());
 					ratings.add(r);
 				}
@@ -268,8 +268,8 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		double featurePrefs[] = new double[numFeatures];
 		DoubleArrays.fill(featurePrefs, 0.0f);
 		
-		for (ScoredObject<Long> rating: ScoredObject.fastWrap(ratings)) {
-			int iid = itemIndexer.getIndex(rating.getObject());
+		for (ScoredId rating: ScoredId.fastWrap(ratings)) {
+			int iid = itemIndexer.getIndex(rating.getId());
 			if (iid < 0) continue;
 			double r = rating.getScore() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
@@ -283,8 +283,8 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	protected double averageDeviation(Map<Long,Double> ratings) {
 		double dev = 0.0f;
 		int n = 0;
-		for (ScoredObject<Long> rating: ScoredObject.fastWrap(ratings)) {
-			int iid = itemIndexer.getIndex(rating.getObject());
+		for (ScoredId rating: ScoredId.fastWrap(ratings)) {
+			int iid = itemIndexer.getIndex(rating.getId());
 			if (iid < 0) continue;
 			dev += rating.getScore() - itemAverages.getDouble(iid);
 			n++;
@@ -299,7 +299,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	 * @see org.grouplens.reflens.Recommender#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
-	public ScoredObject<Long> predict(long user, Map<Long, Double> ratings, long item) {
+	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
 		double dev = averageDeviation(ratings);
 		double uprefs[] = foldIn(ratings, dev);
 		int iid = itemIndexer.getIndex(item);
@@ -310,7 +310,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		for (int f = 0; f < numFeatures; f++) {
 			score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
 		}
-		return new ScoredObject<Long>(item, score);
+		return new ScoredId(item, score);
 	}
 	
 	public Map<Long,Double> predict(UserRatingProfile user, Set<Long> items) {

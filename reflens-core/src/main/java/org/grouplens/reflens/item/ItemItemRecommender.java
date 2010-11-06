@@ -32,7 +32,7 @@ import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
 
 public class ItemItemRecommender implements RecommendationEngine, RatingRecommender, RatingPredictor, Serializable {
@@ -44,7 +44,7 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 	}
 
 	@Override
-	public ScoredObject<Long> predict(long user, Map<Long,Double> ratings, long item) {
+	public ScoredId predict(long user, Map<Long,Double> ratings, long item) {
 		double sum = 0;
 		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
@@ -58,18 +58,18 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ScoredObject<Long>(item, sum / totalWeight);
+			return new ScoredId(item, sum / totalWeight);
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public List<ScoredObject<Long>> recommend(long user, Map<Long,Double> ratings) {
+	public List<ScoredId> recommend(long user, Map<Long,Double> ratings) {
 		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
-		for (ScoredObject<Long> rating: ScoredObject.wrap(ratings.entrySet())) {
-			for (IndexedItemScore score: model.getNeighbors(rating.getObject())) {
+		for (ScoredId rating: ScoredId.wrap(ratings.entrySet())) {
+			for (IndexedItemScore score: model.getNeighbors(rating.getId())) {
 				int jid = score.getIndex();
 				double val = score.getScore();
 				if (!ratings.containsKey(model.getItem(jid))) {
@@ -87,7 +87,7 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 				}
 			}
 		}
-		ArrayList<ScoredObject<Long>> results = new ArrayList<ScoredObject<Long>>(scores.size());
+		ArrayList<ScoredId> results = new ArrayList<ScoredId>(scores.size());
 		IntIterator iids = scores.keySet().iterator();
 		while (iids.hasNext()) {
 			int iid = iids.next();
@@ -95,7 +95,7 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 			if (w >= 0.1) {
 				long item = model.getItem(iid);
 				double pred = scores.get(iid) / w;
-				results.add(new ScoredObject<Long>(item, pred));
+				results.add(new ScoredId(item, pred));
 			}
 		}
 		Collections.sort(results);

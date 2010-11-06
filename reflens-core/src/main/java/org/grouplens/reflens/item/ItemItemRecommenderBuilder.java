@@ -109,7 +109,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
 				for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
 					long item = rating.getKey();
-					int idx = indexer.internObject(item);
+					int idx = indexer.internId(item);
 					if (idx >= itemVectors.size()) {
 						// it's a new item - add one
 						assert idx == itemVectors.size();

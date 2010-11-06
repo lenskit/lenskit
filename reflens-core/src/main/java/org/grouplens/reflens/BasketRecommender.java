@@ -35,9 +35,9 @@
 import java.util.List;
 import java.util.Set;
 
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 
 // TODO name this better
 public interface BasketRecommender {
-	public List<ScoredObject<Long>> recommend(long user, Set<Long> basket);
+	public List<ScoredId> recommend(long user, Set<Long> basket);
 }

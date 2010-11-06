@@ -21,8 +21,8 @@ package org.grouplens.reflens;
 import java.util.List;
 import java.util.Map;
 
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 
 public interface RatingRecommender {
-	public List<ScoredObject<Long>> recommend(long user, Map<Long,Double> ratings);
+	public List<ScoredId> recommend(long user, Map<Long,Double> ratings);
 }

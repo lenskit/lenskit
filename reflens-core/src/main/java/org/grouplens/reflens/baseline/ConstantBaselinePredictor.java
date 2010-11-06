@@ -12,7 +12,7 @@ import java.util.Map;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.ScoredObject;
+import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 
 import com.google.inject.BindingAnnotation;
@@ -41,8 +41,8 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
 	 */
 	@Override
-	public ScoredObject<Long> predict(long user, Map<Long, Double> ratings, long item) {
-		return new ScoredObject<Long>(item, value);
+	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+		return new ScoredId(item, value);
 	}
 
 	public static class Builder implements RatingPredictorBuilder {

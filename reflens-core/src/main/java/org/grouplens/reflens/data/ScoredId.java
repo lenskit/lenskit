@@ -24,16 +24,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Associate a doubleing-point score with an object.
+ * Associate a double score with an object.
  * 
  * This class implements {@link Comparable}.  Instances are sorted by score.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- * @param <T> The type of object to score.
  */
-public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
-	private T object;
+public class ScoredId implements Comparable<ScoredId> {
+	private long id;
 	private double score;
 	
 	/**
@@ -41,12 +39,12 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * @param object The object to score.
 	 * @param score The object's score.
 	 */
-	public ScoredObject(T object, double score) {
-		this.object = object;
+	public ScoredId(long object, double score) {
+		this.id = object;
 		this.score = score;
 	}
 	
-	public ScoredObject(Map.Entry<? extends T, Double> entry) {
+	public ScoredId(Map.Entry<Long, Double> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 	
@@ -54,8 +52,8 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * Get the scored object.
 	 * @return
 	 */
-	public T getObject() {
-		return object;
+	public long getId() {
+		return id;
 	}
 	
 	/**
@@ -72,12 +70,12 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * @param entries A collection of map entries.
 	 * @return A collection representing the map entries as scored objects.
 	 */
-	public static <T> Collection<ScoredObject<T>> wrap(final Collection<Map.Entry<T,Double>> entries) {
-		return new AbstractCollection<ScoredObject<T>>() {
+	public static Collection<ScoredId> wrap(final Collection<Map.Entry<Long,Double>> entries) {
+		return new AbstractCollection<ScoredId>() {
 
 			@Override
-			public Iterator<ScoredObject<T>> iterator() {
-				return new IteratorWrapper<T>(entries.iterator());
+			public Iterator<ScoredId> iterator() {
+				return new IteratorWrapper(entries.iterator());
 			}
 
 			@Override
@@ -88,7 +86,7 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 		};
 	}
 	
-	public static <T> Collection<ScoredObject<T>> wrap(final Map<T,Double> entries) {
+	public static Collection<ScoredId> wrap(final Map<Long,Double> entries) {
 		return wrap(entries.entrySet());
 	}
 	
@@ -100,12 +98,12 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	 * @param entries A collection of map entries.
 	 * @return A collection representing the map entries as scored objects.
 	 */
-	public static <T> Collection<ScoredObject<T>> fastWrap(final Collection<Map.Entry<T,Double>> entries) {
-		return new AbstractCollection<ScoredObject<T>>() {
+	public static Collection<ScoredId> fastWrap(final Collection<Map.Entry<Long,Double>> entries) {
+		return new AbstractCollection<ScoredId>() {
 
 			@Override
-			public Iterator<ScoredObject<T>> iterator() {
-				return new FastIteratorWrapper<T>(entries.iterator());
+			public Iterator<ScoredId> iterator() {
+				return new FastIteratorWrapper(entries.iterator());
 			}
 
 			@Override
@@ -116,42 +114,42 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 		};
 	}
 	
-	public static <T> Collection<ScoredObject<T>> fastWrap(final Map<T,Double> entries) {
+	public static Collection<ScoredId> fastWrap(final Map<Long,Double> entries) {
 		return fastWrap(entries.entrySet());
 	}
 	
-	private static class IteratorWrapper<I> implements Iterator<ScoredObject<I>> {
-		private final Iterator<Map.Entry<I, Double>> iter;
-		public IteratorWrapper(Iterator<Map.Entry<I, Double>> iter) {
+	private static class IteratorWrapper implements Iterator<ScoredId> {
+		private final Iterator<Map.Entry<Long, Double>> iter;
+		public IteratorWrapper(Iterator<Map.Entry<Long, Double>> iter) {
 			this.iter = iter;
 		}
 		
 		public boolean hasNext() {
 			return iter.hasNext();
 		}
-		public ScoredObject<I> next() {
-			Map.Entry<I, Double> next = iter.next();
-			return new ScoredObject<I>(next);
+		public ScoredId next() {
+			Map.Entry<Long, Double> next = iter.next();
+			return new ScoredId(next);
 		}
 		public void remove() {
 			iter.remove();
 		}
 	}
 	
-	private static class FastIteratorWrapper<I> implements Iterator<ScoredObject<I>> {
-		private final Iterator<Map.Entry<I, Double>> iter;
-		private ScoredObject<I> obj = new ScoredObject<I>(null, Double.NaN);
+	private static class FastIteratorWrapper implements Iterator<ScoredId> {
+		private final Iterator<Map.Entry<Long, Double>> iter;
+		private ScoredId obj = new ScoredId(0, Double.NaN);
 		
-		public FastIteratorWrapper(Iterator<Map.Entry<I, Double>> iter) {
+		public FastIteratorWrapper(Iterator<Map.Entry<Long, Double>> iter) {
 			this.iter = iter;
 		}
 		
 		public boolean hasNext() {
 			return iter.hasNext();
 		}
-		public ScoredObject<I> next() {
-			Map.Entry<I, Double> next = iter.next();
-			obj.object = next.getKey();
+		public ScoredId next() {
+			Map.Entry<Long, Double> next = iter.next();
+			obj.id = next.getKey();
 			obj.score = next.getValue();
 			return obj;
 		}
@@ -161,15 +159,15 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	}
 	
 	@Override
-	public int compareTo(ScoredObject<T> other) {
+	public int compareTo(ScoredId other) {
 		return Double.compare(score, other.getScore());
 	}
 	
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof ScoredObject<?>) {
-			ScoredObject<?> os = (ScoredObject<?>) o;
-			return object.equals(os.object) && score == os.score;
+		if (o instanceof ScoredId) {
+			ScoredId os = (ScoredId) o;
+			return id == os.id && score == os.score;
 		} else {
 			return false;
 		}
@@ -177,6 +175,6 @@ public class ScoredObject<T> implements Comparable<ScoredObject<T>> {
 	
 	@Override
 	public int hashCode() {
-		return object != null ? object.hashCode() : 0;
+		return (int) (id ^ (id >> 32));
 	}
 }

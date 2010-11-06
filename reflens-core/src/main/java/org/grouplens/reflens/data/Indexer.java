@@ -47,12 +47,12 @@ public class Indexer implements Index {
 		return ids.size();
 	}
 	
-	public int internObject(long obj) {
-		int idx = getIndex(obj);
+	public int internId(long id) {
+		int idx = getIndex(id);
 		if (idx < 0) {
 			idx = ids.size();
-			ids.add(obj);
-			indexes.put(obj, idx);
+			ids.add(id);
+			indexes.put(id, idx);
 		}
 		return idx;
 	}
