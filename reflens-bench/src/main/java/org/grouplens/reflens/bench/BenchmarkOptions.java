@@ -18,10 +18,7 @@
 
 package org.grouplens.reflens.bench;
 
-import java.util.List;
-
 import uk.co.flamingpenguin.jewel.cli.Option;
-import uk.co.flamingpenguin.jewel.cli.Unparsed;
 
 /**
  * Interface for JewelCLI declaring the command line options taken by
@@ -55,12 +52,9 @@ interface BenchmarkOptions {
 	
 	@Option(longName="progress-bar")
 	boolean showProgress();
-
-	/**
-	 * @return A list of files to use as input data.
-	 */
-	@Unparsed
-	List<String> getFiles();
+	
+	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
+	String getInputFilename();
 
 	@Option(helpRequest = true)
 	boolean getHelp();

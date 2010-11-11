@@ -38,7 +38,7 @@ import java.util.Iterator;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IteratorCursor<T> extends AbstractCursor<T> {
+class IteratorCursor<T> extends AbstractCursor<T> {
 	
 	private Iterator<T> iterator;
 

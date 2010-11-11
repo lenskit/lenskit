@@ -38,7 +38,7 @@ import java.util.Iterator;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CursorIterator<T> implements Iterator<T> {
+class CursorIterator<T> implements Iterator<T> {
 	
 	private Cursor<T> cursor;
 

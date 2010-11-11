@@ -14,9 +14,8 @@ import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.data.DataSet;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.UserRatingProfile;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
@@ -63,7 +62,7 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 			this.value = value;
 		}
 		@Override
-		public RatingPredictor build(DataSet<UserRatingProfile> data) {
+		public RatingPredictor build(RatingDataSource data) {
 			return new ConstantBaselinePredictor(value);
 		}
 	}

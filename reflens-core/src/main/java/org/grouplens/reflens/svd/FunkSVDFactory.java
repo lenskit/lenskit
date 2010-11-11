@@ -20,8 +20,7 @@ package org.grouplens.reflens.svd;
 
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.data.RatingDataSource;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -35,7 +34,7 @@ public class FunkSVDFactory implements RecommenderBuilder {
 	}
 
 	@Override
-	public RecommendationEngine build(DataSet<UserRatingProfile> ratings) {
+	public RecommendationEngine build(RatingDataSource ratings) {
 		FunkSVD rec = svdProvider.get();
 		rec.build(ratings);
 		return rec;

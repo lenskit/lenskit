@@ -1,33 +1,40 @@
 package org.grouplens.reflens.data;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
+import java.util.Collection;
 import java.util.Map;
 
 public class BasicUserRatingProfile implements UserRatingProfile {
 	
 	private long user;
-	private Map<Long, Double> ratings;
+	private Long2ObjectMap<Rating> ratings;
 
-	public BasicUserRatingProfile(long user, Map<Long,Double> ratings) {
+	public BasicUserRatingProfile(long user, Collection<Rating> ratings) {
 		this.user = user;
-		this.ratings = ratings;
+		this.ratings = new Long2ObjectOpenHashMap<Rating>();
+		for (Rating r: ratings) {
+			this.ratings.put(r.getItemId(), r);
+		}
 	}
 	
-	public BasicUserRatingProfile(Map.Entry<Long, ? extends Map<Long,Double>> entry) {
+	public BasicUserRatingProfile(Map.Entry<Long, ? extends Collection<Rating>> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
 
 	@Override
 	public double getRating(long item) {
-		Double r = ratings.get(item);
+		Rating r = ratings.get(item);
 		if (r == null)
 			return Double.NaN;
 		else
-			return r;
+			return r.getRating();
 	}
 
 	@Override
-	public Map<Long,Double> getRatings() {
-		return ratings;
+	public Collection<Rating> getRatings() {
+		return ratings.values();
 	}
 
 	@Override

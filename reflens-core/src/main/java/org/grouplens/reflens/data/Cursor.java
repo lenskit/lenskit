@@ -18,10 +18,34 @@
 
 package org.grouplens.reflens.data;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-
+/**
+ * Cursors over data connections.  These are basically closable iterators which
+ * also implement {@link Iterable} for convenience.
+ * 
+ * Note that the {@link #iterator()} method does <b>not</b> return a fresh
+ * iterator but rather a wraper of this cursor; it is only present to allow
+ * for-each loops over cursors.  After it is exhausted, any iterator returned
+ * will be null.
+ * 
+ * This class does not implement {@link Iterator} because the 'is-a' relationship
+ * does not hold; cursors must be closed by their clients while iterators do
+ * not have such a requirement.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @param <T> The type of data returned by the cursor
+ */
 public interface Cursor<T> extends Iterable<T> {
+	/**
+	 * Get an upper bound on the number of rows available from the cursor.
+	 * @return the number of rows which may be returned by {@link #next()}, or
+	 * -1 if that count is not available.
+	 */
+	public int getRowCount();
+
 	/**
 	 * Query whether the cursor has any more items.  If the cursor or underlying
 	 * source has been closed, this may return even if the end has not been
@@ -42,7 +66,8 @@ public interface Cursor<T> extends Iterable<T> {
 	/**
 	 * Close the cursor.  This invalidates the cursor; no more elements may be
 	 * fetched after a call to <tt>close()</tt> (although implementations are
-	 * not required to enforce this).
+	 * not required to enforce this).  It is not an error to close a cursor
+	 * multiple times.
 	 */
 	public void close();
 }

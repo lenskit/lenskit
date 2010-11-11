@@ -22,8 +22,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -32,8 +32,9 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Indexer;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.RatingNormalization;
@@ -46,7 +47,7 @@ import com.google.inject.Inject;
 public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<Long, Map<Long,Double>> ratingNormalizer;
+	private Normalizer<Long, Collection<Rating>> ratingNormalizer;
 	// TODO Make this Similarity<? super Long2DoubleMap> if we can w/ Guice
 	private Similarity<Long2DoubleMap> itemSimilarity;
 
@@ -54,14 +55,14 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@ItemSimilarity Similarity<Long2DoubleMap> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<Long,Map<Long,Double>> ratingNormalizer) {
+			@Nullable @RatingNormalization Normalizer<Long,Collection<Rating>> ratingNormalizer) {
 		this.matrixFactory = matrixFactory;
 		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
 	}
 	
 	@Override
-	public ItemItemRecommender build(DataSet<UserRatingProfile> data) {
+	public ItemItemRecommender build(RatingDataSource data) {
 		Indexer indexer = new Indexer();
 		List<Long2DoubleMap> itemRatings = buildItemRatings(indexer, data);
 		
@@ -100,23 +101,23 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Long2DoubleMap> buildItemRatings(Indexer indexer, DataSet<UserRatingProfile> data) {
+	private List<Long2DoubleMap> buildItemRatings(Indexer indexer, RatingDataSource data) {
 		ArrayList<Long2DoubleMap> itemVectors = new ArrayList<Long2DoubleMap>();
-		Cursor<UserRatingProfile> cursor = data.cursor();
+		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
 			for (UserRatingProfile user: cursor) {
-				Map<Long,Double> ratings = user.getRatings();
+				Collection<Rating> ratings = user.getRatings();
 				if (ratingNormalizer != null)
 					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
-				for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
-					long item = rating.getKey();
+				for (Rating rating: ratings) {
+					long item = rating.getItemId();
 					int idx = indexer.internId(item);
 					if (idx >= itemVectors.size()) {
 						// it's a new item - add one
 						assert idx == itemVectors.size();
 						itemVectors.add(new Long2DoubleOpenHashMap());
 					}
-					itemVectors.get(idx).put(user.getUser(), (double) rating.getValue());
+					itemVectors.get(idx).put(user.getUser(), (double) rating.getRating());
 				}
 			}
 		} finally {

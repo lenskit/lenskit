@@ -18,22 +18,10 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.BasicUserRatingProfile;
-import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.slf4j.Logger;
@@ -127,7 +115,8 @@ public final class BenchmarkRunner {
 		RatingSet data = null;
 		try {
 			logger.debug("Loading ratings data");
-			data = new RatingSet(options.getNumFolds(),	readRatingsData());
+			data = new RatingSet(options.getNumFolds(),
+					new SimpleFileDataSource(new File(options.getInputFilename()), options.getDelimiter()));
 		} catch (FileNotFoundException e) {
 			fail(3, e);
 		}
@@ -147,41 +136,5 @@ public final class BenchmarkRunner {
 			agg.addBenchmark(data.trainingSet(i), data.testSet(i));
 		}
 		agg.printResults();
-	}
-
-	private List<UserRatingProfile> readRatingsData()
-			throws FileNotFoundException {
-		Long2ObjectMap<Long2DoubleMap> users = new Long2ObjectOpenHashMap<Long2DoubleMap>();
-		Pattern splitter = Pattern.compile(Pattern
-				.quote(options.getDelimiter()));
-		for (String file : options.getFiles()) {
-			Scanner s = new Scanner(new File(file));
-			while (s.hasNextLine()) {
-				String line = s.nextLine();
-				String[] fields = splitter.split(line);
-				if (fields.length < 3) {
-					fail(3, "invalid input line");
-				}
-				int uid = Integer.parseInt(fields[0]);
-				int iid = Integer.parseInt(fields[1]);
-				double rating = Double.parseDouble(fields[2]);
-				Long2DoubleMap history = null;
-				if (users.containsKey(uid)) {
-					history = users.get(uid);
-				} else {
-					history = new Long2DoubleOpenHashMap();
-					users.put(uid, history);
-				}
-				history.put(iid, rating);
-			}
-			s.close();
-		}
-		List<UserRatingProfile> profiles =
-			new ArrayList<UserRatingProfile>();
-		for (Map.Entry<Long, Long2DoubleMap> user: users.entrySet()) {
-			UserRatingProfile p = new BasicUserRatingProfile(user);
-			profiles.add(p);
-		}
-		return profiles;
 	}
 }

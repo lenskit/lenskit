@@ -18,42 +18,31 @@
 
 package org.grouplens.reflens.item;
 
-import it.unimi.dsi.fastutil.doubles.DoubleCollection;
-import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 import org.grouplens.reflens.Normalizer;
+import org.grouplens.reflens.data.Rating;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MeanNormalization implements Normalizer<Long,Map<Long,Double>> {
+public class MeanNormalization implements Normalizer<Long,Collection<Rating>> {
 	/**
 	 * Computes the mean of the vector.
 	 * @param vector
 	 * @return
 	 */
-	private double computeMean(Map<Long,Double> vector) {
+	private double computeMean(Collection<Rating> values) {
+		if (values.isEmpty())
+			return 0.0;
+		
 		double sum = 0.0f;
 		
-		// if the value collection is a double collection, we can avoid boxing
-		Collection<Double> values = vector.values();
-		if (values instanceof DoubleCollection) {
-			DoubleCollection vfast = (DoubleCollection) values;
-			DoubleIterator iter = vfast.iterator();
-			while (iter.hasNext()) {
-				sum += iter.nextDouble();
-			}
-		} else {
-			for (double v: values) {
-				sum += v;
-			}
+		for (Rating r: values) {
+			sum += r.getRating();
 		}
-		
 		return sum / values.size();
 	}
 
@@ -61,11 +50,11 @@ public class MeanNormalization implements Normalizer<Long,Map<Long,Double>> {
 	 * @see org.grouplens.reflens.Normalization#normalize(java.lang.Object)
 	 */
 	@Override
-	public Map<Long,Double> normalize(Long owner, Map<Long,Double> ratings) {
-		Map<Long,Double> normed = new Long2DoubleOpenHashMap();
+	public Collection<Rating> normalize(Long owner, Collection<Rating> ratings) {
+		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		double mean = computeMean(ratings);
-		for (Map.Entry<Long, Double> e: ratings.entrySet()) {
-			normed.put(e.getKey(), e.getValue() - mean);
+		for (Rating r: ratings) {
+			normed.add(new Rating(r.getUserId(), r.getItemId(), r.getRating() - mean, r.getTimestamp()));
 		}
 		return normed;
 	}

@@ -32,7 +32,7 @@
  */
 package org.grouplens.reflens.data;
 
-import java.util.Map;
+import java.util.Collection;
 
 /**
  * Represents a user profile, associating ratings with a user.
@@ -41,6 +41,6 @@ import java.util.Map;
  */
 public interface UserRatingProfile {
 	public long getUser();
-	public Map<Long,Double> getRatings();
+	public Collection<Rating> getRatings();
 	public double getRating(long item);
 }

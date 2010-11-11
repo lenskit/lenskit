@@ -42,7 +42,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import java.util.Map;
+import java.util.Collection;
 
 import javax.annotation.Nullable;
 
@@ -52,9 +52,10 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSet;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.RatingNormalization;
@@ -84,7 +85,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
 	@Nullable
-	private Normalizer<Long, Map<Long,Double>> ratingNormalizer;
+	private Normalizer<Long, Collection<Rating>> ratingNormalizer;
 	private Similarity<Long2DoubleMap> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
@@ -97,7 +98,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
 			@ItemSimilarity OptimizableMapSimilarity<Long,Double, Long2DoubleMap> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<Long,Map<Long,Double>> ratingNormalizer) {
+			@Nullable @RatingNormalization Normalizer<Long,Collection<Rating>> ratingNormalizer) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
 		this.ratingNormalizer = ratingNormalizer;
@@ -105,16 +106,16 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		this.threadCount = threadCount;
 	}
 	
-	private Index indexItems(DataSet<UserRatingProfile> data) {
+	private Index indexItems(RatingDataSource data) {
 		userItemMap = new Long2ObjectOpenHashMap<IntSortedSet>();
 		Indexer indexer = new Indexer();
-		Cursor<UserRatingProfile> cursor = data.cursor();
+		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
 			for (UserRatingProfile profile: cursor) {
 				IntSortedSet s = new IntRBTreeSet();
 				userItemMap.put(profile.getUser(), s);
-				for (long item: profile.getRatings().keySet()) {
-					int idx = indexer.internId(item);
+				for (Rating r: profile.getRatings()) {
+					int idx = indexer.internId(r.getItemId());
 					s.add(idx);
 				}
 			}
@@ -125,8 +126,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	}
 	
 	@Override
-	public ItemItemRecommender build(DataSet<UserRatingProfile> data) {
-		logger.info("Building model for {} ratings with {} threads", data.getRowCount(), threadCount);
+	public ItemItemRecommender build(RatingDataSource data) {
+		logger.info("Building model with {} threads", threadCount);
 		logger.debug("Indexing items");
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");
@@ -191,20 +192,33 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
-	private Long2DoubleMap[] buildItemRatings(final Index index, DataSet<UserRatingProfile> data) {
-		final Long2DoubleMap[] itemVectors = new Long2DoubleMap[data.getRowCount()];
-		for (int i = 0; i < itemVectors.length; i++) {
-			itemVectors[i] = new Long2DoubleOpenHashMap();
-		}
-		
-		Cursor<UserRatingProfile> cursor = data.cursor();
-		
-		try {		
+	private Long2DoubleMap[] buildItemRatings(final Index index, RatingDataSource data) {
+		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
+		try {
+			int nusers = cursor.getRowCount();
+			if (nusers < 0) {
+				Cursor<Long> users = data.getUsers();
+				try {
+					nusers = users.getRowCount();
+					if (nusers < 0) {
+						nusers = 0;
+						for (@SuppressWarnings("unused") long u: users) {
+							nusers += 1;
+						}
+					}
+				} finally {
+					users.close();
+				}
+			}
+			final Long2DoubleMap[] itemVectors = new Long2DoubleMap[nusers];
+			for (int i = 0; i < itemVectors.length; i++) {
+				itemVectors[i] = new Long2DoubleOpenHashMap();
+			}
 			ProgressReporter progress = null;
 			if (progressFactory != null) {
 				progress = progressFactory.create("normalize");
 				if (progress != null)
-					progress.setTotal(data.getRowCount());
+					progress.setTotal(nusers);
 			}
 			IteratorTaskQueue.parallelDo(progress, cursor.iterator(), threadCount,
 					new WorkerFactory<ObjectWorker<UserRatingProfile>>() {
@@ -214,16 +228,16 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 					return new ObjectWorker<UserRatingProfile>() {
 						@Override
 						public void doJob(UserRatingProfile profile) {
-							Map<Long,Double> ratings = profile.getRatings();
+							Collection<Rating> ratings = profile.getRatings();
 							if (ratingNormalizer != null)
 								ratings = ratingNormalizer.normalize(profile.getUser(), ratings);
-							for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
-								long item = rating.getKey();
+							for (Rating rating: ratings) {
+								long item = rating.getItemId();
 								int idx = index.getIndex(item);
 								assert idx >= 0;
 								Long2DoubleMap v = itemVectors[idx];
 								synchronized (v) {
-									v.put(profile.getUser(), rating.getValue().doubleValue());
+									v.put(profile.getUser(), rating.getRating());
 								}
 							}
 						}
@@ -232,10 +246,11 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 					};
 				}
 			});
+			
+			return itemVectors;
 		} finally {
 			cursor.close();
 		}
-		return itemVectors;
 	}
 	
 	private class SimilarityWorker implements IntWorker {

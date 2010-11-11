@@ -18,17 +18,20 @@
 
 package org.grouplens.reflens.bench;
 
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
+import java.util.Collection;
+import java.util.Random;
+
+import org.grouplens.reflens.data.Cursor;
+import org.grouplens.reflens.data.Cursors;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
 
 /**
  * Implementation of a train/test ratings set. It takes care of partitioning the
@@ -40,33 +43,43 @@ import org.slf4j.LoggerFactory;
  * 
  */
 class RatingSet {
-	private static Logger logger = LoggerFactory.getLogger(RatingSet.class);
-	private ArrayList<Collection<UserRatingProfile>> chunks;
+	private static final Logger logger = LoggerFactory.getLogger(RatingSet.class);
+	private Long2IntMap userPartitionMap;
+	private final int chunkCount;
+	private RatingDataSource ratings;
 
 	/**
 	 * Construct a new train/test ratings set.
-	 * @param folds The number of portions to divide the data set into.
+	 * @param nfolds The number of portions to divide the data set into.
 	 * @param ratings The ratings data to partition.
 	 */
-	public RatingSet(int folds, List<UserRatingProfile> ratings) {
-		logger.info(String.format("Creating rating set with %d folds", folds));
-		chunks = new ArrayList<Collection<UserRatingProfile>>(folds);
+	public RatingSet(int nfolds, RatingDataSource ratings) {
+		logger.debug("Creating rating set with {} folds", nfolds);
+		userPartitionMap = new Long2IntOpenHashMap();
+		userPartitionMap.defaultReturnValue(nfolds);
+		chunkCount = nfolds;
+		this.ratings = ratings;
 		
-		int chunkSize = ratings.size() / folds + 1;
-		for (int i = 0; i < folds; i++) {
-			chunks.add(new ArrayList<UserRatingProfile>(chunkSize));
-		}	
-		
-		Collections.shuffle(ratings);
-		int chunk = 0;
-		for (UserRatingProfile user: ratings) {
-			chunks.get(chunk % folds).add(user);
-			chunk++;
+		Random splitter = new Random();
+		Cursor<Long> userCursor = ratings.getUsers();
+		try {
+			int nusers = userCursor.getRowCount();
+			if (nusers >= 0) {
+				userPartitionMap = new Long2IntOpenHashMap(nusers);
+			} else {
+				userPartitionMap = new Long2IntOpenHashMap();
+			}
+			for (long uid: userCursor) {
+				userPartitionMap.put(uid, splitter.nextInt(nfolds));
+			}
+			logger.info("Partitioned {} users into {} folds", userPartitionMap.size(), nfolds);
+		} finally {
+			userCursor.close();
 		}
 	}
 	
 	public int getChunkCount() {
-		return chunks.size();
+		return chunkCount;
 	}
 	
 	/**
@@ -75,8 +88,17 @@ class RatingSet {
 	 * @param testIndex The index of the test set to use.
 	 * @return The union of all data partitions except testIndex.
 	 */
-	public Collection<UserRatingProfile> trainingSet(int testIndex) {
-		return new TrainCollection(testIndex);
+	public RatingDataSource trainingSet(final int testIndex) {
+		Predicate<Long> filter = new Predicate<Long>() {
+			public boolean apply(Long uid) {
+				return userPartitionMap.get(uid.longValue()) != testIndex;
+			}
+		};
+		return new UserFilteredDataSource(ratings, false, filter);
+	}
+	
+	public void close() {
+		ratings.close();
 	}
 	
 	/**
@@ -84,94 +106,13 @@ class RatingSet {
 	 * @param testIndex The index of the test set to use.
 	 * @return The test set of users.
 	 */
-	public Collection<UserRatingProfile> testSet(int testIndex) {
-		return chunks.get(testIndex);
-	}
-	
-	private class TrainCollection extends AbstractCollection<UserRatingProfile> {
-		private int size;
-		private int testSetIndex;
-		
-		public TrainCollection(int testSet) {
-			testSetIndex = testSet;
-			size = 0;
-			for (int i = 0; i < chunks.size(); i++) {
-				if (i == testSet) continue;
-				size += chunks.get(i).size();
+	public Collection<UserRatingProfile> testSet(final int testIndex) {
+		Predicate<UserRatingProfile> filter = new Predicate<UserRatingProfile>() {
+			public boolean apply(UserRatingProfile profile) {
+				int part = userPartitionMap.get(profile.getUser());
+				return part == testIndex;
 			}
-		}
-
-		@Override
-		public Iterator<UserRatingProfile> iterator() {
-			return new TrainIterator(testSetIndex);
-		}
-
-		@Override
-		public int size() {
-			return size;
-		}
-	}
-	
-	/**
-	 * Iterator for iterating over several pieces of the training set.
-	 * 
-	 * Invariant: baseIter is null or has more items.  currentChunk is the index
-	 * of the chunk for which baseIter is an iterator, and is equal to
-	 * chunks.size() when we're past the end (and thus baseIter is null).
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	private class TrainIterator implements Iterator<UserRatingProfile> {
-		private int testSetIndex;
-		private int currentChunk;
-		private Iterator<UserRatingProfile> baseIter;
-		
-		public TrainIterator(int testSet) {
-			testSetIndex = testSet;
-			currentChunk = 0;
-			// set up the first iterator
-			while (currentChunk < chunks.size() && baseIter == null) {
-				if (currentChunk == testSetIndex) {
-					currentChunk++;
-					continue;
-				}
-				baseIter = chunks.get(currentChunk).iterator();
-				if (!baseIter.hasNext()) {
-					currentChunk++;
-					baseIter = null;
-				}
-			}
-		}
-
-		@Override
-		public boolean hasNext() {
-			return baseIter != null && baseIter.hasNext();
-		}
-
-		@Override
-		public UserRatingProfile next() {
-			if (baseIter != null && baseIter.hasNext()) {
-				UserRatingProfile h = baseIter.next();
-				while (baseIter != null && !baseIter.hasNext()) {
-					// we need to advance the underlying iterator
-					currentChunk++;
-					if (currentChunk == testSetIndex) currentChunk++;
-					if (currentChunk < chunks.size()) {
-						baseIter = chunks.get(currentChunk).iterator();
-					} else {
-						baseIter = null;
-					}
-				}
-				return h;
-			} else {
-				throw new NoSuchElementException();
-			}
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-		
+		};
+		return Cursors.makeList(Cursors.filter(ratings.getUserRatingProfiles(), filter));
 	}
 }

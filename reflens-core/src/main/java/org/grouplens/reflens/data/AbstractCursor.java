@@ -39,8 +39,13 @@ import java.util.Iterator;
  *
  */
 public abstract class AbstractCursor<T> implements Cursor<T> {
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.util.Cursor#close()
+	@Override
+	public int getRowCount() {
+		return -1;
+	}
+	
+	/**
+	 * No-op implementation of the {@link Cursor#close()} method.
 	 */
 	@Override
 	public void close() {

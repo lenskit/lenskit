@@ -29,8 +29,8 @@ import java.util.List;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.CollectionDataSet;
-import org.grouplens.reflens.data.DataSet;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
@@ -71,16 +71,15 @@ public class BenchmarkAggregator {
 	 * are tested by holding back 1/3 of their ratings.
 	 */
 	public void addBenchmark(
-			Collection<UserRatingProfile> trainUsers,
+			RatingDataSource trainingData,
 			Collection<UserRatingProfile> testUsers) {
-		logger.debug("Building model with {} users", trainUsers.size());
-		DataSet<UserRatingProfile> trainingSource =
-			new CollectionDataSet<UserRatingProfile>(trainUsers);
 		RecommendationEngine engine;
+		logger.debug("Building model with {} users, {} items", trainingData.getUserCount(),
+				trainingData.getItemCount());
 		try {
-			engine = factory.build(trainingSource);
+			engine = factory.build(trainingData);
 		} finally {
-			trainingSource.close();
+			trainingData.close();
 		}
 		RatingPredictor rec = engine.getRatingPredictor();
 		
@@ -90,18 +89,17 @@ public class BenchmarkAggregator {
 		int nitems = 0;
 		int ngood = 0;
 		for (UserRatingProfile user: testUsers) {
-			List<ScoredId> ratings = new ArrayList<ScoredId>(
-					ScoredId.wrap(user.getRatings()));
+			List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO: make this support timestamped ratings
 			Collections.shuffle(ratings);
 			Long2DoubleMap queryRatings = new Long2DoubleOpenHashMap();
 			for (int i = 0; i < midpt; i++) {
-				ScoredId rating = ratings.get(i);
-				queryRatings.put(rating.getId(), rating.getScore());
+				Rating rating = ratings.get(i);
+				queryRatings.put(rating.getItemId(), rating.getRating());
 			}
 			for (int i = midpt; i < ratings.size(); i++) {
-				long iid = ratings.get(i).getId();
+				long iid = ratings.get(i).getItemId();
 				ScoredId prediction = rec.predict(user.getUser(), queryRatings, iid);
 				nitems++;
 				if (prediction != null) {

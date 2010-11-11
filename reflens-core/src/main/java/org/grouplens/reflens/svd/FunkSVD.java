@@ -29,18 +29,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.data.SortOrder;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.LearningRate;
 import org.slf4j.Logger;
@@ -71,7 +70,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	private final double learningRate;
 	private final int numFeatures;
 	
-	private Index userIndexer;
+	private Indexer userIndexer;
 	private Indexer itemIndexer;
 
 	private double userFeatures[][];
@@ -82,7 +81,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 	private DoubleList userAvgOffsets;
 	
 	@Inject
-	FunkSVD(Index userIndexer, Indexer itemIndexer,
+	FunkSVD(Indexer userIndexer, Indexer itemIndexer,
 			@FeatureCount int features,
 			@LearningRate double lrate) {
 		learningRate = lrate;
@@ -91,12 +90,12 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		this.itemIndexer = itemIndexer;
 	}
 	
-	private void computeItemAverages(Collection<Rating> ratings) {
+	private void computeItemAverages(Collection<SVDRating> ratings) {
 		itemAverages = new DoubleArrayList();
 		int ircounts[] = new int[itemIndexer.getObjectCount()];
 		itemAverages.size(itemIndexer.getObjectCount());
 		double globalAvg = 0.0f;
-		for (Rating r: ratings) {
+		for (SVDRating r: ratings) {
 			itemAverages.set(r.item, itemAverages.getDouble(r.item) + r.value);
 			ircounts[r.item]++;
 			globalAvg += r.value;
@@ -109,12 +108,12 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		}
 	}
 	
-	private void computeUserAverageOffsets(Collection<Rating> ratings) {
+	private void computeUserAverageOffsets(Collection<SVDRating> ratings) {
 		userAvgOffsets = new DoubleArrayList();
 		int urcounts[] = new int[userIndexer.getObjectCount()];
 		userAvgOffsets.size(userIndexer.getObjectCount());
 		double globalAvg = 0.0f;
-		for (Rating r: ratings) {
+		for (SVDRating r: ratings) {
 			double offset = r.value - itemAverages.get(r.item);
 			userAvgOffsets.set(r.user, userAvgOffsets.getDouble(r.user) + offset);
 			urcounts[r.user]++;
@@ -128,20 +127,23 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		}
 	}
 	
-	void build(DataSet<UserRatingProfile> users) {
+	void build(RatingDataSource users) {
 		logger.debug("Building SVD with {} features", numFeatures);
 		
 		// build a list of ratings
-		List<Rating> ratings = new ArrayList<Rating>(users.getRowCount() * 5);
-		Cursor<UserRatingProfile> cursor = users.cursor();
+		Cursor<Rating> cursor = users.getRatings(SortOrder.USER);
+		int nusers = cursor.getRowCount();
+		List<SVDRating> ratings = new ArrayList<SVDRating>(nusers >= 0 ? nusers * 5 : 100);
 		try {
-			for (UserRatingProfile user: cursor) {
-				int uid = userIndexer.getIndex(user.getUser());
-				for (ScoredId rating: ScoredId.fastWrap(user.getRatings())) {
-					int iid = itemIndexer.getIndex(rating.getId());
-					Rating r = new Rating(uid, iid, rating.getScore());
-					ratings.add(r);
-				}
+			long user = 0;
+			int uid = -1;
+			for (Rating rating: cursor) {
+				long u = rating.getUserId();
+				if (uid < 0 || user != u)
+					uid = userIndexer.internId(rating.getUserId());
+				int iid = itemIndexer.internId(rating.getItemId());
+				SVDRating r = new SVDRating(uid, iid, rating.getRating());
+				ratings.add(r);
 			}
 		} finally {
 			cursor.close();
@@ -187,7 +189,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		}
 	}
 	
-	private void trainFeature(int feature, Collection<Rating> ratings) {
+	private void trainFeature(int feature, Collection<SVDRating> ratings) {
 		double ufv[] = userFeatures[feature];
 		double ifv[] = itemFeatures[feature];
 		DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
@@ -201,7 +203,7 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
 			oldRmse = rmse;
 			double ssq = 0;
-			for (Rating r: ratings) {
+			for (SVDRating r: ratings) {
 				double err = r.value - r.predict(feature);
 				ssq += err * err;
 				
@@ -220,18 +222,18 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 		}
 		
 		logger.debug("Finished feature {} in {} epochs", feature, epoch);
-		for (Rating r: ratings) {
+		for (SVDRating r: ratings) {
 			r.update(feature);
 		}
 	}
 	
-	private class Rating {
+	private class SVDRating {
 		public final int user;
 		public final int item;
 		public final double value;
 		private double cachedValue = Double.NaN;
 		
-		public Rating(int user, int item, double value) {
+		public SVDRating(int user, int item, double value) {
 			this.user = user;
 			this.item = item;
 			this.value = value;
@@ -329,25 +331,6 @@ public class FunkSVD implements RecommendationEngine, RatingPredictor {
 			preds.put(item, score);
 		}
 		return preds;
-	}
-	
-	public Map<Long,Double> predict(UserRatingProfile user, Set<Long> items) {
-		double adev = averageDeviation(user.getRatings());
-		double uprefs[] = foldIn(user.getRatings(), adev);
-
-		Long2DoubleMap results = new Long2DoubleOpenHashMap();
-		
-		for (long item: items) {
-			int iid = itemIndexer.getIndex(item);
-			if (iid < 0) continue;
-			double score = itemAverages.get(iid) + adev;
-			for (int f = 0; f < numFeatures; f++) {
-				score += uprefs[f] * singularValues[f] * itemFeatures[f][iid];
-			}
-			results.put(item, score);
-		}
-		
-		return results;
 	}
 
 	@Override

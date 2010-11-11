@@ -21,7 +21,7 @@ package org.grouplens.reflens.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.lang.reflect.Type;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
+import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
 import org.grouplens.reflens.item.params.RatingNormalization;
@@ -132,8 +133,8 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureUserNormalizer() {
-		Key<Normalizer<Long,Map<Long,Double>>> rnKey =
-			Key.get(new TypeLiteral<Normalizer<Long,Map<Long,Double>>>() {},
+		Key<Normalizer<Long,Collection<Rating>>> rnKey =
+			Key.get(new TypeLiteral<Normalizer<Long,Collection<Rating>>>() {},
 					RatingNormalization.class);
 		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
 	}

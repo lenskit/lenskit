@@ -18,8 +18,7 @@
 
 package org.grouplens.reflens;
 
-import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.data.RatingDataSource;
 
 /**
  * Interface for recommender factories for the benchmarker to use.
@@ -37,5 +36,5 @@ public interface RecommenderBuilder {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public RecommendationEngine build(DataSet<UserRatingProfile> ratings);
+	public RecommendationEngine build(RatingDataSource ratings);
 }

@@ -18,12 +18,11 @@
 
 package org.grouplens.reflens;
 
-import org.grouplens.reflens.data.DataSet;
-import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.data.RatingDataSource;
 
 public interface RatingPredictorBuilder {
 
-	public RatingPredictor build(DataSet<UserRatingProfile> data);
+	public RatingPredictor build(RatingDataSource data);
 	
 	public static class RecEngineBuilderWrapper implements RatingPredictorBuilder {
 		private final RecommenderBuilder builder;
@@ -32,7 +31,7 @@ public interface RatingPredictorBuilder {
 			this.builder = builder;
 		}
 		
-		public RatingPredictor build(DataSet<UserRatingProfile> data) {
+		public RatingPredictor build(RatingDataSource data) {
 			RecommendationEngine engine = builder.build(data);
 			RatingPredictor pred = engine.getRatingPredictor();
 			if (pred != null)
