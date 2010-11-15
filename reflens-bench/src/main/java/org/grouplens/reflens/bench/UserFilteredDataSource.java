@@ -6,7 +6,6 @@ package org.grouplens.reflens.bench;
 import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.lang.ref.SoftReference;
-import java.util.List;
 
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Cursors;
