@@ -53,4 +53,4 @@ downloading all other dependencies for RefLens.
 .. _Mavenized fastutil: http://bitbucket.org/elehack/fastutil
 
 .. [1] On Debian or Ubuntu systems, Maven is available via the
-       ``maven2`` packge.
+       ``maven2`` package.
