@@ -1,0 +1,54 @@
+.. -*- restructuredtext -*-
+
+RefLens is an implementation of collaborative filtering algorithms and
+a set of tools for benchmarking them.
+
+.. warning::
+   RefLens is currently undergoing heavy development.  Interfaces and
+   APIs are subject to change.
+
+Packages
+--------
+
+RefLens is comprised of three packages.
+
+``reflens``
+  The top-level ``reflens`` package serves as a parent to collect the
+  other base RefLens packages.  Building it will build all
+  components of RefLens.
+``reflens-core``
+  This package contains the core APIs and recommender implementations.
+``reflens-bench``
+  This package contains the benchmarking program.
+
+Installation and Dependency Management
+--------------------------------------
+
+RefLens is managed and deployed via Maven_ [1]_.  To install it, check out
+this repository and run ``mvn install``.  It can also be checked out
+in Eclipse with M2Eclipse_ by using the “Check out Maven projects from
+SCM” import option; select ‘hg’, provide the BitBucket repository
+location and make sure the “Check out All projects” option is
+selected.  The NetBeans Maven support should be similarly usable but
+has not been tested.
+
+.. _Maven: http://maven.apache.org
+.. _M2Eclipse: http://m2eclipse.sonatype.org/installing-m2eclipse.html
+.. [1] On Debian or Ubuntu systems, Maven is available via the
+       ``maven2`` packge.
+
+RefLens depends on fastutil_.  Unfortunately, an appropriate version
+of fastutil is not available from the Maven central repositories.  We
+provide a Mavenized version.  There are two options to make fastutil
+available for use in RefLens:
+
+- Add http://elehack.net/maven to your list of Maven repositories;
+  Maven will then download and install fastutil from there as needed.
+- Check out the `Mavenized fastutil`_ from Bitbucket and run
+  ``mvn install`` in its source directory.  This will install it to
+  your local repository.
+
+Once Fastutil is installed, Maven will take care of finding it and
+downloading all other dependencies for RefLens.
+
+.. _fastutil: http://fastutil.dsi.unimi.it/
