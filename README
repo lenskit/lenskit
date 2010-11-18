@@ -1,5 +1,8 @@
 .. -*- restructuredtext -*-
 
+RefLens
+=======
+
 RefLens is an implementation of collaborative filtering algorithms and
 a set of tools for benchmarking them.
 
