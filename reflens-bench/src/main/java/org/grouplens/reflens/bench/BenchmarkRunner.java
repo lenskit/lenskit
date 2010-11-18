@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.slf4j.Logger;
