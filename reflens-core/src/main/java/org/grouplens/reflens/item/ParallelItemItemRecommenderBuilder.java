@@ -42,12 +42,14 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.reflens.Normalizer;
 import org.grouplens.reflens.OptimizableMapSimilarity;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
@@ -57,9 +59,10 @@ import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.item.params.BaselinePredictor;
 import org.grouplens.reflens.item.params.ItemSimilarity;
-import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.item.params.ThreadCount;
+import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.ProgressReporter;
 import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.grouplens.reflens.util.SimilarityMatrix;
@@ -84,13 +87,13 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	@Nullable
-	private Normalizer<Long, Collection<Rating>> ratingNormalizer;
 	private Similarity<Long2DoubleMap> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
+	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final int threadCount;
 	private Long2ObjectMap<IntSortedSet> userItemMap;
+	@Nullable private RatingPredictor baseline = null;
 
 	@Inject
 	public ParallelItemItemRecommenderBuilder(
@@ -98,10 +101,10 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
 			@ItemSimilarity OptimizableMapSimilarity<Long,Double, Long2DoubleMap> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<Long,Collection<Rating>> ratingNormalizer) {
+			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
-		this.ratingNormalizer = ratingNormalizer;
+		this.baselineBuilder = baselineBuilder;
 		this.itemSimilarity = itemSimilarity;
 		this.threadCount = threadCount;
 	}
@@ -128,6 +131,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	@Override
 	public ItemItemRecommender build(RatingDataSource data) {
 		logger.info("Building model with {} threads", threadCount);
+		// TODO look in to merging these passes
+		baseline = baselineBuilder.build(data);
 		logger.debug("Indexing items");
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");
@@ -229,8 +234,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 						@Override
 						public void doJob(UserRatingProfile profile) {
 							Collection<Rating> ratings = profile.getRatings();
-							if (ratingNormalizer != null)
-								ratings = ratingNormalizer.normalize(profile.getUser(), ratings);
+							ratings = normalizeUserRatings(profile.getUser(), ratings);
 							for (Rating rating: ratings) {
 								long item = rating.getItemId();
 								int idx = index.getIndex(item);
@@ -309,6 +313,27 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			return new SimilarityWorker(itemVector, builder);
 		}
 		
+	}
+	
+	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
+		// TODO share this code with ItemItemRecommenderBuilder
+		if (baseline == null) return ratings;
+		
+		Long2DoubleMap rmap = new Long2DoubleOpenHashMap(ratings.size());
+		for (Rating r: ratings) {
+			rmap.put(r.getItemId(), r.getRating());
+		}
+		Long2DoubleMap base = CollectionUtils.getFastMap(
+				baseline.predict(uid, rmap, rmap.keySet()));
+		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
+		
+		for (Rating r: ratings) {
+			long iid = r.getItemId();
+			double adj = r.getRating() - base.get(iid);
+			Rating r2 = new Rating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
+			normed.add(r2);
+		}
+		return normed;
 	}
 
 }

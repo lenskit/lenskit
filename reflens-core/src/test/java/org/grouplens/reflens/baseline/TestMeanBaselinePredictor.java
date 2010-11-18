@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,7 +37,11 @@ public class TestMeanBaselinePredictor {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		ratings = new SimpleFileDataSource(TestMeanBaselinePredictor.class.getResource("ratings.dat"), " ");
+		URL res = this.getClass().getResource("ratings.dat");
+		if (res == null) {
+			throw new FileNotFoundException("cannot find ratings.dat");
+		}
+		ratings = new SimpleFileDataSource(res, " ");
 	}
 	
 	@Test

@@ -5,16 +5,19 @@ package org.grouplens.reflens.baseline;
 
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.Collection;
 import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.CollectionUtils;
 
 import com.google.inject.Inject;
 
@@ -34,15 +37,10 @@ public class UserMeanBaselinePredictor implements RatingPredictor {
 		
 		Collection<Double> values = ratings.values();
 		double total = 0;
-		if (values instanceof DoubleCollection) {
-			DoubleIterator iter = ((DoubleCollection) values).iterator();
-			while (iter.hasNext()) {
-				total += iter.nextDouble() - offset;
-			}
-		} else {
-			for (double v: values) {
-				total += v - offset;
-			}
+		DoubleCollection fvalues = CollectionUtils.getFastCollection(values);
+		DoubleIterator iter = fvalues.iterator();
+		while (iter.hasNext()) {
+			total += iter.nextDouble() - offset;
 		}
 		return total / values.size();
 	}
@@ -53,8 +51,14 @@ public class UserMeanBaselinePredictor implements RatingPredictor {
 	@Override
 	public Map<Long, Double> predict(long user, Map<Long, Double> ratings,
 			Collection<Long> items) {
-		// TODO Auto-generated method stub
-		return null;
+		double mean = average(ratings, globalMean) + globalMean;
+		Long2DoubleMap map = new Long2DoubleOpenHashMap(items.size());
+		LongCollection fitems = CollectionUtils.getFastCollection(items);
+		LongIterator iter = fitems.iterator();
+		while (iter.hasNext()) {
+			map.put(iter.nextLong(), mean);
+		}
+		return map;
 	}
 
 	/* (non-Javadoc)

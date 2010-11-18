@@ -21,18 +21,16 @@ package org.grouplens.reflens.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.reflens.Normalizer;
+import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.item.params.BaselinePredictor;
 import org.grouplens.reflens.item.params.ItemSimilarity;
 import org.grouplens.reflens.item.params.NeighborhoodSize;
-import org.grouplens.reflens.item.params.RatingNormalization;
 import org.grouplens.reflens.item.params.SimilarityDamper;
 import org.grouplens.reflens.item.params.ThreadCount;
 import org.grouplens.reflens.util.ObjectLoader;
@@ -45,6 +43,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
+import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.util.Providers;
 
 /**
@@ -74,7 +73,7 @@ public class ItemRecommenderModule extends AbstractModule {
 		
 		configureSimilarityMatrix();
 		
-		configureUserNormalizer();
+		configureBaseline();
 		
 		configureParameters();
 
@@ -129,14 +128,35 @@ public class ItemRecommenderModule extends AbstractModule {
 				Double.parseDouble(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100")));
 	}
 
-	/**
-	 * 
-	 */
-	protected void configureUserNormalizer() {
-		Key<Normalizer<Long,Collection<Rating>>> rnKey =
-			Key.get(new TypeLiteral<Normalizer<Long,Collection<Rating>>>() {},
-					RatingNormalization.class);
-		bindClassFromProperty(rnKey, RatingNormalization.PROPERTY_NAME);
+	protected void configureBaseline() {
+		String rnorm = properties.getProperty(BaselinePredictor.PROPERTY_NAME);
+		Class target = null;
+		if (rnorm != null) {
+			try {
+				target = ObjectLoader.getClass(rnorm);
+			} catch (ClassNotFoundException e) {
+				logger.error("Class {} not found", rnorm);
+			}
+		}
+		if (target != null) {
+			if (!RatingPredictorBuilder.class.isAssignableFrom(target)) {
+				for (Class c: target.getClasses()) {
+					if (!c.getEnclosingClass().equals(target)) continue;
+					if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
+						target = c;
+						break;
+					}
+				}
+			}
+		}
+		LinkedBindingBuilder<RatingPredictorBuilder> binder = bind(RatingPredictorBuilder.class).annotatedWith(BaselinePredictor.class);
+		
+		if (target != null) {
+			logger.debug("Using baseline {}", target.getName());
+			binder.to(target);
+		} else {
+			binder.toProvider(Providers.of((RatingPredictorBuilder) null));
+		}
 	}
 	
 	protected <T> void bindClassFromProperty(Key<T> key, String propName) {

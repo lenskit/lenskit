@@ -27,7 +27,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.reflens.Normalizer;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.Similarity;
 import org.grouplens.reflens.SymmetricBinaryFunction;
@@ -36,8 +37,9 @@ import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.item.params.BaselinePredictor;
 import org.grouplens.reflens.item.params.ItemSimilarity;
-import org.grouplens.reflens.item.params.RatingNormalization;
+import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
@@ -46,24 +48,28 @@ import com.google.inject.Inject;
 
 public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	
-	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Normalizer<Long, Collection<Rating>> ratingNormalizer;
+	private final SimilarityMatrixBuilderFactory matrixFactory;
 	// TODO Make this Similarity<? super Long2DoubleMap> if we can w/ Guice
-	private Similarity<Long2DoubleMap> itemSimilarity;
+	private final Similarity<Long2DoubleMap> itemSimilarity;
+	@Nullable private final RatingPredictorBuilder baselineBuilder;
+	@Nullable private RatingPredictor baseline;
 
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@ItemSimilarity Similarity<Long2DoubleMap> itemSimilarity,
-			@Nullable @RatingNormalization Normalizer<Long,Collection<Rating>> ratingNormalizer) {
+			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.matrixFactory = matrixFactory;
-		this.ratingNormalizer = ratingNormalizer;
 		this.itemSimilarity = itemSimilarity;
+		this.baselineBuilder = baselineBuilder;
 	}
 	
 	@Override
 	public ItemItemRecommender build(RatingDataSource data) {
 		Indexer indexer = new Indexer();
+		if (baselineBuilder != null)
+			baseline = baselineBuilder.build(data);
+		
 		List<Long2DoubleMap> itemRatings = buildItemRatings(indexer, data);
 		
 		// prepare the similarity matrix
@@ -97,6 +103,10 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		return new ItemItemRecommender(model);
 	}
 	
+	protected RatingPredictor getBaseline() {
+		return baseline;
+	}
+	
 	/** 
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
@@ -107,8 +117,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		try {
 			for (UserRatingProfile user: cursor) {
 				Collection<Rating> ratings = user.getRatings();
-				if (ratingNormalizer != null)
-					ratings = ratingNormalizer.normalize(user.getUser(), ratings);
+				ratings = normalizeUserRatings(user.getUser(), ratings);
 				for (Rating rating: ratings) {
 					long item = rating.getItemId();
 					int idx = indexer.internId(item);
@@ -125,5 +134,25 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		}
 		itemVectors.trimToSize();
 		return itemVectors;
+	}
+	
+	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
+		if (baseline == null) return ratings;
+		
+		Long2DoubleMap rmap = new Long2DoubleOpenHashMap(ratings.size());
+		for (Rating r: ratings) {
+			rmap.put(r.getItemId(), r.getRating());
+		}
+		Long2DoubleMap base = CollectionUtils.getFastMap(
+				baseline.predict(uid, rmap, rmap.keySet()));
+		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
+		
+		for (Rating r: ratings) {
+			long iid = r.getItemId();
+			double adj = r.getRating() - base.get(iid);
+			Rating r2 = new Rating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
+			normed.add(r2);
+		}
+		return normed;
 	}
 }
