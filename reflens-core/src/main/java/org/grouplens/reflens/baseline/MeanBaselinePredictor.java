@@ -21,26 +21,35 @@ public class MeanBaselinePredictor extends ConstantBaselinePredictor {
 	private MeanBaselinePredictor(double value) {
 		super(value);
 	}
+	
+	/**
+	 * Helper method to compute the mean of all ratings in a cursor.
+	 * The cursor is closed after the ratings are computed.
+	 * @param ratings A cursor of ratings to average.
+	 * @return The arithemtic mean of all ratings.
+	 */
+	public static double computeMeanRating(Cursor<Rating> ratings) {
+		double total = 0;
+		long count = 0;
+		try {
+			for (Rating r: ratings) {
+				total += r.getRating();
+				count += 1;
+			}
+		} finally {
+			ratings.close();
+		}
+		double avg = 0;
+		if (count > 0)
+			avg = total / count;
+		return avg;
+	}
 
 	public static class Builder implements RatingPredictorBuilder {
 
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
-			double total = 0;
-			long count = 0;
-			Cursor<Rating> ratings = data.getRatings();
-			try {
-				for (Rating r: ratings) {
-					total += r.getRating();
-					count += 1;
-				}
-			} finally {
-				ratings.close();
-			}
-			double avg = 0;
-			if (count > 0)
-				avg = total / count;
-			return new MeanBaselinePredictor(avg);
+			return new MeanBaselinePredictor(computeMeanRating(data.getRatings()));
 		}
 		
 	}
