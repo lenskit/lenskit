@@ -298,4 +298,16 @@ public class CollectionUtils {
 			base.putAll(m);
 		}	
 	}
+
+	public static Iterable<Long2DoubleMap.Entry> fastIterable(Long2DoubleMap fratings) {
+		final ObjectSet<Long2DoubleMap.Entry> entries = fratings.long2DoubleEntrySet();
+		return new Iterable<Long2DoubleMap.Entry>() {
+			public ObjectIterator<Long2DoubleMap.Entry> iterator() {
+				if (entries instanceof Long2DoubleMap.FastEntrySet)
+					return ((Long2DoubleMap.FastEntrySet) entries).fastIterator();
+				else
+					return entries.iterator();
+			}
+		};
+	}
 }
