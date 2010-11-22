@@ -27,11 +27,11 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemMeanBaselinePredictor implements RatingPredictor {
+public class ItemMeanPredictor implements RatingPredictor {
 	private final Long2DoubleMap itemAverages;
 	private final double globalMean;
 	
-	protected ItemMeanBaselinePredictor(double mean, Long2DoubleMap means) {
+	protected ItemMeanPredictor(double mean, Long2DoubleMap means) {
 		globalMean = mean;
 		itemAverages = means;
 	}
@@ -109,7 +109,7 @@ public class ItemMeanBaselinePredictor implements RatingPredictor {
 		}
 		
 		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
-			return new ItemMeanBaselinePredictor(globalMean, itemMeans);
+			return new ItemMeanPredictor(globalMean, itemMeans);
 		}
 		
 	}

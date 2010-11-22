@@ -19,7 +19,7 @@ import org.grouplens.reflens.util.CollectionUtils;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserItemMeanPredictor extends ItemMeanBaselinePredictor {
+public class UserItemMeanPredictor extends ItemMeanPredictor {
 
 	protected UserItemMeanPredictor(double mean, Long2DoubleMap means) {
 		super(mean, means);
@@ -65,7 +65,7 @@ public class UserItemMeanPredictor extends ItemMeanBaselinePredictor {
 		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
 	}
 	
-	public static class Builder extends ItemMeanBaselinePredictor.Builder {
+	public static class Builder extends ItemMeanPredictor.Builder {
 		@Override
 		public RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
 			return new UserItemMeanPredictor(globalMean, itemMeans);

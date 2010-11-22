@@ -24,7 +24,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ConstantBaselinePredictor implements RatingPredictor {
+public class ConstantPredictor implements RatingPredictor {
 	private final double value;
 	
 	@BindingAnnotation
@@ -35,7 +35,7 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 			= "org.grouplens.reflens.baseline.constant.value";
 	}
 	
-	protected ConstantBaselinePredictor(double value) {
+	protected ConstantPredictor(double value) {
 		this.value = value;
 	}
 	
@@ -63,7 +63,7 @@ public class ConstantBaselinePredictor implements RatingPredictor {
 		}
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
-			return new ConstantBaselinePredictor(value);
+			return new ConstantPredictor(value);
 		}
 	}
 }

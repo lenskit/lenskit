@@ -22,13 +22,13 @@ import org.junit.Test;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestConstantBaselinePredictor {
+public class TestConstantPredictor {
 	
 	private RatingPredictorBuilder builder;
 
 	@Before
 	public void setUp() {
-		builder = new ConstantBaselinePredictor.Builder(5);
+		builder = new ConstantPredictor.Builder(5);
 	}
 	
 	@Test

@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestMeanBaselinePredictor {
+public class TestMeanPredictor {
 	private static final double RATINGS_DAT_MEAN = 3.75;
 	private RatingDataSource ratings;
 
@@ -46,7 +46,7 @@ public class TestMeanBaselinePredictor {
 	
 	@Test
 	public void testMeanBaseline() {
-		RatingPredictorBuilder builder = new MeanBaselinePredictor.Builder();
+		RatingPredictorBuilder builder = new GlobalMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
 		Map<Long,Double> map = Collections.emptyMap();
 		ScoredId score = pred.predict(10l, map, 2l);
@@ -55,7 +55,7 @@ public class TestMeanBaselinePredictor {
 	
 	@Test
 	public void testUserMeanBaseline() {
-		RatingPredictorBuilder builder = new UserMeanBaselinePredictor.Builder();
+		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
 		Long2DoubleMap map = new Long2DoubleOpenHashMap();
 		map.put(5, 3);
@@ -71,7 +71,7 @@ public class TestMeanBaselinePredictor {
 	
 	@Test
 	public void testUserMeanBaselineNoFastutil() {
-		RatingPredictorBuilder builder = new UserMeanBaselinePredictor.Builder();
+		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
 		Map<Long,Double> map = new TreeMap<Long, Double>();
 		map.put(5l, 3.0);
@@ -90,7 +90,7 @@ public class TestMeanBaselinePredictor {
 	 */
 	@Test
 	public void testUserMeanBaselineFallback() {
-		RatingPredictorBuilder builder = new UserMeanBaselinePredictor.Builder();
+		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
 		Map<Long,Double> map = Collections.emptyMap();
 		ScoredId score = pred.predict(10l, map, 2l);

@@ -12,13 +12,13 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MeanBaselinePredictor extends ConstantBaselinePredictor {
-	private static final Logger logger = LoggerFactory.getLogger(MeanBaselinePredictor.class);
+public class GlobalMeanPredictor extends ConstantPredictor {
+	private static final Logger logger = LoggerFactory.getLogger(GlobalMeanPredictor.class);
 
 	/**
 	 * @param value
 	 */
-	private MeanBaselinePredictor(double value) {
+	private GlobalMeanPredictor(double value) {
 		super(value);
 	}
 	
@@ -49,7 +49,7 @@ public class MeanBaselinePredictor extends ConstantBaselinePredictor {
 
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
-			return new MeanBaselinePredictor(computeMeanRating(data.getRatings()));
+			return new GlobalMeanPredictor(computeMeanRating(data.getRatings()));
 		}
 		
 	}

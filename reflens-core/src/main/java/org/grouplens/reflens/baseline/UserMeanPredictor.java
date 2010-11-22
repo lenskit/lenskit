@@ -25,10 +25,10 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserMeanBaselinePredictor implements RatingPredictor {
+public class UserMeanPredictor implements RatingPredictor {
 	private final double globalMean;
 	
-	UserMeanBaselinePredictor(double mean) {
+	UserMeanPredictor(double mean) {
 		globalMean = mean;
 	}
 	
@@ -75,8 +75,8 @@ public class UserMeanBaselinePredictor implements RatingPredictor {
 		}
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
-			double avg = MeanBaselinePredictor.computeMeanRating(data.getRatings());
-			return new UserMeanBaselinePredictor(avg);
+			double avg = GlobalMeanPredictor.computeMeanRating(data.getRatings());
+			return new UserMeanPredictor(avg);
 		}
 	}
 }
