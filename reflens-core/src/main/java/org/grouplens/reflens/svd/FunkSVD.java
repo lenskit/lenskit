@@ -45,7 +45,7 @@ import java.util.Map;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommendationEngine;
+import org.grouplens.reflens.Recommender;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
@@ -72,7 +72,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVD implements RecommendationEngine, RatingPredictor {
+public class FunkSVD implements Recommender, RatingPredictor {
 	private static Logger logger = LoggerFactory.getLogger(FunkSVD.class);
 	private static final double DEFAULT_FEATURE_VALUE = 0.1f;
 	private static final double FEATURE_EPSILON = 0.0001f;

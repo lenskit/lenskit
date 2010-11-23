@@ -35,6 +35,18 @@ import java.util.Map;
 
 import org.grouplens.reflens.data.ScoredId;
 
+/**
+ * Recommender recommending items from ratings-based user profiles.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public interface RatingRecommender {
+	/**
+	 * Produce a set of recommendations for the user.
+	 * @param user The user's ID
+	 * @param ratings The user's ratings
+	 * @return a list of scored recommendations, sorted in nondecreasing order
+	 * of score.
+	 */
 	public List<ScoredId> recommend(long user, Map<Long,Double> ratings);
 }

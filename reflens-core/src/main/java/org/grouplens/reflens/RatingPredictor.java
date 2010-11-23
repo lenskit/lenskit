@@ -36,10 +36,25 @@ import java.util.Map;
 import org.grouplens.reflens.data.ScoredId;
 
 /**
+ * Interface for rating prediction.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * TODO: Support multiple simultaneous predictions
+ * 
  */
 public interface RatingPredictor {
+	/**
+	 * Generate predictions for a collection of items.
+	 * @param user the user ID
+	 * @param ratings the user's ratings
+	 * @param items the items for which predictions are desired
+	 * @return a mapping from item IDs to predicted preference
+	 */
 	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items);
+	/**
+	 * Generate a prediction for a single item.
+	 * @param user the user ID
+	 * @param ratings the user's rating history
+	 * @param item the item for which a prediction is required
+	 * @return the prediction, or <tt>null</tt> if no prediction is possible
+	 */
 	public ScoredId predict(long user, Map<Long,Double> ratings, long item);
 }

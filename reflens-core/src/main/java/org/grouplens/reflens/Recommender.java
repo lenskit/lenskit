@@ -45,7 +45,7 @@ package org.grouplens.reflens;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface RecommendationEngine {
+public interface Recommender {
 	/**
 	 * Retrieve the rating recommender from this engine.
 	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based

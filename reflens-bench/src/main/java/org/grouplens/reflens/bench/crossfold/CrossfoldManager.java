@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.bench.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -36,6 +36,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.Collection;
 import java.util.Random;
 
+import org.grouplens.reflens.bench.UserFilteredDataSource;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Cursors;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -54,8 +55,8 @@ import com.google.common.base.Predicate;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-class RatingSet {
-	private static final Logger logger = LoggerFactory.getLogger(RatingSet.class);
+public class CrossfoldManager {
+	private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
 	private Long2IntMap userPartitionMap;
 	private final int chunkCount;
 	private RatingDataSource ratings;
@@ -65,7 +66,7 @@ class RatingSet {
 	 * @param nfolds The number of portions to divide the data set into.
 	 * @param ratings The ratings data to partition.
 	 */
-	public RatingSet(int nfolds, RatingDataSource ratings) {
+	public CrossfoldManager(int nfolds, RatingDataSource ratings) {
 		logger.debug("Creating rating set with {} folds", nfolds);
 		userPartitionMap = new Long2IntOpenHashMap();
 		userPartitionMap.defaultReturnValue(nfolds);

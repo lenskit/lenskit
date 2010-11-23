@@ -32,19 +32,37 @@ package org.grouplens.reflens;
 
 import org.grouplens.reflens.data.RatingDataSource;
 
+/**
+ * Interface for building rating predictors.  This guarantees you a rating
+ * predictor, unlike {@link RecommenderBuilder} which returns a {@link Recommender}
+ * which may or may not supply rating predictions.  Useful for building things
+ * like baselines.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public interface RatingPredictorBuilder {
 
+	/**
+	 * Build a rating predictor from a data source.
+	 * @param data
+	 * @return
+	 */
 	public RatingPredictor build(RatingDataSource data);
 	
-	public static class RecEngineBuilderWrapper implements RatingPredictorBuilder {
+	/**
+	 * Wrapper that turns a recommender builder into a predictor builder.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
+	public static class RecommenderBuilderWrapper implements RatingPredictorBuilder {
 		private final RecommenderBuilder builder;
 
-		public RecEngineBuilderWrapper(RecommenderBuilder builder) {
+		public RecommenderBuilderWrapper(RecommenderBuilder builder) {
 			this.builder = builder;
 		}
 		
 		public RatingPredictor build(RatingDataSource data) {
-			RecommendationEngine engine = builder.build(data);
+			Recommender engine = builder.build(data);
 			RatingPredictor pred = engine.getRatingPredictor();
 			if (pred != null)
 				return pred;

@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.ProgressReporterFactory;
@@ -125,10 +126,10 @@ public final class BenchmarkRunner {
 				}
 			}
 		}, recModule);
-		RatingSet data = null;
+		CrossfoldManager data = null;
 		try {
 			logger.debug("Loading ratings data");
-			data = new RatingSet(options.getNumFolds(),
+			data = new CrossfoldManager(options.getNumFolds(),
 					new SimpleFileDataSource(new File(options.getInputFilename()), options.getDelimiter()));
 		} catch (FileNotFoundException e) {
 			fail(3, e);

@@ -35,7 +35,18 @@ import java.util.Set;
 
 import org.grouplens.reflens.data.ScoredId;
 
-// TODO name this better
+/**
+ * Recommender that provides basket-based recommendations (unary user profiles)
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public interface BasketRecommender {
-	public List<ScoredId> recommend(long user, Set<Long> basket);
+	/**
+	 * Recommend items for a user with a unary history.
+	 * @param user the user ID
+	 * @param basket the items in the user's purchase/visit history
+	 * @return a list of scored recommendations, sorted in nonincreasing order
+	 * of score.
+	 */
+	List<ScoredId> recommend(long user, Set<Long> basket);
 }
