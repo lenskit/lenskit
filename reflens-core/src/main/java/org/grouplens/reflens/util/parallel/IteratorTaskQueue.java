@@ -71,7 +71,10 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 				progress.setProgress(ndone);
 			Thread t = threads.element();
 			try {
-				t.join(100);
+				if (progress == null)
+					t.join();
+				else
+					t.join(100);
 				if (!t.isAlive())
 					threads.remove();
 			} catch (InterruptedException e) {
