@@ -33,23 +33,22 @@
  */
 package org.grouplens.reflens.data;
 
-import java.util.NoSuchElementException;
+import java.util.Iterator;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class FilteredCursor<T> extends AbstractCursor<T> {
-	private final Predicate<T> filter;
 	private final Cursor<T> cursor;
-	private T nval;
+	private final Iterator<T> iter;
 	
 	public FilteredCursor(Cursor<T> cursor, Predicate<T> filter) {
-		this.filter = filter;
 		this.cursor = cursor;
-		nval = null;
+		this.iter = Iterators.filter(cursor.iterator(), filter);
 	}
 	
 	@Override
@@ -59,22 +58,11 @@ public class FilteredCursor<T> extends AbstractCursor<T> {
 	
 	@Override
 	public boolean hasNext() {
-		while (nval == null && cursor.hasNext()) {
-			nval = cursor.next();
-			if (!filter.apply(nval))
-				nval = null;
-		}
-		return nval != null;
+		return iter.hasNext();
 	}
 	
 	@Override
 	public T next() {
-		if (hasNext()) {
-			T v = nval;
-			nval = null;
-			return v;
-		} else {
-			throw new NoSuchElementException();
-		}
+		return iter.next();
 	}
 }

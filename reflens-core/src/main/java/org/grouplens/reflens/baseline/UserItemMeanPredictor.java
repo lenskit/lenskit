@@ -97,7 +97,7 @@ public class UserItemMeanPredictor extends ItemMeanPredictor {
 	
 	public static class Builder extends ItemMeanPredictor.Builder {
 		@Override
-		public RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
+		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
 			return new UserItemMeanPredictor(globalMean, itemMeans);
 		}
 	}
