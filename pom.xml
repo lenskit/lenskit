@@ -73,6 +73,30 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+      	<groupId>com.mycila.maven-license-plugin</groupId>
+      	<artifactId>maven-license-plugin</artifactId>
+      	<version>1.8.0</version>
+      	<configuration>
+      	  <inherited>false</inherited>
+      	  <basedir>${basedir}</basedir>
+      	  <header>${basedir}/etc/header.txt</header>
+      	  <validHeaders>
+      	    <validHeader>${basedir}/etc/mit-header.txt</validHeader>
+      	  </validHeaders>
+      	  <aggregate>true</aggregate>
+      	  <strictCheck>true</strictCheck>
+      	  <includes>
+      	    <include>*/src/**/*.java</include>
+      	  </includes>
+          <!-- <excludes>
+      	    <exclude>reflens-core/src/main/java/org/grouplens/reflens/util/TypeUtils.java</exclude>
+      	  </excludes> -->
+      	  <mapping>
+      	    <java>SLASHSTAR_STYLE</java>
+      	  </mapping>
+      	</configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
