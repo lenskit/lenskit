@@ -1,9 +1,6 @@
-/* RefLens, a reference implementation of recommender algorithms.
+/*
  * Copyright 2010 Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
- * NOTE: the copyright permissions for this file are different from those
- * applying to the rest of RefLens.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -22,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.grouplens.reflens.util;
 
 import java.lang.reflect.GenericArrayType;
@@ -45,16 +43,16 @@ public class TypeUtils {
 	private static ParameterizedType typeOfClass(Class c) {
 		return Types.newParameterizedType(c, c.getTypeParameters());
 	}
-	
+
 	public static Type reifyType(Type template, Class clazz) {
 		if (clazz.getTypeParameters().length == 0)
 			return clazz;
-		
+
 		ParameterizedType t = typeOfClass(clazz);
 		TypeAssignment asn = findAssignment(template, t, null);
 		if (asn == null)
 			return clazz;
-		
+
 		TypeVariable[] params = clazz.getTypeParameters();
 		Type[] bindings = new Type[params.length];
 		for (int i = 0; i < params.length; i++) {
@@ -62,12 +60,12 @@ public class TypeUtils {
 		}
 		return Types.newParameterizedType(clazz, bindings);
 	}
-	
+
 	private static TypeAssignment findAssignment(Type template, ParameterizedType t, TypeAssignment base) {
 		TypeAssignment asn = new TypeAssignment(base);
 		if (!asn.bindParams(t))
 			return null;
-		
+
 		if (unifyTypes(template, t, asn)) {
 			return asn;
 		} else {
@@ -93,10 +91,10 @@ public class TypeUtils {
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Compute the set of unbound type variables used in <var>t</var>.
 	 * @param t A type
@@ -121,20 +119,20 @@ public class TypeUtils {
 		}
 		return s;
 	}
-	
+
 	private static boolean unifyTypes(Type fixed, Type open, TypeAssignment assignment) {
 		assert findFreeVariables(fixed).isEmpty();
-		
+
 		Type ropen = assignment.resolve(open);
 		if (fixed.equals(ropen))
 			return true;
-		
+
 		if (ropen instanceof TypeVariable) {
 			// open is a type variable; assign it.  don't need occurance check
 			// since fixed has no free variables.
 			return assignment.set((TypeVariable) ropen, fixed);
-		} 
-		
+		}
+
 		ParameterizedType fpt;
 		ParameterizedType pt;
 		try {
@@ -147,12 +145,12 @@ public class TypeUtils {
 		} catch (ClassCastException e) {
 			return false; // whoops, we cannot unify.
 		}
-		
+
 		if (fpt.getRawType().equals(pt.getRawType())) {
 			Type[] fargs = fpt.getActualTypeArguments();
 			Type[] targs = pt.getActualTypeArguments();
 			assert fargs.length == targs.length;
-			
+
 			for (int i = 0; i < fargs.length; i++) {
 				if (!unifyTypes(fargs[i], targs[i], assignment))
 					return false;
@@ -163,33 +161,33 @@ public class TypeUtils {
 			return false;
 		}
 	}
-	
+
 	private static class TypeAssignment {
 		private Map<TypeVariable,Type> assignments;
-		
+
 		@SuppressWarnings("unused")
 		public TypeAssignment() {
 			this(null);
 		}
-		
+
 		public TypeAssignment(TypeAssignment base) {
 			if (base == null)
 				assignments = new HashMap<TypeVariable, Type>();
 			else
 				assignments = new HashMap<TypeVariable, Type>(base.assignments);
 		}
-		
+
 		public boolean set(TypeVariable v, Type t) {
 			if (v.equals(t))
 				return true;
-			
+
 			if (assignments.containsKey(v))
 				return false;
-			
+
 			assignments.put(v, t);
 			return true;
 		}
-		
+
 		public Type resolve(Type t) {
 			if (t instanceof TypeVariable) {
 				TypeVariable v = (TypeVariable) t;
@@ -202,7 +200,7 @@ public class TypeUtils {
 				return t;
 			}
 		}
-		
+
 		public boolean bindParams(ParameterizedType t) {
 			try {
 				Class c = (Class) t.getRawType();
@@ -211,7 +209,7 @@ public class TypeUtils {
 				return false;
 			}
 		}
-		
+
 		public boolean bindParams(ParameterizedType t, Class c) {
 			Type[] actuals = t.getActualTypeArguments();
 			TypeVariable[] formals = c.getTypeParameters();
@@ -222,7 +220,7 @@ public class TypeUtils {
 			}
 			return true;
 		}
-		
+
 		@Override
 		public String toString() {
 			return assignments.toString();
