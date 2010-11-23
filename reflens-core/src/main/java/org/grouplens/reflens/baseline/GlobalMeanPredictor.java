@@ -35,15 +35,12 @@ import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
-	private static final Logger logger = LoggerFactory.getLogger(GlobalMeanPredictor.class);
 
 	/**
 	 * @param value

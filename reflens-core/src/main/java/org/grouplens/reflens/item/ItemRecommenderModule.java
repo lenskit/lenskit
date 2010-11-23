@@ -140,6 +140,7 @@ public class ItemRecommenderModule extends AbstractModule {
 				Double.parseDouble(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100")));
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void configureBaseline() {
 		String rnorm = properties.getProperty(BaselinePredictor.PROPERTY_NAME);
 		Class target = null;
