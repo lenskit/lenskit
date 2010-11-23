@@ -42,12 +42,16 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.SimpleFileDataSource;
@@ -69,11 +73,12 @@ public class TestMeanPredictor {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		URL res = this.getClass().getResource("ratings.dat");
-		if (res == null) {
-			throw new FileNotFoundException("cannot find ratings.dat");
-		}
-		ratings = new SimpleFileDataSource(res, " ");
+		List<Rating> rs = new ArrayList<Rating>();
+		rs.add(new Rating(1, 5, 2));
+		rs.add(new Rating(1, 7, 4));
+		rs.add(new Rating(8, 4, 5));
+		rs.add(new Rating(8, 5, 4));
+		ratings = new RatingCollectionDataSource(rs);
 	}
 	
 	@Test
