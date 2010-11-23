@@ -54,6 +54,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Rating predictor that returns the item's mean rating for all predictions.
+ * 
+ * If the item has no ratings, the global mean rating is returned.
+ * 
+ * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub></i>,
+ * where <i>b<sub>i</sub></i> is the item's average rating (less the global
+ * mean µ).
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -94,11 +102,21 @@ public class ItemMeanPredictor implements RatingPredictor {
 		return globalMean + itemAverages.get(id);
 	}
 
+	/**
+	 * Predictor builder for the item mean predictor.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	public static class Builder implements RatingPredictorBuilder {
 		private static Logger logger = LoggerFactory.getLogger(Builder.class);
 
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
+			// We iterate the loop to compute the global and per-item mean
+			// ratings.  Subtracting the global mean from each per-item mean
+			// is equivalent to averaging the offsets from the global mean, so
+			// we can compute the means in parallel and subtract after a single
+			// pass through the data.
 			double total = 0.0;
 			int count = 0;
 			Long2DoubleMap itemTotals = new Long2DoubleOpenHashMap();

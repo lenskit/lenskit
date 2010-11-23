@@ -28,9 +28,6 @@
  * exception statement from your version.
  */
 
-/**
- * 
- */
 package org.grouplens.reflens.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
@@ -46,6 +43,14 @@ import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.CollectionUtils;
 
 /**
+ * Predictor that returns the user's mean offset from item mean rating for all
+ * predictions.
+ * 
+ * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
+ * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
+ * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
+ * difference between their ratings and the item-mean baseline). 
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -55,6 +60,11 @@ public class UserItemMeanPredictor extends ItemMeanPredictor {
 		super(mean, means);
 	}
 	
+	/**
+	 * Compute the mean offset in user rating from item mean rating.
+	 * @param ratings the user's rating profile
+	 * @return the mean offset from item mean rating.
+	 */
 	double computeUserAverage(Map<Long,Double> ratings) {
 		if (ratings.isEmpty()) return 0;
 		
@@ -95,6 +105,11 @@ public class UserItemMeanPredictor extends ItemMeanPredictor {
 		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
 	}
 	
+	/**
+	 * Builder for the user-item mean predictor.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	public static class Builder extends ItemMeanPredictor.Builder {
 		@Override
 		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {

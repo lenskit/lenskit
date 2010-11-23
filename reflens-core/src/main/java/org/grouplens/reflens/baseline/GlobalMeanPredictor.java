@@ -37,14 +37,12 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 
 /**
+ * Rating predictor that predicts the global mean rating for all items.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
 
-	/**
-	 * @param value
-	 */
 	private GlobalMeanPredictor(double value) {
 		super(value);
 	}
@@ -72,6 +70,11 @@ public class GlobalMeanPredictor extends ConstantPredictor {
 		return avg;
 	}
 
+	/**
+	 * Predictor builder for the global mean predictor.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	public static class Builder implements RatingPredictorBuilder {
 
 		@Override

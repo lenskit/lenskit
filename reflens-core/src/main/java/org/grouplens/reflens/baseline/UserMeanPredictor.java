@@ -28,9 +28,6 @@
  * exception statement from your version.
  */
 
-/**
- * 
- */
 package org.grouplens.reflens.baseline;
 
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
@@ -52,12 +49,18 @@ import org.grouplens.reflens.util.CollectionUtils;
 import com.google.inject.Inject;
 
 /**
+ * Rating predictor that returns the user's average rating for all predictions.
+ * 
+ * If the user has no ratings, the global mean is returned.  This is done by
+ * actually computing the average offset from the global mean and adding back
+ * the global mean for the returned prediction.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class UserMeanPredictor implements RatingPredictor {
 	private final double globalMean;
-	
+
 	UserMeanPredictor(double mean) {
 		globalMean = mean;
 	}
@@ -99,6 +102,11 @@ public class UserMeanPredictor implements RatingPredictor {
 		return new ScoredId(item, average(ratings, globalMean) + globalMean);
 	}
 	
+	/**
+	 * Predictor builder for the user mean predictor.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	public static class Builder implements RatingPredictorBuilder {
 		@Inject
 		public Builder() {

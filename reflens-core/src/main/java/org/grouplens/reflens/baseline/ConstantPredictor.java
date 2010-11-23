@@ -51,12 +51,18 @@ import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
 
 /**
+ * Rating predictor that predicts a constant rating for all items.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ConstantPredictor implements RatingPredictor {
 	private final double value;
 	
+	/**
+	 * Annotation for value parameters to the recommender.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	@BindingAnnotation
 	@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 	@Retention(RetentionPolicy.RUNTIME)
@@ -85,6 +91,11 @@ public class ConstantPredictor implements RatingPredictor {
 		return new ScoredId(item, value);
 	}
 
+	/**
+	 * Predictor builder for a constant rating predictor.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
 	public static class Builder implements RatingPredictorBuilder {
 		private final double value;
 		@Inject
