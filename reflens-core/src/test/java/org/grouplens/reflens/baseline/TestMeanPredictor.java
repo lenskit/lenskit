@@ -37,6 +37,8 @@ package org.grouplens.reflens.baseline;
 import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -113,6 +115,14 @@ public class TestMeanPredictor {
 		// seen item - should be same avg
 		score = pred.predict(10l, map, 7);
 		assertEquals(4.33333, score.getScore(), 0.001);
+		
+		// try twice
+		LongCollection items = new LongArrayList();
+		items.add(7);
+		items.add(2);
+		Map<Long,Double> preds = pred.predict(10l, map, items);
+		assertEquals(4.33333, preds.get(2l), 0.001);
+		assertEquals(4.33333, preds.get(7l), 0.001);
 	}
 	
 	/**
@@ -125,6 +135,56 @@ public class TestMeanPredictor {
 		Map<Long,Double> map = Collections.emptyMap();
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
+	}
+	
+	@Test
+	public void testItemMeanBaseline() {
+		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder();
+		RatingPredictor pred = builder.build(ratings);
+		Long2DoubleMap map = new Long2DoubleOpenHashMap();
+		map.put(5, 3);
+		map.put(7, 6);
+		map.put(10, 4);
+		// unseen item, should be global mean
+		ScoredId score = pred.predict(10l, map, 2l);
+		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
+		// seen item - should be item average
+		score = pred.predict(10l, map, 5);
+		assertEquals(3.0, score.getScore(), 0.001);
+		
+		// try twice
+		LongCollection items = new LongArrayList();
+		items.add(5);
+		items.add(2);
+		Map<Long,Double> preds = pred.predict(10l, map, items);
+		assertEquals(RATINGS_DAT_MEAN, preds.get(2l), 0.001);
+		assertEquals(3.0, preds.get(5l), 0.001);
+	}
+	
+	@Test
+	public void testUserItemMeanBaseline() {
+		RatingPredictorBuilder builder = new UserItemMeanPredictor.Builder();
+		RatingPredictor pred = builder.build(ratings);
+		Long2DoubleMap map = new Long2DoubleOpenHashMap();
+		map.put(5, 3); // offset = 0
+		map.put(7, 6); // offset = 2
+		map.put(10, 4); // offset = 4 - µ = 0.25
+		final double avgOffset = 0.75;
+		
+		// unseen item, should be global mean + user offset
+		ScoredId score = pred.predict(10l, map, 2l);
+		assertEquals(RATINGS_DAT_MEAN + avgOffset, score.getScore(), 0.001);
+		// seen item - should be item average + user offset
+		score = pred.predict(10l, map, 5);
+		assertEquals(3.0 + avgOffset, score.getScore(), 0.001);
+		
+		// try twice
+		LongCollection items = new LongArrayList();
+		items.add(5);
+		items.add(2);
+		Map<Long,Double> preds = pred.predict(10l, map, items);
+		assertEquals(RATINGS_DAT_MEAN + avgOffset, preds.get(2l), 0.001);
+		assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
 	}
 
 	/**
