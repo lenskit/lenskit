@@ -30,7 +30,18 @@
 
 package org.grouplens.reflens.data;
 
-public interface Index {
+import java.io.Serializable;
+
+/**
+ * An index mapping long IDs to consecuitive 0-based integers.  The indexes
+ * fall in the range [0,{@linkplain #getObjectCount()}).
+ * 
+ * Indexes must be serializable.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+public interface Index extends Serializable {
 	public abstract int getIndex(long obj);
 	public abstract long getId(int idx);
 	public abstract int getObjectCount();

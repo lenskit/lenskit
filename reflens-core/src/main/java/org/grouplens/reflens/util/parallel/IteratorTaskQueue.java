@@ -68,7 +68,7 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 		while (!threads.isEmpty()) {
 			// FIXME handle exceptions in worker threads
 			if (progress != null)
-				progress.setProgress(ndone);
+				progress.setProgress(getFinishedCount());
 			Thread t = threads.element();
 			try {
 				if (progress == null)
@@ -85,11 +85,15 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 			progress.finish();
 	}
 	public static <I,W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
-		parallelDo(iter, nthreads, factory);
+		parallelDo(null, iter, nthreads, factory);
 	}
 	public static <I,W extends ObjectWorker<I>> void parallelDo(ProgressReporter progress, Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
 		IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(progress, iter, factory);
 		queue.run(nthreads);
+	}
+	
+	private synchronized int getFinishedCount() {
+		return ndone;
 	}
 	
 	private synchronized I nextObject() {

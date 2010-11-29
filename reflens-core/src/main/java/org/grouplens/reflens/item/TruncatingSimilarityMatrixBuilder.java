@@ -33,6 +33,7 @@ package org.grouplens.reflens.item;
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -49,7 +50,7 @@ import com.google.inject.assistedinject.Assisted;
  *
  */
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
-	private static class Score implements IndexedItemScore, Comparable<Score> {
+	private static class Score implements IndexedItemScore {
 		private final int index;
 		private final double score;
 		
@@ -65,11 +66,13 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 		public double getScore() {
 			return score;
 		}
-		
-		public int compareTo(Score other) {
-			return Double.compare(score, other.score);
-		}
 	}
+	
+	private static Comparator<Score> scoreComparator = new Comparator<Score>() {
+		public int compare(Score s1, Score s2) {
+			return Double.compare(s1.score, s2.score);
+		}
+	};
 	
 	/* We have to extend the fastutil priority queue to implement Iterable. The
 	 * java.util PriorityQueue doesn't implement trim, which we want.  Also,
@@ -77,6 +80,11 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 * covariance.
 	 */
 	private static class ScoreQueue extends ObjectHeapPriorityQueue<Object> implements Iterable<IndexedItemScore> {
+		
+		@SuppressWarnings("unchecked")
+		public ScoreQueue() {
+			super((Comparator) scoreComparator);
+		}
 
 		@Override
 		public Iterator<IndexedItemScore> iterator() {

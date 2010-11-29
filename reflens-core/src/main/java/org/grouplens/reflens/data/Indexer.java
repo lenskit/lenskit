@@ -35,6 +35,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 public class Indexer implements Index {
+	private static final long serialVersionUID = -8383883342128686850L;
+	
 	private Long2IntMap indexes;
 	private LongArrayList ids;
 	
