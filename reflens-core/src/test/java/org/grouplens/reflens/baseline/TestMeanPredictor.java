@@ -40,8 +40,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
-import java.io.FileNotFoundException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +52,6 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
