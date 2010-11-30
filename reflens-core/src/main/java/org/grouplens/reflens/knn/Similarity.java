@@ -28,23 +28,20 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item.params;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import com.google.inject.BindingAnnotation;
+package org.grouplens.reflens.knn;
 
 /**
+ * Compute the similarity between two objects (typically rating vectors).
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@BindingAnnotation
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ThreadCount {
-	public static final String PROPERTY_NAME =
-		"org.grouplens.reflens.item.ThreadCount";
+public interface Similarity<V> {
+	/**
+	 * Compute the similarity between two vectors.
+	 * @param vec1
+	 * @param vec2
+	 * @return The similarity, in the range [-1,1].
+	 */
+	double similarity(V vec1, V vec2);
 }

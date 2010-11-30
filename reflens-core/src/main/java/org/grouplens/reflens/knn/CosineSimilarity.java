@@ -28,49 +28,72 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item;
+package org.grouplens.reflens.knn;
 
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import java.util.Properties;
+import org.grouplens.reflens.knn.params.SimilarityDamper;
+import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
-import org.grouplens.reflens.OptimizableMapSimilarity;
-import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.item.params.ItemSimilarity;
-
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
+import com.google.inject.Inject;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ParallelItemRecommenderModule extends ItemRecommenderModule {
-
-	/**
-	 * 
-	 */
-	public ParallelItemRecommenderModule() {
-	}
-
-	/**
-	 * @param props
-	 */
-	public ParallelItemRecommenderModule(Properties props) {
-		super(props);
-	}
-
-	@Override
-	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
+public class CosineSimilarity
+	implements OptimizableMapSimilarity<Long, Double, Long2DoubleMap>, SymmetricBinaryFunction {
+	
+	private final double dampingFactor;
+	
+	public CosineSimilarity() {
+		this(0.0);
 	}
 	
+	@Inject
+	public CosineSimilarity(@SimilarityDamper double dampingFactor) {
+		this.dampingFactor = dampingFactor;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
+	 */
 	@Override
-	protected void configureItemSimilarity() {
-		Key<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>> key =
-			Key.get(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>() {},
-					ItemSimilarity.class);
-		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
-				CosineSimilarity.class);
+	public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+		double dot = 0.0f;
+		double ssq1 = 0.0f;
+		double ssq2 = 0.0f;
+		
+		ObjectSet<Long2DoubleMap.Entry> v1entries = vec1.long2DoubleEntrySet();
+		ObjectIterator<Long2DoubleMap.Entry> v1iter;
+		try {
+			v1iter = ((Long2DoubleMap.FastEntrySet) v1entries).fastIterator();
+		} catch (ClassCastException e) {
+			v1iter = v1entries.iterator();
+		}
+		while (v1iter.hasNext()) {
+			Long2DoubleMap.Entry e = v1iter.next();
+			long k = e.getLongKey();
+			double v = e.getDoubleValue();
+			if (vec2.containsKey(k)) {
+				dot += v * vec2.get(k);
+			}
+			ssq1 += v * v;
+		}
+		DoubleIterator v2iter = vec2.values().iterator();
+		while (v2iter.hasNext()) {
+			double v = v2iter.nextDouble();
+			ssq2 += v * v;
+		}
+		
+		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2) + dampingFactor;
+		if (denom == 0.0f) {
+			return Double.NaN;
+		} else { 
+			return dot / (double) denom;
+		}
 	}
 }

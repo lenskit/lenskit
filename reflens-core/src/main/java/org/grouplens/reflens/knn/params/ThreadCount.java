@@ -28,19 +28,23 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens;
+package org.grouplens.reflens.knn.params;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.google.inject.BindingAnnotation;
 
 /**
- * A similarity function of maps that is optimizable based on its keys.
- * 
- * Optimizable similarity functions always return 0 if the key sets of the
- * two maps are disjoint, so the algorithm can optimize calls by skipping
- * computation for maps with disjoint sets.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface OptimizableMapSimilarity<K,V,M extends Map<K,V>> extends Similarity<M> {
-
+@BindingAnnotation
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ThreadCount {
+	public static final String PROPERTY_NAME =
+		"org.grouplens.reflens.knn.ThreadCount";
 }

@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item.params;
+package org.grouplens.reflens.knn.params;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -41,5 +41,5 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ItemSimilarity {
-	public static final String PROPERTY_NAME = "org.grouplens.reflens.item.ItemSimilarity";
+	public static final String PROPERTY_NAME = "org.grouplens.reflens.knn.ItemSimilarity";
 }

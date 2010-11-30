@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item;
+package org.grouplens.reflens.knn;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
@@ -39,12 +39,11 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.item.params.BaselinePredictor;
-import org.grouplens.reflens.item.params.ItemSimilarity;
-import org.grouplens.reflens.item.params.NeighborhoodSize;
-import org.grouplens.reflens.item.params.SimilarityDamper;
-import org.grouplens.reflens.item.params.ThreadCount;
+import org.grouplens.reflens.knn.params.BaselinePredictor;
+import org.grouplens.reflens.knn.params.ItemSimilarity;
+import org.grouplens.reflens.knn.params.NeighborhoodSize;
+import org.grouplens.reflens.knn.params.SimilarityDamper;
+import org.grouplens.reflens.knn.params.ThreadCount;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.util.TypeUtils;

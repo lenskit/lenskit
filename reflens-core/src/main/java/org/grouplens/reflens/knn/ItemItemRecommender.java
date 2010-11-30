@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item;
+package org.grouplens.reflens.knn;
 
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
@@ -46,11 +46,11 @@ import java.util.Map;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
 
-public class ItemItemRecommender implements Recommender, RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommender implements RecommendationEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	private final ItemItemModel model;
 	

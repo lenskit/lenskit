@@ -28,28 +28,48 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.svd;
+package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.RecommendationEngine;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
+import java.util.Properties;
+
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.knn.params.ItemSimilarity;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
-public class FunkSVDFactory implements RecommenderBuilder {
-	
-	private Provider<FunkSVD> svdProvider;
-	@Inject
-	public FunkSVDFactory(Provider<FunkSVD> provider) {
-		svdProvider = provider;
+/**
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+public class ParallelItemRecommenderModule extends ItemRecommenderModule {
+
+	/**
+	 * 
+	 */
+	public ParallelItemRecommenderModule() {
+	}
+
+	/**
+	 * @param props
+	 */
+	public ParallelItemRecommenderModule(Properties props) {
+		super(props);
 	}
 
 	@Override
-	public RecommendationEngine build(RatingDataSource ratings) {
-		FunkSVD rec = svdProvider.get();
-		rec.build(ratings);
-		return rec;
+	protected void configureRecommenderBuilder() {
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
 	}
-
+	
+	@Override
+	protected void configureItemSimilarity() {
+		Key<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>> key =
+			Key.get(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>() {},
+					ItemSimilarity.class);
+		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
+				CosineSimilarity.class);
+	}
 }

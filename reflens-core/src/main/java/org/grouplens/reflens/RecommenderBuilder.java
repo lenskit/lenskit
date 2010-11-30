@@ -48,5 +48,5 @@ public interface RecommenderBuilder {
 	 * recommender.
 	 * @return A new recommender engine.
 	 */
-	public Recommender build(RatingDataSource ratings);
+	public RecommendationEngine build(RatingDataSource ratings);
 }

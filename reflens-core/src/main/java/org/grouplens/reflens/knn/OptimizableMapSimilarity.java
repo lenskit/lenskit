@@ -28,13 +28,20 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens;
+package org.grouplens.reflens.knn;
+
+import java.util.Map;
+
 
 /**
- * Tag interface for binary functions indicating that the function is symmetric.
+ * A similarity function of maps that is optimizable based on its keys.
+ * 
+ * Optimizable similarity functions always return 0 if the key sets of the
+ * two maps are disjoint, so the algorithm can optimize calls by skipping
+ * computation for maps with disjoint sets.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface SymmetricBinaryFunction {
+public interface OptimizableMapSimilarity<K,V,M extends Map<K,V>> extends Similarity<M> {
 
 }

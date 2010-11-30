@@ -28,46 +28,23 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item;
+package org.grouplens.reflens.knn.params;
 
-import it.unimi.dsi.fastutil.objects.ObjectCollections;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.io.Serializable;
-
-import org.grouplens.reflens.data.Index;
-import org.grouplens.reflens.util.IndexedItemScore;
-import org.grouplens.reflens.util.SimilarityMatrix;
+import com.google.inject.BindingAnnotation;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemModel implements Serializable {
-
-	private static final long serialVersionUID = 7040201805529926395L;
-	
-	private final Index itemIndexer;
-	private final SimilarityMatrix matrix;
-	
-	public ItemItemModel(Index indexer, SimilarityMatrix matrix) {
-		this.itemIndexer = indexer;
-		this.matrix = matrix;
-	}
-	
-	public Iterable<IndexedItemScore> getNeighbors(long item) {
-		int idx = itemIndexer.getIndex(item);
-		if (idx >= 0) {
-			return matrix.getNeighbors(itemIndexer.getIndex(item));
-		} else {
-			return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
-		}
-	}
-	
-	public int getItemIndex(long id) {
-		return itemIndexer.getIndex(id);
-	}
-	
-	public long getItem(int idx) {
-		return itemIndexer.getId(idx);
-	}
+@BindingAnnotation
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SimilarityDamper {
+	public static final String PROPERTY_NAME
+		= "org.grouplens.reflens.knn.SimilarityDamper";
 }

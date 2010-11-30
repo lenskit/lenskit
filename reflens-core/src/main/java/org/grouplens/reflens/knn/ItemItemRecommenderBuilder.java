@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item;
+package org.grouplens.reflens.knn;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
@@ -42,19 +42,18 @@ import javax.annotation.Nullable;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.Similarity;
-import org.grouplens.reflens.SymmetricBinaryFunction;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.item.params.BaselinePredictor;
-import org.grouplens.reflens.item.params.ItemSimilarity;
+import org.grouplens.reflens.knn.params.BaselinePredictor;
+import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
 import com.google.inject.Inject;
 

@@ -28,20 +28,46 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens;
+package org.grouplens.reflens.knn;
+
+import it.unimi.dsi.fastutil.objects.ObjectCollections;
+
+import java.io.Serializable;
+
+import org.grouplens.reflens.data.Index;
+import org.grouplens.reflens.util.IndexedItemScore;
+import org.grouplens.reflens.util.SimilarityMatrix;
 
 /**
- * Compute the similarity between two objects (typically rating vectors).
- * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface Similarity<V> {
-	/**
-	 * Compute the similarity between two vectors.
-	 * @param vec1
-	 * @param vec2
-	 * @return The similarity, in the range [-1,1].
-	 */
-	double similarity(V vec1, V vec2);
+public class ItemItemModel implements Serializable {
+
+	private static final long serialVersionUID = 7040201805529926395L;
+	
+	private final Index itemIndexer;
+	private final SimilarityMatrix matrix;
+	
+	public ItemItemModel(Index indexer, SimilarityMatrix matrix) {
+		this.itemIndexer = indexer;
+		this.matrix = matrix;
+	}
+	
+	public Iterable<IndexedItemScore> getNeighbors(long item) {
+		int idx = itemIndexer.getIndex(item);
+		if (idx >= 0) {
+			return matrix.getNeighbors(itemIndexer.getIndex(item));
+		} else {
+			return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
+		}
+	}
+	
+	public int getItemIndex(long id) {
+		return itemIndexer.getIndex(id);
+	}
+	
+	public long getItem(int idx) {
+		return itemIndexer.getId(idx);
+	}
 }

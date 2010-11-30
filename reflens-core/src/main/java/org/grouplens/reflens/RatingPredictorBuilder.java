@@ -32,9 +32,11 @@ package org.grouplens.reflens;
 
 import org.grouplens.reflens.data.RatingDataSource;
 
+import com.google.inject.Inject;
+
 /**
  * Interface for building rating predictors.  This guarantees you a rating
- * predictor, unlike {@link RecommenderBuilder} which returns a {@link Recommender}
+ * predictor, unlike {@link RecommenderBuilder} which returns a {@link RecommendationEngine}
  * which may or may not supply rating predictions.  Useful for building things
  * like baselines.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -57,17 +59,18 @@ public interface RatingPredictorBuilder {
 	public static class RecommenderBuilderWrapper implements RatingPredictorBuilder {
 		private final RecommenderBuilder builder;
 
+		@Inject
 		public RecommenderBuilderWrapper(RecommenderBuilder builder) {
 			this.builder = builder;
 		}
 		
 		public RatingPredictor build(RatingDataSource data) {
-			Recommender engine = builder.build(data);
+			RecommendationEngine engine = builder.build(data);
 			RatingPredictor pred = engine.getRatingPredictor();
 			if (pred != null)
 				return pred;
 			else
-				throw new RuntimeException("Recommender does not support rating prediction");
+				throw new RuntimeException("RecommendationEngine does not support rating prediction");
 		}
 	}
 }

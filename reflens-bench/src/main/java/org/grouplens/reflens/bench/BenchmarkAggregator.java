@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.Recommender;
+import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -85,7 +85,7 @@ public class BenchmarkAggregator {
 	public void addBenchmark(
 			RatingDataSource trainingData,
 			Collection<UserRatingProfile> testUsers) {
-		Recommender engine;
+		RecommendationEngine engine;
 		logger.debug("Building model with {} users, {} items", trainingData.getUserCount(),
 				trainingData.getItemCount());
 		try {

@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.item.params;
+package org.grouplens.reflens.knn.params;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -37,14 +37,9 @@ import java.lang.annotation.Target;
 
 import com.google.inject.BindingAnnotation;
 
-/**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SimilarityDamper {
-	public static final String PROPERTY_NAME
-		= "org.grouplens.reflens.SimilarityDamper";
+public @interface NeighborhoodSize {
+	public static final String PROPERTY_NAME = "org.grouplens.reflens.knn.NeighborhoodSize";
 }

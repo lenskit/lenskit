@@ -31,7 +31,7 @@
 /**
  * 
  */
-package org.grouplens.reflens.item.params;
+package org.grouplens.reflens.knn.params;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -50,5 +50,5 @@ import com.google.inject.BindingAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BaselinePredictor {
 	public static final String PROPERTY_NAME =
-		"org.grouplens.reflens.item.BaselinePredictor";
+		"org.grouplens.reflens.knn.BaselinePredictor";
 }

@@ -28,40 +28,13 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens;
+package org.grouplens.reflens.util;
 
 /**
- * Interface for recommender engines, providing access to specific types of
- * recommender interfaces.
- * 
- * The reason we have this interface returning other interfaces is so that any
- * class that has e.g. a {@link RatingRecommender} knows it can get rating 
- * recommendations without worring about null values (aside from out-of-domain
- * inputs) or UnsupportedOperationExceptions.  Most implementers will probably
- * just implement the other interfaces directly and return themselves in their
- * implementation of methods from this interface.
- * 
- * You will usually get one of these from a {@link RecommenderBuilder}.
- * 
+ * Tag interface for binary functions indicating that the function is symmetric.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
  */
-public interface Recommender {
-	/**
-	 * Retrieve the rating recommender from this engine.
-	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based
-	 * recommendations are not supported.
-	 */
-	RatingRecommender getRatingRecommender();
-	/**
-	 * Retrieve the rating predictor from this engine.
-	 * @return a rating predictor, or <tt>null</tt> if ratings cannot be
-	 * predicted.
-	 */
-	RatingPredictor getRatingPredictor();
-	/**
-	 * Retrieve the basket-based recommender for this engine.
-	 * @return a basket recommender, or <tt>null</tt> if basket-based
-	 * recommendation is not supported.
-	 */
-	BasketRecommender getBasketRecommender();
+public interface SymmetricBinaryFunction {
+
 }
