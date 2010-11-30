@@ -9,9 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <groupId>org.grouplens.reflens</groupId>
   <artifactId>reflens-core</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>RefLens Core</name>
   <dependencies>
     <dependency>

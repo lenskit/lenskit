@@ -9,9 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <groupId>org.grouplens.reflens</groupId>
   <artifactId>reflens-bench</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>RefLens Benchmarker</name>
   <build>
     <plugins>
@@ -52,12 +50,6 @@
       <artifactId>jewelcli</artifactId>
       <version>0.59</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>0.9.26</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>jline</groupId>
