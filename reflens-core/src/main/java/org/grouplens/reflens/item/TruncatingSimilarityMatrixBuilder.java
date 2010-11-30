@@ -32,6 +32,10 @@ package org.grouplens.reflens.item;
 
 import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -79,7 +83,8 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 * implementing it ourselves lets us work around lack of generic type
 	 * covariance.
 	 */
-	private static class ScoreQueue extends ObjectHeapPriorityQueue<Object> implements Iterable<IndexedItemScore> {
+	private static class ScoreQueue extends ObjectHeapPriorityQueue<Object>
+		implements Iterable<IndexedItemScore>, Externalizable {
 		
 		@SuppressWarnings("unchecked")
 		public ScoreQueue() {
@@ -112,6 +117,26 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 					throw new UnsupportedOperationException();
 				}
 			};
+		}
+
+		@Override
+		public void readExternal(ObjectInput in) throws IOException,
+				ClassNotFoundException {
+			final int n = in.readInt();
+			for (int i = 0; i < n; i++) {
+				int idx = in.readInt();
+				double v = in.readDouble();
+				enqueue(new Score(idx, v));
+			}
+		}
+
+		@Override
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeInt(size());
+			for (IndexedItemScore score: this) {
+				out.writeInt(score.getIndex());
+				out.writeDouble(score.getScore());
+			}
 		}
 		
 	}
