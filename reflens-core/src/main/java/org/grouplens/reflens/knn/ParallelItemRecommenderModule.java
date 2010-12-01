@@ -37,7 +37,6 @@ import java.util.Properties;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 
-import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 
 /**
@@ -66,10 +65,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 	
 	@Override
 	protected void configureItemSimilarity() {
-		Key<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>> key =
-			Key.get(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>() {},
-					ItemSimilarity.class);
-		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
-				CosineSimilarity.class);
+		bindClassParameter(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>(){},
+				ItemSimilarity.class, CosineSimilarity.class);
 	}
 }

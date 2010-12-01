@@ -35,11 +35,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.PropertyName;
+
 import com.google.inject.BindingAnnotation;
 
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@PropertyName("org.grouplens.reflens.knn.ItemSimilarity")
 public @interface ItemSimilarity {
-	public static final String PROPERTY_NAME = "org.grouplens.reflens.knn.ItemSimilarity";
 }

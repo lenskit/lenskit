@@ -32,76 +32,48 @@ package org.grouplens.reflens.knn;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
-import java.lang.reflect.Type;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.knn.params.BaselinePredictor;
+import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
-import org.grouplens.reflens.knn.params.ThreadCount;
-import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
-import org.grouplens.reflens.util.TypeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.joda.convert.StringConvert;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
-import com.google.inject.binder.LinkedBindingBuilder;
-import com.google.inject.util.Providers;
 
 /**
+ * TODO Extract NeighborhoodRecommenderModule
+ * TODO Document this class
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemRecommenderModule extends AbstractModule {
-	
-	private static final Logger logger = LoggerFactory.getLogger(ItemRecommenderModule.class);
-	
-	private Properties properties;
+public class ItemRecommenderModule extends RecommenderModule {
 	
 	public ItemRecommenderModule() {
-		this(System.getProperties());
+		super();
 	}
 
 	public ItemRecommenderModule(Properties props) {
-		this.properties = props;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.google.inject.AbstractModule#configure()
-	 */
-	@Override
-	protected void configure() {
-		configureThreadCount();
-		
-		configureSimilarityMatrix();
-		
-		configureBaseline();
-		
-		configureParameters();
-
-		configureItemSimilarity();
-		configureRecommenderBuilder();
+		super(props);
 	}
 	
-	protected void configureThreadCount() {
-		int count = Runtime.getRuntime().availableProcessors();
-		String cfg = properties.getProperty(ThreadCount.PROPERTY_NAME);
-		try {
-			if (cfg != null)
-				count = Integer.parseInt(cfg, 10);
-		} catch (NumberFormatException e) {
-			logger.warn("Invalid integer {}", cfg);
-		}
-		bind(int.class).annotatedWith(ThreadCount.class).toInstance(count);
+	public ItemRecommenderModule(Properties props, StringConvert converter) {
+		super(props, converter);
+	}
+
+	@Override
+	protected void configure() {
+		super.configure();
+		
+		configureParameters();
+		
+		configureSimilarityMatrix();
+		configureItemSimilarity();
+		configureRecommenderBuilder();
 	}
 	
 	protected void configureParameters() {
@@ -113,8 +85,7 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder>(){}).to(
-				new TypeLiteral<ItemItemRecommenderBuilder>(){});
+		bind(RecommenderBuilder.class).to(ItemItemRecommenderBuilder.class);
 	}
 
 	/**
@@ -130,89 +101,15 @@ public class ItemRecommenderModule extends AbstractModule {
 	 * 
 	 */
 	protected void configureNeighborhoodSize() {
-		bind(int.class).annotatedWith(NeighborhoodSize.class).toInstance(
-				Integer.parseInt(properties.getProperty(NeighborhoodSize.PROPERTY_NAME, "100"), 10));
+		bindProperty(int.class, NeighborhoodSize.class);
 	}
 	
 	protected void configureSimilarityDamper() {
-		bind(double.class).annotatedWith(SimilarityDamper.class).toInstance(
-				Double.parseDouble(properties.getProperty(SimilarityDamper.PROPERTY_NAME, "100")));
-	}
-
-	@SuppressWarnings("unchecked")
-	protected void configureBaseline() {
-		String rnorm = properties.getProperty(BaselinePredictor.PROPERTY_NAME);
-		Class target = null;
-		if (rnorm != null) {
-			try {
-				target = ObjectLoader.getClass(rnorm);
-			} catch (ClassNotFoundException e) {
-				logger.error("Class {} not found", rnorm);
-			}
-		}
-		if (target != null) {
-			if (!RatingPredictorBuilder.class.isAssignableFrom(target)) {
-				for (Class c: target.getClasses()) {
-					if (!c.getEnclosingClass().equals(target)) continue;
-					if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
-						target = c;
-						break;
-					}
-				}
-			}
-		}
-		LinkedBindingBuilder<RatingPredictorBuilder> binder = bind(RatingPredictorBuilder.class).annotatedWith(BaselinePredictor.class);
-		
-		if (target != null) {
-			logger.debug("Using baseline {}", target.getName());
-			binder.to(target);
-		} else {
-			binder.toProvider(Providers.of((RatingPredictorBuilder) null));
-		}
-	}
-	
-	protected <T> void bindClassFromProperty(Key<T> key, String propName) {
-		bindClassFromProperty(key, propName, null);
-	}
-
-	/**
-	 * Bind a dependency using a class read from a property.
-	 * 
-	 * @param key The Guice dependency key to bind.
-	 * @param propName The name of the property containing the class name.
-	 * @param dftClass The implementation to bind if the property is not set.
-	 * If <tt>null</tt>, then null will be bound (and the dependency must have
-	 * the {@link Nullable} annotation).  This parameter has a bare type to make
-	 * it easier to use in the face of type erasure.
-	 */
-	@SuppressWarnings("unchecked")
-	protected <T> void bindClassFromProperty(Key<T> key, String propName, Class dftClass) {
-		String rnorm = properties.getProperty(propName);
-		Class target = dftClass;
-		if (rnorm != null) {
-			try {
-				target = ObjectLoader.getClass(rnorm);
-			} catch (ClassNotFoundException e) {
-				logger.error("Class {} (from {}) not found", rnorm, propName);
-			}
-		}
-		
-		if (target != null) {
-			logger.debug("Binding {} to {}", key.toString(), target.getName());
-			Type tgtType = TypeUtils.reifyType(key.getTypeLiteral().getType(), target);
-			logger.debug("Reified {} to {}", target, tgtType);
-			bind(key).to((Key) Key.get(tgtType));
-		} else {
-			logger.debug("Binding {} to null", key.toString());
-			bind(key).toProvider(Providers.of((T) null));
-		}
+		bindProperty(double.class, SimilarityDamper.class);
 	}
 	
 	protected void configureItemSimilarity() {
-		Key<Similarity<Long2DoubleMap>> key =
-			Key.get(new TypeLiteral<Similarity<Long2DoubleMap>>() {},
-					ItemSimilarity.class);
-		bindClassFromProperty(key, ItemSimilarity.PROPERTY_NAME,
-				CosineSimilarity.class);
+		bindClassParameter(new TypeLiteral<Similarity<Long2DoubleMap>>(){},
+				ItemSimilarity.class, CosineSimilarity.class);
 	}
 }
