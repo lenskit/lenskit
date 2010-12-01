@@ -1,20 +1,17 @@
-package org.grouplens.reflens;
+package org.grouplens.reflens.params.meta;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Annotation describing Java properties to be read for the annotation.
+ * Specifies the default implementer for an object-valued parameter.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PropertyName {
-	/**
-	 * The name of the Java property for this parameter.
-	 * @return
-	 */
-	String value();
+public @interface DefaultClass {
+	@SuppressWarnings("unchecked")
+	Class value();
 }

@@ -35,7 +35,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.reflens.PropertyName;
+import org.grouplens.reflens.params.meta.PropertyName;
 
 import com.google.inject.BindingAnnotation;
 

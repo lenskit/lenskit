@@ -8,6 +8,9 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.ThreadCount;
+import org.grouplens.reflens.params.meta.DefaultClass;
+import org.grouplens.reflens.params.meta.DefaultValue;
+import org.grouplens.reflens.params.meta.PropertyName;
 import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.TypeUtils;
 import org.joda.convert.FromStringConverter;
@@ -136,6 +139,15 @@ public class RecommenderModule extends AbstractModule {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation) {
+		DefaultClass clsA = annotation.getAnnotation(DefaultClass.class);
+		Class dft = null;
+		if (clsA != null)
+			dft = clsA.value();
+		bindClassParameter(type, annotation, dft);
+	}
+	
 	/**
 	 * Bind a dependency using a class read from a property.
 	 * 
@@ -147,7 +159,7 @@ public class RecommenderModule extends AbstractModule {
 	 * it easier to use in the face of type erasure.
 	 */
 	@SuppressWarnings("unchecked")
-	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation, Class<? extends T> dftClass) {
+	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation, Class dftClass) {
 		PropertyName name = annotation.getAnnotation(PropertyName.class);
 		if (name == null) {
 			addError("No property name found for annotation " + annotation.getName());

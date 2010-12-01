@@ -110,6 +110,6 @@ public class ItemRecommenderModule extends RecommenderModule {
 	
 	protected void configureItemSimilarity() {
 		bindClassParameter(new TypeLiteral<Similarity<Long2DoubleMap>>(){},
-				ItemSimilarity.class, CosineSimilarity.class);
+				ItemSimilarity.class);
 	}
 }
