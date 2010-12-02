@@ -62,7 +62,7 @@ import com.google.inject.Inject;
 /**
  * Do recommendations using Funk's SVD algorithm.
  * 
- * TODO: factor this into an SVD recommender and an SVD model builder, so we can
+ * @todo factor this into an SVD recommender and an SVD model builder, so we can
  * use non-FUNK algorithms.
  * 
  * The implementation of FunkSVD is based on

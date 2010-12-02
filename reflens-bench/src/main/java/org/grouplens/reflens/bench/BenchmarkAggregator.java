@@ -103,7 +103,7 @@ public class BenchmarkAggregator {
 		for (UserRatingProfile user: testUsers) {
 			List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
-			// TODO: make this support timestamped ratings
+			// TODO make this support timestamped ratings
 			Collections.shuffle(ratings);
 			Long2DoubleMap queryRatings = new Long2DoubleOpenHashMap();
 			for (int i = 0; i < midpt; i++) {

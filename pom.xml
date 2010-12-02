@@ -42,6 +42,13 @@
         <version>2.7</version>
         <configuration>
           <quiet>true</quiet>
+          <tags>
+            <tag>
+              <name>todo</name>
+              <placement>a</placement>
+              <head>To Do:</head>
+            </tag>
+          </tags>
           <links>
             <link>http://fastutil.dsi.unimi.it/docs/</link>
             <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
