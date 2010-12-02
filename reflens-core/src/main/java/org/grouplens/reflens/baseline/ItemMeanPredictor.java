@@ -143,7 +143,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 			logger.debug("Computed global mean {} for {} items",
 					mean, itemTotals.size());
 			
-			LongIterator items = itemTotals.keySet().iterator();
+			LongIterator items = itemCounts.keySet().iterator();
 			while (items.hasNext()) {
 				long iid = items.nextLong();
 				int ct = itemCounts.get(iid);
@@ -152,7 +152,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 				if (ct > 0) avg = t / ct - mean;
 				itemTotals.put(iid, avg);
 			}
-			return create(count > 0 ? total / count : 0.0, itemTotals);
+			return create(mean, itemTotals);
 		}
 		
 		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
