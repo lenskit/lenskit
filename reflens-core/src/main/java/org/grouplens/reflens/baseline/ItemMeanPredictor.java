@@ -149,8 +149,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 				int ct = itemCounts.get(iid);
 				double t = itemTotals.get(iid);
 				double avg = 0.0;
-				if (ct > 0) avg = t / ct;
-				avg = avg - mean;
+				if (ct > 0) avg = t / ct - mean;
 				itemTotals.put(iid, avg);
 			}
 			return create(count > 0 ? total / count : 0.0, itemTotals);
