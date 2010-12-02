@@ -54,9 +54,9 @@ import org.grouplens.reflens.util.CollectionUtils;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserItemMeanPredictor extends ItemMeanPredictor {
+public class ItemUserMeanPredictor extends ItemMeanPredictor {
 
-	protected UserItemMeanPredictor(double mean, Long2DoubleMap means) {
+	protected ItemUserMeanPredictor(double mean, Long2DoubleMap means) {
 		super(mean, means);
 	}
 	
@@ -113,7 +113,7 @@ public class UserItemMeanPredictor extends ItemMeanPredictor {
 	public static class Builder extends ItemMeanPredictor.Builder {
 		@Override
 		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
-			return new UserItemMeanPredictor(globalMean, itemMeans);
+			return new ItemUserMeanPredictor(globalMean, itemMeans);
 		}
 	}
 

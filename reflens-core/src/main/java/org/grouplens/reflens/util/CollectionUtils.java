@@ -93,6 +93,8 @@ public class CollectionUtils {
 	 * @return
 	 */
 	private static LongIterator fastIterator(final Iterator<Long> iter) {
+		if (iter instanceof LongIterator) return (LongIterator) iter;
+		
 		return new AbstractLongIterator() {
 			Iterator<Long> biter = iter;
 			@Override

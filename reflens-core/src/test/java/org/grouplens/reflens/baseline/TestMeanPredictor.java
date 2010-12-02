@@ -165,7 +165,7 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testUserItemMeanBaseline() {
-		RatingPredictorBuilder builder = new UserItemMeanPredictor.Builder();
+		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
 		Long2DoubleMap map = new Long2DoubleOpenHashMap();
 		map.put(5, 3); // offset = 0
