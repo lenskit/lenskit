@@ -155,7 +155,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		
 		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
-		ItemItemModel model = new ItemItemModel(itemIndex, matrix);
+		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix);
 		return new ItemItemRecommender(model);
 	}
 	

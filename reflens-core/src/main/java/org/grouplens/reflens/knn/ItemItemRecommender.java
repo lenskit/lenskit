@@ -49,6 +49,8 @@ import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommendationEngine;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
+import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
+import static org.grouplens.reflens.util.CollectionUtils.getFastMap;
 
 public class ItemItemRecommender implements RecommendationEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
@@ -60,11 +62,12 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 	
 	@Override
 	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
+		Long2DoubleMap normed = model.subtractBaseline(user, ratings); 
 		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		sums.defaultReturnValue(0);
 		weights.defaultReturnValue(0);
-		for (Map.Entry<Long, Double> rating: ratings.entrySet()) {
+		for (Map.Entry<Long, Double> rating: fastIterable(getFastMap(normed))) {
 			final double r = rating.getValue();
 			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
 				double s = score.getScore();
@@ -81,25 +84,26 @@ public class ItemItemRecommender implements RecommendationEngine, RatingRecommen
 				preds.put(item, sums.get(idx) / w);
 			}
 		}
-		return preds;
+		return model.addBaseline(user, ratings, preds);
 	}
 
 	@Override
 	public ScoredId predict(long user, Map<Long,Double> ratings, long item) {
+		Long2DoubleMap normed = model.subtractBaseline(user, ratings);
 		double sum = 0;
 		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
 			long other = model.getItem(score.getIndex());
 			double s = score.getScore();
-			if (ratings.containsKey(other)) {
+			if (normed.containsKey(other)) {
 				// FIXME this goes wacky with negative similarities
-				double rating = ratings.get(other);
+				double rating = normed.get(other);
 				sum += rating * s;
 				totalWeight += Math.abs(s);
 			}
 		}
 		if (totalWeight >= 0.1) {
-			return new ScoredId(item, sum / totalWeight);
+			return new ScoredId(item, model.addBaseline(user, ratings, item, sum / totalWeight));
 		} else {
 			return null;
 		}

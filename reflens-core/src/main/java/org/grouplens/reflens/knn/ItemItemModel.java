@@ -30,11 +30,18 @@
 
 package org.grouplens.reflens.knn;
 
+import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
+import static org.grouplens.reflens.util.CollectionUtils.getFastMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
+import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
 
@@ -48,9 +55,11 @@ public class ItemItemModel implements Serializable {
 	
 	private final Index itemIndexer;
 	private final SimilarityMatrix matrix;
+	private final RatingPredictor baseline;
 	
-	public ItemItemModel(Index indexer, SimilarityMatrix matrix) {
+	public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix) {
 		this.itemIndexer = indexer;
+		this.baseline = baseline;
 		this.matrix = matrix;
 	}
 	
@@ -69,5 +78,28 @@ public class ItemItemModel implements Serializable {
 	
 	public long getItem(int idx) {
 		return itemIndexer.getId(idx);
+	}
+
+	public Long2DoubleMap subtractBaseline(long user, Map<Long, Double> ratings) {
+		Map<Long,Double> basePreds = baseline.predict(user, ratings, ratings.keySet());
+		Long2DoubleMap normed = new Long2DoubleOpenHashMap();
+		for (Long2DoubleMap.Entry e: fastIterable(getFastMap(ratings))) {
+			normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
+		}
+		return normed;
+	}
+	
+	public Long2DoubleMap addBaseline(long user, Map<Long, Double> ratings, Map<Long,Double> predictions) {
+		Map<Long,Double> basePreds = baseline.predict(user, ratings, predictions.keySet());
+		Long2DoubleMap normed = new Long2DoubleOpenHashMap();
+		for (Long2DoubleMap.Entry e: fastIterable(getFastMap(predictions))) {
+			normed.put(e.getLongKey(), e.getDoubleValue() + basePreds.get(e.getKey()));
+		}
+		return normed;
+	}
+	
+	public double addBaseline(long user, Map<Long, Double> ratings, long item, double prediction) {
+		ScoredId basePred = baseline.predict(user, ratings, item);
+		return prediction + basePred.getScore();
 	}
 }

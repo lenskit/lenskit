@@ -110,7 +110,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		}
 		
 		SimilarityMatrix matrix = builder.build();
-		ItemItemModel model = new ItemItemModel(indexer, matrix);
+		ItemItemModel model = new ItemItemModel(indexer, baseline, matrix);
 		return new ItemItemRecommender(model);
 	}
 	
