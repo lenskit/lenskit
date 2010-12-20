@@ -33,7 +33,7 @@ package org.grouplens.reflens.bench;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.grouplens.reflens.util.ObjectLoader;
@@ -135,9 +135,9 @@ public final class BenchmarkRunner {
 			fail(3, e);
 		}
 
-		RecommenderBuilder factory = null;
+		RecommenderEngineBuilder factory = null;
 		try {
-			factory = injector.getInstance(RecommenderBuilder.class);
+			factory = injector.getInstance(RecommenderEngineBuilder.class);
 		} catch (CreationException e) {
 			fail(2, e.getMessage());
 		}

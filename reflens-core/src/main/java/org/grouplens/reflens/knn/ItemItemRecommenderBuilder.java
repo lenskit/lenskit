@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
@@ -57,7 +57,7 @@ import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
 import com.google.inject.Inject;
 
-public class ItemItemRecommenderBuilder implements RecommenderBuilder {
+public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	
 	private final SimilarityMatrixBuilderFactory matrixFactory;
 	// TODO Make this Similarity<? super Long2DoubleMap> if we can w/ Guice

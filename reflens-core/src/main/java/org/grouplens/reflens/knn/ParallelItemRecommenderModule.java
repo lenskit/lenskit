@@ -34,7 +34,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.util.Properties;
 
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 
 import com.google.inject.TypeLiteral;
@@ -60,7 +60,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 
 	@Override
 	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
+		bind(new TypeLiteral<RecommenderEngineBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
 	}
 	
 	@Override

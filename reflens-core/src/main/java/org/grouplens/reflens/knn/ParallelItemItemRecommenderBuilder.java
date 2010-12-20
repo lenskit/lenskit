@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
@@ -78,7 +78,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
+public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 

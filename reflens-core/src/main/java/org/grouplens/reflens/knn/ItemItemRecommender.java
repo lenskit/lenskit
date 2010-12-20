@@ -46,13 +46,13 @@ import java.util.Map;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommendationEngine;
+import org.grouplens.reflens.RecommenderEngine;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
 import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
 import static org.grouplens.reflens.util.CollectionUtils.getFastMap;
 
-public class ItemItemRecommender implements RecommendationEngine, RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommender implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	private final ItemItemModel model;
 	

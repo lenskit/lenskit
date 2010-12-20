@@ -10,15 +10,15 @@ import com.google.inject.Inject;
  *
  */
 public class FixedRecommenderService implements RecommenderService {
-	private final RecommendationEngine engine;
+	private final RecommenderEngine engine;
 	
 	@Inject
-	public FixedRecommenderService(RecommendationEngine engine) {
+	public FixedRecommenderService(RecommenderEngine engine) {
 		this.engine = engine;
 	}
 	
 	@Override
-	public RecommendationEngine getRecommender() {
+	public RecommenderEngine getRecommender() {
 		return engine;
 	}
 

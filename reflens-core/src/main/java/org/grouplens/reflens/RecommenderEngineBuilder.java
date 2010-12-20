@@ -30,37 +30,23 @@
 
 package org.grouplens.reflens;
 
+import org.grouplens.reflens.data.RatingDataSource;
+
 /**
- * Interface for recommender engines, providing access to specific types of
- * recommender interfaces.
- * 
- * The reason we have this interface returning other interfaces is so that any
- * class that has e.g. a {@link RatingRecommender} knows it can get rating 
- * recommendations without worrying about null values (aside from out-of-domain
- * inputs) or {@link UnsupportedOperationException}s.
- * 
- * You will usually get one of these from a {@link RecommenderService}.  It will
- * build them with a {@link RecommenderBuilder}.
- * 
+ * Interface for recommender factories for the benchmarker to use.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
  */
-public interface RecommendationEngine {
+public interface RecommenderEngineBuilder {
 	/**
-	 * Retrieve the rating recommender from this engine.
-	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based
-	 * recommendations are not supported.
+	 * Construct a new recommender engine trained on the provided ratings.
+	 * 
+	 * The caller is responsible for closing the data source once the recommender
+	 * has been built.
+	 * 
+	 * @param ratings The set of initial ratings with which to seed the
+	 * recommender.
+	 * @return A new recommender engine.
 	 */
-	RatingRecommender getRatingRecommender();
-	/**
-	 * Retrieve the rating predictor from this engine.
-	 * @return a rating predictor, or <tt>null</tt> if ratings cannot be
-	 * predicted.
-	 */
-	RatingPredictor getRatingPredictor();
-	/**
-	 * Retrieve the basket-based recommender for this engine.
-	 * @return a basket recommender, or <tt>null</tt> if basket-based
-	 * recommendation is not supported.
-	 */
-	BasketRecommender getBasketRecommender();
+	public RecommenderEngine build(RatingDataSource ratings);
 }

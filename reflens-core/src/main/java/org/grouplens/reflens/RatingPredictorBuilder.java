@@ -36,7 +36,7 @@ import com.google.inject.Inject;
 
 /**
  * Interface for building rating predictors.  This guarantees you a rating
- * predictor, unlike {@link RecommenderBuilder} which returns a {@link RecommendationEngine}
+ * predictor, unlike {@link RecommenderEngineBuilder} which returns a {@link RecommenderEngine}
  * which may or may not supply rating predictions.  Useful for building things
  * like baselines.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -57,20 +57,20 @@ public interface RatingPredictorBuilder {
 	 *
 	 */
 	public static class RecommenderBuilderWrapper implements RatingPredictorBuilder {
-		private final RecommenderBuilder builder;
+		private final RecommenderEngineBuilder builder;
 
 		@Inject
-		public RecommenderBuilderWrapper(RecommenderBuilder builder) {
+		public RecommenderBuilderWrapper(RecommenderEngineBuilder builder) {
 			this.builder = builder;
 		}
 		
 		public RatingPredictor build(RatingDataSource data) {
-			RecommendationEngine engine = builder.build(data);
+			RecommenderEngine engine = builder.build(data);
 			RatingPredictor pred = engine.getRatingPredictor();
 			if (pred != null)
 				return pred;
 			else
-				throw new RuntimeException("RecommendationEngine does not support rating prediction");
+				throw new RuntimeException("RecommenderEngine does not support rating prediction");
 		}
 	}
 }

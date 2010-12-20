@@ -39,8 +39,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommendationEngine;
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngine;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
@@ -55,14 +55,14 @@ import org.slf4j.LoggerFactory;
  */
 public class BenchmarkAggregator {
 	private static Logger logger = LoggerFactory.getLogger(BenchmarkAggregator.class);
-	private RecommenderBuilder factory;
+	private RecommenderEngineBuilder factory;
 	private int numRuns = 0;
 	private double tMAE = 0.0f;
 	private double tRMSE = 0.0f;
 	private double tCov = 0.0f;
 	private double holdout = 0.33333333;
 	
-	public BenchmarkAggregator(RecommenderBuilder factory) {
+	public BenchmarkAggregator(RecommenderEngineBuilder factory) {
 		this.factory = factory;
 	}
 	
@@ -85,7 +85,7 @@ public class BenchmarkAggregator {
 	public void addBenchmark(
 			RatingDataSource trainingData,
 			Collection<UserRatingProfile> testUsers) {
-		RecommendationEngine engine;
+		RecommenderEngine engine;
 		logger.debug("Building model with {} users, {} items", trainingData.getUserCount(),
 				trainingData.getItemCount());
 		try {

@@ -34,7 +34,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.util.Properties;
 
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
@@ -85,7 +85,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bind(RecommenderBuilder.class).to(ItemItemRecommenderBuilder.class);
+		bind(RecommenderEngineBuilder.class).to(ItemItemRecommenderBuilder.class);
 	}
 
 	/**
