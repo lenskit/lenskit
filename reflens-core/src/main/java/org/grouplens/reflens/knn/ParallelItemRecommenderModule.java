@@ -30,8 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
 import java.util.Properties;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
@@ -65,7 +63,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 	
 	@Override
 	protected void configureItemSimilarity() {
-		bindClassParameter(new TypeLiteral<OptimizableMapSimilarity<Long,Double,Long2DoubleMap>>(){},
+		bindClassParameter(new TypeLiteral<OptimizableVectorSimilarity>(){},
 				ItemSimilarity.class, CosineSimilarity.class);
 	}
 }

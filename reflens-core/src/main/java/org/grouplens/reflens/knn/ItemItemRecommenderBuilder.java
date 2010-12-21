@@ -46,6 +46,7 @@ import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
@@ -60,15 +61,15 @@ import com.google.inject.Inject;
 public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	
 	private final SimilarityMatrixBuilderFactory matrixFactory;
-	// TODO Make this Similarity<? super Long2DoubleMap> if we can w/ Guice
-	private final Similarity<Long2DoubleMap> itemSimilarity;
+	private final Similarity<? super RatingVector> itemSimilarity;
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	@Nullable private RatingPredictor baseline;
 
+	// TODO Make the similarity Similarity<? super RatingVector> if we can w/ Guice
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<Long2DoubleMap> itemSimilarity,
+			@ItemSimilarity Similarity<RatingVector> itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.matrixFactory = matrixFactory;
 		this.itemSimilarity = itemSimilarity;
@@ -81,7 +82,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 		if (baselineBuilder != null)
 			baseline = baselineBuilder.build(data);
 		
-		List<Long2DoubleMap> itemRatings = buildItemRatings(indexer, data);
+		List<RatingVector> itemRatings = buildItemRatings(indexer, data);
 		
 		// prepare the similarity matrix
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.size());
@@ -122,8 +123,8 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return
 	 */
-	private List<Long2DoubleMap> buildItemRatings(Indexer indexer, RatingDataSource data) {
-		ArrayList<Long2DoubleMap> itemVectors = new ArrayList<Long2DoubleMap>();
+	private List<RatingVector> buildItemRatings(Indexer indexer, RatingDataSource data) {
+		ArrayList<RatingVector> itemVectors = new ArrayList<RatingVector>();
 		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
 			for (UserRatingProfile user: cursor) {
@@ -135,7 +136,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 					if (idx >= itemVectors.size()) {
 						// it's a new item - add one
 						assert idx == itemVectors.size();
-						itemVectors.add(new Long2DoubleOpenHashMap());
+						itemVectors.add(new RatingVector());
 					}
 					itemVectors.get(idx).put(user.getUser(), (double) rating.getRating());
 				}

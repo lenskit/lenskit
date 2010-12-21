@@ -30,12 +30,11 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
 import java.util.Properties;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
@@ -109,7 +108,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		bindClassParameter(new TypeLiteral<Similarity<Long2DoubleMap>>(){},
+		bindClassParameter(new TypeLiteral<Similarity<RatingVector>>(){},
 				ItemSimilarity.class);
 	}
 }

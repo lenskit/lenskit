@@ -42,6 +42,7 @@ import java.util.Map;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
 
@@ -81,12 +82,16 @@ public class ItemItemModel implements Serializable {
 	}
 
 	public Long2DoubleMap subtractBaseline(long user, Map<Long, Double> ratings) {
-		Map<Long,Double> basePreds = baseline.predict(user, ratings, ratings.keySet());
-		Long2DoubleMap normed = new Long2DoubleOpenHashMap();
-		for (Long2DoubleMap.Entry e: fastIterable(getFastMap(ratings))) {
-			normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
+		if (baseline != null) {
+			Map<Long,Double> basePreds = baseline.predict(user, ratings, ratings.keySet());
+			Long2DoubleMap normed = new Long2DoubleOpenHashMap();
+			for (Long2DoubleMap.Entry e: fastIterable(getFastMap(ratings))) {
+				normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
+			}
+			return normed;
+		} else {
+			return CollectionUtils.getFastMap(ratings);
 		}
-		return normed;
 	}
 	
 	public Long2DoubleMap addBaseline(long user, Map<Long, Double> ratings, Map<Long,Double> predictions) {

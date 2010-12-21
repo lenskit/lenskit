@@ -39,6 +39,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +54,7 @@ import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
@@ -83,7 +85,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Similarity<Long2DoubleMap> itemSimilarity;
+	private Similarity<RatingVector> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
@@ -96,7 +98,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableMapSimilarity<Long,Double, Long2DoubleMap> itemSimilarity,
+			@ItemSimilarity OptimizableVectorSimilarity itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
@@ -132,7 +134,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 		logger.debug("Indexing items");
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");
-		Long2DoubleMap[] itemRatings = buildItemRatings(itemIndex, data);
+		RatingVector[] itemRatings = buildItemRatings(itemIndex, data);
 		
 		// prepare the similarity matrix
 		logger.debug("Initializing similarity matrix");
@@ -193,7 +195,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
-	private Long2DoubleMap[] buildItemRatings(final Index index, RatingDataSource data) {
+	private RatingVector[] buildItemRatings(final Index index, RatingDataSource data) {
 		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
 			int nusers = cursor.getRowCount();
@@ -211,9 +213,9 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 					users.close();
 				}
 			}
-			final Long2DoubleMap[] itemVectors = new Long2DoubleMap[nusers];
+			final RatingVector[] itemVectors = new RatingVector[nusers];
 			for (int i = 0; i < itemVectors.length; i++) {
-				itemVectors[i] = new Long2DoubleOpenHashMap();
+				itemVectors[i] = new RatingVector();
 			}
 			ProgressReporter progress = null;
 			if (progressFactory != null) {
@@ -235,7 +237,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 								long item = rating.getItemId();
 								int idx = index.getIndex(item);
 								assert idx >= 0;
-								Long2DoubleMap v = itemVectors[idx];
+								RatingVector v = itemVectors[idx];
 								synchronized (v) {
 									v.put(profile.getUser(), rating.getRating());
 								}
@@ -254,11 +256,11 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	}
 	
 	private class SimilarityWorker implements IntWorker {
-		private final Long2DoubleMap[] itemVectors;
+		private final RatingVector[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
 		private final boolean symmetric;
 		
-		public SimilarityWorker(Long2DoubleMap[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorker(RatingVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
 			this.symmetric = itemSimilarity instanceof SymmetricBinaryFunction;
@@ -270,7 +272,9 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 			int max = symmetric ? row : itemVectors.length;
 			
 			IntSet candidates = new IntOpenHashSet();
-			for (long u: itemVectors[row].keySet()) {
+			LongIterator uiter = itemVectors[row].idSet().iterator();
+			while (uiter.hasNext()) {
+				long u = uiter.nextLong();
 				IntIterator is = userItemMap.get(u).iterator();
 				while (is.hasNext()) {
 					int i = is.nextInt();
@@ -297,10 +301,10 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	
 	public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
 
-		private final Long2DoubleMap[] itemVector;
+		private final RatingVector[] itemVector;
 		private final SimilarityMatrixBuilder builder;
 		
-		public SimilarityWorkerFactory(Long2DoubleMap[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorkerFactory(RatingVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
 		}

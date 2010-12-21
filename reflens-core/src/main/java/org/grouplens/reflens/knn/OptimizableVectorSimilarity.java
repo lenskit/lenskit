@@ -30,18 +30,17 @@
 
 package org.grouplens.reflens.knn;
 
-import java.util.Map;
-
+import org.grouplens.reflens.data.RatingVector;
 
 /**
- * A similarity function of maps that is optimizable based on its keys.
+ * A similarity function of vectors that is optimizable based on its ids.
  * 
- * Optimizable similarity functions always return 0 if the key sets of the
+ * Optimizable similarity functions always return 0 if the id sets of the
  * two maps are disjoint, so the algorithm can optimize calls by skipping
  * computation for maps with disjoint sets.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface OptimizableMapSimilarity<K,V,M extends Map<K,V>> extends Similarity<M> {
+public interface OptimizableVectorSimilarity extends Similarity<RatingVector> {
 
 }

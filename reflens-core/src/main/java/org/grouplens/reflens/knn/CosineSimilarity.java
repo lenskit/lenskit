@@ -30,11 +30,11 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import java.util.Iterator;
+
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
@@ -45,7 +45,7 @@ import com.google.inject.Inject;
  *
  */
 public class CosineSimilarity
-	implements OptimizableMapSimilarity<Long, Double, Long2DoubleMap>, SymmetricBinaryFunction {
+	implements OptimizableVectorSimilarity, SymmetricBinaryFunction {
 	
 	private final double dampingFactor;
 	
@@ -62,34 +62,21 @@ public class CosineSimilarity
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+	public double similarity(RatingVector vec1, RatingVector vec2) {
 		double dot = 0.0f;
-		double ssq1 = 0.0f;
-		double ssq2 = 0.0f;
 		
-		ObjectSet<Long2DoubleMap.Entry> v1entries = vec1.long2DoubleEntrySet();
-		ObjectIterator<Long2DoubleMap.Entry> v1iter;
-		try {
-			v1iter = ((Long2DoubleMap.FastEntrySet) v1entries).fastIterator();
-		} catch (ClassCastException e) {
-			v1iter = v1entries.iterator();
-		}
+		Iterator<Long2DoubleMap.Entry> v1iter = vec1.fastIterator();
 		while (v1iter.hasNext()) {
 			Long2DoubleMap.Entry e = v1iter.next();
 			long k = e.getLongKey();
 			double v = e.getDoubleValue();
-			if (vec2.containsKey(k)) {
+			if (vec2.containsId(k)) {
 				dot += v * vec2.get(k);
 			}
-			ssq1 += v * v;
-		}
-		DoubleIterator v2iter = vec2.values().iterator();
-		while (v2iter.hasNext()) {
-			double v = v2iter.nextDouble();
-			ssq2 += v * v;
 		}
 		
-		double denom = Math.sqrt(ssq1) * Math.sqrt(ssq2) + dampingFactor;
+		double denom = vec1.norm() * vec2.norm() + dampingFactor;
+		
 		if (denom == 0.0f) {
 			return Double.NaN;
 		} else { 
