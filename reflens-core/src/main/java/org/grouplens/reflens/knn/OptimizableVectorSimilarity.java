@@ -41,6 +41,6 @@ import org.grouplens.reflens.data.RatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface OptimizableVectorSimilarity extends Similarity<RatingVector> {
+public interface OptimizableVectorSimilarity<V extends RatingVector> extends Similarity<V> {
 
 }

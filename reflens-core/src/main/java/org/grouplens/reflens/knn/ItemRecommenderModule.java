@@ -108,7 +108,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		bindClassParameter(new TypeLiteral<Similarity<RatingVector>>(){},
+		bindClassParameter(new TypeLiteral<Similarity<? super RatingVector>>(){},
 				ItemSimilarity.class);
 	}
 }

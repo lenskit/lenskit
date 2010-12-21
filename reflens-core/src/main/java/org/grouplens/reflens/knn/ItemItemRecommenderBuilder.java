@@ -65,7 +65,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<RatingVector> itemSimilarity,
+			@ItemSimilarity Similarity<? super RatingVector> itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.matrixFactory = matrixFactory;
 		this.itemSimilarity = itemSimilarity;

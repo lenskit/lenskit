@@ -197,7 +197,7 @@ public class RecommenderModule extends AbstractModule {
 		}
 		
 		String className = properties.getProperty(name.value());
-		Type target = dftClass;
+		Type target = TypeUtils.reifyType(type.getType(), dftClass);
 		if (className != null) {
 			try {
 				Class tgtClass = ObjectLoader.getClass(className);
@@ -210,6 +210,7 @@ public class RecommenderModule extends AbstractModule {
 		}
 		
 		if (target != null) {
+			logger.debug("Binding {} to {}", annotation, target);
 			bind(type).annotatedWith(annotation).to((Key) Key.get(target));
 		} else {
 			logger.debug("Binding {} to null", type.toString());

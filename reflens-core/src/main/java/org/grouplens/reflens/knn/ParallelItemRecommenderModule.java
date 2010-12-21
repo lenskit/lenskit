@@ -33,6 +33,7 @@ package org.grouplens.reflens.knn;
 import java.util.Properties;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 
 import com.google.inject.TypeLiteral;
@@ -63,7 +64,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 	
 	@Override
 	protected void configureItemSimilarity() {
-		bindClassParameter(new TypeLiteral<OptimizableVectorSimilarity>(){},
-				ItemSimilarity.class, CosineSimilarity.class);
+		bindClassParameter(new TypeLiteral<OptimizableVectorSimilarity<? super RatingVector>>(){},
+				ItemSimilarity.class);
 	}
 }

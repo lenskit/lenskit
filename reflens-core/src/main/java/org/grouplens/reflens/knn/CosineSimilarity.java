@@ -45,7 +45,7 @@ import com.google.inject.Inject;
  *
  */
 public class CosineSimilarity
-	implements OptimizableVectorSimilarity, SymmetricBinaryFunction {
+	implements OptimizableVectorSimilarity<RatingVector>, SymmetricBinaryFunction {
 	
 	private final double dampingFactor;
 	

@@ -39,6 +39,8 @@ import com.google.inject.util.Types;
  * Utilities for working with types.  Useful for doing weird tricks with Guice.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @todo Make the type unifier work for type templates that contain variables.
+ * Such templates can exist when we are binding wildcard types.
  */
 @SuppressWarnings("unchecked")
 public class TypeUtils {

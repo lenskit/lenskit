@@ -82,7 +82,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Similarity<RatingVector> itemSimilarity;
+	private Similarity<? super RatingVector> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
@@ -95,7 +95,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableVectorSimilarity itemSimilarity,
+			@ItemSimilarity OptimizableVectorSimilarity<? super RatingVector> itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
@@ -193,29 +193,30 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
 	private RatingVector[] buildItemRatings(final Index index, RatingDataSource data) {
+		int nitems = data.getItemCount();
+		final RatingVector[] itemVectors = new RatingVector[nitems];
+		for (int i = 0; i < itemVectors.length; i++) {
+			itemVectors[i] = new RatingVector();
+		}
 		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
-			int nusers = cursor.getRowCount();
-			if (nusers < 0) {
-				Cursor<Long> users = data.getUsers();
-				try {
-					nusers = users.getRowCount();
-					if (nusers < 0) {
-						nusers = 0;
-						for (@SuppressWarnings("unused") long u: users) {
-							nusers += 1;
-						}
-					}
-				} finally {
-					users.close();
-				}
-			}
-			final RatingVector[] itemVectors = new RatingVector[nusers];
-			for (int i = 0; i < itemVectors.length; i++) {
-				itemVectors[i] = new RatingVector();
-			}
 			ProgressReporter progress = null;
 			if (progressFactory != null) {
+				int nusers = cursor.getRowCount();
+				if (nusers < 0) {
+					Cursor<Long> users = data.getUsers();
+					try {
+						nusers = users.getRowCount();
+						if (nusers < 0) {
+							nusers = 0;
+							for (@SuppressWarnings("unused") long u: users) {
+								nusers += 1;
+							}
+						}
+					} finally {
+						users.close();
+					}
+				}
 				progress = progressFactory.create("normalize");
 				if (progress != null)
 					progress.setTotal(nusers);
