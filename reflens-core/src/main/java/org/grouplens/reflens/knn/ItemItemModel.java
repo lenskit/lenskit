@@ -31,18 +31,15 @@
 package org.grouplens.reflens.knn;
 
 import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
-import static org.grouplens.reflens.util.CollectionUtils.getFastMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
 
@@ -81,29 +78,29 @@ public class ItemItemModel implements Serializable {
 		return itemIndexer.getId(idx);
 	}
 
-	public Long2DoubleMap subtractBaseline(long user, Map<Long, Double> ratings) {
+	public RatingVector subtractBaseline(long user, RatingVector ratings) {
 		if (baseline != null) {
-			Map<Long,Double> basePreds = baseline.predict(user, ratings, ratings.keySet());
-			Long2DoubleMap normed = new Long2DoubleOpenHashMap();
-			for (Long2DoubleMap.Entry e: fastIterable(getFastMap(ratings))) {
+			RatingVector basePreds = baseline.predict(user, ratings, ratings.idSet());
+			RatingVector normed = new RatingVector(ratings.size());
+			for (Long2DoubleMap.Entry e: fastIterable(ratings)) {
 				normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
 			}
 			return normed;
 		} else {
-			return CollectionUtils.getFastMap(ratings);
+			return ratings;
 		}
 	}
 	
-	public Long2DoubleMap addBaseline(long user, Map<Long, Double> ratings, Map<Long,Double> predictions) {
-		Map<Long,Double> basePreds = baseline.predict(user, ratings, predictions.keySet());
-		Long2DoubleMap normed = new Long2DoubleOpenHashMap();
-		for (Long2DoubleMap.Entry e: fastIterable(getFastMap(predictions))) {
+	public RatingVector addBaseline(long user, RatingVector ratings, RatingVector predictions) {
+		RatingVector basePreds = baseline.predict(user, ratings, predictions.idSet());
+		RatingVector normed = new RatingVector(predictions.size());
+		for (Long2DoubleMap.Entry e: fastIterable(predictions)) {
 			normed.put(e.getLongKey(), e.getDoubleValue() + basePreds.get(e.getKey()));
 		}
 		return normed;
 	}
 	
-	public double addBaseline(long user, Map<Long, Double> ratings, long item, double prediction) {
+	public double addBaseline(long user, RatingVector ratings, long item, double prediction) {
 		ScoredId basePred = baseline.predict(user, ratings, item);
 		return prediction + basePred.getScore();
 	}

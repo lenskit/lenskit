@@ -31,14 +31,14 @@
 package org.grouplens.reflens.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.Iterator;
 
 import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.CollectionUtils;
 
@@ -65,14 +65,15 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 * @param ratings the user's rating profile
 	 * @return the mean offset from item mean rating.
 	 */
-	double computeUserAverage(Map<Long,Double> ratings) {
+	double computeUserAverage(RatingVector ratings) {
 		if (ratings.isEmpty()) return 0;
 		
 		Collection<Double> values = ratings.values();
 		double total = 0;
-		Long2DoubleMap fratings = CollectionUtils.getFastMap(ratings);
 		
-		for (Long2DoubleMap.Entry rating: CollectionUtils.fastIterable(fratings)) {
+		Iterator<Long2DoubleMap.Entry> iter = ratings.fastIterator();
+		while (iter.hasNext()) {
+			Long2DoubleMap.Entry rating = iter.next();
 			double r = rating.getDoubleValue();
 			long iid = rating.getLongKey();
 			total += r - getItemMean(iid);
@@ -84,10 +85,10 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
 	 */
 	@Override
-	public Map<Long, Double> predict(long user, Map<Long, Double> ratings,
+	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
 		double meanOffset = computeUserAverage(ratings);
-		Long2DoubleMap map = new Long2DoubleOpenHashMap(items.size());
+		RatingVector map = new RatingVector(items.size());
 		LongCollection fitems = CollectionUtils.getFastCollection(items);
 		LongIterator iter = fitems.iterator();
 		while (iter.hasNext()) {
@@ -101,7 +102,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, long)
 	 */
 	@Override
-	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+	public ScoredId predict(long user, RatingVector ratings, long item) {
 		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
 	}
 	

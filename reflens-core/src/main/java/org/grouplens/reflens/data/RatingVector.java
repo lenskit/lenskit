@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -24,6 +25,11 @@ public class RatingVector implements Iterable<Long2DoubleMap.Entry> {
 	
 	public RatingVector() {
 		ratings = new Long2DoubleOpenHashMap();
+		ratings.defaultReturnValue(Double.NaN);
+	}
+	
+	public RatingVector(int size) {
+		ratings = new Long2DoubleOpenHashMap(size);
 		ratings.defaultReturnValue(Double.NaN);
 	}
 	
@@ -75,6 +81,14 @@ public class RatingVector implements Iterable<Long2DoubleMap.Entry> {
 		return ratings.long2DoubleEntrySet().fastIterator();
 	}
 	
+	public Iterable<Long2DoubleMap.Entry> fast() {
+		return new Iterable<Long2DoubleMap.Entry>() {
+			public Iterator<Long2DoubleMap.Entry> iterator() {
+				return fastIterator();
+			}
+		};
+	}
+	
 	public LongSet idSet() {
 		return ratings.keySet();
 	}
@@ -85,6 +99,10 @@ public class RatingVector implements Iterable<Long2DoubleMap.Entry> {
 	
 	public int size() {
 		return ratings.size();
+	}
+	
+	public boolean isEmpty() {
+		return ratings.isEmpty();
 	}
 	
 	/**
@@ -129,5 +147,21 @@ public class RatingVector implements Iterable<Long2DoubleMap.Entry> {
 			mean = sum() / size();
 		}
 		return mean;
+	}
+	
+	public static RatingVector userRatingVector(Collection<Rating> ratings) {
+		RatingVector v = new RatingVector(ratings.size());
+		for (Rating r: ratings) {
+			v.put(r.getItemId(), r.getRating());
+		}
+		return v;
+	}
+	
+	public static RatingVector itemRatingVector(Collection<Rating> ratings) {
+		RatingVector v = new RatingVector(ratings.size());
+		for (Rating r: ratings) {
+			v.put(r.getUserId(), r.getRating());
+		}
+		return v;
 	}
 }

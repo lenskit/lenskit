@@ -33,19 +33,20 @@
  */
 package org.grouplens.reflens.baseline;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
-import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.CollectionUtils;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
@@ -75,9 +76,12 @@ public class ConstantPredictor implements RatingPredictor {
 		this.value = value;
 	}
 	
-	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
-		Map<Long,Double> preds = new Long2DoubleOpenHashMap();
-		for (long item: items) {
+	@Override
+	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
+		RatingVector preds = new RatingVector();
+		LongIterator iter = CollectionUtils.getFastCollection(items).iterator();
+		while (iter.hasNext()) {
+			long item = iter.nextLong();
 			preds.put(item, value);
 		}
 		return preds;
@@ -87,7 +91,7 @@ public class ConstantPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
 	 */
 	@Override
-	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+	public ScoredId predict(long user, RatingVector profile, long item) {
 		return new ScoredId(item, value);
 	}
 

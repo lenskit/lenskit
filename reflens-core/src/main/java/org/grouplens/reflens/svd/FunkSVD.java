@@ -34,13 +34,11 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
@@ -50,6 +48,7 @@ import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.SortOrder;
 import org.grouplens.reflens.svd.params.FeatureCount;
@@ -279,14 +278,14 @@ public class FunkSVD implements RecommenderEngine, RatingPredictor {
 		}
 	}
 	
-	protected double[] foldIn(Map<Long,Double> ratings, double avgDeviation) {
+	protected double[] foldIn(RatingVector ratings, double avgDeviation) {
 		double featurePrefs[] = new double[numFeatures];
 		DoubleArrays.fill(featurePrefs, 0.0f);
 		
-		for (ScoredId rating: ScoredId.fastWrap(ratings)) {
-			int iid = itemIndexer.getIndex(rating.getId());
+		for (Long2DoubleMap.Entry rating: ratings.fast()) {
+			int iid = itemIndexer.getIndex(rating.getKey());
 			if (iid < 0) continue;
-			double r = rating.getScore() - avgDeviation - itemAverages.get(iid);
+			double r = rating.getValue() - avgDeviation - itemAverages.get(iid);
 			for (int f = 0; f < numFeatures; f++) {
 				featurePrefs[f] += r * itemFeatures[f][iid] / singularValues[f];
 			}
@@ -295,13 +294,13 @@ public class FunkSVD implements RecommenderEngine, RatingPredictor {
 		return featurePrefs;
 	}
 	
-	protected double averageDeviation(Map<Long,Double> ratings) {
+	protected double averageDeviation(RatingVector ratings) {
 		double dev = 0.0f;
 		int n = 0;
-		for (ScoredId rating: ScoredId.fastWrap(ratings)) {
-			int iid = itemIndexer.getIndex(rating.getId());
+		for (Long2DoubleMap.Entry rating: ratings.fast()) {
+			int iid = itemIndexer.getIndex(rating.getKey());
 			if (iid < 0) continue;
-			dev += rating.getScore() - itemAverages.getDouble(iid);
+			dev += rating.getValue() - itemAverages.getDouble(iid);
 			n++;
 		}
 		if (n == 0)
@@ -314,23 +313,23 @@ public class FunkSVD implements RecommenderEngine, RatingPredictor {
 	 * @see org.grouplens.reflens.RecommenderEngine#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
-	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+	public ScoredId predict(long user, RatingVector ratings, long item) {
 		LongArrayList items = new LongArrayList(1);
 		items.add(item);
-		Map<Long,Double> scores = predict(user, ratings, items);
+		RatingVector scores = predict(user, ratings, items);
 		
-		if (scores.containsKey(item))
+		if (scores.containsId(item))
 			return new ScoredId(item, scores.get(item));
 		else
 			return null;
 	}
 	
 	@Override
-	public Map<Long,Double> predict(long user, Map<Long, Double> ratings, Collection<Long> items) {
+	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
 		double dev = averageDeviation(ratings);
 		double uprefs[] = foldIn(ratings, dev);
 		
-		Long2DoubleMap preds = new Long2DoubleOpenHashMap();
+		RatingVector preds = new RatingVector();
 		for (long item: items) {
 			int iid = itemIndexer.getIndex(item);
 			if (iid < 0)

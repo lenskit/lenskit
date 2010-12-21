@@ -37,13 +37,13 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testNullBuild() {
 		RatingPredictor pred = builder.build(null);
-		Map<Long,Double> map = Collections.emptyMap();
+		RatingVector map = new RatingVector();
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(5, score.getScore(), 0.00001);
 	}
@@ -72,7 +72,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testDataSourceBuild() {
 		List<Rating> ratings = Collections.emptyList();
-		Map<Long,Double> map = Collections.emptyMap();
+		RatingVector map = new RatingVector();
 		RatingDataSource source = new RatingCollectionDataSource(ratings);
 		RatingPredictor pred = builder.build(source);
 		ScoredId score = pred.predict(10l, map, 2l);

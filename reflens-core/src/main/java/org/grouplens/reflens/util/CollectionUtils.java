@@ -55,6 +55,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.grouplens.reflens.data.RatingVector;
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -339,6 +341,14 @@ public class CollectionUtils {
 					return ((Long2DoubleMap.FastEntrySet) entries).fastIterator();
 				else
 					return entries.iterator();
+			}
+		};
+	}
+	
+	public static Iterable<Long2DoubleMap.Entry> fastIterable(final RatingVector fratings) {
+		return new Iterable<Long2DoubleMap.Entry>() {
+			public Iterator<Long2DoubleMap.Entry> iterator() {
+				return fratings.fastIterator();
 			}
 		};
 	}

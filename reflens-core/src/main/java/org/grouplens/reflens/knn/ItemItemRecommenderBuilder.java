@@ -30,9 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +47,6 @@ import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
-import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
@@ -151,12 +147,8 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
 		if (baseline == null) return ratings;
 		
-		Long2DoubleMap rmap = new Long2DoubleOpenHashMap(ratings.size());
-		for (Rating r: ratings) {
-			rmap.put(r.getItemId(), r.getRating());
-		}
-		Long2DoubleMap base = CollectionUtils.getFastMap(
-				baseline.predict(uid, rmap, rmap.keySet()));
+		RatingVector rmap = RatingVector.userRatingVector(ratings);
+		RatingVector base = baseline.predict(uid, rmap, rmap.idSet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

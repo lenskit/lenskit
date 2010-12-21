@@ -35,8 +35,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -59,7 +57,6 @@ import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.ThreadCount;
-import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.ProgressReporter;
 import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.grouplens.reflens.util.SimilarityMatrix;
@@ -319,12 +316,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
 		
-		Long2DoubleMap rmap = new Long2DoubleOpenHashMap(ratings.size());
-		for (Rating r: ratings) {
-			rmap.put(r.getItemId(), r.getRating());
-		}
-		Long2DoubleMap base = CollectionUtils.getFastMap(
-				baseline.predict(uid, rmap, rmap.keySet()));
+		RatingVector rmap = RatingVector.userRatingVector(ratings);
+		RatingVector base = baseline.predict(uid, rmap, rmap.idSet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

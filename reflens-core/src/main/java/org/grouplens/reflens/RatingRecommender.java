@@ -31,8 +31,8 @@
 package org.grouplens.reflens;
 
 import java.util.List;
-import java.util.Map;
 
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 
 /**
@@ -48,5 +48,5 @@ public interface RatingRecommender {
 	 * @return a list of scored recommendations, sorted in nondecreasing order
 	 * of score.
 	 */
-	public List<ScoredId> recommend(long user, Map<Long,Double> ratings);
+	public List<ScoredId> recommend(long user, RatingVector ratings);
 }

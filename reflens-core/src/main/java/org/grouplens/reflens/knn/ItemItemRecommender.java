@@ -34,23 +34,20 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommenderEngine;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
-import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
-import static org.grouplens.reflens.util.CollectionUtils.getFastMap;
 
 public class ItemItemRecommender implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
@@ -61,13 +58,13 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 	}
 	
 	@Override
-	public Map<Long,Double> predict(long user, Map<Long,Double> ratings, Collection<Long> items) {
-		Long2DoubleMap normed = model.subtractBaseline(user, ratings); 
+	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
+		RatingVector normed = model.subtractBaseline(user, ratings); 
 		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		sums.defaultReturnValue(0);
 		weights.defaultReturnValue(0);
-		for (Map.Entry<Long, Double> rating: fastIterable(getFastMap(normed))) {
+		for (Long2DoubleMap.Entry rating: normed.fast()) {
 			final double r = rating.getValue();
 			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
 				double s = score.getScore();
@@ -76,7 +73,7 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 				sums.put(i, sums.get(i) + s*r);
 			}
 		}
-		Long2DoubleMap preds = new Long2DoubleOpenHashMap();
+		RatingVector preds = new RatingVector(items.size());
 		for (long item: items) {
 			int idx = model.getItemIndex(item);
 			double w = weights.get(idx);
@@ -88,14 +85,14 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 	}
 
 	@Override
-	public ScoredId predict(long user, Map<Long,Double> ratings, long item) {
-		Long2DoubleMap normed = model.subtractBaseline(user, ratings);
+	public ScoredId predict(long user, RatingVector ratings, long item) {
+		RatingVector normed = model.subtractBaseline(user, ratings);
 		double sum = 0;
 		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
 			long other = model.getItem(score.getIndex());
 			double s = score.getScore();
-			if (normed.containsKey(other)) {
+			if (normed.containsId(other)) {
 				// FIXME this goes wacky with negative similarities
 				double rating = normed.get(other);
 				sum += rating * s;
@@ -110,14 +107,14 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 	}
 
 	@Override
-	public List<ScoredId> recommend(long user, Map<Long,Double> ratings) {
+	public List<ScoredId> recommend(long user, RatingVector ratings) {
 		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
-		for (ScoredId rating: ScoredId.wrap(ratings.entrySet())) {
-			for (IndexedItemScore score: model.getNeighbors(rating.getId())) {
+		for (Long2DoubleMap.Entry rating: ratings.fast()) {
+			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
 				int jid = score.getIndex();
 				double val = score.getScore();
-				if (!ratings.containsKey(model.getItem(jid))) {
+				if (!ratings.containsId(model.getItem(jid))) {
 					double s = 0.0f;
 					double w = 0.0f;
 					if (scores.containsKey(jid)) {
@@ -125,7 +122,7 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 						w = weights.get(jid);
 					}
 					// FIXME audit for behavior w/ negative similarities
-					s += val * rating.getScore();
+					s += val * rating.getValue();
 					w += Math.abs(val);
 					scores.put(jid, s);
 					weights.put(jid, w);

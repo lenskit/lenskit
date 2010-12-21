@@ -35,22 +35,18 @@ package org.grouplens.reflens.baseline;
 
 
 import static org.junit.Assert.assertEquals;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.junit.After;
 import org.junit.Before;
@@ -82,7 +78,7 @@ public class TestMeanPredictor {
 	public void testMeanBaseline() {
 		RatingPredictorBuilder builder = new GlobalMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Map<Long,Double> map = Collections.emptyMap();
+		RatingVector map = new RatingVector();
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.00001);
 	}
@@ -91,7 +87,7 @@ public class TestMeanPredictor {
 	public void testUserMeanBaseline() {
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Long2DoubleMap map = new Long2DoubleOpenHashMap();
+		RatingVector map = new RatingVector();
 		map.put(5, 3);
 		map.put(7, 6);
 		map.put(10, 4);
@@ -107,7 +103,7 @@ public class TestMeanPredictor {
 	public void testUserMeanBaselineNoFastutil() {
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Map<Long,Double> map = new TreeMap<Long, Double>();
+		RatingVector map = new RatingVector();
 		map.put(5l, 3.0);
 		map.put(7l, 6.0);
 		map.put(10l, 4.0);
@@ -122,7 +118,7 @@ public class TestMeanPredictor {
 		LongCollection items = new LongArrayList();
 		items.add(7);
 		items.add(2);
-		Map<Long,Double> preds = pred.predict(10l, map, items);
+		RatingVector preds = pred.predict(10l, map, items);
 		assertEquals(4.33333, preds.get(2l), 0.001);
 		assertEquals(4.33333, preds.get(7l), 0.001);
 	}
@@ -134,7 +130,7 @@ public class TestMeanPredictor {
 	public void testUserMeanBaselineFallback() {
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Map<Long,Double> map = Collections.emptyMap();
+		RatingVector map = new RatingVector();
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
 	}
@@ -143,7 +139,7 @@ public class TestMeanPredictor {
 	public void testItemMeanBaseline() {
 		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Long2DoubleMap map = new Long2DoubleOpenHashMap();
+		RatingVector map = new RatingVector();
 		map.put(5, 3);
 		map.put(7, 6);
 		map.put(10, 4);
@@ -158,7 +154,7 @@ public class TestMeanPredictor {
 		LongCollection items = new LongArrayList();
 		items.add(5);
 		items.add(2);
-		Map<Long,Double> preds = pred.predict(10l, map, items);
+		RatingVector preds = pred.predict(10l, map, items);
 		assertEquals(RATINGS_DAT_MEAN, preds.get(2l), 0.001);
 		assertEquals(3.0, preds.get(5l), 0.001);
 	}
@@ -167,7 +163,7 @@ public class TestMeanPredictor {
 	public void testUserItemMeanBaseline() {
 		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		Long2DoubleMap map = new Long2DoubleOpenHashMap();
+		RatingVector map = new RatingVector();
 		map.put(5, 3); // offset = 0
 		map.put(7, 6); // offset = 2
 		map.put(10, 4); // offset = 4 - µ = 0.25
@@ -184,7 +180,7 @@ public class TestMeanPredictor {
 		LongCollection items = new LongArrayList();
 		items.add(5);
 		items.add(2);
-		Map<Long,Double> preds = pred.predict(10l, map, items);
+		RatingVector preds = pred.predict(10l, map, items);
 		assertEquals(RATINGS_DAT_MEAN + avgOffset, preds.get(2l), 0.001);
 		assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
 	}

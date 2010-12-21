@@ -41,13 +41,13 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.slf4j.Logger;
@@ -78,9 +78,9 @@ public class ItemMeanPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
 	 */
 	@Override
-	public Map<Long, Double> predict(long user, Map<Long, Double> ratings,
+	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
-		Long2DoubleMap predictions = new Long2DoubleOpenHashMap(items.size());
+		RatingVector predictions = new RatingVector();
 		LongCollection fitems = CollectionUtils.getFastCollection(items);
 		LongIterator iter = fitems.iterator();
 		while (iter.hasNext()) {
@@ -94,7 +94,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, long)
 	 */
 	@Override
-	public ScoredId predict(long user, Map<Long, Double> ratings, long item) {
+	public ScoredId predict(long user, RatingVector ratings, long item) {
 		return new ScoredId(item, getItemMean(item));
 	}
 	

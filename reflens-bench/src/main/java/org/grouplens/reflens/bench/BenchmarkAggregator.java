@@ -30,9 +30,6 @@
 
 package org.grouplens.reflens.bench;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +40,7 @@ import org.grouplens.reflens.RecommenderEngine;
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
@@ -105,7 +103,7 @@ public class BenchmarkAggregator {
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdout));
 			// TODO make this support timestamped ratings
 			Collections.shuffle(ratings);
-			Long2DoubleMap queryRatings = new Long2DoubleOpenHashMap();
+			RatingVector queryRatings = new RatingVector();
 			for (int i = 0; i < midpt; i++) {
 				Rating rating = ratings.get(i);
 				queryRatings.put(rating.getItemId(), rating.getRating());
