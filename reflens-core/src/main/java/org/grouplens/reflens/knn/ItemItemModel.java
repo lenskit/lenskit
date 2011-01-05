@@ -30,7 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import static org.grouplens.reflens.util.CollectionUtils.fastIterable;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
@@ -82,7 +81,7 @@ public class ItemItemModel implements Serializable {
 		if (baseline != null) {
 			RatingVector basePreds = baseline.predict(user, ratings, ratings.idSet());
 			RatingVector normed = new RatingVector(ratings.size());
-			for (Long2DoubleMap.Entry e: fastIterable(ratings)) {
+			for (Long2DoubleMap.Entry e: ratings.fast()) {
 				normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
 			}
 			return normed;
@@ -94,7 +93,7 @@ public class ItemItemModel implements Serializable {
 	public RatingVector addBaseline(long user, RatingVector ratings, RatingVector predictions) {
 		RatingVector basePreds = baseline.predict(user, ratings, predictions.idSet());
 		RatingVector normed = new RatingVector(predictions.size());
-		for (Long2DoubleMap.Entry e: fastIterable(predictions)) {
+		for (Long2DoubleMap.Entry e: predictions.fast()) {
 			normed.put(e.getLongKey(), e.getDoubleValue() + basePreds.get(e.getKey()));
 		}
 		return normed;
