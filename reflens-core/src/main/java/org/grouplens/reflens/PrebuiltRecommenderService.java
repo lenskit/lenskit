@@ -39,11 +39,11 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FixedRecommenderService implements RecommenderService {
+public class PrebuiltRecommenderService implements RecommenderService {
 	private final RecommenderEngine engine;
 	
 	@Inject
-	public FixedRecommenderService(RecommenderEngine engine) {
+	public PrebuiltRecommenderService(RecommenderEngine engine) {
 		this.engine = engine;
 	}
 	
