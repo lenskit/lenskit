@@ -30,26 +30,27 @@
 
 package org.grouplens.reflens.svd;
 
-import org.grouplens.reflens.RecommenderEngine;
 import org.grouplens.reflens.RecommenderEngineBuilder;
-import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.svd.params.FeatureCount;
+import org.grouplens.reflens.svd.params.LearningRate;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
 
-public class FunkSVDFactory implements RecommenderEngineBuilder {
-	
-	private Provider<FunkSVD> svdProvider;
-	@Inject
-	public FunkSVDFactory(Provider<FunkSVD> provider) {
-		svdProvider = provider;
-	}
+public class GradientDescentSVDModule extends RecommenderModule {
 
 	@Override
-	public RecommenderEngine build(RatingDataSource ratings) {
-		FunkSVD rec = svdProvider.get();
-		rec.build(ratings);
-		return rec;
+	protected void configure() {
+		super.configure();
+		
+		bindProperty(int.class, FeatureCount.class);
+		bindProperty(double.class, LearningRate.class);
+		
+		configureBuilder();
+	}
+	
+	protected void configureBuilder() {
+		bind(new TypeLiteral<RecommenderEngineBuilder>(){}).to(new TypeLiteral<GradientDescentSVDRecommenderBuilder>(){});
 	}
 
 }

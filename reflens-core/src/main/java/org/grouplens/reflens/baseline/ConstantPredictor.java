@@ -72,7 +72,12 @@ public class ConstantPredictor implements RatingPredictor {
 			= "org.grouplens.reflens.baseline.constant.value";
 	}
 	
-	protected ConstantPredictor(double value) {
+	/**
+	 * Construct a new constant predictor.  This is exposed so other code
+	 * can use it as a fallback.
+	 * @param value
+	 */
+	public ConstantPredictor(double value) {
 		this.value = value;
 	}
 	
