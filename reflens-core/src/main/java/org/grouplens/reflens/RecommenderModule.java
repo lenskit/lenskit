@@ -37,6 +37,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.params.BaselinePredictor;
+import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.params.ThreadCount;
 import org.grouplens.reflens.params.meta.DefaultClass;
 import org.grouplens.reflens.params.meta.DefaultValue;
@@ -85,12 +86,17 @@ public class RecommenderModule extends AbstractModule {
 	protected void configure() {
 		logger.debug("Configuring recommender module");
 		configureThreadCount();
+		configureDamping();
 		configureBaseline();
 	}
 	
 	protected void configureThreadCount() {
 		bindProperty(int.class, ThreadCount.class,
 				Runtime.getRuntime().availableProcessors());
+	}
+	
+	protected void configureDamping() {
+		bindProperty(double.class, MeanDamping.class);
 	}
 	
 	@SuppressWarnings("unchecked")

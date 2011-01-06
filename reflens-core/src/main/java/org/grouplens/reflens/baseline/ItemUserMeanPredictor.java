@@ -40,7 +40,10 @@ import java.util.Iterator;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
+
+import com.google.inject.Inject;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -49,15 +52,17 @@ import org.grouplens.reflens.util.CollectionUtils;
  * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
- * difference between their ratings and the item-mean baseline). 
+ * difference between their ratings and the item-mean baseline).
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
 
-	protected ItemUserMeanPredictor(double mean, Long2DoubleMap means) {
+	protected final double damping;
+	protected ItemUserMeanPredictor(double mean, Long2DoubleMap means, double damping) {
 		super(mean, means);
+		this.damping = damping;
 	}
 	
 	/**
@@ -78,7 +83,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 			long iid = rating.getLongKey();
 			total += r - getItemMean(iid);
 		}
-		return total / values.size();
+		return total / (values.size() + damping);
 	}
 	
 	/* (non-Javadoc)
@@ -112,9 +117,13 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 *
 	 */
 	public static class Builder extends ItemMeanPredictor.Builder {
+		@Inject
+		public Builder(@MeanDamping double damping) {
+			super(damping);
+		}
 		@Override
 		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
-			return new ItemUserMeanPredictor(globalMean, itemMeans);
+			return new ItemUserMeanPredictor(globalMean, itemMeans, damping);
 		}
 	}
 

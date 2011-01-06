@@ -137,7 +137,7 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testItemMeanBaseline() {
-		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder();
+		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder(0);
 		RatingPredictor pred = builder.build(ratings);
 		RatingVector map = new RatingVector();
 		map.put(5, 3);
@@ -161,7 +161,7 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testUserItemMeanBaseline() {
-		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder();
+		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder(0);
 		RatingPredictor pred = builder.build(ratings);
 		RatingVector map = new RatingVector();
 		map.put(5, 3); // offset = 0

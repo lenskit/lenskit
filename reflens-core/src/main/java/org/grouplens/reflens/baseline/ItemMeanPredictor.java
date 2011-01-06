@@ -49,9 +49,12 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
 
 /**
  * Rating predictor that returns the item's mean rating for all predictions.
@@ -67,7 +70,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ItemMeanPredictor implements RatingPredictor {
 	private final Long2DoubleMap itemAverages;
-	private final double globalMean;
+	protected final double globalMean;
 	
 	protected ItemMeanPredictor(double mean, Long2DoubleMap means) {
 		globalMean = mean;
@@ -109,6 +112,12 @@ public class ItemMeanPredictor implements RatingPredictor {
 	 */
 	public static class Builder implements RatingPredictorBuilder {
 		private static Logger logger = LoggerFactory.getLogger(Builder.class);
+		
+		protected final double damping;
+		@Inject
+		public Builder(@MeanDamping double meanDamping) {
+			damping = meanDamping;
+		}
 
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
@@ -143,11 +152,13 @@ public class ItemMeanPredictor implements RatingPredictor {
 			logger.debug("Computed global mean {} for {} items",
 					mean, itemTotals.size());
 			
+			logger.debug("Computing item means, damping={}", damping);
+			
 			LongIterator items = itemCounts.keySet().iterator();
 			while (items.hasNext()) {
 				long iid = items.nextLong();
-				int ct = itemCounts.get(iid);
-				double t = itemTotals.get(iid);
+				double ct = itemCounts.get(iid) + damping;
+				double t = itemTotals.get(iid) + damping * mean;
 				double avg = 0.0;
 				if (ct > 0) avg = t / ct - mean;
 				itemTotals.put(iid, avg);
