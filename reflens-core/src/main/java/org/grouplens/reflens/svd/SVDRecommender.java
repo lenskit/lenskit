@@ -45,6 +45,7 @@ import org.grouplens.reflens.RecommenderEngine;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.DoubleFunction;
 
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
@@ -64,15 +65,18 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 	private final int numFeatures;
 	private final double itemFeatures[][];
 	private final double singularValues[];
+	private final DoubleFunction clampingFunction;
 	
 	SVDRecommender(int nfeatures, Index itemIndexer,
 			RatingPredictor baseline, double itemFeatures[][],
-			double singularValues[]) { 		
+			double singularValues[],
+			DoubleFunction clamp) { 		
 		numFeatures = nfeatures;
 		this.itemIndex = itemIndexer;
 		this.baseline = baseline;
 		this.itemFeatures = itemFeatures;
 		this.singularValues = singularValues;
+		clampingFunction = clamp;
 		assert itemFeatures.length == numFeatures;
 		assert singularValues.length == numFeatures;
 	}
@@ -126,6 +130,7 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 			double score = base.get(item);
 			for (int f = 0; f < numFeatures; f++) {
 				score += uprefs[f] * singularValues[f] * itemFeatures[f][idx];
+				score = clampingFunction.apply(score);
 			}
 			preds.put(item, score);
 		}

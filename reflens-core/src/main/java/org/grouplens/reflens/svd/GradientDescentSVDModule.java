@@ -34,10 +34,13 @@ import java.util.Properties;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
 import org.grouplens.reflens.svd.params.GradientDescentRegularization;
+import org.grouplens.reflens.svd.params.IterationCount;
 import org.grouplens.reflens.svd.params.LearningRate;
+import org.grouplens.reflens.util.DoubleFunction;
 import org.joda.convert.StringConvert;
 
 import com.google.inject.TypeLiteral;
@@ -64,6 +67,8 @@ public class GradientDescentSVDModule extends RecommenderModule {
 		bindProperty(double.class, LearningRate.class);
 		bindProperty(double.class, FeatureTrainingThreshold.class);
 		bindProperty(double.class, GradientDescentRegularization.class);
+		bindProperty(int.class, IterationCount.class);
+		bindClassParameter(TypeLiteral.get(DoubleFunction.class), ClampingFunction.class);
 		
 		configureBuilder();
 	}

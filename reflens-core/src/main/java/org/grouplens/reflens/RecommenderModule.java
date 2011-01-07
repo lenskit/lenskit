@@ -37,7 +37,9 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.params.BaselinePredictor;
+import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
+import org.grouplens.reflens.params.MinRating;
 import org.grouplens.reflens.params.ThreadCount;
 import org.grouplens.reflens.params.meta.DefaultClass;
 import org.grouplens.reflens.params.meta.DefaultValue;
@@ -88,6 +90,7 @@ public class RecommenderModule extends AbstractModule {
 		configureThreadCount();
 		configureDamping();
 		configureBaseline();
+		configureRatingData();
 	}
 	
 	protected void configureThreadCount() {
@@ -97,6 +100,11 @@ public class RecommenderModule extends AbstractModule {
 	
 	protected void configureDamping() {
 		bindProperty(double.class, MeanDamping.class);
+	}
+	
+	protected void configureRatingData() {
+		bindProperty(double.class, MinRating.class);
+		bindProperty(double.class, MaxRating.class);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -207,7 +215,6 @@ public class RecommenderModule extends AbstractModule {
 		if (className != null) {
 			try {
 				Class tgtClass = ObjectLoader.getClass(className);
-				logger.debug("Binding {} to {}", name.value(), target);
 				target = TypeUtils.reifyType(type.getType(), tgtClass);
 				logger.debug("Reified {} to {}", tgtClass, target);
 			} catch (ClassNotFoundException e) {

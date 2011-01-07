@@ -48,10 +48,13 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.params.BaselinePredictor;
+import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
 import org.grouplens.reflens.svd.params.GradientDescentRegularization;
+import org.grouplens.reflens.svd.params.IterationCount;
 import org.grouplens.reflens.svd.params.LearningRate;
+import org.grouplens.reflens.util.DoubleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,19 +89,25 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	private final double trainingThreshold;
 	private final double trainingRegularization;
 	private final RatingPredictorBuilder baselineBuilder;
+	private final DoubleFunction clampingFunction;
+	private final int iterationCount;
 	
 	@Inject
 	public GradientDescentSVDRecommenderBuilder(
 			@FeatureCount int features,
 			@LearningRate double lrate,
 			@FeatureTrainingThreshold double trainingThreshold,
+			@IterationCount int icount,
 			@GradientDescentRegularization double reg,
+			@ClampingFunction DoubleFunction clamp,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baseline) {
 		featureCount = features;
 		learningRate = lrate;
 		this.trainingThreshold = trainingThreshold;
 		this.trainingRegularization = reg;
+		clampingFunction = clamp;
 		baselineBuilder = baseline;
+		iterationCount = icount;
 	}
 
 	@Override
@@ -157,7 +166,8 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 			model.singularValues[feature] = unrm * inrm;
 		}
 		
-		return new SVDRecommender(featureCount, itemIndex, baseline, model.itemFeatures, model.singularValues);
+		return new SVDRecommender(featureCount, itemIndex, baseline, model.itemFeatures, model.singularValues,
+				clampingFunction);
 	}
 	
 	private void trainFeature(Model model, List<SVDRating> ratings, int feature) {
@@ -166,11 +176,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
 		DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
 		
-		logger.debug("Training feature {}", feature);
+		logger.trace("Training feature {}", feature);
 		
 		double rmse = Double.MAX_VALUE, oldRmse = 0.0;
 		int epoch;
-		for (epoch = 0; epoch < MIN_EPOCHS || rmse < oldRmse - trainingThreshold; epoch++) {
+		for (epoch = 0; epoch < MIN_EPOCHS || ((iterationCount > 0) ? (epoch < iterationCount) : (rmse < oldRmse - trainingThreshold)); epoch++) {
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
 			oldRmse = rmse;
 			double ssq = 0;
@@ -266,8 +276,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 				sum = cachedValue;
 			
 			sum += model.itemFeatures[feature][item] * model.userFeatures[feature][user];
-			if (trailing)
+			sum = clampingFunction.apply(sum);
+			if (trailing) {
 				sum += (featureCount - feature - 1) * (DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE);
+				sum = clampingFunction.apply(sum);
+			}
 			return sum;
 		}
 		
