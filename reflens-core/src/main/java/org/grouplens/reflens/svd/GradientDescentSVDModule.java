@@ -30,14 +30,31 @@
 
 package org.grouplens.reflens.svd;
 
+import java.util.Properties;
+
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.svd.params.FeatureCount;
+import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
+import org.grouplens.reflens.svd.params.GradientDescentRegularization;
 import org.grouplens.reflens.svd.params.LearningRate;
+import org.joda.convert.StringConvert;
 
 import com.google.inject.TypeLiteral;
 
 public class GradientDescentSVDModule extends RecommenderModule {
+
+	public GradientDescentSVDModule() {
+		super();
+	}
+
+	public GradientDescentSVDModule(Properties props, StringConvert converter) {
+		super(props, converter);
+	}
+
+	public GradientDescentSVDModule(Properties props) {
+		super(props);
+	}
 
 	@Override
 	protected void configure() {
@@ -45,6 +62,8 @@ public class GradientDescentSVDModule extends RecommenderModule {
 		
 		bindProperty(int.class, FeatureCount.class);
 		bindProperty(double.class, LearningRate.class);
+		bindProperty(double.class, FeatureTrainingThreshold.class);
+		bindProperty(double.class, GradientDescentRegularization.class);
 		
 		configureBuilder();
 	}

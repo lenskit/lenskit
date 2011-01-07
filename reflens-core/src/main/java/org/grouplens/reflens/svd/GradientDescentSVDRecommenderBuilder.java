@@ -49,6 +49,8 @@ import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.svd.params.FeatureCount;
+import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
+import org.grouplens.reflens.svd.params.GradientDescentRegularization;
 import org.grouplens.reflens.svd.params.LearningRate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,22 +77,27 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDRecommenderBuilder.class);
 	
 	private static final double DEFAULT_FEATURE_VALUE = 0.1;
-	private static final double FEATURE_EPSILON = 0.0001;
 	private static final double MIN_EPOCHS = 50;
-	private static final double TRAINING_BLEND = 0.015; // Funk's K
-	private static final double MIN_FEAT_NORM = 0.000001;
+	// Internal epsilon to avoid division by 0
+	private static final double MIN_FEAT_NORM = 0.0000000001;
 	
 	private final int featureCount;
 	private final double learningRate;
+	private final double trainingThreshold;
+	private final double trainingRegularization;
 	private final RatingPredictorBuilder baselineBuilder;
 	
 	@Inject
 	public GradientDescentSVDRecommenderBuilder(
 			@FeatureCount int features,
 			@LearningRate double lrate,
+			@FeatureTrainingThreshold double trainingThreshold,
+			@GradientDescentRegularization double reg,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baseline) {
 		featureCount = features;
 		learningRate = lrate;
+		this.trainingThreshold = trainingThreshold;
+		this.trainingRegularization = reg;
 		baselineBuilder = baseline;
 	}
 
@@ -163,22 +170,22 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		
 		double rmse = Double.MAX_VALUE, oldRmse = 0.0;
 		int epoch;
-		for (epoch = 0; epoch < MIN_EPOCHS || rmse < oldRmse - FEATURE_EPSILON; epoch++) {
+		for (epoch = 0; epoch < MIN_EPOCHS || rmse < oldRmse - trainingThreshold; epoch++) {
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
 			oldRmse = rmse;
 			double ssq = 0;
 			for (SVDRating r: ratings) {
-				double err = r.value - r.predict(feature);
+				double err = r.value - r.predict(feature, true);
 				ssq += err * err;
 				
 				// save values
 				double ouf = ufv[r.user];
 				double oif = ifv[r.item];
 				// update user feature preference
-				double udelta = err * oif - TRAINING_BLEND * ouf;
+				double udelta = err * oif - trainingRegularization * ouf;
 				ufv[r.user] += udelta * learningRate;
 				// update item feature relevance
-				double idelta = err * ouf - TRAINING_BLEND * oif;
+				double idelta = err * ouf - trainingRegularization * oif;
 				ifv[r.item] += idelta * learningRate;
 			}
 			rmse = (double) Math.sqrt(ssq / ratings.size());
@@ -247,10 +254,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		/**
 		 * Predict the value up through a particular feature, using the cache
 		 * if possible.
-		 * @param feature
+		 * @param feature the feature to predict through
+		 * @param trailing whether to include an initial value for remaining features
 		 * @return
 		 */
-		public double predict(int feature) {
+		public double predict(int feature, boolean trailing) {
 			double sum;
 			if (Double.isNaN(cachedValue))
 				sum = model.userBaselines.get(user).get(iid);
@@ -258,7 +266,8 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 				sum = cachedValue;
 			
 			sum += model.itemFeatures[feature][item] * model.userFeatures[feature][user];
-			sum += (featureCount - feature - 1) * (DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE);
+			if (trailing)
+				sum += (featureCount - feature - 1) * (DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE);
 			return sum;
 		}
 		
@@ -268,7 +277,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		 * should be done with it.
 		 */
 		public void update(int feature) {
-			cachedValue = predict(feature);
+			cachedValue = predict(feature, false);
 		}
 	}
 }
