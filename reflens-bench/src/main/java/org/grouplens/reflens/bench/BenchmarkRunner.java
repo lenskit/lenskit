@@ -32,25 +32,21 @@ package org.grouplens.reflens.bench;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
-import org.grouplens.reflens.util.ObjectLoader;
-import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.CreationException;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.assistedinject.FactoryProvider;
-import com.google.inject.util.Providers;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
@@ -61,24 +57,62 @@ import com.google.inject.util.Providers;
 public final class BenchmarkRunner {
 	private static Logger logger = LoggerFactory
 			.getLogger(BenchmarkRunner.class);
+	
+	private static class AbortException extends RuntimeException {
+		private int code;
+		public AbortException(int code) {
+			super();
+			this.code = code;
+		}
+		
+		public int getCode() {
+			return code;
+		}
+	}
 
+	/**
+	 * Abort the program with an error message and exit code.
+	 * @see #fail(int, String, Exception)
+	 * @param code The exit code.
+	 * @param msg The message (will be printed on {@link System#err}).
+	 */
 	private static void fail(int code, String msg) {
 		// look for a no-return annotation for this method
 		fail(code, msg, null);
 	}
 
+	/**
+	 * Abort the program with an exception stack trace.
+	 * @see #fail(int, String, Exception)
+	 * @param code The exit code.
+	 * @param err The exception to stacktrace.
+	 */
 	private static void fail(int code, Exception err) {
 		fail(code, null, err);
 	}
 
+	/**
+	 * Abort the program with an error message, possibly augmented with an
+	 * exception.
+	 * @param code The exit code.
+	 * @param msg The error message (can be <tt>null</tt>; otherwise, will be
+	 * printed to {@link System#err})
+	 * @param err The exception (if not <tt>null</tt>, its stack trace will be
+	 * printed to {@link System#err})
+	 */
 	private static void fail(int code, String msg, Exception err) {
 		if (msg != null)
 			System.err.println(msg);
 		if (err != null)
 			err.printStackTrace(System.err);
-		System.exit(code);
+		throw new AbortException(code);
 	}
 
+	/**
+	 * Entry point for the benchmark runner.  This just parses the command line
+	 * arguments, creates a benchmark runner, and gets it going.
+	 * @param args The command line arguments.
+	 */
 	public static void main(String[] args) {
 		BenchmarkOptions options = null;
 		try {
@@ -91,64 +125,67 @@ public final class BenchmarkRunner {
 		BenchmarkRunner runner = new BenchmarkRunner(options);
 		try {
 			runner.run();
-		} catch (Exception e) {
-			fail(2, "Error running recommender benchmark", e);
+		} catch (AbortException e) {
+			System.exit(e.getCode());
 		}
 	}
+	
+	/* The actual BenchmarkRunner implementation starts here. */
 
 	private BenchmarkOptions options;
 	private Injector injector;
 
+	/**
+	 * Instantiate a new benchmark runner with options.
+	 * @param options The options passed to the benchmark runner.
+	 */
 	private BenchmarkRunner(BenchmarkOptions options) {
 		this.options = options;
 	}
 
+	/**
+	 * Do the real work of running the benchmarks.
+	 */
 	private void run() {
-		String moduleName = options.getModule();
-		logger.debug("Loading module {}", moduleName);
-		Module recModule;
-		try {
-			recModule = ObjectLoader.makeInstance(moduleName);
-		} catch (ClassNotFoundException e) {
-			logger.error("Cannot find module {}", moduleName);
-			fail(3, "Cannot find module " + moduleName);
-			return; /* fail will exit */
-		}
-		injector = Guice.createInjector(new AbstractModule() {
-			protected void configure() {
-				if (options.showProgress()) {
-					bind(ProgressReporterFactory.class).toProvider(
-							FactoryProvider.newFactory(ProgressReporterFactory.class,
-									TerminalProgressReporter.class));
-				} else {
-					bind(ProgressReporterFactory.class).toProvider(
-							Providers.of((ProgressReporterFactory) null));
-				}
+		List<AlgorithmInstance> algos = loadAlgorithms();
+		
+		PrintStream output = System.out;
+		File outFile = options.getOutputFile();
+		if (!outFile.getName().isEmpty()) {
+			try {
+				output = new PrintStream(outFile);
+			} catch (FileNotFoundException e) {
+				fail(2, "Error opening output file", e);
 			}
-		}, recModule);
-		CrossfoldManager data = null;
+		}
+		
+		RatingDataSource data;
 		try {
-			logger.debug("Loading ratings data");
-			data = new CrossfoldManager(options.getNumFolds(),
-					new SimpleFileDataSource(new File(options.getInputFilename()), options.getDelimiter()));
+			data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
 		} catch (FileNotFoundException e) {
-			fail(3, e);
+			fail(2, "Error loading input data", e);
+			return; /* fail will not return */
 		}
 
-		RecommenderEngineBuilder factory = null;
 		try {
-			factory = injector.getInstance(RecommenderEngineBuilder.class);
-		} catch (CreationException e) {
-			fail(2, e.getMessage());
+			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(output, data, options.getNumFolds(), options.getHoldoutFraction());
+			benchmark.run(algos);
+		} catch (Exception e) {
+			fail(3, "Error running benchmark", e);
+		} finally {
+			output.close();
 		}
-
-		// We now have data and a factory. Let's go to town!
-		BenchmarkAggregator agg = new BenchmarkAggregator(factory);
-		agg.setHoldoutFraction(options.getHoldoutFraction());
-		for (int i = 0; i < data.getChunkCount(); i++) {
-			logger.info(String.format("Running benchmark set %d", i));
-			agg.addBenchmark(data.trainingSet(i), data.testSet(i));
+	}
+	
+	List<AlgorithmInstance> loadAlgorithms() {
+		List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
+		for (File f: options.getRecommenderSpecs()) {
+			try {
+				algos.add(new AlgorithmInstance(f, null));
+			} catch (InvalidRecommenderException e) {
+				fail(2, "Error loading specification " + f.getName(), e);
+			}
 		}
-		agg.printResults();
+		return algos;
 	}
 }

@@ -30,7 +30,11 @@
 
 package org.grouplens.reflens.bench;
 
+import java.io.File;
+import java.util.List;
+
 import uk.co.flamingpenguin.jewel.cli.Option;
+import uk.co.flamingpenguin.jewel.cli.Unparsed;
 
 /**
  * Interface for JewelCLI declaring the command line options taken by
@@ -47,12 +51,6 @@ interface BenchmarkOptions {
 	String getDelimiter();
 
 	/**
-	 * @return The name of the recommender module class to use.
-	 */
-	@Option(longName = "module", shortName = "m", defaultValue = "")
-	String getModule();
-
-	/**
 	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test
 	 *         split).
 	 */
@@ -66,7 +64,13 @@ interface BenchmarkOptions {
 	boolean showProgress();
 	
 	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
-	String getInputFilename();
+	File getInputFile();
+	
+	@Option(longName="output-file", shortName="o", defaultValue="")
+	File getOutputFile();
+	
+	@Unparsed(name="FILES")
+	List<File> getRecommenderSpecs();
 
 	@Option(helpRequest = true)
 	boolean getHelp();
