@@ -47,7 +47,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.knn.SimilarityDamper")
+@PropertyName("reflens.knn.SimilarityDamper")
 @DefaultValue("100")
 public @interface SimilarityDamper {
 }

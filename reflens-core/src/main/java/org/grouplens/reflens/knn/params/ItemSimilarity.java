@@ -43,7 +43,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.knn.ItemSimilarity")
+@PropertyName("reflens.knn.ItemSimilarity")
 @DefaultClass(org.grouplens.reflens.knn.CosineSimilarity.class)
 public @interface ItemSimilarity {
 }

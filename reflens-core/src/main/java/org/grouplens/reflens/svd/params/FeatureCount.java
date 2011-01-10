@@ -43,7 +43,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.svd.FeatureCount")
+@PropertyName("reflens.svd.FeatureCount")
 @DefaultValue("100")
 public @interface FeatureCount {
 

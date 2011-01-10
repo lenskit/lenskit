@@ -18,7 +18,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.svd.GradientDescentRegularization")
+@PropertyName("reflens.svd.GradientDescentRegularization")
 @DefaultValue("0.015")
 public @interface GradientDescentRegularization {
 

@@ -49,6 +49,6 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.ThreadCount")
+@PropertyName("reflens.ThreadCount")
 public @interface ThreadCount {
 }

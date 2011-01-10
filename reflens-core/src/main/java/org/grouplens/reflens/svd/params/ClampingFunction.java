@@ -14,7 +14,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.svd.ClampingFunction")
+@PropertyName("reflens.svd.ClampingFunction")
 @DefaultClass(DoubleFunction.Identity.class)
 public @interface ClampingFunction {
 

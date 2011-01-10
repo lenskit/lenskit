@@ -13,7 +13,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.MinRating")
+@PropertyName("reflens.MinRating")
 @DefaultValue("1")
 public @interface MinRating {
 

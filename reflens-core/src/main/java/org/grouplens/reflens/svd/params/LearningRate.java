@@ -43,7 +43,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.svd.LearningRate")
+@PropertyName("reflens.svd.LearningRate")
 @DefaultValue("0.001")
 public @interface LearningRate {
 

@@ -17,7 +17,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.svd.FeatureTrainingThreshold")
+@PropertyName("reflens.svd.FeatureTrainingThreshold")
 @DefaultValue("0.00001")
 public @interface FeatureTrainingThreshold {
 

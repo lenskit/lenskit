@@ -43,7 +43,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PropertyName("org.grouplens.reflens.knn.NeighborhoodSize")
+@PropertyName("reflens.knn.NeighborhoodSize")
 @DefaultValue("100")
 public @interface NeighborhoodSize {
 }
