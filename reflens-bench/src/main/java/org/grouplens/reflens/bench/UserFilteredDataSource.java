@@ -44,6 +44,8 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SortOrder;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 
@@ -53,6 +55,7 @@ import com.google.common.base.Predicate;
  *
  */
 public class UserFilteredDataSource implements RatingDataSource {
+	private static final Logger logger = LoggerFactory.getLogger(UserFilteredDataSource.class);
 	private RatingDataSource base;
 	private final Predicate<Long> userFilter;
 	private final boolean closeBase;
@@ -146,16 +149,20 @@ public class UserFilteredDataSource implements RatingDataSource {
 	@Override
 	public LongCursor getUsers() {
 		LongList users = getCachedUsers();
-		if (users == null)
+		if (users == null) {
+			logger.trace("Returning fresh user list");
 			return Cursors.makeLongCursor(Cursors.filter(base.getUsers(), userFilter));
-		else
+		} else {
+			logger.trace("Returning cached user list");
 			return Cursors.wrap(users);
+		}
 	}
 	
 	@Override
 	public int getUserCount() {
 		LongList users = getCachedUsers();
 		if (users == null) {
+			logger.trace("Caching user list");
 			users = Cursors.makeList(getUsers());
 			userCache = new SoftReference<LongList>(users);
 		}
