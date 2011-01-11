@@ -60,9 +60,6 @@ interface BenchmarkOptions {
 	@Option(longName="holdout-fraction", defaultValue="0.3333333")
 	double getHoldoutFraction();
 	
-	@Option(longName="progress-bar")
-	boolean showProgress();
-	
 	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
 	File getInputFile();
 	
