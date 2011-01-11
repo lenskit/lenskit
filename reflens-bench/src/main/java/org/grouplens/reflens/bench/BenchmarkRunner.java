@@ -33,11 +33,9 @@ package org.grouplens.reflens.bench;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.slf4j.Logger;
@@ -45,8 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
-
-import com.google.inject.Injector;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
@@ -58,6 +54,7 @@ public final class BenchmarkRunner {
 	private static Logger logger = LoggerFactory
 			.getLogger(BenchmarkRunner.class);
 	
+	@SuppressWarnings("serial")
 	private static class AbortException extends RuntimeException {
 		private int code;
 		public AbortException(int code) {
@@ -76,6 +73,7 @@ public final class BenchmarkRunner {
 	 * @param code The exit code.
 	 * @param msg The message (will be printed on {@link System#err}).
 	 */
+	@SuppressWarnings("unused")
 	private static void fail(int code, String msg) {
 		// look for a no-return annotation for this method
 		fail(code, msg, null);
@@ -87,6 +85,7 @@ public final class BenchmarkRunner {
 	 * @param code The exit code.
 	 * @param err The exception to stacktrace.
 	 */
+	@SuppressWarnings("unused")
 	private static void fail(int code, Exception err) {
 		fail(code, null, err);
 	}
@@ -101,6 +100,7 @@ public final class BenchmarkRunner {
 	 * printed to {@link System#err})
 	 */
 	private static void fail(int code, String msg, Exception err) {
+		logger.error("Aborting with code {}: {}", code, msg);
 		if (msg != null)
 			System.err.println(msg);
 		if (err != null)
@@ -133,7 +133,6 @@ public final class BenchmarkRunner {
 	/* The actual BenchmarkRunner implementation starts here. */
 
 	private BenchmarkOptions options;
-	private Injector injector;
 
 	/**
 	 * Instantiate a new benchmark runner with options.

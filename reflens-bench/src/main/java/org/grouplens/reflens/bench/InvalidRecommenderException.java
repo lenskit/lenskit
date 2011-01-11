@@ -5,6 +5,7 @@ package org.grouplens.reflens.bench;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@SuppressWarnings("serial")
 public class InvalidRecommenderException extends Exception {
 
 	/**
