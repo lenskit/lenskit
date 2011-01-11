@@ -81,11 +81,14 @@ public class CrossfoldBenchmark {
 	}
 	
 	private void benchmarkAlgorithm(AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
+		TaskTimer timer = new TaskTimer();
 		logger.debug("Benchmarking {}", algo.getName());
 		RecommenderEngine engine;
 		logger.debug("Building recommender");
 		engine = algo.getBuilder().build(train);
 		RatingPredictor rec = engine.getRatingPredictor();
+		logger.debug("Built model {} model in {}",
+				algo.getName(), timer.elapsedPretty());
 		
 		logger.debug("Testing recommender");
 		double accumErr = 0.0f;		// accmulated error
@@ -116,7 +119,8 @@ public class CrossfoldBenchmark {
 		double mae = accumErr / ngood;
 		double rmse = accumSqErr / ngood;
 		double cov = (double) nitems / ngood;
-		logger.info(String.format("Recommender %s finished (mae=%f, rmse=%f)", algo.getName(), mae, rmse));
+		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
+				algo.getName(), timer.elapsedPretty(), mae, rmse));
 		if (wideOutput)
 			out.format(",%f,%f,%f", mae, rmse, cov);
 		else
