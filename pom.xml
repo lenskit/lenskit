@@ -47,53 +47,28 @@
             <target>1.6</target>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.7</version>
+          <configuration>
+            <quiet>true</quiet>
+            <tags>
+              <tag>
+                <name>todo</name>
+                <placement>a</placement>
+                <head>To Do:</head>
+              </tag>
+            </tags>
+            <links>
+              <link>http://fastutil.dsi.unimi.it/docs/</link>
+              <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+            </links>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <quiet>true</quiet>
-          <tags>
-            <tag>
-              <name>todo</name>
-              <placement>a</placement>
-              <head>To Do:</head>
-            </tag>
-          </tags>
-          <links>
-            <link>http://fastutil.dsi.unimi.it/docs/</link>
-            <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
-          </links>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadoc</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <configuration>
-          <includePom>true</includePom>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
       	<groupId>com.mycila.maven-license-plugin</groupId>
       	<artifactId>maven-license-plugin</artifactId>
@@ -130,6 +105,44 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <configuration>
+              <includePom>true</includePom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
     	<groupId>org.slf4j</groupId>
