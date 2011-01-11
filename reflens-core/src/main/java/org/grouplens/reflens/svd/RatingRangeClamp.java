@@ -6,7 +6,7 @@ import org.grouplens.reflens.util.DoubleFunction;
 
 import com.google.inject.Inject;
 
-public class RatingRangeClamp implements DoubleFunction {
+public final class RatingRangeClamp implements DoubleFunction {
 
 	private final double minRating, maxRating;
 	

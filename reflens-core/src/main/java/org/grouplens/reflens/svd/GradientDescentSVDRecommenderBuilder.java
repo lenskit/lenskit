@@ -100,7 +100,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 			@IterationCount int icount,
 			@GradientDescentRegularization double reg,
 			@ClampingFunction DoubleFunction clamp,
-			@Nullable @BaselinePredictor RatingPredictorBuilder baseline) {
+			@BaselinePredictor RatingPredictorBuilder baseline) {
 		featureCount = features;
 		learningRate = lrate;
 		this.trainingThreshold = trainingThreshold;
@@ -126,6 +126,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		Indexer itemIndex = new Indexer();
 		model.itemIndex = itemIndex;
 		List<SVDRating> ratings = indexData(data, baseline, userIndex, itemIndex, model);
+		
+		// update each rating to the baseline
+		for (SVDRating r: ratings) {
+			r.cachedValue = model.userBaselines.get(r.user).get(r.iid);
+		}
 		
 		logger.debug("Building SVD with {} features", featureCount);
 		model.userFeatures = new double[featureCount][userIndex.getObjectCount()];
@@ -171,40 +176,71 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	}
 	
 	private void trainFeature(Model model, List<SVDRating> ratings, int feature) {
+		logger.trace("Training feature {}", feature);
+		
+		// Fetch and initialize the arrays for this feature
 		double ufv[] = model.userFeatures[feature];
 		double ifv[] = model.itemFeatures[feature];
 		DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
 		DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
 		
-		logger.trace("Training feature {}", feature);
+		// We assume that all subsequent features have DEFAULT_FEATURE_VALUE
+		// We can therefore precompute the "trailing" prediction value, as it
+		// will be the same for all ratings for this feature.
+		final int rFeatCount = featureCount - feature - 1;
+		final double trailingValue = rFeatCount * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
 		
+		// Initialize our counters and error tracking
 		double rmse = Double.MAX_VALUE, oldRmse = 0.0;
 		int epoch;
-		for (epoch = 0; epoch < MIN_EPOCHS || ((iterationCount > 0) ? (epoch < iterationCount) : (rmse < oldRmse - trainingThreshold)); epoch++) {
+		// We have two potential terminating conditions: if iterationCount is
+		// specified, we run for that many iterations irregardless of error.
+		// Otherwise, we run until the change in error is less than the training
+		// threshold.
+		for (epoch = 0; (iterationCount > 0) ? (epoch < iterationCount) : (epoch < MIN_EPOCHS || rmse < oldRmse - trainingThreshold); epoch++) {  
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
+			// Save the old RMSE so that we can measure change in error
 			oldRmse = rmse;
+			// We'll need to keep track of our sum of squares
 			double ssq = 0;
 			for (SVDRating r: ratings) {
-				double err = r.value - r.predict(feature, true);
+				// Step 1: get the predicted value (based on preceding features
+				// and the current feature values)
+				double pred = r.cachedValue + ufv[r.user] * ifv[r.item];
+				pred = clampingFunction.apply(pred);
+				
+				// Step 1b: add the estimate from remaining trailing values
+				// and clamp the result.
+				pred = clampingFunction.apply(pred + trailingValue);
+				
+				// Step 2: compute the prediction error. We will follow this for
+				// the gradient descent.
+				final double err = r.value - pred;
 				ssq += err * err;
 				
-				// save values
-				double ouf = ufv[r.user];
-				double oif = ifv[r.item];
-				// update user feature preference
-				double udelta = err * oif - trainingRegularization * ouf;
+				// Step 3: update the feature values.  We'll save the old values first.
+				final double ouf = ufv[r.user];
+				final double oif = ifv[r.item];
+				// Then we'll update user feature preference
+				final double udelta = err * oif - trainingRegularization * ouf;
 				ufv[r.user] += udelta * learningRate;
-				// update item feature relevance
-				double idelta = err * ouf - trainingRegularization * oif;
+				// And finally the item feature relevance.
+				final double idelta = err * ouf - trainingRegularization * oif;
 				ifv[r.item] += idelta * learningRate;
 			}
+			// We're done with this feature.  Compute the total error (RMSE)
+			// and head off to the next iteration.
 			rmse = (double) Math.sqrt(ssq / ratings.size());
 			logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
 		}
 		
 		logger.debug("Finished feature {} in {} epochs", feature, epoch);
+		
+		// After training this feature, we need to update each rating's cached
+		// value to accommodate it.
 		for (SVDRating r: ratings) {
-			r.update(feature);
+			r.cachedValue += ufv[r.user]* ifv[r.item];
+			r.cachedValue = clampingFunction.apply(r.cachedValue);
 		}
 	}
 	
@@ -244,53 +280,19 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		Indexer itemIndex;
 	}
 	
-	private class SVDRating {
-		private final Model model;
+	private final class SVDRating {
 		public final long uid, iid;
 		public final int user;
 		public final int item;
 		public final double value;
-		private double cachedValue = Double.NaN;
+		public double cachedValue;
 		
 		public SVDRating(Model model, Rating r) {
-			this.model = model;
 			uid = r.getUserId();
 			iid = r.getItemId();
 			user = model.userIndex.internId(uid);
 			item = model.itemIndex.internId(iid);
 			this.value = r.getRating();
-		}
-		
-		/**
-		 * Predict the value up through a particular feature, using the cache
-		 * if possible.
-		 * @param feature the feature to predict through
-		 * @param trailing whether to include an initial value for remaining features
-		 * @return
-		 */
-		public double predict(int feature, boolean trailing) {
-			double sum;
-			if (Double.isNaN(cachedValue))
-				sum = model.userBaselines.get(user).get(iid);
-			else
-				sum = cachedValue;
-			
-			sum += model.itemFeatures[feature][item] * model.userFeatures[feature][user];
-			sum = clampingFunction.apply(sum);
-			if (trailing) {
-				sum += (featureCount - feature - 1) * (DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE);
-				sum = clampingFunction.apply(sum);
-			}
-			return sum;
-		}
-		
-		/**
-		 * Update the cached prediction using a feature.
-		 * @param feature The feature to use.  No more feature predictions
-		 * should be done with it.
-		 */
-		public void update(int feature) {
-			cachedValue = predict(feature, false);
 		}
 	}
 }
