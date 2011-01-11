@@ -28,12 +28,14 @@ public class CrossfoldBenchmark {
 	private final CrossfoldManager manager;
 	private final int numFolds;
 	private final double holdoutFraction;
+	private final boolean wideOutput;
 	
-	public CrossfoldBenchmark(PrintStream output, RatingDataSource ratings, int nfolds, double fraction) {
+	public CrossfoldBenchmark(PrintStream output, RatingDataSource ratings, CrossfoldOptions options) {
 		out = output;
-		numFolds = nfolds;
-		holdoutFraction = fraction;
-		manager = new CrossfoldManager(nfolds, ratings);
+		numFolds = options.getNumFolds();
+		holdoutFraction = options.getHoldoutFraction();
+		wideOutput = options.useWideOutput();
+		manager = new CrossfoldManager(numFolds, ratings);
 	}
 	
 	public void run(List<AlgorithmInstance> algorithms) {
@@ -46,12 +48,16 @@ public class CrossfoldBenchmark {
 				int nusers = train.getUserCount();
 				logger.info(String.format("Running benchmark %d with %d training and %d test users",
 						i+1, nusers, test.size()));
-				out.format("%d,%d", nusers,test.size());
+				if (wideOutput)
+					out.format("%d,%d", nusers, test.size());
 
 				for (AlgorithmInstance algo: algorithms) {
+					if (!wideOutput)
+						out.format("%d,%d", nusers, test.size());
 					benchmarkAlgorithm(algo, train, test);
 				}
-				out.println();
+				if (wideOutput)
+					out.println();
 			} finally {
 				train.close();
 			}
@@ -63,11 +69,15 @@ public class CrossfoldBenchmark {
 	 * @param algorithms
 	 */
 	private void printHeader(List<AlgorithmInstance> algorithms) {
-		out.print("trainSize,testSize");
-		for (AlgorithmInstance a: algorithms) {
-			out.format(",\"%s.mae\",\"%s.rmse\",\"%s.cov\"", a.getName(), a.getName(), a.getName());
+		if (wideOutput) {
+			out.print("TrainSize,TestSize");
+			for (AlgorithmInstance a: algorithms) {
+				out.format(",\"%s.mae\",\"%s.rmse\",\"%s.cov\"", a.getName(), a.getName(), a.getName());
+			}
+			out.println();
+		} else {
+			out.println("TrainSize,TestSize,Algorithm,MAE,RMSE,Coverage");
 		}
-		out.println();
 	}
 	
 	private void benchmarkAlgorithm(AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
@@ -107,6 +117,9 @@ public class CrossfoldBenchmark {
 		double rmse = accumSqErr / ngood;
 		double cov = (double) nitems / ngood;
 		logger.info(String.format("Recommender %s finished (mae=%f, rmse=%f)", algo.getName(), mae, rmse));
-		out.format(",%f,%f,%f", mae, rmse, cov);
+		if (wideOutput)
+			out.format(",%f,%f,%f", mae, rmse, cov);
+		else
+			out.format("%s,%f,%f,%f\n", algo.getName(), mae, rmse, cov);
 	}
 }

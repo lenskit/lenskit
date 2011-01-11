@@ -43,23 +43,13 @@ import uk.co.flamingpenguin.jewel.cli.Unparsed;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-interface BenchmarkOptions {
+interface BenchmarkOptions extends CrossfoldOptions {
 	/**
 	 * @return The field separator in the data file.
 	 */
 	@Option(longName = "delimiter", shortName = "d", defaultValue = "\t")
 	String getDelimiter();
 
-	/**
-	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test
-	 *         split).
-	 */
-	@Option(longName="num-folds", shortName="n", defaultValue="10")
-	int getNumFolds();
-	
-	@Option(longName="holdout-fraction", defaultValue="0.3333333")
-	double getHoldoutFraction();
-	
 	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
 	File getInputFile();
 	

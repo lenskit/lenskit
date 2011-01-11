@@ -167,7 +167,7 @@ public final class BenchmarkRunner {
 		}
 
 		try {
-			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(output, data, options.getNumFolds(), options.getHoldoutFraction());
+			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(output, data, options);
 			benchmark.run(algos);
 		} catch (Exception e) {
 			fail(3, "Error running benchmark", e);
