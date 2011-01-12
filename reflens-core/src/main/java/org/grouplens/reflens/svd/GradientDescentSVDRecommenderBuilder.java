@@ -35,8 +35,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderEngine;
