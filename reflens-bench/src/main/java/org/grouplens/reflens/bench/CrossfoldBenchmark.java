@@ -76,7 +76,7 @@ public class CrossfoldBenchmark {
 			}
 			out.println();
 		} else {
-			out.println("TrainSize,TestSize,Algorithm,MAE,RMSE,Coverage");
+			out.println("TrainSize,TestSize,Algorithm,MAE,RMSE,NTried,NGood,Coverage");
 		}
 	}
 	
@@ -124,6 +124,6 @@ public class CrossfoldBenchmark {
 		if (wideOutput)
 			out.format(",%f,%f,%f", mae, rmse, cov);
 		else
-			out.format("%s,%f,%f,%f\n", algo.getName(), mae, rmse, cov);
+			out.format("%s,%f,%f,%d,%d,%f\n", algo.getName(), mae, rmse, nitems, ngood, cov);
 	}
 }
