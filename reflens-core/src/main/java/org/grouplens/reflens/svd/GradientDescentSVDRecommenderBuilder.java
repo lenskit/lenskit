@@ -173,7 +173,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 				clampingFunction);
 	}
 	
-	private void trainFeature(Model model, List<SVDRating> ratings, int feature) {
+	private final void trainFeature(Model model, List<SVDRating> ratings, int feature) {
 		logger.trace("Training feature {}", feature);
 		
 		// Fetch and initialize the arrays for this feature
@@ -199,36 +199,8 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 			logger.trace("Running epoch {} of feature {}", epoch, feature);
 			// Save the old RMSE so that we can measure change in error
 			oldRmse = rmse;
-			// We'll need to keep track of our sum of squares
-			double ssq = 0;
-			for (SVDRating r: ratings) {
-				// Step 1: get the predicted value (based on preceding features
-				// and the current feature values)
-				double pred = r.cachedValue + ufv[r.user] * ifv[r.item];
-				pred = clampingFunction.apply(pred);
-				
-				// Step 1b: add the estimate from remaining trailing values
-				// and clamp the result.
-				pred = clampingFunction.apply(pred + trailingValue);
-				
-				// Step 2: compute the prediction error. We will follow this for
-				// the gradient descent.
-				final double err = r.value - pred;
-				ssq += err * err;
-				
-				// Step 3: update the feature values.  We'll save the old values first.
-				final double ouf = ufv[r.user];
-				final double oif = ifv[r.item];
-				// Then we'll update user feature preference
-				final double udelta = err * oif - trainingRegularization * ouf;
-				ufv[r.user] += udelta * learningRate;
-				// And finally the item feature relevance.
-				final double idelta = err * ouf - trainingRegularization * oif;
-				ifv[r.item] += idelta * learningRate;
-			}
-			// We're done with this feature.  Compute the total error (RMSE)
-			// and head off to the next iteration.
-			rmse = (double) Math.sqrt(ssq / ratings.size());
+			// Run the iteration and save the error 
+			rmse = trainFeatureIteration(ratings, ufv, ifv, trailingValue);
 			logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
 		}
 		
@@ -237,9 +209,28 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		// After training this feature, we need to update each rating's cached
 		// value to accommodate it.
 		for (SVDRating r: ratings) {
-			r.cachedValue += ufv[r.user]* ifv[r.item];
-			r.cachedValue = clampingFunction.apply(r.cachedValue);
+			r.updateCachedValue(ufv, ifv);
 		}
+	}
+
+	/**
+	 * Run one iteration of the training for a feature.
+	 * @param ratings
+	 * @param ufv
+	 * @param ifv
+	 * @param trailingValue
+	 * @return
+	 */
+	private final double trainFeatureIteration(List<SVDRating> ratings,
+			double[] ufv, double[] ifv, final double trailingValue) {
+		// We'll need to keep track of our sum of squares
+		double ssq = 0;
+		for (SVDRating r: ratings) {
+			ssq += r.trainStep(ufv, ifv, trailingValue);
+		}
+		// We're done with this feature.  Compute the total error (RMSE)
+		// and head off to the next iteration.
+		return Math.sqrt(ssq / ratings.size());
 	}
 	
 	private List<SVDRating> indexData(RatingDataSource data, RatingPredictor baseline, Indexer userIndex, Indexer itemIndex, Model model) {
@@ -269,7 +260,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		}
 	}
 	
-	private class Model {
+	private final class Model {
 		ArrayList<RatingVector> userBaselines;
 		double userFeatures[][];
 		double itemFeatures[][];
@@ -291,6 +282,46 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 			user = model.userIndex.internId(uid);
 			item = model.itemIndex.internId(iid);
 			this.value = r.getRating();
+		}
+		
+		/**
+		 * Train one step on the user and item feature vectors against this rating.
+		 * The relevant entries in <var>ufv</var> and <var>ifv</var> are updated.
+		 * @param ufv The current user-feature preference vector.
+		 * @param ifv The current item-feature relevance vector.
+		 * @param trailingValue The trailing feature value to add to the prediction
+		 * @return The squared error in the prediction.
+		 */
+		public double trainStep(double[] ufv, double[] ifv, double trailingValue) {
+			// Step 1: get the predicted value (based on preceding features
+			// and the current feature values)
+			double pred = cachedValue + ufv[user] * ifv[item];
+			pred = clampingFunction.apply(pred);
+			
+			// Step 1b: add the estimate from remaining trailing values
+			// and clamp the result.
+			pred = clampingFunction.apply(pred + trailingValue);
+			
+			// Step 2: compute the prediction error. We will follow this for
+			// the gradient descent.
+			final double err = value - pred;
+			
+			// Step 3: update the feature values.  We'll save the old values first.
+			final double ouf = ufv[user];
+			final double oif = ifv[item];
+			// Then we'll update user feature preference
+			final double udelta = err * oif - trainingRegularization * ouf;
+			ufv[user] += udelta * learningRate;
+			// And finally the item feature relevance.
+			final double idelta = err * ouf - trainingRegularization * oif;
+			ifv[item] += idelta * learningRate;
+			
+			// Finally, return the squared error to the caller
+			return err * err;
+		}
+		
+		public void updateCachedValue(double[] ufv, double[] ifv) {
+			cachedValue = clampingFunction.apply(cachedValue + ufv[user] * ifv[item]);
 		}
 	}
 }
