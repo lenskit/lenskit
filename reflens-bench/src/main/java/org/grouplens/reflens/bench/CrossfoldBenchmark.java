@@ -1,6 +1,8 @@
 package org.grouplens.reflens.bench;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +16,9 @@ import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.tablewriter.CSVWriterBuilder;
+import org.grouplens.reflens.tablewriter.TableWriter;
+import org.grouplens.reflens.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,25 +27,27 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CrossfoldBenchmark {
+public class CrossfoldBenchmark implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(CrossfoldBenchmark.class);
-	private final PrintStream out;
 	private final CrossfoldManager manager;
 	private final int numFolds;
 	private final double holdoutFraction;
-	private final boolean wideOutput;
+	private final List<AlgorithmInstance> algorithms;
 	
-	public CrossfoldBenchmark(PrintStream output, RatingDataSource ratings, CrossfoldOptions options) {
-		out = output;
+	private TableWriter writer;
+	private int colTestSize, colTrainSize, colAlgo, colMAE, colRMSE;
+	private int colNTry, colNGood, colCoverage;
+	
+	public CrossfoldBenchmark(RatingDataSource ratings, CrossfoldOptions options,
+			List<AlgorithmInstance> algorithms, Writer output) throws IOException {
 		numFolds = options.getNumFolds();
 		holdoutFraction = options.getHoldoutFraction();
-		wideOutput = options.useWideOutput();
 		manager = new CrossfoldManager(numFolds, ratings);
+		this.algorithms = algorithms;
+		writer = makeWriter(output);
 	}
 	
-	public void run(List<AlgorithmInstance> algorithms) {
-		printHeader(algorithms);
-		
+	public void run() {
 		for (int i = 0; i < numFolds; i++) {
 			RatingDataSource train = manager.trainingSet(i);
 			try {
@@ -48,36 +55,43 @@ public class CrossfoldBenchmark {
 				int nusers = train.getUserCount();
 				logger.info(String.format("Running benchmark %d with %d training and %d test users",
 						i+1, nusers, test.size()));
-				if (wideOutput)
-					out.format("%d,%d", nusers, test.size());
-
 				for (AlgorithmInstance algo: algorithms) {
-					if (!wideOutput)
-						out.format("%d,%d", nusers, test.size());
+					writer.setValue(colTrainSize, nusers);
+					writer.setValue(colTestSize, test.size());
+					writer.setValue(colAlgo, algo.getName());
 					benchmarkAlgorithm(algo, train, test);
+					writer.finishRow();
 				}
-				if (wideOutput)
-					out.println();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			} finally {
 				train.close();
 			}
+		}
+		try {
+			writer.finish();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	/**
 	 * Print the header for the data file
 	 * @param algorithms
+	 * @throws IOException 
 	 */
-	private void printHeader(List<AlgorithmInstance> algorithms) {
-		if (wideOutput) {
-			out.print("TrainSize,TestSize");
-			for (AlgorithmInstance a: algorithms) {
-				out.format(",\"%s.mae\",\"%s.rmse\",\"%s.cov\"", a.getName(), a.getName(), a.getName());
-			}
-			out.println();
-		} else {
-			out.println("TrainSize,TestSize,Algorithm,MAE,RMSE,NTried,NGood,Coverage");
-		}
+	private TableWriter makeWriter(Writer output) throws IOException {
+		TableWriterBuilder bld = new CSVWriterBuilder();
+		colTrainSize = bld.addColumn("TrainSize");
+		colTestSize = bld.addColumn("TestSize");
+		colAlgo = bld.addColumn("Algortihm");
+		colMAE = bld.addColumn("MAE");
+		colRMSE = bld.addColumn("RMSE");
+		colNTry = bld.addColumn("NTried");
+		colNGood = bld.addColumn("NGood");
+		colCoverage = bld.addColumn("Coverage");
+		
+		return bld.makeWriter(output);
 	}
 	
 	private void benchmarkAlgorithm(AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
@@ -121,9 +135,10 @@ public class CrossfoldBenchmark {
 		double cov = (double) nitems / ngood;
 		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
 				algo.getName(), timer.elapsedPretty(), mae, rmse));
-		if (wideOutput)
-			out.format(",%f,%f,%f", mae, rmse, cov);
-		else
-			out.format("%s,%f,%f,%d,%d,%f\n", algo.getName(), mae, rmse, nitems, ngood, cov);
+		writer.setValue(colMAE, mae);
+		writer.setValue(colRMSE, rmse);
+		writer.setValue(colNTry, nitems);
+		writer.setValue(colNGood, ngood);
+		writer.setValue(colCoverage, cov);
 	}
 }

@@ -32,7 +32,10 @@ package org.grouplens.reflens.bench;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,12 +151,12 @@ public final class BenchmarkRunner {
 	private void run() {
 		List<AlgorithmInstance> algos = loadAlgorithms();
 		
-		PrintStream output = System.out;
+		Writer output = new OutputStreamWriter(System.out);
 		File outFile = options.getOutputFile();
 		if (!outFile.getName().isEmpty()) {
 			try {
-				output = new PrintStream(outFile);
-			} catch (FileNotFoundException e) {
+				output = new FileWriter(outFile);
+			} catch (IOException e) {
 				fail(2, "Error opening output file", e);
 			}
 		}
@@ -167,12 +170,16 @@ public final class BenchmarkRunner {
 		}
 
 		try {
-			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(output, data, options);
-			benchmark.run(algos);
+			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(data, options, algos, output);
+			benchmark.run();
 		} catch (Exception e) {
 			fail(3, "Error running benchmark", e);
 		} finally {
-			output.close();
+			try {
+				output.close();
+			} catch (IOException e) {
+				fail(2, "Error closing output file", e);
+			}
 		}
 	}
 	

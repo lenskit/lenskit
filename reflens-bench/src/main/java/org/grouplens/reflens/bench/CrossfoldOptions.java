@@ -13,8 +13,4 @@ interface CrossfoldOptions {
 
 	@Option(longName = "holdout-fraction", defaultValue = "0.3333333")
 	public abstract double getHoldoutFraction();
-
-	@Option(longName = "wide-output", shortName = "W", description = "Output a wide table with columns for each algorithm")
-	public abstract boolean useWideOutput();
-
 }
