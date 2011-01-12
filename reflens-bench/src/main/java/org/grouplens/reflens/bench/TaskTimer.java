@@ -28,6 +28,10 @@ public class TaskTimer {
 		return stop - startTime;
 	}
 	
+	public double elapsed() {
+		return elapsedMillis() * 0.0001;
+	}
+	
 	public String elapsedPretty() {
 		long elapsed = elapsedMillis();
 		long secs = elapsed / 1000;

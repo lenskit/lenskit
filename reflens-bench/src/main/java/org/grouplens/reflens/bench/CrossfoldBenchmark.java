@@ -37,6 +37,8 @@ public class CrossfoldBenchmark implements Runnable {
 	private TableWriter writer;
 	private int colTestSize, colTrainSize, colAlgo, colMAE, colRMSE;
 	private int colNTry, colNGood, colCoverage;
+	private int colBuildTime;
+	private int colPredTime;
 	
 	public CrossfoldBenchmark(RatingDataSource ratings, CrossfoldOptions options,
 			List<AlgorithmInstance> algorithms, Writer output) throws IOException {
@@ -90,6 +92,8 @@ public class CrossfoldBenchmark implements Runnable {
 		colNTry = bld.addColumn("NTried");
 		colNGood = bld.addColumn("NGood");
 		colCoverage = bld.addColumn("Coverage");
+		colBuildTime = bld.addColumn("BuildTime");
+		colPredTime = bld.addColumn("PredTime");
 		
 		return bld.makeWriter(output);
 	}
@@ -101,10 +105,12 @@ public class CrossfoldBenchmark implements Runnable {
 		logger.debug("Building recommender");
 		engine = algo.getBuilder().build(train);
 		RatingPredictor rec = engine.getRatingPredictor();
+		writer.setValue(colBuildTime, timer.elapsed());
 		logger.debug("Built model {} model in {}",
 				algo.getName(), timer.elapsedPretty());
 		
 		logger.debug("Testing recommender");
+		timer.start();
 		double accumErr = 0.0f;		// accmulated error
 		double accumSqErr = 0.0f;	// accumluated squared error
 		int nitems = 0;				// total ratings
@@ -135,6 +141,7 @@ public class CrossfoldBenchmark implements Runnable {
 		double cov = (double) nitems / ngood;
 		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
 				algo.getName(), timer.elapsedPretty(), mae, rmse));
+		writer.setValue(colPredTime, timer.elapsed());
 		writer.setValue(colMAE, mae);
 		writer.setValue(colRMSE, rmse);
 		writer.setValue(colNTry, nitems);
