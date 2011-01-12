@@ -77,7 +77,9 @@ import com.google.inject.Inject;
 public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBuilder {
 	private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDRecommenderBuilder.class);
 	
+	// The default value for feature values - isn't supposed to matter much
 	private static final double DEFAULT_FEATURE_VALUE = 0.1;
+	// Minimum number of epochs to run to train a feature
 	private static final double MIN_EPOCHS = 50;
 	// Internal epsilon to avoid division by 0
 	private static final double MIN_FEAT_NORM = 0.0000000001;
@@ -102,7 +104,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		featureCount = features;
 		learningRate = lrate;
 		this.trainingThreshold = trainingThreshold;
-		this.trainingRegularization = reg;
+		trainingRegularization = reg;
 		clampingFunction = clamp;
 		baselineBuilder = baseline;
 		iterationCount = icount;
