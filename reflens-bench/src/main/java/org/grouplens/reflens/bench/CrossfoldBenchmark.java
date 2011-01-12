@@ -110,7 +110,7 @@ public class CrossfoldBenchmark implements Runnable {
 				algo.getName(), timer.elapsedPretty());
 		
 		logger.debug("Testing recommender");
-		timer.start();
+		TaskTimer testTimer = new TaskTimer();
 		double accumErr = 0.0f;		// accmulated error
 		double accumSqErr = 0.0f;	// accumluated squared error
 		int nitems = 0;				// total ratings
@@ -141,7 +141,7 @@ public class CrossfoldBenchmark implements Runnable {
 		double cov = (double) nitems / ngood;
 		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
 				algo.getName(), timer.elapsedPretty(), mae, rmse));
-		writer.setValue(colPredTime, timer.elapsed());
+		writer.setValue(colPredTime, testTimer.elapsed());
 		writer.setValue(colMAE, mae);
 		writer.setValue(colRMSE, rmse);
 		writer.setValue(colNTry, nitems);
