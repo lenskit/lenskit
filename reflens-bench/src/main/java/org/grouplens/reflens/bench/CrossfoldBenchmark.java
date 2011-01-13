@@ -1,7 +1,6 @@
 package org.grouplens.reflens.bench;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +85,7 @@ public class CrossfoldBenchmark implements Runnable {
 		TableWriterBuilder bld = new CSVWriterBuilder();
 		colTrainSize = bld.addColumn("TrainSize");
 		colTestSize = bld.addColumn("TestSize");
-		colAlgo = bld.addColumn("Algortihm");
+		colAlgo = bld.addColumn("Algorithm");
 		colMAE = bld.addColumn("MAE");
 		colRMSE = bld.addColumn("RMSE");
 		colNTry = bld.addColumn("NTried");
