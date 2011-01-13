@@ -34,7 +34,7 @@ public class CrossfoldBenchmark implements Runnable {
 	private final List<AlgorithmInstance> algorithms;
 	
 	private TableWriter writer;
-	private int colTestSize, colTrainSize, colAlgo, colMAE, colRMSE;
+	private int colRunNumber, colTestSize, colTrainSize, colAlgo, colMAE, colRMSE;
 	private int colNTry, colNGood, colCoverage;
 	private int colBuildTime;
 	private int colPredTime;
@@ -57,6 +57,7 @@ public class CrossfoldBenchmark implements Runnable {
 				logger.info(String.format("Running benchmark %d with %d training and %d test users",
 						i+1, nusers, test.size()));
 				for (AlgorithmInstance algo: algorithms) {
+					writer.setValue(colRunNumber, i);
 					writer.setValue(colTrainSize, nusers);
 					writer.setValue(colTestSize, test.size());
 					writer.setValue(colAlgo, algo.getName());
@@ -83,6 +84,7 @@ public class CrossfoldBenchmark implements Runnable {
 	 */
 	private TableWriter makeWriter(Writer output) throws IOException {
 		TableWriterBuilder bld = new CSVWriterBuilder();
+		colRunNumber = bld.addColumn("RunNumber");
 		colTrainSize = bld.addColumn("TrainSize");
 		colTestSize = bld.addColumn("TestSize");
 		colAlgo = bld.addColumn("Algorithm");
