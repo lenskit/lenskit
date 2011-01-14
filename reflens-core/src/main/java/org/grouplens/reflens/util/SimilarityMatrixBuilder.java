@@ -54,6 +54,15 @@ public interface SimilarityMatrixBuilder {
 	public void put(int i1, int i2, double sim);
 	
 	/**
+	 * Store a symmetric similarity.
+	 * @see #put(int, int, double)
+	 * @param i1 The index of the first entity
+	 * @param i2 The index of the second entity
+	 * @param sim The similarity score
+	 */
+	void putSymmetric(int i1, int i2, double sim);
+	
+	/**
 	 * Finish building the matrix and return it.  The builder can no longer be
 	 * used after this.  This method cannot be called concurrently with
 	 * {@link #put(int, int, double)}.

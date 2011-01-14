@@ -195,6 +195,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 */
 	@Override
 	public void put(int i1, int i2, double sim) {
+		if (sim < 0.0) return;
 		if (i2 < 0 || i2 >= rows.length)
 			throw new IndexOutOfBoundsException();
 		// concurrent read-only array access permitted
@@ -204,6 +205,14 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 			q.enqueue(new Score(i2, sim));
 			while (q.size() > maxNeighbors)
 				q.dequeue();
+		}
+	}
+	
+	@Override
+	public void putSymmetric(int i1, int i2, double sim) {
+		if (sim > 0.0) {
+			put(i1, i2, sim);
+			put(i2, i1, sim);
 		}
 	}
 	

@@ -39,8 +39,10 @@ import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.joda.convert.StringConvert;
 
+import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
 
@@ -110,5 +112,24 @@ public class ItemRecommenderModule extends RecommenderModule {
 	protected void configureItemSimilarity() {
 		bindClassParameter(new TypeLiteral<Similarity<? super RatingVector>>(){},
 				ItemSimilarity.class);
+	}
+	
+	@Provides
+	SimilarityMatrixBuildStrategy buildStrategy(
+			SimilarityMatrixBuilderFactory matrixFactory,
+			@ItemSimilarity Similarity<? super RatingVector> similarity) {
+		if (similarity instanceof OptimizableVectorSimilarity) {
+			if (similarity instanceof SymmetricBinaryFunction)
+				return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,
+						(OptimizableVectorSimilarity) similarity);
+			else
+				return new OptimizedSimilarityMatrixBuildStrategy(matrixFactory,
+						(OptimizableVectorSimilarity) similarity);
+		} else {
+			if (similarity instanceof SymmetricBinaryFunction)
+				return new SymmetricSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+			else
+				return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+		}
 	}
 }
