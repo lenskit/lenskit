@@ -208,6 +208,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		}
 		
 		logger.debug("Finished feature {} in {} epochs", feature, epoch);
+		logger.debug("Final RMSE for feature {} was {}", feature, rmse);
 		
 		// After training this feature, we need to update each rating's cached
 		// value to accommodate it.
