@@ -127,12 +127,13 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		model.itemIndex = itemIndex;
 		List<SVDRating> ratings = indexData(data, baseline, userIndex, itemIndex, model);
 		
-		// update each rating to the baseline
+		// update each rating to start at the baseline
 		for (SVDRating r: ratings) {
 			r.cachedValue = model.userBaselines.get(r.user).get(r.iid);
 		}
 		
-		logger.debug("Building SVD with {} features", featureCount);
+		logger.debug("Building SVD with {} features for {} ratings",
+				featureCount, ratings.size());
 		model.userFeatures = new double[featureCount][userIndex.getObjectCount()];
 		model.itemFeatures = new double[featureCount][itemIndex.getObjectCount()];
 		for (int i = 0; i < featureCount; i++) {
@@ -215,14 +216,6 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		}
 	}
 
-	/**
-	 * Run one iteration of the training for a feature.
-	 * @param ratings
-	 * @param ufv
-	 * @param ifv
-	 * @param trailingValue
-	 * @return
-	 */
 	private final double trainFeatureIteration(List<SVDRating> ratings,
 			double[] ufv, double[] ifv, final double trailingValue) {
 		// We'll need to keep track of our sum of squares
@@ -236,11 +229,13 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	}
 	
 	private List<SVDRating> indexData(RatingDataSource data, RatingPredictor baseline, Indexer userIndex, Indexer itemIndex, Model model) {
-		Cursor<Rating> ratings = data.getRatings();
 		ArrayList<RatingVector> ratingVectors = new ArrayList<RatingVector>();
+		
+		Cursor<Rating> ratings = data.getRatings();
 		try {
-			int nusers = ratings.getRowCount();
-			ArrayList<SVDRating> svr = new ArrayList<SVDRating>(nusers >= 0 ? nusers * 5 : 100);
+			int nratings = ratings.getRowCount();
+			logger.debug("pre-processing {} ratings", nratings);
+			ArrayList<SVDRating> svr = new ArrayList<SVDRating>(nratings >= 0 ? nratings : 100);
 			for (Rating r: ratings) {
 				SVDRating svdr = new SVDRating(model, r);
 				svr.add(svdr);
