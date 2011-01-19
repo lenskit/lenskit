@@ -113,6 +113,13 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	@Override
 	public RecommenderEngine build(RatingDataSource data) {
 		logger.debug("Setting up to build SVD recommender with {} features", featureCount);
+		logger.debug("Learning rate is {}", learningRate);
+		logger.debug("Regularization term is {}", trainingRegularization);
+		if (iterationCount > 0) {
+			logger.debug("Training each epoch for {} iterations", iterationCount);
+		} else {
+			logger.debug("Error epsilon is {}", trainingThreshold);
+		}
 		
 		RatingPredictor baseline;
 		if (baselineBuilder != null)
