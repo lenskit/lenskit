@@ -116,6 +116,7 @@ public class RecommenderModule extends AbstractModule {
 		}
 		
 		String rnorm = properties.getProperty(prop.value());
+		@SuppressWarnings("rawtypes")
 		Class target = null;
 		if (rnorm != null) {
 			try {
@@ -126,7 +127,7 @@ public class RecommenderModule extends AbstractModule {
 		}
 		if (target != null) {
 			if (!RatingPredictorBuilder.class.isAssignableFrom(target)) {
-				for (Class c: target.getClasses()) {
+				for (@SuppressWarnings("rawtypes") Class c: target.getClasses()) {
 					if (!c.getEnclosingClass().equals(target)) continue;
 					if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
 						target = c;
@@ -183,9 +184,9 @@ public class RecommenderModule extends AbstractModule {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation) {
 		DefaultClass clsA = annotation.getAnnotation(DefaultClass.class);
+		@SuppressWarnings("rawtypes")
 		Class dft = null;
 		if (clsA != null)
 			dft = clsA.value();
@@ -202,7 +203,7 @@ public class RecommenderModule extends AbstractModule {
 	 * the {@link Nullable} annotation).  This parameter has a bare type to make
 	 * it easier to use in the face of type erasure.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation, Class dftClass) {
 		PropertyName name = annotation.getAnnotation(PropertyName.class);
 		if (name == null) {

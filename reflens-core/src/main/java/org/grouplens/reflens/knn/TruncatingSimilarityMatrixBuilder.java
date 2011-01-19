@@ -86,7 +86,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	private static class ScoreQueue extends ObjectHeapPriorityQueue<Object>
 		implements Iterable<IndexedItemScore>, Externalizable {
 		
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public ScoreQueue() {
 			super((Comparator) scoreComparator);
 		}

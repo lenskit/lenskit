@@ -114,6 +114,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 				ItemSimilarity.class);
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Provides
 	SimilarityMatrixBuildStrategy buildStrategy(
 			SimilarityMatrixBuilderFactory matrixFactory,

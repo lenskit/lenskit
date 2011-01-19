@@ -42,7 +42,7 @@ import com.google.inject.util.Types;
  * @todo Make the type unifier work for type templates that contain variables.
  * Such templates can exist when we are binding wildcard types.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes") // we use lots of raw types in this class
 public class TypeUtils {
 	/**
 	 * A {@link StringConvert} that supports Java primitive types.
