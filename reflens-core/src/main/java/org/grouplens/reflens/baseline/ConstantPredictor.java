@@ -84,7 +84,7 @@ public class ConstantPredictor implements RatingPredictor {
 	@Override
 	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
 		RatingVector preds = new RatingVector();
-		LongIterator iter = CollectionUtils.getFastCollection(items).iterator();
+		LongIterator iter = CollectionUtils.fastCollection(items).iterator();
 		while (iter.hasNext()) {
 			long item = iter.nextLong();
 			preds.put(item, value);

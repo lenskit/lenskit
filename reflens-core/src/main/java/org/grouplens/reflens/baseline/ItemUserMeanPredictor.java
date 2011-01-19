@@ -94,7 +94,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 			Collection<Long> items) {
 		double meanOffset = computeUserAverage(ratings);
 		RatingVector map = new RatingVector(items.size());
-		LongCollection fitems = CollectionUtils.getFastCollection(items);
+		LongCollection fitems = CollectionUtils.fastCollection(items);
 		LongIterator iter = fitems.iterator();
 		while (iter.hasNext()) {
 			long iid = iter.nextLong();

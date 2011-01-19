@@ -33,6 +33,7 @@ package org.grouplens.reflens.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -45,14 +46,18 @@ import org.grouplens.reflens.RecommenderEngine;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.DoubleFunction;
 
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
  * 
- * The implementation of SVDRecommender is based on
- * <a href="http://www.timelydevelopment.com/demos/NetflixPrize.aspx">Timely
- * Development's sample code</a>.
+ * Recommendation is done based on folding-in.  The strategy is do a fold-in
+ * operation as described in
+ * <a href="http://www.grouplens.org/node/212">Sarwar et al., 2002</a> with the
+ * user's ratings.
+ * 
+ * @todo Look at using the user's feature preferences in some cases.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -81,10 +86,28 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 		assert singularValues.length == numFeatures;
 	}
 	
-		
+	/**
+	 * Get the number of features used by the underlying factorization.
+	 * @return the feature count (rank) of the factorization.
+	 */
+	public int getFeatureCount() {
+		return numFeatures;
+	}
+	
+	/**
+	 * Fold in a user's ratings vector to produce a feature preference vector.
+	 * A baseline vector is also provided; its values are subtracted from the
+	 * rating vector prior to folding in.
+	 * @param user The user ID.
+	 * @param ratings The user's rating vector.
+	 * @param base The user's baseline vector (e.g. baseline predictions).
+	 * @return An array of feature preference values.  The length of this array
+	 * will be the number of features.
+	 * @see #getFeatureCount()
+	 */
 	protected double[] foldIn(long user, RatingVector ratings, RatingVector base) {
 		double featurePrefs[] = new double[numFeatures];
-		DoubleArrays.fill(featurePrefs, 0.0f);
+		DoubleArrays.fill(featurePrefs, 0.0);
 		
 		for (Long2DoubleMap.Entry rating: ratings.fast()) {
 			long iid = rating.getLongKey();
@@ -122,8 +145,10 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 		double uprefs[] = foldIn(user, ratings, base);
 		
 		RatingVector preds = new RatingVector();
-		for (long item: items) {
-			int idx = itemIndex.getIndex(item);
+		LongIterator iter = CollectionUtils.fastIterator(items);
+		while (iter.hasNext()) {
+			final long item = iter.nextLong();
+			final int idx = itemIndex.getIndex(item);
 			if (idx < 0)
 				continue;
 

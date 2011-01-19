@@ -77,7 +77,7 @@ public class UserMeanPredictor implements RatingPredictor {
 			Collection<Long> items) {
 		double mean = average(ratings, globalMean) + globalMean;
 		RatingVector map = new RatingVector(items.size());
-		LongCollection fitems = CollectionUtils.getFastCollection(items);
+		LongCollection fitems = CollectionUtils.fastCollection(items);
 		LongIterator iter = fitems.iterator();
 		while (iter.hasNext()) {
 			map.put(iter.nextLong(), mean);

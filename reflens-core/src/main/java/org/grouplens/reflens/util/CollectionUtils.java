@@ -42,11 +42,20 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
+ * Various helper methods for working with collections (particularly Fastutil
+ * collections).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class CollectionUtils {
-	public static LongCollection getFastCollection(final Collection<Long> longs) {
+	/**
+	 * Get a Fastutil {@link LongCollection} from a {@link Collection} of longs.
+	 * This method simply casts the collection, if possible, and returns a
+	 * wrapper otherwise.
+	 * @param longs A collection of longs.
+	 * @return The collection as a {@link LongCollection}.
+	 */
+	public static LongCollection fastCollection(final Collection<Long> longs) {
 		if (longs instanceof LongCollection) return (LongCollection) longs;
 		
 		return new AbstractLongCollection() {
@@ -69,9 +78,26 @@ public class CollectionUtils {
 	}
 	
 	/**
-	 * @return
+	 * Get a {@link LongIterator} which to iterate over a collection.
+	 * This facilitiates iteration without boxing if the underlying collection
+	 * is a Fastutil {@link LongCollection}.
+	 * @see #fastIterator(Iterator)
+	 * @param col The collection of longs.
+	 * @return A Fastutil iterator for the collection.
 	 */
-	private static LongIterator fastIterator(final Iterator<Long> iter) {
+	public static LongIterator fastIterator(final Collection<Long> col) {
+		return fastIterator(col.iterator());
+	}
+	
+	/**
+	 * Cast or wrap an iterator to a Fastutil {@link LongIterator}.
+	 * @param iter An iterator of longs.
+	 * @return A Fastutil iterator wrapping <var>iter</var>.  If <var>iter</var>
+	 * is already a Fastutil iterator (an instance of {@link LongIterator}), this
+	 * is simply <var>iter</var> cast to {@link LongIterator}.  Otherwise, it is
+	 * a wrapper object.
+	 */
+	public static LongIterator fastIterator(final Iterator<Long> iter) {
 		if (iter instanceof LongIterator) return (LongIterator) iter;
 		
 		return new AbstractLongIterator() {

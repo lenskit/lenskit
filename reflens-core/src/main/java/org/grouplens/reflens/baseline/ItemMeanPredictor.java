@@ -84,7 +84,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
 		RatingVector predictions = new RatingVector();
-		LongCollection fitems = CollectionUtils.getFastCollection(items);
+		LongCollection fitems = CollectionUtils.fastCollection(items);
 		LongIterator iter = fitems.iterator();
 		while (iter.hasNext()) {
 			long iid = iter.nextLong();
