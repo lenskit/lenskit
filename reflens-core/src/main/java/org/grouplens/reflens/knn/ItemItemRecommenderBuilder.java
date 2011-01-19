@@ -62,9 +62,6 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final SimilarityMatrixBuildStrategy similarityStrategy;
-	
-	// TODO find a way to backdoor the baseline predictor more cleanly
-	private RatingPredictor baselinePredictor;
 
 	// TODO Make the similarity Similarity<? super RatingVector> if we can w/ Guice
 	@Inject
@@ -84,7 +81,6 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 		
 		public BuildState(RatingDataSource data, boolean trackItemSets) {
 			baseline = baselineBuilder == null ? null : baselineBuilder.build(data);
-			baselinePredictor = baseline;
 			Indexer itemIndexer;
 			itemIndex = itemIndexer = new Indexer();
 			itemRatings = new ArrayList<RatingVector>();
@@ -94,6 +90,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 			else
 				userItemSets = null;
 			
+			logger.debug("Pre-processing ratings");
 			buildItemRatings(itemIndexer, data);
 			itemCount = itemRatings.size();
 		}
@@ -107,7 +104,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 			try {
 				for (UserRatingProfile user: cursor) {
 					Collection<Rating> ratings = user.getRatings();
-					ratings = normalizeUserRatings(user.getUser(), ratings);
+					ratings = normalizeUserRatings(baseline, user.getUser(), ratings);
 					IntSortedSet userItems = null;
 					if (userItemSets != null) {
 						userItems = new IntAVLTreeSet();
@@ -143,19 +140,23 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
 		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);
-		baselinePredictor = null;
 		return new ItemItemRecommender(model);
 	}
-
-	protected RatingPredictor getBaselinePredictor() {
-		return baselinePredictor;
-	}
 	
-	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
-		if (baselinePredictor == null) return ratings;
+	/**
+	 * Normalize a user's ratings.  This method is called on each user's ratings
+	 * prior to using the ratings to learn item similarities.  Deriving
+	 * classes can customize the normalization method.
+	 * @param baseline The baseline predictor for this model build.
+	 * @param uid The user ID.
+	 * @param ratings The user's ratings.
+	 * @return A normalized version of the user's ratings.
+	 */
+	protected Collection<Rating> normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, Collection<Rating> ratings) {
+		if (baseline == null) return ratings;
 		
 		RatingVector rmap = RatingVector.userRatingVector(ratings);
-		RatingVector base = baselinePredictor.predict(uid, rmap, rmap.idSet());
+		RatingVector base = baseline.predict(uid, rmap, rmap.idSet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {
