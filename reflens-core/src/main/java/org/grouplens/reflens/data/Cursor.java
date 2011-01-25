@@ -30,6 +30,7 @@
 
 package org.grouplens.reflens.data;
 
+import java.io.Closeable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -50,7 +51,7 @@ import java.util.NoSuchElementException;
  *
  * @param <T> The type of data returned by the cursor
  */
-public interface Cursor<T> extends Iterable<T> {
+public interface Cursor<T> extends Iterable<T>, Closeable {
 	/**
 	 * Get an upper bound on the number of rows available from the cursor.
 	 * @return the number of rows which may be returned by {@link #next()}, or
