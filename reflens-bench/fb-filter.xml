@@ -1,0 +1,15 @@
+<FindBugsFilter>
+  <LastVersion value="-1" relOp="NEQ"/>
+  <And>
+    <Bug category="PERFORMANCE"/>
+    <Bug code="UPM"/>
+  </And>
+  <And>
+    <Class name="org.grouplens.reflens.bench.BenchmarkRunner"/>
+    <Bug code="NP"/>
+  </And>
+  <And>
+    <Class name="org.grouplens.reflens.bench.TerminalProgressReporter"/>
+    <Bug code="NP"/>
+  </And>
+</FindBugsFilter>

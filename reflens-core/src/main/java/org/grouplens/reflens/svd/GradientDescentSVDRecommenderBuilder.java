@@ -265,7 +265,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 		}
 	}
 	
-	private final class Model {
+	private static final class Model {
 		ArrayList<RatingVector> userBaselines;
 		double userFeatures[][];
 		double itemFeatures[][];
