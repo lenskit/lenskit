@@ -191,12 +191,11 @@
     	<scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>ch.qos.logback</groupId>
-    	<artifactId>logback-classic</artifactId>
-    	<version>0.9.26</version>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-nop</artifactId>
+    	<version>1.6.1</version>
     	<type>jar</type>
-    	<scope>compile</scope>
-    	<optional>true</optional>
+    	<scope>test</scope>
     </dependency>
   </dependencies>
   <reporting>
