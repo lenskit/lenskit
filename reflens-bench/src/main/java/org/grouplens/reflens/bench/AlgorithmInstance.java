@@ -33,12 +33,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
-import org.grouplens.reflens.util.ObjectLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -48,27 +54,15 @@ import com.google.inject.Module;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class AlgorithmInstance {
-	private final Properties algoProps; 
-	private final String algoName;
-	private final Injector injector;
-	private final RecommenderEngineBuilder builder;
+public class AlgorithmInstance {
+	private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
+	private String algoName;
+	private Module module;
+	private Map<String,String> attributes;
+	private Injector injector;
 	
-	public AlgorithmInstance(File specFile, Properties baseProps) throws InvalidRecommenderException {		
-		algoProps = loadProperties(baseProps, specFile);
-		
-		String name = algoProps.getProperty("recommender.name");
-		if (name == null) {
-			name = fileBaseName(specFile, "properties");
-		}
-		algoName = name;
-		
-		injector = Guice.createInjector(getModule());
-		try {
-			builder = injector.getInstance(RecommenderEngineBuilder.class);
-		} catch (CreationException e) {
-			throw new InvalidRecommenderException("Error creating recommender builder", e);
-		}
+	public AlgorithmInstance() {
+		attributes = new HashMap<String,String>();
 	}
 	
 	/**
@@ -87,33 +81,6 @@ class AlgorithmInstance {
 	}
 	
 	/**
-	 * Load the properties object for the specified file.
-	 * @param base
-	 * @param specFile
-	 * @return
-	 * @throws IOException
-	 */
-	private static Properties loadProperties(Properties base, File specFile) throws InvalidRecommenderException {
-		if (base == null)
-			base = System.getProperties();
-
-		try {
-			Reader reader = null;
-			try {
-				reader = new FileReader(specFile);
-				Properties props = new Properties(base);
-				props.load(reader);
-				return props;
-			} finally {
-				if (reader != null)
-					reader.close();
-			}
-		} catch (IOException e) {
-			throw new InvalidRecommenderException(e);
-		}
-	}
-	
-	/**
 	 * Get the name of this algorithm.  This returns a short name which is
 	 * used to identify the algorithm or instance.
 	 * @return The algorithm's name
@@ -122,19 +89,80 @@ class AlgorithmInstance {
 		return algoName;
 	}
 	
-	private Module getModule() throws InvalidRecommenderException {
-		String modName = algoProps.getProperty("recommender.module");
-		if (modName == null) {
-			throw new InvalidRecommenderException("No recommender module specified");
+	/**
+	 * Set the instance's name.
+	 * @param name The instance name
+	 */
+	public void setName(String name) {
+		algoName = name;
+	}
+	
+	public Map<String,String> getAttributes() {
+		return attributes;
+	}
+	
+	public Module getModule() {
+		return module;
+	}
+	
+	public void setModule(Module mod) {
+		module = mod;
+		injector = null;
+	}
+	
+	public void setModule(Class<? extends Module> mod) throws InstantiationException, IllegalAccessException {
+		setModule(mod.newInstance());
+	}
+	
+	Injector getInjector() {
+		if (injector == null) {
+			injector = Guice.createInjector(module);
 		}
+		return injector;
+	}
+	
+	RecommenderEngineBuilder getBuilder() {
+		return getInjector().getInstance(RecommenderEngineBuilder.class);
+	}
+
+	public static AlgorithmInstance load(ScriptEngineManager mgr, File f) throws InvalidRecommenderException {
+		logger.info("Loading recommender definition from {}", f);
+		String xtn = fileExtension(f);
+		logger.debug("Loading recommender from {} with extension {}", f, xtn);
+		ScriptEngine engine = mgr.getEngineByExtension(xtn);
+		if (engine == null)
+			throw new InvalidRecommenderException("Cannot find engine for extension " + xtn);
+		ScriptEngineFactory factory = engine.getFactory();
+		logger.info("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
+		AlgorithmInstance algo = new AlgorithmInstance();
+		mgr.put("rec", algo);
 		try {
-			return ObjectLoader.makeInstance(modName, Properties.class, algoProps);
-		} catch (Exception e) {
-			throw new InvalidRecommenderException("Error instantiating recommender module", e);
+			Reader r = new FileReader(f);
+			try {
+				engine.eval(r);
+				if (algo.getModule() != null)
+					return algo;
+				else
+					throw new InvalidRecommenderException("No recommender configured");
+			} finally {
+				r.close();
+			}
+		} catch (ScriptException e) {
+			throw new InvalidRecommenderException(e);
+		} catch (IOException e) {
+			throw new InvalidRecommenderException(e);
 		}
 	}
 	
-	public RecommenderEngineBuilder getBuilder() {
-		return builder;
+	static String fileExtension(File f) {
+		return fileExtension(f.getName());
+	}
+	static String fileExtension(String fn) {
+		int idx = fn.lastIndexOf('.');
+		if (idx >= 0) {
+			return fn.substring(idx+1);
+		} else {
+			return "";
+		}
 	}
 }

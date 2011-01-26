@@ -29,6 +29,8 @@
  */
 package org.grouplens.reflens.bench;
 
+import static org.grouplens.reflens.bench.AlgorithmInstance.fileExtension;
+
 import java.io.File;
 
 import org.junit.Test;
@@ -51,5 +53,27 @@ public class TestAlgorithmInstance {
 		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), "properties"));
 		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.properties"), "properties"));
 		assertEquals("whizbang", AlgorithmInstance.fileBaseName(new File("whizbang.properties"), "properties"));
+	}
+	
+	@Test
+	public void testFileExtensionNone() {
+		assertEquals("", fileExtension(""));
+		assertEquals("", fileExtension("foo"));
+	}
+	
+	@Test
+	public void testFileExtensionSimple() {
+		assertEquals("txt", fileExtension("foo.txt"));
+	}
+	
+	@Test
+	public void testFileExtensionMultiple() {
+		assertEquals("txt", fileExtension("foo.exe.txt"));
+	}
+	
+	@Test
+	public void testFileExtensionFile() {
+		assertEquals("txt", fileExtension(new File("foo.txt")));
+		assertEquals("", fileExtension(new File("foo")));
 	}
 }

@@ -39,6 +39,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.script.ScriptEngineManager;
+
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.slf4j.Logger;
@@ -184,10 +186,11 @@ public final class BenchmarkRunner {
 	}
 	
 	List<AlgorithmInstance> loadAlgorithms() {
+		ScriptEngineManager manager = new ScriptEngineManager();
 		List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
 		for (File f: options.getRecommenderSpecs()) {
 			try {
-				algos.add(new AlgorithmInstance(f, null));
+				algos.add(AlgorithmInstance.load(manager, f));
 			} catch (InvalidRecommenderException e) {
 				fail(2, "Error loading specification " + f.getName(), e);
 			}
