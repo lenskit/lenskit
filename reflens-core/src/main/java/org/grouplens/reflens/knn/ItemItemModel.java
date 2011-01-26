@@ -100,7 +100,10 @@ public class ItemItemModel implements Serializable {
 	}
 	
 	public double addBaseline(long user, RatingVector ratings, long item, double prediction) {
-		ScoredId basePred = baseline.predict(user, ratings, item);
-		return prediction + basePred.getScore();
+		if (baseline != null) {
+			ScoredId basePred = baseline.predict(user, ratings, item);
+			prediction += basePred.getScore();
+		}
+		return prediction;
 	}
 }
