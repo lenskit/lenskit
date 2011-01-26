@@ -85,7 +85,7 @@ public class TerminalProgressReporter extends AbstractProgressReporter
 		}
 		pbChars -= lstr.length();
 		if (pbChars < 5) {
-			System.out.format("s%d/%d %s\r", new Object[] { lstr, Long.valueOf(current), Long.valueOf(total), fstr });
+			System.out.format("%s%d/%d %s\r", lstr, Long.valueOf(current), Long.valueOf(total), fstr );
 		} else {
 			int nf = (int)(pbChars * fract);
 			StringBuffer prog = new StringBuffer(pbChars);
