@@ -74,8 +74,8 @@
       	<groupId>com.mycila.maven-license-plugin</groupId>
       	<artifactId>maven-license-plugin</artifactId>
       	<version>1.9.0</version>
+        <inherited>false</inherited>
       	<configuration>
-      	  <inherited>false</inherited>
       	  <basedir>${basedir}</basedir>
       	  <header>${basedir}/etc/header.txt</header>
       	  <validHeaders>
@@ -93,6 +93,15 @@
       	    <java>SLASHSTAR_STYLE</java>
       	  </mapping>
       	</configuration>
+        <executions>
+          <execution>
+            <id>check-headers</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
       	<groupId>org.codehaus.mojo</groupId>
