@@ -40,7 +40,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
         <configuration>
-          <excludeFilterFile>fb-filter.xml</excludeFilterFile>
+          <excludeFilterFile>${basedir}/fb-filter.xml</excludeFilterFile>
         </configuration>
       </plugin>
     </plugins>
