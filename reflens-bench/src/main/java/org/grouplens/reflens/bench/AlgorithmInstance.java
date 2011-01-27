@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
