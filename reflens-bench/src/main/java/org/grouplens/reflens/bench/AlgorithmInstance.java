@@ -125,13 +125,14 @@ public class AlgorithmInstance {
 		return getInjector().getInstance(RecommenderEngineBuilder.class);
 	}
 
-	public static AlgorithmInstance load(ScriptEngineManager mgr, File f) throws InvalidRecommenderException {
+	public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
 		logger.info("Loading recommender definition from {}", f);
 		String xtn = fileExtension(f);
 		logger.debug("Loading recommender from {} with extension {}", f, xtn);
+		ScriptEngineManager mgr = new ScriptEngineManager();
 		ScriptEngine engine = mgr.getEngineByExtension(xtn);
 		if (engine == null)
-			throw new InvalidRecommenderException("Cannot find engine for extension " + xtn);
+			throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
 		ScriptEngineFactory factory = engine.getFactory();
 		logger.info("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
 		AlgorithmInstance algo = new AlgorithmInstance();
@@ -143,14 +144,14 @@ public class AlgorithmInstance {
 				if (algo.getModule() != null)
 					return algo;
 				else
-					throw new InvalidRecommenderException("No recommender configured");
+					throw new InvalidRecommenderException(f.toURI(), "No recommender configured");
 			} finally {
 				r.close();
 			}
 		} catch (ScriptException e) {
-			throw new InvalidRecommenderException(e);
+			throw new InvalidRecommenderException(f.toURI(), e);
 		} catch (IOException e) {
-			throw new InvalidRecommenderException(e);
+			throw new InvalidRecommenderException(f.toURI(), e);
 		}
 	}
 	

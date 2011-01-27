@@ -29,6 +29,11 @@
  */
 package org.grouplens.reflens.bench;
 
+import java.io.File;
+import java.net.URI;
+
+import javax.annotation.Nullable;
+
 /**
  * Raised if the recommender cannot be created for some reason.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -36,11 +41,13 @@ package org.grouplens.reflens.bench;
  */
 @SuppressWarnings("serial")
 public class InvalidRecommenderException extends Exception {
+	private final @Nullable URI sourceUri;
 
 	/**
 	 * 
-	 */
+	 */	
 	public InvalidRecommenderException() {
+		sourceUri = null;
 	}
 
 	/**
@@ -48,6 +55,12 @@ public class InvalidRecommenderException extends Exception {
 	 */
 	public InvalidRecommenderException(String message) {
 		super(message);
+		sourceUri = null;
+	}
+	
+	public InvalidRecommenderException(URI uri, String message) {
+		super(message);
+		sourceUri = uri;
 	}
 
 	/**
@@ -55,6 +68,12 @@ public class InvalidRecommenderException extends Exception {
 	 */
 	public InvalidRecommenderException(Throwable cause) {
 		super(cause);
+		sourceUri = null;
+	}
+	
+	public InvalidRecommenderException(URI uri, Throwable cause) {
+		super(cause);
+		sourceUri = uri;
 	}
 
 	/**
@@ -63,6 +82,26 @@ public class InvalidRecommenderException extends Exception {
 	 */
 	public InvalidRecommenderException(String message, Throwable cause) {
 		super(message, cause);
+		sourceUri = null;
+	}
+	
+	public InvalidRecommenderException(URI uri, String message, Throwable cause) {
+		super(message, cause);
+		sourceUri = uri;
 	}
 
+	public @Nullable URI getSourceUri() {
+		return sourceUri;
+	}
+	
+	@Override
+	public String getMessage() {
+		String msg = super.getMessage();
+		if (sourceUri != null) {
+			URI base = new File("").toURI();
+			URI simple = base.relativize(sourceUri);
+			msg += "\nEncountered in " + simple.toString();
+		}
+		return msg;
+	}
 }
