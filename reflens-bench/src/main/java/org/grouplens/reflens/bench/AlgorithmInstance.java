@@ -36,12 +36,15 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +59,10 @@ import com.google.inject.Module;
  */
 public class AlgorithmInstance {
 	private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-	private String algoName;
-	private Module module;
-	private Map<String,String> attributes;
-	private Injector injector;
+	private @Nonnull String algoName;
+	private @Nullable RecommenderModule module;
+	private @Nonnull Map<String,String> attributes;
+	private @Nullable Injector injector;
 	
 	public AlgorithmInstance() {
 		attributes = new HashMap<String,String>();
@@ -95,22 +98,25 @@ public class AlgorithmInstance {
 	 */
 	public void setName(String name) {
 		algoName = name;
+		if (module != null)
+			module.setName(name);
 	}
 	
 	public Map<String,String> getAttributes() {
 		return attributes;
 	}
 	
-	public Module getModule() {
+	public RecommenderModule getModule() {
 		return module;
 	}
 	
-	public void setModule(Module mod) {
+	public void setModule(RecommenderModule mod) {
 		module = mod;
 		injector = null;
+		mod.setName(getName());
 	}
 	
-	public void setModule(Class<? extends Module> mod) throws InstantiationException, IllegalAccessException {
+	public void setModule(Class<? extends RecommenderModule> mod) throws InstantiationException, IllegalAccessException {
 		setModule(mod.newInstance());
 	}
 	

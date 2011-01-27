@@ -30,8 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import java.util.Properties;
-
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.data.RatingVector;
@@ -40,7 +38,6 @@ import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
-import org.joda.convert.StringConvert;
 
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
@@ -53,33 +50,69 @@ import com.google.inject.assistedinject.FactoryProvider;
  *
  */
 public class ItemRecommenderModule extends RecommenderModule {
+	private int neighborhoodSize;
+	private double similarityDamping;
+	private Class<? extends Similarity<? super RatingVector>> itemSimilarity;
 	
 	public ItemRecommenderModule() {
-		super();
-	}
-
-	public ItemRecommenderModule(Properties props) {
-		super(props);
+		neighborhoodSize = 100;
+		similarityDamping = 100;
+		itemSimilarity = CosineSimilarity.class;
 	}
 	
-	public ItemRecommenderModule(Properties props, StringConvert converter) {
-		super(props, converter);
-	}
-
 	@Override
 	protected void configure() {
 		super.configure();
-		
-		configureParameters();
 		
 		configureSimilarityMatrix();
 		configureItemSimilarity();
 		configureRecommenderBuilder();
 	}
 	
-	protected void configureParameters() {
-		configureNeighborhoodSize();
-		configureSimilarityDamper();
+	/**
+	 * @return the neighborhoodSize
+	 */
+	@Provides @NeighborhoodSize
+	public int getNeighborhoodSize() {
+		return neighborhoodSize;
+	}
+
+	/**
+	 * @param neighborhoodSize the neighborhoodSize to set
+	 */
+	public void setNeighborhoodSize(int neighborhoodSize) {
+		this.neighborhoodSize = neighborhoodSize;
+	}
+
+	/**
+	 * @return the similarityDamping
+	 */
+	@Provides @SimilarityDamper
+	public double getSimilarityDamping() {
+		return similarityDamping;
+	}
+
+	/**
+	 * @param similarityDamping the similarityDamping to set
+	 */
+	public void setSimilarityDamping(double similarityDamper) {
+		this.similarityDamping = similarityDamper;
+	}
+
+	/**
+	 * @return the itemSimilarity
+	 */
+	public Class<? extends Similarity<? super RatingVector>> getItemSimilarity() {
+		return itemSimilarity;
+	}
+
+	/**
+	 * @todo make this fail-fast if a bad class is passed in.
+	 * @param itemSimilarity the itemSimilarity to set
+	 */
+	public void setItemSimilarity(
+			Class<? extends Similarity<? super RatingVector>> itemSimilarity) {
+		this.itemSimilarity = itemSimilarity;
 	}
 
 	/**
@@ -97,26 +130,16 @@ public class ItemRecommenderModule extends RecommenderModule {
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
 						TruncatingSimilarityMatrixBuilder.class));
 	}
-
-	/**
-	 * 
-	 */
-	protected void configureNeighborhoodSize() {
-		bindProperty(int.class, NeighborhoodSize.class);
-	}
-	
-	protected void configureSimilarityDamper() {
-		bindProperty(double.class, SimilarityDamper.class);
-	}
 	
 	protected void configureItemSimilarity() {
-		bindClassParameter(new TypeLiteral<Similarity<? super RatingVector>>(){},
-				ItemSimilarity.class);
+		bind(new TypeLiteral<Similarity<? super RatingVector>>(){})
+			.annotatedWith(ItemSimilarity.class)
+			.to(itemSimilarity);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Provides
-	SimilarityMatrixBuildStrategy buildStrategy(
+	protected SimilarityMatrixBuildStrategy buildStrategy(
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@ItemSimilarity Similarity<? super RatingVector> similarity) {
 		if (similarity instanceof OptimizableVectorSimilarity) {

@@ -30,9 +30,7 @@
 
 package org.grouplens.reflens;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -41,44 +39,47 @@ import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.params.MinRating;
 import org.grouplens.reflens.params.ThreadCount;
-import org.grouplens.reflens.params.meta.DefaultClass;
-import org.grouplens.reflens.params.meta.DefaultValue;
-import org.grouplens.reflens.params.meta.PropertyName;
-import org.grouplens.reflens.util.ObjectLoader;
 import org.grouplens.reflens.util.TypeUtils;
-import org.joda.convert.FromStringConverter;
-import org.joda.convert.StringConvert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
+import com.google.inject.Provides;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.util.Providers;
 
 /**
- * TODO Document this class
+ * Base module for configuring Guice to inject recommenders.
+ * 
+ * @todo Document this module.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class RecommenderModule extends AbstractModule {
-	protected final Properties properties;
-	protected final StringConvert converter;
-	protected final Logger logger;
+	/**
+	 * A logger, initialized for the class.  Provided here so subclasses don't
+	 * have to include the boilerplate of creating their own loggers.
+	 */
+	private Logger logger;
+	
+	private String name;
+	private int threadCount;
+	private double damping;
+	private double minRating;
+	private double maxRating;
+	private @Nullable Class<? extends RatingPredictorBuilder> baseline;
 	
 	public RecommenderModule() {
-		this(System.getProperties(), TypeUtils.CONVERTER);
+		setName("<unnamed>");
+		threadCount = Runtime.getRuntime().availableProcessors();
+		damping = 0;
+		minRating = 1;
+		maxRating = 5;
+		baseline = null;
 	}
 	
-	public RecommenderModule(Properties props) {
-		this(props, TypeUtils.CONVERTER);
-	}
-
-	public RecommenderModule(Properties props, StringConvert converter) {
-		properties = props;
-		this.converter = converter;
-		logger = LoggerFactory.getLogger(this.getClass());
+	protected Logger getLogger() {
+		return logger;
 	}
 	
 	/* (non-Javadoc)
@@ -87,149 +88,108 @@ public class RecommenderModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		logger.debug("Configuring recommender module");
-		configureThreadCount();
-		configureDamping();
 		configureBaseline();
-		configureRatingData();
 	}
 	
-	protected void configureThreadCount() {
-		bindProperty(int.class, ThreadCount.class,
-				Runtime.getRuntime().availableProcessors());
+	public String getName() {
+		return name;
 	}
 	
-	protected void configureDamping() {
-		bindProperty(double.class, MeanDamping.class);
+	public void setName(String name) {
+		this.name = name;
+		logger = LoggerFactory.getLogger(this.getClass().getName() + ":" + name);
 	}
 	
-	protected void configureRatingData() {
-		bindProperty(double.class, MinRating.class);
-		bindProperty(double.class, MaxRating.class);
+	@Provides @ThreadCount
+	public int getThreadCount() {
+		return threadCount;
 	}
-	
-	@SuppressWarnings("unchecked")
-	protected void configureBaseline() {
-		PropertyName prop = BaselinePredictor.class.getAnnotation(PropertyName.class);
-		if (prop == null) {
-			addError("No property found for " + BaselinePredictor.class.getName());
-			return;
-		}
-		
-		String rnorm = properties.getProperty(prop.value());
-		@SuppressWarnings("rawtypes")
-		Class target = null;
-		if (rnorm != null) {
-			try {
-				target = ObjectLoader.getClass(rnorm);
-			} catch (ClassNotFoundException e) {
-				logger.error("Class {} not found", rnorm);
-			}
-		}
-		if (target != null) {
-			if (!RatingPredictorBuilder.class.isAssignableFrom(target)) {
-				for (@SuppressWarnings("rawtypes") Class c: target.getClasses()) {
-					if (!c.getEnclosingClass().equals(target)) continue;
-					if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
-						target = c;
-						break;
-					}
-				}
-			}
-		}
-		LinkedBindingBuilder<RatingPredictorBuilder> binder = bind(RatingPredictorBuilder.class).annotatedWith(BaselinePredictor.class);
-		
-		if (target != null) {
-			logger.debug("Using baseline {}", target.getName());
-			binder.to(target);
-		} else {
-			binder.toProvider(Providers.of((RatingPredictorBuilder) null));
-		}
-	}
-	
-	protected <T> void bindProperty(Class<T> type, Class<? extends Annotation> annotation) {
-		bindProperty(type, annotation,
-				converter.findConverter(type));
-	}
-	
-	protected <T> void bindProperty(Class<T> type, Class<? extends Annotation> annotation,
-			T defaultValue) {
-		bindProperty(type, annotation, defaultValue,
-				converter.findConverter(type));
-	}
-	
-	protected <T> void bindProperty(Class<T> type, Class<? extends Annotation> annotation,
-			FromStringConverter<T> parser) {
-		DefaultValue dft = annotation.getAnnotation(DefaultValue.class);
-		T dftV = null;
-		if (dft != null)
-			dftV = parser.convertFromString(type, dft.value());
-		bindProperty(type, annotation, dftV, parser);
-	}
-	
-	protected <T> void bindProperty(Class<T> type, Class<? extends Annotation> annotation,
-			T defaultValue, FromStringConverter<T> parser) {
-		PropertyName name = annotation.getAnnotation(PropertyName.class);
-		if (name == null) {
-			addError("No property name found for annotation " + annotation.getName());
-			return;
-		}
-		
-		String v = properties.getProperty(name.value());
-		T value = v == null ? defaultValue : parser.convertFromString(type, v);
-		
-		if (value == null) {
-			bind(type).annotatedWith(annotation).toProvider(Providers.of((T) null));
-		} else {
-			bind(type).annotatedWith(annotation).toInstance(value);
-		}
-	}
-	
-	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation) {
-		DefaultClass clsA = annotation.getAnnotation(DefaultClass.class);
-		@SuppressWarnings("rawtypes")
-		Class dft = null;
-		if (clsA != null)
-			dft = clsA.value();
-		bindClassParameter(type, annotation, dft);
+	public void setThreadCount(int count) {
+		threadCount = count;
 	}
 	
 	/**
-	 * Bind a dependency using a class read from a property.
-	 * 
-	 * @param key The Guice dependency key to bind.
-	 * @param propName The name of the property containing the class name.
-	 * @param dftClass The implementation to bind if the property is not set.
-	 * If <tt>null</tt>, then null will be bound (and the dependency must have
-	 * the {@link Nullable} annotation).  This parameter has a bare type to make
-	 * it easier to use in the face of type erasure.
+	 * @return the damping
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected <T> void bindClassParameter(TypeLiteral<T> type, Class<? extends Annotation> annotation, Class dftClass) {
-		PropertyName name = annotation.getAnnotation(PropertyName.class);
-		if (name == null) {
-			addError("No property name found for annotation " + annotation.getName());
-			return;
-		}
-		
-		String className = properties.getProperty(name.value());
-		Type target = TypeUtils.reifyType(type.getType(), dftClass);
-		if (className != null) {
-			try {
-				Class tgtClass = ObjectLoader.getClass(className);
-				target = TypeUtils.reifyType(type.getType(), tgtClass);
-				logger.debug("Reified {} to {}", tgtClass, target);
-			} catch (ClassNotFoundException e) {
-				addError("Class " + className + " not found");
-			}
-		}
-		
-		if (target != null) {
-			logger.debug("Binding {} to {}", annotation, target);
-			bind(type).annotatedWith(annotation).to((Key) Key.get(target));
-		} else {
-			logger.debug("Binding {} to null", type.toString());
-			bind(type).annotatedWith(annotation).toProvider(Providers.of((T) null));
-		}
+	@Provides @MeanDamping
+	public double getDamping() {
+		return damping;
 	}
 
+	/**
+	 * @param damping the damping to set
+	 */
+	public void setDamping(double damping) {
+		this.damping = damping;
+	}
+	
+	/**
+	 * @return the minRating
+	 */
+	@Provides @MinRating
+	public double getMinRating() {
+		return minRating;
+	}
+
+	/**
+	 * @param minRating the minRating to set
+	 */
+	public void setMinRating(double minRating) {
+		this.minRating = minRating;
+	}
+
+	/**
+	 * @return the maxRating
+	 */
+	@Provides @MaxRating
+	public double getMaxRating() {
+		return maxRating;
+	}
+
+	/**
+	 * @param maxRating the maxRating to set
+	 */
+	public void setMaxRating(double maxRating) {
+		this.maxRating = maxRating;
+	}
+	
+	/**
+	 * Configure the binding for the baseline predictor.
+	 * 
+	 * @todo Make this capable of reifying generic types with
+	 * {@link TypeUtils#reifyType(Type, Class)}.
+	 */
+	protected void configureBaseline() {
+		LinkedBindingBuilder<RatingPredictorBuilder> binder = bind(RatingPredictorBuilder.class).annotatedWith(BaselinePredictor.class);
+		if (baseline == null)
+			binder.toProvider(Providers.of((RatingPredictorBuilder) null));
+		else
+			binder.to(baseline);
+	}
+	
+	public Class<? extends RatingPredictorBuilder> getBaseline() {
+		return baseline;
+	}
+	
+	/**
+	 * Set the predictor builder used for the baseline.  This can be an actual
+	 * {@link RatingPredictorBuilder}, or it can be a class with a public static
+	 * inner class which implements {@link RatingPredictorBuilder}.
+	 * @param cls The class.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setBaseline(Class cls) {
+		if (RatingPredictorBuilder.class.isAssignableFrom(cls)) {
+			baseline = cls;
+		} else {
+			for (Class c: cls.getClasses()) {
+				if (!c.getEnclosingClass().equals(cls)) continue;
+				if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
+					baseline = c;
+					break;
+				}
+			}
+		}
+		logger.debug("Set {} for baseline builder", baseline);
+	}
 }

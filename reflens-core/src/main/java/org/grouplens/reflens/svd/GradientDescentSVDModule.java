@@ -30,8 +30,6 @@
 
 package org.grouplens.reflens.svd;
 
-import java.util.Properties;
-
 import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.svd.params.ClampingFunction;
@@ -41,40 +39,124 @@ import org.grouplens.reflens.svd.params.GradientDescentRegularization;
 import org.grouplens.reflens.svd.params.IterationCount;
 import org.grouplens.reflens.svd.params.LearningRate;
 import org.grouplens.reflens.util.DoubleFunction;
-import org.joda.convert.StringConvert;
 
+import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 
 public class GradientDescentSVDModule extends RecommenderModule {
+	private int featureCount = 100;
+	private double learningRate = 0.001;
+	private double featureTrainingThreshold = 1.0e-5;
+	private double gradientDescentRegularization = 0.015;
+	private double iterationCount = 0;
+	private Class<? extends DoubleFunction> clampingFunction = DoubleFunction.Identity.class;
 
 	public GradientDescentSVDModule() {
 		super();
 	}
 
-	public GradientDescentSVDModule(Properties props, StringConvert converter) {
-		super(props, converter);
-	}
-
-	public GradientDescentSVDModule(Properties props) {
-		super(props);
-	}
-
 	@Override
 	protected void configure() {
 		super.configure();
-		
-		bindProperty(int.class, FeatureCount.class);
-		bindProperty(double.class, LearningRate.class);
-		bindProperty(double.class, FeatureTrainingThreshold.class);
-		bindProperty(double.class, GradientDescentRegularization.class);
-		bindProperty(int.class, IterationCount.class);
-		bindClassParameter(TypeLiteral.get(DoubleFunction.class), ClampingFunction.class);
-		
+		configureClamping();
 		configureBuilder();
+	}
+	
+	protected void configureClamping() {
+		bind(DoubleFunction.class).annotatedWith(ClampingFunction.class).to(clampingFunction);
 	}
 	
 	protected void configureBuilder() {
 		bind(new TypeLiteral<RecommenderEngineBuilder>(){}).to(new TypeLiteral<GradientDescentSVDRecommenderBuilder>(){});
 	}
 
+	/**
+	 * @return the featureCount
+	 */
+	@Provides @FeatureCount
+	public int getFeatureCount() {
+		return featureCount;
+	}
+
+	/**
+	 * @param featureCount the featureCount to set
+	 */
+	public void setFeatureCount(int featureCount) {
+		this.featureCount = featureCount;
+	}
+
+	/**
+	 * @return the learningRate
+	 */
+	@Provides @LearningRate
+	public double getLearningRate() {
+		return learningRate;
+	}
+
+	/**
+	 * @param learningRate the learningRate to set
+	 */
+	public void setLearningRate(double learningRate) {
+		this.learningRate = learningRate;
+	}
+
+	/**
+	 * @return the featureTrainingThreshold
+	 */
+	@Provides @FeatureTrainingThreshold
+	public double getFeatureTrainingThreshold() {
+		return featureTrainingThreshold;
+	}
+
+	/**
+	 * @param featureTrainingThreshold the featureTrainingThreshold to set
+	 */
+	public void setFeatureTrainingThreshold(double featureTrainingThreshold) {
+		this.featureTrainingThreshold = featureTrainingThreshold;
+	}
+
+	/**
+	 * @return the gradientDescentRegularization
+	 */
+	@Provides @GradientDescentRegularization
+	public double getGradientDescentRegularization() {
+		return gradientDescentRegularization;
+	}
+
+	/**
+	 * @param gradientDescentRegularization the gradientDescentRegularization to set
+	 */
+	public void setGradientDescentRegularization(
+			double gradientDescentRegularization) {
+		this.gradientDescentRegularization = gradientDescentRegularization;
+	}
+
+	/**
+	 * @return the iterationCount
+	 */
+	@Provides @IterationCount
+	public double getIterationCount() {
+		return iterationCount;
+	}
+
+	/**
+	 * @param iterationCount the iterationCount to set
+	 */
+	public void setIterationCount(double iterationCount) {
+		this.iterationCount = iterationCount;
+	}
+
+	/**
+	 * @return the clampingFunction
+	 */
+	public Class<? extends DoubleFunction> getClampingFunction() {
+		return clampingFunction;
+	}
+
+	/**
+	 * @param clampingFunction the clampingFunction to set
+	 */
+	public void setClampingFunction(Class<? extends DoubleFunction> clampingFunction) {
+		this.clampingFunction = clampingFunction;
+	}
 }
