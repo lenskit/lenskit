@@ -31,8 +31,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.joda.convert.StringConvert;
-
 import com.google.inject.util.Types;
 
 /**
@@ -44,20 +42,6 @@ import com.google.inject.util.Types;
  */
 @SuppressWarnings("rawtypes") // we use lots of raw types in this class
 public class TypeUtils {
-	/**
-	 * A {@link StringConvert} that supports Java primitive types.
-	 */
-	public static final StringConvert CONVERTER = new StringConvert(true);
-	static {
-		CONVERTER.register(boolean.class, CONVERTER.findConverter(Boolean.class));
-		CONVERTER.register(short.class, CONVERTER.findConverter(Short.class));
-		CONVERTER.register(int.class, CONVERTER.findConverter(Integer.class));
-		CONVERTER.register(long.class, CONVERTER.findConverter(Long.class));
-		CONVERTER.register(byte.class, CONVERTER.findConverter(Byte.class));
-		CONVERTER.register(char.class, CONVERTER.findConverter(Character.class));
-		CONVERTER.register(float.class, CONVERTER.findConverter(Float.class));
-		CONVERTER.register(double.class, CONVERTER.findConverter(Double.class));
-	}
 	
 	private static ParameterizedType typeOfClass(Class c) {
 		return Types.newParameterizedType(c, c.getTypeParameters());
