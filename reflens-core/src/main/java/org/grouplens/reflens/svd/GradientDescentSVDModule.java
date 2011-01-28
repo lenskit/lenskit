@@ -48,7 +48,7 @@ public class GradientDescentSVDModule extends RecommenderModule {
 	private double learningRate = 0.001;
 	private double featureTrainingThreshold = 1.0e-5;
 	private double gradientDescentRegularization = 0.015;
-	private double iterationCount = 0;
+	private int iterationCount = 0;
 	private Class<? extends DoubleFunction> clampingFunction = DoubleFunction.Identity.class;
 
 	public GradientDescentSVDModule() {
@@ -135,14 +135,14 @@ public class GradientDescentSVDModule extends RecommenderModule {
 	 * @return the iterationCount
 	 */
 	@Provides @IterationCount
-	public double getIterationCount() {
+	public int getIterationCount() {
 		return iterationCount;
 	}
 
 	/**
 	 * @param iterationCount the iterationCount to set
 	 */
-	public void setIterationCount(double iterationCount) {
+	public void setIterationCount(int iterationCount) {
 		this.iterationCount = iterationCount;
 	}
 

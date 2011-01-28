@@ -84,13 +84,13 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	// Internal epsilon to avoid division by 0
 	private static final double MIN_FEAT_NORM = 0.0000000001;
 	
-	private final int featureCount;
-	private final double learningRate;
-	private final double trainingThreshold;
-	private final double trainingRegularization;
-	private final RatingPredictorBuilder baselineBuilder;
-	private final DoubleFunction clampingFunction;
-	private final int iterationCount;
+	final int featureCount;
+	final double learningRate;
+	final double trainingThreshold;
+	final double trainingRegularization;
+	final RatingPredictorBuilder baselineBuilder;
+	final DoubleFunction clampingFunction;
+	final int iterationCount;
 	
 	@Inject
 	public GradientDescentSVDRecommenderBuilder(

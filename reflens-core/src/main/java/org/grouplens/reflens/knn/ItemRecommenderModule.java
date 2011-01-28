@@ -50,14 +50,11 @@ import com.google.inject.assistedinject.FactoryProvider;
  *
  */
 public class ItemRecommenderModule extends RecommenderModule {
-	private int neighborhoodSize;
-	private double similarityDamping;
-	private Class<? extends Similarity<? super RatingVector>> itemSimilarity;
+	private @NeighborhoodSize int neighborhoodSize;
+	private @SimilarityDamper double similarityDamping;
+	private @ItemSimilarity Class<? extends Similarity<? super RatingVector>> itemSimilarity;
 	
 	public ItemRecommenderModule() {
-		neighborhoodSize = 100;
-		similarityDamping = 100;
-		itemSimilarity = CosineSimilarity.class;
 	}
 	
 	@Override

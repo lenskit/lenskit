@@ -30,10 +30,13 @@
 
 package org.grouplens.reflens;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
@@ -51,6 +54,13 @@ import com.google.inject.util.Providers;
 /**
  * Base module for configuring Guice to inject recommenders.
  * 
+ * This module provides the feature of automatically setting default values for
+ * members.  For every field, including private fields, annotated with a parameter
+ * annotation which contains a public static variable <var>DEFAULT_VALUE</var>,
+ * the field is set to contain the value of <var>DEFAULT_VALUE</var>.
+ * Parameter annotations are annotations which are themselves annotated with
+ * {@link Parameter}.  See {@link MinRating} for an example parameter annotation.
+ * 
  * @todo Document this module.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -63,19 +73,40 @@ public class RecommenderModule extends AbstractModule {
 	private Logger logger;
 	
 	private String name;
-	private int threadCount;
-	private double damping;
-	private double minRating;
-	private double maxRating;
+	private @ThreadCount int threadCount;
+	private @MeanDamping double damping;
+	private @MinRating double minRating;
+	private @MaxRating double maxRating;
 	private @Nullable Class<? extends RatingPredictorBuilder> baseline;
+	private @ConstantPredictor.Value double constantBaselineValue;
 	
 	public RecommenderModule() {
 		setName("<unnamed>");
-		threadCount = Runtime.getRuntime().availableProcessors();
-		damping = 0;
-		minRating = 1;
-		maxRating = 5;
+		initializeDefaultValues(this.getClass());
 		baseline = null;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void initializeDefaultValues(Class clazz) {
+		Class parent = clazz.getSuperclass();
+		if (parent != null)
+			initializeDefaultValues(parent);
+		
+		for (Field f: clazz.getDeclaredFields()) {
+			f.setAccessible(true);
+			for (Annotation a: f.getAnnotations()) {
+				if (a.annotationType().isAnnotationPresent(Parameter.class)) {
+					try {
+						Field dft = a.getClass().getField("DEFAULT_VALUE");
+						f.set(this, dft.get(null));
+					} catch (NoSuchFieldException e) {
+						continue;
+					} catch (IllegalAccessException e) {
+						logger.warn("Cannot set default value for {}", f.getName(), e);
+					}
+				}
+			}
+		}
 	}
 	
 	protected Logger getLogger() {
@@ -191,5 +222,14 @@ public class RecommenderModule extends AbstractModule {
 			}
 		}
 		logger.debug("Set {} for baseline builder", baseline);
+	}
+	
+	@Provides @ConstantPredictor.Value
+	public double getConstantBaselineValue() {
+		return constantBaselineValue;
+	}
+	
+	public void setConstantBaselineValue(double v) {
+		constantBaselineValue = v;
 	}
 }

@@ -35,6 +35,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.Parameter;
+
 import com.google.inject.BindingAnnotation;
 
 /**
@@ -47,5 +49,7 @@ import com.google.inject.BindingAnnotation;
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Parameter
 public @interface ThreadCount {
+	public static final int DEFAULT_VALUE = Runtime.getRuntime().availableProcessors();
 }

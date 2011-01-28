@@ -41,6 +41,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
 
+import org.grouplens.reflens.Parameter;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -67,9 +68,9 @@ public class ConstantPredictor implements RatingPredictor {
 	@BindingAnnotation
 	@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 	@Retention(RetentionPolicy.RUNTIME)
+	@Parameter
 	public static @interface Value {
-		public static final String PROPERTY_NAME
-			= "org.grouplens.reflens.baseline.constant.value";
+		public static final double DEFAULT_VALUE = 0;
 	}
 	
 	/**
@@ -114,6 +115,14 @@ public class ConstantPredictor implements RatingPredictor {
 		@Override
 		public RatingPredictor build(RatingDataSource data) {
 			return new ConstantPredictor(value);
+		}
+		
+		/**
+		 * Return the value which will be returned for predictions.
+		 * @return
+		 */
+		public double getValue() {
+			return value;
 		}
 	}
 }
