@@ -207,6 +207,13 @@
     	<type>jar</type>
     	<scope>test</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.grouplens.common</groupId>
+    	<artifactId>common-test</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
   <reporting>
     <plugins>

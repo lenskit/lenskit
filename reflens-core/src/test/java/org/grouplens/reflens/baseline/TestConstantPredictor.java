@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -54,11 +53,16 @@ import org.junit.Test;
  */
 public class TestConstantPredictor {
 	
-	private RatingPredictorBuilder builder;
+	private ConstantPredictor.Builder builder;
 
 	@Before
 	public void setUp() {
 		builder = new ConstantPredictor.Builder(5);
+	}
+	
+	@Test
+	public void testValue() {
+		assertEquals(5, builder.getValue(), 1.0e-6); 
 	}
 	
 	@Test
