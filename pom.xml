@@ -26,6 +26,14 @@
     <developerConnection>scm:hg:https://bitbucket.org/elehack/reflens-dev</developerConnection>
     <url>http://bitbucket.org/elehack/reflens-dev</url>
   </scm>
+  
+  <distributionManagement>
+    <site>
+      <id>reflens.website</id>
+      <name>RefLens Website</name>
+      <url>scp://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/</url>
+    </site>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,6 +50,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
@@ -74,6 +83,16 @@
           <configuration>
             <effort>Max</effort>
           </configuration>
+        </plugin>
+        <plugin>
+        	<groupId>org.apache.maven.plugins</groupId>
+        	<artifactId>maven-site-plugin</artifactId>
+        	<version>2.2</version>
+        </plugin>
+        <plugin>
+        	<groupId>org.apache.maven.plugins</groupId>
+        	<artifactId>maven-jar-plugin</artifactId>
+        	<version>2.3.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -126,6 +145,86 @@
       </plugin>
     </plugins>
   </build>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>0.9.27</version>
+        <type>jar</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-api</artifactId>
+    	<version>1.6.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>junit</groupId>
+    	<artifactId>junit</artifactId>
+    	<version>4.8.2</version>
+    	<type>jar</type>
+    	<scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-nop</artifactId>
+    	<version>1.6.1</version>
+    	<type>jar</type>
+    	<scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.grouplens.common</groupId>
+    	<artifactId>common-test</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <reporting>
+    <plugins>
+      <plugin>
+  	<groupId>org.apache.maven.plugins</groupId>
+  	<artifactId>maven-project-info-reports-plugin</artifactId>
+  	<version>2.3.1</version>
+  	<reportSets>
+  	  <reportSet>
+  	    <id>main</id>
+  	      	<reports>
+  	      	  <report>index</report>
+  	          <report>summary</report>
+  	          <report>license</report>  	        
+  	          <report>issue-tracking</report>
+  	          <report>scm</report>
+  	          <report>dependencies</report>
+  	        </reports>
+  	  </reportSet>
+  	</reportSets>
+      </plugin>
+      <plugin>
+      	<groupId>org.codehaus.mojo</groupId>
+      	<artifactId>findbugs-maven-plugin</artifactId>
+      	<version>2.3.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.2</version>
+        <inherited>false</inherited>
+        <configuration>
+          <linkJavadoc>true</linkJavadoc>
+          <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  
   <profiles>
     <profile>
       <id>release</id>
@@ -174,82 +273,15 @@
         </plugins>
       </build>
     </profile>
+    
+    <profile>
+      <id>stage</id>
+      <distributionManagement>
+        <site>
+          <id>reflens.website</id>
+          <url>scp://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/stage</url>
+        </site>
+      </distributionManagement>
+    </profile>
   </profiles>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>0.9.27</version>
-        <type>jar</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  <dependencies>
-    <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-api</artifactId>
-    	<version>1.6.1</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
-    </dependency>
-    <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
-    	<version>4.8.2</version>
-    	<type>jar</type>
-    	<scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-nop</artifactId>
-    	<version>1.6.1</version>
-    	<type>jar</type>
-    	<scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.grouplens.common</groupId>
-    	<artifactId>common-test</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
-    	<type>jar</type>
-    	<scope>test</scope>
-    </dependency>
-  </dependencies>
-  <reporting>
-    <plugins>
-      <plugin>
-  	<groupId>org.apache.maven.plugins</groupId>
-  	<artifactId>maven-project-info-reports-plugin</artifactId>
-  	<version>2.3.1</version>
-  	<reportSets>
-  	  <reportSet>
-  	    <id>main</id>
-  	      	<reports>
-  	      	  <report>index</report>
-  	          <report>summary</report>
-  	          <report>license</report>  	        
-  	          <report>issue-tracking</report>
-  	          <report>scm</report>
-  	          <report>dependencies</report>
-  	        </reports>
-  	  </reportSet>
-  	</reportSets>
-      </plugin>
-      <plugin>
-      	<groupId>org.codehaus.mojo</groupId>
-      	<artifactId>findbugs-maven-plugin</artifactId>
-      	<version>2.3.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.2</version>
-        <inherited>false</inherited>
-        <configuration>
-          <linkJavadoc>true</linkJavadoc>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
 </project>
