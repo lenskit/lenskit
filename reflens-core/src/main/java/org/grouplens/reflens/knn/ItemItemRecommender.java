@@ -75,11 +75,12 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 		}
 		RatingVector preds = new RatingVector(items.size());
 		for (long item: items) {
-			int idx = model.getItemIndex(item);
-			double w = weights.get(idx);
-			if (w > 0) {
-				preds.put(item, sums.get(idx) / w);
-			}
+			final int idx = model.getItemIndex(item);
+			final double w = weights.get(idx);
+			double p = 0;
+			if (w > 0)
+				p = sums.get(idx) / w;
+			preds.put(item, p);
 		}
 		return model.addBaseline(user, ratings, preds);
 	}
@@ -99,11 +100,10 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 				totalWeight += Math.abs(s);
 			}
 		}
-		if (totalWeight >= 0.1) {
-			return new ScoredId(item, model.addBaseline(user, ratings, item, sum / totalWeight));
-		} else {
-			return null;
-		}
+		double pred = 0;
+		if (totalWeight > 0)
+			pred = sum / totalWeight;
+		return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
 	}
 
 	@Override
