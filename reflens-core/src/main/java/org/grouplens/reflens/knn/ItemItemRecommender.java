@@ -103,6 +103,7 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 		double pred = 0;
 		if (totalWeight > 0)
 			pred = sum / totalWeight;
+		// FIXME Should return NULL if there is no baseline
 		return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
 	}
 
