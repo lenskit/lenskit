@@ -38,6 +38,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
@@ -58,17 +59,16 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 
 /**
- * Builds item-item recommenders from data sources.
+ * Builds item-item recommender engines from data sources.
  * 
  * This class takes {@link RatingDataSource}es and builds item-item recommender
  * models from them.  It uses a build strategy and a baseline recommender to do
  * the actual building, constructs an {@link ItemItemModel} containing the
  * resulting recommender model, and finally builds a recommender around it.
  * 
- * If you want to change the type of recommender object built, e.g. to change
- * the prediction or recommendation logic, subclass this class and override the
- * {@link #createRecommender(ItemItemModel)} method.  To change the normalization
- * strategy, override {@link #normalizeUserRatings(RatingPredictor, long, Collection)}.
+ * The recommender engine builder uses an {@link ItemItemRecommenderEngineFactory}
+ * to actually construct the recommender engine.  Re-binding that interface
+ * allows alternative recommender engines to be used.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -76,14 +76,17 @@ import com.google.inject.Inject;
 public class ItemItemRecommenderEngineBuilder implements RecommenderEngineBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngineBuilder.class);
 	
-	@Nullable private final RatingPredictorBuilder baselineBuilder;
-	private final SimilarityMatrixBuildStrategy similarityStrategy;
+	private final @Nullable RatingPredictorBuilder baselineBuilder;
+	private final @Nonnull ItemItemRecommenderEngineFactory engineFactory;
+	private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
 	@Inject
 	ItemItemRecommenderEngineBuilder(
 			SimilarityMatrixBuildStrategy similarityStrategy,
+			ItemItemRecommenderEngineFactory engineFactory,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.similarityStrategy = similarityStrategy;
+		this.engineFactory = engineFactory;
 		this.baselineBuilder = baselineBuilder;
 	}
 	
@@ -155,19 +158,7 @@ public class ItemItemRecommenderEngineBuilder implements RecommenderEngineBuilde
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
 		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);
-		return createRecommender(model);
-	}
-
-	/**
-	 * Create a new recommender instance from the model.  Override this to change
-	 * what type of object is used for recommending.
-	 * @todo Investigate making this cleaner with a factory & Juice modules
-	 * @param model The item-item recommender model the recommender should use.
-	 * @return A new recommender object, ready to provide recommendations and
-	 * predictions.
-	 */
-	protected ItemItemRecommenderEngine createRecommender(ItemItemModel model) {
-		return new ItemItemRecommenderEngine(model);
+		return engineFactory.create(model);
 	}
 	
 	/**
