@@ -30,7 +30,7 @@
 package org.grouplens.reflens.knn;
 
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState;
+import org.grouplens.reflens.knn.ItemItemRecommenderEngineBuilder.BuildState;
 import org.grouplens.reflens.util.SimilarityMatrix;
 import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
@@ -50,7 +50,7 @@ class SymmetricSimilarityMatrixBuildStrategy implements
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState)
+	 * @see org.grouplens.reflens.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.reflens.knn.ItemItemRecommenderEngineBuilder.BuildState)
 	 */
 	@Override
 	public SimilarityMatrix buildMatrix(BuildState state) {

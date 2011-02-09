@@ -116,7 +116,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bind(RecommenderEngineBuilder.class).to(ItemItemRecommenderBuilder.class);
+		bind(RecommenderEngineBuilder.class).to(ItemItemRecommenderEngineBuilder.class);
 	}
 
 	/**

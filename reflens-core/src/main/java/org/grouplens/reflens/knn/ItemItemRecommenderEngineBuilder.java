@@ -73,14 +73,14 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
-	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
+public class ItemItemRecommenderEngineBuilder implements RecommenderEngineBuilder {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngineBuilder.class);
 	
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final SimilarityMatrixBuildStrategy similarityStrategy;
 
 	@Inject
-	ItemItemRecommenderBuilder(
+	ItemItemRecommenderEngineBuilder(
 			SimilarityMatrixBuildStrategy similarityStrategy,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.similarityStrategy = similarityStrategy;
@@ -150,7 +150,7 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	}
 	
 	@Override
-	public ItemItemRecommender build(RatingDataSource data) {
+	public ItemItemRecommenderEngine build(RatingDataSource data) {
 		BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
@@ -166,8 +166,8 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	 * @return A new recommender object, ready to provide recommendations and
 	 * predictions.
 	 */
-	protected ItemItemRecommender createRecommender(ItemItemModel model) {
-		return new ItemItemRecommender(model);
+	protected ItemItemRecommenderEngine createRecommender(ItemItemModel model) {
+		return new ItemItemRecommenderEngine(model);
 	}
 	
 	/**

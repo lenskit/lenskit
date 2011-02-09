@@ -63,8 +63,8 @@ import org.grouplens.reflens.util.IndexedItemScore;
  * To modify the recommendation or prediction logic, do the following:
  * 
  * <ul>
- * <li>Extend {@link ItemItemRecommenderBuilder}, reimplementing the
- * {@link ItemItemRecommenderBuilder#createRecommender(ItemItemModel)} method
+ * <li>Extend {@link ItemItemRecommenderEngineBuilder}, reimplementing the
+ * {@link ItemItemRecommenderEngineBuilder#createRecommender(ItemItemModel)} method
  * to create an instance of your new class rather than this one.
  * <li>Configure Guice to inject your new recommender builder.
  * </ul>
@@ -74,7 +74,7 @@ import org.grouplens.reflens.util.IndexedItemScore;
  *
  */
 @Immutable
-public class ItemItemRecommender implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommenderEngine implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	protected final @Nonnull ItemItemModel model;
 	
@@ -82,7 +82,7 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 	 * Construct a new recommender from an item-item recommender model.
 	 * @param model The backing model for the new recommender.
 	 */
-	public ItemItemRecommender(@Nonnull ItemItemModel model) {
+	public ItemItemRecommenderEngine(@Nonnull ItemItemModel model) {
 		this.model = model;
 	}
 	

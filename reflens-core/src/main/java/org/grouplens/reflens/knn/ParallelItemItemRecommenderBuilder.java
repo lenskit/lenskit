@@ -124,7 +124,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	}
 	
 	@Override
-	public ItemItemRecommender build(RatingDataSource data) {
+	public ItemItemRecommenderEngine build(RatingDataSource data) {
 		logger.info("Building model with {} threads", threadCount);
 		// TODO look in to merging these passes
 		baseline = baselineBuilder.build(data);
@@ -155,7 +155,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
 		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix);
-		return new ItemItemRecommender(model);
+		return new ItemItemRecommenderEngine(model);
 	}
 	
 	static int arithSum(int n) {
@@ -314,7 +314,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	}
 	
 	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
-		// TODO share this code with ItemItemRecommenderBuilder
+		// TODO share this code with ItemItemRecommenderEngineBuilder
 		if (baseline == null) return ratings;
 		
 		RatingVector rmap = RatingVector.userRatingVector(ratings);
