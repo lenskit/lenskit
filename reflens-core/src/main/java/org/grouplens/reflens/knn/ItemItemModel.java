@@ -35,6 +35,8 @@ import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import java.io.Serializable;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
@@ -43,9 +45,16 @@ import org.grouplens.reflens.util.IndexedItemScore;
 import org.grouplens.reflens.util.SimilarityMatrix;
 
 /**
+ * Encapsulation of the model needed for item-item collaborative filtering.
+ * 
+ * This class is used by {@link ItemItemRecommender} to do actual item-item
+ * recommendation.  It encapsulates the various data accesses needed to support
+ * item-item CF.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Immutable
 public class ItemItemModel implements Serializable {
 
 	private static final long serialVersionUID = 7040201805529926395L;

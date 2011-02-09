@@ -41,20 +41,71 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
+
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommenderEngine;
+import org.grouplens.reflens.RecommenderEngineBuilder;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
 
+/**
+ * Generate predictions and recommendations using item-item CF.
+ * 
+ * This class implements an item-item collaborative filter backed by a particular
+ * {@link ItemItemModel}.  Client code will usually use a
+ * {@link RecommenderEngineBuilder} to get one of these.
+ * 
+ * To modify the recommendation or prediction logic, do the following:
+ * 
+ * <ul>
+ * <li>Extend {@link ItemItemRecommenderBuilder}, reimplementing the
+ * {@link ItemItemRecommenderBuilder#createRecommender(ItemItemModel)} method
+ * to create an instance of your new class rather than this one.
+ * <li>Configure Guice to inject your new recommender builder.
+ * </ul>
+ * 
+ * @todo Document how this class works.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+@Immutable
 public class ItemItemRecommender implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
-	private final ItemItemModel model;
+	protected final @Nonnull ItemItemModel model;
 	
-	public ItemItemRecommender(ItemItemModel model) {
+	/**
+	 * Construct a new recommender from an item-item recommender model.
+	 * @param model The backing model for the new recommender.
+	 */
+	public ItemItemRecommender(@Nonnull ItemItemModel model) {
 		this.model = model;
+	}
+	
+	@Override
+	public ScoredId predict(long user, RatingVector ratings, long item) {
+		RatingVector normed = model.subtractBaseline(user, ratings);
+		double sum = 0;
+		double totalWeight = 0;
+		for (IndexedItemScore score: model.getNeighbors(item)) {
+			long other = model.getItem(score.getIndex());
+			double s = score.getScore();
+			if (normed.containsId(other)) {
+				// FIXME this goes wacky with negative similarities
+				double rating = normed.get(other);
+				sum += rating * s;
+				totalWeight += Math.abs(s);
+			}
+		}
+		double pred = 0;
+		if (totalWeight > 0)
+			pred = sum / totalWeight;
+		// FIXME Should return NULL if there is no baseline
+		return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
 	}
 	
 	@Override
@@ -83,28 +134,6 @@ public class ItemItemRecommender implements RecommenderEngine, RatingRecommender
 			preds.put(item, p);
 		}
 		return model.addBaseline(user, ratings, preds);
-	}
-
-	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
-		RatingVector normed = model.subtractBaseline(user, ratings);
-		double sum = 0;
-		double totalWeight = 0;
-		for (IndexedItemScore score: model.getNeighbors(item)) {
-			long other = model.getItem(score.getIndex());
-			double s = score.getScore();
-			if (normed.containsId(other)) {
-				// FIXME this goes wacky with negative similarities
-				double rating = normed.get(other);
-				sum += rating * s;
-				totalWeight += Math.abs(s);
-			}
-		}
-		double pred = 0;
-		if (totalWeight > 0)
-			pred = sum / totalWeight;
-		// FIXME Should return NULL if there is no baseline
-		return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
 	}
 
 	@Override

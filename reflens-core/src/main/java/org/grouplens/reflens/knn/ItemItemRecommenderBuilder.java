@@ -57,13 +57,28 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
+/**
+ * Builds item-item recommenders from data sources.
+ * 
+ * This class takes {@link RatingDataSource}es and builds item-item recommender
+ * models from them.  It uses a build strategy and a baseline recommender to do
+ * the actual building, constructs an {@link ItemItemModel} containing the
+ * resulting recommender model, and finally builds a recommender around it.
+ * 
+ * If you want to change the type of recommender object built, e.g. to change
+ * the prediction or recommendation logic, subclass this class and override the
+ * {@link #createRecommender(ItemItemModel)} method.  To change the normalization
+ * strategy, override {@link #normalizeUserRatings(RatingPredictor, long, Collection)}.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 	
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final SimilarityMatrixBuildStrategy similarityStrategy;
 
-	// TODO Make the similarity Similarity<? super RatingVector> if we can w/ Guice
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuildStrategy similarityStrategy,
@@ -140,6 +155,18 @@ public class ItemItemRecommenderBuilder implements RecommenderEngineBuilder {
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
 		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);
+		return createRecommender(model);
+	}
+
+	/**
+	 * Create a new recommender instance from the model.  Override this to change
+	 * what type of object is used for recommending.
+	 * @todo Investigate making this cleaner with a factory & Juice modules
+	 * @param model The item-item recommender model the recommender should use.
+	 * @return A new recommender object, ready to provide recommendations and
+	 * predictions.
+	 */
+	protected ItemItemRecommender createRecommender(ItemItemModel model) {
 		return new ItemItemRecommender(model);
 	}
 	

@@ -32,6 +32,11 @@ package org.grouplens.reflens;
 
 import java.util.Collection;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 
@@ -40,15 +45,8 @@ import org.grouplens.reflens.data.ScoredId;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
+@ParametersAreNonnullByDefault
 public interface RatingPredictor {
-	/**
-	 * Generate predictions for a collection of items.
-	 * @param user the user ID
-	 * @param ratings the user's ratings
-	 * @param items the items for which predictions are desired
-	 * @return a mapping from item IDs to predicted preference
-	 */
-	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items);
 	/**
 	 * Generate a prediction for a single item.
 	 * @param user the user ID
@@ -56,5 +54,17 @@ public interface RatingPredictor {
 	 * @param item the item for which a prediction is required
 	 * @return the prediction, or <tt>null</tt> if no prediction is possible
 	 */
+	@Nullable @CheckForNull
 	public ScoredId predict(long user, RatingVector ratings, long item);
+	
+	/**
+	 * Generate predictions for a collection of items.
+	 * @param user the user ID
+	 * @param ratings the user's ratings
+	 * @param items the items for which predictions are desired
+	 * @return A mapping from item IDs to predicted preference.  This mapping
+	 * may not contain all requested items.
+	 */
+	@Nonnull
+	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items);
 }
