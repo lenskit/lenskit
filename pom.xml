@@ -70,10 +70,6 @@
                 <head>To Do:</head>
               </tag>
             </tags>
-            <links>
-              <link>http://fastutil.dsi.unimi.it/docs/</link>
-              <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
-            </links>
           </configuration>
         </plugin>
         <plugin>
@@ -85,9 +81,9 @@
           </configuration>
         </plugin>
         <plugin>
-        	<groupId>org.apache.maven.plugins</groupId>
-        	<artifactId>maven-site-plugin</artifactId>
-        	<version>2.2</version>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>2.2</version>
         </plugin>
         <plugin>
         	<groupId>org.apache.maven.plugins</groupId>
@@ -128,19 +124,6 @@
         <executions>
           <execution>
             <id>check-headers</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-      	<groupId>org.codehaus.mojo</groupId>
-      	<artifactId>findbugs-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>lint</id>
             <phase>verify</phase>
             <goals>
               <goal>check</goal>
@@ -215,11 +198,6 @@
   	</reportSets>
       </plugin>
       <plugin>
-      	<groupId>org.codehaus.mojo</groupId>
-      	<artifactId>findbugs-maven-plugin</artifactId>
-      	<version>2.3.1</version>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
         <version>2.2</version>
@@ -227,6 +205,26 @@
         <configuration>
           <linkJavadoc>true</linkJavadoc>
           <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
+        <inherited>false</inherited>
+        <configuration>
+          <quiet>true</quiet>
+          <tags>
+            <tag>
+              <name>todo</name>
+              <placement>a</placement>
+              <head>To Do:</head>
+            </tag>
+          </tags>
+          <links>
+            <link>http://fastutil.dsi.unimi.it/docs/</link>
+            <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+          </links>
         </configuration>
       </plugin>
     </plugins>
@@ -308,6 +306,37 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>static-analysis</id>
+      <build>
+        <plugins>
+          <plugin>
+      	    <groupId>org.codehaus.mojo</groupId>
+      	    <artifactId>findbugs-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>lint</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+
+      <reporting>
+        <plugins>
+          <plugin>
+      	    <groupId>org.codehaus.mojo</groupId>
+      	    <artifactId>findbugs-maven-plugin</artifactId>
+      	    <version>2.3.1</version>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
   </profiles>
 </project>
