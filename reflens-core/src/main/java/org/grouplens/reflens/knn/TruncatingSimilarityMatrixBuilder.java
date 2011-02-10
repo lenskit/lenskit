@@ -54,11 +54,11 @@ import com.google.inject.assistedinject.Assisted;
  *
  */
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
-	private static class Score implements IndexedItemScore {
+	static class Score implements IndexedItemScore {
 		private final int index;
 		private final double score;
 		
-		public Score(int i, double s) {
+		public Score(final int i, final double s) {
 			index = i;
 			score = s;
 		}
@@ -83,7 +83,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 * implementing it ourselves lets us work around lack of generic type
 	 * covariance.
 	 */
-	private static class ScoreQueue extends ObjectHeapPriorityQueue<Object>
+	static class ScoreQueue extends ObjectHeapPriorityQueue<Object>
 		implements Iterable<IndexedItemScore>, Externalizable {
 		
 		@SuppressWarnings({ "unchecked", "rawtypes" })
