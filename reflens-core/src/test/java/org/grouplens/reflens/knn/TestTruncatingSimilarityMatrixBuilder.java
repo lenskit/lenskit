@@ -176,7 +176,7 @@ public class TestTruncatingSimilarityMatrixBuilder {
 		assertEquals(1.0, neighbors[0].getScore(), EPSILON);
 	}
 	
-	private static class ScoreComparator implements Comparator<IndexedItemScore> {
+	static class ScoreComparator implements Comparator<IndexedItemScore> {
 		@Override
 		public int compare(IndexedItemScore arg0, IndexedItemScore arg1) {
 			return Doubles.compare(arg0.getScore(), arg1.getScore());

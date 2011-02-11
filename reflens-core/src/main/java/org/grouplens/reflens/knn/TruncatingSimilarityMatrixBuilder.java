@@ -83,12 +83,14 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 * implementing it ourselves lets us work around lack of generic type
 	 * covariance.
 	 */
-	static class ScoreQueue extends ObjectHeapPriorityQueue<Object>
+	static final class ScoreQueue extends ObjectHeapPriorityQueue<Object>
 		implements Iterable<IndexedItemScore>, Externalizable {
+		private final int maxNeighbors;
 		
 		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public ScoreQueue() {
-			super((Comparator) scoreComparator);
+		public ScoreQueue(int maxNeighbors) {
+			super(maxNeighbors + 1, (Comparator) scoreComparator);
+			this.maxNeighbors = maxNeighbors;
 		}
 
 		@Override
@@ -138,6 +140,12 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 				out.writeDouble(score.getScore());
 			}
 		}
+
+		public void put(int i, double sim) {
+			enqueue(new Score(i, sim));
+			while (size() > maxNeighbors)
+				dequeue();
+		}
 		
 	}
 	
@@ -173,7 +181,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	private void setup() {
 		rows = new ScoreQueue[itemCount];
 		for (int i = 0; i < itemCount; i++) {
-			rows[i] = new ScoreQueue();
+			rows[i] = new ScoreQueue(maxNeighbors);
 		}
 	}
 
@@ -202,9 +210,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 		ScoreQueue q = rows[i1];
 		// synchronize on this row to add item
 		synchronized (q) {
-			q.enqueue(new Score(i2, sim));
-			while (q.size() > maxNeighbors)
-				q.dequeue();
+			q.put(i2, sim);
 		}
 	}
 	
