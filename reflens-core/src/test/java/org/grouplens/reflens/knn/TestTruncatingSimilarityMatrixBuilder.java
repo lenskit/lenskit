@@ -3,8 +3,8 @@
  */
 package org.grouplens.reflens.knn;
 
+import static org.grouplens.common.test.MoreAsserts.assertIsEmpty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,7 +46,7 @@ public class TestTruncatingSimilarityMatrixBuilder {
 		SimilarityMatrix matrix = builder.build();
 		assertEquals(10, matrix.size());
 		for (int i = 0; i < 10; i++) {
-			assertTrue(Iterables.isEmpty(matrix.getNeighbors(i)));
+			assertIsEmpty(matrix.getNeighbors(i));
 		}
 	}
 	
@@ -66,7 +66,7 @@ public class TestTruncatingSimilarityMatrixBuilder {
 		assertEquals(3, neighbors[2].getIndex());
 		assertEquals(0.4, neighbors[1].getScore(), EPSILON);
 		for (int i = 1; i < 10; i++) {
-			assertTrue(Iterables.isEmpty(matrix.getNeighbors(i)));
+			assertIsEmpty(matrix.getNeighbors(i));
 		}
 	}
 	
@@ -146,6 +146,9 @@ public class TestTruncatingSimilarityMatrixBuilder {
 			assertEquals(expInd[i], neighbors[i].getIndex());
 			assertEquals(expScore[i], neighbors[i].getScore(), EPSILON);
 		}
+		
+		assertIsEmpty(matrix.getNeighbors(1));
+		assertIsEmpty(matrix.getNeighbors(9));
 		
 		neighbors = Iterables.toArray(matrix.getNeighbors(2), IndexedItemScore.class);
 		assertEquals(1, neighbors.length);
