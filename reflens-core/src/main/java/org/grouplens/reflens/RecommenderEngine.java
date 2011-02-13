@@ -39,7 +39,7 @@ package org.grouplens.reflens;
  * recommendations without worrying about null values (aside from out-of-domain
  * inputs) or {@link UnsupportedOperationException}s.
  * 
- * You will usually get one of these from a {@link RecommenderService}.  It will
+ * You will usually get one of these from a {@link RecommenderServiceManager}.  It will
  * build them with a {@link RecommenderEngineBuilder}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

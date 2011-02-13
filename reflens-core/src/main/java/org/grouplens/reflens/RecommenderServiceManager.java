@@ -30,26 +30,20 @@
 
 package org.grouplens.reflens;
 
-import com.google.inject.Inject;
-
 /**
- * {@link RecommenderService} that returns a recommender engine passed as its
- * constructor.
+ * Service providing {@link RecommenderEngine}s.  This service is to be used
+ * by the application to acquire the recommender; it is responsible for building
+ * or otherwise loading it.
+ * 
+ * This interface is thread-safe; it is safe for multiple threads to 
+ * simultaneously request a recommender, although they may need to coordinate
+ * around its use.
+ * 
+ * TODO Define and document thread safety of recommendation engines.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PrebuiltRecommenderService implements RecommenderService {
-	private final RecommenderEngine engine;
-	
-	@Inject
-	public PrebuiltRecommenderService(RecommenderEngine engine) {
-		this.engine = engine;
-	}
-	
-	@Override
-	public RecommenderEngine getRecommender() {
-		return engine;
-	}
-
+public interface RecommenderServiceManager {
+	RecommenderEngine getRecommender();
 }

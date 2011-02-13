@@ -30,20 +30,41 @@
 
 package org.grouplens.reflens;
 
+import org.grouplens.reflens.data.RatingDataSource;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+
 /**
- * Service providing {@link RecommenderEngine}s.  This service is to be used
- * by the application to acquire the recommender; it is responsible for building
- * or otherwise loading it.
- * 
- * This interface is thread-safe; it is safe for multiple threads to 
- * simultaneously request a recommender, although they may need to coordinate
- * around its use.
- * 
- * TODO Define and document thread safety of recommendation engines.
+ * {@link RecommenderServiceManager} that uses a {@link RecommenderEngineBuilder} and data
+ * source dataProvider to build a recommender engine.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface RecommenderService {
-	RecommenderEngine getRecommender();
+@Singleton
+public class SimpleRecommenderServiceManager implements RecommenderServiceManager {
+	private RecommenderEngine engine;
+	private final RecommenderEngineBuilder builder;
+	private final Provider<RatingDataSource> dataProvider;
+	
+	@Inject
+	public SimpleRecommenderServiceManager(RecommenderEngineBuilder builder, Provider<RatingDataSource> dataProvider) {
+		this.builder = builder;
+		this.dataProvider = dataProvider;
+	}
+
+	/**
+	 * Get the recommender engine.  If the recommender needs to be built, it
+	 * will block all other threads asking for recommenders.
+	 */
+	@Override
+	public synchronized RecommenderEngine getRecommender() {
+		if (engine == null) {
+			engine = builder.build(dataProvider.get());
+		}
+		return engine;
+	}
+
 }

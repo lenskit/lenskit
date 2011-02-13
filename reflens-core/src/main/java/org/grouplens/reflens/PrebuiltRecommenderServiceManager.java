@@ -30,40 +30,25 @@
 
 package org.grouplens.reflens;
 
-import org.grouplens.reflens.data.RatingDataSource;
-
 import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 /**
- * {@link RecommenderService} that uses a {@link RecommenderEngineBuilder} and data
- * source dataProvider to build a recommender engine.
+ * {@link RecommenderServiceManager} that returns a recommender engine passed as its
+ * constructor.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Singleton
-public class SimpleRecommenderService implements RecommenderService {
-	private RecommenderEngine engine;
-	private final RecommenderEngineBuilder builder;
-	private final Provider<RatingDataSource> dataProvider;
+public class PrebuiltRecommenderServiceManager implements RecommenderServiceManager {
+	private final RecommenderEngine engine;
 	
 	@Inject
-	public SimpleRecommenderService(RecommenderEngineBuilder builder, Provider<RatingDataSource> dataProvider) {
-		this.builder = builder;
-		this.dataProvider = dataProvider;
+	public PrebuiltRecommenderServiceManager(RecommenderEngine engine) {
+		this.engine = engine;
 	}
-
-	/**
-	 * Get the recommender engine.  If the recommender needs to be built, it
-	 * will block all other threads asking for recommenders.
-	 */
+	
 	@Override
-	public synchronized RecommenderEngine getRecommender() {
-		if (engine == null) {
-			engine = builder.build(dataProvider.get());
-		}
+	public RecommenderEngine getRecommender() {
 		return engine;
 	}
 
