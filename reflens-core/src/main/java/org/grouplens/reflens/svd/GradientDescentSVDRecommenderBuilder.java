@@ -37,8 +37,8 @@ import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderEngine;
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
@@ -74,7 +74,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBuilder {
+public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder {
 	private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDRecommenderBuilder.class);
 	
 	// The default value for feature values - isn't supposed to matter much
@@ -111,7 +111,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 	}
 
 	@Override
-	public RecommenderEngine build(RatingDataSource data) {
+	public RecommenderService build(RatingDataSource data) {
 		logger.debug("Setting up to build SVD recommender with {} features", featureCount);
 		logger.debug("Learning rate is {}", learningRate);
 		logger.debug("Regularization term is {}", trainingRegularization);
@@ -179,7 +179,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderEngineBu
 			model.singularValues[feature] = unrm * inrm;
 		}
 		
-		return new SVDRecommender(featureCount, itemIndex, baseline, model.itemFeatures, model.singularValues,
+		return new SVDRecommenderService(featureCount, itemIndex, baseline, model.itemFeatures, model.singularValues,
 				clampingFunction);
 	}
 	

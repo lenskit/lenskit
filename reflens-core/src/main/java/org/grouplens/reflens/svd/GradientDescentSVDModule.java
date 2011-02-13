@@ -30,7 +30,7 @@
 
 package org.grouplens.reflens.svd;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
@@ -67,7 +67,7 @@ public class GradientDescentSVDModule extends RecommenderModule {
 	}
 	
 	protected void configureBuilder() {
-		bind(new TypeLiteral<RecommenderEngineBuilder>(){}).to(new TypeLiteral<GradientDescentSVDRecommenderBuilder>(){});
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(new TypeLiteral<GradientDescentSVDRecommenderBuilder>(){});
 	}
 
 	/**

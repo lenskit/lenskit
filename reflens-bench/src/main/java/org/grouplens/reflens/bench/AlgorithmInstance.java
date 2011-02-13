@@ -43,7 +43,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,8 +126,8 @@ public class AlgorithmInstance {
 		return injector;
 	}
 	
-	RecommenderEngineBuilder getBuilder() {
-		return getInjector().getInstance(RecommenderEngineBuilder.class);
+	RecommenderBuilder getBuilder() {
+		return getInjector().getInstance(RecommenderBuilder.class);
 	}
 
 	public static AlgorithmInstance load(File f) throws InvalidRecommenderException {

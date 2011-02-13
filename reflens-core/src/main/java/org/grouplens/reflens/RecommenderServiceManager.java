@@ -31,7 +31,7 @@
 package org.grouplens.reflens;
 
 /**
- * Service providing {@link RecommenderEngine}s.  This service is to be used
+ * Service providing {@link RecommenderService}s.  This service is to be used
  * by the application to acquire the recommender; it is responsible for building
  * or otherwise loading it.
  * 
@@ -45,5 +45,5 @@ package org.grouplens.reflens;
  *
  */
 public interface RecommenderServiceManager {
-	RecommenderEngine getRecommender();
+	RecommenderService getRecommenderService();
 }

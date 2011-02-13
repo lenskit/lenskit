@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommenderEngine;
+import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -131,7 +131,7 @@ public class CrossfoldBenchmark implements Runnable {
 	private void benchmarkAlgorithm(AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
 		TaskTimer timer = new TaskTimer();
 		logger.debug("Benchmarking {}", algo.getName());
-		RecommenderEngine engine;
+		RecommenderService engine;
 		logger.debug("Building recommender");
 		engine = algo.getBuilder().build(train);
 		RatingPredictor rec = engine.getRatingPredictor();

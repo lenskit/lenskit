@@ -43,7 +43,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
@@ -66,24 +66,24 @@ import com.google.inject.Inject;
  * the actual building, constructs an {@link ItemItemModel} containing the
  * resulting recommender model, and finally builds a recommender around it.
  * 
- * The recommender engine builder uses an {@link ItemItemRecommenderEngineFactory}
+ * The recommender engine builder uses an {@link ItemItemRecommenderServiceFactory}
  * to actually construct the recommender engine.  Re-binding that interface
  * allows alternative recommender engines to be used.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommenderEngineBuilder implements RecommenderEngineBuilder {
-	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngineBuilder.class);
+public class ItemItemRecommenderBuilder implements RecommenderBuilder {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 	
 	private final @Nullable RatingPredictorBuilder baselineBuilder;
-	private final @Nonnull ItemItemRecommenderEngineFactory engineFactory;
+	private final @Nonnull ItemItemRecommenderServiceFactory engineFactory;
 	private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
 	@Inject
-	ItemItemRecommenderEngineBuilder(
+	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuildStrategy similarityStrategy,
-			ItemItemRecommenderEngineFactory engineFactory,
+			ItemItemRecommenderServiceFactory engineFactory,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.similarityStrategy = similarityStrategy;
 		this.engineFactory = engineFactory;
@@ -153,7 +153,7 @@ public class ItemItemRecommenderEngineBuilder implements RecommenderEngineBuilde
 	}
 	
 	@Override
-	public ItemItemRecommenderEngine build(RatingDataSource data) {
+	public ItemItemRecommenderService build(RatingDataSource data) {
 		BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);

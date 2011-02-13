@@ -27,28 +27,26 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
 
-import javax.annotation.Nonnull;
+package org.grouplens.reflens;
 
-import com.google.inject.ImplementedBy;
+import org.grouplens.reflens.data.RatingDataSource;
 
 /**
- * Factory for creating new item-item recommender engines from models.
- * 
- * Implementations of this interface take an {@link ItemItemModel} and create
- * an {@link ItemItemRecommenderEngine} backed by it.
- * 
+ * Interface for recommender factories for the benchmarker to use.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ImplementedBy(DefaultItemItemRecommenderEngineFactory.class)
-public interface ItemItemRecommenderEngineFactory {
+public interface RecommenderBuilder {
 	/**
-	 * Create a new recommender engine.
-	 * @param model The model backing the engine.
-	 * @return The newly-constructed recommender engine.
+	 * Construct a new recommender engine trained on the provided ratings.
+	 * 
+	 * The caller is responsible for closing the data source once the recommender
+	 * has been built.
+	 * 
+	 * @param ratings The set of initial ratings with which to seed the
+	 * recommender.
+	 * @return A new recommender engine.
 	 */
-	@Nonnull
-	ItemItemRecommenderEngine create(@Nonnull ItemItemModel model);
+	public RecommenderService build(RatingDataSource ratings);
 }

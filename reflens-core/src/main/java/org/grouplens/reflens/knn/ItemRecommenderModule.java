@@ -30,7 +30,7 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
@@ -116,7 +116,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * 
 	 */
 	protected void configureRecommenderBuilder() {
-		bind(RecommenderEngineBuilder.class).to(ItemItemRecommenderEngineBuilder.class);
+		bind(RecommenderBuilder.class).to(ItemItemRecommenderBuilder.class);
 	}
 
 	/**

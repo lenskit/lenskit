@@ -47,7 +47,7 @@ import org.grouplens.reflens.util.SimilarityMatrix;
 /**
  * Encapsulation of the model needed for item-item collaborative filtering.
  * 
- * This class is used by {@link ItemItemRecommenderEngine} to do actual item-item
+ * This class is used by {@link ItemItemRecommenderService} to do actual item-item
  * recommendation.  It encapsulates the various data accesses needed to support
  * item-item CF.
  * 

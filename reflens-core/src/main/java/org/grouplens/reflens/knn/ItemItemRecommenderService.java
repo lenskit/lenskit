@@ -47,8 +47,8 @@ import javax.annotation.concurrent.Immutable;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommenderEngine;
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
@@ -58,13 +58,13 @@ import org.grouplens.reflens.util.IndexedItemScore;
  * 
  * This class implements an item-item collaborative filter backed by a particular
  * {@link ItemItemModel}.  Client code will usually use a
- * {@link RecommenderEngineBuilder} to get one of these.
+ * {@link RecommenderBuilder} to get one of these.
  * 
  * To modify the recommendation or prediction logic, do the following:
  * 
  * <ul>
- * <li>Extend {@link ItemItemRecommenderEngineBuilder}, reimplementing the
- * {@link ItemItemRecommenderEngineBuilder#createRecommender(ItemItemModel)} method
+ * <li>Extend {@link ItemItemRecommenderBuilder}, reimplementing the
+ * {@link ItemItemRecommenderBuilder#createRecommender(ItemItemModel)} method
  * to create an instance of your new class rather than this one.
  * <li>Configure Guice to inject your new recommender builder.
  * </ul>
@@ -74,7 +74,7 @@ import org.grouplens.reflens.util.IndexedItemScore;
  *
  */
 @Immutable
-public class ItemItemRecommenderEngine implements RecommenderEngine, RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommenderService implements RecommenderService, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	protected final @Nonnull ItemItemModel model;
 	
@@ -82,7 +82,7 @@ public class ItemItemRecommenderEngine implements RecommenderEngine, RatingRecom
 	 * Construct a new recommender from an item-item recommender model.
 	 * @param model The backing model for the new recommender.
 	 */
-	public ItemItemRecommenderEngine(@Nonnull ItemItemModel model) {
+	public ItemItemRecommenderService(@Nonnull ItemItemModel model) {
 		this.model = model;
 	}
 	

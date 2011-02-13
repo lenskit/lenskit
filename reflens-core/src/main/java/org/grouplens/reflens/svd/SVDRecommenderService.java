@@ -42,7 +42,7 @@ import java.util.Collection;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommenderEngine;
+import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
@@ -62,7 +62,7 @@ import org.grouplens.reflens.util.DoubleFunction;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRecommender implements RecommenderEngine, RatingPredictor {
+public class SVDRecommenderService implements RecommenderService, RatingPredictor {
 	
 	private final Index itemIndex;
 	private final RatingPredictor baseline;
@@ -72,7 +72,7 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 	private final double singularValues[];
 	private final DoubleFunction clampingFunction;
 	
-	SVDRecommender(int nfeatures, Index itemIndexer,
+	SVDRecommenderService(int nfeatures, Index itemIndexer,
 			RatingPredictor baseline, double itemFeatures[][],
 			double singularValues[],
 			DoubleFunction clamp) { 		
@@ -123,7 +123,7 @@ public class SVDRecommender implements RecommenderEngine, RatingPredictor {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.RecommenderEngine#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
+	 * @see org.grouplens.reflens.RecommenderService#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
 	public ScoredId predict(long user, RatingVector ratings, long item) {

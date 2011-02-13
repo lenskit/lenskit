@@ -37,34 +37,34 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
- * {@link RecommenderServiceManager} that uses a {@link RecommenderEngineBuilder} and data
- * source dataProvider to build a recommender engine.
+ * {@link RecommenderServiceManager} that uses a {@link RecommenderBuilder} and data
+ * source dataProvider to build a recommender service.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @Singleton
 public class SimpleRecommenderServiceManager implements RecommenderServiceManager {
-	private RecommenderEngine engine;
-	private final RecommenderEngineBuilder builder;
+	private RecommenderService service;
+	private final RecommenderBuilder builder;
 	private final Provider<RatingDataSource> dataProvider;
 	
 	@Inject
-	public SimpleRecommenderServiceManager(RecommenderEngineBuilder builder, Provider<RatingDataSource> dataProvider) {
+	public SimpleRecommenderServiceManager(RecommenderBuilder builder, Provider<RatingDataSource> dataProvider) {
 		this.builder = builder;
 		this.dataProvider = dataProvider;
 	}
 
 	/**
-	 * Get the recommender engine.  If the recommender needs to be built, it
+	 * Get the recommender service.  If the recommender needs to be built, it
 	 * will block all other threads asking for recommenders.
 	 */
 	@Override
-	public synchronized RecommenderEngine getRecommender() {
-		if (engine == null) {
-			engine = builder.build(dataProvider.get());
+	public synchronized RecommenderService getRecommenderService() {
+		if (service == null) {
+			service = builder.build(dataProvider.get());
 		}
-		return engine;
+		return service;
 	}
 
 }

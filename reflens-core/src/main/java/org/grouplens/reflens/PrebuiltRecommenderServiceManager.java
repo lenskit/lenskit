@@ -33,23 +33,23 @@ package org.grouplens.reflens;
 import com.google.inject.Inject;
 
 /**
- * {@link RecommenderServiceManager} that returns a recommender engine passed as its
+ * {@link RecommenderServiceManager} that returns a recommender service passed as its
  * constructor.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class PrebuiltRecommenderServiceManager implements RecommenderServiceManager {
-	private final RecommenderEngine engine;
+	private final RecommenderService service;
 	
 	@Inject
-	public PrebuiltRecommenderServiceManager(RecommenderEngine engine) {
-		this.engine = engine;
+	public PrebuiltRecommenderServiceManager(RecommenderService service) {
+		this.service = service;
 	}
 	
 	@Override
-	public RecommenderEngine getRecommender() {
-		return engine;
+	public RecommenderService getRecommenderService() {
+		return service;
 	}
 
 }

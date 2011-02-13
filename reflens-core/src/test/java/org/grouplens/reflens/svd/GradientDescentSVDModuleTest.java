@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.grouplens.common.test.Matchers.*;
 import static org.grouplens.common.test.GuiceHelpers.*;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
@@ -169,7 +169,7 @@ public class GradientDescentSVDModuleTest {
 	public void testDefaultInject() {
 		module.setBaseline(ConstantPredictor.class);
 		module.setConstantBaselineValue(3);
-		RecommenderEngineBuilder builder = inject(module, RecommenderEngineBuilder.class);
+		RecommenderBuilder builder = inject(module, RecommenderBuilder.class);
 		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
 		GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
 		assertEquals(FeatureCount.DEFAULT_VALUE, b.featureCount);

@@ -30,7 +30,7 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 
 import com.google.inject.TypeLiteral;
 
@@ -48,6 +48,6 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 
 	@Override
 	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderEngineBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
 	}
 }

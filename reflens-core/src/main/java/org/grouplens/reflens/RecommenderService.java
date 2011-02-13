@@ -40,11 +40,11 @@ package org.grouplens.reflens;
  * inputs) or {@link UnsupportedOperationException}s.
  * 
  * You will usually get one of these from a {@link RecommenderServiceManager}.  It will
- * build them with a {@link RecommenderEngineBuilder}.
+ * build them with a {@link RecommenderBuilder}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface RecommenderEngine {
+public interface RecommenderService {
 	/**
 	 * Retrieve the rating recommender from this engine.
 	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based

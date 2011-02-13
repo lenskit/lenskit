@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderEngineBuilder;
+import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
@@ -77,7 +77,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuilder {
+public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
@@ -124,7 +124,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	}
 	
 	@Override
-	public ItemItemRecommenderEngine build(RatingDataSource data) {
+	public ItemItemRecommenderService build(RatingDataSource data) {
 		logger.info("Building model with {} threads", threadCount);
 		// TODO look in to merging these passes
 		baseline = baselineBuilder.build(data);
@@ -155,7 +155,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
 		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix);
-		return new ItemItemRecommenderEngine(model);
+		return new ItemItemRecommenderService(model);
 	}
 	
 	static int arithSum(int n) {
@@ -314,7 +314,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderEngineBuil
 	}
 	
 	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
-		// TODO share this code with ItemItemRecommenderEngineBuilder
+		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
 		
 		RatingVector rmap = RatingVector.userRatingVector(ratings);
