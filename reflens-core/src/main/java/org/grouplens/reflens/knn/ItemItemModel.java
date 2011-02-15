@@ -42,7 +42,6 @@ import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
-import org.grouplens.reflens.util.SimilarityMatrix;
 
 /**
  * Encapsulation of the model needed for item-item collaborative filtering.

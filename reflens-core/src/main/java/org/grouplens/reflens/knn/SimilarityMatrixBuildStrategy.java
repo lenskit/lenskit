@@ -29,7 +29,6 @@
  */
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.util.SimilarityMatrix;
 
 /**
  * A strategy for computing similarity matrices.

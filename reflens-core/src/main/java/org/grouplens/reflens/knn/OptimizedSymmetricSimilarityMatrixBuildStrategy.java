@@ -37,9 +37,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState;
-import org.grouplens.reflens.util.SimilarityMatrix;
-import org.grouplens.reflens.util.SimilarityMatrixBuilder;
-import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

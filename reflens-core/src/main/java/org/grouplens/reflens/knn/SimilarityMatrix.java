@@ -28,7 +28,9 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.knn;
+
+import org.grouplens.reflens.util.IndexedItemScore;
 
 
 /**

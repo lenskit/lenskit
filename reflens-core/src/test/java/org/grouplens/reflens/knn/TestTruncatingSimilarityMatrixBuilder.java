@@ -11,7 +11,6 @@ import java.util.Comparator;
 
 import org.grouplens.reflens.knn.TruncatingSimilarityMatrixBuilder.Score;
 import org.grouplens.reflens.util.IndexedItemScore;
-import org.grouplens.reflens.util.SimilarityMatrix;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.util;
+package org.grouplens.reflens.knn;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

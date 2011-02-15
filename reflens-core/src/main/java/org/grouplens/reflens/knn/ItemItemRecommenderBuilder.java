@@ -52,7 +52,6 @@ import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.params.BaselinePredictor;
-import org.grouplens.reflens.util.SimilarityMatrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

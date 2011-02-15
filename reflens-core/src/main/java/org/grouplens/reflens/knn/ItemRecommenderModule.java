@@ -36,7 +36,6 @@ import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
-import org.grouplens.reflens.util.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
 import com.google.inject.Provides;

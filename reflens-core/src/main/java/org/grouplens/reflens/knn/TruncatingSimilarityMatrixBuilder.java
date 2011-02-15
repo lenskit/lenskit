@@ -38,8 +38,6 @@ import java.util.NoSuchElementException;
 
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.util.IndexedItemScore;
-import org.grouplens.reflens.util.SimilarityMatrix;
-import org.grouplens.reflens.util.SimilarityMatrixBuilder;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
