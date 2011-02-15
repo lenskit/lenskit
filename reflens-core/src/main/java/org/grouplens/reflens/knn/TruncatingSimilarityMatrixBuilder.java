@@ -30,14 +30,9 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.objects.ObjectHeapPriorityQueue;
+import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -72,25 +67,35 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 		}
 	}
 	
-	private static Comparator<Score> scoreComparator = new Comparator<Score>() {
-		public int compare(Score s1, Score s2) {
-			return Double.compare(s1.score, s2.score);
-		}
-	};
-	
-	/* We have to extend the fastutil priority queue to implement Iterable. The
-	 * java.util PriorityQueue doesn't implement trim, which we want.  Also,
-	 * implementing it ourselves lets us work around lack of generic type
-	 * covariance.
+	/**
+	 * Priority queue for tracking the <i>N</i> highest-scoring items.
+	 * 
+	 * This uses a {@link DoubleHeapIndirectPriorityQueue} to maintain a heap of
+	 * items in parallel unboxed arrays of scores and indices.  The arrays are
+	 * of length <var>maxNeighbors</var>+1; this allows them to have one free
+	 * slot to hold a new item when the queue is already full.
+	 * 
+	 * Iteration order is undefined for this class.
+	 * 
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
 	 */
-	static final class ScoreQueue extends ObjectHeapPriorityQueue<Object>
-		implements Iterable<IndexedItemScore>, Externalizable {
+	static final class ScoreQueue implements Iterable<IndexedItemScore>, Serializable {
+		private static final long serialVersionUID = -3045709409904317792L;
 		private final int maxNeighbors;
+		private double[] scores;
+		private int[] indices;
+		private int slot;
+		private int size;
+		private DoubleHeapIndirectPriorityQueue heap;
 		
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public ScoreQueue(int maxNeighbors) {
-			super(maxNeighbors + 1, (Comparator) scoreComparator);
-			this.maxNeighbors = maxNeighbors;
+		public ScoreQueue(int nbrs) {
+			this.maxNeighbors = nbrs;
+			scores = new double[nbrs+1];
+			indices = new int[nbrs+1];
+			slot = 0;
+			size = 0;
+			heap = new DoubleHeapIndirectPriorityQueue(scores);
 		}
 
 		@Override
@@ -103,10 +108,13 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 					return pos < size;
 				}
 
+				// TODO Support fast iteration
 				@Override
 				public IndexedItemScore next() {
 					if (pos < size) {
-						Score s = (Score) heap[pos];
+						int i = pos;
+						if (i >= slot) i++;   // skip the slot
+						Score s = new Score(indices[i], scores[i]);
 						pos += 1;
 						return s;
 					} else {
@@ -120,33 +128,44 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 				}
 			};
 		}
-
-		@Override
-		public void readExternal(ObjectInput in) throws IOException,
-				ClassNotFoundException {
-			final int n = in.readInt();
-			for (int i = 0; i < n; i++) {
-				int idx = in.readInt();
-				double v = in.readDouble();
-				enqueue(new Score(idx, v));
-			}
+		
+		public boolean isEmpty() {
+			return size == 0;
 		}
-
-		@Override
-		public void writeExternal(ObjectOutput out) throws IOException {
-			out.writeInt(size());
-			for (IndexedItemScore score: this) {
-				out.writeInt(score.getIndex());
-				out.writeDouble(score.getScore());
-			}
+		
+		public int size() {
+			return size;
 		}
 
 		public void put(int i, double sim) {
-			enqueue(new Score(i, sim));
-			while (size() > maxNeighbors)
-				dequeue();
+			if (heap == null)
+				throw new RuntimeException("attempt to add to finished queue");
+			assert slot <= maxNeighbors;
+			assert heap.size() == size;
+			/* Store the new item. The slit shows where the current item is,
+			 * and then we deal with it based on whether we're oversized.
+			 */
+			indices[slot] = i;
+			scores[slot] = sim;
+			heap.enqueue(slot);
+			
+			if (size == maxNeighbors) {
+				// already at capacity, so remove and reuse smallest item
+				slot = heap.dequeue();
+			} else {
+				// we have free space, so increment the slot and size
+				slot += 1;
+				size += 1;
+			}
 		}
 		
+		/**
+		 * Free internal structures needed for adding items.  After calling this
+		 * method, it is an error to call {@link #put(int, double)}.
+		 */
+		public void finish() {
+			heap = null;
+		}
 	}
 	
 	private static class Matrix implements SimilarityMatrix, Serializable {
@@ -190,8 +209,8 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	 */
 	@Override
 	public SimilarityMatrix build() {
-		for (int i = 0; i < rows.length; i++) {
-			rows[i].trim();
+		for (ScoreQueue row: rows) {
+			row.finish();
 		}
 		Matrix m = new Matrix(rows);
 		rows = null;
