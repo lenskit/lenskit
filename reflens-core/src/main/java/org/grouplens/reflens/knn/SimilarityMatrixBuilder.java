@@ -30,8 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 /**
  * Interface for building similarity matrices for collaborative filtering.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
