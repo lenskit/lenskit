@@ -54,7 +54,7 @@ import com.google.inject.assistedinject.Assisted;
  *
  */
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
-	static class Score implements IndexedItemScore {
+	static final class Score implements IndexedItemScore {
 		private final int index;
 		private final double score;
 		
