@@ -28,11 +28,15 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
+import org.grouplens.reflens.knn.Similarity;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.knn.TruncatingSimilarityMatrixBuilder;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;

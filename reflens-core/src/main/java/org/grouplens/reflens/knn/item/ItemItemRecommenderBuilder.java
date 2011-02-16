@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntCollection;
@@ -52,6 +52,7 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.util.IntSortedArraySet;
 import org.slf4j.Logger;

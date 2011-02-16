@@ -27,7 +27,7 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -36,7 +36,11 @@ import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState;
+import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
+import org.grouplens.reflens.knn.SimilarityMatrix;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.knn.item.ItemItemRecommenderBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

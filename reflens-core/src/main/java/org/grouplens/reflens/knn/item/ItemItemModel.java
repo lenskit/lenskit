@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
@@ -41,6 +41,7 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.util.IndexedItemScore;
 
 /**

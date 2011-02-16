@@ -27,31 +27,27 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
 
+package org.grouplens.reflens.knn.item;
+
+import org.grouplens.reflens.RecommenderBuilder;
+
+import com.google.inject.TypeLiteral;
 
 /**
- * A strategy for computing similarity matrices.
- * 
- * {@link ItemItemRecommenderBuilder} uses the Strategy pattern to optimize its
- * build algorithm based on what kind of similarity function is in use.  This is
- * the interface which makes that possible.
- * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-interface SimilarityMatrixBuildStrategy {
+public class ParallelItemRecommenderModule extends ItemRecommenderModule {
+
 	/**
-	 * Query whether this strategy requires the build state to have easy access
-	 * to the sets of items rated by each user.
-	 * @return {@code true} if the strategy requires the item sets.
+	 * 
 	 */
-	boolean needsUserItemSets();
-	
-	/**
-	 * Build the item-item matrix.
-	 * @param state The build state containing data needed to build the matrix.
-	 * @return The completed similarity matrix
-	 */
-	SimilarityMatrix buildMatrix(ItemItemRecommenderBuilder.BuildState state);
+	public ParallelItemRecommenderModule() {
+	}
+
+	@Override
+	protected void configureRecommenderBuilder() {
+		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
+	}
 }

@@ -27,23 +27,36 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
+
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState;
+import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
+import org.grouplens.reflens.knn.SimilarityMatrix;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.knn.item.ItemItemRecommenderBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SymmetricSimilarityMatrixBuildStrategy implements
+/**
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+class OptimizedSimilarityMatrixBuildStrategy implements
 		SimilarityMatrixBuildStrategy {
-	private final static Logger logger = LoggerFactory.getLogger(SymmetricSimilarityMatrixBuildStrategy.class);
-	
+	private static final Logger logger = LoggerFactory.getLogger(OptimizedSimilarityMatrixBuildStrategy.class);
 	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final Similarity<? super RatingVector> similarityFunction;
-	
-	SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super RatingVector> similarity) {
-		this.matrixFactory = matrixFactory;
-		this.similarityFunction = similarity;
+	private final OptimizableVectorSimilarity<RatingVector> similarityFunction;
+
+	OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<RatingVector> sim) {
+		matrixFactory = mfact;
+		similarityFunction = sim;
 	}
 
 	/* (non-Javadoc)
@@ -51,13 +64,26 @@ class SymmetricSimilarityMatrixBuildStrategy implements
 	 */
 	@Override
 	public SimilarityMatrix buildMatrix(BuildState state) {
+		final SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
+		logger.debug("Building with AVL tree implementation");
 		final int nitems = state.itemCount;
-		logger.debug("Building matrix with {} rows");
-		SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
 		for (int i = 0; i < nitems; i++) {
-			for (int j = i+1; j < nitems; j++) {
-				double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-				builder.putSymmetric(i, j, sim);
+			final RatingVector v = state.itemRatings.get(i);
+			final IntSet candidates = new IntOpenHashSet();
+			final LongIterator uiter = v.idSet().iterator();
+			while (uiter.hasNext()) {
+				long user = uiter.next();
+				IntSortedSet uitems = state.userItemSets.get(user);
+				candidates.addAll(uitems);
+			}
+			candidates.rem(i);
+			
+			final IntIterator iter = candidates.iterator();
+			while (iter.hasNext()) {
+				final int j = iter.nextInt();
+				final double sim = similarityFunction.similarity(v,
+						state.itemRatings.get(j));
+				builder.put(i,j,sim);
 			}
 		}
 		return builder.build();
@@ -68,7 +94,7 @@ class SymmetricSimilarityMatrixBuildStrategy implements
 	 */
 	@Override
 	public boolean needsUserItemSets() {
-		return false;
+		return true;
 	}
 
 }

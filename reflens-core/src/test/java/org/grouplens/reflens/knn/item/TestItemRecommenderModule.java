@@ -27,7 +27,7 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
@@ -36,6 +36,8 @@ import static org.grouplens.common.test.GuiceHelpers.inject;
 
 import org.grouplens.reflens.TestRecommenderModule;
 import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.knn.Similarity;
+import org.grouplens.reflens.knn.item.ItemRecommenderModule;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
@@ -62,7 +64,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#getNeighborhoodSize()}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#getNeighborhoodSize()}.
 	 */
 	@Test
 	public void testGetNeighborhoodSize() {
@@ -70,7 +72,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#setNeighborhoodSize(int)}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#setNeighborhoodSize(int)}.
 	 */
 	@Test
 	public void testSetNeighborhoodSize() {
@@ -79,7 +81,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#getSimilarityDamping()}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#getSimilarityDamping()}.
 	 */
 	@Test
 	public void testGetSimilarityDamping() {
@@ -87,7 +89,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#setSimilarityDamping(double)}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#setSimilarityDamping(double)}.
 	 */
 	@Test
 	public void testSetSimilarityDamping() {
@@ -96,7 +98,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#getItemSimilarity()}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#getItemSimilarity()}.
 	 */
 	@Test
 	public void testGetItemSimilarity() {
@@ -104,7 +106,7 @@ public class TestItemRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.knn.ItemRecommenderModule#setItemSimilarity(java.lang.Class)}.
+	 * Test method for {@link org.grouplens.reflens.knn.item.ItemRecommenderModule#setItemSimilarity(java.lang.Class)}.
 	 */
 	@Test
 	public void testSetItemSimilarity() {

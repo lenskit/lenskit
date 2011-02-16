@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -54,6 +54,11 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
+import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
+import org.grouplens.reflens.knn.Similarity;
+import org.grouplens.reflens.knn.SimilarityMatrix;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.ThreadCount;

@@ -27,26 +27,25 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.knn;
+package org.grouplens.reflens.knn.item;
 
 import org.grouplens.reflens.data.RatingVector;
-import org.grouplens.reflens.knn.ItemItemRecommenderBuilder.BuildState;
+import org.grouplens.reflens.knn.Similarity;
+import org.grouplens.reflens.knn.SimilarityMatrix;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
+import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.reflens.knn.item.ItemItemRecommenderBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Similarity matrix strategy that assumes nothing about the similarity function.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-class SimpleSimilarityMatrixBuildStrategy implements
+class SymmetricSimilarityMatrixBuildStrategy implements
 		SimilarityMatrixBuildStrategy {
-	private final static Logger logger = LoggerFactory.getLogger(SimpleSimilarityMatrixBuildStrategy.class);
+	private final static Logger logger = LoggerFactory.getLogger(SymmetricSimilarityMatrixBuildStrategy.class);
 	
 	private final SimilarityMatrixBuilderFactory matrixFactory;
 	private final Similarity<? super RatingVector> similarityFunction;
 	
-	SimpleSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super RatingVector> similarity) {
+	SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super RatingVector> similarity) {
 		this.matrixFactory = matrixFactory;
 		this.similarityFunction = similarity;
 	}
@@ -60,10 +59,9 @@ class SimpleSimilarityMatrixBuildStrategy implements
 		logger.debug("Building matrix with {} rows");
 		SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
 		for (int i = 0; i < nitems; i++) {
-			for (int j = 0; j < nitems; j++) {
-				if (i == j) continue;
+			for (int j = i+1; j < nitems; j++) {
 				double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-				builder.put(i, j, sim);
+				builder.putSymmetric(i, j, sim);
 			}
 		}
 		return builder.build();
