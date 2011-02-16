@@ -253,5 +253,17 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	public boolean isEmpty() {
 		return end == start;
 	}
-
+	
+	@Override
+	public boolean contains(long key) {
+		return findIndex(key) >= 0;
+	}
+	
+	/**
+	 * Unsupported remove operation.
+	 */
+	@Override
+	public boolean rem(long k) {
+		throw new UnsupportedOperationException();
+	}
 }

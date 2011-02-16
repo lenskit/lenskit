@@ -80,6 +80,8 @@ public class TestLongSortedArraySet {
 		assertTrue(set.contains(2));
 		assertTrue(set.contains(5));
 		assertTrue(set.contains(6));
+		assertFalse(set.contains(0));
+		assertFalse(set.contains(42));
 		assertFalse(set.iterator().hasPrevious());
 		long[] items = LongIterators.unwrap(set.iterator());
 		assertEquals(2, items[0]);
