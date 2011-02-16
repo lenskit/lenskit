@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.ints.AbstractIntSortedSet;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 
@@ -167,7 +166,7 @@ public final class IntSortedArraySet extends AbstractIntSortedSet {
 	 */
 	@Override
 	public IntComparator comparator() {
-		return IntComparators.NATURAL_COMPARATOR;
+		return null;
 	}
 
 	/* (non-Javadoc)

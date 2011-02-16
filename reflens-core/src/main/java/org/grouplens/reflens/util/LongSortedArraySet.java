@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.AbstractLongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongComparator;
-import it.unimi.dsi.fastutil.longs.LongComparators;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -167,7 +166,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	 */
 	@Override
 	public LongComparator comparator() {
-		return LongComparators.NATURAL_COMPARATOR;
+		return null;
 	}
 
 	/* (non-Javadoc)
