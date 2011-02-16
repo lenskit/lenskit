@@ -24,7 +24,11 @@ package org.grouplens.reflens.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.grouplens.reflens.util.LongSortedArraySet.deduplicate;
+import static org.grouplens.reflens.util.LongSortedArraySet.isSorted;
+import static org.hamcrest.CoreMatchers.equalTo;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
@@ -43,6 +47,72 @@ public class TestLongSortedArraySet {
 	@SuppressWarnings("unchecked")
 	private LongSortedArraySet emptySet() {
 		return new LongSortedArraySet(Collections.EMPTY_LIST);
+	}
+	
+	@Test
+	public void testIsSortedEmpty() {
+		assertTrue(isSorted(new long[]{}, 0, 0));
+	}
+	
+	@Test
+	public void testIsSortedTrue() {
+		assertTrue(isSorted(new long[]{1,2,3}, 0, 3));
+	}
+	
+	@Test
+	public void testIsSortedFalse() {
+		assertFalse(isSorted(new long[]{1,3,2}, 0, 3));
+	}
+	
+	@Test
+	public void testIsSortedSubset() {
+		assertTrue(isSorted(new long[]{5,1,2,3,-4}, 1, 4));
+	}
+	
+	@Test
+	public void testDeduplicateEmpty() {
+		long[] data = {};
+		int end = deduplicate(data, 0, 0);
+		assertEquals(0, end);
+	}
+	
+	@Test
+	public void testDeduplicateNoChange() {
+		long[] data = {1, 2, 3};
+		int end = deduplicate(data, 0, 3);
+		assertEquals(3, end);
+		assertThat(data, equalTo(new long[]{1,2,3}));
+	}
+	
+	@Test
+	public void testDeduplicateDups() {
+		long[] data = {1, 2, 2, 3};
+		int end = deduplicate(data, 0, 4);
+		assertEquals(3, end);
+		assertEquals(1, data[0]);
+		assertEquals(2, data[1]);
+		assertEquals(3, data[2]);
+	}
+	
+	@Test
+	public void testDeduplicateDupsEnd() {
+		long[] data = {1, 2, 2, 3, 3};
+		int end = deduplicate(data, 0, 5);
+		assertEquals(3, end);
+		assertEquals(1, data[0]);
+		assertEquals(2, data[1]);
+		assertEquals(3, data[2]);
+	}
+	@
+	Test
+	public void testDeduplicateSubset() {
+		long[] data = {1, 1, 2, 2, 3, 3};
+		int end = deduplicate(data, 1, 6);
+		assertEquals(4, end);
+		assertEquals(1, data[0]);
+		assertEquals(1, data[1]);
+		assertEquals(2, data[2]);
+		assertEquals(3, data[3]);
 	}
 	
 	@Test
@@ -70,6 +140,11 @@ public class TestLongSortedArraySet {
 		assertFalse(set.contains(Long.valueOf(42)));
 	}
 	
+	/**
+	 * Run a battery of tests on a standard set. Used to test a variety of
+	 * construction scenarios with less code duplication.
+	 * @param set The set {2, 5, 6}.
+	 */
 	private void testSetSimple(LongSortedSet set) {
 		assertFalse(set.isEmpty());
 		assertEquals(3, set.size());
@@ -163,5 +238,13 @@ public class TestLongSortedArraySet {
 		assertEquals(5, iter.nextLong());
 		iter = set.iterator(3);
 		assertEquals(2, iter.previousLong());
+	}
+	
+	@Test
+	public void testRemoveDuplicates() {
+		long[] data = {5, 2, 6, 2};
+		LongSortedSet set = new LongSortedArraySet(data);
+		assertEquals(2, data[0]);
+		testSetSimple(set);
 	}
 }

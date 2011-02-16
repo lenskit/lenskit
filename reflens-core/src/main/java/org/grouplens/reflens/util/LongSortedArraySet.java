@@ -84,30 +84,58 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	 * @param fromIndex The index of the first item in the array to use.
 	 * @param toIndex The end of the array to use (last index + 1).
 	 * set, behavior is undefined.
-	 * @param sorted Assume the array is sorted.
+	 * @param clean Assume the array is sorted and has no duplicates.
 	 * @throws IndexOutOfBoundsException if <var>start</var> or <var>end</var>
 	 * is out of range.
 	 */
-	private LongSortedArraySet(long[] items, int fromIndex, int toIndex, boolean sorted) {
+	private LongSortedArraySet(long[] items, int fromIndex, int toIndex, boolean clean) {
 		data = items;
 		start = fromIndex;
-		end = toIndex;
 		if (fromIndex < 0 || toIndex > data.length)
 			throw new IndexOutOfBoundsException();
-		// check for sortedness first to avoid the actual sort
-		if (!sorted && !isSorted())
-			Arrays.sort(data, start, end);
+
+		if (!clean) {
+			// check for sortedness first to avoid the actual sort
+			if (!isSorted(data, start, toIndex))
+				Arrays.sort(data, start, toIndex);
+			end = deduplicate(data, start, toIndex);
+		} else {
+			end = toIndex;
+		}
 	}
 	
 	/**
 	 * Check that the array is sorted.
 	 * @return <code>true</code> iff the array is sorted.
 	 */
-	private boolean isSorted() {
+	static boolean isSorted(final long[] data, final int start, final int end) {
 		for (int i = start; i < end - 1; i++) {
 			if (data[i] > data[i+1]) return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Remove duplicate elements in the backing store. The array should be
+	 * unsorted.
+	 * @return the new end index of the array
+	 */
+	static int deduplicate(final long[] data, final int start, final int end) {
+		if (start == end) return end;   // special-case empty arrays
+		
+		// Since we have a non-empty array, the pos will always be where the
+		// end is if we find no more unique elements.
+		int pos = start + 1;
+		for (int i = pos; i < end; i++) {
+			if (data[i] != data[i-1]) { // we have a non-duplicate item
+				if (i != pos)           // indices out of alignment, must copy
+					data[pos] = data[i];
+				pos++;                  // increment pos since we have a new non-dup
+			}
+			// if data[i] is a duplicate, then i steps forward and pos doesn't,
+			// thereby arranging for data[i] to be elided.
+		}
+		return pos;
 	}
 	
 	/**
