@@ -74,6 +74,7 @@ public class CSVWriter implements TableWriter {
 			if (values[i] != null) writer.write(values[i]);
 		}
 		writer.write('\n');
+		writer.flush();
 		values = null;
 	}
 
