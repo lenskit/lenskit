@@ -4,14 +4,13 @@ import static org.junit.Assert.assertNotNull;
 
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderService;
-import org.grouplens.reflens.baseline.ItemUserMeanPredictor;
+import org.grouplens.reflens.baseline.UserMeanPredictor;
 import org.grouplens.reflens.data.ExpensiveRatingDataTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 
 
 /**
@@ -38,7 +37,7 @@ public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
 	
 	@Test
 	public void testItemItemWithBaseline() {
-		module.setBaseline(ItemUserMeanPredictor.class);
+		module.setBaseline(UserMeanPredictor.class);
 		Injector inj = Guice.createInjector(module);
 		RecommenderBuilder builder = inj.getInstance(RecommenderBuilder.class);
 		RecommenderService rec = builder.build(dataSource);
