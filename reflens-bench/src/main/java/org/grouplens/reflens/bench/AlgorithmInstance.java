@@ -126,7 +126,7 @@ public class AlgorithmInstance {
 		return injector;
 	}
 	
-	RecommenderBuilder getBuilder() {
+	public RecommenderBuilder getBuilder() {
 		return getInjector().getInstance(RecommenderBuilder.class);
 	}
 

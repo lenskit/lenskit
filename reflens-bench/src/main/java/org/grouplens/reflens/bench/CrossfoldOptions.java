@@ -31,7 +31,7 @@ package org.grouplens.reflens.bench;
 
 import uk.co.flamingpenguin.jewel.cli.Option;
 
-interface CrossfoldOptions {
+public interface CrossfoldOptions {
 
 	/**
 	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test

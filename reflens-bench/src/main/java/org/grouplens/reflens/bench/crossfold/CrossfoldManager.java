@@ -36,7 +36,6 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.Collection;
 import java.util.Random;
 
-import org.grouplens.reflens.bench.UserFilteredDataSource;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Cursors;
 import org.grouplens.reflens.data.RatingDataSource;

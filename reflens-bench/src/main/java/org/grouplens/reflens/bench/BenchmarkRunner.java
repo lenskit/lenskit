@@ -39,6 +39,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grouplens.reflens.bench.crossfold.CrossfoldBenchmark;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.slf4j.Logger;

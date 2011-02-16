@@ -27,7 +27,7 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.bench.crossfold;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -38,7 +38,9 @@ import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderService;
-import org.grouplens.reflens.bench.crossfold.CrossfoldManager;
+import org.grouplens.reflens.bench.AlgorithmInstance;
+import org.grouplens.reflens.bench.CrossfoldOptions;
+import org.grouplens.reflens.bench.TaskTimer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
