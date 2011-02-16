@@ -168,7 +168,7 @@ public class CrossfoldBenchmark implements Runnable {
 		}
 		double mae = accumErr / ngood;
 		double rmse = accumSqErr / ngood;
-		double cov = (double) nitems / ngood;
+		double cov = (double) ngood / nitems;
 		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
 				algo.getName(), timer.elapsedPretty(), mae, rmse));
 		writer.setValue(colPredTime, testTimer.elapsed());
