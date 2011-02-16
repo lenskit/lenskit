@@ -34,6 +34,8 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,8 +49,8 @@ import javax.annotation.concurrent.Immutable;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.util.IndexedItemScore;
@@ -125,7 +127,9 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 			}
 		}
 		RatingVector preds = new RatingVector(items.size());
-		for (long item: items) {
+		LongIterator iter = LongIterators.asLongIterator(items.iterator());
+		while (iter.hasNext()) {
+			final long item = iter.nextLong();
 			final int idx = model.getItemIndex(item);
 			final double w = weights.get(idx);
 			double p = 0;
