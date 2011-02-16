@@ -30,7 +30,8 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -52,6 +53,7 @@ import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.params.BaselinePredictor;
+import org.grouplens.reflens.util.IntSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,18 +116,22 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		
 		/** 
 		 * Transpose the ratings matrix so we have a list of item rating vectors.
-		 * @return
+		 * @todo Fix this method to abstract item collection.
 		 */
 		private void buildItemRatings(Indexer itemIndexer, RatingDataSource data) {
 			Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
+			final boolean collectItems = userItemSets != null;
 			try {
 				for (UserRatingProfile user: cursor) {
 					Collection<Rating> ratings = user.getRatings();
 					ratings = normalizeUserRatings(baseline, user.getUser(), ratings);
-					IntSortedSet userItems = null;
-					if (userItemSets != null) {
-						userItems = new IntAVLTreeSet();
-						userItemSets.put(user.getUser(), userItems);
+					final int nratings = ratings.size();
+					// allocate the array ourselves to avoid an array copy
+					int[] userItemArr = null;
+					IntCollection userItems = null;
+					if (collectItems) {
+						userItemArr = new int[nratings];
+						userItems = IntArrayList.wrap(userItemArr, 0);
 					}
 					for (Rating rating: ratings) {
 						long item = rating.getItemId();
@@ -142,6 +148,10 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 						ivect.put(user.getUser(), (double) rating.getRating());
 						if (userItems != null)
 							userItems.add(idx);
+					}
+					if (collectItems) {
+						IntSortedSet itemSet = new IntSortedArraySet(userItemArr, 0, userItems.size());
+						userItemSets.put(user.getUser(), itemSet);
 					}
 				}
 			} finally {
