@@ -1,15 +1,19 @@
-package org.grouplens.reflens;
+package org.grouplens.reflens.data;
 
 import java.net.URL;
 
-import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
 /**
  * Base class providing access to the MovieLens rating data for expensive tests.
+ * 
+ * <p>This class provides the machinery to access the MovieLens 100K rating data
+ * for expensive data-based tests.  It's used by the extra data tests in RefLens,
+ * and can be used to implement your own data-based tests (subject to the licensing
+ * terms of the MovieLens rating data).</p>
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

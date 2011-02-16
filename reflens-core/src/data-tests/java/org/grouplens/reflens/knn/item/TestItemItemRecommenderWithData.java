@@ -2,9 +2,10 @@ package org.grouplens.reflens.knn.item;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.grouplens.reflens.ExpensiveRatingDataTest;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.baseline.ItemUserMeanPredictor;
+import org.grouplens.reflens.data.ExpensiveRatingDataTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ import com.google.inject.Module;
  *
  */
 public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
-	private Module module;
+	private ItemRecommenderModule module;
 	@Before
 	public void createModule() {
 		module = new ItemRecommenderModule();
@@ -27,6 +28,17 @@ public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
 	
 	@Test
 	public void testItemItemBuild() {
+		Injector inj = Guice.createInjector(module);
+		RecommenderBuilder builder = inj.getInstance(RecommenderBuilder.class);
+		RecommenderService rec = builder.build(dataSource);
+		assertNotNull(rec);
+		assertNotNull(rec.getRatingPredictor());
+		assertNotNull(rec.getRatingRecommender());
+	}
+	
+	@Test
+	public void testItemItemWithBaseline() {
+		module.setBaseline(ItemUserMeanPredictor.class);
 		Injector inj = Guice.createInjector(module);
 		RecommenderBuilder builder = inj.getInstance(RecommenderBuilder.class);
 		RecommenderService rec = builder.build(dataSource);
