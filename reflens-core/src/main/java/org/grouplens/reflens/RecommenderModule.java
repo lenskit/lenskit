@@ -42,6 +42,7 @@ import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.params.MinRating;
 import org.grouplens.reflens.params.ThreadCount;
+import org.grouplens.reflens.params.meta.Parameter;
 import org.grouplens.reflens.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

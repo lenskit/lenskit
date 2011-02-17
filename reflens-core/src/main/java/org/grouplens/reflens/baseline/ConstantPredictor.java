@@ -41,12 +41,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
 
-import org.grouplens.reflens.Parameter;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.params.meta.Parameter;
 import org.grouplens.reflens.util.CollectionUtils;
 
 import com.google.inject.BindingAnnotation;
