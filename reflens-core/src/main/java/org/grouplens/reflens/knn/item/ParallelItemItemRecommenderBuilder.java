@@ -35,6 +35,8 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -195,10 +197,10 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
 	private RatingVector[] buildItemRatings(final Index index, RatingDataSource data) {
-		int nitems = data.getItemCount();
-		final RatingVector[] itemVectors = new RatingVector[nitems];
-		for (int i = 0; i < itemVectors.length; i++) {
-			itemVectors[i] = new RatingVector();
+		final int nitems = data.getItemCount();
+		final Long2DoubleMap[] itemWork = new Long2DoubleMap[nitems];
+		for (int i = 0; i < nitems; i++) {
+			itemWork[i] = new Long2DoubleOpenHashMap();
 		}
 		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
@@ -237,7 +239,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 								long item = rating.getItemId();
 								int idx = index.getIndex(item);
 								assert idx >= 0;
-								RatingVector v = itemVectors[idx];
+								Long2DoubleMap v = itemWork[idx];
 								synchronized (v) {
 									v.put(profile.getUser(), rating.getRating());
 								}
@@ -248,11 +250,16 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 					};
 				}
 			});
-			
-			return itemVectors;
 		} finally {
 			cursor.close();
 		}
+		// Transmogrify the item vector workspace into real rating vectors.
+		RatingVector[] itemVectors = new RatingVector[nitems];
+		for (int i = 0; i < nitems; i++) {
+			itemVectors[i] = new RatingVector(itemWork[i]);
+			itemWork[i] = null;
+		}
+		return itemVectors;
 	}
 	
 	private class SimilarityWorker implements IntWorker {

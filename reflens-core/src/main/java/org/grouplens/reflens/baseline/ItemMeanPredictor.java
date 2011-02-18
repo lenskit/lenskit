@@ -37,9 +37,10 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
@@ -83,14 +84,14 @@ public class ItemMeanPredictor implements RatingPredictor {
 	@Override
 	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
-		RatingVector predictions = new RatingVector();
-		LongCollection fitems = CollectionUtils.fastCollection(items);
-		LongIterator iter = fitems.iterator();
-		while (iter.hasNext()) {
-			long iid = iter.nextLong();
-			predictions.put(iid, getItemMean(iid));
+		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+		if (!(items instanceof LongSortedSet))
+			Arrays.sort(keys);
+		double[] preds = new double[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			preds[i] = getItemMean(keys[i]);
 		}
-		return predictions;
+		return RatingVector.wrap(keys, preds);
 	}
 
 	/* (non-Javadoc)

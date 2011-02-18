@@ -35,6 +35,7 @@ package org.grouplens.reflens.baseline;
 
 
 import static org.junit.Assert.assertEquals;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
@@ -78,7 +79,7 @@ public class TestMeanPredictor {
 	public void testMeanBaseline() {
 		RatingPredictorBuilder builder = new GlobalMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
+		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.00001);
 	}
@@ -87,10 +88,9 @@ public class TestMeanPredictor {
 	public void testUserMeanBaseline() {
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
-		map.put(5, 3);
-		map.put(7, 6);
-		map.put(10, 4);
+		long[] items = {5, 7, 10};
+		double[] ratings = {3, 6, 4};
+		RatingVector map = RatingVector.wrap(items, ratings);
 		// unseen item
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(4.33333, score.getScore(), 0.001);
@@ -101,12 +101,12 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testUserMeanBaselineNoFastutil() {
+		// FIXME: is this method still necessary?
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
-		map.put(5l, 3.0);
-		map.put(7l, 6.0);
-		map.put(10l, 4.0);
+		long[] items = {5, 7, 10};
+		double[] ratings = {3, 6, 4};
+		RatingVector map = RatingVector.wrap(items, ratings);
 		// unseen item
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(4.33333, score.getScore(), 0.001);
@@ -115,10 +115,10 @@ public class TestMeanPredictor {
 		assertEquals(4.33333, score.getScore(), 0.001);
 		
 		// try twice
-		LongCollection items = new LongArrayList();
-		items.add(7);
-		items.add(2);
-		RatingVector preds = pred.predict(10l, map, items);
+		LongCollection items2 = new LongArrayList();
+		items2.add(7);
+		items2.add(2);
+		RatingVector preds = pred.predict(10l, map, items2);
 		assertEquals(4.33333, preds.get(2l), 0.001);
 		assertEquals(4.33333, preds.get(7l), 0.001);
 	}
@@ -130,7 +130,7 @@ public class TestMeanPredictor {
 	public void testUserMeanBaselineFallback() {
 		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
+		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
 	}
@@ -139,10 +139,9 @@ public class TestMeanPredictor {
 	public void testItemMeanBaseline() {
 		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder(0);
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
-		map.put(5, 3);
-		map.put(7, 6);
-		map.put(10, 4);
+		long[] items = {5, 7, 10};
+		double[] ratings = {3, 6, 4};
+		RatingVector map = RatingVector.wrap(items, ratings);
 		// unseen item, should be global mean
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
@@ -151,10 +150,10 @@ public class TestMeanPredictor {
 		assertEquals(3.0, score.getScore(), 0.001);
 		
 		// try twice
-		LongCollection items = new LongArrayList();
-		items.add(5);
-		items.add(2);
-		RatingVector preds = pred.predict(10l, map, items);
+		LongCollection items2 = new LongArrayList();
+		items2.add(5);
+		items2.add(2);
+		RatingVector preds = pred.predict(10l, map, items2);
 		assertEquals(RATINGS_DAT_MEAN, preds.get(2l), 0.001);
 		assertEquals(3.0, preds.get(5l), 0.001);
 	}
@@ -163,10 +162,9 @@ public class TestMeanPredictor {
 	public void testUserItemMeanBaseline() {
 		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder(0);
 		RatingPredictor pred = builder.build(ratings);
-		RatingVector map = new RatingVector();
-		map.put(5, 3); // offset = 0
-		map.put(7, 6); // offset = 2
-		map.put(10, 4); // offset = 4 - µ = 0.25
+		long[] items = {5, 7, 10};
+		double[] ratings = {3, 6, 4};
+		RatingVector map = RatingVector.wrap(items, ratings);
 		final double avgOffset = 0.75;
 		
 		// unseen item, should be global mean + user offset
@@ -177,10 +175,10 @@ public class TestMeanPredictor {
 		assertEquals(3.0 + avgOffset, score.getScore(), 0.001);
 		
 		// try twice
-		LongCollection items = new LongArrayList();
-		items.add(5);
-		items.add(2);
-		RatingVector preds = pred.predict(10l, map, items);
+		LongCollection items2 = new LongArrayList();
+		items2.add(5);
+		items2.add(2);
+		RatingVector preds = pred.predict(10l, map, items2);
 		assertEquals(RATINGS_DAT_MEAN + avgOffset, preds.get(2l), 0.001);
 		assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
 	}

@@ -30,10 +30,6 @@
 
 package org.grouplens.reflens.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
-import java.util.Iterator;
-
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
@@ -43,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 
 /**
+ * Similarity function using cosine similarity.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -67,24 +64,9 @@ public class CosineSimilarity
 	 */
 	@Override
 	public double similarity(RatingVector vec1, RatingVector vec2) {
-		double dot = 0.0f;
+		final double dot = vec1.dot(vec2);
+		final double denom = vec1.norm() * vec2.norm() + dampingFactor;
 		
-		Iterator<Long2DoubleMap.Entry> v1iter = vec1.fastIterator();
-		while (v1iter.hasNext()) {
-			Long2DoubleMap.Entry e = v1iter.next();
-			long k = e.getLongKey();
-			double v = e.getDoubleValue();
-			if (vec2.containsId(k)) {
-				dot += v * vec2.get(k);
-			}
-		}
-		
-		double denom = vec1.norm() * vec2.norm() + dampingFactor;
-		
-		if (denom == 0.0f) {
-			return Double.NaN;
-		} else { 
-			return dot / (double) denom;
-		}
+		return dot / denom;
 	}
 }

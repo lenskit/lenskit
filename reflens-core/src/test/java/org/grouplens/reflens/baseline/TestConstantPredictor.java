@@ -34,6 +34,7 @@
 package org.grouplens.reflens.baseline;
 
 import static org.junit.Assert.assertEquals;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +69,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testNullBuild() {
 		RatingPredictor pred = builder.build(null);
-		RatingVector map = new RatingVector();
+		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(5, score.getScore(), 0.00001);
 	}
@@ -76,7 +77,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testDataSourceBuild() {
 		List<Rating> ratings = Collections.emptyList();
-		RatingVector map = new RatingVector();
+		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
 		RatingDataSource source = new RatingCollectionDataSource(ratings);
 		RatingPredictor pred = builder.build(source);
 		ScoredId score = pred.predict(10l, map, 2l);

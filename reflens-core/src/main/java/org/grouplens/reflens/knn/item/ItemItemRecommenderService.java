@@ -34,11 +34,10 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +52,7 @@ import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.IndexedItemScore;
 
 /**
@@ -90,7 +90,8 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	
 	@Override
 	public ScoredId predict(long user, RatingVector ratings, long item) {
-		RatingVector normed = model.subtractBaseline(user, ratings);
+		RatingVector normed = ratings.copy();
+		model.subtractBaseline(user, ratings, normed);
 		double sum = 0;
 		double totalWeight = 0;
 		for (IndexedItemScore score: model.getNeighbors(item)) {
@@ -112,7 +113,8 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	
 	@Override
 	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
-		RatingVector normed = model.subtractBaseline(user, ratings); 
+		RatingVector normed = ratings.copy();
+		model.subtractBaseline(user, ratings, normed); 
 		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		sums.defaultReturnValue(0);
@@ -126,18 +128,21 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 				sums.put(i, sums.get(i) + s*r);
 			}
 		}
-		RatingVector preds = new RatingVector(items.size());
-		LongIterator iter = LongIterators.asLongIterator(items.iterator());
-		while (iter.hasNext()) {
-			final long item = iter.nextLong();
+		final long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+		Arrays.sort(keys);
+		final double[] preds = new double[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			final long item = keys[i];
 			final int idx = model.getItemIndex(item);
 			final double w = weights.get(idx);
 			double p = 0;
 			if (w > 0)
 				p = sums.get(idx) / w;
-			preds.put(item, p);
+			preds[i] = p;
 		}
-		return model.addBaseline(user, ratings, preds);
+		RatingVector predictions = RatingVector.wrap(keys, preds);
+		model.addBaseline(user, ratings, predictions);
+		return predictions;
 	}
 
 	@Override

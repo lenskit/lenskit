@@ -151,11 +151,7 @@ public class CrossfoldBenchmark implements Runnable {
 			List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
 			Collections.shuffle(ratings);
-			RatingVector queryRatings = new RatingVector();
-			for (int i = 0; i < midpt; i++) {
-				Rating rating = ratings.get(i);
-				queryRatings.put(rating.getItemId(), rating.getRating());
-			}
+			RatingVector queryRatings = RatingVector.itemRatingVector(ratings.subList(0, midpt));
 			for (int i = midpt; i < ratings.size(); i++) {
 				long iid = ratings.get(i).getItemId();
 				ScoredId prediction = rec.predict(user.getUser(), queryRatings, iid);

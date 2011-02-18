@@ -30,7 +30,6 @@
 
 package org.grouplens.reflens.knn.item;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import java.io.Serializable;
@@ -86,26 +85,28 @@ public class ItemItemModel implements Serializable {
 		return itemIndexer.getId(idx);
 	}
 
-	public RatingVector subtractBaseline(long user, RatingVector ratings) {
+	/**
+	 * Subtract the baseline recommender from a set of ratings.
+	 * <p>
+	 * This method computes the baseline predictions for all items in <var>target</var>
+	 * and subtracts the prediction from the value in <var>target</var>.  This
+	 * subtraction is done in-place by calling {@link RatingVector#subtract(RatingVector)}
+	 * on <var>target</var>.
+	 * 
+	 * @param user The user ID.
+	 * @param ratings The user's rating vector.
+	 * @param target The vector from which the baseline is to be subtracted.
+	 */
+	public void subtractBaseline(long user, RatingVector ratings, RatingVector target) {
 		if (baseline != null) {
-			RatingVector basePreds = baseline.predict(user, ratings, ratings.idSet());
-			RatingVector normed = new RatingVector(ratings.size());
-			for (Long2DoubleMap.Entry e: ratings.fast()) {
-				normed.put(e.getLongKey(), e.getDoubleValue() - basePreds.get(e.getKey()));
-			}
-			return normed;
-		} else {
-			return ratings;
+			RatingVector basePreds = baseline.predict(user, ratings, target.idSet());
+			target.subtract(basePreds);
 		}
 	}
 	
-	public RatingVector addBaseline(long user, RatingVector ratings, RatingVector predictions) {
-		RatingVector basePreds = baseline.predict(user, ratings, predictions.idSet());
-		RatingVector normed = new RatingVector(predictions.size());
-		for (Long2DoubleMap.Entry e: predictions.fast()) {
-			normed.put(e.getLongKey(), e.getDoubleValue() + basePreds.get(e.getKey()));
-		}
-		return normed;
+	public void addBaseline(long user, RatingVector ratings, RatingVector target) {
+		RatingVector basePreds = baseline.predict(user, ratings, target.idSet());
+		target.add(basePreds);
 	}
 	
 	public double addBaseline(long user, RatingVector ratings, long item, double prediction) {

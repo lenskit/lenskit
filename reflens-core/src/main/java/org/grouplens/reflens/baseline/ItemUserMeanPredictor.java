@@ -31,9 +31,9 @@
 package org.grouplens.reflens.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -93,14 +93,14 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
 		double meanOffset = computeUserAverage(ratings);
-		RatingVector map = new RatingVector(items.size());
-		LongCollection fitems = CollectionUtils.fastCollection(items);
-		LongIterator iter = fitems.iterator();
-		while (iter.hasNext()) {
-			long iid = iter.nextLong();
-			map.put(iid, meanOffset + getItemMean(iid));
+		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+		if (!(items instanceof LongSortedSet))
+			Arrays.sort(keys);
+		double[] preds = new double[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			preds[i] = meanOffset + getItemMean(keys[i]);
 		}
-		return map;
+		return RatingVector.wrap(keys, preds);
 	}
 
 	/* (non-Javadoc)

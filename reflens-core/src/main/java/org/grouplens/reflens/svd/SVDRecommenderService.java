@@ -33,10 +33,10 @@ package org.grouplens.reflens.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.reflens.BasketRecommender;
@@ -144,10 +144,11 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 		RatingVector base = baseline.predict(user, ratings, tgtids);
 		double uprefs[] = foldIn(user, ratings, base);
 		
-		RatingVector preds = new RatingVector();
-		LongIterator iter = CollectionUtils.fastIterator(items);
-		while (iter.hasNext()) {
-			final long item = iter.nextLong();
+		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+		Arrays.sort(keys);
+		double[] values = new double[keys.length];
+		for (int i = 0; i < keys.length; i++) {
+			final long item = keys[i];
 			final int idx = itemIndex.getIndex(item);
 			if (idx < 0)
 				continue;
@@ -157,9 +158,9 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 				score += uprefs[f] * singularValues[f] * itemFeatures[f][idx];
 				score = clampingFunction.apply(score);
 			}
-			preds.put(item, score);
+			values[i] = score;
 		}
-		return preds;
+		return RatingVector.wrap(keys, values);
 	}
 
 	@Override

@@ -33,12 +33,13 @@
  */
 package org.grouplens.reflens.baseline;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
@@ -74,6 +75,22 @@ public class ConstantPredictor implements RatingPredictor {
 	}
 	
 	/**
+	 * Construct a rating vector with the same rating for all items.
+	 * @param items The items to include in the vector.
+	 * @param value The rating/prediction to give.
+	 * @return A rating vector mapping all items in <var>items</var> to
+	 * <var>value</var>.
+	 */
+	public static RatingVector constantPredictions(Collection<Long> items, double value) {
+		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+		if (!(items instanceof LongSortedSet))
+			Arrays.sort(keys);
+		double[] preds = new double[keys.length];
+		Arrays.fill(preds, value);
+		return RatingVector.wrap(keys, preds);
+	}
+	
+	/**
 	 * Construct a new constant predictor.  This is exposed so other code
 	 * can use it as a fallback.
 	 * @param value
@@ -84,13 +101,7 @@ public class ConstantPredictor implements RatingPredictor {
 	
 	@Override
 	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
-		RatingVector preds = new RatingVector();
-		LongIterator iter = CollectionUtils.fastCollection(items).iterator();
-		while (iter.hasNext()) {
-			long item = iter.nextLong();
-			preds.put(item, value);
-		}
-		return preds;
+		return constantPredictions(items, value);
 	}
 
 	/* (non-Javadoc)

@@ -30,9 +30,6 @@
 
 package org.grouplens.reflens.baseline;
 
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
@@ -40,7 +37,6 @@ import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.util.CollectionUtils;
 
 import com.google.inject.Inject;
 
@@ -76,13 +72,7 @@ public class UserMeanPredictor implements RatingPredictor {
 	public RatingVector predict(long user, RatingVector ratings,
 			Collection<Long> items) {
 		double mean = average(ratings, globalMean) + globalMean;
-		RatingVector map = new RatingVector(items.size());
-		LongCollection fitems = CollectionUtils.fastCollection(items);
-		LongIterator iter = fitems.iterator();
-		while (iter.hasNext()) {
-			map.put(iter.nextLong(), mean);
-		}
-		return map;
+		return ConstantPredictor.constantPredictions(items, mean);
 	}
 
 	/* (non-Javadoc)

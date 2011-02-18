@@ -31,14 +31,16 @@
 package org.grouplens.reflens.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
@@ -237,7 +239,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 	}
 	
 	private List<SVDRating> indexData(RatingDataSource data, RatingPredictor baseline, Indexer userIndex, Indexer itemIndex, Model model) {
-		ArrayList<RatingVector> ratingVectors = new ArrayList<RatingVector>();
+		ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>();
 		
 		Cursor<Rating> ratings = data.getRatings();
 		try {
@@ -247,14 +249,14 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 			for (Rating r: ratings) {
 				SVDRating svdr = new SVDRating(model, r);
 				svr.add(svdr);
-				while (svdr.user >= ratingVectors.size()) {
-					ratingVectors.add(new RatingVector());
+				while (svdr.user >= ratingData.size()) {
+					ratingData.add(new Long2DoubleOpenHashMap());
 				}
-				ratingVectors.get(svdr.user).put(svdr.iid, svdr.value);
+				ratingData.get(svdr.user).put(svdr.iid, svdr.value);
 			}
-			model.userBaselines = new ArrayList<RatingVector>(ratingVectors.size());
-			for (int i = 0, sz = ratingVectors.size(); i < sz; i++) {
-				RatingVector rv = ratingVectors.get(i);
+			model.userBaselines = new ArrayList<RatingVector>(ratingData.size());
+			for (int i = 0, sz = ratingData.size(); i < sz; i++) {
+				RatingVector rv = new RatingVector(ratingData.get(i));
 				long uid = userIndex.getId(i);
 				model.userBaselines.add(baseline.predict(uid, rv, rv.idSet()));
 			}

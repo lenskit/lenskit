@@ -33,11 +33,14 @@ package org.grouplens.reflens.knn.item;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntCollection;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -95,7 +98,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	final class BuildState {
 		public final RatingPredictor baseline;
 		public final Index itemIndex;
-		public final ArrayList<RatingVector> itemRatings;
+		public ArrayList<RatingVector> itemRatings;
 		public final Long2ObjectMap<IntSortedSet> userItemSets;
 		public final int itemCount;
 		
@@ -122,6 +125,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		private void buildItemRatings(Indexer itemIndexer, RatingDataSource data) {
 			Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 			final boolean collectItems = userItemSets != null;
+			ArrayList<Long2DoubleMap> itemWork = new ArrayList<Long2DoubleMap>(100);
 			try {
 				for (UserRatingProfile user: cursor) {
 					Collection<Rating> ratings = user.getRatings();
@@ -137,14 +141,14 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 					for (Rating rating: ratings) {
 						long item = rating.getItemId();
 						int idx = itemIndexer.internId(item);
-						RatingVector ivect;
-						if (idx >= itemRatings.size()) {
+						Long2DoubleMap ivect;
+						if (idx >= itemWork.size()) {
 							// it's a new item - add one
-							assert idx == itemRatings.size();
-							ivect = new RatingVector();
-							itemRatings.add(ivect);
+							assert idx == itemWork.size();
+							ivect = new Long2DoubleOpenHashMap();
+							itemWork.add(ivect);
 						} else {
-							ivect = itemRatings.get(idx);
+							ivect = itemWork.get(idx);
 						}
 						ivect.put(user.getUser(), (double) rating.getRating());
 						if (userItems != null)
@@ -158,7 +162,14 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			} finally {
 				cursor.close();
 			}
-			itemRatings.trimToSize();
+			
+			// convert the temporary work array into a real array
+			itemRatings = new ArrayList<RatingVector>(itemWork.size());
+			ListIterator<Long2DoubleMap> iter = itemWork.listIterator();
+			while (iter.hasNext()) {
+				itemRatings.add(new RatingVector(iter.next()));
+				iter.set(null);                // clear the array so GC can free
+			}
 		}
 	}
 	
