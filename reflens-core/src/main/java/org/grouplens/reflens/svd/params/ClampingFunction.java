@@ -34,6 +34,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.params.meta.DefaultClass;
 import org.grouplens.reflens.params.meta.Parameter;
 import org.grouplens.reflens.util.DoubleFunction;
 
@@ -43,6 +44,6 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Parameter
+@DefaultClass(DoubleFunction.Identity.class)
 public @interface ClampingFunction {
-	public static final Class<? extends DoubleFunction> DEFAULT_VALUE = DoubleFunction.Identity.class;
 }

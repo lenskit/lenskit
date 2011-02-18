@@ -35,9 +35,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.CosineSimilarity;
-import org.grouplens.reflens.knn.Similarity;
+import org.grouplens.reflens.params.meta.DefaultClass;
 import org.grouplens.reflens.params.meta.Parameter;
 
 import com.google.inject.BindingAnnotation;
@@ -46,6 +45,6 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Parameter
+@DefaultClass(CosineSimilarity.class)
 public @interface ItemSimilarity {
-	public static final Class<? extends Similarity<? super RatingVector>> DEFAULT_VALUE = CosineSimilarity.class;
 }

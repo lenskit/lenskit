@@ -44,6 +44,7 @@ import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.params.MinRating;
 import org.grouplens.reflens.params.ThreadCount;
+import org.grouplens.reflens.params.meta.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,9 +73,9 @@ public class TestRecommenderModule {
 	
 	@Test
 	public void testDefaults() {
-		assertEquals(MeanDamping.DEFAULT_VALUE, module.getDamping(), EPSILON);
-		assertEquals(MinRating.DEFAULT_VALUE, module.getMinRating(), EPSILON);
-		assertEquals(MaxRating.DEFAULT_VALUE, module.getMaxRating(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(MeanDamping.class), module.getDamping(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(MinRating.class), module.getMinRating(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(MaxRating.class), module.getMaxRating(), EPSILON);
 	}
 
 	/**

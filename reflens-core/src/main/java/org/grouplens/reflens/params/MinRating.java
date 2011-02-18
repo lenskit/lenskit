@@ -34,6 +34,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.params.meta.DefaultDouble;
 import org.grouplens.reflens.params.meta.Parameter;
 
 import com.google.inject.BindingAnnotation;
@@ -42,6 +43,6 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Parameter
+@DefaultDouble(1)
 public @interface MinRating {
-	public static final double DEFAULT_VALUE = 5;
 }

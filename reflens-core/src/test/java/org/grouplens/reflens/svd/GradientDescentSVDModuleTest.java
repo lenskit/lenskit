@@ -36,6 +36,7 @@ import static org.grouplens.common.test.GuiceHelpers.*;
 
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.baseline.ConstantPredictor;
+import org.grouplens.reflens.params.meta.Parameters;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
@@ -67,7 +68,7 @@ public class GradientDescentSVDModuleTest {
 	 */
 	@Test
 	public void testGetFeatureCount() {
-		assertEquals(FeatureCount.DEFAULT_VALUE, module.getFeatureCount());
+		assertEquals(Parameters.getDefaultInt(FeatureCount.class), module.getFeatureCount());
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class GradientDescentSVDModuleTest {
 	 */
 	@Test
 	public void testGetLearningRate() {
-		assertEquals(LearningRate.DEFAULT_VALUE, module.getLearningRate(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(LearningRate.class), module.getLearningRate(), EPSILON);
 	}
 
 	/**
@@ -101,7 +102,7 @@ public class GradientDescentSVDModuleTest {
 	 */
 	@Test
 	public void testGetFeatureTrainingThreshold() {
-		assertEquals(FeatureTrainingThreshold.DEFAULT_VALUE, module.getFeatureTrainingThreshold(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), module.getFeatureTrainingThreshold(), EPSILON);
 	}
 
 	/**
@@ -118,7 +119,7 @@ public class GradientDescentSVDModuleTest {
 	 */
 	@Test
 	public void testGetGradientDescentRegularization() {
-		assertEquals(GradientDescentRegularization.DEFAULT_VALUE, module.getGradientDescentRegularization(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), module.getGradientDescentRegularization(), EPSILON);
 	}
 
 	/**
@@ -135,7 +136,7 @@ public class GradientDescentSVDModuleTest {
 	 */
 	@Test
 	public void testGetIterationCount() {
-		assertEquals(IterationCount.DEFAULT_VALUE, module.getIterationCount());
+		assertEquals(Parameters.getDefaultInt(IterationCount.class), module.getIterationCount());
 	}
 
 	/**
@@ -172,11 +173,11 @@ public class GradientDescentSVDModuleTest {
 		RecommenderBuilder builder = inject(module, RecommenderBuilder.class);
 		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
 		GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
-		assertEquals(FeatureCount.DEFAULT_VALUE, b.featureCount);
-		assertEquals(LearningRate.DEFAULT_VALUE, b.learningRate, EPSILON);
-		assertEquals(GradientDescentRegularization.DEFAULT_VALUE, b.trainingRegularization, EPSILON);
-		assertEquals(FeatureTrainingThreshold.DEFAULT_VALUE, b.trainingThreshold, EPSILON);
-		assertEquals(IterationCount.DEFAULT_VALUE, b.iterationCount);
+		assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);
+		assertEquals(Parameters.getDefaultDouble(LearningRate.class), b.learningRate, EPSILON);
+		assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), b.trainingRegularization, EPSILON);
+		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), b.trainingThreshold, EPSILON);
+		assertEquals(Parameters.getDefaultInt(IterationCount.class), b.iterationCount);
 		assertThat(b.clampingFunction, instanceOf(DoubleFunction.Identity.class));
 		assertNotNull(b.baselineBuilder);
 		assertThat(b.baselineBuilder, instanceOf(ConstantPredictor.Builder.class));

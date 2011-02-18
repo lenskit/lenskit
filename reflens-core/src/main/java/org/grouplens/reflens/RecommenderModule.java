@@ -30,6 +30,8 @@
 
 package org.grouplens.reflens;
 
+import static org.grouplens.reflens.params.meta.Parameters.*;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -74,11 +76,11 @@ public class RecommenderModule extends AbstractModule {
 	private Logger logger;
 	
 	private String name;
-	private @ThreadCount int threadCount;
+	private @ThreadCount int threadCount = Runtime.getRuntime().availableProcessors();
 	private @MeanDamping double damping;
 	private @MinRating double minRating;
 	private @MaxRating double maxRating;
-	private @Nullable Class<? extends RatingPredictorBuilder> baseline;
+	private @BaselinePredictor @Nullable Class<? extends RatingPredictorBuilder> baseline;
 	private @ConstantPredictor.Value double constantBaselineValue;
 	
 	public RecommenderModule() {
@@ -87,21 +89,25 @@ public class RecommenderModule extends AbstractModule {
 		baseline = null;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private void initializeDefaultValues(Class clazz) {
-		Class parent = clazz.getSuperclass();
+	private void initializeDefaultValues(Class<?> clazz) {
+		Class<?> parent = clazz.getSuperclass();
 		if (parent != null)
 			initializeDefaultValues(parent);
 		
 		for (Field f: clazz.getDeclaredFields()) {
 			f.setAccessible(true);
+			Class<?> fType = f.getType();
 			for (Annotation a: f.getAnnotations()) {
-				if (a.annotationType().isAnnotationPresent(Parameter.class)) {
+				Class<? extends Annotation> aType = a.annotationType();
+				if (aType.isAnnotationPresent(Parameter.class)) {
 					try {
-						Field dft = a.getClass().getField("DEFAULT_VALUE");
-						f.set(this, dft.get(null));
-					} catch (NoSuchFieldException e) {
-						continue;
+						if (fType.equals(double.class) && hasDefaultDouble(aType)) {
+							f.set(this, getDefaultDouble(aType));
+						} else if (fType.equals(int.class) && hasDefaultInt(aType)) {
+							f.set(this, getDefaultInt(aType));
+						} else if (fType.equals(Class.class) && hasDefaultClass(aType)) {
+							f.set(this, getDefaultClass(aType));
+						}
 					} catch (IllegalAccessException e) {
 						logger.warn("Cannot set default value for {}", f.getName(), e);
 					}

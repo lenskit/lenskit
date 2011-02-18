@@ -34,11 +34,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.params.meta.DefaultDouble;
 import org.grouplens.reflens.params.meta.Parameter;
 
 import com.google.inject.BindingAnnotation;
 
 /**
+ * The convergence threshold for feature training.  If {@link IterationCount} is
+ * unspecified, then each feature is trained until the change in error between
+ * two consecutive passes is less than the value specified by this parameter.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -46,6 +50,6 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Parameter
+@DefaultDouble(1.0e-5)
 public @interface FeatureTrainingThreshold {
-	public static final double DEFAULT_VALUE = 1.0e-5;
 }

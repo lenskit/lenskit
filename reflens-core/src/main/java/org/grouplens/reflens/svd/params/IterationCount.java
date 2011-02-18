@@ -34,14 +34,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.reflens.params.meta.DefaultInt;
 import org.grouplens.reflens.params.meta.Parameter;
 
 import com.google.inject.BindingAnnotation;
 
+/**
+ * The number of iterations at which to stop.  If non-zero, then the gradient
+ * descent algorithm runs for the specified number of iterations per featurerather
+ * than measuring convergence.
+ * @see FeatureTrainingThreshold
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 @BindingAnnotation
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Parameter
+@DefaultInt(0)
 public @interface IterationCount {
-	public static final int DEFAULT_VALUE = 0;
 }

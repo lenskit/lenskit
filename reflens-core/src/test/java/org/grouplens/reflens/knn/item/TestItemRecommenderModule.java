@@ -29,18 +29,19 @@
  */
 package org.grouplens.reflens.knn.item;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.grouplens.common.test.Matchers.*;
 import static org.grouplens.common.test.GuiceHelpers.inject;
+import static org.grouplens.common.test.Matchers.isAssignableTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.grouplens.reflens.TestRecommenderModule;
 import org.grouplens.reflens.data.RatingVector;
 import org.grouplens.reflens.knn.Similarity;
-import org.grouplens.reflens.knn.item.ItemRecommenderModule;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
+import org.grouplens.reflens.params.meta.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,7 +69,7 @@ public class TestItemRecommenderModule {
 	 */
 	@Test
 	public void testGetNeighborhoodSize() {
-		assertEquals(NeighborhoodSize.DEFAULT_VALUE, module.getNeighborhoodSize());
+		assertEquals(Parameters.getDefaultInt(NeighborhoodSize.class), module.getNeighborhoodSize());
 	}
 
 	/**
@@ -85,7 +86,7 @@ public class TestItemRecommenderModule {
 	 */
 	@Test
 	public void testGetSimilarityDamping() {
-		assertEquals(SimilarityDamper.DEFAULT_VALUE, module.getSimilarityDamping(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(SimilarityDamper.class), module.getSimilarityDamping(), EPSILON);
 	}
 
 	/**
@@ -102,7 +103,7 @@ public class TestItemRecommenderModule {
 	 */
 	@Test
 	public void testGetItemSimilarity() {
-		assertThat(module.getItemSimilarity(), isAssignableTo(ItemSimilarity.DEFAULT_VALUE));
+		assertThat(module.getItemSimilarity(), isAssignableTo(Parameters.getDefaultClass(ItemSimilarity.class)));
 	}
 
 	/**
