@@ -30,10 +30,10 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.SparseVector;
 
 /**
- * A similarity function of vectors that is optimizable based on its ids.
+ * A similarity function of vectors that is optimizable based on its keys.
  * 
  * Optimizable similarity functions always return 0 if the id sets of the
  * two maps are disjoint, so the algorithm can optimize calls by skipping
@@ -41,6 +41,6 @@ import org.grouplens.reflens.data.RatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface OptimizableVectorSimilarity<V extends RatingVector> extends Similarity<V> {
+public interface OptimizableVectorSimilarity<V extends SparseVector> extends Similarity<V> {
 
 }

@@ -32,7 +32,7 @@ package org.grouplens.reflens.knn.item;
 
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
@@ -55,7 +55,7 @@ import com.google.inject.assistedinject.FactoryProvider;
 public class ItemRecommenderModule extends RecommenderModule {
 	private @NeighborhoodSize int neighborhoodSize;
 	private @SimilarityDamper double similarityDamping;
-	private @ItemSimilarity Class<? extends Similarity<? super RatingVector>> itemSimilarity;
+	private @ItemSimilarity Class<? extends Similarity<? super MutableSparseVector>> itemSimilarity;
 	
 	public ItemRecommenderModule() {
 	}
@@ -102,7 +102,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	/**
 	 * @return the itemSimilarity
 	 */
-	public Class<? extends Similarity<? super RatingVector>> getItemSimilarity() {
+	public Class<? extends Similarity<? super MutableSparseVector>> getItemSimilarity() {
 		return itemSimilarity;
 	}
 
@@ -111,7 +111,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * @param itemSimilarity the itemSimilarity to set
 	 */
 	public void setItemSimilarity(
-			Class<? extends Similarity<? super RatingVector>> itemSimilarity) {
+			Class<? extends Similarity<? super MutableSparseVector>> itemSimilarity) {
 		this.itemSimilarity = itemSimilarity;
 	}
 
@@ -132,7 +132,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		bind(new TypeLiteral<Similarity<? super RatingVector>>(){})
+		bind(new TypeLiteral<Similarity<? super MutableSparseVector>>(){})
 			.annotatedWith(ItemSimilarity.class)
 			.to(itemSimilarity);
 	}
@@ -141,7 +141,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	@Provides
 	protected SimilarityMatrixBuildStrategy buildStrategy(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<? super RatingVector> similarity) {
+			@ItemSimilarity Similarity<? super MutableSparseVector> similarity) {
 		if (similarity instanceof OptimizableVectorSimilarity) {
 			if (similarity instanceof SymmetricBinaryFunction)
 				return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,

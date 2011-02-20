@@ -54,7 +54,8 @@ import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.Similarity;
@@ -86,7 +87,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Similarity<? super RatingVector> itemSimilarity;
+	private Similarity<? super SparseVector> itemSimilarity;
 	@Nullable
 	private final ProgressReporterFactory progressFactory;
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
@@ -99,7 +100,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableVectorSimilarity<? super RatingVector> itemSimilarity,
+			@ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
 		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
@@ -135,7 +136,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		logger.debug("Indexing items");
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");
-		RatingVector[] itemRatings = buildItemRatings(itemIndex, data);
+		SparseVector[] itemRatings = buildItemRatings(itemIndex, data);
 		
 		// prepare the similarity matrix
 		logger.debug("Initializing similarity matrix");
@@ -196,7 +197,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
-	private RatingVector[] buildItemRatings(final Index index, RatingDataSource data) {
+	private SparseVector[] buildItemRatings(final Index index, RatingDataSource data) {
 		final int nitems = data.getItemCount();
 		final Long2DoubleMap[] itemWork = new Long2DoubleMap[nitems];
 		for (int i = 0; i < nitems; i++) {
@@ -254,20 +255,20 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			cursor.close();
 		}
 		// Transmogrify the item vector workspace into real rating vectors.
-		RatingVector[] itemVectors = new RatingVector[nitems];
+		SparseVector[] itemVectors = new SparseVector[nitems];
 		for (int i = 0; i < nitems; i++) {
-			itemVectors[i] = new RatingVector(itemWork[i]);
+			itemVectors[i] = new MutableSparseVector(itemWork[i]);
 			itemWork[i] = null;
 		}
 		return itemVectors;
 	}
 	
 	private class SimilarityWorker implements IntWorker {
-		private final RatingVector[] itemVectors;
+		private final SparseVector[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
 		private final boolean symmetric;
 		
-		public SimilarityWorker(RatingVector[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorker(SparseVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
 			this.symmetric = itemSimilarity instanceof SymmetricBinaryFunction;
@@ -308,10 +309,10 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	
 	public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
 
-		private final RatingVector[] itemVector;
+		private final SparseVector[] itemVector;
 		private final SimilarityMatrixBuilder builder;
 		
-		public SimilarityWorkerFactory(RatingVector[] items, SimilarityMatrixBuilder builder) {
+		public SimilarityWorkerFactory(SparseVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
 		}
@@ -326,8 +327,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
 		
-		RatingVector rmap = RatingVector.userRatingVector(ratings);
-		RatingVector base = baseline.predict(uid, rmap, rmap.idSet());
+		SparseVector rmap = MutableSparseVector.userRatingVector(ratings);
+		SparseVector base = baseline.predict(uid, rmap, rmap.idSet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

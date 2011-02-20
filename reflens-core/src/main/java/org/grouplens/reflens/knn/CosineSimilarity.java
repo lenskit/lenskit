@@ -30,7 +30,8 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ import com.google.inject.Inject;
  *
  */
 public class CosineSimilarity
-	implements OptimizableVectorSimilarity<RatingVector>, SymmetricBinaryFunction {
+	implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
 	private static final Logger logger = LoggerFactory.getLogger(CosineSimilarity.class);
 	
 	private final double dampingFactor;
@@ -63,7 +64,7 @@ public class CosineSimilarity
 	 * @see org.grouplens.reflens.Similarity#similarity(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public double similarity(RatingVector vec1, RatingVector vec2) {
+	public double similarity(SparseVector vec1, SparseVector vec2) {
 		final double dot = vec1.dot(vec2);
 		final double denom = vec1.norm() * vec2.norm() + dampingFactor;
 		

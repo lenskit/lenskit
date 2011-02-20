@@ -37,8 +37,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 
 /**
  * Interface for rating prediction.
@@ -55,7 +56,7 @@ public interface RatingPredictor {
 	 * @return the prediction, or <tt>null</tt> if no prediction is possible
 	 */
 	@Nullable @CheckForNull
-	public ScoredId predict(long user, RatingVector ratings, long item);
+	public ScoredId predict(long user, SparseVector ratings, long item);
 	
 	/**
 	 * Generate predictions for a collection of items.
@@ -66,5 +67,5 @@ public interface RatingPredictor {
 	 * may not contain all requested items.
 	 */
 	@Nonnull
-	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items);
+	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 }

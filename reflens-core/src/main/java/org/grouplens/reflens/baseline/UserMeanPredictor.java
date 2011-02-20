@@ -35,8 +35,9 @@ import java.util.Collection;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 
 import com.google.inject.Inject;
 
@@ -57,7 +58,7 @@ public class UserMeanPredictor implements RatingPredictor {
 		globalMean = mean;
 	}
 	
-	static double average(RatingVector ratings, double offset) {
+	static double average(SparseVector ratings, double offset) {
 		if (ratings.isEmpty()) return 0;
 		
 		double total = ratings.sum();
@@ -69,7 +70,7 @@ public class UserMeanPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
 	 */
 	@Override
-	public RatingVector predict(long user, RatingVector ratings,
+	public MutableSparseVector predict(long user, SparseVector ratings,
 			Collection<Long> items) {
 		double mean = average(ratings, globalMean) + globalMean;
 		return ConstantPredictor.constantPredictions(items, mean);
@@ -79,7 +80,7 @@ public class UserMeanPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, long)
 	 */
 	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
+	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, average(ratings, globalMean) + globalMean);
 	}
 	

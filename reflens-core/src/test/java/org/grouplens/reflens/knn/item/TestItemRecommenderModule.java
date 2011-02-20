@@ -36,7 +36,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.grouplens.reflens.TestRecommenderModule;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
@@ -119,14 +120,14 @@ public class TestItemRecommenderModule {
 	public void testInjectSimilarity() {
 		module.setItemSimilarity(DummySimilarity.class);
 		module.setSimilarityDamping(39.8);
-		Similarity<? super RatingVector> sim;
-		sim = inject(module, new TypeLiteral<Similarity<? super RatingVector>>(){}, ItemSimilarity.class);
+		Similarity<? super MutableSparseVector> sim;
+		sim = inject(module, new TypeLiteral<Similarity<? super MutableSparseVector>>(){}, ItemSimilarity.class);
 		assertThat(sim, instanceOf(DummySimilarity.class));
 		DummySimilarity dsim = (DummySimilarity) sim;
 		assertEquals(39.8, dsim.damping, EPSILON);
 	}
 	
-	private static class DummySimilarity implements Similarity<RatingVector> {
+	private static class DummySimilarity implements Similarity<SparseVector> {
 		public final double damping;
 		
 		@SuppressWarnings("unused")
@@ -136,7 +137,7 @@ public class TestItemRecommenderModule {
 		}
 
 		@Override
-		public double similarity(RatingVector vec1, RatingVector vec2) {
+		public double similarity(SparseVector vec1, SparseVector vec2) {
 			return 0;
 		}
 		

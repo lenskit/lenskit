@@ -29,7 +29,7 @@
  */
 package org.grouplens.reflens.knn.item;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
@@ -43,9 +43,9 @@ class SymmetricSimilarityMatrixBuildStrategy implements
 	private final static Logger logger = LoggerFactory.getLogger(SymmetricSimilarityMatrixBuildStrategy.class);
 	
 	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final Similarity<? super RatingVector> similarityFunction;
+	private final Similarity<? super MutableSparseVector> similarityFunction;
 	
-	SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super RatingVector> similarity) {
+	SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super MutableSparseVector> similarity) {
 		this.matrixFactory = matrixFactory;
 		this.similarityFunction = similarity;
 	}

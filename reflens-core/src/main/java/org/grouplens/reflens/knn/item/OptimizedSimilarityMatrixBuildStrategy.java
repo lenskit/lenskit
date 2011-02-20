@@ -35,7 +35,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
@@ -52,9 +52,9 @@ class OptimizedSimilarityMatrixBuildStrategy implements
 		SimilarityMatrixBuildStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(OptimizedSimilarityMatrixBuildStrategy.class);
 	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final OptimizableVectorSimilarity<RatingVector> similarityFunction;
+	private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-	OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<RatingVector> sim) {
+	OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
 		matrixFactory = mfact;
 		similarityFunction = sim;
 	}
@@ -68,7 +68,7 @@ class OptimizedSimilarityMatrixBuildStrategy implements
 		logger.debug("Building with AVL tree implementation");
 		final int nitems = state.itemCount;
 		for (int i = 0; i < nitems; i++) {
-			final RatingVector v = state.itemRatings.get(i);
+			final SparseVector v = state.itemRatings.get(i);
 			final IntSet candidates = new IntOpenHashSet();
 			final LongIterator uiter = v.idSet().iterator();
 			while (uiter.hasNext()) {

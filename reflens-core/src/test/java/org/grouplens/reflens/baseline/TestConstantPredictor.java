@@ -43,8 +43,9 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,7 +70,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testNullBuild() {
 		RatingPredictor pred = builder.build(null);
-		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
+		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(5, score.getScore(), 0.00001);
 	}
@@ -77,7 +78,7 @@ public class TestConstantPredictor {
 	@Test
 	public void testDataSourceBuild() {
 		List<Rating> ratings = Collections.emptyList();
-		RatingVector map = new RatingVector(Long2DoubleMaps.EMPTY_MAP);
+		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
 		RatingDataSource source = new RatingCollectionDataSource(ratings);
 		RatingPredictor pred = builder.build(source);
 		ScoredId score = pred.predict(10l, map, 2l);

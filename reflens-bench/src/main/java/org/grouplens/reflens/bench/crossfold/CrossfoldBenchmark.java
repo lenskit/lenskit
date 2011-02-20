@@ -43,8 +43,9 @@ import org.grouplens.reflens.bench.CrossfoldOptions;
 import org.grouplens.reflens.bench.TaskTimer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.tablewriter.CSVWriterBuilder;
 import org.grouplens.reflens.tablewriter.TableWriter;
@@ -151,7 +152,7 @@ public class CrossfoldBenchmark implements Runnable {
 			List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
 			int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
 			Collections.shuffle(ratings);
-			RatingVector queryRatings = RatingVector.itemRatingVector(ratings.subList(0, midpt));
+			SparseVector queryRatings = MutableSparseVector.itemRatingVector(ratings.subList(0, midpt));
 			for (int i = midpt; i < ratings.size(); i++) {
 				long iid = ratings.get(i).getItemId();
 				ScoredId prediction = rec.predict(user.getUser(), queryRatings, iid);

@@ -44,8 +44,9 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.Index;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.DoubleFunction;
 
@@ -105,7 +106,7 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 	 * will be the number of features.
 	 * @see #getFeatureCount()
 	 */
-	protected double[] foldIn(long user, RatingVector ratings, RatingVector base) {
+	protected double[] foldIn(long user, SparseVector ratings, SparseVector base) {
 		double featurePrefs[] = new double[numFeatures];
 		DoubleArrays.fill(featurePrefs, 0.0);
 		
@@ -126,10 +127,10 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 	 * @see org.grouplens.reflens.RecommenderService#predict(org.grouplens.reflens.data.UserRatingProfile, java.lang.Object)
 	 */
 	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
+	public ScoredId predict(long user, SparseVector ratings, long item) {
 		LongArrayList items = new LongArrayList(1);
 		items.add(item);
-		RatingVector scores = predict(user, ratings, items);
+		SparseVector scores = predict(user, ratings, items);
 		
 		if (scores.containsId(item))
 			return new ScoredId(item, scores.get(item));
@@ -138,10 +139,10 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 	}
 	
 	@Override
-	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
+	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
 		LongSet tgtids = new LongOpenHashSet(ratings.idSet());
 		tgtids.addAll(items);
-		RatingVector base = baseline.predict(user, ratings, tgtids);
+		SparseVector base = baseline.predict(user, ratings, tgtids);
 		double uprefs[] = foldIn(user, ratings, base);
 		
 		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
@@ -160,7 +161,7 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 			}
 			values[i] = score;
 		}
-		return RatingVector.wrap(keys, values);
+		return MutableSparseVector.wrap(keys, values);
 	}
 
 	@Override

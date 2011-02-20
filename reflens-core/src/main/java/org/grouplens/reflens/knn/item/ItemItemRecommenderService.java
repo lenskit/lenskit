@@ -50,8 +50,9 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderService;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.IndexedItemScore;
 
@@ -89,8 +90,8 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	}
 	
 	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
-		RatingVector normed = ratings.copy();
+	public ScoredId predict(long user, SparseVector ratings, long item) {
+		MutableSparseVector normed = MutableSparseVector.copy(ratings);
 		model.subtractBaseline(user, ratings, normed);
 		double sum = 0;
 		double totalWeight = 0;
@@ -112,8 +113,8 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	}
 	
 	@Override
-	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
-		RatingVector normed = ratings.copy();
+	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+		MutableSparseVector normed = MutableSparseVector.copy(ratings);
 		model.subtractBaseline(user, ratings, normed); 
 		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
@@ -140,13 +141,13 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 				p = sums.get(idx) / w;
 			preds[i] = p;
 		}
-		RatingVector predictions = RatingVector.wrap(keys, preds);
+		MutableSparseVector predictions = MutableSparseVector.wrap(keys, preds);
 		model.addBaseline(user, ratings, predictions);
 		return predictions;
 	}
 
 	@Override
-	public List<ScoredId> recommend(long user, RatingVector ratings) {
+	public List<ScoredId> recommend(long user, SparseVector ratings) {
 		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
 		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
 		for (Long2DoubleMap.Entry rating: ratings.fast()) {

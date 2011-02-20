@@ -38,8 +38,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.util.IndexedItemScore;
 
@@ -90,26 +91,26 @@ public class ItemItemModel implements Serializable {
 	 * <p>
 	 * This method computes the baseline predictions for all items in <var>target</var>
 	 * and subtracts the prediction from the value in <var>target</var>.  This
-	 * subtraction is done in-place by calling {@link RatingVector#subtract(RatingVector)}
+	 * subtraction is done in-place by calling {@link MutableSparseVector#subtract(MutableSparseVector)}
 	 * on <var>target</var>.
 	 * 
 	 * @param user The user ID.
 	 * @param ratings The user's rating vector.
 	 * @param target The vector from which the baseline is to be subtracted.
 	 */
-	public void subtractBaseline(long user, RatingVector ratings, RatingVector target) {
+	public void subtractBaseline(long user, SparseVector ratings, MutableSparseVector target) {
 		if (baseline != null) {
-			RatingVector basePreds = baseline.predict(user, ratings, target.idSet());
+			SparseVector basePreds = baseline.predict(user, ratings, target.idSet());
 			target.subtract(basePreds);
 		}
 	}
 	
-	public void addBaseline(long user, RatingVector ratings, RatingVector target) {
-		RatingVector basePreds = baseline.predict(user, ratings, target.idSet());
+	public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
+		SparseVector basePreds = baseline.predict(user, ratings, target.idSet());
 		target.add(basePreds);
 	}
 	
-	public double addBaseline(long user, RatingVector ratings, long item, double prediction) {
+	public double addBaseline(long user, SparseVector ratings, long item, double prediction) {
 		if (baseline != null) {
 			ScoredId basePred = baseline.predict(user, ratings, item);
 			prediction += basePred.getScore();

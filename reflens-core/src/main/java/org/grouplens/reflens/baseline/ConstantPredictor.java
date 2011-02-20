@@ -45,8 +45,9 @@ import java.util.Collection;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.params.meta.Parameter;
 import org.grouplens.reflens.util.CollectionUtils;
 
@@ -81,13 +82,13 @@ public class ConstantPredictor implements RatingPredictor {
 	 * @return A rating vector mapping all items in <var>items</var> to
 	 * <var>value</var>.
 	 */
-	public static RatingVector constantPredictions(Collection<Long> items, double value) {
+	public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
 		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
 		if (!(items instanceof LongSortedSet))
 			Arrays.sort(keys);
 		double[] preds = new double[keys.length];
 		Arrays.fill(preds, value);
-		return RatingVector.wrap(keys, preds);
+		return MutableSparseVector.wrap(keys, preds);
 	}
 	
 	/**
@@ -100,7 +101,7 @@ public class ConstantPredictor implements RatingPredictor {
 	}
 	
 	@Override
-	public RatingVector predict(long user, RatingVector ratings, Collection<Long> items) {
+	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
 		return constantPredictions(items, value);
 	}
 
@@ -108,7 +109,7 @@ public class ConstantPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
 	 */
 	@Override
-	public ScoredId predict(long user, RatingVector profile, long item) {
+	public ScoredId predict(long user, SparseVector profile, long item) {
 		return new ScoredId(item, value);
 	}
 

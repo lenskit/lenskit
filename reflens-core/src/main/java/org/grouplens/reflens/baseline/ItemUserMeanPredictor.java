@@ -38,8 +38,9 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
 
@@ -70,7 +71,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 * @param ratings the user's rating profile
 	 * @return the mean offset from item mean rating.
 	 */
-	double computeUserAverage(RatingVector ratings) {
+	double computeUserAverage(SparseVector ratings) {
 		if (ratings.isEmpty()) return 0;
 		
 		Collection<Double> values = ratings.values();
@@ -90,7 +91,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
 	 */
 	@Override
-	public RatingVector predict(long user, RatingVector ratings,
+	public MutableSparseVector predict(long user, SparseVector ratings,
 			Collection<Long> items) {
 		double meanOffset = computeUserAverage(ratings);
 		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
@@ -100,14 +101,14 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 		for (int i = 0; i < keys.length; i++) {
 			preds[i] = meanOffset + getItemMean(keys[i]);
 		}
-		return RatingVector.wrap(keys, preds);
+		return MutableSparseVector.wrap(keys, preds);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, long)
 	 */
 	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
+	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
 	}
 	

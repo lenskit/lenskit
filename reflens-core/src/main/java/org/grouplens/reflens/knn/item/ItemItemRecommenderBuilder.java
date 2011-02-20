@@ -53,7 +53,8 @@ import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.params.BaselinePredictor;
@@ -98,7 +99,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	final class BuildState {
 		public final RatingPredictor baseline;
 		public final Index itemIndex;
-		public ArrayList<RatingVector> itemRatings;
+		public ArrayList<MutableSparseVector> itemRatings;
 		public final Long2ObjectMap<IntSortedSet> userItemSets;
 		public final int itemCount;
 		
@@ -106,7 +107,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			baseline = baselineBuilder == null ? null : baselineBuilder.build(data);
 			Indexer itemIndexer;
 			itemIndex = itemIndexer = new Indexer();
-			itemRatings = new ArrayList<RatingVector>();
+			itemRatings = new ArrayList<MutableSparseVector>();
 			
 			if (trackItemSets)
 				userItemSets = new Long2ObjectOpenHashMap<IntSortedSet>();
@@ -164,10 +165,10 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			}
 			
 			// convert the temporary work array into a real array
-			itemRatings = new ArrayList<RatingVector>(itemWork.size());
+			itemRatings = new ArrayList<MutableSparseVector>(itemWork.size());
 			ListIterator<Long2DoubleMap> iter = itemWork.listIterator();
 			while (iter.hasNext()) {
-				itemRatings.add(new RatingVector(iter.next()));
+				itemRatings.add(new MutableSparseVector(iter.next()));
 				iter.set(null);                // clear the array so GC can free
 			}
 		}
@@ -194,8 +195,8 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	protected Collection<Rating> normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, Collection<Rating> ratings) {
 		if (baseline == null) return ratings;
 		
-		RatingVector rmap = RatingVector.userRatingVector(ratings);
-		RatingVector base = baseline.predict(uid, rmap, rmap.idSet());
+		SparseVector rmap = MutableSparseVector.userRatingVector(ratings);
+		SparseVector base = baseline.predict(uid, rmap, rmap.idSet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

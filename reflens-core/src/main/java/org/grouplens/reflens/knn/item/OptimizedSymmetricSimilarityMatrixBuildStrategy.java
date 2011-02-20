@@ -35,7 +35,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
@@ -52,9 +52,9 @@ class OptimizedSymmetricSimilarityMatrixBuildStrategy implements
 		SimilarityMatrixBuildStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(OptimizedSymmetricSimilarityMatrixBuildStrategy.class);
 	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final OptimizableVectorSimilarity<RatingVector> similarityFunction;
+	private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-	OptimizedSymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<RatingVector> sim) {
+	OptimizedSymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
 		matrixFactory = mfact;
 		similarityFunction = sim;
 	}
@@ -68,7 +68,7 @@ class OptimizedSymmetricSimilarityMatrixBuildStrategy implements
 		final int nitems = state.itemCount;
 		logger.debug("Building matrix with {} rows", nitems);
 		for (int i = 0; i < nitems; i++) {
-			final RatingVector v = state.itemRatings.get(i);
+			final SparseVector v = state.itemRatings.get(i);
 			final IntSet candidates = new IntOpenHashSet();
 			final LongIterator uiter = v.idSet().iterator();
 			while (uiter.hasNext()) {

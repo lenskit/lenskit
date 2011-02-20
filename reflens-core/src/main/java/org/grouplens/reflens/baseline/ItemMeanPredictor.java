@@ -48,8 +48,9 @@ import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
 	 */
 	@Override
-	public RatingVector predict(long user, RatingVector ratings,
+	public MutableSparseVector predict(long user, SparseVector ratings,
 			Collection<Long> items) {
 		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
 		if (!(items instanceof LongSortedSet))
@@ -91,14 +92,14 @@ public class ItemMeanPredictor implements RatingPredictor {
 		for (int i = 0; i < keys.length; i++) {
 			preds[i] = getItemMean(keys[i]);
 		}
-		return RatingVector.wrap(keys, preds);
+		return MutableSparseVector.wrap(keys, preds);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.reflens.RatingPredictor#predict(long, java.util.Map, long)
 	 */
 	@Override
-	public ScoredId predict(long user, RatingVector ratings, long item) {
+	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, getItemMean(item));
 	}
 	

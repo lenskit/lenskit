@@ -46,7 +46,8 @@ import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.RatingVector;
+import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.SparseVector;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
@@ -254,9 +255,9 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 				}
 				ratingData.get(svdr.user).put(svdr.iid, svdr.value);
 			}
-			model.userBaselines = new ArrayList<RatingVector>(ratingData.size());
+			model.userBaselines = new ArrayList<MutableSparseVector>(ratingData.size());
 			for (int i = 0, sz = ratingData.size(); i < sz; i++) {
-				RatingVector rv = new RatingVector(ratingData.get(i));
+				SparseVector rv = new MutableSparseVector(ratingData.get(i));
 				long uid = userIndex.getId(i);
 				model.userBaselines.add(baseline.predict(uid, rv, rv.idSet()));
 			}
@@ -268,7 +269,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 	}
 	
 	private static final class Model {
-		ArrayList<RatingVector> userBaselines;
+		ArrayList<MutableSparseVector> userBaselines;
 		double userFeatures[][];
 		double itemFeatures[][];
 		double singularValues[];

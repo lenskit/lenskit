@@ -31,28 +31,28 @@ import com.google.common.collect.Iterators;
 public class TestRatingVector {
 	private static final double EPSILON = 1.0e-6;
 	
-	protected RatingVector emptyVector() {
-		return new RatingVector(Long2DoubleMaps.EMPTY_MAP);
+	protected MutableSparseVector emptyVector() {
+		return new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
 	}
 	
 	/**
 	 * Construct a simple rating vector with three ratings.
 	 * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
 	 */
-	protected RatingVector simpleVector() {
+	protected MutableSparseVector simpleVector() {
 		long[] keys = {3, 7, 8};
 		double[] values = {1.5, 3.5, 2};
-		return RatingVector.wrap(keys, values);
+		return MutableSparseVector.wrap(keys, values);
 	}
 	
 	/**
 	 * Construct a simple rating vector with three ratings.
 	 * @return A rating vector mapping {3, 5, 8} to {2, 2.3, 1.7}.
 	 */
-	protected RatingVector simpleVector2() {
+	protected MutableSparseVector simpleVector2() {
 		long[] keys = {3, 5, 8};
 		double[] values = {2, 2.3, 1.7};
-		return RatingVector.wrap(keys, values);
+		return MutableSparseVector.wrap(keys, values);
 	}
 
 	
@@ -60,8 +60,8 @@ public class TestRatingVector {
 	 * Construct a singleton rating vector mapping 5 to PI.
 	 * @return
 	 */
-	protected RatingVector singleton() {
-		return RatingVector.wrap(new long[]{5}, new double[]{Math.PI});
+	protected MutableSparseVector singleton() {
+		return MutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
 	}
 	
 	protected static void assertIsNaN(double v) {
@@ -70,12 +70,12 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#get(long)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#get(long)}.
 	 */
 	@Test
 	public void testGet() {
 		assertIsNaN(emptyVector().get(5));
-		RatingVector v = singleton();
+		SparseVector v = singleton();
 		assertEquals(Math.PI, v.get(5), EPSILON);
 		assertIsNaN(v.get(2));
 		
@@ -90,13 +90,13 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#get(long, double)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#get(long, double)}.
 	 */
 	@Test
 	public void testGetWithDft() {
 		assertIsNaN(emptyVector().get(5, Double.NaN));
 		assertEquals(-1, emptyVector().get(5, -1), EPSILON);
-		RatingVector v = singleton();
+		SparseVector v = singleton();
 		assertEquals(Math.PI, v.get(5, -1), EPSILON);
 		assertEquals(-1, v.get(2, -1), EPSILON);
 		
@@ -111,7 +111,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#containsId(long)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#containsId(long)}.
 	 */
 	@Test
 	public void testContainsId() {
@@ -132,7 +132,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#iterator()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#iterator()}.
 	 */
 	@Test
 	public void testIterator() {
@@ -171,7 +171,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#fastIterator()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#fastIterator()}.
 	 */
 	@Test
 	public void testFastIterator() {
@@ -209,7 +209,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#fast()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#fast()}.
 	 */
 	@Test
 	public void testFast() {
@@ -218,7 +218,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#idSet()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#idSet()}.
 	 */
 	@Test
 	public void testIdSet() {
@@ -233,7 +233,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#values()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#values()}.
 	 */
 	@Test
 	public void testValues() {
@@ -248,7 +248,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#size()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#size()}.
 	 */
 	@Test
 	public void testSize() {
@@ -258,7 +258,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#isEmpty()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#isEmpty()}.
 	 */
 	@Test
 	public void testIsEmpty() {
@@ -268,7 +268,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#norm()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#norm()}.
 	 */
 	@Test
 	public void testNorm() {
@@ -278,7 +278,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#sum()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#sum()}.
 	 */
 	@Test
 	public void testSum() {
@@ -288,7 +288,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#mean()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#mean()}.
 	 */
 	@Test
 	public void testMean() {
@@ -298,13 +298,13 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#copy()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#copy()}.
 	 */
 	@Test
 	public void testCopy() {
 		assertTrue(emptyVector().copy().isEmpty());
-		RatingVector v1 = singleton();
-		RatingVector v2 = v1.copy();
+		MutableSparseVector v1 = singleton();
+		MutableSparseVector v2 = v1.copy();
 		assertNotSame(v1, v2);
 		assertEquals(v1, v2);
 		v2.subtract(simpleVector2());
@@ -313,11 +313,11 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#subtract(org.grouplens.reflens.data.RatingVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#subtract(org.grouplens.reflens.data.MutableSparseVector)}.
 	 */
 	@Test
 	public void testSubtract() {
-		RatingVector v = emptyVector();
+		MutableSparseVector v = emptyVector();
 		v.subtract(singleton());
 		assertTrue(v.isEmpty());
 		
@@ -345,11 +345,11 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#add(org.grouplens.reflens.data.RatingVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#add(org.grouplens.reflens.data.MutableSparseVector)}.
 	 */
 	@Test
 	public void testAdd() {
-		RatingVector v = emptyVector();
+		MutableSparseVector v = emptyVector();
 		v.add(singleton());
 		assertTrue(v.isEmpty());
 		
@@ -377,7 +377,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#dot(org.grouplens.reflens.data.RatingVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#dot(org.grouplens.reflens.data.MutableSparseVector)}.
 	 */
 	@Test
 	public void testDot() {
@@ -389,7 +389,7 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#userRatingVector(java.util.Collection)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#userRatingVector(java.util.Collection)}.
 	 */
 	@Test
 	public void testUserRatingVector() {
@@ -397,14 +397,14 @@ public class TestRatingVector {
 		ratings.add(new Rating(5, 7, 3.5));
 		ratings.add(new Rating(5, 3, 1.5));
 		ratings.add(new Rating(5, 8, 2));
-		RatingVector v = RatingVector.userRatingVector(ratings);
+		SparseVector v = MutableSparseVector.userRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.RatingVector#itemRatingVector(java.util.Collection)}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#itemRatingVector(java.util.Collection)}.
 	 */
 	@Test
 	public void testItemRatingVector() {
@@ -412,7 +412,7 @@ public class TestRatingVector {
 		ratings.add(new Rating(7, 5, 3.5));
 		ratings.add(new Rating(3, 5, 1.5));
 		ratings.add(new Rating(8, 5, 2));
-		RatingVector v = RatingVector.itemRatingVector(ratings);
+		SparseVector v = MutableSparseVector.itemRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
