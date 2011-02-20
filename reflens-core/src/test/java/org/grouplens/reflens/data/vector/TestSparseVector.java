@@ -1,4 +1,4 @@
-package org.grouplens.reflens.data;
+package org.grouplens.reflens.data.vector;
 
 import static org.grouplens.common.test.MoreAsserts.assertIsEmpty;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -19,6 +19,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -70,7 +73,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#get(long)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#get(long)}.
 	 */
 	@Test
 	public void testGet() {
@@ -90,7 +93,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#get(long, double)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#get(long, double)}.
 	 */
 	@Test
 	public void testGetWithDft() {
@@ -111,7 +114,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#containsId(long)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#containsId(long)}.
 	 */
 	@Test
 	public void testContainsId() {
@@ -132,7 +135,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#iterator()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#iterator()}.
 	 */
 	@Test
 	public void testIterator() {
@@ -171,7 +174,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#fastIterator()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#fastIterator()}.
 	 */
 	@Test
 	public void testFastIterator() {
@@ -209,7 +212,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#fast()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#fast()}.
 	 */
 	@Test
 	public void testFast() {
@@ -218,7 +221,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#keySet()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#keySet()}.
 	 */
 	@Test
 	public void testIdSet() {
@@ -233,7 +236,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#values()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#values()}.
 	 */
 	@Test
 	public void testValues() {
@@ -248,7 +251,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#size()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#size()}.
 	 */
 	@Test
 	public void testSize() {
@@ -258,7 +261,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#isEmpty()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#isEmpty()}.
 	 */
 	@Test
 	public void testIsEmpty() {
@@ -268,7 +271,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#norm()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#norm()}.
 	 */
 	@Test
 	public void testNorm() {
@@ -278,7 +281,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#sum()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#sum()}.
 	 */
 	@Test
 	public void testSum() {
@@ -288,7 +291,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#mean()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#mean()}.
 	 */
 	@Test
 	public void testMean() {
@@ -298,7 +301,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#copy()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#copy()}.
 	 */
 	@Test
 	public void testCopy() {
@@ -313,7 +316,7 @@ public class TestSparseVector {
 	}
 	
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#clone()}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#clone()}.
 	 */
 	@Test
 	public void testClone() {
@@ -328,7 +331,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#subtract(org.grouplens.reflens.data.MutableSparseVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#subtract(org.grouplens.reflens.data.vector.MutableSparseVector)}.
 	 */
 	@Test
 	public void testSubtract() {
@@ -360,7 +363,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#add(org.grouplens.reflens.data.MutableSparseVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#add(org.grouplens.reflens.data.vector.MutableSparseVector)}.
 	 */
 	@Test
 	public void testAdd() {
@@ -392,7 +395,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#dot(org.grouplens.reflens.data.MutableSparseVector)}.
+	 * Test method for {@link org.grouplens.reflens.data.vector.MutableSparseVector#dot(org.grouplens.reflens.data.vector.MutableSparseVector)}.
 	 */
 	@Test
 	public void testDot() {

@@ -40,6 +40,8 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.Collection;
 
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

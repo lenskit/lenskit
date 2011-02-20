@@ -30,7 +30,7 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;

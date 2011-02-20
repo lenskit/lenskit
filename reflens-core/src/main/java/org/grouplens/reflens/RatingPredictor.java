@@ -37,9 +37,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 
 /**
  * Interface for rating prediction.

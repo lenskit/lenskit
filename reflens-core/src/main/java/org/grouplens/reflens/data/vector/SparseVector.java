@@ -1,4 +1,4 @@
-package org.grouplens.reflens.data;
+package org.grouplens.reflens.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;

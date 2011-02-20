@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.data;
+package org.grouplens.reflens.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;

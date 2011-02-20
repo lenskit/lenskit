@@ -38,9 +38,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Index;
-import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.util.IndexedItemScore;
 

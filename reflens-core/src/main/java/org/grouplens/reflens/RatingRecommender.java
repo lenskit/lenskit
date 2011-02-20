@@ -33,7 +33,7 @@ package org.grouplens.reflens;
 import java.util.List;
 
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 
 /**
  * Recommender recommending items from ratings-based user profiles.

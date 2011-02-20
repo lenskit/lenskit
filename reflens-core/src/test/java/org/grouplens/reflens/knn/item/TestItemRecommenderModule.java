@@ -36,8 +36,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.grouplens.reflens.TestRecommenderModule;
-import org.grouplens.reflens.data.MutableSparseVector;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;

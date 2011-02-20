@@ -29,7 +29,7 @@
  */
 package org.grouplens.reflens.knn.item;
 
-import org.grouplens.reflens.data.MutableSparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;

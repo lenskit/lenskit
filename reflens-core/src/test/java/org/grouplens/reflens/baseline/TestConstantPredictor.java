@@ -43,9 +43,9 @@ import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 

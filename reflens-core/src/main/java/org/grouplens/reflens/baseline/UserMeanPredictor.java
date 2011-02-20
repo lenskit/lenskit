@@ -35,9 +35,9 @@ import java.util.Collection;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 
 import com.google.inject.Inject;
 

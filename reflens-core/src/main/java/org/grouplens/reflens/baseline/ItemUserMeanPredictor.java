@@ -38,9 +38,9 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.data.MutableSparseVector;
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
 

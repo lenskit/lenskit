@@ -35,7 +35,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;

@@ -30,7 +30,7 @@
 
 package org.grouplens.reflens.knn;
 
-import org.grouplens.reflens.data.SparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
 
 /**
  * A similarity function of vectors that is optimizable based on its keys.
