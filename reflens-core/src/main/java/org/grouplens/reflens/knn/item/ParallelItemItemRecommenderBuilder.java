@@ -327,7 +327,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
 		
-		SparseVector rmap = MutableSparseVector.userRatingVector(ratings);
+		SparseVector rmap = Rating.userRatingVector(ratings);
 		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		

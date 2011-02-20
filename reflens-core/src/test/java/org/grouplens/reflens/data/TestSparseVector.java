@@ -404,7 +404,7 @@ public class TestSparseVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#userRatingVector(java.util.Collection)}.
+	 * Test method for {@link org.grouplens.reflens.data.Rating#userRatingVector(java.util.Collection)}.
 	 */
 	@Test
 	public void testUserRatingVector() {
@@ -412,14 +412,14 @@ public class TestSparseVector {
 		ratings.add(new Rating(5, 7, 3.5));
 		ratings.add(new Rating(5, 3, 1.5));
 		ratings.add(new Rating(5, 8, 2));
-		SparseVector v = MutableSparseVector.userRatingVector(ratings);
+		SparseVector v = Rating.userRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#itemRatingVector(java.util.Collection)}.
+	 * Test method for {@link org.grouplens.reflens.data.Rating#itemRatingVector(java.util.Collection)}.
 	 */
 	@Test
 	public void testItemRatingVector() {
@@ -427,7 +427,7 @@ public class TestSparseVector {
 		ratings.add(new Rating(7, 5, 3.5));
 		ratings.add(new Rating(3, 5, 1.5));
 		ratings.add(new Rating(8, 5, 2));
-		SparseVector v = MutableSparseVector.itemRatingVector(ratings);
+		SparseVector v = Rating.itemRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
