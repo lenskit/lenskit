@@ -259,7 +259,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 			for (int i = 0, sz = ratingData.size(); i < sz; i++) {
 				SparseVector rv = new MutableSparseVector(ratingData.get(i));
 				long uid = userIndex.getId(i);
-				model.userBaselines.add(baseline.predict(uid, rv, rv.idSet()));
+				model.userBaselines.add(baseline.predict(uid, rv, rv.keySet()));
 			}
 			svr.trimToSize();
 			return svr;

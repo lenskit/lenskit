@@ -280,7 +280,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 			int max = symmetric ? row : itemVectors.length;
 			
 			IntSet candidates = new IntOpenHashSet();
-			LongIterator uiter = itemVectors[row].idSet().iterator();
+			LongIterator uiter = itemVectors[row].keySet().iterator();
 			while (uiter.hasNext()) {
 				long u = uiter.nextLong();
 				IntIterator is = userItemMap.get(u).iterator();
@@ -328,7 +328,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		if (baseline == null) return ratings;
 		
 		SparseVector rmap = MutableSparseVector.userRatingVector(ratings);
-		SparseVector base = baseline.predict(uid, rmap, rmap.idSet());
+		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

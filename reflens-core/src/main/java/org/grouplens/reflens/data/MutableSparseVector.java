@@ -45,12 +45,12 @@ import java.util.Collection;
  * 
  * <p>This extends the sparse vector with support for imperative mutation
  * operations on their values, but
- * once created the set of IDs is immutable.  Addition and subtraction are
+ * once created the set of keys remains immutable.  Addition and subtraction are
  * supported.  Mutation operations also operate in-place to reduce the
  * reallocation and copying required.  Therefore, a common pattern is:
  * 
  * <pre>
- * MutableSparseVector normalized = vector.copy();
+ * MutableSparseVector normalized = MutableSparseVector.copy(vector);
  * normalized.subtract(normFactor);
  * </pre>
  *
@@ -72,8 +72,8 @@ public class MutableSparseVector extends SparseVector {
 	 * @param keys
 	 * @param values
 	 */
-	private MutableSparseVector(long[] ids, double[] values) {
-		super(ids, values);
+	private MutableSparseVector(long[] keys, double[] values) {
+		super(keys, values);
 	}
 	
 	/**
@@ -144,6 +144,11 @@ public class MutableSparseVector extends SparseVector {
 	public static MutableSparseVector copy(SparseVector vector) {
 		return new MutableSparseVector(vector.keys, DoubleArrays.copy(vector.values));
 	}
+	
+	@Override
+	public MutableSparseVector clone() {
+		return (MutableSparseVector) super.clone();
+	}
 
 	/**
 	 * Construct a rating vector that contains the ratings provided by each item.
@@ -154,7 +159,7 @@ public class MutableSparseVector extends SparseVector {
 	 * collection.
 	 * 
 	 * @param ratings A collection of ratings (should all be by the same user)
-	 * @return A rating vector mapping item IDs to ratings
+	 * @return A sparse vector mapping item IDs to ratings
 	 */
 	public static MutableSparseVector userRatingVector(Collection<Rating> ratings) {
 		Long2DoubleMap vect = new Long2DoubleOpenHashMap();
@@ -180,7 +185,7 @@ public class MutableSparseVector extends SparseVector {
 	 * when the collection is iterated is retained.
 	 * 
 	 * @param ratings Some ratings (they should all be for the same item)
-	 * @return A rating vector mapping user IDs to ratings.
+	 * @return A sparse vector mapping user IDs to ratings.
 	 */
 	public static MutableSparseVector itemRatingVector(Collection<Rating> ratings) {
 		Long2DoubleMap vect = new Long2DoubleOpenHashMap();
@@ -198,26 +203,16 @@ public class MutableSparseVector extends SparseVector {
 	}
 
 	/**
-	 * Wrap key and value arrays in a rating vector.
-	 * 
-	 * <p>This method allows a new rating vector to be constructed from
-	 * pre-created arrays.  After wrapping arrays in a rating vector, client
-	 * code should not modify them (particularly the <var>items</var> array).
-	 * 
-	 * @param items Array of item IDs. This array must be in sorted order and
-	 * be duplicate-free.
-	 * @param ratings The ratigns corresponding to the item IDs.
-	 * @return A rating vector backed by the provided arrays.
-	 * @throws IllegalArgumentException if there is a problem with the provided
-	 * arrays (length mismatch, <var>items</var> not sorted, etc.).
+	 * Wrap key and value arrays in a mutable sparse vector.
+	 * @see SparseVector#wrap(long[], double[])
 	 */
-	public static MutableSparseVector wrap(long[] items, double[] ratings) {
-		if (ratings.length < items.length)
+	public static MutableSparseVector wrap(long[] keys, double[] values) {
+		if (values.length < keys.length)
 			throw new IllegalArgumentException("ratings shorter than items");
-		for (int i = 1; i < items.length; i++) {
-			if (items[i] <= items[i-1])
+		for (int i = 1; i < keys.length; i++) {
+			if (keys[i] <= keys[i-1])
 				throw new IllegalArgumentException("item array not sorted");
 		}
-		return new MutableSparseVector(items, ratings);
+		return new MutableSparseVector(keys, values);
 	}
 }

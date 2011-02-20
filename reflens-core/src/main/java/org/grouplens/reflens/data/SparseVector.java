@@ -1,6 +1,7 @@
 package org.grouplens.reflens.data;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleCollections;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
@@ -23,10 +24,10 @@ import org.grouplens.reflens.util.LongSortedArraySet;
  * the items in key ID.
  *
  */
-public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable {
+public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
 	private static final long serialVersionUID = 5097272716721395321L;
 	protected final long[] keys;
-	protected final double[] values;
+	protected double[] values;
 	private transient Double norm;
 	private transient Double sum;
 	private transient Double mean;
@@ -59,22 +60,22 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 	}
 
 	/**
-	 * Get the rating for <var>id</var>.
-	 * @param id the item or user ID for which the rating is desired
-	 * @return the rating (or {@link Double.NaN} if no such rating exists)
+	 * Get the rating for <var>key</var>.
+	 * @param key the key to look up
+	 * @return the key's value (or {@link Double.NaN} if no such value exists)
 	 */
-	public double get(long id) {
-		return get(id, Double.NaN);
+	public double get(long key) {
+		return get(key, Double.NaN);
 	}
 
 	/**
-	 * Get the rating for <var>id</var>.
-	 * @param id the item or user ID for which the rating is desired
-	 * @param dft The rating to return if no such rating exists
-	 * @return the rating (or <var>dft</var> if no such rating exists)
+	 * Get the rating for <var>key</var>.
+	 * @param key the key to look up
+	 * @param dft The value to return if the key is not in the vector
+	 * @return the value (or <var>dft</var> if no such key exists)
 	 */
-	public double get(long id, double dft) {
-		int idx = Arrays.binarySearch(keys, id);
+	public double get(long key, double dft) {
+		int idx = Arrays.binarySearch(keys, key);
 		if (idx >= 0)
 			return values[idx];
 		else
@@ -87,7 +88,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 
 	/**
 	 * Iterate over all entries.
-	 * @return an iterator over all ID/Rating pairs.
+	 * @return an iterator over all key/value pairs.
 	 */
 	@Override
 	public Iterator<Long2DoubleMap.Entry> iterator() {
@@ -97,7 +98,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 	/**
 	 * Fast iterator over all entries (it can reuse entry objects).
 	 * @see Long2DoubleMap.FastEntrySet#fastIterator()
-	 * @return a fast iterator over all ID/Rating pairs
+	 * @return a fast iterator over all key/value pairs
 	 */
 	public Iterator<Long2DoubleMap.Entry> fastIterator() {
 		return new FastIterImpl();
@@ -111,7 +112,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 		};
 	}
 
-	public LongSortedSet idSet() {
+	public LongSortedSet keySet() {
 		return new LongSortedArraySet(keys);
 	}
 
@@ -209,6 +210,18 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 		return keys.hashCode() ^ values.hashCode();
 	}
 	
+	@Override
+	public SparseVector clone() {
+		SparseVector v;
+		try {
+			v = (SparseVector) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+		v.values = DoubleArrays.copy(v.values);
+		return v;
+	}
+	
 	final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
 		int pos = 0;
 		@Override
@@ -280,4 +293,27 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 		}
 	}
 
+	/**
+	 * Wrap key and value arrays in a sparse vector.
+	 * 
+	 * <p>This method allows a new vector to be constructed from
+	 * pre-created arrays.  After wrapping arrays in a rating vector, client
+	 * code should not modify them (particularly the <var>items</var> array).
+	 * 
+	 * @param keys Array of entry keys. This array must be in sorted order and
+	 * be duplicate-free.
+	 * @param values The values for the vector.
+	 * @return A sparse vector backed by the provided arrays.
+	 * @throws IllegalArgumentException if there is a problem with the provided
+	 * arrays (length mismatch, <var>keys</var> not sorted, etc.).
+	 */
+	public static SparseVector wrap(long[] keys, double[] values) {
+		if (values.length < keys.length)
+			throw new IllegalArgumentException("ratings shorter than items");
+		for (int i = 1; i < keys.length; i++) {
+			if (keys[i] <= keys[i-1])
+				throw new IllegalArgumentException("item array not sorted");
+		}
+		return new SparseVector(keys, values);
+	}
 }

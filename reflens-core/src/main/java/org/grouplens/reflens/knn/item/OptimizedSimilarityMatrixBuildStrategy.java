@@ -70,7 +70,7 @@ class OptimizedSimilarityMatrixBuildStrategy implements
 		for (int i = 0; i < nitems; i++) {
 			final SparseVector v = state.itemRatings.get(i);
 			final IntSet candidates = new IntOpenHashSet();
-			final LongIterator uiter = v.idSet().iterator();
+			final LongIterator uiter = v.keySet().iterator();
 			while (uiter.hasNext()) {
 				long user = uiter.next();
 				IntSortedSet uitems = state.userItemSets.get(user);

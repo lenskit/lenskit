@@ -140,7 +140,7 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 	
 	@Override
 	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-		LongSet tgtids = new LongOpenHashSet(ratings.idSet());
+		LongSet tgtids = new LongOpenHashSet(ratings.keySet());
 		tgtids.addAll(items);
 		SparseVector base = baseline.predict(user, ratings, tgtids);
 		double uprefs[] = foldIn(user, ratings, base);

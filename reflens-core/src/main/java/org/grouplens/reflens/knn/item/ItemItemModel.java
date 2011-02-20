@@ -100,13 +100,13 @@ public class ItemItemModel implements Serializable {
 	 */
 	public void subtractBaseline(long user, SparseVector ratings, MutableSparseVector target) {
 		if (baseline != null) {
-			SparseVector basePreds = baseline.predict(user, ratings, target.idSet());
+			SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
 			target.subtract(basePreds);
 		}
 	}
 	
 	public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-		SparseVector basePreds = baseline.predict(user, ratings, target.idSet());
+		SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
 		target.add(basePreds);
 	}
 	

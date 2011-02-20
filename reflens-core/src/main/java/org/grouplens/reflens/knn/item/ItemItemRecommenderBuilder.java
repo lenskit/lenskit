@@ -196,7 +196,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		if (baseline == null) return ratings;
 		
 		SparseVector rmap = MutableSparseVector.userRatingVector(ratings);
-		SparseVector base = baseline.predict(uid, rmap, rmap.idSet());
+		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 		
 		for (Rating r: ratings) {

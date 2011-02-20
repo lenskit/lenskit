@@ -28,7 +28,7 @@ import com.google.common.collect.Iterators;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestRatingVector {
+public class TestSparseVector {
 	private static final double EPSILON = 1.0e-6;
 	
 	protected MutableSparseVector emptyVector() {
@@ -218,17 +218,17 @@ public class TestRatingVector {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#idSet()}.
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#keySet()}.
 	 */
 	@Test
 	public void testIdSet() {
-		LongSortedSet set = emptyVector().idSet();
+		LongSortedSet set = emptyVector().keySet();
 		assertIsEmpty(set);
 		
-		long[] keys = singleton().idSet().toLongArray();
+		long[] keys = singleton().keySet().toLongArray();
 		assertThat(keys, equalTo(new long[]{5}));
 		
-		keys = simpleVector().idSet().toLongArray();
+		keys = simpleVector().keySet().toLongArray();
 		assertThat(keys, equalTo(new long[]{3, 7, 8}));
 	}
 
@@ -305,6 +305,21 @@ public class TestRatingVector {
 		assertTrue(emptyVector().copy().isEmpty());
 		MutableSparseVector v1 = singleton();
 		MutableSparseVector v2 = v1.copy();
+		assertNotSame(v1, v2);
+		assertEquals(v1, v2);
+		v2.subtract(simpleVector2());
+		assertEquals(Math.PI - 2.3, v2.sum(), EPSILON);
+		assertEquals(Math.PI, v1.sum(), EPSILON);
+	}
+	
+	/**
+	 * Test method for {@link org.grouplens.reflens.data.MutableSparseVector#clone()}.
+	 */
+	@Test
+	public void testClone() {
+		assertTrue(emptyVector().clone().isEmpty());
+		MutableSparseVector v1 = singleton();
+		MutableSparseVector v2 = v1.clone();
 		assertNotSame(v1, v2);
 		assertEquals(v1, v2);
 		v2.subtract(simpleVector2());
