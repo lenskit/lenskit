@@ -255,7 +255,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 				}
 				ratingData.get(svdr.user).put(svdr.iid, svdr.value);
 			}
-			model.userBaselines = new ArrayList<MutableSparseVector>(ratingData.size());
+			model.userBaselines = new ArrayList<SparseVector>(ratingData.size());
 			for (int i = 0, sz = ratingData.size(); i < sz; i++) {
 				SparseVector rv = new MutableSparseVector(ratingData.get(i));
 				long uid = userIndex.getId(i);
@@ -269,7 +269,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 	}
 	
 	private static final class Model {
-		ArrayList<MutableSparseVector> userBaselines;
+		ArrayList<SparseVector> userBaselines;
 		double userFeatures[][];
 		double itemFeatures[][];
 		double singularValues[];

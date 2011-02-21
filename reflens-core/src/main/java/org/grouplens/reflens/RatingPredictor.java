@@ -38,7 +38,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.grouplens.reflens.data.ScoredId;
-import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 
 /**
@@ -67,5 +66,5 @@ public interface RatingPredictor {
 	 * may not contain all requested items.
 	 */
 	@Nonnull
-	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
+	public SparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 }

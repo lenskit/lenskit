@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleCollections;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
@@ -315,5 +316,44 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 				throw new IllegalArgumentException("item array not sorted");
 		}
 		return new SparseVector(keys, values);
+	}
+	
+	/**
+	 * Wrap key and value arrays in a sparse vector.
+	 * 
+	 * <p>This method allows a new vector to be constructed from
+	 * pre-created arrays.  After wrapping arrays in a rating vector, client
+	 * code should not modify them (particularly the <var>items</var> array).
+	 * 
+	 * <p>The arrays may be modified, particularly to remove NaN values.  The
+	 * client should not depend on them exhibiting any particular behavior aftor
+	 * calling this method.
+	 * 
+	 * @param keys Array of entry keys. This array must be in sorted order and
+	 * be duplicate-free.
+	 * @param values The values for the vector.
+	 * @param values If true, remove NaN values from the arrays.
+	 * @return A sparse vector backed by the provided arrays.
+	 * @throws IllegalArgumentException if there is a problem with the provided
+	 * arrays (length mismatch, <var>keys</var> not sorted, etc.).
+	 */
+	public static SparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
+		if (removeNaN) {
+			int pos = 0;
+			for (int i = 0; i < keys.length; i++) {
+				if (!Double.isNaN(values[i])) {
+					if (i != pos) {
+						keys[pos] = keys[i];
+						values[pos] = values[i];
+					}
+					pos++;
+				}
+			}
+			if (pos < keys.length) {
+				keys = LongArrays.copy(keys, 0, pos);
+				values = DoubleArrays.copy(values, 0, pos);
+			}
+		}
+		return wrap(keys, values);
 	}
 }
