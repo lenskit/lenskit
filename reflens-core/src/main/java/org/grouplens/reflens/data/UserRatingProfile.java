@@ -32,13 +32,22 @@ package org.grouplens.reflens.data;
 
 import java.util.Collection;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.grouplens.reflens.data.vector.SparseVector;
+
 /**
- * Represents a user profile, associating ratings with a user.
+ * Represents a user profile, associating ratings with a user.  Implementations
+ * must be thread safe (so long as the {@link #getRatings()} collection is
+ * not mutated, which should never happen anyway).
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ThreadSafe
 public interface UserRatingProfile {
 	public long getUser();
 	public Collection<Rating> getRatings();
+	public SparseVector getRatingVector();
 	public double getRating(long item);
 }

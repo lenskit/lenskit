@@ -33,14 +33,31 @@ package org.grouplens.reflens.data;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Map;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.grouplens.reflens.data.vector.SparseVector;
+
+/**
+ * Basic user rating profile backed by a collection of ratings.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+@ThreadSafe
 public class BasicUserRatingProfile implements UserRatingProfile {
 	
 	private long user;
 	private Long2ObjectMap<Rating> ratings;
+	private transient SoftReference<SparseVector> vector;
 
+	/**
+	 * Construct a new basic user profile.
+	 * @param user The user ID.
+	 * @param ratings The user's rating collection.
+	 */
 	public BasicUserRatingProfile(long user, Collection<Rating> ratings) {
 		this.user = user;
 		this.ratings = new Long2ObjectOpenHashMap<Rating>();
@@ -49,6 +66,10 @@ public class BasicUserRatingProfile implements UserRatingProfile {
 		}
 	}
 	
+	/**
+	 * Construct a profile from a map entry.
+	 * @param entry
+	 */
 	public BasicUserRatingProfile(Map.Entry<Long, ? extends Collection<Rating>> entry) {
 		this(entry.getKey(), entry.getValue());
 	}
@@ -60,6 +81,16 @@ public class BasicUserRatingProfile implements UserRatingProfile {
 			return Double.NaN;
 		else
 			return r.getRating();
+	}
+	
+	@Override
+	public synchronized SparseVector getRatingVector() {
+		SparseVector v = vector != null ? vector.get() : null;
+		if (v == null) {
+			v = Rating.userRatingVector(getRatings());
+			vector = new SoftReference<SparseVector>(v);
+		}
+		return v;
 	}
 
 	@Override
