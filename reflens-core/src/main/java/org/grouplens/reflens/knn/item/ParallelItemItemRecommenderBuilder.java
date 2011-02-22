@@ -65,8 +65,6 @@ import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.ThreadCount;
-import org.grouplens.reflens.util.ProgressReporter;
-import org.grouplens.reflens.util.ProgressReporterFactory;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.grouplens.reflens.util.parallel.IntWorker;
 import org.grouplens.reflens.util.parallel.IntegerTaskQueue;
@@ -88,8 +86,6 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
 	private Similarity<? super SparseVector> itemSimilarity;
-	@Nullable
-	private final ProgressReporterFactory progressFactory;
 	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final int threadCount;
 	private Long2ObjectMap<IntSortedSet> userItemMap;
@@ -98,11 +94,9 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	@Inject
 	public ParallelItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@Nullable ProgressReporterFactory progressFactory,
 			@ThreadCount int threadCount,
 			@ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity,
 			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
-		this.progressFactory = progressFactory;
 		this.matrixFactory = matrixFactory;
 		this.baselineBuilder = baselineBuilder;
 		this.itemSimilarity = itemSimilarity;
@@ -143,16 +137,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
 		
 		// compute the similarity matrix
-		ProgressReporter rep = null;
-		if (progressFactory != null)
-			rep = progressFactory.create("similarity");
 		WorkerFactory<IntWorker> worker = new SimilarityWorkerFactory(itemRatings, builder);
-		if (itemSimilarity instanceof SymmetricBinaryFunction) {
-			if (rep != null) {
-				rep = new ExpandedProgressReporter(rep);
-			}
-		}
-		IntegerTaskQueue queue = new IntegerTaskQueue(rep, itemRatings.length);
+		IntegerTaskQueue queue = new IntegerTaskQueue(itemRatings.length);
 		
 		logger.debug("Computing similarities");
 		queue.run(worker, threadCount);
@@ -170,29 +156,6 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		return (n * (n + 1)) >> 1; // bake-in the strength reduction
 	}
 	
-	static class ExpandedProgressReporter implements ProgressReporter {
-		private final ProgressReporter base;
-		public ExpandedProgressReporter(ProgressReporter base) {
-			this.base = base;
-		}
-		@Override
-		public void finish() {
-			base.finish();
-		}
-		@Override
-		public void setProgress(long current) {
-			base.setProgress(arithSum(current));
-		}
-		@Override
-		public void setProgress(long current, long total) {
-			base.setProgress(arithSum(current), arithSum(total));
-		}
-		@Override
-		public void setTotal(long total) {
-			base.setTotal(arithSum(total));
-		}
-	}
-	
 	/** 
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
@@ -205,28 +168,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		}
 		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
 		try {
-			ProgressReporter progress = null;
-			if (progressFactory != null) {
-				int nusers = cursor.getRowCount();
-				if (nusers < 0) {
-					Cursor<Long> users = data.getUsers();
-					try {
-						nusers = users.getRowCount();
-						if (nusers < 0) {
-							nusers = 0;
-							for (@SuppressWarnings("unused") long u: users) {
-								nusers += 1;
-							}
-						}
-					} finally {
-						users.close();
-					}
-				}
-				progress = progressFactory.create("normalize");
-				if (progress != null)
-					progress.setTotal(nusers);
-			}
-			IteratorTaskQueue.parallelDo(progress, cursor.iterator(), threadCount,
+			IteratorTaskQueue.parallelDo(cursor.iterator(), threadCount,
 					new WorkerFactory<ObjectWorker<UserRatingProfile>>() {
 				@Override
 				public ObjectWorker<UserRatingProfile> create(

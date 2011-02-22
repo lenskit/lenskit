@@ -34,8 +34,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.grouplens.reflens.util.ProgressReporter;
-
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -43,15 +41,8 @@ import org.grouplens.reflens.util.ProgressReporter;
 public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 	private final Iterator<I> iterator;
 	private final WorkerFactory<W> factory;
-	private final ProgressReporter progress;
-	private int ndone = 0;
 	
 	public IteratorTaskQueue(Iterator<I> iter, WorkerFactory<W> factory) {
-		this(null, iter, factory);
-	}
-	
-	public IteratorTaskQueue(ProgressReporter progress, Iterator<I> iter, WorkerFactory<W> factory) {
-		this.progress = progress;
 		iterator = iter;
 		this.factory = factory;
 	}
@@ -67,38 +58,23 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 		}
 		while (!threads.isEmpty()) {
 			// FIXME handle exceptions in worker threads
-			if (progress != null)
-				progress.setProgress(getFinishedCount());
 			Thread t = threads.element();
 			try {
-				if (progress == null)
-					t.join();
-				else
-					t.join(100);
+				t.join();
 				if (!t.isAlive())
 					threads.remove();
 			} catch (InterruptedException e) {
 				/* no-op, try again */;
 			}
 		}
-		if (progress != null)
-			progress.finish();
 	}
 	public static <I,W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
-		parallelDo(null, iter, nthreads, factory);
-	}
-	public static <I,W extends ObjectWorker<I>> void parallelDo(ProgressReporter progress, Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
-		IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(progress, iter, factory);
+		IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(iter, factory);
 		queue.run(nthreads);
-	}
-	
-	private synchronized int getFinishedCount() {
-		return ndone;
 	}
 	
 	private synchronized I nextObject() {
 		if (iterator.hasNext()) {
-			ndone++;
 			return iterator.next();
 		} else {
 			return null;

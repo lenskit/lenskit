@@ -34,8 +34,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.grouplens.reflens.util.ProgressReporter;
-
 /**
  * A task queue that returns (long) integer task IDs.
  * 
@@ -51,19 +49,12 @@ import org.grouplens.reflens.util.ProgressReporter;
 public class IntegerTaskQueue {
 	private final int taskCount;
 	private AtomicInteger nextTask;
-	private ProgressReporter progress;
 	
 	public IntegerTaskQueue(int ntasks)
 	{
-		this(null, ntasks);
-	}
-
-	public IntegerTaskQueue(ProgressReporter progress, int ntasks) {
-		this.progress = progress;
 		this.taskCount = ntasks;
 		this.nextTask = new AtomicInteger();
 	}
-
 	
 	public long getTaskCount() {
 		return taskCount;
@@ -79,8 +70,6 @@ public class IntegerTaskQueue {
 			t.start();
 		}
 		while (!threads.isEmpty()) {
-			if (this.progress != null)
-				this.progress.setProgress(this.nextTask.get(), this.taskCount);
 			Thread t = (Thread)threads.element();
 			try {
 				t.join(100);
@@ -91,8 +80,6 @@ public class IntegerTaskQueue {
 				/* no-op */;
 			}
 		}
-		if (this.progress != null)
-			this.progress.finish(); 
 	}
 	
 	private class TaskThread<W extends IntWorker> extends Thread {
