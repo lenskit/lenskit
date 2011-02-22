@@ -28,9 +28,8 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.data;
+package org.grouplens.reflens.util;
 
-import org.grouplens.reflens.util.ProgressReporter;
 
 public abstract class AbstractProgressReporter implements ProgressReporter
 {
