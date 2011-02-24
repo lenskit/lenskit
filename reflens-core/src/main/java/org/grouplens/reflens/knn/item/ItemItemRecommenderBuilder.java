@@ -44,9 +44,9 @@ import java.util.ListIterator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
@@ -57,7 +57,6 @@ import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.SimilarityMatrix;
-import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.util.IntSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,29 +81,28 @@ import com.google.inject.Inject;
 public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 	
-	private final @Nullable RatingPredictorBuilder baselineBuilder;
 	private final @Nonnull ItemItemRecommenderServiceFactory engineFactory;
 	private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
 	@Inject
 	ItemItemRecommenderBuilder(
 			SimilarityMatrixBuildStrategy similarityStrategy,
-			ItemItemRecommenderServiceFactory engineFactory,
-			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
+			ItemItemRecommenderServiceFactory engineFactory) {
 		this.similarityStrategy = similarityStrategy;
 		this.engineFactory = engineFactory;
-		this.baselineBuilder = baselineBuilder;
 	}
 	
+	@ParametersAreNonnullByDefault
 	final class BuildState {
-		public final RatingPredictor baseline;
+		public final @Nullable RatingPredictor baseline;
 		public final Index itemIndex;
 		public ArrayList<MutableSparseVector> itemRatings;
-		public final Long2ObjectMap<IntSortedSet> userItemSets;
+		public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
 		public final int itemCount;
 		
-		public BuildState(RatingDataSource data, boolean trackItemSets) {
-			baseline = baselineBuilder == null ? null : baselineBuilder.build(data);
+		public BuildState(RatingDataSource data, @Nullable RatingPredictor baseline,
+				boolean trackItemSets) {
+			this.baseline = baseline;
 			Indexer itemIndexer;
 			itemIndex = itemIndexer = new Indexer();
 			itemRatings = new ArrayList<MutableSparseVector>();
@@ -175,8 +173,8 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	}
 	
 	@Override
-	public ItemItemRecommenderService build(RatingDataSource data) {
-		BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
+	public ItemItemRecommenderService build(RatingDataSource data, @Nullable RatingPredictor baseline) {
+		BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 		
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
 		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);

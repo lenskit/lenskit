@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
@@ -45,6 +45,7 @@ import org.grouplens.reflens.params.MeanDamping;
 import org.grouplens.reflens.util.CollectionUtils;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -59,10 +60,20 @@ import com.google.inject.Inject;
  *
  */
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
-
 	protected final double damping;
-	protected ItemUserMeanPredictor(double mean, Long2DoubleMap means, double damping) {
-		super(mean, means);
+	
+	@Inject
+	public ItemUserMeanPredictor(Provider<RatingDataSource> ratingProvider,
+			@MeanDamping double damping) {
+		this(ratingProvider.get(), damping);
+	}
+	
+	public ItemUserMeanPredictor(RatingDataSource ratings) {
+		this(ratings, 0);
+	}
+
+	public ItemUserMeanPredictor(RatingDataSource ratings, double damping) {
+		super(ratings, damping);
 		this.damping = damping;
 	}
 	
@@ -111,21 +122,4 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
 	}
-	
-	/**
-	 * Builder for the user-item mean predictor.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	public static class Builder extends ItemMeanPredictor.Builder {
-		@Inject
-		public Builder(@MeanDamping double damping) {
-			super(damping);
-		}
-		@Override
-		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
-			return new ItemUserMeanPredictor(globalMean, itemMeans, damping);
-		}
-	}
-
 }

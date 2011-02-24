@@ -36,17 +36,10 @@ package org.grouplens.reflens.baseline;
 import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.data.Rating;
-import org.grouplens.reflens.data.RatingCollectionDataSource;
-import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -54,33 +47,11 @@ import org.junit.Test;
  *
  */
 public class TestConstantPredictor {
-	
-	private ConstantPredictor.Builder builder;
-
-	@Before
-	public void setUp() {
-		builder = new ConstantPredictor.Builder(5);
-	}
-	
+		
 	@Test
-	public void testValue() {
-		assertEquals(5, builder.getValue(), 1.0e-6); 
-	}
-	
-	@Test
-	public void testNullBuild() {
-		RatingPredictor pred = builder.build(null);
+	public void testConstantPredict() {
+		RatingPredictor pred = new ConstantPredictor(5);
 		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-		ScoredId score = pred.predict(10l, map, 2l);
-		assertEquals(5, score.getScore(), 0.00001);
-	}
-	
-	@Test
-	public void testDataSourceBuild() {
-		List<Rating> ratings = Collections.emptyList();
-		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-		RatingDataSource source = new RatingCollectionDataSource(ratings);
-		RatingPredictor pred = builder.build(source);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(5, score.getScore(), 0.00001);
 	}

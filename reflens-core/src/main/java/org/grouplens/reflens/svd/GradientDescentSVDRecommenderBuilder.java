@@ -38,17 +38,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderService;
-import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
-import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
@@ -91,7 +88,6 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 	final double learningRate;
 	final double trainingThreshold;
 	final double trainingRegularization;
-	final RatingPredictorBuilder baselineBuilder;
 	final DoubleFunction clampingFunction;
 	final int iterationCount;
 	
@@ -102,19 +98,17 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 			@FeatureTrainingThreshold double trainingThreshold,
 			@IterationCount int icount,
 			@GradientDescentRegularization double reg,
-			@ClampingFunction DoubleFunction clamp,
-			@BaselinePredictor RatingPredictorBuilder baseline) {
+			@ClampingFunction DoubleFunction clamp) {
 		featureCount = features;
 		learningRate = lrate;
 		this.trainingThreshold = trainingThreshold;
 		trainingRegularization = reg;
 		clampingFunction = clamp;
-		baselineBuilder = baseline;
 		iterationCount = icount;
 	}
 
 	@Override
-	public RecommenderService build(RatingDataSource data) {
+	public RecommenderService build(RatingDataSource data, RatingPredictor baseline) {
 		logger.debug("Setting up to build SVD recommender with {} features", featureCount);
 		logger.debug("Learning rate is {}", learningRate);
 		logger.debug("Regularization term is {}", trainingRegularization);
@@ -123,12 +117,6 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 		} else {
 			logger.debug("Error epsilon is {}", trainingThreshold);
 		}
-		
-		RatingPredictor baseline;
-		if (baselineBuilder != null)
-			baseline = baselineBuilder.build(data);
-		else
-			baseline = new ConstantPredictor(0.0);
 		
 		Model model = new Model();
 		Indexer userIndex = new Indexer();

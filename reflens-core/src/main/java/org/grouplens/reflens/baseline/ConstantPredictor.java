@@ -43,11 +43,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
-import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
+import org.grouplens.reflens.params.meta.DefaultDouble;
 import org.grouplens.reflens.params.meta.Parameter;
 import org.grouplens.reflens.util.CollectionUtils;
 
@@ -71,8 +70,8 @@ public class ConstantPredictor implements RatingPredictor {
 	@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 	@Retention(RetentionPolicy.RUNTIME)
 	@Parameter
+	@DefaultDouble(0)
 	public static @interface Value {
-		public static final double DEFAULT_VALUE = 0;
 	}
 	
 	/**
@@ -96,7 +95,8 @@ public class ConstantPredictor implements RatingPredictor {
 	 * can use it as a fallback.
 	 * @param value
 	 */
-	public ConstantPredictor(double value) {
+	@Inject
+	public ConstantPredictor(@Value double value) {
 		this.value = value;
 	}
 	
@@ -111,30 +111,5 @@ public class ConstantPredictor implements RatingPredictor {
 	@Override
 	public ScoredId predict(long user, SparseVector profile, long item) {
 		return new ScoredId(item, value);
-	}
-
-	/**
-	 * Predictor builder for a constant rating predictor.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	public static class Builder implements RatingPredictorBuilder {
-		private final double value;
-		@Inject
-		public Builder(@Value double value) {
-			this.value = value;
-		}
-		@Override
-		public RatingPredictor build(RatingDataSource data) {
-			return new ConstantPredictor(value);
-		}
-		
-		/**
-		 * Return the value which will be returned for predictions.
-		 * @return
-		 */
-		public double getValue() {
-			return value;
-		}
 	}
 }

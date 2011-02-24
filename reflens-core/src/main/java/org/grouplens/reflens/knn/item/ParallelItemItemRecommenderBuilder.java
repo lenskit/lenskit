@@ -47,7 +47,6 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
@@ -63,7 +62,6 @@ import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
-import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.ThreadCount;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.grouplens.reflens.util.parallel.IntWorker;
@@ -86,7 +84,6 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
 	private Similarity<? super SparseVector> itemSimilarity;
-	@Nullable private final RatingPredictorBuilder baselineBuilder;
 	private final int threadCount;
 	private Long2ObjectMap<IntSortedSet> userItemMap;
 	@Nullable private RatingPredictor baseline = null;
@@ -95,10 +92,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	public ParallelItemItemRecommenderBuilder(
 			SimilarityMatrixBuilderFactory matrixFactory,
 			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity,
-			@Nullable @BaselinePredictor RatingPredictorBuilder baselineBuilder) {
+			@ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity) {
 		this.matrixFactory = matrixFactory;
-		this.baselineBuilder = baselineBuilder;
 		this.itemSimilarity = itemSimilarity;
 		this.threadCount = threadCount;
 	}
@@ -123,10 +118,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 	}
 	
 	@Override
-	public ItemItemRecommenderService build(RatingDataSource data) {
+	public ItemItemRecommenderService build(RatingDataSource data, RatingPredictor baseline) {
 		logger.info("Building model with {} threads", threadCount);
-		// TODO look in to merging these passes
-		baseline = baselineBuilder.build(data);
 		logger.debug("Indexing items");
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");

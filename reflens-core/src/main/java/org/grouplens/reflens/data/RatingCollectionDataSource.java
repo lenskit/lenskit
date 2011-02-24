@@ -36,7 +36,7 @@ package org.grouplens.reflens.data;
 import java.util.Collection;
 
 /**
- * Simple data source wrapping a collection of ratings.
+ * Data source backed by a collection of ratings.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

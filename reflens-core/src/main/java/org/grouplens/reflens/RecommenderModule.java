@@ -80,7 +80,7 @@ public class RecommenderModule extends AbstractModule {
 	private @MeanDamping double damping;
 	private @MinRating double minRating;
 	private @MaxRating double maxRating;
-	private @BaselinePredictor @Nullable Class<? extends RatingPredictorBuilder> baseline;
+	private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
 	private @ConstantPredictor.Value double constantBaselineValue;
 	
 	public RecommenderModule() {
@@ -198,37 +198,24 @@ public class RecommenderModule extends AbstractModule {
 	 * {@link TypeUtils#reifyType(Type, Class)}.
 	 */
 	protected void configureBaseline() {
-		LinkedBindingBuilder<RatingPredictorBuilder> binder = bind(RatingPredictorBuilder.class).annotatedWith(BaselinePredictor.class);
+		LinkedBindingBuilder<RatingPredictor> binder = bind(RatingPredictor.class).annotatedWith(BaselinePredictor.class);
 		if (baseline == null)
-			binder.toProvider(Providers.of((RatingPredictorBuilder) null));
+			binder.toProvider(Providers.of((RatingPredictor) null));
 		else
 			binder.to(baseline);
 	}
 	
-	public Class<? extends RatingPredictorBuilder> getBaseline() {
+	public Class<? extends RatingPredictor> getBaseline() {
 		return baseline;
 	}
 	
 	/**
-	 * Set the predictor builder used for the baseline.  This can be an actual
-	 * {@link RatingPredictorBuilder}, or it can be a class with a public static
-	 * inner class which implements {@link RatingPredictorBuilder}.
+	 * Set the predictor used for the baseline.
+	 * @todo Support setting baseline providers.
 	 * @param cls The class.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void setBaseline(Class cls) {
-		if (RatingPredictorBuilder.class.isAssignableFrom(cls)) {
-			baseline = cls;
-		} else {
-			for (Class c: cls.getClasses()) {
-				if (!c.getEnclosingClass().equals(cls)) continue;
-				if (RatingPredictorBuilder.class.isAssignableFrom(c)) {
-					baseline = c;
-					break;
-				}
-			}
-		}
-		logger.debug("Set {} for baseline builder", baseline);
+	public void setBaseline(Class<? extends RatingPredictor> cls) {
+		baseline = cls;
 	}
 	
 	@Provides @ConstantPredictor.Value

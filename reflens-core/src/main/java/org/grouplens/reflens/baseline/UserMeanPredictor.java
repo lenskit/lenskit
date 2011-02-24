@@ -33,13 +33,13 @@ package org.grouplens.reflens.baseline;
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Rating predictor that returns the user's average rating for all predictions.
@@ -53,9 +53,29 @@ import com.google.inject.Inject;
  */
 public class UserMeanPredictor implements RatingPredictor {
 	private final double globalMean;
+	
+	/**
+	 * Construct a predictor that does not do global mean offsetting.
+	 */
+	public UserMeanPredictor() {
+		globalMean = 0;
+	}
 
-	UserMeanPredictor(double mean) {
-		globalMean = mean;
+	/**
+	 * Construct a predictor that computes user means offset by the global mean.
+	 * @param ratings
+	 */
+	public UserMeanPredictor(RatingDataSource ratings) {
+		globalMean = GlobalMeanPredictor.computeMeanRating(ratings.getRatings());
+	}
+	
+	/**
+	 * Injectable constructor for offset-based user mean prediction.
+	 * @param ratingProvider
+	 */
+	@Inject
+	public UserMeanPredictor(Provider<RatingDataSource> ratingProvider) {
+		this(ratingProvider.get());
 	}
 	
 	static double average(SparseVector ratings, double offset) {
@@ -82,21 +102,5 @@ public class UserMeanPredictor implements RatingPredictor {
 	@Override
 	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, average(ratings, globalMean) + globalMean);
-	}
-	
-	/**
-	 * Predictor builder for the user mean predictor.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	public static class Builder implements RatingPredictorBuilder {
-		@Inject
-		public Builder() {
-		}
-		@Override
-		public RatingPredictor build(RatingDataSource data) {
-			double avg = GlobalMeanPredictor.computeMeanRating(data.getRatings());
-			return new UserMeanPredictor(avg);
-		}
 	}
 }

@@ -30,11 +30,14 @@
 
 package org.grouplens.reflens.baseline;
 
-import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
+import javax.annotation.WillClose;
+
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Rating predictor that predicts the global mean rating for all items.
@@ -43,17 +46,30 @@ import org.grouplens.reflens.data.RatingDataSource;
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
 
-	private GlobalMeanPredictor(double value) {
-		super(value);
+	/**
+	 * Construct a new global mean predictor from a data source.
+	 * @param ratings A data source of ratings.
+	 */
+	public GlobalMeanPredictor(RatingDataSource ratings) {
+		super(computeMeanRating(ratings.getRatings()));
+	}
+	/**
+	 * Injectable constructor.  Takes a provider so the resulting predictor can
+	 * outlive the data source.
+	 * @param ratingProvider A provider to get rating data sources.
+	 */
+	@Inject
+	public GlobalMeanPredictor(Provider<RatingDataSource> ratingProvider) {
+		this(ratingProvider.get());
 	}
 	
 	/**
 	 * Helper method to compute the mean of all ratings in a cursor.
 	 * The cursor is closed after the ratings are computed.
 	 * @param ratings A cursor of ratings to average.
-	 * @return The arithemtic mean of all ratings.
+	 * @return The arithmetic mean of all ratings.
 	 */
-	public static double computeMeanRating(Cursor<Rating> ratings) {
+	public static double computeMeanRating(@WillClose Cursor<Rating> ratings) {
 		double total = 0;
 		long count = 0;
 		try {
@@ -68,19 +84,5 @@ public class GlobalMeanPredictor extends ConstantPredictor {
 		if (count > 0)
 			avg = total / count;
 		return avg;
-	}
-
-	/**
-	 * Predictor builder for the global mean predictor.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	public static class Builder implements RatingPredictorBuilder {
-
-		@Override
-		public RatingPredictor build(RatingDataSource data) {
-			return new GlobalMeanPredictor(computeMeanRating(data.getRatings()));
-		}
-		
 	}
 }

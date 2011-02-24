@@ -29,13 +29,17 @@
  */
 package org.grouplens.reflens.svd;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.grouplens.common.test.Matchers.*;
-import static org.grouplens.common.test.GuiceHelpers.*;
+import static org.grouplens.common.test.GuiceHelpers.inject;
+import static org.grouplens.common.test.Matchers.isAssignableTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
+import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.baseline.ConstantPredictor;
+import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.meta.Parameters;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
@@ -179,8 +183,8 @@ public class GradientDescentSVDModuleTest {
 		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), b.trainingThreshold, EPSILON);
 		assertEquals(Parameters.getDefaultInt(IterationCount.class), b.iterationCount);
 		assertThat(b.clampingFunction, instanceOf(DoubleFunction.Identity.class));
-		assertNotNull(b.baselineBuilder);
-		assertThat(b.baselineBuilder, instanceOf(ConstantPredictor.Builder.class));
-		assertEquals(3, ((ConstantPredictor.Builder) b.baselineBuilder).getValue(), EPSILON);
+		RatingPredictor baseline = inject(module, RatingPredictor.class, BaselinePredictor.class);
+		assertNotNull(baseline);
+		assertThat(baseline, instanceOf(ConstantPredictor.class));
 	}
 }

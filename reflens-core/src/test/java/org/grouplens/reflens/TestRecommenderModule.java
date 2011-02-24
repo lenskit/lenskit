@@ -29,16 +29,14 @@
  */
 package org.grouplens.reflens;
 
+import static org.grouplens.common.test.GuiceHelpers.inject;
 import static org.grouplens.common.test.Matchers.isAssignableTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
-import static org.grouplens.common.test.GuiceHelpers.*;
-
 import org.grouplens.reflens.baseline.ConstantPredictor;
-import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.MaxRating;
 import org.grouplens.reflens.params.MeanDamping;
@@ -146,7 +144,7 @@ public class TestRecommenderModule {
 	@Test
 	public void testGetBaseline() {
 		assertNull(module.getBaseline());
-		assertNull(inject(module, RatingPredictorBuilder.class, BaselinePredictor.class));
+		assertNull(inject(module, RatingPredictor.class, BaselinePredictor.class));
 	}
 
 	/**
@@ -154,22 +152,17 @@ public class TestRecommenderModule {
 	 */
 	@Test
 	public void testSetBaselineClass() {
-		module.setBaseline(DudBaseline.class);
-		assertThat(module.getBaseline(), isAssignableTo(DudBaseline.class));
-		RatingPredictorBuilder bldr =
-			inject(module, RatingPredictorBuilder.class, BaselinePredictor.class);
-		assertThat(bldr, instanceOf(DudBaseline.class));
-	}
-	
-	private static class DudBaseline implements RatingPredictorBuilder {
-		@Override public RatingPredictor build(RatingDataSource data) {
-			throw new UnsupportedOperationException();
-		}
+		module.setBaseline(ConstantPredictor.class);
+		assertThat(module.getBaseline(), isAssignableTo(ConstantPredictor.class));
+		RatingPredictor bldr =
+			inject(module, RatingPredictor.class, BaselinePredictor.class);
+		assertThat(bldr, instanceOf(ConstantPredictor.class));
 	}
 	
 	@Test
 	public void testGetConstantBaselineValue() {
-		assertEquals(ConstantPredictor.Value.DEFAULT_VALUE, module.getConstantBaselineValue(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(ConstantPredictor.Value.class),
+				module.getConstantBaselineValue(), EPSILON);
 	}
 	
 	@Test
@@ -182,9 +175,8 @@ public class TestRecommenderModule {
 	public void testInjectConstantBaseline() {
 		module.setConstantBaselineValue(3);
 		module.setBaseline(ConstantPredictor.class);
-		RatingPredictorBuilder pred = inject(module, RatingPredictorBuilder.class, BaselinePredictor.class);
-		assertThat(pred, instanceOf(ConstantPredictor.Builder.class));
-		ConstantPredictor.Builder b = (ConstantPredictor.Builder) pred;
-		assertEquals(3, b.getValue(), EPSILON);
+		RatingPredictor pred = inject(module, RatingPredictor.class, BaselinePredictor.class);
+		assertThat(pred, instanceOf(ConstantPredictor.class));
+		assertEquals(3.0, pred.predict(0, null, 5).getScore(), EPSILON);
 	}
 }

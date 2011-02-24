@@ -33,6 +33,10 @@
  */
 package org.grouplens.reflens.data;
 
+import java.io.Closeable;
+
+import javax.annotation.PreDestroy;
+
 
 /**
  * Represents a data source.  More properly, this represents a connection to a
@@ -40,10 +44,17 @@ package org.grouplens.reflens.data;
  * the data will not change between when it is constructed and closed.  This
  * allows recommender-building code to take multiple passes over the data.
  * 
+ * <p>RefLens code does not close data sources - that is the responsibility of
+ * the client code.  This is in order to facilitate reuse of data sources within
+ * operations.  See {@link DataSourceProvider} for further discussion of this,
+ * particularly as it relates to dependency injection.
+ * 
+ * @see DataSourceProvider
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface DataSource {
+public interface DataSource extends Closeable {
 	/**
 	 * Retrieve the users from the data source.
 	 * @return a cursor iterating the user IDs.
@@ -78,5 +89,6 @@ public interface DataSource {
 	 * <tt>close()</tt> has been called for no other reason that the source
 	 * has been closed.
 	 */
+	@PreDestroy
 	public void close();
 }

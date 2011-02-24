@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -63,11 +62,8 @@ public class TestMeanPredictor {
 	private static final double RATINGS_DAT_MEAN = 3.75;
 	private RatingDataSource ratings;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
-	public void setUp() throws Exception {
+	public void createRatingSource() {
 		List<Rating> rs = new ArrayList<Rating>();
 		rs.add(new Rating(1, 5, 2));
 		rs.add(new Rating(1, 7, 4));
@@ -76,10 +72,14 @@ public class TestMeanPredictor {
 		ratings = new RatingCollectionDataSource(rs);
 	}
 	
+	@After
+	public void closeRatingSource() {
+		ratings.close();
+	}
+	
 	@Test
 	public void testMeanBaseline() {
-		RatingPredictorBuilder builder = new GlobalMeanPredictor.Builder();
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new GlobalMeanPredictor(ratings);
 		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.00001);
@@ -87,8 +87,7 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testUserMeanBaseline() {
-		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new UserMeanPredictor(ratings);
 		long[] items = {5, 7, 10};
 		double[] ratings = {3, 6, 4};
 		SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -103,8 +102,7 @@ public class TestMeanPredictor {
 	@Test
 	public void testUserMeanBaselineNoFastutil() {
 		// FIXME: is this method still necessary?
-		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new UserMeanPredictor(ratings);
 		long[] items = {5, 7, 10};
 		double[] ratings = {3, 6, 4};
 		SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -129,8 +127,7 @@ public class TestMeanPredictor {
 	 */
 	@Test
 	public void testUserMeanBaselineFallback() {
-		RatingPredictorBuilder builder = new UserMeanPredictor.Builder();
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new UserMeanPredictor(ratings);
 		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
@@ -138,11 +135,10 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testItemMeanBaseline() {
-		RatingPredictorBuilder builder = new ItemMeanPredictor.Builder(0);
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new ItemMeanPredictor(ratings);
 		long[] items = {5, 7, 10};
-		double[] ratings = {3, 6, 4};
-		SparseVector map = MutableSparseVector.wrap(items, ratings);
+		double[] values = {3, 6, 4};
+		SparseVector map = MutableSparseVector.wrap(items, values);
 		// unseen item, should be global mean
 		ScoredId score = pred.predict(10l, map, 2l);
 		assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
@@ -161,8 +157,7 @@ public class TestMeanPredictor {
 	
 	@Test
 	public void testUserItemMeanBaseline() {
-		RatingPredictorBuilder builder = new ItemUserMeanPredictor.Builder(0);
-		RatingPredictor pred = builder.build(ratings);
+		RatingPredictor pred = new ItemUserMeanPredictor(ratings);
 		long[] items = {5, 7, 10};
 		double[] ratings = {3, 6, 4};
 		SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -182,14 +177,6 @@ public class TestMeanPredictor {
 		SparseVector preds = pred.predict(10l, map, items2);
 		assertEquals(RATINGS_DAT_MEAN + avgOffset, preds.get(2l), 0.001);
 		assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		ratings.close();
 	}
 
 }

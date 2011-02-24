@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingPredictorBuilder;
 import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -57,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Rating predictor that returns the item's mean rating for all predictions.
@@ -71,12 +71,99 @@ import com.google.inject.Inject;
  *
  */
 public class ItemMeanPredictor implements RatingPredictor {
-	private final Long2DoubleMap itemAverages;
+	private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
+	private final Long2DoubleMap itemMeans;
 	protected final double globalMean;
 	
-	protected ItemMeanPredictor(double mean, Long2DoubleMap means) {
-		globalMean = mean;
-		itemAverages = means;
+	/**
+	 * Construct a new predictor with a damping of 0.
+	 * @param ratings The rating data.
+	 */
+	public ItemMeanPredictor(RatingDataSource ratings) {
+		this(ratings, 0);
+	}
+	
+	/**
+	 * Construct a new predictor.
+	 * @param ratings The rating data.
+	 * @param damping The damping factor (see
+	 * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
+	 */
+	public ItemMeanPredictor(RatingDataSource ratings, double damping) {
+		itemMeans = new Long2DoubleOpenHashMap();
+		globalMean = computeItemAverages(ratings, damping, itemMeans);
+	}
+	
+	/**
+	 * Injectable constructor taking a provider.
+	 */
+	@Inject
+	public ItemMeanPredictor(Provider<RatingDataSource> ratingProvider, @MeanDamping double damping) {
+		this(ratingProvider.get(), damping);
+	}
+	
+	/**
+	 * Compute item averages from a rating data source.  Used to construct
+	 * predictors that need this data.
+	 * 
+	 * <p>This method's interface is a little weird, using an output parameter
+	 * and returning the global mean, so that we can compute the global mean
+	 * and the item means in a single pass through the data source.
+	 * 
+	 * <p>The mean damping factor is used to bias the item means towards the
+	 * global mean.  For a damping factor `D` and global mean `µ`, the item mean
+	 * is computed as `(\sum_{u \in 𝓤_i}r_{u,i} + D)/(|𝓤_i|+D\mu)`.  See
+	 * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
+	 * Try This at Home</a> by Simon Funk for documentation of this enhancement.
+	 * 
+	 * @param data The data source to compute item averages from.
+	 * @param damping The mean damping factor.
+	 * @param itemMeans A map in which the means should be stored.
+	 * @return The global mean rating.  The item means are stored in
+	 * <var>itemMeans</var>.
+	 */
+	public static double computeItemAverages(RatingDataSource data, double damping, Long2DoubleMap itemMeans) {
+		// We iterate the loop to compute the global and per-item mean
+		// ratings.  Subtracting the global mean from each per-item mean
+		// is equivalent to averaging the offsets from the global mean, so
+		// we can compute the means in parallel and subtract after a single
+		// pass through the data.
+		double total = 0.0;
+		int count = 0;
+		itemMeans.defaultReturnValue(0.0);
+		Long2IntMap itemCounts = new Long2IntOpenHashMap();
+		itemCounts.defaultReturnValue(0);
+		
+		Cursor<Rating> ratings = data.getRatings();
+		try {
+			for (Rating r: ratings) {
+				long i = r.getItemId();
+				double v = r.getRating();
+				total += v;
+				count++;
+				itemMeans.put(i, v + itemMeans.get(i));
+				itemCounts.put(i, 1 + itemCounts.get(i));
+			}
+		} finally {
+			ratings.close();
+		}
+		
+		final double mean = count > 0 ? total / count : 0;
+		logger.debug("Computed global mean {} for {} items",
+				mean, itemMeans.size());
+		
+		logger.debug("Computing item means, damping={}", damping);
+		
+		LongIterator items = itemCounts.keySet().iterator();
+		while (items.hasNext()) {
+			long iid = items.nextLong();
+			double ct = itemCounts.get(iid) + damping;
+			double t = itemMeans.get(iid) + damping * mean;
+			double avg = 0.0;
+			if (ct > 0) avg = t / ct - mean;
+			itemMeans.put(iid, avg);
+		}
+		return mean;
 	}
 
 	/* (non-Javadoc)
@@ -104,73 +191,6 @@ public class ItemMeanPredictor implements RatingPredictor {
 	}
 	
 	protected double getItemMean(long id) {
-		return globalMean + itemAverages.get(id);
-	}
-
-	/**
-	 * Predictor builder for the item mean predictor.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	public static class Builder implements RatingPredictorBuilder {
-		private static Logger logger = LoggerFactory.getLogger(Builder.class);
-		
-		protected final double damping;
-		@Inject
-		public Builder(@MeanDamping double meanDamping) {
-			damping = meanDamping;
-		}
-
-		@Override
-		public RatingPredictor build(RatingDataSource data) {
-			// We iterate the loop to compute the global and per-item mean
-			// ratings.  Subtracting the global mean from each per-item mean
-			// is equivalent to averaging the offsets from the global mean, so
-			// we can compute the means in parallel and subtract after a single
-			// pass through the data.
-			double total = 0.0;
-			int count = 0;
-			Long2DoubleMap itemTotals = new Long2DoubleOpenHashMap();
-			itemTotals.defaultReturnValue(0.0);
-			Long2IntMap itemCounts = new Long2IntOpenHashMap();
-			itemCounts.defaultReturnValue(0);
-			
-			Cursor<Rating> ratings = data.getRatings();
-			try {
-				for (Rating r: ratings) {
-					long i = r.getItemId();
-					double v = r.getRating();
-					total += v;
-					count++;
-					itemTotals.put(i, v + itemTotals.get(i));
-					itemCounts.put(i, 1 + itemCounts.get(i));
-				}
-			} finally {
-				ratings.close();
-			}
-			
-			double mean = 0.0;
-			if (count > 0) mean = total / count;
-			logger.debug("Computed global mean {} for {} items",
-					mean, itemTotals.size());
-			
-			logger.debug("Computing item means, damping={}", damping);
-			
-			LongIterator items = itemCounts.keySet().iterator();
-			while (items.hasNext()) {
-				long iid = items.nextLong();
-				double ct = itemCounts.get(iid) + damping;
-				double t = itemTotals.get(iid) + damping * mean;
-				double avg = 0.0;
-				if (ct > 0) avg = t / ct - mean;
-				itemTotals.put(iid, avg);
-			}
-			return create(mean, itemTotals);
-		}
-		
-		protected RatingPredictor create(double globalMean, Long2DoubleMap itemMeans) {
-			return new ItemMeanPredictor(globalMean, itemMeans);
-		}
-		
+		return globalMean + itemMeans.get(id);
 	}
 }
