@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.binder.LinkedBindingBuilder;
+import com.google.inject.throwingproviders.ThrowingProviderBinder;
 import com.google.inject.util.Providers;
 
 /**
@@ -126,6 +127,7 @@ public class RecommenderModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		logger.debug("Configuring recommender module");
+		install(ThrowingProviderBinder.forModule(this));
 		configureBaseline();
 	}
 	

@@ -44,7 +44,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderServiceProvider;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -63,7 +66,6 @@ public class AlgorithmInstance {
 	private @Nonnull String algoName;
 	private @Nullable RecommenderModule module;
 	private @Nonnull Map<String,String> attributes;
-	private @Nullable Injector injector;
 	
 	public AlgorithmInstance() {
 		attributes = new HashMap<String,String>();
@@ -113,7 +115,6 @@ public class AlgorithmInstance {
 	
 	public void setModule(RecommenderModule mod) {
 		module = mod;
-		injector = null;
 		mod.setName(getName());
 	}
 	
@@ -121,21 +122,15 @@ public class AlgorithmInstance {
 		setModule(mod.newInstance());
 	}
 	
-	Injector getInjector() {
-		if (injector == null) {
-			injector = Guice.createInjector(module);
-		}
-		return injector;
-	}
-	
-	public RecommenderService getRecommenderService(final RatingDataSource input) {
-		Injector injector = getInjector();
-		Injector child = injector.createChildInjector(new AbstractModule() {
+	public RecommenderService getRecommenderService(final RatingDataSource input) throws RecommenderNotAvailableException {
+		Module dataModule = new AbstractModule() {
 			@Override protected void configure() {
 				bind(RatingDataSource.class).toInstance(input);
 			}
-		});
-		return child.getInstance(RecommenderService.class);
+		};
+		Injector inj = Guice.createInjector(dataModule, module);
+		RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
+		return provider.get();
 	}
 
 	public static AlgorithmInstance load(File f) throws InvalidRecommenderException {

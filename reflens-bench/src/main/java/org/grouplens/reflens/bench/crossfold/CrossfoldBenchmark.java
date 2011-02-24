@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.bench.AlgorithmInstance;
 import org.grouplens.reflens.bench.CrossfoldOptions;
@@ -135,7 +136,12 @@ public class CrossfoldBenchmark implements Runnable {
 		logger.debug("Benchmarking {}", algo.getName());
 		RecommenderService engine;
 		logger.debug("Building recommender");
-		engine = algo.getRecommenderService(train);
+		try {
+			engine = algo.getRecommenderService(train);
+		} catch (RecommenderNotAvailableException e) {
+			logger.error("Recommender not available: {}", e);
+			throw new RuntimeException(e);
+		}
 		RatingPredictor rec = engine.getRatingPredictor();
 		writer.setValue(colBuildTime, timer.elapsed());
 		logger.debug("Built model {} model in {}",
