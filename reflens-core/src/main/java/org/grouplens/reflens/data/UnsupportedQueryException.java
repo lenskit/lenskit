@@ -38,7 +38,7 @@ package org.grouplens.reflens.data;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UnsupportedQueryException extends RuntimeException {
+public class UnsupportedQueryException extends IllegalArgumentException {
 
 	/**
 	 * 
