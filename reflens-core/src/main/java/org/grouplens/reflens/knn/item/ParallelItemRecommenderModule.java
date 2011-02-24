@@ -30,24 +30,24 @@
 
 package org.grouplens.reflens.knn.item;
 
-import org.grouplens.reflens.RecommenderBuilder;
+import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderServiceProvider;
+import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.params.BaselinePredictor;
 
-import com.google.inject.TypeLiteral;
+import com.google.inject.throwingproviders.CheckedProvides;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ParallelItemRecommenderModule extends ItemRecommenderModule {
-
-	/**
-	 * 
-	 */
-	public ParallelItemRecommenderModule() {
-	}
-
+	
 	@Override
-	protected void configureRecommenderBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder>(){}).to(ParallelItemItemRecommenderBuilder.class);
+	@CheckedProvides(RecommenderServiceProvider.class)
+	public RecommenderService buildRecommender(ItemItemRecommenderBuilder builder,
+			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+		return builder.build(data, baseline);
 	}
 }

@@ -30,8 +30,13 @@
 
 package org.grouplens.reflens.svd;
 
+import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderServiceProvider;
+import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.svd.params.ClampingFunction;
 import org.grouplens.reflens.svd.params.FeatureCount;
 import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
@@ -42,6 +47,7 @@ import org.grouplens.reflens.util.DoubleFunction;
 
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+import com.google.inject.throwingproviders.CheckedProvides;
 
 public class GradientDescentSVDModule extends RecommenderModule {
 	private int featureCount = 100;
@@ -59,15 +65,10 @@ public class GradientDescentSVDModule extends RecommenderModule {
 	protected void configure() {
 		super.configure();
 		configureClamping();
-		configureBuilder();
 	}
 	
 	protected void configureClamping() {
 		bind(DoubleFunction.class).annotatedWith(ClampingFunction.class).to(clampingFunction);
-	}
-	
-	protected void configureBuilder() {
-		bind(new TypeLiteral<RecommenderBuilder>(){}).to(new TypeLiteral<GradientDescentSVDRecommenderBuilder>(){});
 	}
 
 	/**
@@ -158,5 +159,11 @@ public class GradientDescentSVDModule extends RecommenderModule {
 	 */
 	public void setClampingFunction(Class<? extends DoubleFunction> clampingFunction) {
 		this.clampingFunction = clampingFunction;
+	}
+	
+	@CheckedProvides(RecommenderServiceProvider.class)
+	public RecommenderService buildRecommender(GradientDescentSVDRecommenderBuilder builder,
+			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+		return builder.build(data, baseline);
 	}
 }

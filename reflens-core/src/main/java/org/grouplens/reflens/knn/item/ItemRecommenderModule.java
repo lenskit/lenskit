@@ -30,8 +30,12 @@
 
 package org.grouplens.reflens.knn.item;
 
+import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.RecommenderServiceProvider;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.Similarity;
@@ -40,11 +44,13 @@ import org.grouplens.reflens.knn.TruncatingSimilarityMatrixBuilder;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
+import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
+import com.google.inject.throwingproviders.CheckedProvides;
 
 /**
  * TODO Extract NeighborhoodRecommenderModule
@@ -66,7 +72,6 @@ public class ItemRecommenderModule extends RecommenderModule {
 		
 		configureSimilarityMatrix();
 		configureItemSimilarity();
-		configureRecommenderBuilder();
 	}
 	
 	/**
@@ -118,13 +123,6 @@ public class ItemRecommenderModule extends RecommenderModule {
 	/**
 	 * 
 	 */
-	protected void configureRecommenderBuilder() {
-		bind(RecommenderBuilder.class).to(ItemItemRecommenderBuilder.class);
-	}
-
-	/**
-	 * 
-	 */
 	protected void configureSimilarityMatrix() {
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
@@ -135,6 +133,12 @@ public class ItemRecommenderModule extends RecommenderModule {
 		bind(new TypeLiteral<Similarity<? super MutableSparseVector>>(){})
 			.annotatedWith(ItemSimilarity.class)
 			.to(itemSimilarity);
+	}
+	
+	@CheckedProvides(RecommenderServiceProvider.class)
+	public RecommenderService buildRecommender(ItemItemRecommenderBuilder builder,
+			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+		return builder.build(data, baseline);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })

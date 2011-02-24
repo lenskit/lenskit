@@ -174,7 +174,8 @@ public class GradientDescentSVDModuleTest {
 	public void testDefaultInject() {
 		module.setBaseline(ConstantPredictor.class);
 		module.setConstantBaselineValue(3);
-		RecommenderBuilder builder = inject(module, RecommenderBuilder.class);
+		GradientDescentSVDRecommenderBuilder builder = 
+			inject(module, GradientDescentSVDRecommenderBuilder.class);
 		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
 		GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
 		assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);

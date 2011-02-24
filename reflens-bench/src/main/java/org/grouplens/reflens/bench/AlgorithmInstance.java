@@ -43,11 +43,13 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderService;
+import org.grouplens.reflens.data.RatingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -126,8 +128,14 @@ public class AlgorithmInstance {
 		return injector;
 	}
 	
-	public RecommenderBuilder getBuilder() {
-		return getInjector().getInstance(RecommenderBuilder.class);
+	public RecommenderService getRecommenderService(final RatingDataSource input) {
+		Injector injector = getInjector();
+		Injector child = injector.createChildInjector(new AbstractModule() {
+			@Override protected void configure() {
+				bind(RatingDataSource.class).toInstance(input);
+			}
+		});
+		return child.getInstance(RecommenderService.class);
 	}
 
 	public static AlgorithmInstance load(File f) throws InvalidRecommenderException {

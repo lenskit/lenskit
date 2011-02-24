@@ -135,7 +135,7 @@ public class CrossfoldBenchmark implements Runnable {
 		logger.debug("Benchmarking {}", algo.getName());
 		RecommenderService engine;
 		logger.debug("Building recommender");
-		engine = algo.getBuilder().build(train);
+		engine = algo.getRecommenderService(train);
 		RatingPredictor rec = engine.getRatingPredictor();
 		writer.setValue(colBuildTime, timer.elapsed());
 		logger.debug("Built model {} model in {}",
