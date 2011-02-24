@@ -39,10 +39,6 @@ package org.grouplens.reflens.data;
  *
  */
 public class UnsupportedQueryException extends IllegalArgumentException {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1340119072527578247L;
 
 	public UnsupportedQueryException() {
