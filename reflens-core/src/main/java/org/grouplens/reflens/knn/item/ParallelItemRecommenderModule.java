@@ -30,16 +30,13 @@
 
 package org.grouplens.reflens.knn.item;
 
-import java.io.IOException;
-
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderServiceProvider;
-import org.grouplens.reflens.data.DataSourceProvider;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.params.BaselinePredictor;
 
+import com.google.inject.Singleton;
 import com.google.inject.throwingproviders.CheckedProvides;
 
 /**
@@ -50,12 +47,9 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
 	
 	@Override
 	@CheckedProvides(RecommenderServiceProvider.class)
+	@Singleton
 	public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-			DataSourceProvider<RatingDataSource> data, @BaselinePredictor RatingPredictor baseline) throws RecommenderNotAvailableException {
-		try {
-			return builder.build(data.get(), baseline);
-		} catch (IOException e) {
-			throw new RecommenderNotAvailableException(e);
-		}
+			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+		return builder.build(data, baseline);
 	}
 }
