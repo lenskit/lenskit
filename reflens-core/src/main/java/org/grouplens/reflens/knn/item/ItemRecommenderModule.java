@@ -30,11 +30,14 @@
 
 package org.grouplens.reflens.knn.item;
 
+import java.io.IOException;
+
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderServiceProvider;
+import org.grouplens.reflens.data.DataSourceProvider;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
@@ -136,9 +139,13 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 	
 	@CheckedProvides(RecommenderServiceProvider.class)
-	public RecommenderService buildRecommender(ItemItemRecommenderBuilder builder,
-			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
-		return builder.build(data, baseline);
+	public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
+			DataSourceProvider<RatingDataSource> data, @BaselinePredictor RatingPredictor baseline) throws RecommenderNotAvailableException {
+		try {
+			return builder.build(data.get(), baseline);
+		} catch (IOException e) {
+			throw new RecommenderNotAvailableException(e);
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
