@@ -29,11 +29,13 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
 import it.unimi.dsi.fastutil.longs.LongIterable;
+
+import org.grouplens.common.cursors.Cursor;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

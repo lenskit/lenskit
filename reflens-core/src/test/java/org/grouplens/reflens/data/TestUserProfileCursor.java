@@ -29,18 +29,22 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

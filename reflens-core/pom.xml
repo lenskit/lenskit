@@ -47,6 +47,10 @@
     	<type>jar</type>
     	<scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.grouplens.common</groupId>
+    	<artifactId>common-core</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

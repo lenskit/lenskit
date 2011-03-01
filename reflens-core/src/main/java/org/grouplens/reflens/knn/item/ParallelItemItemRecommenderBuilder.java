@@ -46,9 +46,9 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
@@ -79,7 +79,7 @@ import com.google.inject.Inject;
  *
  */
 public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
 	private SimilarityMatrixBuilderFactory matrixFactory;
@@ -97,7 +97,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		this.itemSimilarity = itemSimilarity;
 		this.threadCount = threadCount;
 	}
-	
+
 	private Index indexItems(RatingDataSource data) {
 		userItemMap = new Long2ObjectOpenHashMap<IntSortedSet>();
 		Indexer indexer = new Indexer();
@@ -116,7 +116,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		}
 		return indexer;
 	}
-	
+
 	@Override
 	public ItemItemRecommenderService build(RatingDataSource data, RatingPredictor baseline) {
 		logger.info("Building model with {} threads", threadCount);
@@ -124,32 +124,32 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		Index itemIndex = indexItems(data);
 		logger.debug("Normalizing and transposing ratings matrix");
 		SparseVector[] itemRatings = buildItemRatings(itemIndex, data);
-		
+
 		// prepare the similarity matrix
 		logger.debug("Initializing similarity matrix");
 		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
-		
+
 		// compute the similarity matrix
 		WorkerFactory<IntWorker> worker = new SimilarityWorkerFactory(itemRatings, builder);
 		IntegerTaskQueue queue = new IntegerTaskQueue(itemRatings.length);
-		
+
 		logger.debug("Computing similarities");
 		queue.run(worker, threadCount);
-		
+
 		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
 		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix);
 		return new ItemItemRecommenderService(model);
 	}
-	
+
 	static int arithSum(int n) {
 		return (n * (n + 1)) >> 1; // bake-in the strength reduction
 	}
 	static long arithSum(long n) {
 		return (n * (n + 1)) >> 1; // bake-in the strength reduction
 	}
-	
-	/** 
+
+	/**
 	 * Transpose the ratings matrix so we have a list of item rating vectors.
 	 * @return An array of item rating vectors, mapping user IDs to ratings.
 	 */
@@ -197,12 +197,12 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		}
 		return itemVectors;
 	}
-	
+
 	private class SimilarityWorker implements IntWorker {
 		private final SparseVector[] itemVectors;
 		private final SimilarityMatrixBuilder builder;
 		private final boolean symmetric;
-		
+
 		public SimilarityWorker(SparseVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVectors = items;
 			this.builder = builder;
@@ -213,7 +213,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		public void doJob(int job) {
 			int row = (int) job;
 			int max = symmetric ? row : itemVectors.length;
-			
+
 			IntSet candidates = new IntOpenHashSet();
 			LongIterator uiter = itemVectors[row].keySet().iterator();
 			while (uiter.hasNext()) {
@@ -225,11 +225,11 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 					candidates.add(i);
 				}
 			}
-			
+
 			IntIterator iter = candidates.iterator();
 			while (iter.hasNext()) {
 				int col = iter.nextInt();
-				
+
 				double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
 				builder.put(row, col, sim);
 				if (symmetric)
@@ -241,12 +241,12 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		public void finish() {
 		}
 	}
-	
+
 	public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
 
 		private final SparseVector[] itemVector;
 		private final SimilarityMatrixBuilder builder;
-		
+
 		public SimilarityWorkerFactory(SparseVector[] items, SimilarityMatrixBuilder builder) {
 			this.itemVector = items;
 			this.builder = builder;
@@ -255,17 +255,17 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		public SimilarityWorker create(Thread owner) {
 			return new SimilarityWorker(itemVector, builder);
 		}
-		
+
 	}
-	
+
 	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
 		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
-		
+
 		SparseVector rmap = Rating.userRatingVector(ratings);
 		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
-		
+
 		for (Rating r: ratings) {
 			long iid = r.getItemId();
 			double adj = r.getRating() - base.get(iid);

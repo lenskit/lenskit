@@ -29,7 +29,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
@@ -42,6 +42,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.grouplens.common.cursors.AbstractCursor;
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.common.cursors.FilteredCursor;
 
 import com.google.common.base.Predicate;
 
@@ -58,7 +63,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 	 */
 	@Override
 	public abstract Cursor<Rating> getRatings();
-	
+
 	/**
 	 * Implement {@link RatingDataSource#getRatings(SortOrder)} by sorting the
 	 * output of {@link #getRatings()}.
@@ -66,7 +71,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 	@Override
 	public Cursor<Rating> getRatings(SortOrder order) {
 		Comparator<Rating> comp = null;
-		
+
 		switch (order) {
 		case ANY:
 			return getRatings();
@@ -113,12 +118,12 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 			};
 			break;
 		default:
-			assert false;	
+			assert false;
 		}
-		
+
 		ArrayList<Rating> ratings = Cursors.makeList(getRatings());
 		Collections.sort(ratings, comp);
-		return new IteratorCursor<Rating>(ratings.iterator());
+		return Cursors.wrap(ratings.iterator());
 	}
 
 	/* (non-Javadoc)
@@ -159,12 +164,12 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 	public void close() {
 		/* no-op */
 	}
-	
+
 	private LongSet getItemSet() {
 		LongSet items = null;
 		if (itemCache != null)
 			items = itemCache.get();
-		
+
 		if (items == null) {
 			items = new LongOpenHashSet();
 			Cursor<Rating> ratings = getRatings();
@@ -186,19 +191,19 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 	 */
 	@Override
 	public LongCursor getItems() {
-		return Cursors.wrap(getItemSet());
+		return Cursors2.wrap(getItemSet());
 	}
-	
+
 	@Override
 	public int getItemCount() {
 		return getItemSet().size();
 	}
-	
+
 	private LongSet getUserSet() {
 		LongSet users = null;
 		if (userCache != null)
 			users = userCache.get();
-		
+
 		if (users == null) {
 			users = new LongOpenHashSet();
 			Cursor<Rating> ratings = getRatings();
@@ -219,18 +224,18 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 	 */
 	@Override
 	public LongCursor getUsers() {
-		return Cursors.wrap(getUserSet());
+		return Cursors2.wrap(getUserSet());
 	}
-	
+
 	@Override
 	public int getUserCount() {
 		return getUserSet().size();
 	}
-	
+
 	static class UserProfileCursor extends AbstractCursor<UserRatingProfile> {
 		private Cursor<Rating> cursor;
 		private Rating lastRating;
-		
+
 		public UserProfileCursor(Cursor<Rating> cursor) {
 			this.cursor = cursor;
 			lastRating = null;
@@ -264,7 +269,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
 				else
 					lastRating = null;
 			} while (lastRating != null && lastRating.getUserId() == uid);
-			
+
 			return new BasicUserRatingProfile(uid, ratings);
 		}
 	}

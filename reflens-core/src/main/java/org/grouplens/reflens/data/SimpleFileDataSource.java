@@ -29,7 +29,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
@@ -43,6 +43,8 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import org.grouplens.common.cursors.AbstractCursor;
+import org.grouplens.common.cursors.Cursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 	private final File file;
 	private final URL url;
 	private final Pattern splitter;
-	
+
 	public SimpleFileDataSource(File file, String delimiter) throws FileNotFoundException {
 		this.file = file;
 		if (!file.exists())
@@ -68,15 +70,15 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 		}
 		splitter = Pattern.compile(Pattern.quote(delimiter));
 	}
-	
+
 	public SimpleFileDataSource(File file) throws FileNotFoundException {
 		this(file, System.getProperty("org.grouplens.reflens.bench.SimpleFileDataSource.delimiter", "\t"));
 	}
-	
+
 	public SimpleFileDataSource(URL url) {
 		this(url, System.getProperty("org.grouplens.reflens.bench.SimpleFileDataSource.delimiter", "\t"));
 	}
-	
+
 	public SimpleFileDataSource(URL url, String delimiter) {
 		this.url = url;
 		if (url.getProtocol().equals("file"))
@@ -89,7 +91,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 	public File getFile() {
 		return file;
 	}
-	
+
 	public URL getURL() {
 		return url;
 	}
@@ -111,7 +113,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		}		
+		}
 		return new RatingScannerCursor(scanner);
 	}
 
@@ -119,7 +121,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 		private Scanner scanner;
 		private int lineno;
 		private Rating rating;
-		
+
 		public RatingScannerCursor(Scanner s) {
 			lineno = 0;
 			scanner = s;
@@ -137,7 +139,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 		@Override
 		public boolean hasNext() {
 			if (scanner == null) return false;
-			
+
 			while (rating == null && scanner.hasNextLine()) {
 				String line = scanner.nextLine();
 				lineno += 1;
@@ -150,7 +152,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 				long uid = Long.parseLong(fields[0]);
 				long iid = Long.parseLong(fields[1]);
 				double r = Double.parseDouble(fields[2]);
-			
+
 				rating = new Rating(uid, iid, r);
 			}
 			return rating != null;
@@ -162,7 +164,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 			Rating r = rating;
 			rating = null;
 			return r;
-		}		
-		
+		}
+
 	}
 }

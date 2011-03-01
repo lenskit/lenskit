@@ -30,6 +30,8 @@
 
 package org.grouplens.reflens.data;
 
+import org.grouplens.common.cursors.Cursor;
+
 
 /**
  * Represents a data source providing ratings data.
@@ -49,7 +51,7 @@ public interface RatingDataSource extends DataSource {
 	 * @throws UnsupportedQueryException if the sort order cannot be supported.
 	 */
 	public Cursor<Rating> getRatings(SortOrder order);
-	
+
 	/**
 	 * Get all user rating profiles from the system.
 	 * @return A cursor returning the user rating profile for each user in the

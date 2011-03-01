@@ -36,8 +36,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.Collection;
 import java.util.Random;
 
-import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.Cursors;
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.slf4j.Logger;
@@ -50,9 +50,9 @@ import com.google.common.base.Predicate;
  * data set into N portions so that each one can be tested against the others.
  * Portions are divided equally, and data is randomized before being
  * partitioned.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class CrossfoldManager {
 	private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
@@ -71,7 +71,7 @@ public class CrossfoldManager {
 		userPartitionMap.defaultReturnValue(nfolds);
 		chunkCount = nfolds;
 		this.ratings = ratings;
-		
+
 		Random splitter = new Random();
 		Cursor<Long> userCursor = ratings.getUsers();
 		try {
@@ -89,11 +89,11 @@ public class CrossfoldManager {
 			userCursor.close();
 		}
 	}
-	
+
 	public int getChunkCount() {
 		return chunkCount;
 	}
-	
+
 	/**
 	 * Build a training data collection.  The collection is built on-demand, so
 	 * it doesn't use much excess memory.
@@ -108,11 +108,11 @@ public class CrossfoldManager {
 		};
 		return new UserFilteredDataSource(ratings, false, filter);
 	}
-	
+
 	public void close() {
 		ratings.close();
 	}
-	
+
 	/**
 	 * Return a test data set.
 	 * @param testIndex The index of the test set to use.
@@ -125,6 +125,6 @@ public class CrossfoldManager {
 				return part == testIndex;
 			}
 		};
-		return Cursors.makeList(Cursors.filter(ratings.getUserRatingProfiles(), filter));
+		return Cursors.makeList(org.grouplens.common.cursors.Cursors.filter(ratings.getUserRatingProfiles(), filter));
 	}
 }

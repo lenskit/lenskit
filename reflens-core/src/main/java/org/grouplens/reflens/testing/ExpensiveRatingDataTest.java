@@ -1,7 +1,9 @@
-package org.grouplens.reflens.data;
+package org.grouplens.reflens.testing;
 
 import java.net.URL;
 
+import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

@@ -29,11 +29,14 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
 import java.util.Collection;
+
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 
 /**
  * Data source backed by a collection of ratings.
@@ -42,7 +45,7 @@ import java.util.Collection;
  */
 public class RatingCollectionDataSource extends AbstractRatingDataSource {
 	private Collection<Rating> ratings;
-	
+
 	/**
 	 * Construct a new data source from a collection of ratings.
 	 * @param ratings The ratings to use.

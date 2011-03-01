@@ -29,11 +29,11 @@
  */
 package org.grouplens.reflens.knn.item;
 
-import static org.grouplens.common.test.GuiceHelpers.inject;
 import static org.grouplens.common.test.Matchers.isAssignableTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+
 
 import org.grouplens.reflens.TestRecommenderModule;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
@@ -43,17 +43,20 @@ import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.params.meta.Parameters;
+import org.grouplens.reflens.testing.RecommenderModuleTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestItemRecommenderModule {
+public class TestItemRecommenderModule extends RecommenderModuleTest {
 	private static final double EPSILON = TestRecommenderModule.EPSILON;
 	private ItemRecommenderModule module;
 
@@ -63,6 +66,10 @@ public class TestItemRecommenderModule {
 	@Before
 	public void setUp() throws Exception {
 		module = new ItemRecommenderModule();
+	}
+
+	public Module getModule() {
+		return module;
 	}
 
 	/**
@@ -115,21 +122,21 @@ public class TestItemRecommenderModule {
 		module.setItemSimilarity(DummySimilarity.class);
 		assertThat(module.getItemSimilarity(), isAssignableTo(DummySimilarity.class));
 	}
-	
+
 	@Test
 	public void testInjectSimilarity() {
 		module.setItemSimilarity(DummySimilarity.class);
 		module.setSimilarityDamping(39.8);
 		Similarity<? super MutableSparseVector> sim;
-		sim = inject(module, new TypeLiteral<Similarity<? super MutableSparseVector>>(){}, ItemSimilarity.class);
+		sim = inject(Key.get(new TypeLiteral<Similarity<? super MutableSparseVector>>(){}, ItemSimilarity.class));
 		assertThat(sim, instanceOf(DummySimilarity.class));
 		DummySimilarity dsim = (DummySimilarity) sim;
 		assertEquals(39.8, dsim.damping, EPSILON);
 	}
-	
+
 	private static class DummySimilarity implements Similarity<SparseVector> {
 		public final double damping;
-		
+
 		@SuppressWarnings("unused")
 		@Inject
 		public DummySimilarity(@SimilarityDamper double d) {
@@ -140,6 +147,6 @@ public class TestItemRecommenderModule {
 		public double similarity(SparseVector vec1, SparseVector vec2) {
 			return 0;
 		}
-		
+
 	}
 }

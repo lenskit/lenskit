@@ -29,7 +29,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.bench.crossfold;
 
@@ -37,8 +37,8 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.lang.ref.SoftReference;
 
-import org.grouplens.reflens.data.Cursor;
-import org.grouplens.reflens.data.Cursors;
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.reflens.data.Cursors2;
 import org.grouplens.reflens.data.LongCursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
@@ -60,11 +60,11 @@ public class UserFilteredDataSource implements RatingDataSource {
 	private final Predicate<Long> userFilter;
 	private final boolean closeBase;
 	private SoftReference<LongList> userCache;
-	
+
 	public UserFilteredDataSource(RatingDataSource base, Predicate<Long> filter) {
 		this(base, false, filter);
 	}
-	
+
 	public UserFilteredDataSource(RatingDataSource base, boolean closeBase, Predicate<Long> filter) {
 		this.base = base;
 		this.closeBase = closeBase;
@@ -76,7 +76,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 	 */
 	@Override
 	public Cursor<Rating> getRatings() {
-		return Cursors.filter(base.getRatings(), new RatingPredicate());
+		return org.grouplens.common.cursors.Cursors.filter(base.getRatings(), new RatingPredicate());
 	}
 
 	/* (non-Javadoc)
@@ -84,7 +84,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 	 */
 	@Override
 	public Cursor<Rating> getRatings(SortOrder order) {
-		return Cursors.filter(base.getRatings(order), new RatingPredicate());
+		return org.grouplens.common.cursors.Cursors.filter(base.getRatings(order), new RatingPredicate());
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +92,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 	 */
 	@Override
 	public Cursor<UserRatingProfile> getUserRatingProfiles() {
-		return Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
+		return org.grouplens.common.cursors.Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
 	}
 
 	/* (non-Javadoc)
@@ -103,7 +103,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 		if (userFilter.apply(userId))
 			return base.getUserRatings(userId);
 		else
-			return Cursors.empty();
+			return org.grouplens.common.cursors.Cursors.empty();
 	}
 
 	/* (non-Javadoc)
@@ -114,7 +114,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 		if (userFilter.apply(userId))
 			return base.getUserRatings(userId, order);
 		else
-			return Cursors.empty();
+			return org.grouplens.common.cursors.Cursors.empty();
 	}
 
 	/* (non-Javadoc)
@@ -125,7 +125,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 		if (closeBase)
 			base.close();
 	}
-	
+
 	@Override
 	public int getItemCount() {
 		return base.getItemCount();
@@ -138,7 +138,7 @@ public class UserFilteredDataSource implements RatingDataSource {
 	public LongCursor getItems() {
 		return base.getItems();
 	}
-	
+
 	private LongList getCachedUsers() {
 		return userCache == null ? null : userCache.get();
 	}
@@ -151,30 +151,30 @@ public class UserFilteredDataSource implements RatingDataSource {
 		LongList users = getCachedUsers();
 		if (users == null) {
 			logger.trace("Returning fresh user list");
-			return Cursors.makeLongCursor(Cursors.filter(base.getUsers(), userFilter));
+			return Cursors2.makeLongCursor(org.grouplens.common.cursors.Cursors.filter(base.getUsers(), userFilter));
 		} else {
 			logger.trace("Returning cached user list");
-			return Cursors.wrap(users);
+			return Cursors2.wrap(users);
 		}
 	}
-	
+
 	@Override
 	public int getUserCount() {
 		LongList users = getCachedUsers();
 		if (users == null) {
 			logger.trace("Caching user list");
-			users = Cursors.makeList(getUsers());
+			users = Cursors2.makeList(getUsers());
 			userCache = new SoftReference<LongList>(users);
 		}
 		return users.size();
 	}
-	
+
 	private class RatingPredicate implements Predicate<Rating> {
 		public boolean apply(Rating r) {
 			return userFilter.apply(r.getUserId());
 		}
 	}
-	
+
 	private class RatingProfilePredicate implements Predicate<UserRatingProfile> {
 		public boolean apply(UserRatingProfile profile) {
 			return userFilter.apply(profile.getUser());

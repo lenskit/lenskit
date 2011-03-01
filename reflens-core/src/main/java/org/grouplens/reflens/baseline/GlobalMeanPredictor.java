@@ -32,7 +32,7 @@ package org.grouplens.reflens.baseline;
 
 import javax.annotation.WillClose;
 
-import org.grouplens.reflens.data.Cursor;
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 
@@ -62,7 +62,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
 	public GlobalMeanPredictor(Provider<RatingDataSource> ratingProvider) {
 		this(ratingProvider.get());
 	}
-	
+
 	/**
 	 * Helper method to compute the mean of all ratings in a cursor.
 	 * The cursor is closed after the ratings are computed.

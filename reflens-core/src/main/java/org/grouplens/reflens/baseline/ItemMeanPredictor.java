@@ -29,7 +29,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.baseline;
 
@@ -43,8 +43,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
@@ -60,13 +60,13 @@ import com.google.inject.Provider;
 
 /**
  * Rating predictor that returns the item's mean rating for all predictions.
- * 
+ *
  * If the item has no ratings, the global mean rating is returned.
- * 
+ *
  * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub></i>,
  * where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean µ).
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -74,7 +74,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
 	private final Long2DoubleMap itemMeans;
 	protected final double globalMean;
-	
+
 	/**
 	 * Construct a new predictor with a damping of 0.
 	 * @param ratings The rating data.
@@ -82,7 +82,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	public ItemMeanPredictor(RatingDataSource ratings) {
 		this(ratings, 0);
 	}
-	
+
 	/**
 	 * Construct a new predictor.
 	 * @param ratings The rating data.
@@ -93,7 +93,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 		itemMeans = new Long2DoubleOpenHashMap();
 		globalMean = computeItemAverages(ratings, damping, itemMeans);
 	}
-	
+
 	/**
 	 * Injectable constructor taking a provider.
 	 */
@@ -101,21 +101,21 @@ public class ItemMeanPredictor implements RatingPredictor {
 	public ItemMeanPredictor(Provider<RatingDataSource> ratingProvider, @MeanDamping double damping) {
 		this(ratingProvider.get(), damping);
 	}
-	
+
 	/**
 	 * Compute item averages from a rating data source.  Used to construct
 	 * predictors that need this data.
-	 * 
+	 *
 	 * <p>This method's interface is a little weird, using an output parameter
 	 * and returning the global mean, so that we can compute the global mean
 	 * and the item means in a single pass through the data source.
-	 * 
+	 *
 	 * <p>The mean damping factor is used to bias the item means towards the
 	 * global mean.  For a damping factor `D` and global mean `µ`, the item mean
 	 * is computed as `(\sum_{u \in 𝓤_i}r_{u,i} + D)/(|𝓤_i|+D\mu)`.  See
 	 * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
 	 * Try This at Home</a> by Simon Funk for documentation of this enhancement.
-	 * 
+	 *
 	 * @param data The data source to compute item averages from.
 	 * @param damping The mean damping factor.
 	 * @param itemMeans A map in which the means should be stored.
@@ -133,7 +133,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 		itemMeans.defaultReturnValue(0.0);
 		Long2IntMap itemCounts = new Long2IntOpenHashMap();
 		itemCounts.defaultReturnValue(0);
-		
+
 		Cursor<Rating> ratings = data.getRatings();
 		try {
 			for (Rating r: ratings) {
@@ -147,13 +147,13 @@ public class ItemMeanPredictor implements RatingPredictor {
 		} finally {
 			ratings.close();
 		}
-		
+
 		final double mean = count > 0 ? total / count : 0;
 		logger.debug("Computed global mean {} for {} items",
 				mean, itemMeans.size());
-		
+
 		logger.debug("Computing item means, damping={}", damping);
-		
+
 		LongIterator items = itemCounts.keySet().iterator();
 		while (items.hasNext()) {
 			long iid = items.nextLong();
@@ -189,7 +189,7 @@ public class ItemMeanPredictor implements RatingPredictor {
 	public ScoredId predict(long user, SparseVector ratings, long item) {
 		return new ScoredId(item, getItemMean(item));
 	}
-	
+
 	protected double getItemMean(long id) {
 		return globalMean + itemMeans.get(id);
 	}

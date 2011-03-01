@@ -29,7 +29,6 @@
  */
 package org.grouplens.reflens.svd;
 
-import static org.grouplens.common.test.GuiceHelpers.inject;
 import static org.grouplens.common.test.Matchers.isAssignableTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +36,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommenderBuilder;
 import org.grouplens.reflens.baseline.ConstantPredictor;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.params.meta.Parameters;
@@ -47,15 +45,19 @@ import org.grouplens.reflens.svd.params.FeatureTrainingThreshold;
 import org.grouplens.reflens.svd.params.GradientDescentRegularization;
 import org.grouplens.reflens.svd.params.IterationCount;
 import org.grouplens.reflens.svd.params.LearningRate;
+import org.grouplens.reflens.testing.RecommenderModuleTest;
 import org.grouplens.reflens.util.DoubleFunction;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.inject.Key;
+import com.google.inject.Module;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDModuleTest {
+public class GradientDescentSVDModuleTest extends RecommenderModuleTest {
 	private static final double EPSILON = 1.0e-6;
 	private GradientDescentSVDModule module;
 
@@ -65,6 +67,10 @@ public class GradientDescentSVDModuleTest {
 	@Before
 	public void setUp() throws Exception {
 		module = new GradientDescentSVDModule();
+	}
+
+	protected Module getModule() {
+		return module;
 	}
 
 	/**
@@ -166,16 +172,16 @@ public class GradientDescentSVDModuleTest {
 	@Test
 	public void testSetClampingFunction() {
 		module.setClampingFunction(RatingRangeClamp.class);
-		DoubleFunction clamp = inject(module, DoubleFunction.class, ClampingFunction.class);
+		DoubleFunction clamp = inject(Key.get(DoubleFunction.class, ClampingFunction.class));
 		assertThat(clamp, instanceOf(RatingRangeClamp.class));
 	}
-	
+
 	@Test
 	public void testDefaultInject() {
 		module.setBaseline(ConstantPredictor.class);
 		module.setConstantBaselineValue(3);
-		GradientDescentSVDRecommenderBuilder builder = 
-			inject(module, GradientDescentSVDRecommenderBuilder.class);
+		GradientDescentSVDRecommenderBuilder builder =
+			inject(Key.get(GradientDescentSVDRecommenderBuilder.class));
 		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
 		GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
 		assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);
@@ -184,7 +190,7 @@ public class GradientDescentSVDModuleTest {
 		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), b.trainingThreshold, EPSILON);
 		assertEquals(Parameters.getDefaultInt(IterationCount.class), b.iterationCount);
 		assertThat(b.clampingFunction, instanceOf(DoubleFunction.Identity.class));
-		RatingPredictor baseline = inject(module, RatingPredictor.class, BaselinePredictor.class);
+		RatingPredictor baseline = inject(Key.get(RatingPredictor.class, BaselinePredictor.class));
 		assertNotNull(baseline);
 		assertThat(baseline, instanceOf(ConstantPredictor.class));
 	}

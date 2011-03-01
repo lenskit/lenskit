@@ -46,9 +46,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.data.Cursor;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
@@ -65,22 +65,22 @@ import com.google.inject.Inject;
 
 /**
  * Builds item-item recommender engines from data sources.
- * 
+ *
  * This class takes {@link RatingDataSource}es and builds item-item recommender
  * models from them.  It uses a build strategy and a baseline recommender to do
  * the actual building, constructs an {@link ItemItemModel} containing the
  * resulting recommender model, and finally builds a recommender around it.
- * 
+ *
  * The recommender engine builder uses an {@link ItemItemRecommenderServiceFactory}
  * to actually construct the recommender engine.  Re-binding that interface
  * allows alternative recommender engines to be used.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
-	
+
 	private final @Nonnull ItemItemRecommenderServiceFactory engineFactory;
 	private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
@@ -91,7 +91,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		this.similarityStrategy = similarityStrategy;
 		this.engineFactory = engineFactory;
 	}
-	
+
 	@ParametersAreNonnullByDefault
 	final class BuildState {
 		public final @Nullable RatingPredictor baseline;
@@ -99,25 +99,25 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		public ArrayList<MutableSparseVector> itemRatings;
 		public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
 		public final int itemCount;
-		
+
 		public BuildState(RatingDataSource data, @Nullable RatingPredictor baseline,
 				boolean trackItemSets) {
 			this.baseline = baseline;
 			Indexer itemIndexer;
 			itemIndex = itemIndexer = new Indexer();
 			itemRatings = new ArrayList<MutableSparseVector>();
-			
+
 			if (trackItemSets)
 				userItemSets = new Long2ObjectOpenHashMap<IntSortedSet>();
 			else
 				userItemSets = null;
-			
+
 			logger.debug("Pre-processing ratings");
 			buildItemRatings(itemIndexer, data);
 			itemCount = itemRatings.size();
 		}
-		
-		/** 
+
+		/**
 		 * Transpose the ratings matrix so we have a list of item rating vectors.
 		 * @todo Fix this method to abstract item collection.
 		 */
@@ -161,7 +161,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			} finally {
 				cursor.close();
 			}
-			
+
 			// convert the temporary work array into a real array
 			itemRatings = new ArrayList<MutableSparseVector>(itemWork.size());
 			ListIterator<Long2DoubleMap> iter = itemWork.listIterator();
@@ -171,16 +171,16 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			}
 		}
 	}
-	
+
 	@Override
 	public ItemItemRecommenderService build(RatingDataSource data, @Nullable RatingPredictor baseline) {
 		BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
-		
+
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
 		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);
 		return engineFactory.create(model);
 	}
-	
+
 	/**
 	 * Normalize a user's ratings.  This method is called on each user's ratings
 	 * prior to using the ratings to learn item similarities.  Deriving
@@ -192,11 +192,11 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	 */
 	protected Collection<Rating> normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, Collection<Rating> ratings) {
 		if (baseline == null) return ratings;
-		
+
 		SparseVector rmap = Rating.userRatingVector(ratings);
 		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
-		
+
 		for (Rating r: ratings) {
 			long iid = r.getItemId();
 			double adj = r.getRating() - base.get(iid);

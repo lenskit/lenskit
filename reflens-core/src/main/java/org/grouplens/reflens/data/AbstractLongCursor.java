@@ -29,11 +29,15 @@
  */
 
 /**
- * 
+ *
  */
 package org.grouplens.reflens.data;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
+
+import java.awt.Cursor;
+
+import org.grouplens.common.cursors.AbstractCursor;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -49,7 +53,7 @@ public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
 	public Long next() {
 		return nextLong();
 	}
-	
+
 	public LongIterator iterator() {
 		return new LongCursorIterator(this);
 	}
