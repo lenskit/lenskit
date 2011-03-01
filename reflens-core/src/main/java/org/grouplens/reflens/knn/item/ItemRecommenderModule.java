@@ -31,18 +31,17 @@
 package org.grouplens.reflens.knn.item;
 
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderServiceProvider;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
+import org.grouplens.reflens.data.vector.SparseVector;
+import org.grouplens.reflens.knn.NeighborhoodRecommenderModule;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
 import org.grouplens.reflens.knn.Similarity;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.knn.TruncatingSimilarityMatrixBuilder;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
-import org.grouplens.reflens.knn.params.NeighborhoodSize;
-import org.grouplens.reflens.knn.params.SimilarityDamper;
 import org.grouplens.reflens.params.BaselinePredictor;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
@@ -58,13 +57,8 @@ import com.google.inject.throwingproviders.CheckedProvides;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemRecommenderModule extends RecommenderModule {
-	private @NeighborhoodSize int neighborhoodSize;
-	private @SimilarityDamper double similarityDamping;
-	private @ItemSimilarity Class<? extends Similarity<? super MutableSparseVector>> itemSimilarity;
-	
-	public ItemRecommenderModule() {
-	}
+public class ItemRecommenderModule extends NeighborhoodRecommenderModule {
+	private @ItemSimilarity Class<? extends Similarity<? super SparseVector>> itemSimilarity;
 	
 	@Override
 	protected void configure() {
@@ -73,41 +67,11 @@ public class ItemRecommenderModule extends RecommenderModule {
 		configureSimilarityMatrix();
 		configureItemSimilarity();
 	}
-	
-	/**
-	 * @return the neighborhoodSize
-	 */
-	@Provides @NeighborhoodSize
-	public int getNeighborhoodSize() {
-		return neighborhoodSize;
-	}
-
-	/**
-	 * @param neighborhoodSize the neighborhoodSize to set
-	 */
-	public void setNeighborhoodSize(int neighborhoodSize) {
-		this.neighborhoodSize = neighborhoodSize;
-	}
-
-	/**
-	 * @return the similarityDamping
-	 */
-	@Provides @SimilarityDamper
-	public double getSimilarityDamping() {
-		return similarityDamping;
-	}
-
-	/**
-	 * @param similarityDamping the similarityDamping to set
-	 */
-	public void setSimilarityDamping(double similarityDamper) {
-		this.similarityDamping = similarityDamper;
-	}
 
 	/**
 	 * @return the itemSimilarity
 	 */
-	public Class<? extends Similarity<? super MutableSparseVector>> getItemSimilarity() {
+	public Class<? extends Similarity<? super SparseVector>> getItemSimilarity() {
 		return itemSimilarity;
 	}
 
@@ -116,7 +80,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * @param itemSimilarity the itemSimilarity to set
 	 */
 	public void setItemSimilarity(
-			Class<? extends Similarity<? super MutableSparseVector>> itemSimilarity) {
+			Class<? extends Similarity<? super SparseVector>> itemSimilarity) {
 		this.itemSimilarity = itemSimilarity;
 	}
 
@@ -130,7 +94,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 	
 	protected void configureItemSimilarity() {
-		bind(new TypeLiteral<Similarity<? super MutableSparseVector>>(){})
+		bind(new TypeLiteral<Similarity<? super SparseVector>>(){})
 			.annotatedWith(ItemSimilarity.class)
 			.to(itemSimilarity);
 	}
@@ -146,7 +110,7 @@ public class ItemRecommenderModule extends RecommenderModule {
 	@Provides
 	protected SimilarityMatrixBuildStrategy buildStrategy(
 			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<? super MutableSparseVector> similarity) {
+			@ItemSimilarity Similarity<? super SparseVector> similarity) {
 		if (similarity instanceof OptimizableVectorSimilarity) {
 			if (similarity instanceof SymmetricBinaryFunction)
 				return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,

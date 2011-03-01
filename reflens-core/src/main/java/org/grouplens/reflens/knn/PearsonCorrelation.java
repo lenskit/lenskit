@@ -53,6 +53,7 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
 			 * same key, add to the accumulators and advance both.  Otherwise,
 			 * advance the one further back to try to catch up.
 			 */
+			// TODO Fix this loop to have cleaner hasNext/next pairs
 			if (e1.getLongKey() == e2.getLongKey()) {
 				final double v1 = e1.getDoubleValue() - mu1;
 				final double v2 = e2.getDoubleValue() - mu2;
@@ -60,12 +61,16 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
 				var2 += v2 * v2;
 				dot += v1 * v2;
 				nCoratings += 1;
-				e1 = it1.next();
-				e2 = it2.next();
+				if (it1.hasNext())
+					e1 = it1.next();
+				if (it2.hasNext())
+					e2 = it2.next();
 			} else if (e1.getLongKey() < e2.getLongKey()) {
-				e1 = it1.next();
+				if (it1.hasNext())
+					e1 = it1.next();
 			} else {
-				e2 = it2.next();
+				if (it2.hasNext())
+					e2 = it2.next();
 			}
 		} while (it1.hasNext() && it2.hasNext());
 		
