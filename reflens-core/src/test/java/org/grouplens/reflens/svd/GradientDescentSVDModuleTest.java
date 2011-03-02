@@ -178,8 +178,8 @@ public class GradientDescentSVDModuleTest extends RecommenderModuleTest {
 
 	@Test
 	public void testDefaultInject() {
-		module.setBaseline(ConstantPredictor.class);
-		module.setConstantBaselineValue(3);
+		module.core.setBaseline(ConstantPredictor.class);
+		module.core.setConstantBaselineValue(3);
 		GradientDescentSVDRecommenderBuilder builder =
 			inject(Key.get(GradientDescentSVDRecommenderBuilder.class));
 		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));

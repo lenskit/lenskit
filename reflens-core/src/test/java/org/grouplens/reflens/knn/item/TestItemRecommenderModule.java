@@ -77,7 +77,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testGetNeighborhoodSize() {
-		assertEquals(Parameters.getDefaultInt(NeighborhoodSize.class), module.getNeighborhoodSize());
+		assertEquals(Parameters.getDefaultInt(NeighborhoodSize.class), module.knn.getNeighborhoodSize());
 	}
 
 	/**
@@ -85,8 +85,8 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testSetNeighborhoodSize() {
-		module.setNeighborhoodSize(40);
-		assertEquals(40, module.getNeighborhoodSize());
+		module.knn.setNeighborhoodSize(40);
+		assertEquals(40, module.knn.getNeighborhoodSize());
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testGetSimilarityDamping() {
-		assertEquals(Parameters.getDefaultDouble(SimilarityDamper.class), module.getSimilarityDamping(), EPSILON);
+		assertEquals(Parameters.getDefaultDouble(SimilarityDamper.class), module.knn.getSimilarityDamping(), EPSILON);
 	}
 
 	/**
@@ -102,8 +102,8 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testSetSimilarityDamping() {
-		module.setSimilarityDamping(5);
-		assertEquals(5, module.getSimilarityDamping(), EPSILON);
+		module.knn.setSimilarityDamping(5);
+		assertEquals(5, module.knn.getSimilarityDamping(), EPSILON);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testGetItemSimilarity() {
-		assertThat(module.getItemSimilarity(), isAssignableTo(Parameters.getDefaultClass(ItemSimilarity.class)));
+		assertThat(module.knn.getItemSimilarity(), isAssignableTo(Parameters.getDefaultClass(ItemSimilarity.class)));
 	}
 
 	/**
@@ -119,16 +119,16 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
 	 */
 	@Test
 	public void testSetItemSimilarity() {
-		module.setItemSimilarity(DummySimilarity.class);
-		assertThat(module.getItemSimilarity(), isAssignableTo(DummySimilarity.class));
+		module.knn.setItemSimilarity(DummySimilarity.class);
+		assertThat(module.knn.getItemSimilarity(), isAssignableTo(DummySimilarity.class));
 	}
 
 	@Test
 	public void testInjectSimilarity() {
-		module.setItemSimilarity(DummySimilarity.class);
-		module.setSimilarityDamping(39.8);
+		module.knn.setItemSimilarity(DummySimilarity.class);
+		module.knn.setSimilarityDamping(39.8);
 		Similarity<? super MutableSparseVector> sim;
-		sim = inject(Key.get(new TypeLiteral<Similarity<? super MutableSparseVector>>(){}, ItemSimilarity.class));
+		sim = inject(Key.get(new TypeLiteral<Similarity<? super SparseVector>>(){}, ItemSimilarity.class));
 		assertThat(sim, instanceOf(DummySimilarity.class));
 		DummySimilarity dsim = (DummySimilarity) sim;
 		assertEquals(39.8, dsim.damping, EPSILON);

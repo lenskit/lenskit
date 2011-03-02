@@ -53,15 +53,15 @@ import org.junit.Test;
  */
 public class TestRecommenderModule {
 	public static final double EPSILON = 1.0e-6;
-	private RecommenderModule module;
+	private RecommenderCoreModule module;
 	
 	@Before
 	public void setUp() {
-		module = new RecommenderModule();
+		module = new RecommenderCoreModule();
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setName(java.lang.String)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setName(java.lang.String)}.
 	 */
 	@Test
 	public void testSetName() {
@@ -77,7 +77,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#getThreadCount()}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#getThreadCount()}.
 	 */
 	@Test
 	public void testGetThreadCount() {
@@ -85,7 +85,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setThreadCount(int)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setThreadCount(int)}.
 	 */
 	@Test
 	public void testSetThreadCount() {
@@ -105,7 +105,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setDamping(double)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setDamping(double)}.
 	 */
 	@Test
 	public void testSetDamping() {
@@ -114,7 +114,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setMinRating(double)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setMinRating(double)}.
 	 */
 	@Test
 	public void testSetMinRating() {
@@ -123,7 +123,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setMaxRating(double)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setMaxRating(double)}.
 	 */
 	@Test
 	public void testSetMaxRating() {
@@ -139,7 +139,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#getBaseline()}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#getBaseline()}.
 	 */
 	@Test
 	public void testGetBaseline() {
@@ -148,7 +148,7 @@ public class TestRecommenderModule {
 	}
 
 	/**
-	 * Test method for {@link org.grouplens.reflens.RecommenderModule#setBaseline(java.lang.Class)}.
+	 * Test method for {@link org.grouplens.reflens.RecommenderCoreModule#setBaseline(java.lang.Class)}.
 	 */
 	@Test
 	public void testSetBaselineClass() {

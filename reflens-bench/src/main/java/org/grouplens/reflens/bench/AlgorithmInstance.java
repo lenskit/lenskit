@@ -43,7 +43,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.reflens.RecommenderModule;
+import org.grouplens.reflens.RecommenderCoreModule;
+import org.grouplens.reflens.RecommenderModuleComponent;
 import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderServiceProvider;
@@ -64,7 +65,7 @@ import com.google.inject.Module;
 public class AlgorithmInstance {
 	private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
 	private @Nonnull String algoName;
-	private @Nullable RecommenderModule module;
+	private @Nullable RecommenderModuleComponent module;
 	private @Nonnull Map<String,String> attributes;
 	
 	public AlgorithmInstance() {
@@ -109,16 +110,16 @@ public class AlgorithmInstance {
 		return attributes;
 	}
 	
-	public RecommenderModule getModule() {
+	public RecommenderModuleComponent getModule() {
 		return module;
 	}
 	
-	public void setModule(RecommenderModule mod) {
+	public void setModule(RecommenderModuleComponent mod) {
 		module = mod;
 		mod.setName(getName());
 	}
 	
-	public void setModule(Class<? extends RecommenderModule> mod) throws InstantiationException, IllegalAccessException {
+	public void setModule(Class<? extends RecommenderCoreModule> mod) throws InstantiationException, IllegalAccessException {
 		setModule(mod.newInstance());
 	}
 	

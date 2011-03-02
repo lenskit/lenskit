@@ -31,10 +31,10 @@
 package org.grouplens.reflens.knn.item;
 
 import org.grouplens.reflens.RatingPredictor;
+import org.grouplens.reflens.RecommenderModule;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.RecommenderServiceProvider;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.NeighborhoodRecommenderModule;
 import org.grouplens.reflens.knn.OptimizableVectorSimilarity;
@@ -47,9 +47,9 @@ import org.grouplens.reflens.util.SymmetricBinaryFunction;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryProvider;
 import com.google.inject.throwingproviders.CheckedProvides;
+import com.google.inject.throwingproviders.ThrowingProviderBinder;
 
 /**
  * TODO Extract NeighborhoodRecommenderModule
@@ -57,31 +57,28 @@ import com.google.inject.throwingproviders.CheckedProvides;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemRecommenderModule extends NeighborhoodRecommenderModule {
-	private @ItemSimilarity Class<? extends Similarity<? super SparseVector>> itemSimilarity;
+public class ItemRecommenderModule extends RecommenderModule {
+	/**
+	 * Neighborhood recommender parameters.
+	 */
+	public final NeighborhoodRecommenderModule knn;
+	
+	public ItemRecommenderModule() {
+		knn = new NeighborhoodRecommenderModule();
+	}
+	
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		knn.setName(name);
+	}
 	
 	@Override
 	protected void configure() {
 		super.configure();
-		
+		install(ThrowingProviderBinder.forModule(this));
+		install(knn);
 		configureSimilarityMatrix();
-		configureItemSimilarity();
-	}
-
-	/**
-	 * @return the itemSimilarity
-	 */
-	public Class<? extends Similarity<? super SparseVector>> getItemSimilarity() {
-		return itemSimilarity;
-	}
-
-	/**
-	 * @todo make this fail-fast if a bad class is passed in.
-	 * @param itemSimilarity the itemSimilarity to set
-	 */
-	public void setItemSimilarity(
-			Class<? extends Similarity<? super SparseVector>> itemSimilarity) {
-		this.itemSimilarity = itemSimilarity;
 	}
 
 	/**
@@ -91,12 +88,6 @@ public class ItemRecommenderModule extends NeighborhoodRecommenderModule {
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
 						TruncatingSimilarityMatrixBuilder.class));
-	}
-	
-	protected void configureItemSimilarity() {
-		bind(new TypeLiteral<Similarity<? super SparseVector>>(){})
-			.annotatedWith(ItemSimilarity.class)
-			.to(itemSimilarity);
 	}
 	
 	@CheckedProvides(RecommenderServiceProvider.class)
