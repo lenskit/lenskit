@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,16 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.flamingpenguin.jewel.cli.ArgumentValidationException;
 import uk.co.flamingpenguin.jewel.cli.CliFactory;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
+import com.google.inject.Provides;
+import com.google.inject.grapher.GrapherModule;
+import com.google.inject.grapher.InjectorGrapher;
+import com.google.inject.grapher.graphviz.GraphvizModule;
+import com.google.inject.grapher.graphviz.GraphvizRenderer;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
@@ -151,6 +162,45 @@ public final class BenchmarkRunner {
 	 */
 	private void run() {
 		List<AlgorithmInstance> algos = loadAlgorithms();
+		
+		if (options.getGraphMode()) {
+			File outFile = options.getOutputFile();
+			logger.info("Writing graph to file {}", outFile);
+			PrintWriter output = new PrintWriter(System.out);
+			try {
+				if (!outFile.getName().isEmpty()) {
+					try {
+						output = new PrintWriter(outFile);
+					} catch (FileNotFoundException e) {
+						fail(2, "Error opening output file", e);
+					}
+				}
+				Injector graphInjector = Guice.createInjector(new GrapherModule(), new GraphvizModule());
+				GraphvizRenderer renderer = graphInjector.getInstance(GraphvizRenderer.class);
+				renderer.setOut(output).setRankdir("TB");
+				Provider<InjectorGrapher> gprovider = graphInjector.getProvider(InjectorGrapher.class);
+				for (AlgorithmInstance algo: algos) {
+					Injector injector = Guice.createInjector(new AbstractModule() {
+						protected void configure() {
+						}
+						@SuppressWarnings("unused")
+						@Provides public RatingDataSource provideDataSource() {
+							throw new RuntimeException("No data source available");
+						}
+					}, algo.getModule());
+					try {
+						gprovider.get().of(injector).graph();
+					} catch (IOException e) {
+						fail(3, "Error graphing injector", e);
+					}
+				}
+			} finally {
+				if (outFile.getName().isEmpty())
+					output.close();
+			}
+			logger.info("Graph written, shutting down");
+			return;
+		}
 		
 		Writer output = new OutputStreamWriter(System.out);
 		File outFile = options.getOutputFile();

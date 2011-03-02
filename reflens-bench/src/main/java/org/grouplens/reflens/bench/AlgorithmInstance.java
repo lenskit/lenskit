@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.Provides;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -123,13 +123,27 @@ public class AlgorithmInstance {
 		setModule(mod.newInstance());
 	}
 	
+	private static class DataModule extends AbstractModule {
+		private RatingDataSource dataSource;
+		public DataModule(RatingDataSource source) {
+			dataSource = source;
+		}
+		
+		@Override protected void configure() {
+		}
+		
+		@SuppressWarnings("unused")
+		@Provides public RatingDataSource provideDataSource() {
+			return dataSource;
+		}
+	}
+	
+	public Injector makeInjector(final RatingDataSource input) {
+		return Guice.createInjector(new DataModule(input), module);
+	}
+	
 	public RecommenderService getRecommenderService(final RatingDataSource input) throws RecommenderNotAvailableException {
-		Module dataModule = new AbstractModule() {
-			@Override protected void configure() {
-				bind(RatingDataSource.class).toInstance(input);
-			}
-		};
-		Injector inj = Guice.createInjector(dataModule, module);
+		Injector inj = makeInjector(input);
 		RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
 		return provider.get();
 	}
