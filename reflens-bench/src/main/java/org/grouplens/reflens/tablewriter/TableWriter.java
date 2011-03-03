@@ -74,6 +74,12 @@ public interface TableWriter {
 	<V> void writeRow(Map<String,V> data) throws IOException;
 	
 	/**
+	 * Write a row to the table.
+	 * @see #writeRow(List)
+	 */
+	void writeRow(Object... columns) throws IOException;
+	
+	/**
 	 * Set a column in the current row to an integer value.
 	 * @param col The column to set
 	 * @param val The value to store

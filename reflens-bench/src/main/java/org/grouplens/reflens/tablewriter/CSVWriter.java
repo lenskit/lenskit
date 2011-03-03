@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -110,6 +111,9 @@ public class CSVWriter implements TableWriter {
 	}
 	
 	private String quote(String e) {
+		if (e == null)
+			return "";
+		
 		if (e.matches("[\r\n,\"]")) {
 			return "\"" + e.replaceAll("\"", "\"\"") + "\"";
 		} else {
@@ -156,6 +160,16 @@ public class CSVWriter implements TableWriter {
 				setValue(i, v.toString());
 		}
 		finishRow();
+	}
+	
+	@Override
+	public void writeRow(Object... columns) throws IOException {
+		List<String> cols = new ArrayList<String>(columns.length);
+		for (int i = 0; i < columns.length; i++) {
+			Object o = columns[i];
+			cols.add(o == null ? null : o.toString());
+		}
+		writeRow(cols);
 	}
 
 }

@@ -29,6 +29,9 @@
  */
 package org.grouplens.reflens.bench.crossfold;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -44,7 +47,6 @@ import org.grouplens.reflens.bench.CrossfoldOptions;
 import org.grouplens.reflens.bench.TaskTimer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
-import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.tablewriter.CSVWriterBuilder;
@@ -65,7 +67,7 @@ public class CrossfoldBenchmark implements Runnable {
 	private final double holdoutFraction;
 	private final List<AlgorithmInstance> algorithms;
 	
-	private TableWriter writer;
+	private TableWriter writer, predWriter;
 	private int colRunNumber, colTestSize, colTrainSize, colAlgo, colMAE, colRMSE;
 	private int colNTry, colNGood, colCoverage;
 	private int colBuildTime;
@@ -78,6 +80,18 @@ public class CrossfoldBenchmark implements Runnable {
 		manager = new CrossfoldManager(numFolds, ratings);
 		this.algorithms = algorithms;
 		writer = makeWriter(output);
+		
+		if (!options.predictionFile().isEmpty()) {
+			logger.info("Writing predictions to {}", options.predictionFile());
+			TableWriterBuilder builder = new CSVWriterBuilder();
+			builder.addColumn("Fold");
+			builder.addColumn("Algorithm");
+			builder.addColumn("User");
+			builder.addColumn("Item");
+			builder.addColumn("Rating");
+			builder.addColumn("Prediction");
+			predWriter = builder.makeWriter(new FileWriter(options.predictionFile()));
+		}
 	}
 	
 	public void run() {
@@ -89,11 +103,11 @@ public class CrossfoldBenchmark implements Runnable {
 				logger.info(String.format("Running benchmark %d with %d training and %d test users",
 						i+1, nusers, test.size()));
 				for (AlgorithmInstance algo: algorithms) {
-					writer.setValue(colRunNumber, i);
+					writer.setValue(colRunNumber, i+1);
 					writer.setValue(colTrainSize, nusers);
 					writer.setValue(colTestSize, test.size());
 					writer.setValue(colAlgo, algo.getName());
-					benchmarkAlgorithm(algo, train, test);
+					benchmarkAlgorithm(i+1, algo, train, test);
 					writer.finishRow();
 				}
 			} catch (IOException e) {
@@ -104,6 +118,8 @@ public class CrossfoldBenchmark implements Runnable {
 		}
 		try {
 			writer.finish();
+			if (predWriter != null)
+				predWriter.finish();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -131,7 +147,7 @@ public class CrossfoldBenchmark implements Runnable {
 		return bld.makeWriter(output);
 	}
 	
-	private void benchmarkAlgorithm(AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
+	private void benchmarkAlgorithm(int runNumber, AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
 		TaskTimer timer = new TaskTimer();
 		logger.debug("Benchmarking {}", algo.getName());
 		RecommenderService engine;
@@ -154,16 +170,32 @@ public class CrossfoldBenchmark implements Runnable {
 		int nitems = 0;				// total ratings
 		int ngood = 0;				// total predictable ratings
 		for (UserRatingProfile user: test) {
-			List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
-			int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
+			final long uid = user.getUser();
+			final List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
+			final int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
 			Collections.shuffle(ratings);
-			SparseVector queryRatings = Rating.itemRatingVector(ratings.subList(0, midpt));
-			for (int i = midpt; i < ratings.size(); i++) {
-				long iid = ratings.get(i).getItemId();
-				ScoredId prediction = rec.predict(user.getUser(), queryRatings, iid);
+			final SparseVector queryRatings =
+				Rating.itemRatingVector(ratings.subList(0, midpt));
+			final SparseVector probeRatings =
+				Rating.itemRatingVector(ratings.subList(midpt, ratings.size()));
+			final SparseVector predictions = rec.predict(uid, queryRatings, probeRatings.keySet());
+			for (final Long2DoubleMap.Entry entry: probeRatings.fast()) {
+				final long iid = entry.getLongKey();
+				final double rating = entry.getDoubleValue();
+				final double prediction = predictions.get(iid);
 				nitems++;
-				if (prediction != null) {
-					double err = prediction.getScore() - user.getRating(iid);
+				if (predWriter != null) {
+					try {
+						predWriter.writeRow(runNumber, algo.getName(),
+								uid, iid, rating,
+								Double.isNaN(prediction) ? null : prediction);
+					} catch (IOException e) {
+						logger.error("Error writing to pred. table: {}", e);
+						predWriter = null;
+					}
+				}
+				if (!Double.isNaN(prediction)) {
+					double err = prediction - rating;
 					ngood++;
 					accumErr += Math.abs(err);
 					accumSqErr += err * err;

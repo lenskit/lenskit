@@ -157,7 +157,7 @@ public class AlgorithmInstance {
 		if (engine == null)
 			throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
 		ScriptEngineFactory factory = engine.getFactory();
-		logger.info("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
+		logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
 		AlgorithmInstance algo = new AlgorithmInstance();
 		mgr.put("rec", algo);
 		try {

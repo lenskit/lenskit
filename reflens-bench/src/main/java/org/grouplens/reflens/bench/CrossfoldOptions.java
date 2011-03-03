@@ -42,4 +42,8 @@ public interface CrossfoldOptions {
 
 	@Option(longName = "holdout-fraction", defaultValue = "0.3333333")
 	public abstract double getHoldoutFraction();
+	
+	@Option(longName="write-predictions", defaultValue="",
+			description="Write predictions to CSV file")
+	public String predictionFile();
 }
