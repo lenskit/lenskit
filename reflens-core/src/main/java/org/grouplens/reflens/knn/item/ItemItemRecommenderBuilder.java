@@ -96,7 +96,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 	final class BuildState {
 		public final @Nullable RatingPredictor baseline;
 		public final Index itemIndex;
-		public ArrayList<MutableSparseVector> itemRatings;
+		public ArrayList<SparseVector> itemRatings;
 		public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
 		public final int itemCount;
 
@@ -105,7 +105,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			this.baseline = baseline;
 			Indexer itemIndexer;
 			itemIndex = itemIndexer = new Indexer();
-			itemRatings = new ArrayList<MutableSparseVector>();
+			itemRatings = new ArrayList<SparseVector>();
 
 			if (trackItemSets)
 				userItemSets = new Long2ObjectOpenHashMap<IntSortedSet>();
@@ -163,12 +163,16 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 			}
 
 			// convert the temporary work array into a real array
-			itemRatings = new ArrayList<MutableSparseVector>(itemWork.size());
+			itemRatings = new ArrayList<SparseVector>(itemWork.size());
 			ListIterator<Long2DoubleMap> iter = itemWork.listIterator();
 			while (iter.hasNext()) {
-				itemRatings.add(new MutableSparseVector(iter.next()));
+				Long2DoubleMap ratings = iter.next();
+				SparseVector v = new SparseVector(ratings);
+				assert v.size() == ratings.size();
+				itemRatings.add(v);
 				iter.set(null);                // clear the array so GC can free
 			}
+			assert itemRatings.size() == itemWork.size();
 		}
 	}
 

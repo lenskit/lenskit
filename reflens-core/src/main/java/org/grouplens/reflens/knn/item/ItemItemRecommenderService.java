@@ -30,14 +30,16 @@
 
 package org.grouplens.reflens.knn.item;
 
+import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -53,8 +55,8 @@ import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
-import org.grouplens.reflens.util.CollectionUtils;
 import org.grouplens.reflens.util.IndexedItemScore;
+import org.grouplens.reflens.util.LongSortedArraySet;
 
 /**
  * Generate predictions and recommendations using item-item CF.
@@ -102,7 +104,7 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 				// FIXME this goes wacky with negative similarities
 				double rating = normed.get(other);
 				sum += rating * s;
-				totalWeight += Math.abs(s);
+				totalWeight += abs(s);
 			}
 		}
 		double pred = 0;
@@ -113,37 +115,42 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	}
 	
 	@Override
-	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+	public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
 		MutableSparseVector normed = MutableSparseVector.copy(ratings);
-		model.subtractBaseline(user, ratings, normed); 
-		Int2DoubleMap sums = new Int2DoubleOpenHashMap();
-		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
-		sums.defaultReturnValue(0);
-		weights.defaultReturnValue(0);
+		model.subtractBaseline(user, ratings, normed);
+		
+		LongSortedSet iset;
+		if (items instanceof LongSortedSet)
+			iset = (LongSortedSet) items;
+		else
+			iset = new LongSortedArraySet(items);
+		
+		MutableSparseVector sums = new MutableSparseVector(iset);
+		MutableSparseVector weights = new MutableSparseVector(iset);
 		for (Long2DoubleMap.Entry rating: normed.fast()) {
-			final double r = rating.getValue();
-			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
-				double s = score.getScore();
-				int i = score.getIndex();
-				weights.put(i, weights.get(i) + s);
-				sums.put(i, sums.get(i) + s*r);
+			final double r = rating.getDoubleValue();
+			for (IndexedItemScore score: model.getNeighbors(rating.getLongKey())) {
+				final double s = score.getScore();
+				final int idx = score.getIndex();
+				final long iid = model.getItem(idx);
+				weights.add(iid, abs(s));
+				sums.add(iid, s*r);
 			}
 		}
-		final long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-		Arrays.sort(keys);
-		final double[] preds = new double[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			final long item = keys[i];
-			final int idx = model.getItemIndex(item);
-			final double w = weights.get(idx);
-			double p = 0;
+		
+		final boolean hasBaseline = model.hasBaseline();
+		LongIterator iter = sums.keySet().iterator();
+		while (iter.hasNext()) {
+			final long iid = iter.next();
+			final double w = weights.get(iid);
 			if (w > 0)
-				p = sums.get(idx) / w;
-			preds[i] = p;
+				sums.set(iid, sums.get(iid) / w);
+			else
+				sums.set(iid, hasBaseline ? 0 : Double.NaN);
 		}
-		MutableSparseVector predictions = MutableSparseVector.wrap(keys, preds);
-		model.addBaseline(user, ratings, predictions);
-		return predictions;
+		
+		model.addBaseline(user, ratings, sums);
+		return sums;
 	}
 
 	@Override

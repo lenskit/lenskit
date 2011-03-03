@@ -106,7 +106,7 @@ public final class Rating {
 	}
 
 	/**
-	 * Construct a rating vector that contains the ratings provided by each item.
+	 * Construct a rating vector that contains the ratings provided for each item.
 	 * If all ratings in <var>ratings</var> are by the same user, then this will
 	 * be a valid user rating vector.  If multiple ratings are provided for the
 	 * same item, the one with the greatest timestamp is retained.  Ties are

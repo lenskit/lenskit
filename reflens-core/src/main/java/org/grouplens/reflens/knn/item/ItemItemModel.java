@@ -85,6 +85,10 @@ public class ItemItemModel implements Serializable {
 	public long getItem(int idx) {
 		return itemIndexer.getId(idx);
 	}
+	
+	public boolean hasBaseline() {
+		return baseline != null;
+	}
 
 	/**
 	 * Subtract the baseline recommender from a set of ratings.
@@ -106,8 +110,10 @@ public class ItemItemModel implements Serializable {
 	}
 	
 	public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-		SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
-		target.add(basePreds);
+		if (baseline != null) {
+			SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
+			target.add(basePreds);
+		}
 	}
 	
 	public double addBaseline(long user, SparseVector ratings, long item, double prediction) {

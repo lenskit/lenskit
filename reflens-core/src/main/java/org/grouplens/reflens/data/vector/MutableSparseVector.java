@@ -32,6 +32,10 @@ package org.grouplens.reflens.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import java.util.Arrays;
 
 
 
@@ -63,6 +67,22 @@ public class MutableSparseVector extends SparseVector {
 	}
 	
 	/**
+	 * Construct a new zero vector with specified keys.
+	 * @param keys The keys to include in the vector.
+	 */
+	public MutableSparseVector(LongSet keySet) {
+		super(normalizeKeys(keySet), new double[keySet.size()]);
+		Arrays.fill(values, 0);
+	}
+	
+	static long[] normalizeKeys(LongSet set) {
+		long[] keys = set.toLongArray();
+		if (!(set instanceof LongSortedSet))
+			Arrays.sort(keys);
+		return keys;
+	}
+	
+	/**
 	 * Construct a new vector from existing arrays.  It is assumed that the keys
 	 * are sorted and duplicate-free, and that the values is the same length.
 	 * @param keys
@@ -70,6 +90,39 @@ public class MutableSparseVector extends SparseVector {
 	 */
 	private MutableSparseVector(long[] keys, double[] values) {
 		super(keys, values);
+	}
+	
+	/**
+	 * Set a value in the vector
+	 * @param key The key of the value to set.
+	 * @param value The value to set.
+	 * @return The original value, or {@link Double#NaN} if there was no key
+	 * (or if the original value was {@link Double#NaN}).
+	 */
+	public double set(long key, double value) {
+		final int idx = Arrays.binarySearch(keys, key);
+		if (idx >= 0) {
+			double v = values[idx];
+			values[idx] = value;
+			return v;
+		} else {
+			return Double.NaN;
+		}
+	}
+	
+	/**
+	 * Add a value to the specified entry.
+	 * @param key The key whose value should be added.
+	 * @param value The value to increase it by.
+	 * @return The new value (or {@link Double#NaN} if no such key existed).
+	 */
+	public double add(long key, double value) {
+		final int idx = Arrays.binarySearch(keys, key);
+		if (idx >= 0) {
+			return values[idx] += value;
+		} else {
+			return Double.NaN;
+		}
 	}
 	
 	/**
@@ -106,11 +159,44 @@ public class MutableSparseVector extends SparseVector {
 	 * @param other The vector to add.
 	 */
 	public void add(final SparseVector other) {
+		final int len = keys.length;
+		final int olen = other.keys.length;
 		int i = 0;
 		int j = 0;
-		while (i < keys.length && j < other.keys.length) {
+		while (i < len && j < olen) {
 			if (keys[i] == other.keys[j]) {
 				values[i] += other.values[j];
+				i++;
+				j++;
+			} else if (keys[i] < other.keys[j]) {
+				i++;
+			} else {
+				j++;
+			}
+		}
+		clearCachedValues();
+	}
+	
+	/**
+	 * Add another rating vector, clearing NaN values.
+	 * 
+	 * <p>This is like {@link #add(SparseVector)} but, if a particular value in
+	 * this array is NaN and occurs in the other array, the value is replaced
+	 * rather than added.
+	 * @param other The vector to add.
+	 */
+	public void addClearNaN(final SparseVector other) {
+		final int len = keys.length;
+		final int olen = other.keys.length;
+		int i = 0;
+		int j = 0;
+		while (i < len && j < olen) {
+			if (keys[i] == other.keys[j]) {
+				final double v = values[i];
+				if (Double.isNaN(v))
+					values[i] = other.values[j];
+				else
+					values[i] = v + other.values[j];
 				i++;
 				j++;
 			} else if (keys[i] < other.keys[j]) {

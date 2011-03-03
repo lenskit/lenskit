@@ -23,6 +23,11 @@ import org.grouplens.reflens.util.LongSortedArraySet;
  * commonly-used statistics.  The values are stored in parallel arrays sorted
  * by ID.  This allows fast lookup and sorted iteration.  All iterators access
  * the items in key ID.
+ * 
+ * <p>It is possible for vectors to contain NaN values, but be careful with this.
+ * They will show up in enumeration and {@link #containsId(long)} will return
+ * <tt>true</tt>, but {@link #get(long)} will not distinguish between them and
+ * missing entries.
  *
  */
 public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
@@ -37,8 +42,10 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 		keys = ratings.keySet().toLongArray();
 		Arrays.sort(keys);
 		assert keys.length == ratings.size();
+		assert isSorted(keys);
 		values = new double[keys.length];
-		for (int i = 0; i < keys.length; i++) {
+		final int len = keys.length;
+		for (int i = 0; i < len; i++) {
 			values[i] = ratings.get(keys[i]);
 		}
 	}
@@ -52,6 +59,15 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 	protected SparseVector(long[] keys, double[] values) {
 		this.keys = keys;
 		this.values = values;
+		assert isSorted(keys);
+	}
+	
+	public static boolean isSorted(long[] array) {
+		for (int i = 1; i < array.length; i++) {
+			if (array[i] <= array[i-1])
+				return false;
+		}
+		return true;
 	}
 
 	protected void clearCachedValues() {
@@ -311,10 +327,8 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 	public static SparseVector wrap(long[] keys, double[] values) {
 		if (values.length < keys.length)
 			throw new IllegalArgumentException("ratings shorter than items");
-		for (int i = 1; i < keys.length; i++) {
-			if (keys[i] <= keys[i-1])
-				throw new IllegalArgumentException("item array not sorted");
-		}
+		if (!isSorted(keys))
+			throw new IllegalArgumentException("item array not sorted");
 		return new SparseVector(keys, values);
 	}
 	
@@ -354,6 +368,10 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 				values = DoubleArrays.copy(values, 0, pos);
 			}
 		}
+		if (values.length < keys.length)
+			throw new IllegalArgumentException("key/value length mismatch");
+		if (!isSorted(keys))
+			throw new IllegalArgumentException("key array not sorted");
 		return wrap(keys, values);
 	}
 }

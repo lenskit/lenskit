@@ -38,6 +38,8 @@ import java.util.NoSuchElementException;
 
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.util.IndexedItemScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -47,6 +49,7 @@ import com.google.inject.assistedinject.Assisted;
  *
  */
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
+	private static final Logger logger = LoggerFactory.getLogger(TruncatingSimilarityMatrixBuilder.class);
 	static final class Score implements IndexedItemScore {
 		private final int index;
 		private final double score;
@@ -190,6 +193,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
 	public TruncatingSimilarityMatrixBuilder(
 			@NeighborhoodSize int neighborhoodSize,
 			@Assisted int nitems) {
+		logger.debug("Using neighborhood size of {}", neighborhoodSize);
 		maxNeighbors = neighborhoodSize;
 		this.itemCount = nitems;
 		setup();

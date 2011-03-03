@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
+import org.grouplens.reflens.util.LongSortedArraySet;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -434,5 +435,37 @@ public class TestSparseVector {
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
+	}
+	
+	/**
+	 * Test the set constructor.
+	 */
+	public void testSetConstructor() {
+		long[] keys = {2, 5};
+		MutableSparseVector v = new MutableSparseVector(new LongSortedArraySet(keys));
+		assertEquals(2, v.size());
+		assertEquals(0, v.get(2), EPSILON);
+		assertEquals(0, v.get(5), EPSILON);
+	}
+	
+	/**
+	 * Test the set(long, double) method.
+	 */
+	public void testSet() {
+		assertIsNaN(emptyVector().set(5, 5));
+		MutableSparseVector v = simpleVector();
+		assertEquals(3.5, v.set(7, 2), EPSILON);
+		assertEquals(2, v.get(7), EPSILON);
+	}
+	
+	/**
+	 * Test the add(long, double) method.
+	 */
+	public void testAddToItem() {
+		assertIsNaN(emptyVector().add(5, 5));
+		MutableSparseVector v = simpleVector();
+		assertEquals(5.5, v.add(7, 2), EPSILON);
+		assertEquals(5.5, v.get(7), EPSILON);
+		assertEquals(1.5, v.get(3), EPSILON);
 	}
 }
