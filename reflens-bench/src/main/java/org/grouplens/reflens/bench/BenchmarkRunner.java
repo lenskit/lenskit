@@ -202,36 +202,35 @@ public final class BenchmarkRunner {
 			return;
 		}
 		
-		Writer output = new OutputStreamWriter(System.out);
-		File outFile = options.getOutputFile();
-		if (!outFile.getName().isEmpty()) {
-			try {
-				output = new FileWriter(outFile);
-			} catch (IOException e) {
-				fail(2, "Error opening output file", e);
-			}
-		}
-		
-		RatingDataSource data;
+		RatingDataSource data = null;
 		try {
 			data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
+			
+			Writer output = new OutputStreamWriter(System.out);
+			File outFile = options.getOutputFile();
+			if (!outFile.getName().isEmpty()) {
+				try {
+					output = new FileWriter(outFile);
+				} catch (IOException e) {
+					fail(2, "Error opening output file", e);
+				}
+			}
+
+			try {
+				CrossfoldBenchmark benchmark = new CrossfoldBenchmark(data, options, algos, output);
+				benchmark.run();
+			} catch (Exception e) {
+				fail(3, "Error running benchmark", e);
+			}
 		} catch (FileNotFoundException e) {
 			fail(2, "Error loading input data", e);
 			return; /* fail will not return */
-		}
-
-		try {
-			CrossfoldBenchmark benchmark = new CrossfoldBenchmark(data, options, algos, output);
-			benchmark.run();
-		} catch (Exception e) {
-			fail(3, "Error running benchmark", e);
 		} finally {
-			try {
-				output.close();
-			} catch (IOException e) {
-				fail(2, "Error closing output file", e);
-			}
+			if (data != null)
+				data.close();
 		}
+		
+		
 	}
 	
 	List<AlgorithmInstance> loadAlgorithms() {

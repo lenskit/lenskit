@@ -59,7 +59,7 @@ public class CSVWriter implements TableWriter {
 	public void finish() throws IOException {
 		if (values != null)
 			finishRow();
-		writer.flush();
+		writer.close();
 		writer = null;
 	}
 

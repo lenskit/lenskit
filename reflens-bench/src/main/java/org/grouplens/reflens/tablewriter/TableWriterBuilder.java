@@ -32,6 +32,8 @@ package org.grouplens.reflens.tablewriter;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.annotation.WillClose;
+
 /**
  * Build a {@link TableWriter} to output a data table.
  * 
@@ -54,9 +56,7 @@ public interface TableWriterBuilder {
 	/**
 	 * Get a {@link TableWriter} so you can start writing rows.  Table writers
 	 * will automatically start writing their header when this method is called.
-	 * The writer is <b>not</b> closed when the table writer is finished, but
-	 * it is flushed.
 	 * @return The writer to write table rows.
 	 */
-	TableWriter makeWriter(Writer output) throws IOException;
+	TableWriter makeWriter(@WillClose Writer output) throws IOException;
 }
