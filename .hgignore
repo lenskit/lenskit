@@ -3,3 +3,6 @@
 (^|/)\.(project|classpath)$
 (^|/)\.settings/
 ~$
+\.csv$
+
+
