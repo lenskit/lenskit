@@ -175,9 +175,10 @@ public class CrossfoldBenchmark implements Runnable {
 			final int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
 			Collections.shuffle(ratings);
 			final SparseVector queryRatings =
-				Rating.itemRatingVector(ratings.subList(0, midpt));
+				Rating.userRatingVector(ratings.subList(0, midpt));
 			final SparseVector probeRatings =
-				Rating.itemRatingVector(ratings.subList(midpt, ratings.size()));
+				Rating.userRatingVector(ratings.subList(midpt, ratings.size()));
+			assert queryRatings.size() + probeRatings.size() == ratings.size();
 			final SparseVector predictions = rec.predict(uid, queryRatings, probeRatings.keySet());
 			for (final Long2DoubleMap.Entry entry: probeRatings.fast()) {
 				final long iid = entry.getLongKey();
@@ -205,8 +206,8 @@ public class CrossfoldBenchmark implements Runnable {
 		double mae = accumErr / ngood;
 		double rmse = accumSqErr / ngood;
 		double cov = (double) ngood / nitems;
-		logger.info(String.format("Recommender %s finished in %s (mae=%f, rmse=%f)",
-				algo.getName(), timer.elapsedPretty(), mae, rmse));
+		logger.info(String.format("Recommender %s finished in %s (cov=%f, mae=%f, rmse=%f)",
+				algo.getName(), timer.elapsedPretty(), cov, mae, rmse));
 		writer.setValue(colPredTime, testTimer.elapsed());
 		writer.setValue(colMAE, mae);
 		writer.setValue(colRMSE, rmse);
