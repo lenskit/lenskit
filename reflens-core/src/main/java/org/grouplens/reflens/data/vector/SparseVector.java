@@ -198,8 +198,8 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;
-		} else if (o instanceof MutableSparseVector) {
-			MutableSparseVector vo = (MutableSparseVector) o;
+		} else if (o instanceof SparseVector) {
+			SparseVector vo = (SparseVector) o;
 			return Arrays.equals(keys, vo.keys) && Arrays.equals(values, vo.values);
 		} else {
 			return false;

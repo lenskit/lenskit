@@ -66,6 +66,8 @@ public class CosineSimilarity
 	public double similarity(SparseVector vec1, SparseVector vec2) {
 		final double dot = vec1.dot(vec2);
 		final double denom = vec1.norm() * vec2.norm() + dampingFactor;
+		if (denom == 0)
+			return 0;
 		
 		return dot / denom;
 	}
