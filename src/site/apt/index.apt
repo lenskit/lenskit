@@ -31,7 +31,7 @@ Project Goals
   * A common recommender API covering item rating prediction and item
     recommendation in both rated and rating-free contexts.
 
-    <Bold>Status</Bold>: The rating-based APIs are in place and seem
+    <<Status>>: The rating-based APIs are in place and seem
     to work pretty well.  The rating-free APIs still need development.
 
   * A highly modular implementation of common algorithms with
@@ -42,7 +42,7 @@ Project Goals
     (e.g. testing a new similarity function for item-item
     collaborative filtering).
 
-    <Bold>Status</Bold>: The framework for this is in place and we
+    <<Status>>: The framework for this is in place and we
     have modular implementations of user-user and item-item
     collaborative filtering.  We also have a gradient descent SVD
     implementation that has not yet had as much refinement.
@@ -51,16 +51,16 @@ Project Goals
     compatible recommender algorithm using a variety of offline
     evaluation methods and metrics.
 
-    <Bold>Status</Bold>: We have a leave-N-out crossfold benchmarker
+    <<Status>>: We have a leave-N-out crossfold benchmarker
     and the beginnings of a benchmarking framework.  Significant
     further development is needed on this goal.
 
   []
 
-  Non-goals
+* Non-goals
 
-    RefLens is not intended to be an industry-strength implementation
-    capable of running on a large e-commerce site (although we don't
-    mind at all if you use it for that).  It is intended to be useful
-    at research and education scales, and suitable for providing
-    recommendations in smaller-scale web applications.
+  RefLens is not intended to be an industry-strength implementation
+  capable of running on a large e-commerce site (although we don't
+  mind at all if you use it for that).  It is intended to be useful
+  at research and education scales, and suitable for providing
+  recommendations in smaller-scale web applications.
