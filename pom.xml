@@ -29,9 +29,9 @@
   
   <distributionManagement>
     <site>
-      <id>reflens.website</id>
+      <id>grouplens.org</id>
       <name>RefLens Website</name>
-      <url>scp://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/</url>
+      <url>scpexe://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/</url>
     </site>
   </distributionManagement>
   
@@ -50,6 +50,7 @@
   </repositories>
 
   <properties>
+    <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

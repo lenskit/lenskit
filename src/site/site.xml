@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
+                             http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+  <skin>
+    <groupId>org.grouplens.common</groupId>
+    <artifactId>grouplens-skin</artifactId>
+    <version>1-SNAPSHOT</version>
+  </skin>
+  <version position="right"/>
+  <publishDate position="right"/>
+  <body>
+    <breadcrumbs>
+      <item name="GroupLens Research" href="http://www.grouplens.org"/>
+      <item name="RefLens (Recommender Implementation)"/>
+    </breadcrumbs>
+    <menu name="RefLens">
+      <item name="Home" href="index.html"/>
+      <item name="Versioning" href="versioning.html"/>
+    </menu>
+    <menu ref="modules"/>
+    <menu ref="reports" inherit="bottom"/>
+  </body>
+</project>

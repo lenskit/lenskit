@@ -1,0 +1,66 @@
+                               -------
+                                About
+                               -------
+
+About RefLens
+
+  RefLens is an open-source implementation of recommender algorithms
+  with an emphasis on collaborative filtering.  It is developed by
+  {{{http://www.grouplens.org}GroupLens Research}}.
+
+Project Goals
+
+  RefLens is intended to be a reference implementation of common
+  collaborative filtering algorithms and a useful starting point for
+  recommender systems research and education.
+
+  To support education, we place an emphasis on clean, readable code
+  that demonstrates what is necessary to take algorithms from
+  mathematical descriptions to actual implementation. RefLens is
+  currently in an early alpha state, so the code does not yet live up
+  to this standard.  As development progresses, we will be auditing
+  the code for readability and documenting it more carefully.  The
+  goal is to have the implementation be ready for use in courses on
+  adaptive web and recommender technologies or for self-study on
+  recommender implementation.
+
+  We also intend RefLens to be a good platform for experimenting with
+  new algorithms and evaluation metrics.  There are several specific
+  design goals we have to further this objective:
+
+  * A common recommender API covering item rating prediction and item
+    recommendation in both rated and rating-free contexts.
+
+    <Bold>Status</Bold>: The rating-based APIs are in place and seem
+    to work pretty well.  The rating-free APIs still need development.
+
+  * A highly modular implementation of common algorithms with
+    state-of-the-art normalizations and tweaks.  This will provide
+    easy access to high-quality implementations of existing algorithms
+    to use as a baseline for evaluating new algorithms and a framework
+    for testing modifications to individual components of algorithms
+    (e.g. testing a new similarity function for item-item
+    collaborative filtering).
+
+    <Bold>Status</Bold>: The framework for this is in place and we
+    have modular implementations of user-user and item-item
+    collaborative filtering.  We also have a gradient descent SVD
+    implementation that has not yet had as much refinement.
+
+  * A comprehensive benchmarking tool capable of evaluating any
+    compatible recommender algorithm using a variety of offline
+    evaluation methods and metrics.
+
+    <Bold>Status</Bold>: We have a leave-N-out crossfold benchmarker
+    and the beginnings of a benchmarking framework.  Significant
+    further development is needed on this goal.
+
+  []
+
+  Non-goals
+
+    RefLens is not intended to be an industry-strength implementation
+    capable of running on a large e-commerce site (although we don't
+    mind at all if you use it for that).  It is intended to be useful
+    at research and education scales, and suitable for providing
+    recommendations in smaller-scale web applications.
