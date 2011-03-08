@@ -8,6 +8,13 @@ About RefLens
   with an emphasis on collaborative filtering.  It is developed by
   {{{http://www.grouplens.org}GroupLens Research}}.
 
+  RefLens is currently alpha softare (see
+  {{{versioning.html}Versioning}} for more information).  Please
+  download it, try it out, and provide us with feedback on how it
+  works for you, but be advised that it is still very much a
+  work-in-progress and APIs may change as we gain more experience with
+  them and the project stabilizes.
+
 Project Goals
 
   RefLens is intended to be a reference implementation of common
