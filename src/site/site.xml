@@ -5,7 +5,7 @@
   <skin>
     <groupId>org.grouplens.common</groupId>
     <artifactId>grouplens-skin</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>1</version>
   </skin>
   <version position="right"/>
   <publishDate position="right"/>
@@ -16,6 +16,8 @@
     </breadcrumbs>
     <menu name="RefLens">
       <item name="Home" href="index.html"/>
+      <item name="Getting Started" href="getting-started.html"/>
+      <item name="Offline Evaluation" href="evaluating.html"/>
       <item name="Versioning" href="versioning.html"/>
     </menu>
     <menu ref="modules"/>

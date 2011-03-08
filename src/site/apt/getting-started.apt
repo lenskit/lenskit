@@ -1,0 +1,178 @@
+                -------------------------------------
+                           Getting Started
+                -------------------------------------
+
+Overview
+
+  RefLens uses a couple of key Java technologies aimed at making it
+  easier to configure and use the recommender while allowing a great
+  deal of flexibility in how the recommender is configured.  These are
+  {{{http://maven.apache.org}Maven}}, a Java project and build
+  framework which also takes care of resolving dependencies, and
+  {{{http://code.google.com/p/google-guice/}Guice}}, which allows
+  recommender implementations to be highly modular and generic.  The
+  basic process to create a project using RefLens follows these steps:
+
+  [[1]] Create a new Maven project that depends on <<<reflens-core>>>.
+        In Eclipse with {{{http://m2eclipse.sonatype.org/}M2Eclipse}},
+        this can be done easily from the New Project wizard.  See
+        {{{http://www.sonatype.com/developing-with-eclipse-and-maven-book.html}Developing
+        with Eclipse and Maven}} for more information on using Maven
+        in Eclipse.
+
+  [[2]] Set up the recommender configuration, either by using one of
+        the existing Guice modules or creating a new one.
+
+  [[3]] Configure the data source for recommendation.
+
+  [[3]] Create a Guice injector from the module and use it to create a
+        new <<<RecommenderServiceProvider>>>.
+
+  [[4]] Get a <<<RecommenderService>>> from the
+        <<<RecommenderServiceProvider>>>, get a <<RatingRecommender>>
+        or <<RatingPredictor>> from the service provider, and start
+        generating recommendations.
+
+Getting RefLens
+
+  RefLens has not yet been published to the master Maven repositories,
+  so we recommend that you get it from the
+  {{{http://bitbucket.org/grouplens/reflens}BitBucket repository}}.
+  Clone the repository and install it to your local Maven repository:
+
++--------------------------------------+
+  $ hg clone https://bitbucket.org/grouplens/reflens
+  $ cd reflens
+  $ mvn install
++--------------------------------------+
+
+  This will build the jars and make them available to other Maven
+  projects.
+
+  You can also load RefLens into an Eclipse or NetBeans workspace.
+  Unfortunately, you cannot use M2Eclipse's "Check Out from Version
+  Control" feature since they do not have Mercurial support; however,
+  if you clone on the command line, you can import the project as an
+  existing Maven project.  If you have MercurialEclipse installed, it
+  will automatically detect that RefLens is a Mercurial project.
+
+Creating a Project
+
+  While it is possible to download RefLens jars, all dependency jars,
+  and use them in your build, we highly recommend using Maven (or a
+  compatible tool such as Ivy) to manage dependencies in your project.
+  To get started, create a new Maven project in Eclipse, NetBeans, or
+  at the command line:
+
++--------------------------------------+
+  mvn archetype:generate 
++--------------------------------------+
+
+  Select the <<<maven-archetype-quickstart>>> archetype.  Edit the POM
+  to add RefLens as a dependency (Eclipse will make this easy,
+  allowing you to search through the Maven Central repository for
+  RefLens once it is published there).
+
+* Maven reference materials
+
+  Maven has a fair amount of documentation at its
+  {{{http://maven.apache.org}home page}}.  Sonatype has also provided
+  free online access to some books on it:
+
+  * {{{http://www.sonatype.com/books/mvnex-book/reference/public-book.html}Maven by Example}}
+
+  * {{{http://www.sonatype.com/books/mvnref-book/reference/public-book.html}Maven: The Complete Reference}}
+
+  * {{{http://www.sonatype.com/developing-with-eclipse-and-maven-book.html}Developing with Eclipse and Maven}}
+
+  []
+
+Configuring and Creating the Recommender
+
+  The recommender implementations in RefLens are highly modular to
+  allow their behavior to be customized and to allow individual pieces
+  to be individually replaced.  In order to facilitate this kind of
+  modularity, it is useful to have some way to configure the pieces to
+  be used to build a particular recommender.  RefLens accomplishes
+  this through the {{{http://code.google.com/p/google-guice/}Guice
+  dependency injection framework}}.
+
+  RefLens is configured through Guice <modules>.  These are classes
+  which use the Guice API to configure the recommender, e.g. defining
+  that <<<org.grouplens.reflens.knn.CosineSimilarity>>> should be used
+  to compute item similarities.  Each recommender provides a default
+  module that exposes the various parameters of that recommender via
+  Bean properties, so in many cases you will not need to write a Guice
+  module yourself.  One such module is
+  {{{apidocs/org/grouplens/reflens/knn/item/ItemRecommenderModule}ItemRecommenderModule}}},
+  which configures an item-item collaborative filter.
+
+  You also need to configure your data source.  The recommendation
+  framework depends on having access to data sources via the
+  <<<RatingDataSource>>> interface.
+
+  Once you have a recommender configuration, use it to create a Guice
+  injector and get the recommender.  The following code does this,
+  using an anonymous class to provide access to the data source and
+  setting up the recommender module:
+
++-----------------------------------------------------------------+
+  Module dataModule = new AbstractModule() {
+      protected configure() { }
+      @Provides @Singleton
+      public RatingDataSource provideDataSource() {
+          return new SimpleFileDataSource(fileName);
+      }
+  };
+  Module recModule = new ItemRecommenderModule();
+  Injector injector = Guice.createInjector(dataModule, recModule);
+  RecommenderServiceProvider provider =
+      injector.createInstance(RecommenderServiceProvider.class);
+  try {
+      RecommenderService recommender = provider.get();
+      // do some recommendation!
+  } catch (RecommenderNotAvailableException e) {
+      // recommender is not available for some reason
+      e.printStackTrace(System.err);
+  }
++-----------------------------------------------------------------+
+
+Further Topics
+
+  There are quite a few things that need to be documented.  For now,
+  browse the {{{apidocs/}API documentation}} and the
+  {{{xref/}sources}} to see more of how RefLens works and how to use
+  it.
+
+* Data Source Lifecycles
+
+  In the example we provided above, the data source is a singleton
+  that never gets closed.  In real applications, you will want to
+  close your data sources.  RefLens does not provide a direct
+  architecture for doing that.  Recommenders assume that the data
+  source can be injected and that they can access it as needed.
+
+  The solution to this is twofold: first, do not hold on to
+  recommenders - obtain them as needed.  In a web application, this
+  means asking the injector for a recommender in each request.  A
+  RecommenderServiceProvider can be implemented which takes care of
+  caching so that recommenders do not need to be rebuilt every request
+  (we will be providing an example of this sometime in the future).
+  Ideally, you'll like dependency injection enough that you'll use
+  Guice for everything and inject the recommender into your request
+  handler.
+
+  The second piece of the solution is to use
+  {{{http://code.google.com/docreader/#p=google-guice&s=google-guice&t=Scopes}Guice
+  scopes}}, which allow object lifetimes to be managed more carefully.
+  Configuring data sources to live at the request scope, combined with
+  a servlet filter or Struts interceptor which closes or releases the
+  data source at the end of the request will accomplish this.  We're
+  still working on the details of this and will write more
+  documentation as we get it figured out.
+
+  This has a couple of implications for writing recommenders.  First,
+  you don't need to close data sources (although you do need to close
+  all your cursors).  Second, be careful how you hang on to data
+  sources.  If a recommender can be a singleton, don't hang on to the
+  data source; at most, hang on to a <<<Provider<DataSource>>>>.
