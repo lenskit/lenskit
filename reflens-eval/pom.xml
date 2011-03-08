@@ -9,8 +9,8 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <artifactId>reflens-bench</artifactId>
-  <name>RefLens Benchmarker</name>
+  <artifactId>reflens-eval</artifactId>
+  <name>RefLens Evaluation Framework</name>
   <build>
     <plugins>
       <plugin>

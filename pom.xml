@@ -65,7 +65,7 @@
 
   <modules>
     <module>reflens-core</module>
-    <module>reflens-bench</module>
+    <module>reflens-eval</module>
   </modules>
 
   <build>
