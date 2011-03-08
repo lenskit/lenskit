@@ -5,6 +5,7 @@ import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.knn.params.NeighborhoodSize;
 import org.grouplens.reflens.knn.params.SimilarityDamper;
+import org.grouplens.reflens.knn.params.UserSimilarity;
 
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
@@ -20,10 +21,12 @@ public class NeighborhoodRecommenderModule extends RecommenderModuleComponent {
 	private @NeighborhoodSize int neighborhoodSize;
 	private @SimilarityDamper double similarityDamping;
 	private @ItemSimilarity Class<? extends Similarity<? super SparseVector>> itemSimilarity;
+	private @UserSimilarity Class<? extends Similarity<? super SparseVector>> userSimilarity;
 	
 	@Override
 	protected void configure() {
 		configureItemSimilarity();
+		configureUserSimilarity();
 	}
 	
 	/**
@@ -75,6 +78,28 @@ public class NeighborhoodRecommenderModule extends RecommenderModuleComponent {
 	protected void configureItemSimilarity() {
 		bind(new TypeLiteral<Similarity<? super SparseVector>>(){})
 			.annotatedWith(ItemSimilarity.class)
+			.to(itemSimilarity);
+	}
+	
+	/**
+	 * @return the itemSimilarity
+	 */
+	public Class<? extends Similarity<? super SparseVector>> getUserSimilarity() {
+		return userSimilarity;
+	}
+
+	/**
+	 * @todo make this fail-fast if a bad class is passed in.
+	 * @param itemSimilarity the itemSimilarity to set
+	 */
+	public void setUserSimilarity(
+			Class<? extends Similarity<? super SparseVector>> userSimilarity) {
+		this.userSimilarity = userSimilarity;
+	}
+	
+	protected void configureUserSimilarity() {
+		bind(new TypeLiteral<Similarity<? super SparseVector>>(){})
+			.annotatedWith(UserSimilarity.class)
 			.to(itemSimilarity);
 	}
 	

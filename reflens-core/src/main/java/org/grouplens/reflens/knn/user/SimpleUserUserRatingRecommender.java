@@ -171,11 +171,16 @@ public class SimpleUserUserRatingRecommender implements RatingRecommender,
 			final long item = keys[i];
 			double sum = 0;
 			double weight = 0;
-			for (final Neighbor n: neighborhoods.get(item)) {
-				weight += abs(n.similarity);
-				sum += n.similarity * n.ratings.get(item);
+			Collection<Neighbor> nbrs = neighborhoods.get(item);
+			if (nbrs != null) {
+				for (final Neighbor n: neighborhoods.get(item)) {
+					weight += abs(n.similarity);
+					sum += n.similarity * n.ratings.get(item);
+				}
+				preds[i] = sum / weight;
+			} else {
+				preds[i] = Double.NaN;
 			}
-			preds[i] = sum / weight;
 		}
 		return SparseVector.wrap(keys, preds, true);
 	}
