@@ -53,6 +53,10 @@ interface EvaluatorOptions extends CrossfoldOptions {
 	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
 	File getInputFile();
 	
+	@Option(longName="preload", shortName="p",
+			description="Load all ratings into memory once")
+	boolean preloadData();
+	
 	@Option(longName="output-file", shortName="o", defaultValue="")
 	File getOutputFile();
 	

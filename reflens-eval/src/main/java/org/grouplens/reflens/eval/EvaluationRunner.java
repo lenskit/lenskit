@@ -40,6 +40,10 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
 import org.grouplens.reflens.eval.crossfold.CrossfoldEvaluator;
@@ -205,6 +209,18 @@ public final class EvaluationRunner {
 		RatingDataSource data = null;
 		try {
 			data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
+			if (options.preloadData()) {
+				RatingDataSource source = data;
+				Cursor<Rating> ratings = null;
+				try {
+					ratings = source.getRatings();
+					data = new RatingCollectionDataSource(Cursors.makeList(ratings));
+				} finally {
+					if (ratings != null)
+						ratings.close();
+					source.close();
+				}
+			}
 			
 			Writer output = new OutputStreamWriter(System.out);
 			File outFile = options.getOutputFile();
