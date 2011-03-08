@@ -19,11 +19,9 @@
   </organization>
   <licenses>
     <license>
-      <name>GPLv2+</name>
-      <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+      <name>LGPLv2+</name>
+      <url>COPYING</url>
       <distribution>repo</distribution>
-      <comments>Linking against Apache Public License version 2.0
-      software is permitted.</comments>
     </license>
   </licenses>
   <issueManagement>
@@ -31,9 +29,9 @@
     <url>http://bitbucket.org/elehack/reflens-dev/issues</url>
   </issueManagement>
   <scm>
-    <connection>scm:hg:http://bitbucket.org/elehack/reflens-dev</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/elehack/reflens-dev</developerConnection>
-    <url>http://bitbucket.org/elehack/reflens-dev</url>
+    <connection>scm:hg:http://bitbucket.org/grouplens/reflens</connection>
+    <developerConnection>scm:hg:https://bitbucket.org/grouplens/reflens</developerConnection>
+    <url>http://bitbucket.org/grouplens/reflens</url>
   </scm>
   
   <distributionManagement>
