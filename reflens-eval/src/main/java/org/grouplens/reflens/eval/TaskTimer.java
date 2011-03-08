@@ -27,81 +27,51 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench;
-
-import java.io.File;
-import java.net.URI;
-
-import javax.annotation.Nullable;
+package org.grouplens.reflens.eval;
 
 /**
- * Raised if the recommender cannot be created for some reason.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@SuppressWarnings("serial")
-public class InvalidRecommenderException extends Exception {
-	private final @Nullable URI sourceUri;
-
-	/**
-	 * 
-	 */	
-	public InvalidRecommenderException() {
-		sourceUri = null;
-	}
-
-	/**
-	 * @param message
-	 */
-	public InvalidRecommenderException(String message) {
-		super(message);
-		sourceUri = null;
+public class TaskTimer {
+	private long startTime;
+	private long stopTime;
+	
+	public TaskTimer() {
+		start();
 	}
 	
-	public InvalidRecommenderException(URI uri, String message) {
-		super(message);
-		sourceUri = uri;
-	}
-
-	/**
-	 * @param cause
-	 */
-	public InvalidRecommenderException(Throwable cause) {
-		super(cause);
-		sourceUri = null;
+	public void start() {
+		startTime = System.currentTimeMillis();
+		stopTime = -1;
 	}
 	
-	public InvalidRecommenderException(URI uri, Throwable cause) {
-		super(cause);
-		sourceUri = uri;
-	}
-
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public InvalidRecommenderException(String message, Throwable cause) {
-		super(message, cause);
-		sourceUri = null;
+	public void stop() {
+		stopTime = System.currentTimeMillis();
 	}
 	
-	public InvalidRecommenderException(URI uri, String message, Throwable cause) {
-		super(message, cause);
-		sourceUri = uri;
-	}
-
-	public @Nullable URI getSourceUri() {
-		return sourceUri;
+	public long elapsedMillis() {
+		long stop = stopTime;
+		if (stop < 0)
+			stop = System.currentTimeMillis();
+		return stop - startTime;
 	}
 	
-	@Override
-	public String getMessage() {
-		String msg = super.getMessage();
-		if (sourceUri != null) {
-			URI base = new File("").toURI();
-			URI simple = base.relativize(sourceUri);
-			msg += "\nEncountered in " + simple.toString();
-		}
-		return msg;
+	public double elapsed() {
+		return elapsedMillis() * 0.0001;
+	}
+	
+	public String elapsedPretty() {
+		long elapsed = elapsedMillis();
+		long secs = elapsed / 1000;
+		long mins = secs / 60;
+		long hrs = mins / 60;
+		StringBuilder s = new StringBuilder();
+		if (hrs > 0)
+			s.append(String.format("%dh", hrs));
+		if (mins > 0)
+			s.append(String.format("%dm", mins % 60));
+		s.append(String.format("%ds", secs % 60));
+		return s.toString();
 	}
 }

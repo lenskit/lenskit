@@ -31,7 +31,7 @@
 /**
  *
  */
-package org.grouplens.reflens.bench.crossfold;
+package org.grouplens.reflens.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.LongList;
 

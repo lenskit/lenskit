@@ -27,53 +27,23 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.eval;
 
-import static org.grouplens.reflens.bench.AlgorithmInstance.fileExtension;
+import uk.co.flamingpenguin.jewel.cli.Option;
 
-import java.io.File;
+public interface CrossfoldOptions {
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+	/**
+	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test
+	 *         split).
+	 */
+	@Option(longName = "num-folds", shortName = "n", defaultValue = "10")
+	public abstract int getNumFolds();
 
-
-/**
- * Tests for the {@link AlgorithmInstance} class.  Not very extensive, but they
- * help us sanity-check a few things.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public class TestAlgorithmInstance {
-	@Test
-	public void testBasename() {
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), null));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), "bar"));
-		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), null));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.bar"), "bar"));
-		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), "properties"));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.properties"), "properties"));
-		assertEquals("whizbang", AlgorithmInstance.fileBaseName(new File("whizbang.properties"), "properties"));
-	}
+	@Option(longName = "holdout-fraction", defaultValue = "0.3333333")
+	public abstract double getHoldoutFraction();
 	
-	@Test
-	public void testFileExtensionNone() {
-		assertEquals("", fileExtension(""));
-		assertEquals("", fileExtension("foo"));
-	}
-	
-	@Test
-	public void testFileExtensionSimple() {
-		assertEquals("txt", fileExtension("foo.txt"));
-	}
-	
-	@Test
-	public void testFileExtensionMultiple() {
-		assertEquals("txt", fileExtension("foo.exe.txt"));
-	}
-	
-	@Test
-	public void testFileExtensionFile() {
-		assertEquals("txt", fileExtension(new File("foo.txt")));
-		assertEquals("", fileExtension(new File("foo")));
-	}
+	@Option(longName="write-predictions", defaultValue="",
+			description="Write predictions to CSV file")
+	public String predictionFile();
 }

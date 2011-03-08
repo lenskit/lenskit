@@ -31,7 +31,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>org.grouplens.reflens.bench.BenchmarkRunner</mainClass>
+              <mainClass>org.grouplens.reflens.eval.EvaluationRunner</mainClass>
             </manifest>
           </archive>
         </configuration>

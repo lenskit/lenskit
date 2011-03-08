@@ -27,7 +27,7 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench.crossfold;
+package org.grouplens.reflens.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
@@ -42,13 +42,13 @@ import java.util.List;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
-import org.grouplens.reflens.bench.AlgorithmInstance;
-import org.grouplens.reflens.bench.CrossfoldOptions;
-import org.grouplens.reflens.bench.TaskTimer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.vector.SparseVector;
+import org.grouplens.reflens.eval.AlgorithmInstance;
+import org.grouplens.reflens.eval.CrossfoldOptions;
+import org.grouplens.reflens.eval.TaskTimer;
 import org.grouplens.reflens.tablewriter.CSVWriterBuilder;
 import org.grouplens.reflens.tablewriter.TableWriter;
 import org.grouplens.reflens.tablewriter.TableWriterBuilder;
@@ -60,8 +60,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CrossfoldBenchmark implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(CrossfoldBenchmark.class);
+public class CrossfoldEvaluator implements Runnable {
+	private static final Logger logger = LoggerFactory.getLogger(CrossfoldEvaluator.class);
 	private final CrossfoldManager manager;
 	private final int numFolds;
 	private final double holdoutFraction;
@@ -73,7 +73,7 @@ public class CrossfoldBenchmark implements Runnable {
 	private int colBuildTime;
 	private int colPredTime;
 	
-	public CrossfoldBenchmark(RatingDataSource ratings, CrossfoldOptions options,
+	public CrossfoldEvaluator(RatingDataSource ratings, CrossfoldOptions options,
 			List<AlgorithmInstance> algorithms, Writer output) throws IOException {
 		numFolds = options.getNumFolds();
 		holdoutFraction = options.getHoldoutFraction();

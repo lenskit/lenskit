@@ -27,51 +27,54 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.eval;
+
+import static org.grouplens.reflens.eval.AlgorithmInstance.fileExtension;
+
+import java.io.File;
+
+import org.grouplens.reflens.eval.AlgorithmInstance;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+
 
 /**
+ * Tests for the {@link AlgorithmInstance} class.  Not very extensive, but they
+ * help us sanity-check a few things.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TaskTimer {
-	private long startTime;
-	private long stopTime;
-	
-	public TaskTimer() {
-		start();
+public class TestAlgorithmInstance {
+	@Test
+	public void testBasename() {
+		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), null));
+		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), "bar"));
+		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), null));
+		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.bar"), "bar"));
+		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), "properties"));
+		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.properties"), "properties"));
+		assertEquals("whizbang", AlgorithmInstance.fileBaseName(new File("whizbang.properties"), "properties"));
 	}
 	
-	public void start() {
-		startTime = System.currentTimeMillis();
-		stopTime = -1;
+	@Test
+	public void testFileExtensionNone() {
+		assertEquals("", fileExtension(""));
+		assertEquals("", fileExtension("foo"));
 	}
 	
-	public void stop() {
-		stopTime = System.currentTimeMillis();
+	@Test
+	public void testFileExtensionSimple() {
+		assertEquals("txt", fileExtension("foo.txt"));
 	}
 	
-	public long elapsedMillis() {
-		long stop = stopTime;
-		if (stop < 0)
-			stop = System.currentTimeMillis();
-		return stop - startTime;
+	@Test
+	public void testFileExtensionMultiple() {
+		assertEquals("txt", fileExtension("foo.exe.txt"));
 	}
 	
-	public double elapsed() {
-		return elapsedMillis() * 0.0001;
-	}
-	
-	public String elapsedPretty() {
-		long elapsed = elapsedMillis();
-		long secs = elapsed / 1000;
-		long mins = secs / 60;
-		long hrs = mins / 60;
-		StringBuilder s = new StringBuilder();
-		if (hrs > 0)
-			s.append(String.format("%dh", hrs));
-		if (mins > 0)
-			s.append(String.format("%dm", mins % 60));
-		s.append(String.format("%ds", secs % 60));
-		return s.toString();
+	@Test
+	public void testFileExtensionFile() {
+		assertEquals("txt", fileExtension(new File("foo.txt")));
+		assertEquals("", fileExtension(new File("foo")));
 	}
 }

@@ -27,23 +27,42 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-package org.grouplens.reflens.bench;
+
+package org.grouplens.reflens.eval;
+
+import java.io.File;
+import java.util.List;
 
 import uk.co.flamingpenguin.jewel.cli.Option;
+import uk.co.flamingpenguin.jewel.cli.Unparsed;
 
-public interface CrossfoldOptions {
-
+/**
+ * Interface for JewelCLI declaring the command line options taken by
+ * EvaluationRunner.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * 
+ */
+interface EvaluatorOptions extends CrossfoldOptions {
 	/**
-	 * @return The number of folds to use (where 10 is 10-fold, 90/10 train/test
-	 *         split).
+	 * @return The field separator in the data file.
 	 */
-	@Option(longName = "num-folds", shortName = "n", defaultValue = "10")
-	public abstract int getNumFolds();
+	@Option(longName = "delimiter", shortName = "d", defaultValue = "\t")
+	String getDelimiter();
 
-	@Option(longName = "holdout-fraction", defaultValue = "0.3333333")
-	public abstract double getHoldoutFraction();
+	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
+	File getInputFile();
 	
-	@Option(longName="write-predictions", defaultValue="",
-			description="Write predictions to CSV file")
-	public String predictionFile();
+	@Option(longName="output-file", shortName="o", defaultValue="")
+	File getOutputFile();
+	
+	@Option(longName="graph-module", shortName="G",
+			description="Produce DOT graph of recommender rather than benchmark")
+	boolean getGraphMode();
+	
+	@Unparsed(name="FILES")
+	List<File> getRecommenderSpecs();
+
+	@Option(helpRequest = true)
+	boolean getHelp();
 }

@@ -28,7 +28,7 @@
  * exception statement from your version.
  */
 
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.eval;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,9 +40,9 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.reflens.bench.crossfold.CrossfoldBenchmark;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.SimpleFileDataSource;
+import org.grouplens.reflens.eval.crossfold.CrossfoldEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,9 +65,9 @@ import com.google.inject.grapher.graphviz.GraphvizRenderer;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public final class BenchmarkRunner {
+public final class EvaluationRunner {
 	private static Logger logger = LoggerFactory
-			.getLogger(BenchmarkRunner.class);
+			.getLogger(EvaluationRunner.class);
 	
 	@SuppressWarnings("serial")
 	private static class AbortException extends RuntimeException {
@@ -129,15 +129,15 @@ public final class BenchmarkRunner {
 	 * @param args The command line arguments.
 	 */
 	public static void main(String[] args) {
-		BenchmarkOptions options = null;
+		EvaluatorOptions options = null;
 		try {
-			options = CliFactory.parseArguments(BenchmarkOptions.class, args);
+			options = CliFactory.parseArguments(EvaluatorOptions.class, args);
 		} catch (ArgumentValidationException e) {
 			System.err.println(e.getMessage());
 			System.exit(1);
 		}
 
-		BenchmarkRunner runner = new BenchmarkRunner(options);
+		EvaluationRunner runner = new EvaluationRunner(options);
 		try {
 			runner.run();
 		} catch (AbortException e) {
@@ -145,15 +145,15 @@ public final class BenchmarkRunner {
 		}
 	}
 	
-	/* The actual BenchmarkRunner implementation starts here. */
+	/* The actual EvaluationRunner implementation starts here. */
 
-	private BenchmarkOptions options;
+	private EvaluatorOptions options;
 
 	/**
 	 * Instantiate a new benchmark runner with options.
 	 * @param options The options passed to the benchmark runner.
 	 */
-	private BenchmarkRunner(BenchmarkOptions options) {
+	private EvaluationRunner(EvaluatorOptions options) {
 		this.options = options;
 	}
 
@@ -217,7 +217,7 @@ public final class BenchmarkRunner {
 			}
 
 			try {
-				CrossfoldBenchmark benchmark = new CrossfoldBenchmark(data, options, algos, output);
+				CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos, output);
 				benchmark.run();
 			} catch (Exception e) {
 				fail(3, "Error running benchmark", e);

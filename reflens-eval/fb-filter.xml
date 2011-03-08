@@ -5,11 +5,11 @@
     <Bug code="UPM"/>
   </And>
   <And>
-    <Class name="org.grouplens.reflens.bench.BenchmarkRunner"/>
+    <Class name="org.grouplens.reflens.eval.EvaluationRunner"/>
     <Bug code="NP"/>
   </And>
   <And>
-    <Class name="org.grouplens.reflens.bench.TerminalProgressReporter"/>
+    <Class name="org.grouplens.reflens.eval.TerminalProgressReporter"/>
     <Bug code="NP"/>
   </And>
 </FindBugsFilter>

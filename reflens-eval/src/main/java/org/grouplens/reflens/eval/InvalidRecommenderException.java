@@ -27,42 +27,81 @@
  * you are not obligated to do so. If you do not wish to do so, delete this
  * exception statement from your version.
  */
-
-package org.grouplens.reflens.bench;
+package org.grouplens.reflens.eval;
 
 import java.io.File;
-import java.util.List;
+import java.net.URI;
 
-import uk.co.flamingpenguin.jewel.cli.Option;
-import uk.co.flamingpenguin.jewel.cli.Unparsed;
+import javax.annotation.Nullable;
 
 /**
- * Interface for JewelCLI declaring the command line options taken by
- * BenchmarkRunner.
- * 
+ * Raised if the recommender cannot be created for some reason.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
-interface BenchmarkOptions extends CrossfoldOptions {
+@SuppressWarnings("serial")
+public class InvalidRecommenderException extends Exception {
+	private final @Nullable URI sourceUri;
+
 	/**
-	 * @return The field separator in the data file.
+	 * 
+	 */	
+	public InvalidRecommenderException() {
+		sourceUri = null;
+	}
+
+	/**
+	 * @param message
 	 */
-	@Option(longName = "delimiter", shortName = "d", defaultValue = "\t")
-	String getDelimiter();
+	public InvalidRecommenderException(String message) {
+		super(message);
+		sourceUri = null;
+	}
+	
+	public InvalidRecommenderException(URI uri, String message) {
+		super(message);
+		sourceUri = uri;
+	}
 
-	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
-	File getInputFile();
+	/**
+	 * @param cause
+	 */
+	public InvalidRecommenderException(Throwable cause) {
+		super(cause);
+		sourceUri = null;
+	}
 	
-	@Option(longName="output-file", shortName="o", defaultValue="")
-	File getOutputFile();
-	
-	@Option(longName="graph-module", shortName="G",
-			description="Produce DOT graph of recommender rather than benchmark")
-	boolean getGraphMode();
-	
-	@Unparsed(name="FILES")
-	List<File> getRecommenderSpecs();
+	public InvalidRecommenderException(URI uri, Throwable cause) {
+		super(cause);
+		sourceUri = uri;
+	}
 
-	@Option(helpRequest = true)
-	boolean getHelp();
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public InvalidRecommenderException(String message, Throwable cause) {
+		super(message, cause);
+		sourceUri = null;
+	}
+	
+	public InvalidRecommenderException(URI uri, String message, Throwable cause) {
+		super(message, cause);
+		sourceUri = uri;
+	}
+
+	public @Nullable URI getSourceUri() {
+		return sourceUri;
+	}
+	
+	@Override
+	public String getMessage() {
+		String msg = super.getMessage();
+		if (sourceUri != null) {
+			URI base = new File("").toURI();
+			URI simple = base.relativize(sourceUri);
+			msg += "\nEncountered in " + simple.toString();
+		}
+		return msg;
+	}
 }
