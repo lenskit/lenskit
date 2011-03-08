@@ -54,10 +54,10 @@ import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.UserRatingProfile;
-import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.knn.SimilarityMatrix;
 import org.grouplens.reflens.util.IntSortedArraySet;
+import org.grouplens.reflens.util.LongSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +181,8 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 		BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 
 		SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
-		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix);
+		LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
+		ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix, items);
 		return engineFactory.create(model);
 	}
 

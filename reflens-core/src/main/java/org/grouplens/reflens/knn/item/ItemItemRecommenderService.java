@@ -31,18 +31,18 @@
 package org.grouplens.reflens.knn.item;
 
 import static java.lang.Math.abs;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -60,20 +60,20 @@ import org.grouplens.reflens.util.LongSortedArraySet;
 
 /**
  * Generate predictions and recommendations using item-item CF.
- * 
+ *
  * This class implements an item-item collaborative filter backed by a particular
  * {@link ItemItemModel}.  Client code will usually use a
  * {@link RecommenderBuilder} to get one of these.
- * 
+ *
  * To modify the recommendation or prediction logic, do the following:
- * 
+ *
  * <ul>
  * <li>Extend {@link ItemItemRecommenderBuilder}, reimplementing the
  * {@link ItemItemRecommenderBuilder#createRecommender(ItemItemModel)} method
  * to create an instance of your new class rather than this one.
  * <li>Configure Guice to inject your new recommender builder.
  * </ul>
- * 
+ *
  * @todo Document how this class works.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -82,7 +82,7 @@ import org.grouplens.reflens.util.LongSortedArraySet;
 public class ItemItemRecommenderService implements RecommenderService, RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	protected final @Nonnull ItemItemModel model;
-	
+
 	/**
 	 * Construct a new recommender from an item-item recommender model.
 	 * @param model The backing model for the new recommender.
@@ -90,7 +90,7 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 	public ItemItemRecommenderService(@Nonnull ItemItemModel model) {
 		this.model = model;
 	}
-	
+
 	@Override
 	public ScoredId predict(long user, SparseVector ratings, long item) {
 		MutableSparseVector normed = MutableSparseVector.copy(ratings);
@@ -113,18 +113,18 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 		// FIXME Should return NULL if there is no baseline
 		return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
 	}
-	
+
 	@Override
 	public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
 		MutableSparseVector normed = MutableSparseVector.copy(ratings);
 		model.subtractBaseline(user, ratings, normed);
-		
+
 		LongSortedSet iset;
 		if (items instanceof LongSortedSet)
 			iset = (LongSortedSet) items;
 		else
 			iset = new LongSortedArraySet(items);
-		
+
 		MutableSparseVector sums = new MutableSparseVector(iset);
 		MutableSparseVector weights = new MutableSparseVector(iset);
 		for (Long2DoubleMap.Entry rating: normed.fast()) {
@@ -137,7 +137,7 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 				sums.add(iid, s*r);
 			}
 		}
-		
+
 		final boolean hasBaseline = model.hasBaseline();
 		LongIterator iter = sums.keySet().iterator();
 		while (iter.hasNext()) {
@@ -148,47 +148,57 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 			else
 				sums.set(iid, hasBaseline ? 0 : Double.NaN);
 		}
-		
+
 		model.addBaseline(user, ratings, sums);
 		return sums;
 	}
 
-	@Override
-	public List<ScoredId> recommend(long user, SparseVector ratings) {
-		Int2DoubleMap scores = new Int2DoubleOpenHashMap();
-		Int2DoubleMap weights = new Int2DoubleOpenHashMap();
-		for (Long2DoubleMap.Entry rating: ratings.fast()) {
-			for (IndexedItemScore score: model.getNeighbors(rating.getKey())) {
-				int jid = score.getIndex();
-				double val = score.getScore();
-				if (!ratings.containsId(model.getItem(jid))) {
-					double s = 0.0f;
-					double w = 0.0f;
-					if (scores.containsKey(jid)) {
-						s = scores.get(jid);
-						w = weights.get(jid);
-					}
-					// FIXME audit for behavior w/ negative similarities
-					s += val * rating.getValue();
-					w += Math.abs(val);
-					scores.put(jid, s);
-					weights.put(jid, w);
+	LongSet getRecommendableItems(long user, SparseVector ratings) {
+		if (model.hasBaseline()) {
+			return model.getItemUniverse();
+		} else {
+			LongSet items = new LongOpenHashSet();
+			LongIterator iter = ratings.keySet().iterator();
+			while (iter.hasNext()) {
+				final long item = iter.nextLong();
+				for (IndexedItemScore n: model.getNeighbors(item)) {
+					items.add(model.getItem(n.getIndex()));
 				}
 			}
+			return items;
 		}
-		ArrayList<ScoredId> results = new ArrayList<ScoredId>(scores.size());
-		IntIterator iids = scores.keySet().iterator();
-		while (iids.hasNext()) {
-			int iid = iids.next();
-			double w = weights.get(iid);
-			if (w >= 0.1) {
-				long item = model.getItem(iid);
-				double pred = scores.get(iid) / w;
-				results.add(new ScoredId(item, pred));
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings) {
+		return recommend(user, ratings, -1, null);
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings, Set<Long> candidates) {
+		return recommend(user, ratings, -1, candidates);
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings, int n, Set<Long> candidates) {
+		if (candidates == null)
+			candidates = getRecommendableItems(user, ratings);
+		SparseVector predictions = predict(user, ratings, candidates);
+		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
+		for (Long2DoubleMap.Entry pred: predictions.fast()) {
+			final double v = pred.getDoubleValue();
+			if (!Double.isNaN(v)) {
+				queue.add(new ScoredId(pred.getLongKey(), v));
 			}
 		}
-		Collections.sort(results);
-		return results;
+
+		ArrayList<ScoredId> finalPredictions =
+			new ArrayList<ScoredId>(n >= 0 ? n : queue.size());
+		for (int i = 0; !queue.isEmpty() && (n < 0 || i < n); i++) {
+			finalPredictions.add(queue.poll());
+		}
+
+		return finalPredictions;
 	}
 
 	@Override

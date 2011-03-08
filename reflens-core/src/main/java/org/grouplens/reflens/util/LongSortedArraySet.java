@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.AbstractLongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -37,20 +38,21 @@ import java.util.NoSuchElementException;
  * A sorted set of longs implemented using a sorted array.  It's much faster
  * than {@link LongArraySet} as it is able to use binary searches.  The set
  * is also immutable.
- * 
+ *
  * No orders are supported other than the natural ordering.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public final class LongSortedArraySet extends AbstractLongSortedSet {
 	private final long[] data;
 	private final int start, end;
-	
+
 	public LongSortedArraySet(Collection<Long> items) {
-		this(LongIterators.unwrap(LongIterators.asLongIterator(items.iterator())));
+		this(items instanceof LongCollection ? ((LongCollection) items).toLongArray()
+				: LongIterators.unwrap(LongIterators.asLongIterator(items.iterator())));
 	}
-	
+
 	/**
 	 * Create a new set from an existing array.
 	 * @param items An array of items. The array will be sorted and used as the
@@ -61,7 +63,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	public LongSortedArraySet(long[] items) {
 		this(items, 0, items.length);
 	}
-	
+
 	/**
 	 * Create a new set from a range of an existing array.
 	 * @param items An array of items. The array will be sorted and used as the
@@ -75,7 +77,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	public LongSortedArraySet(long[] items, int fromIndex, int toIndex) {
 		this(items, fromIndex, toIndex, false);
 	}
-	
+
 	/**
 	 * Create a new set from a range of an existing array.
 	 * @param items An array of items. The array will be sorted and used as the
@@ -102,7 +104,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 			end = toIndex;
 		}
 	}
-	
+
 	/**
 	 * Check that the array is sorted.
 	 * @return <code>true</code> iff the array is sorted.
@@ -113,7 +115,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Remove duplicate elements in the backing store. The array should be
 	 * unsorted.
@@ -121,7 +123,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	 */
 	static int deduplicate(final long[] data, final int start, final int end) {
 		if (start == end) return end;   // special-case empty arrays
-		
+
 		// Since we have a non-empty array, the pos will always be where the
 		// end is if we find no more unique elements.
 		int pos = start + 1;
@@ -136,7 +138,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 		}
 		return pos;
 	}
-	
+
 	/**
 	 * Find the index for a key.
 	 * @see Arrays#binarySearch(long[], int, int, long)
@@ -146,7 +148,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	private int findIndex(long key) {
 		return Arrays.binarySearch(data, start, end, key);
 	}
-	
+
 	/**
 	 * Find the index where <var>key</var> would appear if it exists.
 	 * @param key The search key.
@@ -199,7 +201,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 			index++;
 		return new IterImpl(index);
 	}
-	
+
 	private final class IterImpl extends AbstractLongBidirectionalIterator {
 		private int pos;
 		public IterImpl(int start) {
@@ -215,7 +217,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 		public boolean hasPrevious() {
 			return pos > start;
 		}
-		
+
 		@Override
 		public long nextLong() {
 			if (hasNext())
@@ -223,7 +225,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 			else
 				throw new NoSuchElementException();
 		}
-		
+
 		@Override
 		public long previousLong() {
 			if (hasPrevious())
@@ -275,17 +277,17 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
 	public int size() {
 		return end - start;
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return end == start;
 	}
-	
+
 	@Override
 	public boolean contains(long key) {
 		return findIndex(key) >= 0;
 	}
-	
+
 	/**
 	 * Unsupported remove operation.
 	 */

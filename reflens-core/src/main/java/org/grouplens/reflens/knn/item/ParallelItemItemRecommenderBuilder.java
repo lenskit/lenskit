@@ -40,6 +40,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +64,7 @@ import org.grouplens.reflens.knn.SimilarityMatrixBuilder;
 import org.grouplens.reflens.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.reflens.knn.params.ItemSimilarity;
 import org.grouplens.reflens.params.ThreadCount;
+import org.grouplens.reflens.util.LongSortedArraySet;
 import org.grouplens.reflens.util.SymmetricBinaryFunction;
 import org.grouplens.reflens.util.parallel.IntWorker;
 import org.grouplens.reflens.util.parallel.IntegerTaskQueue;
@@ -138,7 +140,8 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 
 		logger.debug("Finalizing recommender model");
 		SimilarityMatrix matrix = builder.build();
-		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix);
+		LongSortedSet items = new LongSortedArraySet(itemIndex.getIds());
+		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix, items);
 		return new ItemItemRecommenderService(model);
 	}
 

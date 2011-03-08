@@ -30,6 +30,7 @@
 
 package org.grouplens.reflens.knn.item;
 
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import java.io.Serializable;
@@ -46,11 +47,11 @@ import org.grouplens.reflens.util.IndexedItemScore;
 
 /**
  * Encapsulation of the model needed for item-item collaborative filtering.
- * 
+ *
  * This class is used by {@link ItemItemRecommenderService} to do actual item-item
  * recommendation.  It encapsulates the various data accesses needed to support
  * item-item CF.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -58,17 +59,20 @@ import org.grouplens.reflens.util.IndexedItemScore;
 public class ItemItemModel implements Serializable {
 
 	private static final long serialVersionUID = 7040201805529926395L;
-	
+
 	private final Index itemIndexer;
 	private final SimilarityMatrix matrix;
 	private final RatingPredictor baseline;
-	
-	public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix) {
+	private final LongSortedSet itemUniverse;
+
+	public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix,
+			LongSortedSet items) {
 		this.itemIndexer = indexer;
 		this.baseline = baseline;
 		this.matrix = matrix;
+		this.itemUniverse = items;
 	}
-	
+
 	public Iterable<IndexedItemScore> getNeighbors(long item) {
 		int idx = itemIndexer.getIndex(item);
 		if (idx >= 0) {
@@ -77,15 +81,19 @@ public class ItemItemModel implements Serializable {
 			return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
 		}
 	}
-	
+
 	public int getItemIndex(long id) {
 		return itemIndexer.getIndex(id);
 	}
-	
+
 	public long getItem(int idx) {
 		return itemIndexer.getId(idx);
 	}
-	
+
+	public LongSortedSet getItemUniverse() {
+		return itemUniverse;
+	}
+
 	public boolean hasBaseline() {
 		return baseline != null;
 	}
@@ -97,7 +105,7 @@ public class ItemItemModel implements Serializable {
 	 * and subtracts the prediction from the value in <var>target</var>.  This
 	 * subtraction is done in-place by calling {@link MutableSparseVector#subtract(MutableSparseVector)}
 	 * on <var>target</var>.
-	 * 
+	 *
 	 * @param user The user ID.
 	 * @param ratings The user's rating vector.
 	 * @param target The vector from which the baseline is to be subtracted.
@@ -108,14 +116,14 @@ public class ItemItemModel implements Serializable {
 			target.subtract(basePreds);
 		}
 	}
-	
+
 	public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
 		if (baseline != null) {
 			SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
 			target.add(basePreds);
 		}
 	}
-	
+
 	public double addBaseline(long user, SparseVector ratings, long item, double prediction) {
 		if (baseline != null) {
 			ScoredId basePred = baseline.predict(user, ratings, item);

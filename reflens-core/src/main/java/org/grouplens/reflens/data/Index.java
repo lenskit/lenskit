@@ -30,19 +30,22 @@
 
 package org.grouplens.reflens.data;
 
+import it.unimi.dsi.fastutil.longs.LongList;
+
 import java.io.Serializable;
 
 /**
  * An index mapping long IDs to consecuitive 0-based integers.  The indexes
  * fall in the range [0,{@linkplain #getObjectCount()}).
- * 
+ *
  * Indexes must be serializable.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public interface Index extends Serializable {
-	public abstract int getIndex(long obj);
-	public abstract long getId(int idx);
-	public abstract int getObjectCount();
+	int getIndex(long obj);
+	long getId(int idx);
+	int getObjectCount();
+	LongList getIds();
 }

@@ -33,13 +33,15 @@ package org.grouplens.reflens.data;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongLists;
 
 public class Indexer implements Index {
 	private static final long serialVersionUID = -8383883342128686850L;
-	
+
 	private Long2IntMap indexes;
 	private LongArrayList ids;
-	
+
 	public Indexer() {
 		indexes = new Long2IntOpenHashMap();
 		indexes.defaultReturnValue(-1);
@@ -52,6 +54,11 @@ public class Indexer implements Index {
 	}
 
 	@Override
+	public LongList getIds() {
+		return LongLists.unmodifiable(ids);
+	}
+
+	@Override
 	public int getIndex(long id) {
 		return indexes.get(id);
 	}
@@ -60,7 +67,7 @@ public class Indexer implements Index {
 	public int getObjectCount() {
 		return ids.size();
 	}
-	
+
 	public int internId(long id) {
 		int idx = getIndex(id);
 		if (idx < 0) {

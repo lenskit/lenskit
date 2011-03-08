@@ -62,17 +62,17 @@ public class ItemRecommenderModule extends RecommenderModule {
 	 * Neighborhood recommender parameters.
 	 */
 	public final NeighborhoodRecommenderModule knn;
-	
+
 	public ItemRecommenderModule() {
 		knn = new NeighborhoodRecommenderModule();
 	}
-	
+
 	@Override
 	public void setName(String name) {
 		super.setName(name);
 		knn.setName(name);
 	}
-	
+
 	@Override
 	protected void configure() {
 		super.configure();
@@ -82,21 +82,21 @@ public class ItemRecommenderModule extends RecommenderModule {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	protected void configureSimilarityMatrix() {
 		bind(SimilarityMatrixBuilderFactory.class).toProvider(
 				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
 						TruncatingSimilarityMatrixBuilder.class));
 	}
-	
+
 	@CheckedProvides(RecommenderServiceProvider.class)
 	@Singleton
 	public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
 			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
 		return builder.build(data, baseline);
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Provides
 	protected SimilarityMatrixBuildStrategy buildStrategy(
