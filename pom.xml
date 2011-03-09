@@ -33,7 +33,7 @@
     <developerConnection>scm:hg:https://bitbucket.org/grouplens/reflens</developerConnection>
     <url>http://bitbucket.org/grouplens/reflens</url>
   </scm>
-  
+
   <distributionManagement>
     <site>
       <id>grouplens.org</id>
@@ -41,7 +41,7 @@
       <url>scpexe://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/</url>
     </site>
   </distributionManagement>
-  
+
   <repositories>
     <repository>
       <id>jboss.releases</id>
@@ -155,7 +155,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -254,7 +254,7 @@
     	<artifactId>jsr305</artifactId>
     </dependency>
   </dependencies>
-  
+
   <reporting>
     <plugins>
       <plugin>
@@ -267,13 +267,14 @@
   	      	<reports>
   	      	  <report>index</report>
   	          <report>summary</report>
-  	          <report>license</report>  	        
+  	          <report>license</report>
   	          <report>issue-tracking</report>
   	          <report>scm</report>
   	          <report>dependencies</report>
   	          <report>dependency-convergence</report>
   	          <report>dependency-management</report>
-  	        </reports>
+  	          <report>team</report>
+  	      	</reports>
   	  </reportSet>
   	</reportSets>
       </plugin>
@@ -320,7 +321,7 @@
       </plugin>
     </plugins>
   </reporting>
-  
+
   <profiles>
     <profile>
       <id>release</id>
