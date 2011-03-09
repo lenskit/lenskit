@@ -13,22 +13,25 @@ Overview
   recommender implementations to be highly modular and generic.  The
   basic process to create a project using RefLens follows these steps:
 
-  [[1]] Create a new Maven project that depends on <<<reflens-core>>>.
+  [[1]] Download and install RefLens (this will not be necessary once
+        we have published to the Maven central repository.
+
+  [[2]] Create a new Maven project that depends on <<<reflens-core>>>.
         In Eclipse with {{{http://m2eclipse.sonatype.org/}M2Eclipse}},
         this can be done easily from the New Project wizard.  See
         {{{http://www.sonatype.com/developing-with-eclipse-and-maven-book.html}Developing
         with Eclipse and Maven}} for more information on using Maven
         in Eclipse.
 
-  [[2]] Set up the recommender configuration, either by using one of
+  [[3]] Set up the recommender configuration, either by using one of
         the existing Guice modules or creating a new one.
 
-  [[3]] Configure the data source for recommendation.
+  [[4]] Configure the data source for recommendation.
 
-  [[3]] Create a Guice injector from the module and use it to create a
+  [[5]] Create a Guice injector from the module and use it to create a
         new <<<RecommenderServiceProvider>>>.
 
-  [[4]] Get a <<<RecommenderService>>> from the
+  [[7]] Get a <<<RecommenderService>>> from the
         <<<RecommenderServiceProvider>>>, get a <<RatingRecommender>>
         or <<RatingPredictor>> from the service provider, and start
         generating recommendations.
@@ -65,7 +68,7 @@ Creating a Project
   at the command line:
 
 +--------------------------------------+
-  mvn archetype:generate 
+  mvn archetype:generate
 +--------------------------------------+
 
   Select the <<<maven-archetype-quickstart>>> archetype.  Edit the POM
