@@ -18,8 +18,6 @@
  */
 package org.grouplens.reflens;
 
-import java.lang.reflect.Type;
-
 import javax.annotation.Nullable;
 
 import org.grouplens.reflens.baseline.ConstantPredictor;
