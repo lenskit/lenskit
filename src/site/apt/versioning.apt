@@ -8,9 +8,9 @@
 
 Versioning and API change policy
 
-  Until RefLens reaches version 1.0, the APIs are liable to change at any time.
+  Until RefLens reaches version 1.0, the APIs may change somewhat as development progresses.
   While the version numbers are 0.0.X, RefLens is alpha-level software and the
-  APIs may be volatile.  When we reach 0.X.Y (X > 0), we will be in beta phase.
+  APIs may be volatile, particularly those for extending recommender implementations.  When we reach 0.X.Y (X > 0), we will be in beta phase.
   The APIs will be expected to be more stable, but still may change as we gain
   more experience with the package and fix the warts.
   
