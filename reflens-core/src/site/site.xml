@@ -2,17 +2,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd">
-  <skin>
-    <groupId>org.grouplens.common</groupId>
-    <artifactId>grouplens-skin</artifactId>
-    <version>1</version>
-  </skin>
   <version position="right"/>
   <publishDate position="right"/>
   <body>
     <menu name="RefLens Core">
       <item name="Home" href="index.html"/>
-      <menu ref="reports" inherit="bottom"/>
+      <item ref="reports" inherit="bottom"/>
     </menu>
   </body>
 </project>

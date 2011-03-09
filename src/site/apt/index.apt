@@ -9,7 +9,7 @@ About RefLens
   {{{http://www.grouplens.org}GroupLens Research}}.
 
   RefLens is currently alpha softare (see
-  {{{versioning.html}Versioning}} for more information).  Please
+  {{{./versioning.html}Versioning}} for more information).  Please
   download it, try it out, and provide us with feedback on how it
   works for you, but be advised that it is still very much a
   work-in-progress and APIs may change as we gain more experience with

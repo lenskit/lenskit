@@ -32,9 +32,9 @@ Overview
         new <<<RecommenderServiceProvider>>>.
 
   [[7]] Get a <<<RecommenderService>>> from the
-        <<<RecommenderServiceProvider>>>, get a <<RatingRecommender>>
-        or <<RatingPredictor>> from the service provider, and start
-        generating recommendations.
+        <<<RecommenderServiceProvider>>>, get a
+        <<<RatingRecommender>>> or <<<RatingPredictor>>> from the
+        service provider, and start generating recommendations.
 
 Getting RefLens
 
@@ -72,10 +72,20 @@ Creating a Project
       -DgroupId=org.myorg.app -DartifactId=my-app
 +--------------------------------------+
 
-  Edit the POM to add RefLens as a dependency (Eclipse will make this
-  easy, allowing you to search through the Maven Central repository
-  for RefLens once it is published there).  For more introductory
-  material, see the
+  Edit the POM to add <<<reflens-core>>> as a dependency (Eclipse will
+  make this easy, allowing you to search through the Maven Central
+  repository for RefLens once it is published there).  The XML to do this is:
+
++---------------------------------------+
+  <dependency>
+    <groupId>org.grouplens.reflens</groupId>
+    <artifactId>reflens-core</artifactId>
+    <version>${project.version}</version>
+  </dependency>
++---------------------------------------+
+
+
+  For more introductory material, see the
   {{{http://maven.apache.org/guides/getting-started/index.html}Maven
   Getting Started Guide}}.
 
@@ -110,7 +120,7 @@ Configuring and Creating the Recommender
   module that exposes the various parameters of that recommender via
   Bean properties, so in many cases you will not need to write a Guice
   module yourself.  One such module is
-  {{{apidocs/org/grouplens/reflens/knn/item/ItemRecommenderModule}ItemRecommenderModule}}},
+  {{{./apidocs/org/grouplens/reflens/knn/item/ItemRecommenderModule}ItemRecommenderModule}}},
   which configures an item-item collaborative filter.
 
   You also need to configure your data source.  The recommendation
@@ -146,8 +156,8 @@ Configuring and Creating the Recommender
 Further Topics
 
   There are quite a few things that need to be documented.  For now,
-  browse the {{{apidocs/}API documentation}} and the
-  {{{xref/}sources}} to see more of how RefLens works and how to use
+  browse the {{{./apidocs/}API documentation}} and the
+  {{{./xref/}sources}} to see more of how RefLens works and how to use
   it.
 
 * Data Source Lifecycles
