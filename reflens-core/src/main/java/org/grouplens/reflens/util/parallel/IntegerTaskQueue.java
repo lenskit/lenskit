@@ -65,7 +65,7 @@ public class IntegerTaskQueue {
 					threads.remove();
 			}
 			catch (InterruptedException localInterruptedException) {
-				/* no-op */;
+				/* no-op */
 			}
 		}
 	}

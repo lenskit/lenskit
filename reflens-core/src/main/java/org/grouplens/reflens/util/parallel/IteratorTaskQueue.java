@@ -52,7 +52,7 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
 				if (!t.isAlive())
 					threads.remove();
 			} catch (InterruptedException e) {
-				/* no-op, try again */;
+				/* no-op, try again */
 			}
 		}
 	}

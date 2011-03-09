@@ -22,7 +22,6 @@ import static org.grouplens.reflens.eval.AlgorithmInstance.fileExtension;
 
 import java.io.File;
 
-import org.grouplens.reflens.eval.AlgorithmInstance;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 

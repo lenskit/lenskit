@@ -38,8 +38,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.grouplens.reflens.data.Rating;
-import org.grouplens.reflens.data.vector.MutableSparseVector;
-import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.util.LongSortedArraySet;
 import org.junit.Test;
 
