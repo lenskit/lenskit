@@ -68,13 +68,16 @@ Creating a Project
   at the command line:
 
 +--------------------------------------+
-  mvn archetype:generate
+  mvn archetype:create -DarchetypeGroupId=org.apache.maven.archetypes \
+      -DgroupId=org.myorg.app -DartifactId=my-app
 +--------------------------------------+
 
-  Select the <<<maven-archetype-quickstart>>> archetype.  Edit the POM
-  to add RefLens as a dependency (Eclipse will make this easy,
-  allowing you to search through the Maven Central repository for
-  RefLens once it is published there).
+  Edit the POM to add RefLens as a dependency (Eclipse will make this
+  easy, allowing you to search through the Maven Central repository
+  for RefLens once it is published there).  For more introductory
+  material, see the
+  {{{http://maven.apache.org/guides/getting-started/index.html}Maven
+  Getting Started Guide}}.
 
 * Maven reference materials
 
