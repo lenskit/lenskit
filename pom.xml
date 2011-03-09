@@ -265,15 +265,9 @@
   	  <reportSet>
   	    <id>main</id>
   	      	<reports>
-  	      	  <report>index</report>
-  	          <report>summary</report>
-  	          <report>license</report>
-  	          <report>issue-tracking</report>
-  	          <report>scm</report>
   	          <report>dependencies</report>
   	          <report>dependency-convergence</report>
   	          <report>dependency-management</report>
-  	          <report>team</report>
   	      	</reports>
   	  </reportSet>
   	</reportSets>
