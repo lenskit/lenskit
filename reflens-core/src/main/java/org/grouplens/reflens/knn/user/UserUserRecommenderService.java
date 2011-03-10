@@ -31,11 +31,11 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleUserUserRecommenderService implements RecommenderService {
-	private final SimpleUserUserRatingRecommender recommender;
+public class UserUserRecommenderService implements RecommenderService {
+	private final AbstractUserUserRatingRecommender recommender;
 	
 	@Inject
-	SimpleUserUserRecommenderService(SimpleUserUserRatingRecommender recommender) {
+	UserUserRecommenderService(AbstractUserUserRatingRecommender recommender) {
 		this.recommender = recommender;
 	}
 

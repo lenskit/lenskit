@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -115,6 +116,17 @@ public abstract class AbstractUserUserRatingRecommender implements RatingRecomme
 			userId = user;
 			ratings = rv;
 			similarity = sim;
+		}
+	}
+	
+	/**
+	 * Compartor to order neighbors by similarity.
+	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+	 *
+	 */
+	static class NeighborSimComparator implements Comparator<Neighbor> {
+		public int compare(Neighbor n1, Neighbor n2) {
+			return Double.compare(n1.similarity, n2.similarity);
 		}
 	}
 }

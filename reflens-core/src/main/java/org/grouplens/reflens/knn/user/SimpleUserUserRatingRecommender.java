@@ -45,18 +45,6 @@ import com.google.inject.Inject;
  *
  */
 public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecommender {
-
-	/**
-	 * Compartor to order neighbors by similarity.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	static class NeighborSimComparator implements Comparator<Neighbor> {
-		public int compare(Neighbor n1, Neighbor n2) {
-			return Double.compare(n1.similarity, n2.similarity);
-		}
-	}
-
 	private final RatingDataSource dataSource;
 	private final int neighborhoodSize;
 	private final Similarity<? super SparseVector> similarity;
