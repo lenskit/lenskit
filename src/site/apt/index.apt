@@ -68,8 +68,8 @@ Project Goals
 
   RefLens is not intended to be an industry-strength implementation
   capable of running on a large e-commerce site (although we don't
-  mind at all if you use it for that).  It is intended to be useful
-  at research and education scales, and suitable for providing
+  mind at all if you use it for that).  It is intended to be useful at
+  research and education scales, and suitable for providing
   recommendations in smaller-scale web applications.
 
 Development
