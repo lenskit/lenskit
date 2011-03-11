@@ -48,11 +48,11 @@ public class TestUserProfileCursor {
 	@Before
 	public void setUp() throws Exception {
 		ratings = new ArrayList<Rating>();
-		ratings.add(new Rating(2, 5, 3.0));
-		ratings.add(new Rating(2, 3, 3.0));
-		ratings.add(new Rating(2, 39, 2.5));
-		ratings.add(new Rating(5, 7, 2.5));
-		ratings.add(new Rating(5, 39, 7.2));
+		ratings.add(new SimpleRating(2, 5, 3.0));
+		ratings.add(new SimpleRating(2, 3, 3.0));
+		ratings.add(new SimpleRating(2, 39, 2.5));
+		ratings.add(new SimpleRating(5, 7, 2.5));
+		ratings.add(new SimpleRating(5, 39, 7.2));
 		ratingCursor = Cursors.wrap(ratings);
 	}
 

@@ -141,7 +141,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
 				long iid = Long.parseLong(fields[1]);
 				double r = Double.parseDouble(fields[2]);
 
-				rating = new Rating(uid, iid, r);
+				rating = new SimpleRating(uid, iid, r);
 			}
 			return rating != null;
 		}

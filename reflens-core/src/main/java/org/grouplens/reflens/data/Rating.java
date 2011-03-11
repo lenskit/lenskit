@@ -21,101 +21,33 @@
  */
 package org.grouplens.reflens.data;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap;
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
-import java.util.Collection;
-
-import org.grouplens.reflens.data.vector.MutableSparseVector;
 
 /**
+ * Interface representing ratings in the system.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class Rating {
-	private final long userId;
-	private final long itemId;
-	private final double rating;
-	private final long timestamp;
-	
-	public Rating(long uid, long iid, double r) {
-		this(uid, iid, r, -1);
-	}
-	
-	public Rating(long uid, long iid, double r, long ts) {
-		userId = uid;
-		itemId = iid;
-		rating = r;
-		timestamp = ts;
-	}
-	
-	public final long getUserId() {
-		return userId;
-	}
-	
-	public final long getItemId() {
-		return itemId;
-	}
-	
-	public final double getRating() {
-		return rating;
-	}
-	
-	public final long getTimestamp() {
-		return timestamp;
-	}
-
-	/** 
-	 * Construct a rating vector that contains the ratings provided by each user.
-	 * If all ratings in <var>ratings</var> are for the same item, then this
-	 * will be a valid item rating vector.  If multiple ratings are by the same
-	 * user, the one with the highest timestamp is retained.  If two ratings
-	 * by the same user have identical timestamps, then the one that occurs last
-	 * when the collection is iterated is retained.
-	 * 
-	 * @param ratings Some ratings (they should all be for the same item)
-	 * @return A sparse vector mapping user IDs to ratings.
-	 */
-	public static MutableSparseVector itemRatingVector(Collection<Rating> ratings) {
-		Long2DoubleMap vect = new Long2DoubleOpenHashMap();
-		Long2LongMap tsMap = new Long2LongOpenHashMap();
-		tsMap.defaultReturnValue(Long.MIN_VALUE);
-		for (Rating r: ratings) {
-			long uid = r.getUserId();
-			long ts = r.getTimestamp();
-			if (ts >= tsMap.get(uid)) {
-				vect.put(uid, r.getRating());
-				tsMap.put(uid, ts);
-			}
-		}
-		return new MutableSparseVector(vect);
-	}
-
+public interface Rating {
 	/**
-	 * Construct a rating vector that contains the ratings provided for each item.
-	 * If all ratings in <var>ratings</var> are by the same user, then this will
-	 * be a valid user rating vector.  If multiple ratings are provided for the
-	 * same item, the one with the greatest timestamp is retained.  Ties are
-	 * broken by preferring ratings which come later when iterating through the
-	 * collection.
-	 * 
-	 * @param ratings A collection of ratings (should all be by the same user)
-	 * @return A sparse vector mapping item IDs to ratings
+	 * Get the user ID.
+	 * @return The user ID of the rating.
 	 */
-	public static MutableSparseVector userRatingVector(Collection<Rating> ratings) {
-		Long2DoubleMap vect = new Long2DoubleOpenHashMap();
-		Long2LongMap tsMap = new Long2LongOpenHashMap();
-		tsMap.defaultReturnValue(Long.MIN_VALUE);
-		for (Rating r: ratings) {
-			long iid = r.getItemId();
-			long ts = r.getTimestamp();
-			if (ts >= tsMap.get(iid)) {
-				vect.put(r.getItemId(), r.getRating());
-				tsMap.put(iid, ts);
-			}
-		}
-		return new MutableSparseVector(vect);
-	}
+	long getUserId();
+	/**
+	 * Get the item ID.
+	 * @return The item ID of the rating.
+	 */
+	long getItemId();
+	/**
+	 * Get the rating value.
+	 * @return The value of the rating.
+	 */
+	double getRating();
+	/**
+	 * Get the rating timestamp.
+	 * @return The timestamp of the rating (or -1 if the rating has no
+	 * timestamp).
+	 */
+	long getTimestamp();
 }

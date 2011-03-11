@@ -35,6 +35,7 @@ import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingCollectionDataSource;
 import org.grouplens.reflens.data.RatingDataSource;
 import org.grouplens.reflens.data.ScoredId;
+import org.grouplens.reflens.data.SimpleRating;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.junit.After;
@@ -53,10 +54,10 @@ public class TestMeanPredictor {
 	@Before
 	public void createRatingSource() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new Rating(1, 5, 2));
-		rs.add(new Rating(1, 7, 4));
-		rs.add(new Rating(8, 4, 5));
-		rs.add(new Rating(8, 5, 4));
+		rs.add(new SimpleRating(1, 5, 2));
+		rs.add(new SimpleRating(1, 7, 4));
+		rs.add(new SimpleRating(8, 4, 5));
+		rs.add(new SimpleRating(8, 5, 4));
 		ratings = new RatingCollectionDataSource(rs);
 	}
 	

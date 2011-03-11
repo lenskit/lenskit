@@ -38,6 +38,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.grouplens.reflens.data.Rating;
+import org.grouplens.reflens.data.Ratings;
+import org.grouplens.reflens.data.SimpleRating;
 import org.grouplens.reflens.util.LongSortedArraySet;
 import org.junit.Test;
 
@@ -429,10 +431,10 @@ public class TestSparseVector {
 	@Test
 	public void testUserRatingVector() {
 		Collection<Rating> ratings = new ArrayList<Rating>();
-		ratings.add(new Rating(5, 7, 3.5));
-		ratings.add(new Rating(5, 3, 1.5));
-		ratings.add(new Rating(5, 8, 2));
-		SparseVector v = Rating.userRatingVector(ratings);
+		ratings.add(new SimpleRating(5, 7, 3.5));
+		ratings.add(new SimpleRating(5, 3, 1.5));
+		ratings.add(new SimpleRating(5, 8, 2));
+		SparseVector v = Ratings.userRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);
@@ -444,10 +446,10 @@ public class TestSparseVector {
 	@Test
 	public void testItemRatingVector() {
 		Collection<Rating> ratings = new ArrayList<Rating>();
-		ratings.add(new Rating(7, 5, 3.5));
-		ratings.add(new Rating(3, 5, 1.5));
-		ratings.add(new Rating(8, 5, 2));
-		SparseVector v = Rating.itemRatingVector(ratings);
+		ratings.add(new SimpleRating(7, 5, 3.5));
+		ratings.add(new SimpleRating(3, 5, 1.5));
+		ratings.add(new SimpleRating(8, 5, 2));
+		SparseVector v = Ratings.itemRatingVector(ratings);
 		assertEquals(3, v.size());
 		assertEquals(7, v.sum(), EPSILON);
 		assertEquals(simpleVector(), v);

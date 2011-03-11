@@ -33,6 +33,7 @@ import org.grouplens.reflens.RecommenderNotAvailableException;
 import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.Ratings;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.vector.SparseVector;
 import org.grouplens.reflens.eval.AlgorithmInstance;
@@ -164,9 +165,9 @@ public class CrossfoldEvaluator implements Runnable {
 			final int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
 			Collections.shuffle(ratings);
 			final SparseVector queryRatings =
-				Rating.userRatingVector(ratings.subList(0, midpt));
+				Ratings.userRatingVector(ratings.subList(0, midpt));
 			final SparseVector probeRatings =
-				Rating.userRatingVector(ratings.subList(midpt, ratings.size()));
+				Ratings.userRatingVector(ratings.subList(midpt, ratings.size()));
 			assert queryRatings.size() + probeRatings.size() == ratings.size();
 			final SparseVector predictions = rec.predict(uid, queryRatings, probeRatings.keySet());
 			for (final Long2DoubleMap.Entry entry: probeRatings.fast()) {

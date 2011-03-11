@@ -42,6 +42,8 @@ import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.Indexer;
 import org.grouplens.reflens.data.Rating;
 import org.grouplens.reflens.data.RatingDataSource;
+import org.grouplens.reflens.data.Ratings;
+import org.grouplens.reflens.data.SimpleRating;
 import org.grouplens.reflens.data.UserRatingProfile;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
@@ -253,14 +255,14 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 		// TODO share this code with ItemItemRecommenderBuilder
 		if (baseline == null) return ratings;
 
-		SparseVector rmap = Rating.userRatingVector(ratings);
+		SparseVector rmap = Ratings.userRatingVector(ratings);
 		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
 		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 
 		for (Rating r: ratings) {
 			long iid = r.getItemId();
 			double adj = r.getRating() - base.get(iid);
-			Rating r2 = new Rating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
+			Rating r2 = new SimpleRating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
 			normed.add(r2);
 		}
 		return normed;

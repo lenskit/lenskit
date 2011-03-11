@@ -75,7 +75,7 @@ public class BasicUserRatingProfile implements UserRatingProfile {
 	public synchronized SparseVector getRatingVector() {
 		SparseVector v = vector != null ? vector.get() : null;
 		if (v == null) {
-			v = Rating.userRatingVector(getRatings());
+			v = Ratings.userRatingVector(getRatings());
 			vector = new SoftReference<SparseVector>(v);
 		}
 		return v;
