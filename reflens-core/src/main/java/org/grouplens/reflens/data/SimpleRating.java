@@ -1,10 +1,13 @@
 package org.grouplens.reflens.data;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ThreadSafe
 public final class SimpleRating implements Rating {
 	private final long userId;
 	private final long itemId;

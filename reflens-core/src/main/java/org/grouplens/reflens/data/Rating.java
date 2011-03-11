@@ -21,13 +21,19 @@
  */
 package org.grouplens.reflens.data;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 
 
 /**
  * Interface representing ratings in the system.
+ * 
+ * <p>Implementations of this interface must be thread-safe.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ThreadSafe
 public interface Rating {
 	/**
 	 * Get the user ID.
