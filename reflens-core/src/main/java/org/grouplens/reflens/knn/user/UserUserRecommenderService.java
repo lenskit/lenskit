@@ -19,7 +19,6 @@
 package org.grouplens.reflens.knn.user;
 
 import org.grouplens.reflens.AbstractRecommenderService;
-import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 
