@@ -26,8 +26,8 @@ import com.google.inject.Provider;
 /**
  * User-user CF implementation that caches user data for faster computation.
  * 
- * <p>This implementation does nothing to update its caches, so you probably
- * don't really want to use it.
+ * <p>This implementation does nothing to update its caches, so it does not
+ * update to reflect changes in ratings by users other than the current user.
  * 
  * @todo Make it support updating its caches in response to changes in the data
  * source.
