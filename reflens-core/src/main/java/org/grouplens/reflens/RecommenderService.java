@@ -18,6 +18,8 @@
  */
 package org.grouplens.reflens;
 
+import javax.annotation.Nonnull;
+
 /**
  * Interface for recommender engines, providing access to specific types of
  * recommender interfaces.
@@ -35,20 +37,26 @@ package org.grouplens.reflens;
 public interface RecommenderService {
 	/**
 	 * Retrieve the rating recommender from this engine.
-	 * @return a ratings-based recommender, or <tt>null</tt> if ratings-based
-	 * recommendations are not supported.
+	 * @return a ratings-based recommender.
+	 * @throws IncompatibleRecommenderException if the recommender service does
+	 * not support rating-based recommendation.
 	 */
-	RatingRecommender getRatingRecommender();
+	
+	@Nonnull RatingRecommender getRatingRecommender();
 	/**
 	 * Retrieve the rating predictor from this engine.
 	 * @return a rating predictor, or <tt>null</tt> if ratings cannot be
 	 * predicted.
+	 * @throws IncompatibleRecommenderException if the recommender service does
+	 * not support rating prediction.
 	 */
-	RatingPredictor getRatingPredictor();
+	@Nonnull RatingPredictor getRatingPredictor();
 	/**
 	 * Retrieve the basket-based recommender for this engine.
 	 * @return a basket recommender, or <tt>null</tt> if basket-based
 	 * recommendation is not supported.
+	 * @throws IncompatibleRecommenderException if the recommender service does
+	 * not support basket-based recommendation.
 	 */
-	BasketRecommender getBasketRecommender();
+	@Nonnull BasketRecommender getBasketRecommender();
 }

@@ -27,10 +27,8 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.grouplens.reflens.BasketRecommender;
+import org.grouplens.reflens.AbstractRecommenderService;
 import org.grouplens.reflens.RatingPredictor;
-import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.Index;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
@@ -51,7 +49,7 @@ import org.grouplens.reflens.util.DoubleFunction;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRecommenderService implements RecommenderService, RatingPredictor {
+public class SVDRecommenderService extends AbstractRecommenderService implements RatingPredictor {
 	
 	private final Index itemIndex;
 	private final RatingPredictor baseline;
@@ -153,17 +151,7 @@ public class SVDRecommenderService implements RecommenderService, RatingPredicto
 	}
 
 	@Override
-	public BasketRecommender getBasketRecommender() {
-		return null;
-	}
-
-	@Override
 	public RatingPredictor getRatingPredictor() {
 		return this;
-	}
-
-	@Override
-	public RatingRecommender getRatingRecommender() {
-		return null;
 	}
 }

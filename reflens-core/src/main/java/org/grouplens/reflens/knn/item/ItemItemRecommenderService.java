@@ -35,11 +35,10 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.reflens.BasketRecommender;
+import org.grouplens.reflens.AbstractRecommenderService;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
 import org.grouplens.reflens.RecommenderBuilder;
-import org.grouplens.reflens.RecommenderService;
 import org.grouplens.reflens.data.ScoredId;
 import org.grouplens.reflens.data.vector.MutableSparseVector;
 import org.grouplens.reflens.data.vector.SparseVector;
@@ -67,7 +66,7 @@ import org.grouplens.reflens.util.LongSortedArraySet;
  *
  */
 @Immutable
-public class ItemItemRecommenderService implements RecommenderService, RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommenderService extends AbstractRecommenderService implements RatingRecommender, RatingPredictor, Serializable {
 	private static final long serialVersionUID = 3157980766584927863L;
 	protected final @Nonnull ItemItemModel model;
 
@@ -187,12 +186,6 @@ public class ItemItemRecommenderService implements RecommenderService, RatingRec
 		}
 
 		return finalPredictions;
-	}
-
-	@Override
-	public BasketRecommender getBasketRecommender() {
-		// TODO Support basket recommendations
-		return null;
 	}
 
 	@Override

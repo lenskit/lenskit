@@ -18,10 +18,10 @@
  */
 package org.grouplens.reflens.knn.user;
 
+import org.grouplens.reflens.AbstractRecommenderService;
 import org.grouplens.reflens.BasketRecommender;
 import org.grouplens.reflens.RatingPredictor;
 import org.grouplens.reflens.RatingRecommender;
-import org.grouplens.reflens.RecommenderService;
 
 import com.google.inject.Inject;
 
@@ -31,7 +31,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRecommenderService implements RecommenderService {
+public class UserUserRecommenderService extends AbstractRecommenderService {
 	private final AbstractUserUserRatingRecommender recommender;
 	
 	@Inject
@@ -44,8 +44,7 @@ public class UserUserRecommenderService implements RecommenderService {
 	 */
 	@Override
 	public RatingRecommender getRatingRecommender() {
-		// TODO Auto-generated method stub
-		return null;
+		return recommender;
 	}
 
 	/* (non-Javadoc)
@@ -55,14 +54,4 @@ public class UserUserRecommenderService implements RecommenderService {
 	public RatingPredictor getRatingPredictor() {
 		return recommender;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.reflens.RecommenderService#getBasketRecommender()
-	 */
-	@Override
-	public BasketRecommender getBasketRecommender() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
