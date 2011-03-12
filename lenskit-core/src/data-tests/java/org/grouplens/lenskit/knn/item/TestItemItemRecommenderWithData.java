@@ -20,15 +20,18 @@ package org.grouplens.lenskit.knn.item;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.grouplens.lenskit.RecommenderBuilder;
+import org.grouplens.lenskit.RecommenderNotAvailableException;
 import org.grouplens.lenskit.RecommenderService;
+import org.grouplens.lenskit.RecommenderServiceProvider;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.testing.ExpensiveRatingDataTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
 
 
 /**
@@ -43,11 +46,24 @@ public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
 		module = new ItemRecommenderModule();
 	}
 
+	private Injector createInjector() {
+		return Guice.createInjector(dataModule(), module, new AbstractModule() {
+			@Override protected void configure() { }
+			@SuppressWarnings("unused")
+			@Provides public RecommenderService provideRecSvc(RecommenderServiceProvider prov) {
+				try {
+					return prov.get();
+				} catch (RecommenderNotAvailableException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+	}
+
 	@Test
 	public void testItemItemBuild() {
-		Injector inj = Guice.createInjector(module);
-		RecommenderBuilder builder = inj.getInstance(RecommenderBuilder.class);
-		RecommenderService rec = builder.build(dataSource);
+		Injector inj = createInjector();
+		RecommenderService rec = inj.getInstance(RecommenderService.class);
 		assertNotNull(rec);
 		assertNotNull(rec.getRatingPredictor());
 		assertNotNull(rec.getRatingRecommender());
@@ -56,9 +72,8 @@ public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
 	@Test
 	public void testItemItemWithBaseline() {
 		module.core.setBaseline(UserMeanPredictor.class);
-		Injector inj = Guice.createInjector(module);
-		RecommenderBuilder builder = inj.getInstance(RecommenderBuilder.class);
-		RecommenderService rec = builder.build(dataSource);
+		Injector inj = createInjector();
+		RecommenderService rec = inj.getInstance(RecommenderService.class);
 		assertNotNull(rec);
 		assertNotNull(rec.getRatingPredictor());
 		assertNotNull(rec.getRatingRecommender());

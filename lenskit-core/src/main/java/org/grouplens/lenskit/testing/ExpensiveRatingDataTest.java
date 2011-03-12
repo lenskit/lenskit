@@ -26,21 +26,24 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Module;
+
 /**
  * Base class providing access to the MovieLens rating data for expensive tests.
- * 
+ *
  * <p>This class provides the machinery to access the MovieLens 100K rating data
  * for expensive data-based tests.  It's used by the extra data tests in RefLens,
  * and can be used to implement your own data-based tests (subject to the licensing
  * terms of the MovieLens rating data).</p>
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public abstract class ExpensiveRatingDataTest {
 	public static final String DATA_PATH = "org/grouplens/movielens/mldata/ml100k/ratings.dat";
 	protected RatingDataSource dataSource;
-	
+
 	@BeforeClass
 	public static void printMessage() {
 		System.out.println("This test uses the MovieLens 100K data set.");
@@ -50,7 +53,7 @@ public abstract class ExpensiveRatingDataTest {
 
 	@BeforeClass
 	public static void getDataURL() {
-		
+
 	}
 
 	public ExpensiveRatingDataTest() {
@@ -67,6 +70,15 @@ public abstract class ExpensiveRatingDataTest {
 	public void closeDataSource() {
 		dataSource.close();
 		dataSource = null;
+	}
+
+	protected Module dataModule() {
+		return new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(RatingDataSource.class).toInstance(dataSource);
+			}
+		};
 	}
 
 }
