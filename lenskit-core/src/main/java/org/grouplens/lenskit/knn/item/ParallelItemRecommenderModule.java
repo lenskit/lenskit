@@ -32,12 +32,12 @@ import com.google.inject.throwingproviders.CheckedProvides;
  *
  */
 public class ParallelItemRecommenderModule extends ItemRecommenderModule {
-	
-	@Override
-	@CheckedProvides(RecommenderServiceProvider.class)
-	@Singleton
-	public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
-		return builder.build(data, baseline);
-	}
+
+    @Override
+    @CheckedProvides(RecommenderServiceProvider.class)
+    @Singleton
+    public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
+            RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+        return builder.build(data, baseline);
+    }
 }

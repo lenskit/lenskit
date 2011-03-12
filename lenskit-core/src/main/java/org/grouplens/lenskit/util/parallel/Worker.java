@@ -23,5 +23,5 @@ package org.grouplens.lenskit.util.parallel;
  *
  */
 public interface Worker {
-	public void finish();
+    public void finish();
 }

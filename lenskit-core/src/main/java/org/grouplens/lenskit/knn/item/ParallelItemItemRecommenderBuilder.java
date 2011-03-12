@@ -72,200 +72,200 @@ import com.google.inject.Inject;
  */
 public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
 
-	private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(ParallelItemItemRecommenderBuilder.class);
 
-	private SimilarityMatrixBuilderFactory matrixFactory;
-	private Similarity<? super SparseVector> itemSimilarity;
-	private final int threadCount;
-	private Long2ObjectMap<IntSortedSet> userItemMap;
-	@Nullable private RatingPredictor baseline = null;
+    private SimilarityMatrixBuilderFactory matrixFactory;
+    private Similarity<? super SparseVector> itemSimilarity;
+    private final int threadCount;
+    private Long2ObjectMap<IntSortedSet> userItemMap;
+    @Nullable private RatingPredictor baseline = null;
 
-	@Inject
-	public ParallelItemItemRecommenderBuilder(
-			SimilarityMatrixBuilderFactory matrixFactory,
-			@ThreadCount int threadCount,
-			@ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity) {
-		this.matrixFactory = matrixFactory;
-		this.itemSimilarity = itemSimilarity;
-		this.threadCount = threadCount;
-	}
+    @Inject
+    public ParallelItemItemRecommenderBuilder(
+            SimilarityMatrixBuilderFactory matrixFactory,
+            @ThreadCount int threadCount,
+            @ItemSimilarity OptimizableVectorSimilarity<? super SparseVector> itemSimilarity) {
+        this.matrixFactory = matrixFactory;
+        this.itemSimilarity = itemSimilarity;
+        this.threadCount = threadCount;
+    }
 
-	private Index indexItems(RatingDataSource data) {
-		userItemMap = new Long2ObjectOpenHashMap<IntSortedSet>();
-		Indexer indexer = new Indexer();
-		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
-		try {
-			for (UserRatingProfile profile: cursor) {
-				IntSortedSet s = new IntRBTreeSet();
-				userItemMap.put(profile.getUser(), s);
-				for (Rating r: profile.getRatings()) {
-					int idx = indexer.internId(r.getItemId());
-					s.add(idx);
-				}
-			}
-		} finally {
-			cursor.close();
-		}
-		return indexer;
-	}
+    private Index indexItems(RatingDataSource data) {
+        userItemMap = new Long2ObjectOpenHashMap<IntSortedSet>();
+        Indexer indexer = new Indexer();
+        Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
+        try {
+            for (UserRatingProfile profile: cursor) {
+                IntSortedSet s = new IntRBTreeSet();
+                userItemMap.put(profile.getUser(), s);
+                for (Rating r: profile.getRatings()) {
+                    int idx = indexer.internId(r.getItemId());
+                    s.add(idx);
+                }
+            }
+        } finally {
+            cursor.close();
+        }
+        return indexer;
+    }
 
-	@Override
-	public ItemItemRecommenderService build(RatingDataSource data, RatingPredictor baseline) {
-		logger.info("Building model with {} threads", threadCount);
-		logger.debug("Indexing items");
-		Index itemIndex = indexItems(data);
-		logger.debug("Normalizing and transposing ratings matrix");
-		SparseVector[] itemRatings = buildItemRatings(itemIndex, data);
+    @Override
+    public ItemItemRecommenderService build(RatingDataSource data, RatingPredictor baseline) {
+        logger.info("Building model with {} threads", threadCount);
+        logger.debug("Indexing items");
+        Index itemIndex = indexItems(data);
+        logger.debug("Normalizing and transposing ratings matrix");
+        SparseVector[] itemRatings = buildItemRatings(itemIndex, data);
 
-		// prepare the similarity matrix
-		logger.debug("Initializing similarity matrix");
-		SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
+        // prepare the similarity matrix
+        logger.debug("Initializing similarity matrix");
+        SimilarityMatrixBuilder builder = matrixFactory.create(itemRatings.length);
 
-		// compute the similarity matrix
-		WorkerFactory<IntWorker> worker = new SimilarityWorkerFactory(itemRatings, builder);
-		IntegerTaskQueue queue = new IntegerTaskQueue(itemRatings.length);
+        // compute the similarity matrix
+        WorkerFactory<IntWorker> worker = new SimilarityWorkerFactory(itemRatings, builder);
+        IntegerTaskQueue queue = new IntegerTaskQueue(itemRatings.length);
 
-		logger.debug("Computing similarities");
-		queue.run(worker, threadCount);
+        logger.debug("Computing similarities");
+        queue.run(worker, threadCount);
 
-		logger.debug("Finalizing recommender model");
-		SimilarityMatrix matrix = builder.build();
-		LongSortedSet items = new LongSortedArraySet(itemIndex.getIds());
-		ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix, items);
-		return new ItemItemRecommenderService(model);
-	}
+        logger.debug("Finalizing recommender model");
+        SimilarityMatrix matrix = builder.build();
+        LongSortedSet items = new LongSortedArraySet(itemIndex.getIds());
+        ItemItemModel model = new ItemItemModel(itemIndex, baseline, matrix, items);
+        return new ItemItemRecommenderService(model);
+    }
 
-	static int arithSum(int n) {
-		return (n * (n + 1)) >> 1; // bake-in the strength reduction
-	}
-	static long arithSum(long n) {
-		return (n * (n + 1)) >> 1; // bake-in the strength reduction
-	}
+    static int arithSum(int n) {
+        return (n * (n + 1)) >> 1; // bake-in the strength reduction
+    }
+    static long arithSum(long n) {
+        return (n * (n + 1)) >> 1; // bake-in the strength reduction
+    }
 
-	/**
-	 * Transpose the ratings matrix so we have a list of item rating vectors.
-	 * @return An array of item rating vectors, mapping user IDs to ratings.
-	 */
-	private SparseVector[] buildItemRatings(final Index index, RatingDataSource data) {
-		final int nitems = data.getItemCount();
-		final Long2DoubleMap[] itemWork = new Long2DoubleMap[nitems];
-		for (int i = 0; i < nitems; i++) {
-			itemWork[i] = new Long2DoubleOpenHashMap();
-		}
-		Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
-		try {
-			IteratorTaskQueue.parallelDo(cursor.iterator(), threadCount,
-					new WorkerFactory<ObjectWorker<UserRatingProfile>>() {
-				@Override
-				public ObjectWorker<UserRatingProfile> create(
-						Thread owner) {
-					return new ObjectWorker<UserRatingProfile>() {
-						@Override
-						public void doJob(UserRatingProfile profile) {
-							Collection<Rating> ratings = profile.getRatings();
-							ratings = normalizeUserRatings(profile.getUser(), ratings);
-							for (Rating rating: ratings) {
-								long item = rating.getItemId();
-								int idx = index.getIndex(item);
-								assert idx >= 0;
-								Long2DoubleMap v = itemWork[idx];
-								synchronized (v) {
-									v.put(profile.getUser(), rating.getRating());
-								}
-							}
-						}
-						@Override public void finish() {}
+    /**
+     * Transpose the ratings matrix so we have a list of item rating vectors.
+     * @return An array of item rating vectors, mapping user IDs to ratings.
+     */
+    private SparseVector[] buildItemRatings(final Index index, RatingDataSource data) {
+        final int nitems = data.getItemCount();
+        final Long2DoubleMap[] itemWork = new Long2DoubleMap[nitems];
+        for (int i = 0; i < nitems; i++) {
+            itemWork[i] = new Long2DoubleOpenHashMap();
+        }
+        Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
+        try {
+            IteratorTaskQueue.parallelDo(cursor.iterator(), threadCount,
+                    new WorkerFactory<ObjectWorker<UserRatingProfile>>() {
+                @Override
+                public ObjectWorker<UserRatingProfile> create(
+                        Thread owner) {
+                    return new ObjectWorker<UserRatingProfile>() {
+                        @Override
+                        public void doJob(UserRatingProfile profile) {
+                            Collection<Rating> ratings = profile.getRatings();
+                            ratings = normalizeUserRatings(profile.getUser(), ratings);
+                            for (Rating rating: ratings) {
+                                long item = rating.getItemId();
+                                int idx = index.getIndex(item);
+                                assert idx >= 0;
+                                Long2DoubleMap v = itemWork[idx];
+                                synchronized (v) {
+                                    v.put(profile.getUser(), rating.getRating());
+                                }
+                            }
+                        }
+                        @Override public void finish() {}
 
-					};
-				}
-			});
-		} finally {
-			cursor.close();
-		}
-		// Transmogrify the item vector workspace into real rating vectors.
-		SparseVector[] itemVectors = new SparseVector[nitems];
-		for (int i = 0; i < nitems; i++) {
-			itemVectors[i] = new MutableSparseVector(itemWork[i]);
-			itemWork[i] = null;
-		}
-		return itemVectors;
-	}
+                    };
+                }
+            });
+        } finally {
+            cursor.close();
+        }
+        // Transmogrify the item vector workspace into real rating vectors.
+        SparseVector[] itemVectors = new SparseVector[nitems];
+        for (int i = 0; i < nitems; i++) {
+            itemVectors[i] = new MutableSparseVector(itemWork[i]);
+            itemWork[i] = null;
+        }
+        return itemVectors;
+    }
 
-	private class SimilarityWorker implements IntWorker {
-		private final SparseVector[] itemVectors;
-		private final SimilarityMatrixBuilder builder;
-		private final boolean symmetric;
+    private class SimilarityWorker implements IntWorker {
+        private final SparseVector[] itemVectors;
+        private final SimilarityMatrixBuilder builder;
+        private final boolean symmetric;
 
-		public SimilarityWorker(SparseVector[] items, SimilarityMatrixBuilder builder) {
-			this.itemVectors = items;
-			this.builder = builder;
-			this.symmetric = itemSimilarity instanceof SymmetricBinaryFunction;
-		}
+        public SimilarityWorker(SparseVector[] items, SimilarityMatrixBuilder builder) {
+            this.itemVectors = items;
+            this.builder = builder;
+            this.symmetric = itemSimilarity instanceof SymmetricBinaryFunction;
+        }
 
-		@Override
-		public void doJob(int job) {
-			int row = (int) job;
-			int max = symmetric ? row : itemVectors.length;
+        @Override
+        public void doJob(int job) {
+            int row = (int) job;
+            int max = symmetric ? row : itemVectors.length;
 
-			IntSet candidates = new IntOpenHashSet();
-			LongIterator uiter = itemVectors[row].keySet().iterator();
-			while (uiter.hasNext()) {
-				long u = uiter.nextLong();
-				IntIterator is = userItemMap.get(u).iterator();
-				while (is.hasNext()) {
-					int i = is.nextInt();
-					if (i >= max) break;
-					candidates.add(i);
-				}
-			}
+            IntSet candidates = new IntOpenHashSet();
+            LongIterator uiter = itemVectors[row].keySet().iterator();
+            while (uiter.hasNext()) {
+                long u = uiter.nextLong();
+                IntIterator is = userItemMap.get(u).iterator();
+                while (is.hasNext()) {
+                    int i = is.nextInt();
+                    if (i >= max) break;
+                    candidates.add(i);
+                }
+            }
 
-			IntIterator iter = candidates.iterator();
-			while (iter.hasNext()) {
-				int col = iter.nextInt();
+            IntIterator iter = candidates.iterator();
+            while (iter.hasNext()) {
+                int col = iter.nextInt();
 
-				double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
-				builder.put(row, col, sim);
-				if (symmetric)
-					builder.put(col, row, sim);
-			}
-		}
+                double sim = itemSimilarity.similarity(itemVectors[row], itemVectors[col]);
+                builder.put(row, col, sim);
+                if (symmetric)
+                    builder.put(col, row, sim);
+            }
+        }
 
-		@Override
-		public void finish() {
-		}
-	}
+        @Override
+        public void finish() {
+        }
+    }
 
-	public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
+    public class SimilarityWorkerFactory implements WorkerFactory<IntWorker> {
 
-		private final SparseVector[] itemVector;
-		private final SimilarityMatrixBuilder builder;
+        private final SparseVector[] itemVector;
+        private final SimilarityMatrixBuilder builder;
 
-		public SimilarityWorkerFactory(SparseVector[] items, SimilarityMatrixBuilder builder) {
-			this.itemVector = items;
-			this.builder = builder;
-		}
-		@Override
-		public SimilarityWorker create(Thread owner) {
-			return new SimilarityWorker(itemVector, builder);
-		}
+        public SimilarityWorkerFactory(SparseVector[] items, SimilarityMatrixBuilder builder) {
+            this.itemVector = items;
+            this.builder = builder;
+        }
+        @Override
+        public SimilarityWorker create(Thread owner) {
+            return new SimilarityWorker(itemVector, builder);
+        }
 
-	}
+    }
 
-	protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
-		// TODO share this code with ItemItemRecommenderBuilder
-		if (baseline == null) return ratings;
+    protected Collection<Rating> normalizeUserRatings(long uid, Collection<Rating> ratings) {
+        // TODO share this code with ItemItemRecommenderBuilder
+        if (baseline == null) return ratings;
 
-		SparseVector rmap = Ratings.userRatingVector(ratings);
-		SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
-		Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
+        SparseVector rmap = Ratings.userRatingVector(ratings);
+        SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
+        Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
 
-		for (Rating r: ratings) {
-			long iid = r.getItemId();
-			double adj = r.getRating() - base.get(iid);
-			Rating r2 = new SimpleRating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
-			normed.add(r2);
-		}
-		return normed;
-	}
+        for (Rating r: ratings) {
+            long iid = r.getItemId();
+            double adj = r.getRating() - base.get(iid);
+            Rating r2 = new SimpleRating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
+            normed.add(r2);
+        }
+        return normed;
+    }
 
 }

@@ -52,130 +52,130 @@ import com.google.inject.Provides;
  *
  */
 public class AlgorithmInstance {
-	private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-	private @Nonnull String algoName;
-	private @Nullable RecommenderModuleComponent module;
-	private @Nonnull Map<String,String> attributes;
-	
-	public AlgorithmInstance() {
-		attributes = new HashMap<String,String>();
-	}
-	
-	/**
-	 * Helper method to extract the basename for a file with an expected extension.
-	 * @param f The file
-	 * @param xtn The extension (or NULL, if no extension is to be stripped).
-	 * @return The basename of the file, with <var>xtn</var> stripped if it is
-	 * the file's extension.
-	 */
-	static String fileBaseName(File f, String xtn) {
-		String name = f.getName();
-		if (xtn != null && name.endsWith("." + xtn)) {
-			name = name.substring(0, name.length() - xtn.length() - 1);
-		}
-		return name;
-	}
-	
-	/**
-	 * Get the name of this algorithm.  This returns a short name which is
-	 * used to identify the algorithm or instance.
-	 * @return The algorithm's name
-	 */
-	public String getName() {
-		return algoName;
-	}
-	
-	/**
-	 * Set the instance's name.
-	 * @param name The instance name
-	 */
-	public void setName(String name) {
-		algoName = name;
-		if (module != null)
-			module.setName(name);
-	}
-	
-	public Map<String,String> getAttributes() {
-		return attributes;
-	}
-	
-	public RecommenderModuleComponent getModule() {
-		return module;
-	}
-	
-	public void setModule(RecommenderModuleComponent mod) {
-		module = mod;
-		mod.setName(getName());
-	}
-	
-	public void setModule(Class<? extends RecommenderCoreModule> mod) throws InstantiationException, IllegalAccessException {
-		setModule(mod.newInstance());
-	}
-	
-	private static class DataModule extends AbstractModule {
-		private RatingDataSource dataSource;
-		public DataModule(RatingDataSource source) {
-			dataSource = source;
-		}
-		
-		@Override protected void configure() {
-		}
-		
-		@SuppressWarnings("unused")
-		@Provides public RatingDataSource provideDataSource() {
-			return dataSource;
-		}
-	}
-	
-	public Injector makeInjector(final RatingDataSource input) {
-		return Guice.createInjector(new DataModule(input), module);
-	}
-	
-	public RecommenderService getRecommenderService(final RatingDataSource input) throws RecommenderNotAvailableException {
-		Injector inj = makeInjector(input);
-		RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
-		return provider.get();
-	}
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
+    private @Nonnull String algoName;
+    private @Nullable RecommenderModuleComponent module;
+    private @Nonnull Map<String,String> attributes;
 
-	public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
-		logger.info("Loading recommender definition from {}", f);
-		String xtn = fileExtension(f);
-		logger.debug("Loading recommender from {} with extension {}", f, xtn);
-		ScriptEngineManager mgr = new ScriptEngineManager();
-		ScriptEngine engine = mgr.getEngineByExtension(xtn);
-		if (engine == null)
-			throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
-		ScriptEngineFactory factory = engine.getFactory();
-		logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
-		AlgorithmInstance algo = new AlgorithmInstance();
-		mgr.put("rec", algo);
-		try {
-			Reader r = new FileReader(f);
-			try {
-				engine.eval(r);
-				if (algo.getModule() != null)
-					return algo;
-				else
-					throw new InvalidRecommenderException(f.toURI(), "No recommender configured");
-			} finally {
-				r.close();
-			}
-		} catch (ScriptException e) {
-			throw new InvalidRecommenderException(f.toURI(), e);
-		} catch (IOException e) {
-			throw new InvalidRecommenderException(f.toURI(), e);
-		}
-	}
-	
-	static String fileExtension(File f) {
-		return fileExtension(f.getName());
-	}
-	static String fileExtension(String fn) {
-		int idx = fn.lastIndexOf('.');
-		if (idx >= 0) {
-			return fn.substring(idx+1);
-		} else {
-			return "";
-		}
-	}
+    public AlgorithmInstance() {
+        attributes = new HashMap<String,String>();
+    }
+
+    /**
+     * Helper method to extract the basename for a file with an expected extension.
+     * @param f The file
+     * @param xtn The extension (or NULL, if no extension is to be stripped).
+     * @return The basename of the file, with <var>xtn</var> stripped if it is
+     * the file's extension.
+     */
+    static String fileBaseName(File f, String xtn) {
+        String name = f.getName();
+        if (xtn != null && name.endsWith("." + xtn)) {
+            name = name.substring(0, name.length() - xtn.length() - 1);
+        }
+        return name;
+    }
+
+    /**
+     * Get the name of this algorithm.  This returns a short name which is
+     * used to identify the algorithm or instance.
+     * @return The algorithm's name
+     */
+    public String getName() {
+        return algoName;
+    }
+
+    /**
+     * Set the instance's name.
+     * @param name The instance name
+     */
+    public void setName(String name) {
+        algoName = name;
+        if (module != null)
+            module.setName(name);
+    }
+
+    public Map<String,String> getAttributes() {
+        return attributes;
+    }
+
+    public RecommenderModuleComponent getModule() {
+        return module;
+    }
+
+    public void setModule(RecommenderModuleComponent mod) {
+        module = mod;
+        mod.setName(getName());
+    }
+
+    public void setModule(Class<? extends RecommenderCoreModule> mod) throws InstantiationException, IllegalAccessException {
+        setModule(mod.newInstance());
+    }
+
+    private static class DataModule extends AbstractModule {
+        private RatingDataSource dataSource;
+        public DataModule(RatingDataSource source) {
+            dataSource = source;
+        }
+
+        @Override protected void configure() {
+        }
+
+        @SuppressWarnings("unused")
+        @Provides public RatingDataSource provideDataSource() {
+            return dataSource;
+        }
+    }
+
+    public Injector makeInjector(final RatingDataSource input) {
+        return Guice.createInjector(new DataModule(input), module);
+    }
+
+    public RecommenderService getRecommenderService(final RatingDataSource input) throws RecommenderNotAvailableException {
+        Injector inj = makeInjector(input);
+        RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
+        return provider.get();
+    }
+
+    public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
+        logger.info("Loading recommender definition from {}", f);
+        String xtn = fileExtension(f);
+        logger.debug("Loading recommender from {} with extension {}", f, xtn);
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByExtension(xtn);
+        if (engine == null)
+            throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
+        ScriptEngineFactory factory = engine.getFactory();
+        logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
+        AlgorithmInstance algo = new AlgorithmInstance();
+        mgr.put("rec", algo);
+        try {
+            Reader r = new FileReader(f);
+            try {
+                engine.eval(r);
+                if (algo.getModule() != null)
+                    return algo;
+                else
+                    throw new InvalidRecommenderException(f.toURI(), "No recommender configured");
+            } finally {
+                r.close();
+            }
+        } catch (ScriptException e) {
+            throw new InvalidRecommenderException(f.toURI(), e);
+        } catch (IOException e) {
+            throw new InvalidRecommenderException(f.toURI(), e);
+        }
+    }
+
+    static String fileExtension(File f) {
+        return fileExtension(f.getName());
+    }
+    static String fileExtension(String fn) {
+        int idx = fn.lastIndexOf('.');
+        if (idx >= 0) {
+            return fn.substring(idx+1);
+        } else {
+            return "";
+        }
+    }
 }

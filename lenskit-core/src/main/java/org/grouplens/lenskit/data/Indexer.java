@@ -25,44 +25,44 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongLists;
 
 public class Indexer implements Index {
-	private static final long serialVersionUID = -8383883342128686850L;
+    private static final long serialVersionUID = -8383883342128686850L;
 
-	private Long2IntMap indexes;
-	private LongArrayList ids;
+    private Long2IntMap indexes;
+    private LongArrayList ids;
 
-	public Indexer() {
-		indexes = new Long2IntOpenHashMap();
-		indexes.defaultReturnValue(-1);
-		ids = new LongArrayList();
-	}
+    public Indexer() {
+        indexes = new Long2IntOpenHashMap();
+        indexes.defaultReturnValue(-1);
+        ids = new LongArrayList();
+    }
 
-	@Override
-	public long getId(int idx) {
-		return ids.getLong(idx);
-	}
+    @Override
+    public long getId(int idx) {
+        return ids.getLong(idx);
+    }
 
-	@Override
-	public LongList getIds() {
-		return LongLists.unmodifiable(ids);
-	}
+    @Override
+    public LongList getIds() {
+        return LongLists.unmodifiable(ids);
+    }
 
-	@Override
-	public int getIndex(long id) {
-		return indexes.get(id);
-	}
+    @Override
+    public int getIndex(long id) {
+        return indexes.get(id);
+    }
 
-	@Override
-	public int getObjectCount() {
-		return ids.size();
-	}
+    @Override
+    public int getObjectCount() {
+        return ids.size();
+    }
 
-	public int internId(long id) {
-		int idx = getIndex(id);
-		if (idx < 0) {
-			idx = ids.size();
-			ids.add(id);
-			indexes.put(id, idx);
-		}
-		return idx;
-	}
+    public int internId(long id) {
+        int idx = getIndex(id);
+        if (idx < 0) {
+            idx = ids.size();
+            ids.add(id);
+            indexes.put(id, idx);
+        }
+        return idx;
+    }
 }

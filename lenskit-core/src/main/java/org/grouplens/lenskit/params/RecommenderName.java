@@ -31,7 +31,7 @@ import com.google.inject.BindingAnnotation;
  * The name of the recommender network.  This name is global to the entire
  * recommender configuration, and used if a piece of the recommender wants the
  * name for some reason.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

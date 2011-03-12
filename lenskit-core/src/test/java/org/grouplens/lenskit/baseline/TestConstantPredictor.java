@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.baseline;
 
@@ -36,12 +36,12 @@ import org.junit.Test;
  *
  */
 public class TestConstantPredictor {
-		
-	@Test
-	public void testConstantPredict() {
-		RatingPredictor pred = new ConstantPredictor(5);
-		SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-		ScoredId score = pred.predict(10l, map, 2l);
-		assertEquals(5, score.getScore(), 0.00001);
-	}
+
+    @Test
+    public void testConstantPredict() {
+        RatingPredictor pred = new ConstantPredictor(5);
+        SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
+        ScoredId score = pred.predict(10l, map, 2l);
+        assertEquals(5, score.getScore(), 0.00001);
+    }
 }

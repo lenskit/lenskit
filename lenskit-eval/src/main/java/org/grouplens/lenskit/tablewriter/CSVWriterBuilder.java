@@ -29,27 +29,27 @@ import java.util.List;
  *
  */
 public class CSVWriterBuilder implements TableWriterBuilder {
-	private List<String> columns;
-	
-	public CSVWriterBuilder() {
-		columns = new ArrayList<String>();
-	}
+    private List<String> columns;
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#addColumn(java.lang.String)
-	 */
-	@Override
-	public int addColumn(String name) {
-		columns.add(name);
-		return columns.size() - 1;
-	}
+    public CSVWriterBuilder() {
+        columns = new ArrayList<String>();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#makeWriter(java.io.Writer)
-	 */
-	@Override
-	public CSVWriter makeWriter(Writer output) throws IOException {
-		return new CSVWriter(output, columns.toArray(new String[columns.size()]));
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#addColumn(java.lang.String)
+     */
+    @Override
+    public int addColumn(String name) {
+        columns.add(name);
+        return columns.size() - 1;
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#makeWriter(java.io.Writer)
+     */
+    @Override
+    public CSVWriter makeWriter(Writer output) throws IOException {
+        return new CSVWriter(output, columns.toArray(new String[columns.size()]));
+    }
 
 }

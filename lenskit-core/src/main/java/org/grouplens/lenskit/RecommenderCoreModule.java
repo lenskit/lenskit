@@ -35,131 +35,131 @@ import com.google.inject.util.Providers;
 
 /**
  * Module for configuring the common RefLens parameters.
- * 
+ *
  * <p>This module provides bean properties and bindings for the core RefLens
  * parameters, controlling the infrastructure and the common parameters used
  * across many algorithms.
- * 
+ *
  * @todo Document this module.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class RecommenderCoreModule extends RecommenderModuleComponent {
-	private @ThreadCount int threadCount = Runtime.getRuntime().availableProcessors();
-	private @MeanDamping double damping;
-	private @MinRating double minRating;
-	private @MaxRating double maxRating;
-	private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
-	private @ConstantPredictor.Value double constantBaselineValue;
-	
-	public RecommenderCoreModule() {
-		initializeDefaultValues(this.getClass());
-		baseline = null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.google.inject.AbstractModule#configure()
-	 */
-	@Override
-	protected void configure() {
-		getLogger().debug("Configuring core recommender module");
-		configureBaseline();
-	}
-	
-	/**
-	 * Provide the recommender name to the module.
-	 */
-	@Provides @RecommenderName
-	public String getName() {
-		return super.getName();
-	}
-	
-	@Provides @ThreadCount
-	public int getThreadCount() {
-		return threadCount;
-	}
-	public void setThreadCount(int count) {
-		threadCount = count;
-	}
-	
-	/**
-	 * @return the damping
-	 */
-	@Provides @MeanDamping
-	public double getDamping() {
-		return damping;
-	}
+    private @ThreadCount int threadCount = Runtime.getRuntime().availableProcessors();
+    private @MeanDamping double damping;
+    private @MinRating double minRating;
+    private @MaxRating double maxRating;
+    private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
+    private @ConstantPredictor.Value double constantBaselineValue;
 
-	/**
-	 * @param damping the damping to set
-	 */
-	public void setDamping(double damping) {
-		this.damping = damping;
-	}
-	
-	/**
-	 * @return the minRating
-	 */
-	@Provides @MinRating
-	public double getMinRating() {
-		return minRating;
-	}
+    public RecommenderCoreModule() {
+        initializeDefaultValues(this.getClass());
+        baseline = null;
+    }
 
-	/**
-	 * @param minRating the minRating to set
-	 */
-	public void setMinRating(double minRating) {
-		this.minRating = minRating;
-	}
+    /* (non-Javadoc)
+     * @see com.google.inject.AbstractModule#configure()
+     */
+    @Override
+    protected void configure() {
+        getLogger().debug("Configuring core recommender module");
+        configureBaseline();
+    }
 
-	/**
-	 * @return the maxRating
-	 */
-	@Provides @MaxRating
-	public double getMaxRating() {
-		return maxRating;
-	}
+    /**
+     * Provide the recommender name to the module.
+     */
+    @Provides @RecommenderName
+    public String getName() {
+        return super.getName();
+    }
 
-	/**
-	 * @param maxRating the maxRating to set
-	 */
-	public void setMaxRating(double maxRating) {
-		this.maxRating = maxRating;
-	}
-	
-	/**
-	 * Configure the binding for the baseline predictor.
-	 * 
-	 * @todo Make this capable of reifying generic types with
-	 * {@link TypeUtils#reifyType(Type, Class)}.
-	 */
-	protected void configureBaseline() {
-		LinkedBindingBuilder<RatingPredictor> binder = bind(RatingPredictor.class).annotatedWith(BaselinePredictor.class);
-		if (baseline == null)
-			binder.toProvider(Providers.of((RatingPredictor) null));
-		else
-			binder.to(baseline);
-	}
-	
-	public Class<? extends RatingPredictor> getBaseline() {
-		return baseline;
-	}
-	
-	/**
-	 * Set the predictor used for the baseline.
-	 * @todo Support setting baseline providers.
-	 * @param cls The class.
-	 */
-	public void setBaseline(Class<? extends RatingPredictor> cls) {
-		baseline = cls;
-	}
-	
-	@Provides @ConstantPredictor.Value
-	public double getConstantBaselineValue() {
-		return constantBaselineValue;
-	}
-	
-	public void setConstantBaselineValue(double v) {
-		constantBaselineValue = v;
-	}
+    @Provides @ThreadCount
+    public int getThreadCount() {
+        return threadCount;
+    }
+    public void setThreadCount(int count) {
+        threadCount = count;
+    }
+
+    /**
+     * @return the damping
+     */
+    @Provides @MeanDamping
+    public double getDamping() {
+        return damping;
+    }
+
+    /**
+     * @param damping the damping to set
+     */
+    public void setDamping(double damping) {
+        this.damping = damping;
+    }
+
+    /**
+     * @return the minRating
+     */
+    @Provides @MinRating
+    public double getMinRating() {
+        return minRating;
+    }
+
+    /**
+     * @param minRating the minRating to set
+     */
+    public void setMinRating(double minRating) {
+        this.minRating = minRating;
+    }
+
+    /**
+     * @return the maxRating
+     */
+    @Provides @MaxRating
+    public double getMaxRating() {
+        return maxRating;
+    }
+
+    /**
+     * @param maxRating the maxRating to set
+     */
+    public void setMaxRating(double maxRating) {
+        this.maxRating = maxRating;
+    }
+
+    /**
+     * Configure the binding for the baseline predictor.
+     *
+     * @todo Make this capable of reifying generic types with
+     * {@link TypeUtils#reifyType(Type, Class)}.
+     */
+    protected void configureBaseline() {
+        LinkedBindingBuilder<RatingPredictor> binder = bind(RatingPredictor.class).annotatedWith(BaselinePredictor.class);
+        if (baseline == null)
+            binder.toProvider(Providers.of((RatingPredictor) null));
+        else
+            binder.to(baseline);
+    }
+
+    public Class<? extends RatingPredictor> getBaseline() {
+        return baseline;
+    }
+
+    /**
+     * Set the predictor used for the baseline.
+     * @todo Support setting baseline providers.
+     * @param cls The class.
+     */
+    public void setBaseline(Class<? extends RatingPredictor> cls) {
+        baseline = cls;
+    }
+
+    @Provides @ConstantPredictor.Value
+    public double getConstantBaselineValue() {
+        return constantBaselineValue;
+    }
+
+    public void setConstantBaselineValue(double v) {
+        constantBaselineValue = v;
+    }
 }

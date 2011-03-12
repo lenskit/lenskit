@@ -42,191 +42,191 @@ import com.google.inject.util.Types;
  */
 @SuppressWarnings("rawtypes") // we use lots of raw types in this class
 public class TypeUtils {
-	
-	private static ParameterizedType typeOfClass(Class c) {
-		return Types.newParameterizedType(c, c.getTypeParameters());
-	}
 
-	public static Type reifyType(Type template, Class clazz) {
-		if (clazz.getTypeParameters().length == 0)
-			return clazz;
+    private static ParameterizedType typeOfClass(Class c) {
+        return Types.newParameterizedType(c, c.getTypeParameters());
+    }
 
-		ParameterizedType t = typeOfClass(clazz);
-		TypeAssignment asn = findAssignment(template, t, null);
-		if (asn == null)
-			return clazz;
+    public static Type reifyType(Type template, Class clazz) {
+        if (clazz.getTypeParameters().length == 0)
+            return clazz;
 
-		TypeVariable[] params = clazz.getTypeParameters();
-		Type[] bindings = new Type[params.length];
-		for (int i = 0; i < params.length; i++) {
-			bindings[i] = asn.resolve(params[i]);
-		}
-		return Types.newParameterizedType(clazz, bindings);
-	}
+        ParameterizedType t = typeOfClass(clazz);
+        TypeAssignment asn = findAssignment(template, t, null);
+        if (asn == null)
+            return clazz;
 
-	private static TypeAssignment findAssignment(Type template, ParameterizedType t, TypeAssignment base) {
-		TypeAssignment asn = new TypeAssignment(base);
-		if (!asn.bindParams(t))
-			return null;
+        TypeVariable[] params = clazz.getTypeParameters();
+        Type[] bindings = new Type[params.length];
+        for (int i = 0; i < params.length; i++) {
+            bindings[i] = asn.resolve(params[i]);
+        }
+        return Types.newParameterizedType(clazz, bindings);
+    }
 
-		if (unifyTypes(template, t, asn)) {
-			return asn;
-		} else {
-			Type raw = t.getRawType();
-			if (raw instanceof Class) {
-				Class c = (Class) raw;
-				asn = new TypeAssignment(base);
-				asn.bindParams(t);
-				for (Type i: c.getGenericInterfaces()) {
-					if (!(i instanceof ParameterizedType))
-						continue;
-					ParameterizedType pti = (ParameterizedType) i;
-					TypeAssignment sup = findAssignment(template, pti, asn);
-					if (sup != null)
-						return sup;
-				}
-				Type i = c.getGenericSuperclass();
-				if (i != null && i instanceof ParameterizedType) { // we have an interface
-					ParameterizedType pti = (ParameterizedType) i;
-					TypeAssignment sup = findAssignment(template, pti, asn);
-					if (sup != null)
-						return sup;
-				}
-			}
-		}
+    private static TypeAssignment findAssignment(Type template, ParameterizedType t, TypeAssignment base) {
+        TypeAssignment asn = new TypeAssignment(base);
+        if (!asn.bindParams(t))
+            return null;
 
-		return null;
-	}
+        if (unifyTypes(template, t, asn)) {
+            return asn;
+        } else {
+            Type raw = t.getRawType();
+            if (raw instanceof Class) {
+                Class c = (Class) raw;
+                asn = new TypeAssignment(base);
+                asn.bindParams(t);
+                for (Type i: c.getGenericInterfaces()) {
+                    if (!(i instanceof ParameterizedType))
+                        continue;
+                    ParameterizedType pti = (ParameterizedType) i;
+                    TypeAssignment sup = findAssignment(template, pti, asn);
+                    if (sup != null)
+                        return sup;
+                }
+                Type i = c.getGenericSuperclass();
+                if (i != null && i instanceof ParameterizedType) { // we have an interface
+                    ParameterizedType pti = (ParameterizedType) i;
+                    TypeAssignment sup = findAssignment(template, pti, asn);
+                    if (sup != null)
+                        return sup;
+                }
+            }
+        }
 
-	/**
-	 * Compute the set of unbound type variables used in <var>t</var>.
-	 * @param t A type
-	 * @return The set of type variables used unbound in <var>t</var>
-	 */
-	public static Set<TypeVariable> findFreeVariables(Type t) {
-		Set<TypeVariable> s = new HashSet<TypeVariable>();
-		if (t instanceof TypeVariable) {
-			s.add((TypeVariable) t);
-		} else if (t instanceof Class) {
-			for (TypeVariable to: ((Class) t).getTypeParameters()) {
-				s.add(to);
-			}
-		} else if (t instanceof ParameterizedType) {
-			for (Type to: ((ParameterizedType) t).getActualTypeArguments()) {
-				s.addAll(findFreeVariables(to));
-			}
-		} else if (t instanceof GenericArrayType) {
-			s.addAll(findFreeVariables(((GenericArrayType) t).getGenericComponentType()));
-		} else {
-			throw new RuntimeException("invalid type");
-		}
-		return s;
-	}
+        return null;
+    }
 
-	private static boolean unifyTypes(Type fixed, Type open, TypeAssignment assignment) {
-		assert findFreeVariables(fixed).isEmpty();
+    /**
+     * Compute the set of unbound type variables used in <var>t</var>.
+     * @param t A type
+     * @return The set of type variables used unbound in <var>t</var>
+     */
+    public static Set<TypeVariable> findFreeVariables(Type t) {
+        Set<TypeVariable> s = new HashSet<TypeVariable>();
+        if (t instanceof TypeVariable) {
+            s.add((TypeVariable) t);
+        } else if (t instanceof Class) {
+            for (TypeVariable to: ((Class) t).getTypeParameters()) {
+                s.add(to);
+            }
+        } else if (t instanceof ParameterizedType) {
+            for (Type to: ((ParameterizedType) t).getActualTypeArguments()) {
+                s.addAll(findFreeVariables(to));
+            }
+        } else if (t instanceof GenericArrayType) {
+            s.addAll(findFreeVariables(((GenericArrayType) t).getGenericComponentType()));
+        } else {
+            throw new RuntimeException("invalid type");
+        }
+        return s;
+    }
 
-		Type ropen = assignment.resolve(open);
-		if (fixed.equals(ropen))
-			return true;
+    private static boolean unifyTypes(Type fixed, Type open, TypeAssignment assignment) {
+        assert findFreeVariables(fixed).isEmpty();
 
-		if (ropen instanceof TypeVariable) {
-			// open is a type variable; assign it.  don't need occurance check
-			// since fixed has no free variables.
-			return assignment.set((TypeVariable) ropen, fixed);
-		}
+        Type ropen = assignment.resolve(open);
+        if (fixed.equals(ropen))
+            return true;
 
-		ParameterizedType fpt;
-		ParameterizedType pt;
-		try {
-			fpt = (ParameterizedType) fixed;
-			if (ropen instanceof Class) {
-				pt = typeOfClass((Class) ropen);
-			} else { // generic arrays will fail. that's fine.
-				pt = (ParameterizedType) ropen;
-			}
-		} catch (ClassCastException e) {
-			return false; // whoops, we cannot unify.
-		}
+        if (ropen instanceof TypeVariable) {
+            // open is a type variable; assign it.  don't need occurance check
+            // since fixed has no free variables.
+            return assignment.set((TypeVariable) ropen, fixed);
+        }
 
-		if (fpt.getRawType().equals(pt.getRawType())) {
-			Type[] fargs = fpt.getActualTypeArguments();
-			Type[] targs = pt.getActualTypeArguments();
-			assert fargs.length == targs.length;
+        ParameterizedType fpt;
+        ParameterizedType pt;
+        try {
+            fpt = (ParameterizedType) fixed;
+            if (ropen instanceof Class) {
+                pt = typeOfClass((Class) ropen);
+            } else { // generic arrays will fail. that's fine.
+                pt = (ParameterizedType) ropen;
+            }
+        } catch (ClassCastException e) {
+            return false; // whoops, we cannot unify.
+        }
 
-			for (int i = 0; i < fargs.length; i++) {
-				if (!unifyTypes(fargs[i], targs[i], assignment))
-					return false;
-			}
-			// we could unify everything
-			return true;
-		} else {
-			return false;
-		}
-	}
+        if (fpt.getRawType().equals(pt.getRawType())) {
+            Type[] fargs = fpt.getActualTypeArguments();
+            Type[] targs = pt.getActualTypeArguments();
+            assert fargs.length == targs.length;
 
-	private static class TypeAssignment {
-		private Map<TypeVariable,Type> assignments;
+            for (int i = 0; i < fargs.length; i++) {
+                if (!unifyTypes(fargs[i], targs[i], assignment))
+                    return false;
+            }
+            // we could unify everything
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		@SuppressWarnings("unused")
-		public TypeAssignment() {
-			this(null);
-		}
+    private static class TypeAssignment {
+        private Map<TypeVariable,Type> assignments;
 
-		public TypeAssignment(TypeAssignment base) {
-			if (base == null)
-				assignments = new HashMap<TypeVariable, Type>();
-			else
-				assignments = new HashMap<TypeVariable, Type>(base.assignments);
-		}
+        @SuppressWarnings("unused")
+        public TypeAssignment() {
+            this(null);
+        }
 
-		public boolean set(TypeVariable v, Type t) {
-			if (v.equals(t))
-				return true;
+        public TypeAssignment(TypeAssignment base) {
+            if (base == null)
+                assignments = new HashMap<TypeVariable, Type>();
+            else
+                assignments = new HashMap<TypeVariable, Type>(base.assignments);
+        }
 
-			if (assignments.containsKey(v))
-				return false;
+        public boolean set(TypeVariable v, Type t) {
+            if (v.equals(t))
+                return true;
 
-			assignments.put(v, t);
-			return true;
-		}
+            if (assignments.containsKey(v))
+                return false;
 
-		public Type resolve(Type t) {
-			if (t instanceof TypeVariable) {
-				TypeVariable v = (TypeVariable) t;
-				Type tgt = assignments.get(v);
-				if (tgt == null)
-					return t;
-				else
-					return resolve(tgt);
-			} else {
-				return t;
-			}
-		}
+            assignments.put(v, t);
+            return true;
+        }
 
-		public boolean bindParams(ParameterizedType t) {
-			try {
-				Class c = (Class) t.getRawType();
-				return bindParams(t, c);
-			} catch (ClassCastException e) {
-				return false;
-			}
-		}
+        public Type resolve(Type t) {
+            if (t instanceof TypeVariable) {
+                TypeVariable v = (TypeVariable) t;
+                Type tgt = assignments.get(v);
+                if (tgt == null)
+                    return t;
+                else
+                    return resolve(tgt);
+            } else {
+                return t;
+            }
+        }
 
-		public boolean bindParams(ParameterizedType t, Class c) {
-			Type[] actuals = t.getActualTypeArguments();
-			TypeVariable[] formals = c.getTypeParameters();
-			assert actuals.length == formals.length;
-			for (int i = 0; i < actuals.length; i++) {
-				if (!set(formals[i], actuals[i]))
-					return false;
-			}
-			return true;
-		}
+        public boolean bindParams(ParameterizedType t) {
+            try {
+                Class c = (Class) t.getRawType();
+                return bindParams(t, c);
+            } catch (ClassCastException e) {
+                return false;
+            }
+        }
 
-		@Override
-		public String toString() {
-			return assignments.toString();
-		}
-	}
+        public boolean bindParams(ParameterizedType t, Class c) {
+            Type[] actuals = t.getActualTypeArguments();
+            TypeVariable[] formals = c.getTypeParameters();
+            assert actuals.length == formals.length;
+            for (int i = 0; i < actuals.length; i++) {
+                if (!set(formals[i], actuals[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return assignments.toString();
+        }
+    }
 }

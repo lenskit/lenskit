@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.data;
 
@@ -27,33 +27,33 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Interface representing ratings in the system.
- * 
+ *
  * <p>Implementations of this interface must be thread-safe.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @ThreadSafe
 public interface Rating {
-	/**
-	 * Get the user ID.
-	 * @return The user ID of the rating.
-	 */
-	long getUserId();
-	/**
-	 * Get the item ID.
-	 * @return The item ID of the rating.
-	 */
-	long getItemId();
-	/**
-	 * Get the rating value.
-	 * @return The value of the rating.
-	 */
-	double getRating();
-	/**
-	 * Get the rating timestamp.
-	 * @return The timestamp of the rating (or -1 if the rating has no
-	 * timestamp).
-	 */
-	long getTimestamp();
+    /**
+     * Get the user ID.
+     * @return The user ID of the rating.
+     */
+    long getUserId();
+    /**
+     * Get the item ID.
+     * @return The item ID of the rating.
+     */
+    long getItemId();
+    /**
+     * Get the rating value.
+     * @return The value of the rating.
+     */
+    double getRating();
+    /**
+     * Get the rating timestamp.
+     * @return The timestamp of the rating (or -1 if the rating has no
+     * timestamp).
+     */
+    long getTimestamp();
 }

@@ -21,28 +21,28 @@ package org.grouplens.lenskit.data;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 public class LongIteratorCursor extends AbstractLongCursor {
-	private LongIterator iterator;
+    private LongIterator iterator;
 
-	public LongIteratorCursor(LongIterator iter) {
-		iterator = iter;
-	}
+    public LongIteratorCursor(LongIterator iter) {
+        iterator = iter;
+    }
 
-	@Override
-	public boolean hasNext() {
-		return iterator.hasNext();
-	}
+    @Override
+    public boolean hasNext() {
+        return iterator.hasNext();
+    }
 
-	@Override
-	public Long next() {
-		return iterator.next();
-	}
+    @Override
+    public Long next() {
+        return iterator.next();
+    }
 
-	public long nextLong() {
-		return iterator.nextLong();
-	}
+    public long nextLong() {
+        return iterator.nextLong();
+    }
 
-	@Override
-	public LongIterator iterator() {
-		return iterator;
-	}
+    @Override
+    public LongIterator iterator() {
+        return iterator;
+    }
 }

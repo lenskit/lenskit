@@ -30,43 +30,43 @@ import java.util.List;
  *
  */
 public class SparseMatrix {
-	private List<Int2DoubleMap> data;
-	
-	public SparseMatrix() {
-		data = new ObjectArrayList<Int2DoubleMap>();
-	}
-	
-	public SparseMatrix (int nrows) {
-		data = new ObjectArrayList<Int2DoubleMap>(nrows);
-		for (int i = 0; i < nrows; i++) {
-			Int2DoubleMap m = new Int2DoubleOpenHashMap();
-			m.defaultReturnValue(Double.NaN);
-			data.add(m);
-		}
-	}
-	
-	public void set(int row, int col, double value) {
-		while (row >= data.size()) {
-			Int2DoubleMap m = new Int2DoubleOpenHashMap();
-			m.defaultReturnValue(Double.NaN);
-			data.add(m);
-		}
-		data.get(row).put(col, value);
-	}
-	
-	public double get(int row, int col) {
-		if (row >= data.size()) {
-			return Double.NaN;
-		} else {
-			return data.get(row).get(col);
-		}
-	}
-	
-	public Int2DoubleMap row(int row) {
-		if (row >= data.size()) {
-			return Int2DoubleMaps.EMPTY_MAP;
-		} else {
-			return Int2DoubleMaps.unmodifiable(data.get(row));
-		}
-	}
+    private List<Int2DoubleMap> data;
+
+    public SparseMatrix() {
+        data = new ObjectArrayList<Int2DoubleMap>();
+    }
+
+    public SparseMatrix (int nrows) {
+        data = new ObjectArrayList<Int2DoubleMap>(nrows);
+        for (int i = 0; i < nrows; i++) {
+            Int2DoubleMap m = new Int2DoubleOpenHashMap();
+            m.defaultReturnValue(Double.NaN);
+            data.add(m);
+        }
+    }
+
+    public void set(int row, int col, double value) {
+        while (row >= data.size()) {
+            Int2DoubleMap m = new Int2DoubleOpenHashMap();
+            m.defaultReturnValue(Double.NaN);
+            data.add(m);
+        }
+        data.get(row).put(col, value);
+    }
+
+    public double get(int row, int col) {
+        if (row >= data.size()) {
+            return Double.NaN;
+        } else {
+            return data.get(row).get(col);
+        }
+    }
+
+    public Int2DoubleMap row(int row) {
+        if (row >= data.size()) {
+            return Int2DoubleMaps.EMPTY_MAP;
+        } else {
+            return Int2DoubleMaps.unmodifiable(data.get(row));
+        }
+    }
 }

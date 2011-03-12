@@ -26,19 +26,19 @@ import com.google.inject.Inject;
 
 public final class RatingRangeClamp implements DoubleFunction {
 
-	private final double minRating, maxRating;
-	
-	@Inject
-	RatingRangeClamp(@MinRating double min, @MaxRating double max) {
-		minRating = min;
-		maxRating = max;
-	}
-	
-	@Override
-	public double apply(double v) {
-		if (v < minRating) return minRating;
-		else if (v > maxRating) return maxRating;
-		else return v;
-	}
+    private final double minRating, maxRating;
+
+    @Inject
+    RatingRangeClamp(@MinRating double min, @MaxRating double max) {
+        minRating = min;
+        maxRating = max;
+    }
+
+    @Override
+    public double apply(double v) {
+        if (v < minRating) return minRating;
+        else if (v > maxRating) return maxRating;
+        else return v;
+    }
 
 }

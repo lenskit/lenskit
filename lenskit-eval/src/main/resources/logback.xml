@@ -6,7 +6,7 @@
         </encoder>
         <target>System.err</target>
     </appender>
-    
+
     <root level="${logging.level:-INFO}">
         <appender-ref ref="STDERR"/>
     </root>

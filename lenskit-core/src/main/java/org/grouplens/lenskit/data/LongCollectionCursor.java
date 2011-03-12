@@ -21,15 +21,15 @@ package org.grouplens.lenskit.data;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 public class LongCollectionCursor extends LongIteratorCursor {
-	private final int size;
-	
-	public LongCollectionCursor(LongCollection collection) {
-		super(collection.iterator());
-		size = collection.size(); 
-	}
+    private final int size;
 
-	@Override
-	public int getRowCount() {
-		return size;
-	}
+    public LongCollectionCursor(LongCollection collection) {
+        super(collection.iterator());
+        size = collection.size();
+    }
+
+    @Override
+    public int getRowCount() {
+        return size;
+    }
 }

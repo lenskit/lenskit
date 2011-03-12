@@ -38,76 +38,76 @@ import com.google.inject.Provider;
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
  * predictions.
- * 
+ *
  * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
-	protected final double damping;
-	
-	@Inject
-	public ItemUserMeanPredictor(Provider<RatingDataSource> ratingProvider,
-			@MeanDamping double damping) {
-		this(ratingProvider.get(), damping);
-	}
-	
-	public ItemUserMeanPredictor(RatingDataSource ratings) {
-		this(ratings, 0);
-	}
+    protected final double damping;
 
-	public ItemUserMeanPredictor(RatingDataSource ratings, double damping) {
-		super(ratings, damping);
-		this.damping = damping;
-	}
-	
-	/**
-	 * Compute the mean offset in user rating from item mean rating.
-	 * @param ratings the user's rating profile
-	 * @return the mean offset from item mean rating.
-	 */
-	double computeUserAverage(SparseVector ratings) {
-		if (ratings.isEmpty()) return 0;
-		
-		Collection<Double> values = ratings.values();
-		double total = 0;
-		
-		Iterator<Long2DoubleMap.Entry> iter = ratings.fastIterator();
-		while (iter.hasNext()) {
-			Long2DoubleMap.Entry rating = iter.next();
-			double r = rating.getDoubleValue();
-			long iid = rating.getLongKey();
-			total += r - getItemMean(iid);
-		}
-		return total / (values.size() + damping);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
-	 */
-	@Override
-	public MutableSparseVector predict(long user, SparseVector ratings,
-			Collection<Long> items) {
-		double meanOffset = computeUserAverage(ratings);
-		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-		if (!(items instanceof LongSortedSet))
-			Arrays.sort(keys);
-		double[] preds = new double[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			preds[i] = meanOffset + getItemMean(keys[i]);
-		}
-		return MutableSparseVector.wrap(keys, preds);
-	}
+    @Inject
+    public ItemUserMeanPredictor(Provider<RatingDataSource> ratingProvider,
+            @MeanDamping double damping) {
+        this(ratingProvider.get(), damping);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
-	 */
-	@Override
-	public ScoredId predict(long user, SparseVector ratings, long item) {
-		return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
-	}
+    public ItemUserMeanPredictor(RatingDataSource ratings) {
+        this(ratings, 0);
+    }
+
+    public ItemUserMeanPredictor(RatingDataSource ratings, double damping) {
+        super(ratings, damping);
+        this.damping = damping;
+    }
+
+    /**
+     * Compute the mean offset in user rating from item mean rating.
+     * @param ratings the user's rating profile
+     * @return the mean offset from item mean rating.
+     */
+    double computeUserAverage(SparseVector ratings) {
+        if (ratings.isEmpty()) return 0;
+
+        Collection<Double> values = ratings.values();
+        double total = 0;
+
+        Iterator<Long2DoubleMap.Entry> iter = ratings.fastIterator();
+        while (iter.hasNext()) {
+            Long2DoubleMap.Entry rating = iter.next();
+            double r = rating.getDoubleValue();
+            long iid = rating.getLongKey();
+            total += r - getItemMean(iid);
+        }
+        return total / (values.size() + damping);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
+     */
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings,
+            Collection<Long> items) {
+        double meanOffset = computeUserAverage(ratings);
+        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+        if (!(items instanceof LongSortedSet))
+            Arrays.sort(keys);
+        double[] preds = new double[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            preds[i] = meanOffset + getItemMean(keys[i]);
+        }
+        return MutableSparseVector.wrap(keys, preds);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
+     */
+    @Override
+    public ScoredId predict(long user, SparseVector ratings, long item) {
+        return new ScoredId(item, computeUserAverage(ratings) + getItemMean(item));
+    }
 }

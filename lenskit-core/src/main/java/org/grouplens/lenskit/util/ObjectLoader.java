@@ -30,56 +30,56 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ObjectLoader {
-	private static Logger logger = LoggerFactory.getLogger(ObjectLoader.class);
-	
-	public static <T> Class<T> getClass(String name) throws ClassNotFoundException {
-		@SuppressWarnings("unchecked")
-		Class<T> factClass =
-			(Class<T>) Class.forName(name);
-		logger.debug("Loaded class {}", factClass.getName());
-		return factClass;
-	}
-	
-	/**
-	 * Construct a new instance of the class named by <tt>name</tt>.
-	 * @param <T> A supertype of the class to construct.
-	 * @param name The name of the class to construct.
-	 * @return A new instance of the class <tt>name</tt>.
-	 * @throws NoSuchMethodException 
-	 * @throws  
-	 */
-	public static <T> T makeInstance(String name) throws ClassNotFoundException, NoSuchMethodException {
-		try {
-			Class<T> factClass = getClass(name);
-			Constructor<T> ctor = factClass.getConstructor();
-			return ctor.newInstance();
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		}
-	}
-	
-	/**
-	 * Construct a new instance of the class named by <tt>name</tt> with a single
-	 * constructor argument.
-	 * @param <T> A supertype of the class to construct.
-	 * @param name The name of the class to construct.
-	 * @return A new instance of the class <tt>name</tt>.
-	 */
-	public static <T,P> T makeInstance(String name, Class<P> pType, P param) throws ClassNotFoundException, NoSuchMethodException {
-		try {
-			Class<T> factClass = getClass(name);
-			Constructor<T> ctor = factClass.getConstructor(pType);
-			return ctor.newInstance(param);
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException("Invalid recommender fatory", e);
-		}
-	}
+    private static Logger logger = LoggerFactory.getLogger(ObjectLoader.class);
+
+    public static <T> Class<T> getClass(String name) throws ClassNotFoundException {
+        @SuppressWarnings("unchecked")
+        Class<T> factClass =
+            (Class<T>) Class.forName(name);
+        logger.debug("Loaded class {}", factClass.getName());
+        return factClass;
+    }
+
+    /**
+     * Construct a new instance of the class named by <tt>name</tt>.
+     * @param <T> A supertype of the class to construct.
+     * @param name The name of the class to construct.
+     * @return A new instance of the class <tt>name</tt>.
+     * @throws NoSuchMethodException
+     * @throws
+     */
+    public static <T> T makeInstance(String name) throws ClassNotFoundException, NoSuchMethodException {
+        try {
+            Class<T> factClass = getClass(name);
+            Constructor<T> ctor = factClass.getConstructor();
+            return ctor.newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        }
+    }
+
+    /**
+     * Construct a new instance of the class named by <tt>name</tt> with a single
+     * constructor argument.
+     * @param <T> A supertype of the class to construct.
+     * @param name The name of the class to construct.
+     * @return A new instance of the class <tt>name</tt>.
+     */
+    public static <T,P> T makeInstance(String name, Class<P> pType, P param) throws ClassNotFoundException, NoSuchMethodException {
+        try {
+            Class<T> factClass = getClass(name);
+            Constructor<T> ctor = factClass.getConstructor(pType);
+            return ctor.newInstance(param);
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException("Invalid recommender fatory", e);
+        }
+    }
 }

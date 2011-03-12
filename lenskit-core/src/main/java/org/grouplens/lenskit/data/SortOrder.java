@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.data;
 
@@ -26,5 +26,5 @@ package org.grouplens.lenskit.data;
  *
  */
 public enum SortOrder {
-	ANY, TIMESTAMP, USER, ITEM
+    ANY, TIMESTAMP, USER, ITEM
 }

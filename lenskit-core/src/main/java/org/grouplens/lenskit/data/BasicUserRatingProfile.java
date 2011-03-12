@@ -36,59 +36,59 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  */
 @ThreadSafe
 public class BasicUserRatingProfile implements UserRatingProfile {
-	
-	private long user;
-	private Long2ObjectMap<Rating> ratings;
-	private transient SoftReference<SparseVector> vector;
 
-	/**
-	 * Construct a new basic user profile.
-	 * @param user The user ID.
-	 * @param ratings The user's rating collection.
-	 */
-	public BasicUserRatingProfile(long user, Collection<Rating> ratings) {
-		this.user = user;
-		this.ratings = new Long2ObjectOpenHashMap<Rating>();
-		for (Rating r: ratings) {
-			this.ratings.put(r.getItemId(), r);
-		}
-	}
-	
-	/**
-	 * Construct a profile from a map entry.
-	 * @param entry
-	 */
-	public BasicUserRatingProfile(Map.Entry<Long, ? extends Collection<Rating>> entry) {
-		this(entry.getKey(), entry.getValue());
-	}
+    private long user;
+    private Long2ObjectMap<Rating> ratings;
+    private transient SoftReference<SparseVector> vector;
 
-	@Override
-	public double getRating(long item) {
-		Rating r = ratings.get(item);
-		if (r == null)
-			return Double.NaN;
-		else
-			return r.getRating();
-	}
-	
-	@Override
-	public synchronized SparseVector getRatingVector() {
-		SparseVector v = vector != null ? vector.get() : null;
-		if (v == null) {
-			v = Ratings.userRatingVector(getRatings());
-			vector = new SoftReference<SparseVector>(v);
-		}
-		return v;
-	}
+    /**
+     * Construct a new basic user profile.
+     * @param user The user ID.
+     * @param ratings The user's rating collection.
+     */
+    public BasicUserRatingProfile(long user, Collection<Rating> ratings) {
+        this.user = user;
+        this.ratings = new Long2ObjectOpenHashMap<Rating>();
+        for (Rating r: ratings) {
+            this.ratings.put(r.getItemId(), r);
+        }
+    }
 
-	@Override
-	public Collection<Rating> getRatings() {
-		return ratings.values();
-	}
+    /**
+     * Construct a profile from a map entry.
+     * @param entry
+     */
+    public BasicUserRatingProfile(Map.Entry<Long, ? extends Collection<Rating>> entry) {
+        this(entry.getKey(), entry.getValue());
+    }
 
-	@Override
-	public long getUser() {
-		return user;
-	}
+    @Override
+    public double getRating(long item) {
+        Rating r = ratings.get(item);
+        if (r == null)
+            return Double.NaN;
+        else
+            return r.getRating();
+    }
+
+    @Override
+    public synchronized SparseVector getRatingVector() {
+        SparseVector v = vector != null ? vector.get() : null;
+        if (v == null) {
+            v = Ratings.userRatingVector(getRatings());
+            vector = new SoftReference<SparseVector>(v);
+        }
+        return v;
+    }
+
+    @Override
+    public Collection<Rating> getRatings() {
+        return ratings.values();
+    }
+
+    @Override
+    public long getUser() {
+        return user;
+    }
 
 }

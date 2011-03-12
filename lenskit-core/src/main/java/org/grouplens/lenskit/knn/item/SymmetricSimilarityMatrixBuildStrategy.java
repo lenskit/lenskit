@@ -28,40 +28,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class SymmetricSimilarityMatrixBuildStrategy implements
-		SimilarityMatrixBuildStrategy {
-	private final static Logger logger = LoggerFactory.getLogger(SymmetricSimilarityMatrixBuildStrategy.class);
-	
-	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final Similarity<? super SparseVector> similarityFunction;
-	
-	SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
-		this.matrixFactory = matrixFactory;
-		this.similarityFunction = similarity;
-	}
+        SimilarityMatrixBuildStrategy {
+    private final static Logger logger = LoggerFactory.getLogger(SymmetricSimilarityMatrixBuildStrategy.class);
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-	 */
-	@Override
-	public SimilarityMatrix buildMatrix(BuildState state) {
-		final int nitems = state.itemCount;
-		logger.debug("Building matrix with {} rows");
-		SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
-		for (int i = 0; i < nitems; i++) {
-			for (int j = i+1; j < nitems; j++) {
-				double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-				builder.putSymmetric(i, j, sim);
-			}
-		}
-		return builder.build();
-	}
+    private final SimilarityMatrixBuilderFactory matrixFactory;
+    private final Similarity<? super SparseVector> similarityFunction;
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
-	 */
-	@Override
-	public boolean needsUserItemSets() {
-		return false;
-	}
+    SymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
+        this.matrixFactory = matrixFactory;
+        this.similarityFunction = similarity;
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
+     */
+    @Override
+    public SimilarityMatrix buildMatrix(BuildState state) {
+        final int nitems = state.itemCount;
+        logger.debug("Building matrix with {} rows");
+        SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
+        for (int i = 0; i < nitems; i++) {
+            for (int j = i+1; j < nitems; j++) {
+                double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
+                builder.putSymmetric(i, j, sim);
+            }
+        }
+        return builder.build();
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
+     */
+    @Override
+    public boolean needsUserItemSets() {
+        return false;
+    }
 
 }

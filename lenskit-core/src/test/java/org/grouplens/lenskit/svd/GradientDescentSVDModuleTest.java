@@ -47,140 +47,140 @@ import com.google.inject.Module;
  *
  */
 public class GradientDescentSVDModuleTest extends RecommenderModuleTest {
-	private static final double EPSILON = 1.0e-6;
-	private GradientDescentSVDModule module;
+    private static final double EPSILON = 1.0e-6;
+    private GradientDescentSVDModule module;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		module = new GradientDescentSVDModule();
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        module = new GradientDescentSVDModule();
+    }
 
-	protected Module getModule() {
-		return module;
-	}
+    protected Module getModule() {
+        return module;
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getFeatureCount()}.
-	 */
-	@Test
-	public void testGetFeatureCount() {
-		assertEquals(Parameters.getDefaultInt(FeatureCount.class), module.getFeatureCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getFeatureCount()}.
+     */
+    @Test
+    public void testGetFeatureCount() {
+        assertEquals(Parameters.getDefaultInt(FeatureCount.class), module.getFeatureCount());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setFeatureCount(int)}.
-	 */
-	@Test
-	public void testSetFeatureCount() {
-		module.setFeatureCount(10);
-		assertEquals(10, module.getFeatureCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setFeatureCount(int)}.
+     */
+    @Test
+    public void testSetFeatureCount() {
+        module.setFeatureCount(10);
+        assertEquals(10, module.getFeatureCount());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getLearningRate()}.
-	 */
-	@Test
-	public void testGetLearningRate() {
-		assertEquals(Parameters.getDefaultDouble(LearningRate.class), module.getLearningRate(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getLearningRate()}.
+     */
+    @Test
+    public void testGetLearningRate() {
+        assertEquals(Parameters.getDefaultDouble(LearningRate.class), module.getLearningRate(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setLearningRate(double)}.
-	 */
-	@Test
-	public void testSetLearningRate() {
-		module.setLearningRate(0.5);
-		assertEquals(0.5, module.getLearningRate(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setLearningRate(double)}.
+     */
+    @Test
+    public void testSetLearningRate() {
+        module.setLearningRate(0.5);
+        assertEquals(0.5, module.getLearningRate(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getFeatureTrainingThreshold()}.
-	 */
-	@Test
-	public void testGetFeatureTrainingThreshold() {
-		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), module.getFeatureTrainingThreshold(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getFeatureTrainingThreshold()}.
+     */
+    @Test
+    public void testGetFeatureTrainingThreshold() {
+        assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), module.getFeatureTrainingThreshold(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setFeatureTrainingThreshold(double)}.
-	 */
-	@Test
-	public void testSetFeatureTrainingThreshold() {
-		module.setFeatureTrainingThreshold(1);
-		assertEquals(1, module.getFeatureTrainingThreshold(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setFeatureTrainingThreshold(double)}.
+     */
+    @Test
+    public void testSetFeatureTrainingThreshold() {
+        module.setFeatureTrainingThreshold(1);
+        assertEquals(1, module.getFeatureTrainingThreshold(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getGradientDescentRegularization()}.
-	 */
-	@Test
-	public void testGetGradientDescentRegularization() {
-		assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), module.getGradientDescentRegularization(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getGradientDescentRegularization()}.
+     */
+    @Test
+    public void testGetGradientDescentRegularization() {
+        assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), module.getGradientDescentRegularization(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setGradientDescentRegularization(double)}.
-	 */
-	@Test
-	public void testSetGradientDescentRegularization() {
-		module.setGradientDescentRegularization(1);
-		assertEquals(1, module.getGradientDescentRegularization(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setGradientDescentRegularization(double)}.
+     */
+    @Test
+    public void testSetGradientDescentRegularization() {
+        module.setGradientDescentRegularization(1);
+        assertEquals(1, module.getGradientDescentRegularization(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getIterationCount()}.
-	 */
-	@Test
-	public void testGetIterationCount() {
-		assertEquals(Parameters.getDefaultInt(IterationCount.class), module.getIterationCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getIterationCount()}.
+     */
+    @Test
+    public void testGetIterationCount() {
+        assertEquals(Parameters.getDefaultInt(IterationCount.class), module.getIterationCount());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setIterationCount(double)}.
-	 */
-	@Test
-	public void testSetIterationCount() {
-		module.setIterationCount(120);
-		assertEquals(120, module.getIterationCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setIterationCount(double)}.
+     */
+    @Test
+    public void testSetIterationCount() {
+        module.setIterationCount(120);
+        assertEquals(120, module.getIterationCount());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getClampingFunction()}.
-	 */
-	@Test
-	public void testGetClampingFunction() {
-		assertThat(module.getClampingFunction(), isAssignableTo(DoubleFunction.Identity.class));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#getClampingFunction()}.
+     */
+    @Test
+    public void testGetClampingFunction() {
+        assertThat(module.getClampingFunction(), isAssignableTo(DoubleFunction.Identity.class));
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setClampingFunction(java.lang.Class)}.
-	 */
-	@Test
-	public void testSetClampingFunction() {
-		module.setClampingFunction(RatingRangeClamp.class);
-		DoubleFunction clamp = inject(Key.get(DoubleFunction.class, ClampingFunction.class));
-		assertThat(clamp, instanceOf(RatingRangeClamp.class));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.svd.GradientDescentSVDModule#setClampingFunction(java.lang.Class)}.
+     */
+    @Test
+    public void testSetClampingFunction() {
+        module.setClampingFunction(RatingRangeClamp.class);
+        DoubleFunction clamp = inject(Key.get(DoubleFunction.class, ClampingFunction.class));
+        assertThat(clamp, instanceOf(RatingRangeClamp.class));
+    }
 
-	@Test
-	public void testDefaultInject() {
-		module.core.setBaseline(ConstantPredictor.class);
-		module.core.setConstantBaselineValue(3);
-		GradientDescentSVDRecommenderBuilder builder =
-			inject(Key.get(GradientDescentSVDRecommenderBuilder.class));
-		assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
-		GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
-		assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);
-		assertEquals(Parameters.getDefaultDouble(LearningRate.class), b.learningRate, EPSILON);
-		assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), b.trainingRegularization, EPSILON);
-		assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), b.trainingThreshold, EPSILON);
-		assertEquals(Parameters.getDefaultInt(IterationCount.class), b.iterationCount);
-		assertThat(b.clampingFunction, instanceOf(DoubleFunction.Identity.class));
-		RatingPredictor baseline = inject(Key.get(RatingPredictor.class, BaselinePredictor.class));
-		assertNotNull(baseline);
-		assertThat(baseline, instanceOf(ConstantPredictor.class));
-	}
+    @Test
+    public void testDefaultInject() {
+        module.core.setBaseline(ConstantPredictor.class);
+        module.core.setConstantBaselineValue(3);
+        GradientDescentSVDRecommenderBuilder builder =
+            inject(Key.get(GradientDescentSVDRecommenderBuilder.class));
+        assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
+        GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
+        assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);
+        assertEquals(Parameters.getDefaultDouble(LearningRate.class), b.learningRate, EPSILON);
+        assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), b.trainingRegularization, EPSILON);
+        assertEquals(Parameters.getDefaultDouble(FeatureTrainingThreshold.class), b.trainingThreshold, EPSILON);
+        assertEquals(Parameters.getDefaultInt(IterationCount.class), b.iterationCount);
+        assertThat(b.clampingFunction, instanceOf(DoubleFunction.Identity.class));
+        RatingPredictor baseline = inject(Key.get(RatingPredictor.class, BaselinePredictor.class));
+        assertNotNull(baseline);
+        assertThat(baseline, instanceOf(ConstantPredictor.class));
+    }
 }

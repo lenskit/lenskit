@@ -46,62 +46,62 @@ import com.google.inject.throwingproviders.ThrowingProviderBinder;
  *
  */
 public class ItemRecommenderModule extends RecommenderModule {
-	/**
-	 * Neighborhood recommender parameters.
-	 */
-	public final NeighborhoodRecommenderModule knn;
+    /**
+     * Neighborhood recommender parameters.
+     */
+    public final NeighborhoodRecommenderModule knn;
 
-	public ItemRecommenderModule() {
-		knn = new NeighborhoodRecommenderModule();
-	}
+    public ItemRecommenderModule() {
+        knn = new NeighborhoodRecommenderModule();
+    }
 
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		knn.setName(name);
-	}
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        knn.setName(name);
+    }
 
-	@Override
-	protected void configure() {
-		super.configure();
-		install(ThrowingProviderBinder.forModule(this));
-		install(knn);
-		configureSimilarityMatrix();
-	}
+    @Override
+    protected void configure() {
+        super.configure();
+        install(ThrowingProviderBinder.forModule(this));
+        install(knn);
+        configureSimilarityMatrix();
+    }
 
-	/**
-	 *
-	 */
-	protected void configureSimilarityMatrix() {
-		bind(SimilarityMatrixBuilderFactory.class).toProvider(
-				FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
-						TruncatingSimilarityMatrixBuilder.class));
-	}
+    /**
+     *
+     */
+    protected void configureSimilarityMatrix() {
+        bind(SimilarityMatrixBuilderFactory.class).toProvider(
+                FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
+                        TruncatingSimilarityMatrixBuilder.class));
+    }
 
-	@CheckedProvides(RecommenderServiceProvider.class)
-	@Singleton
-	public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-			RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
-		return builder.build(data, baseline);
-	}
+    @CheckedProvides(RecommenderServiceProvider.class)
+    @Singleton
+    public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
+            RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+        return builder.build(data, baseline);
+    }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Provides
-	protected SimilarityMatrixBuildStrategy buildStrategy(
-			SimilarityMatrixBuilderFactory matrixFactory,
-			@ItemSimilarity Similarity<? super SparseVector> similarity) {
-		if (similarity instanceof OptimizableVectorSimilarity) {
-			if (similarity instanceof SymmetricBinaryFunction)
-				return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,
-						(OptimizableVectorSimilarity) similarity);
-			else
-				return new OptimizedSimilarityMatrixBuildStrategy(matrixFactory,
-						(OptimizableVectorSimilarity) similarity);
-		} else {
-			if (similarity instanceof SymmetricBinaryFunction)
-				return new SymmetricSimilarityMatrixBuildStrategy(matrixFactory, similarity);
-			else
-				return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
-		}
-	}
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Provides
+    protected SimilarityMatrixBuildStrategy buildStrategy(
+            SimilarityMatrixBuilderFactory matrixFactory,
+            @ItemSimilarity Similarity<? super SparseVector> similarity) {
+        if (similarity instanceof OptimizableVectorSimilarity) {
+            if (similarity instanceof SymmetricBinaryFunction)
+                return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,
+                        (OptimizableVectorSimilarity) similarity);
+            else
+                return new OptimizedSimilarityMatrixBuildStrategy(matrixFactory,
+                        (OptimizableVectorSimilarity) similarity);
+        } else {
+            if (similarity instanceof SymmetricBinaryFunction)
+                return new SymmetricSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+            else
+                return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+        }
+    }
 }

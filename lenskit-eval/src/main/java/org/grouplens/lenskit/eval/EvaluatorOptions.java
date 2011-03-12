@@ -27,34 +27,34 @@ import uk.co.flamingpenguin.jewel.cli.Unparsed;
 /**
  * Interface for JewelCLI declaring the command line options taken by
  * EvaluationRunner.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 interface EvaluatorOptions extends CrossfoldOptions {
-	/**
-	 * @return The field separator in the data file.
-	 */
-	@Option(longName = "delimiter", shortName = "d", defaultValue = "\t")
-	String getDelimiter();
+    /**
+     * @return The field separator in the data file.
+     */
+    @Option(longName = "delimiter", shortName = "d", defaultValue = "\t")
+    String getDelimiter();
 
-	@Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
-	File getInputFile();
-	
-	@Option(longName="preload", shortName="p",
-			description="Load all ratings into memory once")
-	boolean preloadData();
-	
-	@Option(longName="output-file", shortName="o", defaultValue="")
-	File getOutputFile();
-	
-	@Option(longName="graph-module", shortName="G",
-			description="Produce DOT graph of recommender rather than benchmark")
-	boolean getGraphMode();
-	
-	@Unparsed(name="FILES")
-	List<File> getRecommenderSpecs();
+    @Option(longName="input-file", shortName="i", defaultValue="ratings.dat")
+    File getInputFile();
 
-	@Option(helpRequest = true)
-	boolean getHelp();
+    @Option(longName="preload", shortName="p",
+            description="Load all ratings into memory once")
+    boolean preloadData();
+
+    @Option(longName="output-file", shortName="o", defaultValue="")
+    File getOutputFile();
+
+    @Option(longName="graph-module", shortName="G",
+            description="Produce DOT graph of recommender rather than benchmark")
+    boolean getGraphMode();
+
+    @Unparsed(name="FILES")
+    List<File> getRecommenderSpecs();
+
+    @Option(helpRequest = true)
+    boolean getHelp();
 }

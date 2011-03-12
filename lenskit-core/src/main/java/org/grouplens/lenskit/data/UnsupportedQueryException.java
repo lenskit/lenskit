@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.data;
 
@@ -27,13 +27,13 @@ package org.grouplens.lenskit.data;
  *
  */
 public class UnsupportedQueryException extends IllegalArgumentException {
-	private static final long serialVersionUID = -1340119072527578247L;
+    private static final long serialVersionUID = -1340119072527578247L;
 
-	public UnsupportedQueryException() {
-	}
+    public UnsupportedQueryException() {
+    }
 
-	public UnsupportedQueryException(String message) {
-		super(message);
-	}
+    public UnsupportedQueryException(String message) {
+        super(message);
+    }
 
 }

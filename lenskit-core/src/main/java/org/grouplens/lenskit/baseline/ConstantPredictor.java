@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.baseline;
 
@@ -47,57 +47,57 @@ import com.google.inject.Inject;
  *
  */
 public class ConstantPredictor implements RatingPredictor {
-	private final double value;
-	
-	/**
-	 * Annotation for value parameters to the recommender.
-	 * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-	 *
-	 */
-	@BindingAnnotation
-	@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-	@Retention(RetentionPolicy.RUNTIME)
-	@Parameter
-	@DefaultDouble(0)
-	public static @interface Value {
-	}
-	
-	/**
-	 * Construct a rating vector with the same rating for all items.
-	 * @param items The items to include in the vector.
-	 * @param value The rating/prediction to give.
-	 * @return A rating vector mapping all items in <var>items</var> to
-	 * <var>value</var>.
-	 */
-	public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
-		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-		if (!(items instanceof LongSortedSet))
-			Arrays.sort(keys);
-		double[] preds = new double[keys.length];
-		Arrays.fill(preds, value);
-		return MutableSparseVector.wrap(keys, preds);
-	}
-	
-	/**
-	 * Construct a new constant predictor.  This is exposed so other code
-	 * can use it as a fallback.
-	 * @param value
-	 */
-	@Inject
-	public ConstantPredictor(@Value double value) {
-		this.value = value;
-	}
-	
-	@Override
-	public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-		return constantPredictions(items, value);
-	}
+    private final double value;
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
-	 */
-	@Override
-	public ScoredId predict(long user, SparseVector profile, long item) {
-		return new ScoredId(item, value);
-	}
+    /**
+     * Annotation for value parameters to the recommender.
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     *
+     */
+    @BindingAnnotation
+    @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Parameter
+    @DefaultDouble(0)
+    public static @interface Value {
+    }
+
+    /**
+     * Construct a rating vector with the same rating for all items.
+     * @param items The items to include in the vector.
+     * @param value The rating/prediction to give.
+     * @return A rating vector mapping all items in <var>items</var> to
+     * <var>value</var>.
+     */
+    public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
+        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+        if (!(items instanceof LongSortedSet))
+            Arrays.sort(keys);
+        double[] preds = new double[keys.length];
+        Arrays.fill(preds, value);
+        return MutableSparseVector.wrap(keys, preds);
+    }
+
+    /**
+     * Construct a new constant predictor.  This is exposed so other code
+     * can use it as a fallback.
+     * @param value
+     */
+    @Inject
+    public ConstantPredictor(@Value double value) {
+        this.value = value;
+    }
+
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+        return constantPredictions(items, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
+     */
+    @Override
+    public ScoredId predict(long user, SparseVector profile, long item) {
+        return new ScoredId(item, value);
+    }
 }

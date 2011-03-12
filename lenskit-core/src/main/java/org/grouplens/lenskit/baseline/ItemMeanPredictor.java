@@ -59,126 +59,126 @@ import com.google.inject.Provider;
  *
  */
 public class ItemMeanPredictor implements RatingPredictor {
-	private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
-	private final Long2DoubleMap itemMeans;
-	protected final double globalMean;
+    private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
+    private final Long2DoubleMap itemMeans;
+    protected final double globalMean;
 
-	/**
-	 * Construct a new predictor with a damping of 0.
-	 * @param ratings The rating data.
-	 */
-	public ItemMeanPredictor(RatingDataSource ratings) {
-		this(ratings, 0);
-	}
+    /**
+     * Construct a new predictor with a damping of 0.
+     * @param ratings The rating data.
+     */
+    public ItemMeanPredictor(RatingDataSource ratings) {
+        this(ratings, 0);
+    }
 
-	/**
-	 * Construct a new predictor.
-	 * @param ratings The rating data.
-	 * @param damping The damping factor (see
-	 * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
-	 */
-	public ItemMeanPredictor(RatingDataSource ratings, double damping) {
-		itemMeans = new Long2DoubleOpenHashMap();
-		globalMean = computeItemAverages(ratings, damping, itemMeans);
-	}
+    /**
+     * Construct a new predictor.
+     * @param ratings The rating data.
+     * @param damping The damping factor (see
+     * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
+     */
+    public ItemMeanPredictor(RatingDataSource ratings, double damping) {
+        itemMeans = new Long2DoubleOpenHashMap();
+        globalMean = computeItemAverages(ratings, damping, itemMeans);
+    }
 
-	/**
-	 * Injectable constructor taking a provider.
-	 */
-	@Inject
-	public ItemMeanPredictor(Provider<RatingDataSource> ratingProvider, @MeanDamping double damping) {
-		this(ratingProvider.get(), damping);
-	}
+    /**
+     * Injectable constructor taking a provider.
+     */
+    @Inject
+    public ItemMeanPredictor(Provider<RatingDataSource> ratingProvider, @MeanDamping double damping) {
+        this(ratingProvider.get(), damping);
+    }
 
-	/**
-	 * Compute item averages from a rating data source.  Used to construct
-	 * predictors that need this data.
-	 *
-	 * <p>This method's interface is a little weird, using an output parameter
-	 * and returning the global mean, so that we can compute the global mean
-	 * and the item means in a single pass through the data source.
-	 *
-	 * <p>The mean damping factor is used to bias the item means towards the
-	 * global mean.  For a damping factor `D` and global mean `µ`, the item mean
-	 * is computed as `(\sum_{u \in 𝓤_i}r_{u,i} + D)/(|𝓤_i|+D\mu)`.  See
-	 * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
-	 * Try This at Home</a> by Simon Funk for documentation of this enhancement.
-	 *
-	 * @param data The data source to compute item averages from.
-	 * @param damping The mean damping factor.
-	 * @param itemMeans A map in which the means should be stored.
-	 * @return The global mean rating.  The item means are stored in
-	 * <var>itemMeans</var>.
-	 */
-	public static double computeItemAverages(RatingDataSource data, double damping, Long2DoubleMap itemMeans) {
-		// We iterate the loop to compute the global and per-item mean
-		// ratings.  Subtracting the global mean from each per-item mean
-		// is equivalent to averaging the offsets from the global mean, so
-		// we can compute the means in parallel and subtract after a single
-		// pass through the data.
-		double total = 0.0;
-		int count = 0;
-		itemMeans.defaultReturnValue(0.0);
-		Long2IntMap itemCounts = new Long2IntOpenHashMap();
-		itemCounts.defaultReturnValue(0);
+    /**
+     * Compute item averages from a rating data source.  Used to construct
+     * predictors that need this data.
+     *
+     * <p>This method's interface is a little weird, using an output parameter
+     * and returning the global mean, so that we can compute the global mean
+     * and the item means in a single pass through the data source.
+     *
+     * <p>The mean damping factor is used to bias the item means towards the
+     * global mean.  For a damping factor `D` and global mean `µ`, the item mean
+     * is computed as `(\sum_{u \in 𝓤_i}r_{u,i} + D)/(|𝓤_i|+D\mu)`.  See
+     * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
+     * Try This at Home</a> by Simon Funk for documentation of this enhancement.
+     *
+     * @param data The data source to compute item averages from.
+     * @param damping The mean damping factor.
+     * @param itemMeans A map in which the means should be stored.
+     * @return The global mean rating.  The item means are stored in
+     * <var>itemMeans</var>.
+     */
+    public static double computeItemAverages(RatingDataSource data, double damping, Long2DoubleMap itemMeans) {
+        // We iterate the loop to compute the global and per-item mean
+        // ratings.  Subtracting the global mean from each per-item mean
+        // is equivalent to averaging the offsets from the global mean, so
+        // we can compute the means in parallel and subtract after a single
+        // pass through the data.
+        double total = 0.0;
+        int count = 0;
+        itemMeans.defaultReturnValue(0.0);
+        Long2IntMap itemCounts = new Long2IntOpenHashMap();
+        itemCounts.defaultReturnValue(0);
 
-		Cursor<Rating> ratings = data.getRatings();
-		try {
-			for (Rating r: ratings) {
-				long i = r.getItemId();
-				double v = r.getRating();
-				total += v;
-				count++;
-				itemMeans.put(i, v + itemMeans.get(i));
-				itemCounts.put(i, 1 + itemCounts.get(i));
-			}
-		} finally {
-			ratings.close();
-		}
+        Cursor<Rating> ratings = data.getRatings();
+        try {
+            for (Rating r: ratings) {
+                long i = r.getItemId();
+                double v = r.getRating();
+                total += v;
+                count++;
+                itemMeans.put(i, v + itemMeans.get(i));
+                itemCounts.put(i, 1 + itemCounts.get(i));
+            }
+        } finally {
+            ratings.close();
+        }
 
-		final double mean = count > 0 ? total / count : 0;
-		logger.debug("Computed global mean {} for {} items",
-				mean, itemMeans.size());
+        final double mean = count > 0 ? total / count : 0;
+        logger.debug("Computed global mean {} for {} items",
+                mean, itemMeans.size());
 
-		logger.debug("Computing item means, damping={}", damping);
+        logger.debug("Computing item means, damping={}", damping);
 
-		LongIterator items = itemCounts.keySet().iterator();
-		while (items.hasNext()) {
-			long iid = items.nextLong();
-			double ct = itemCounts.get(iid) + damping;
-			double t = itemMeans.get(iid) + damping * mean;
-			double avg = 0.0;
-			if (ct > 0) avg = t / ct - mean;
-			itemMeans.put(iid, avg);
-		}
-		return mean;
-	}
+        LongIterator items = itemCounts.keySet().iterator();
+        while (items.hasNext()) {
+            long iid = items.nextLong();
+            double ct = itemCounts.get(iid) + damping;
+            double t = itemMeans.get(iid) + damping * mean;
+            double avg = 0.0;
+            if (ct > 0) avg = t / ct - mean;
+            itemMeans.put(iid, avg);
+        }
+        return mean;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
-	 */
-	@Override
-	public MutableSparseVector predict(long user, SparseVector ratings,
-			Collection<Long> items) {
-		long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-		if (!(items instanceof LongSortedSet))
-			Arrays.sort(keys);
-		double[] preds = new double[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			preds[i] = getItemMean(keys[i]);
-		}
-		return MutableSparseVector.wrap(keys, preds);
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
+     */
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings,
+            Collection<Long> items) {
+        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
+        if (!(items instanceof LongSortedSet))
+            Arrays.sort(keys);
+        double[] preds = new double[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            preds[i] = getItemMean(keys[i]);
+        }
+        return MutableSparseVector.wrap(keys, preds);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
-	 */
-	@Override
-	public ScoredId predict(long user, SparseVector ratings, long item) {
-		return new ScoredId(item, getItemMean(item));
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
+     */
+    @Override
+    public ScoredId predict(long user, SparseVector ratings, long item) {
+        return new ScoredId(item, getItemMean(item));
+    }
 
-	protected double getItemMean(long id) {
-		return globalMean + itemMeans.get(id);
-	}
+    protected double getItemMean(long id) {
+        return globalMean + itemMeans.get(id);
+    }
 }

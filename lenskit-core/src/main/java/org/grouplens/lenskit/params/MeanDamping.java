@@ -30,7 +30,7 @@ import com.google.inject.BindingAnnotation;
 
 /**
  * Parameter to damp means as recommended by Simon Funk.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

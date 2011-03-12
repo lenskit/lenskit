@@ -19,6 +19,6 @@
 package org.grouplens.lenskit.util;
 
 public interface IndexedItemScore {
-	public int getIndex();
-	public double getScore();
+    public int getIndex();
+    public double getScore();
 }

@@ -18,11 +18,11 @@
  */
 /**
  * Utilities for formatting and writing tabular output.
- * 
+ *
  * <p>This package provides the Table Writer framework, a mechanism for writing
- * tabular output such as CSV files.  It's used by the benchmarking code to 
+ * tabular output such as CSV files.  It's used by the benchmarking code to
  * provide its output.</p>
- * 
+ *
  * The table writer framework consists of two primary interfaces:
  * {@link TableWriterBuilder} is used to set
  * up the format of a table (e.g. the number and titles of the columns).  Once

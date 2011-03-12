@@ -107,41 +107,41 @@
           <version>2.2</version>
         </plugin>
         <plugin>
-        	<groupId>org.apache.maven.plugins</groupId>
-        	<artifactId>maven-jar-plugin</artifactId>
-        	<version>2.3.1</version>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
         </plugin>
         <plugin>
-        	<groupId>org.codehaus.mojo</groupId>
-        	<artifactId>build-helper-maven-plugin</artifactId>
-        	<version>1.5</version>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.5</version>
         </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
-      	<groupId>com.mycila.maven-license-plugin</groupId>
-      	<artifactId>maven-license-plugin</artifactId>
-      	<version>1.9.0</version>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>1.9.0</version>
         <inherited>false</inherited>
-      	<configuration>
-      	  <basedir>${basedir}</basedir>
-      	  <header>${basedir}/etc/header.txt</header>
-      	  <validHeaders>
-      	    <validHeader>${basedir}/etc/mit-header.txt</validHeader>
-      	  </validHeaders>
-      	  <aggregate>true</aggregate>
-      	  <strictCheck>true</strictCheck>
-      	  <includes>
-      	    <include>*/src/**/*.java</include>
-      	  </includes>
+        <configuration>
+          <basedir>${basedir}</basedir>
+          <header>${basedir}/etc/header.txt</header>
+          <validHeaders>
+            <validHeader>${basedir}/etc/mit-header.txt</validHeader>
+          </validHeaders>
+          <aggregate>true</aggregate>
+          <strictCheck>true</strictCheck>
+          <includes>
+            <include>*/src/**/*.java</include>
+          </includes>
           <!-- <excludes>
-      	    <exclude>reflens-core/src/main/java/org/grouplens/reflens/util/TypeUtils.java</exclude>
-      	  </excludes> -->
-      	  <mapping>
-      	    <java>SLASHSTAR_STYLE</java>
-      	  </mapping>
-      	</configuration>
+            <exclude>reflens-core/src/main/java/org/grouplens/reflens/util/TypeUtils.java</exclude>
+          </excludes> -->
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+          </mapping>
+        </configuration>
         <executions>
           <execution>
             <id>check-headers</id>
@@ -188,88 +188,88 @@
         <type>jar</type>
       </dependency>
       <dependency>
-      	<groupId>com.google.inject</groupId>
-      	<artifactId>guice</artifactId>
-      	<version>3.0-rc2</version>
-      	<type>jar</type>
-      	<scope>compile</scope>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>3.0-rc2</version>
+        <type>jar</type>
+        <scope>compile</scope>
       </dependency>
       <dependency>
-      	<groupId>com.google.inject.extensions</groupId>
-      	<artifactId>guice-assistedinject</artifactId>
-      	<version>3.0-rc2</version>
-      	<type>jar</type>
-      	<scope>compile</scope>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-assistedinject</artifactId>
+        <version>3.0-rc2</version>
+        <type>jar</type>
+        <scope>compile</scope>
       </dependency>
       <dependency>
-      	<groupId>com.google.guava</groupId>
-      	<artifactId>guava</artifactId>
-      	<version>r08</version>
-      	<type>jar</type>
-      	<scope>compile</scope>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>r08</version>
+        <type>jar</type>
+        <scope>compile</scope>
       </dependency>
       <dependency>
-      	<groupId>com.google.code.findbugs</groupId>
-      	<artifactId>jsr305</artifactId>
-      	<version>1.3.9</version>
-      	<type>jar</type>
-      	<scope>compile</scope>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>1.3.9</version>
+        <type>jar</type>
+        <scope>compile</scope>
       </dependency>
       <dependency>
-      	<groupId>it.unimi.dsi</groupId>
-      	<artifactId>fastutil</artifactId>
-      	<version>6.1.0</version>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>6.1.0</version>
       </dependency>
       <dependency>
-      	<groupId>org.grouplens.common</groupId>
-      	<artifactId>common-core</artifactId>
-      	<version>0.1</version>
+        <groupId>org.grouplens.common</groupId>
+        <artifactId>common-core</artifactId>
+        <version>0.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-api</artifactId>
-    	<scope>compile</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
-    	<scope>test</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.slf4j</groupId>
-    	<artifactId>slf4j-nop</artifactId>
-    	<scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.grouplens.common</groupId>
-    	<artifactId>common-test</artifactId>
-    	<scope>test</scope>
+      <groupId>org.grouplens.common</groupId>
+      <artifactId>common-test</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>com.google.code.findbugs</groupId>
-    	<artifactId>jsr305</artifactId>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
     </dependency>
   </dependencies>
 
   <reporting>
     <plugins>
       <plugin>
-  	<groupId>org.apache.maven.plugins</groupId>
-  	<artifactId>maven-project-info-reports-plugin</artifactId>
-  	<version>2.3.1</version>
-  	<reportSets>
-  	  <reportSet>
-  	    <id>main</id>
-  	      	<reports>
-  	          <report>dependencies</report>
-  	          <report>dependency-convergence</report>
-  	          <report>dependency-management</report>
-  	      	</reports>
-  	  </reportSet>
-  	</reportSets>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-project-info-reports-plugin</artifactId>
+    <version>2.3.1</version>
+    <reportSets>
+      <reportSet>
+        <id>main</id>
+            <reports>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+              <report>dependency-management</report>
+            </reports>
+      </reportSet>
+    </reportSets>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -398,8 +398,8 @@
       <build>
         <plugins>
           <plugin>
-      	    <groupId>org.codehaus.mojo</groupId>
-      	    <artifactId>findbugs-maven-plugin</artifactId>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
             <executions>
               <execution>
                 <id>lint</id>
@@ -416,9 +416,9 @@
       <reporting>
         <plugins>
           <plugin>
-      	    <groupId>org.codehaus.mojo</groupId>
-      	    <artifactId>findbugs-maven-plugin</artifactId>
-      	    <version>2.3.1</version>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.3.1</version>
           </plugin>
         </plugins>
       </reporting>

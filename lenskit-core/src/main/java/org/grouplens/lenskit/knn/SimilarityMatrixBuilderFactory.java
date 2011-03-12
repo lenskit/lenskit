@@ -23,5 +23,5 @@ package org.grouplens.lenskit.knn;
  *
  */
 public interface SimilarityMatrixBuilderFactory {
-	public SimilarityMatrixBuilder create(int nrows);
+    public SimilarityMatrixBuilder create(int nrows);
 }

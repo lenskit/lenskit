@@ -42,23 +42,23 @@ import com.google.inject.Provides;
  *
  */
 public abstract class RecommenderModuleTest {
-	/**
-	 * Method to get the current recommender module under test.
-	 * @return The module to be used, in conjunction with an empty rating set,
-	 * for testing.
-	 */
-	protected abstract Module getModule();
+    /**
+     * Method to get the current recommender module under test.
+     * @return The module to be used, in conjunction with an empty rating set,
+     * for testing.
+     */
+    protected abstract Module getModule();
 
-	protected <T> T inject(Key<T> key) {
-		Injector injector = Guice.createInjector(new AbstractModule() {
-			protected void configure() {
-			}
-			@SuppressWarnings("unused")
-			@Provides public RatingDataSource provideDataSource() {
-				Collection<Rating> ratings = Collections.emptyList();
-				return new RatingCollectionDataSource(ratings);
-			}
-		}, getModule());
-		return injector.getInstance(key);
-	}
+    protected <T> T inject(Key<T> key) {
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+            }
+            @SuppressWarnings("unused")
+            @Provides public RatingDataSource provideDataSource() {
+                Collection<Rating> ratings = Collections.emptyList();
+                return new RatingCollectionDataSource(ratings);
+            }
+        }, getModule());
+        return injector.getInstance(key);
+    }
 }

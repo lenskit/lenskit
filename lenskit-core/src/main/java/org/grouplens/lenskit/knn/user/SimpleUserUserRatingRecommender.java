@@ -45,72 +45,72 @@ import com.google.inject.Inject;
  *
  */
 public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecommender {
-	private final RatingDataSource dataSource;
-	private final int neighborhoodSize;
-	private final Similarity<? super SparseVector> similarity;
+    private final RatingDataSource dataSource;
+    private final int neighborhoodSize;
+    private final Similarity<? super SparseVector> similarity;
 
-	/**
-	 * Construct a new user-user recommender.
-	 * @param data The data source to scan.
-	 * @param nnbrs The number of neighbors to consider for each item.
-	 * @param similarity The similarity function to use.
-	 */
-	@Inject
-	SimpleUserUserRatingRecommender(@WillNotClose RatingDataSource data,
-			@NeighborhoodSize int nnbrs,
-			@UserSimilarity Similarity<? super SparseVector> similarity) {
-		dataSource = data;
-		neighborhoodSize = nnbrs;
-		this.similarity = similarity;
-	}
+    /**
+     * Construct a new user-user recommender.
+     * @param data The data source to scan.
+     * @param nnbrs The number of neighbors to consider for each item.
+     * @param similarity The similarity function to use.
+     */
+    @Inject
+    SimpleUserUserRatingRecommender(@WillNotClose RatingDataSource data,
+            @NeighborhoodSize int nnbrs,
+            @UserSimilarity Similarity<? super SparseVector> similarity) {
+        dataSource = data;
+        neighborhoodSize = nnbrs;
+        this.similarity = similarity;
+    }
 
-	/**
-	 * Find the neighbors for a user with respect to a collection of items.
-	 * For each item, the <var>neighborhoodSize</var> users closest to the
-	 * provided user are returned.
-	 *
-	 * @param uid The user ID.
-	 * @param ratings The user's ratings vector.
-	 * @param items The items for which neighborhoods are requested.
-	 * @return A mapping of item IDs to neighborhoods.
-	 */
-	@Override
-	protected Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
-		Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
-			new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
-		final Comparator<Neighbor> comp = new NeighborSimComparator();
+    /**
+     * Find the neighbors for a user with respect to a collection of items.
+     * For each item, the <var>neighborhoodSize</var> users closest to the
+     * provided user are returned.
+     *
+     * @param uid The user ID.
+     * @param ratings The user's ratings vector.
+     * @param items The items for which neighborhoods are requested.
+     * @return A mapping of item IDs to neighborhoods.
+     */
+    @Override
+    protected Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
+        Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
+            new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
+        final Comparator<Neighbor> comp = new NeighborSimComparator();
 
-		Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
+        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
 
-		try {
-			for (UserRatingProfile user: users) {
-				if (user.getUser() == uid) continue;
+        try {
+            for (UserRatingProfile user: users) {
+                if (user.getUser() == uid) continue;
 
-				final SparseVector urv = user.getRatingVector();
-				final double sim = similarity.similarity(ratings, urv);
-				final Neighbor n = new Neighbor(user.getUser(), urv, sim);
+                final SparseVector urv = user.getRatingVector();
+                final double sim = similarity.similarity(ratings, urv);
+                final Neighbor n = new Neighbor(user.getUser(), urv, sim);
 
-				LongIterator iit = urv.keySet().iterator();
-				ITEMS: while (iit.hasNext()) {
-					final long item = iit.nextLong();
-					if (items != null && !items.contains(item))
-						continue ITEMS;
+                LongIterator iit = urv.keySet().iterator();
+                ITEMS: while (iit.hasNext()) {
+                    final long item = iit.nextLong();
+                    if (items != null && !items.contains(item))
+                        continue ITEMS;
 
-					PriorityQueue<Neighbor> heap = heaps.get(item);
-					if (heap == null) {
-						heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1, comp);
-						heaps.put(item, heap);
-					}
-					heap.add(n);
-					if (heap.size() > neighborhoodSize) {
-						assert heap.size() == neighborhoodSize + 1;
-						heap.remove();
-					}
-				}
-			}
-		} finally {
-			users.close();
-		}
-		return heaps;
-	}
+                    PriorityQueue<Neighbor> heap = heaps.get(item);
+                    if (heap == null) {
+                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1, comp);
+                        heaps.put(item, heap);
+                    }
+                    heap.add(n);
+                    if (heap.size() > neighborhoodSize) {
+                        assert heap.size() == neighborhoodSize + 1;
+                        heap.remove();
+                    }
+                }
+            }
+        } finally {
+            users.close();
+        }
+        return heaps;
+    }
 }

@@ -43,76 +43,76 @@ import com.google.common.base.Predicate;
  *
  */
 public class CrossfoldManager {
-	private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
-	private Long2IntMap userPartitionMap;
-	private final int chunkCount;
-	private RatingDataSource ratings;
+    private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
+    private Long2IntMap userPartitionMap;
+    private final int chunkCount;
+    private RatingDataSource ratings;
 
-	/**
-	 * Construct a new train/test ratings set.
-	 * @param nfolds The number of portions to divide the data set into.
-	 * @param ratings The ratings data to partition.
-	 */
-	public CrossfoldManager(int nfolds, RatingDataSource ratings) {
-		logger.debug("Creating rating set with {} folds", nfolds);
-		userPartitionMap = new Long2IntOpenHashMap();
-		userPartitionMap.defaultReturnValue(nfolds);
-		chunkCount = nfolds;
-		this.ratings = ratings;
+    /**
+     * Construct a new train/test ratings set.
+     * @param nfolds The number of portions to divide the data set into.
+     * @param ratings The ratings data to partition.
+     */
+    public CrossfoldManager(int nfolds, RatingDataSource ratings) {
+        logger.debug("Creating rating set with {} folds", nfolds);
+        userPartitionMap = new Long2IntOpenHashMap();
+        userPartitionMap.defaultReturnValue(nfolds);
+        chunkCount = nfolds;
+        this.ratings = ratings;
 
-		Random splitter = new Random();
-		Cursor<Long> userCursor = ratings.getUsers();
-		try {
-			int nusers = userCursor.getRowCount();
-			if (nusers >= 0) {
-				userPartitionMap = new Long2IntOpenHashMap(nusers);
-			} else {
-				userPartitionMap = new Long2IntOpenHashMap();
-			}
-			for (long uid: userCursor) {
-				userPartitionMap.put(uid, splitter.nextInt(nfolds));
-			}
-			logger.info("Partitioned {} users into {} folds", userPartitionMap.size(), nfolds);
-		} finally {
-			userCursor.close();
-		}
-	}
+        Random splitter = new Random();
+        Cursor<Long> userCursor = ratings.getUsers();
+        try {
+            int nusers = userCursor.getRowCount();
+            if (nusers >= 0) {
+                userPartitionMap = new Long2IntOpenHashMap(nusers);
+            } else {
+                userPartitionMap = new Long2IntOpenHashMap();
+            }
+            for (long uid: userCursor) {
+                userPartitionMap.put(uid, splitter.nextInt(nfolds));
+            }
+            logger.info("Partitioned {} users into {} folds", userPartitionMap.size(), nfolds);
+        } finally {
+            userCursor.close();
+        }
+    }
 
-	public int getChunkCount() {
-		return chunkCount;
-	}
+    public int getChunkCount() {
+        return chunkCount;
+    }
 
-	/**
-	 * Build a training data collection.  The collection is built on-demand, so
-	 * it doesn't use much excess memory.
-	 * @param testIndex The index of the test set to use.
-	 * @return The union of all data partitions except testIndex.
-	 */
-	public RatingDataSource trainingSet(final int testIndex) {
-		Predicate<Long> filter = new Predicate<Long>() {
-			public boolean apply(Long uid) {
-				return userPartitionMap.get(uid.longValue()) != testIndex;
-			}
-		};
-		return new UserFilteredDataSource(ratings, false, filter);
-	}
+    /**
+     * Build a training data collection.  The collection is built on-demand, so
+     * it doesn't use much excess memory.
+     * @param testIndex The index of the test set to use.
+     * @return The union of all data partitions except testIndex.
+     */
+    public RatingDataSource trainingSet(final int testIndex) {
+        Predicate<Long> filter = new Predicate<Long>() {
+            public boolean apply(Long uid) {
+                return userPartitionMap.get(uid.longValue()) != testIndex;
+            }
+        };
+        return new UserFilteredDataSource(ratings, false, filter);
+    }
 
-	public void close() {
-		ratings.close();
-	}
+    public void close() {
+        ratings.close();
+    }
 
-	/**
-	 * Return a test data set.
-	 * @param testIndex The index of the test set to use.
-	 * @return The test set of users.
-	 */
-	public Collection<UserRatingProfile> testSet(final int testIndex) {
-		Predicate<UserRatingProfile> filter = new Predicate<UserRatingProfile>() {
-			public boolean apply(UserRatingProfile profile) {
-				int part = userPartitionMap.get(profile.getUser());
-				return part == testIndex;
-			}
-		};
-		return Cursors.makeList(org.grouplens.common.cursors.Cursors.filter(ratings.getUserRatingProfiles(), filter));
-	}
+    /**
+     * Return a test data set.
+     * @param testIndex The index of the test set to use.
+     * @return The test set of users.
+     */
+    public Collection<UserRatingProfile> testSet(final int testIndex) {
+        Predicate<UserRatingProfile> filter = new Predicate<UserRatingProfile>() {
+            public boolean apply(UserRatingProfile profile) {
+                int part = userPartitionMap.get(profile.getUser());
+                return part == testIndex;
+            }
+        };
+        return Cursors.makeList(org.grouplens.common.cursors.Cursors.filter(ratings.getUserRatingProfiles(), filter));
+    }
 }

@@ -40,42 +40,42 @@ import com.google.inject.Provides;
  *
  */
 public class TestItemItemRecommenderWithData extends ExpensiveRatingDataTest {
-	private ItemRecommenderModule module;
-	@Before
-	public void createModule() {
-		module = new ItemRecommenderModule();
-	}
+    private ItemRecommenderModule module;
+    @Before
+    public void createModule() {
+        module = new ItemRecommenderModule();
+    }
 
-	private Injector createInjector() {
-		return Guice.createInjector(dataModule(), module, new AbstractModule() {
-			@Override protected void configure() { }
-			@SuppressWarnings("unused")
-			@Provides public RecommenderService provideRecSvc(RecommenderServiceProvider prov) {
-				try {
-					return prov.get();
-				} catch (RecommenderNotAvailableException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-	}
+    private Injector createInjector() {
+        return Guice.createInjector(dataModule(), module, new AbstractModule() {
+            @Override protected void configure() { }
+            @SuppressWarnings("unused")
+            @Provides public RecommenderService provideRecSvc(RecommenderServiceProvider prov) {
+                try {
+                    return prov.get();
+                } catch (RecommenderNotAvailableException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
 
-	@Test
-	public void testItemItemBuild() {
-		Injector inj = createInjector();
-		RecommenderService rec = inj.getInstance(RecommenderService.class);
-		assertNotNull(rec);
-		assertNotNull(rec.getRatingPredictor());
-		assertNotNull(rec.getRatingRecommender());
-	}
+    @Test
+    public void testItemItemBuild() {
+        Injector inj = createInjector();
+        RecommenderService rec = inj.getInstance(RecommenderService.class);
+        assertNotNull(rec);
+        assertNotNull(rec.getRatingPredictor());
+        assertNotNull(rec.getRatingRecommender());
+    }
 
-	@Test
-	public void testItemItemWithBaseline() {
-		module.core.setBaseline(UserMeanPredictor.class);
-		Injector inj = createInjector();
-		RecommenderService rec = inj.getInstance(RecommenderService.class);
-		assertNotNull(rec);
-		assertNotNull(rec.getRatingPredictor());
-		assertNotNull(rec.getRatingRecommender());
-	}
+    @Test
+    public void testItemItemWithBaseline() {
+        module.core.setBaseline(UserMeanPredictor.class);
+        Injector inj = createInjector();
+        RecommenderService rec = inj.getInstance(RecommenderService.class);
+        assertNotNull(rec);
+        assertNotNull(rec.getRatingPredictor());
+        assertNotNull(rec.getRatingRecommender());
+    }
 }

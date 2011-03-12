@@ -24,20 +24,20 @@ import com.google.inject.ImplementedBy;
 
 /**
  * Factory for creating new item-item recommender engines from models.
- * 
+ *
  * Implementations of this interface take an {@link ItemItemModel} and create
  * an {@link ItemItemRecommenderService} backed by it.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @ImplementedBy(DefaultItemItemRecommenderEngineFactory.class)
 public interface ItemItemRecommenderServiceFactory {
-	/**
-	 * Create a new recommender engine.
-	 * @param model The model backing the engine.
-	 * @return The newly-constructed recommender engine.
-	 */
-	@Nonnull
-	ItemItemRecommenderService create(@Nonnull ItemItemModel model);
+    /**
+     * Create a new recommender engine.
+     * @param model The model backing the engine.
+     * @return The newly-constructed recommender engine.
+     */
+    @Nonnull
+    ItemItemRecommenderService create(@Nonnull ItemItemModel model);
 }

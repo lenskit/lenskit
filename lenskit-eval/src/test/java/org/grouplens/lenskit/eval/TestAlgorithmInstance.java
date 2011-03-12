@@ -34,36 +34,36 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestAlgorithmInstance {
-	@Test
-	public void testBasename() {
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), null));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), "bar"));
-		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), null));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.bar"), "bar"));
-		assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), "properties"));
-		assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.properties"), "properties"));
-		assertEquals("whizbang", AlgorithmInstance.fileBaseName(new File("whizbang.properties"), "properties"));
-	}
-	
-	@Test
-	public void testFileExtensionNone() {
-		assertEquals("", fileExtension(""));
-		assertEquals("", fileExtension("foo"));
-	}
-	
-	@Test
-	public void testFileExtensionSimple() {
-		assertEquals("txt", fileExtension("foo.txt"));
-	}
-	
-	@Test
-	public void testFileExtensionMultiple() {
-		assertEquals("txt", fileExtension("foo.exe.txt"));
-	}
-	
-	@Test
-	public void testFileExtensionFile() {
-		assertEquals("txt", fileExtension(new File("foo.txt")));
-		assertEquals("", fileExtension(new File("foo")));
-	}
+    @Test
+    public void testBasename() {
+        assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), null));
+        assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo"), "bar"));
+        assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), null));
+        assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.bar"), "bar"));
+        assertEquals("foo.bar", AlgorithmInstance.fileBaseName(new File("foo.bar"), "properties"));
+        assertEquals("foo", AlgorithmInstance.fileBaseName(new File("foo.properties"), "properties"));
+        assertEquals("whizbang", AlgorithmInstance.fileBaseName(new File("whizbang.properties"), "properties"));
+    }
+
+    @Test
+    public void testFileExtensionNone() {
+        assertEquals("", fileExtension(""));
+        assertEquals("", fileExtension("foo"));
+    }
+
+    @Test
+    public void testFileExtensionSimple() {
+        assertEquals("txt", fileExtension("foo.txt"));
+    }
+
+    @Test
+    public void testFileExtensionMultiple() {
+        assertEquals("txt", fileExtension("foo.exe.txt"));
+    }
+
+    @Test
+    public void testFileExtensionFile() {
+        assertEquals("txt", fileExtension(new File("foo.txt")));
+        assertEquals("", fileExtension(new File("foo")));
+    }
 }

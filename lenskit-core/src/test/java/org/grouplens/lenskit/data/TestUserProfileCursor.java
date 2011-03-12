@@ -43,36 +43,36 @@ import org.junit.Test;
  *
  */
 public class TestUserProfileCursor {
-	private List<Rating> ratings;
-	private Cursor<Rating> ratingCursor;
+    private List<Rating> ratings;
+    private Cursor<Rating> ratingCursor;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		ratings = new ArrayList<Rating>();
-		ratings.add(new SimpleRating(2, 5, 3.0));
-		ratings.add(new SimpleRating(2, 3, 3.0));
-		ratings.add(new SimpleRating(2, 39, 2.5));
-		ratings.add(new SimpleRating(5, 7, 2.5));
-		ratings.add(new SimpleRating(5, 39, 7.2));
-		ratingCursor = Cursors.wrap(ratings);
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        ratings = new ArrayList<Rating>();
+        ratings.add(new SimpleRating(2, 5, 3.0));
+        ratings.add(new SimpleRating(2, 3, 3.0));
+        ratings.add(new SimpleRating(2, 39, 2.5));
+        ratings.add(new SimpleRating(5, 7, 2.5));
+        ratings.add(new SimpleRating(5, 39, 7.2));
+        ratingCursor = Cursors.wrap(ratings);
+    }
 
-	@Test
-	public void testCursor() {
-		Cursor<UserRatingProfile> cursor =
-			new AbstractRatingDataSource.UserProfileCursor(ratingCursor);
-		assertTrue(cursor.hasNext());
-		UserRatingProfile profile = cursor.next();
-		assertTrue(cursor.hasNext());
-		assertEquals(2, profile.getUser());
-		assertEquals(3, profile.getRatings().size());
-		profile = cursor.next();
-		assertFalse(cursor.hasNext());
-		assertEquals(5, profile.getUser());
-		assertEquals(2, profile.getRatings().size());
-	}
+    @Test
+    public void testCursor() {
+        Cursor<UserRatingProfile> cursor =
+            new AbstractRatingDataSource.UserProfileCursor(ratingCursor);
+        assertTrue(cursor.hasNext());
+        UserRatingProfile profile = cursor.next();
+        assertTrue(cursor.hasNext());
+        assertEquals(2, profile.getUser());
+        assertEquals(3, profile.getRatings().size());
+        profile = cursor.next();
+        assertFalse(cursor.hasNext());
+        assertEquals(5, profile.getUser());
+        assertEquals(2, profile.getRatings().size());
+    }
 
 }

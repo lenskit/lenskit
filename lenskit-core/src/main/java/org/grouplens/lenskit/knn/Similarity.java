@@ -20,16 +20,16 @@ package org.grouplens.lenskit.knn;
 
 /**
  * Compute the similarity between two objects (typically rating vectors).
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public interface Similarity<V> {
-	/**
-	 * Compute the similarity between two vectors.
-	 * @param vec1
-	 * @param vec2
-	 * @return The similarity, in the range [-1,1].
-	 */
-	double similarity(V vec1, V vec2);
+    /**
+     * Compute the similarity between two vectors.
+     * @param vec1
+     * @param vec2
+     * @return The similarity, in the range [-1,1].
+     */
+    double similarity(V vec1, V vec2);
 }

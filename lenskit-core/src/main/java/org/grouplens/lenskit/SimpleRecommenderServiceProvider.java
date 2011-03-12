@@ -27,26 +27,26 @@ import com.google.inject.Singleton;
  * {@link RecommenderServiceProvider} that returns the recommender service
  * injected into it.  It serves as the default implementation of
  * {@link RecommenderServiceProvider}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @Singleton
 public class SimpleRecommenderServiceProvider implements RecommenderServiceProvider {
-	private final @Nonnull RecommenderService service;
-	
-	@Inject
-	public SimpleRecommenderServiceProvider(@Nonnull RecommenderService service) {
-		this.service = service;
-	}
+    private final @Nonnull RecommenderService service;
 
-	/**
-	 * Get the recommender service.  If the recommender needs to be built, it
-	 * will block all other threads asking for recommenders.
-	 */
-	@Override
-	public @Nonnull RecommenderService get() {
-		return service;
-	}
+    @Inject
+    public SimpleRecommenderServiceProvider(@Nonnull RecommenderService service) {
+        this.service = service;
+    }
+
+    /**
+     * Get the recommender service.  If the recommender needs to be built, it
+     * will block all other threads asking for recommenders.
+     */
+    @Override
+    public @Nonnull RecommenderService get() {
+        return service;
+    }
 
 }

@@ -26,15 +26,15 @@ import org.grouplens.lenskit.data.RatingDataSource;
  *
  */
 public interface RecommenderBuilder {
-	/**
-	 * Construct a new recommender engine trained on the provided ratings.
-	 * 
-	 * The caller is responsible for closing the data source once the recommender
-	 * has been built.
-	 * 
-	 * @param ratings The set of initial ratings with which to seed the
-	 * recommender.
-	 * @return A new recommender engine.
-	 */
-	public RecommenderService build(RatingDataSource ratings, RatingPredictor baseline);
+    /**
+     * Construct a new recommender engine trained on the provided ratings.
+     *
+     * The caller is responsible for closing the data source once the recommender
+     * has been built.
+     *
+     * @param ratings The set of initial ratings with which to seed the
+     * recommender.
+     * @return A new recommender engine.
+     */
+    public RecommenderService build(RatingDataSource ratings, RatingPredictor baseline);
 }

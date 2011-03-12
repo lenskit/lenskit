@@ -23,32 +23,32 @@ import org.grouplens.lenskit.util.IndexedItemScore;
 
 /**
  * Interface for similarity matrices for collaborative filtering.
- * 
+ *
  * This interface uses numeric indexes for everything. The indexes are expected
  * to be contiguous starting with 0. Similarity matrices will usually have a
  * fixed size that cannot be exceeded.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface SimilarityMatrix {
-	/**
-	 * The number of entities for which this matrix has similarities.
-	 * 
-	 * @return
-	 */
-	public int size();
+    /**
+     * The number of entities for which this matrix has similarities.
+     *
+     * @return
+     */
+    public int size();
 
-	/**
-	 * Retrieve the neighbors for an item.
-	 * 
-	 * @param i
-	 *            All neighbors for item <tt>i</tt>. This is all similarity
-	 *            scores for which <tt>i</tt> was passed as the first argument
-	 *            to {@link #put(int, int, double)}.
-	 * @return A map of neighbors to similarity scores.
-	 * @throws IndexOutOfBoundsException
-	 *             if the index is invalid.
-	 */
-	public Iterable<IndexedItemScore> getNeighbors(int i);
+    /**
+     * Retrieve the neighbors for an item.
+     *
+     * @param i
+     *            All neighbors for item <tt>i</tt>. This is all similarity
+     *            scores for which <tt>i</tt> was passed as the first argument
+     *            to {@link #put(int, int, double)}.
+     * @return A map of neighbors to similarity scores.
+     * @throws IndexOutOfBoundsException
+     *             if the index is invalid.
+     */
+    public Iterable<IndexedItemScore> getNeighbors(int i);
 }

@@ -33,6 +33,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DefaultClass {
-	@SuppressWarnings("rawtypes")
-	Class value();
+    @SuppressWarnings("rawtypes")
+    Class value();
 }

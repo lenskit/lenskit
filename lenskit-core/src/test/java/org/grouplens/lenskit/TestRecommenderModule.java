@@ -41,131 +41,131 @@ import org.junit.Test;
  *
  */
 public class TestRecommenderModule {
-	public static final double EPSILON = 1.0e-6;
-	private RecommenderCoreModule module;
+    public static final double EPSILON = 1.0e-6;
+    private RecommenderCoreModule module;
 
-	@Before
-	public void setUp() {
-		module = new RecommenderCoreModule();
-	}
+    @Before
+    public void setUp() {
+        module = new RecommenderCoreModule();
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setName(java.lang.String)}.
-	 */
-	@Test
-	public void testSetName() {
-		module.setName("foo");
-		assertEquals("foo", module.getName());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setName(java.lang.String)}.
+     */
+    @Test
+    public void testSetName() {
+        module.setName("foo");
+        assertEquals("foo", module.getName());
+    }
 
-	@Test
-	public void testDefaults() {
-		assertEquals(Parameters.getDefaultDouble(MeanDamping.class), module.getDamping(), EPSILON);
-		assertEquals(Parameters.getDefaultDouble(MinRating.class), module.getMinRating(), EPSILON);
-		assertEquals(Parameters.getDefaultDouble(MaxRating.class), module.getMaxRating(), EPSILON);
-	}
+    @Test
+    public void testDefaults() {
+        assertEquals(Parameters.getDefaultDouble(MeanDamping.class), module.getDamping(), EPSILON);
+        assertEquals(Parameters.getDefaultDouble(MinRating.class), module.getMinRating(), EPSILON);
+        assertEquals(Parameters.getDefaultDouble(MaxRating.class), module.getMaxRating(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getThreadCount()}.
-	 */
-	@Test
-	public void testGetThreadCount() {
-		assertEquals(Runtime.getRuntime().availableProcessors(), module.getThreadCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getThreadCount()}.
+     */
+    @Test
+    public void testGetThreadCount() {
+        assertEquals(Runtime.getRuntime().availableProcessors(), module.getThreadCount());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setThreadCount(int)}.
-	 */
-	@Test
-	public void testSetThreadCount() {
-		// 57 is a safe processor count to make sure the set method changes it
-		// unless you are on a very strange machine
-		module.setThreadCount(57);
-		assertEquals(57, module.getThreadCount());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setThreadCount(int)}.
+     */
+    @Test
+    public void testSetThreadCount() {
+        // 57 is a safe processor count to make sure the set method changes it
+        // unless you are on a very strange machine
+        module.setThreadCount(57);
+        assertEquals(57, module.getThreadCount());
+    }
 
-	@Test
-	public void testInjectThreadCount() {
-		int nthreads = inject(module, int.class, ThreadCount.class);
-		assertEquals(Runtime.getRuntime().availableProcessors(), nthreads);
-		module.setThreadCount(57);
-		nthreads = inject(module, int.class, ThreadCount.class);
-		assertEquals(57, nthreads);
-	}
+    @Test
+    public void testInjectThreadCount() {
+        int nthreads = inject(module, int.class, ThreadCount.class);
+        assertEquals(Runtime.getRuntime().availableProcessors(), nthreads);
+        module.setThreadCount(57);
+        nthreads = inject(module, int.class, ThreadCount.class);
+        assertEquals(57, nthreads);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setDamping(double)}.
-	 */
-	@Test
-	public void testSetDamping() {
-		module.setDamping(500);
-		assertEquals(500, module.getDamping(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setDamping(double)}.
+     */
+    @Test
+    public void testSetDamping() {
+        module.setDamping(500);
+        assertEquals(500, module.getDamping(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMinRating(double)}.
-	 */
-	@Test
-	public void testSetMinRating() {
-		module.setMinRating(-5);
-		assertEquals(-5, module.getMinRating(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMinRating(double)}.
+     */
+    @Test
+    public void testSetMinRating() {
+        module.setMinRating(-5);
+        assertEquals(-5, module.getMinRating(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMaxRating(double)}.
-	 */
-	@Test
-	public void testSetMaxRating() {
-		module.setMaxRating(42);
-		assertEquals(42, module.getMaxRating(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMaxRating(double)}.
+     */
+    @Test
+    public void testSetMaxRating() {
+        module.setMaxRating(42);
+        assertEquals(42, module.getMaxRating(), EPSILON);
+    }
 
-	public void testInjectRatingRange() {
-		double min = inject(module, double.class, MinRating.class);
-		double max = inject(module, double.class, MaxRating.class);
-		assertEquals(1, min, EPSILON);
-		assertEquals(5, max, EPSILON);
-	}
+    public void testInjectRatingRange() {
+        double min = inject(module, double.class, MinRating.class);
+        double max = inject(module, double.class, MaxRating.class);
+        assertEquals(1, min, EPSILON);
+        assertEquals(5, max, EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getBaseline()}.
-	 */
-	@Test
-	public void testGetBaseline() {
-		assertNull(module.getBaseline());
-		assertNull(inject(module, RatingPredictor.class, BaselinePredictor.class));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getBaseline()}.
+     */
+    @Test
+    public void testGetBaseline() {
+        assertNull(module.getBaseline());
+        assertNull(inject(module, RatingPredictor.class, BaselinePredictor.class));
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setBaseline(java.lang.Class)}.
-	 */
-	@Test
-	public void testSetBaselineClass() {
-		module.setBaseline(ConstantPredictor.class);
-		assertThat(module.getBaseline(), isAssignableTo(ConstantPredictor.class));
-		RatingPredictor bldr =
-			inject(module, RatingPredictor.class, BaselinePredictor.class);
-		assertThat(bldr, instanceOf(ConstantPredictor.class));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setBaseline(java.lang.Class)}.
+     */
+    @Test
+    public void testSetBaselineClass() {
+        module.setBaseline(ConstantPredictor.class);
+        assertThat(module.getBaseline(), isAssignableTo(ConstantPredictor.class));
+        RatingPredictor bldr =
+            inject(module, RatingPredictor.class, BaselinePredictor.class);
+        assertThat(bldr, instanceOf(ConstantPredictor.class));
+    }
 
-	@Test
-	public void testGetConstantBaselineValue() {
-		assertEquals(Parameters.getDefaultDouble(ConstantPredictor.Value.class),
-				module.getConstantBaselineValue(), EPSILON);
-	}
+    @Test
+    public void testGetConstantBaselineValue() {
+        assertEquals(Parameters.getDefaultDouble(ConstantPredictor.Value.class),
+                module.getConstantBaselineValue(), EPSILON);
+    }
 
-	@Test
-	public void testSetConstantBaselineValue() {
-		module.setConstantBaselineValue(10);
-		assertEquals(10, module.getConstantBaselineValue(), EPSILON);
-	}
+    @Test
+    public void testSetConstantBaselineValue() {
+        module.setConstantBaselineValue(10);
+        assertEquals(10, module.getConstantBaselineValue(), EPSILON);
+    }
 
-	@Test
-	public void testInjectConstantBaseline() {
-		module.setConstantBaselineValue(3);
-		module.setBaseline(ConstantPredictor.class);
-		RatingPredictor pred = inject(module, RatingPredictor.class, BaselinePredictor.class);
-		assertThat(pred, instanceOf(ConstantPredictor.class));
-		assertEquals(3.0, pred.predict(0, null, 5).getScore(), EPSILON);
-	}
+    @Test
+    public void testInjectConstantBaseline() {
+        module.setConstantBaselineValue(3);
+        module.setBaseline(ConstantPredictor.class);
+        RatingPredictor pred = inject(module, RatingPredictor.class, BaselinePredictor.class);
+        assertThat(pred, instanceOf(ConstantPredictor.class));
+        assertEquals(3.0, pred.predict(0, null, 5).getScore(), EPSILON);
+    }
 }

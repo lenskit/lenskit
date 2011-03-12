@@ -47,96 +47,96 @@ import com.google.inject.TypeLiteral;
  *
  */
 public class TestItemRecommenderModule extends RecommenderModuleTest {
-	private static final double EPSILON = TestRecommenderModule.EPSILON;
-	private ItemRecommenderModule module;
+    private static final double EPSILON = TestRecommenderModule.EPSILON;
+    private ItemRecommenderModule module;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		module = new ItemRecommenderModule();
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        module = new ItemRecommenderModule();
+    }
 
-	public Module getModule() {
-		return module;
-	}
+    public Module getModule() {
+        return module;
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getNeighborhoodSize()}.
-	 */
-	@Test
-	public void testGetNeighborhoodSize() {
-		assertEquals(Parameters.getDefaultInt(NeighborhoodSize.class), module.knn.getNeighborhoodSize());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getNeighborhoodSize()}.
+     */
+    @Test
+    public void testGetNeighborhoodSize() {
+        assertEquals(Parameters.getDefaultInt(NeighborhoodSize.class), module.knn.getNeighborhoodSize());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setNeighborhoodSize(int)}.
-	 */
-	@Test
-	public void testSetNeighborhoodSize() {
-		module.knn.setNeighborhoodSize(40);
-		assertEquals(40, module.knn.getNeighborhoodSize());
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setNeighborhoodSize(int)}.
+     */
+    @Test
+    public void testSetNeighborhoodSize() {
+        module.knn.setNeighborhoodSize(40);
+        assertEquals(40, module.knn.getNeighborhoodSize());
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getSimilarityDamping()}.
-	 */
-	@Test
-	public void testGetSimilarityDamping() {
-		assertEquals(Parameters.getDefaultDouble(SimilarityDamper.class), module.knn.getSimilarityDamping(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getSimilarityDamping()}.
+     */
+    @Test
+    public void testGetSimilarityDamping() {
+        assertEquals(Parameters.getDefaultDouble(SimilarityDamper.class), module.knn.getSimilarityDamping(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setSimilarityDamping(double)}.
-	 */
-	@Test
-	public void testSetSimilarityDamping() {
-		module.knn.setSimilarityDamping(5);
-		assertEquals(5, module.knn.getSimilarityDamping(), EPSILON);
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setSimilarityDamping(double)}.
+     */
+    @Test
+    public void testSetSimilarityDamping() {
+        module.knn.setSimilarityDamping(5);
+        assertEquals(5, module.knn.getSimilarityDamping(), EPSILON);
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getItemSimilarity()}.
-	 */
-	@Test
-	public void testGetItemSimilarity() {
-		assertThat(module.knn.getItemSimilarity(), isAssignableTo(Parameters.getDefaultClass(ItemSimilarity.class)));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getItemSimilarity()}.
+     */
+    @Test
+    public void testGetItemSimilarity() {
+        assertThat(module.knn.getItemSimilarity(), isAssignableTo(Parameters.getDefaultClass(ItemSimilarity.class)));
+    }
 
-	/**
-	 * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setItemSimilarity(java.lang.Class)}.
-	 */
-	@Test
-	public void testSetItemSimilarity() {
-		module.knn.setItemSimilarity(DummySimilarity.class);
-		assertThat(module.knn.getItemSimilarity(), isAssignableTo(DummySimilarity.class));
-	}
+    /**
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setItemSimilarity(java.lang.Class)}.
+     */
+    @Test
+    public void testSetItemSimilarity() {
+        module.knn.setItemSimilarity(DummySimilarity.class);
+        assertThat(module.knn.getItemSimilarity(), isAssignableTo(DummySimilarity.class));
+    }
 
-	@Test
-	public void testInjectSimilarity() {
-		module.knn.setItemSimilarity(DummySimilarity.class);
-		module.knn.setSimilarityDamping(39.8);
-		Similarity<? super MutableSparseVector> sim;
-		sim = inject(Key.get(new TypeLiteral<Similarity<? super SparseVector>>(){}, ItemSimilarity.class));
-		assertThat(sim, instanceOf(DummySimilarity.class));
-		DummySimilarity dsim = (DummySimilarity) sim;
-		assertEquals(39.8, dsim.damping, EPSILON);
-	}
+    @Test
+    public void testInjectSimilarity() {
+        module.knn.setItemSimilarity(DummySimilarity.class);
+        module.knn.setSimilarityDamping(39.8);
+        Similarity<? super MutableSparseVector> sim;
+        sim = inject(Key.get(new TypeLiteral<Similarity<? super SparseVector>>(){}, ItemSimilarity.class));
+        assertThat(sim, instanceOf(DummySimilarity.class));
+        DummySimilarity dsim = (DummySimilarity) sim;
+        assertEquals(39.8, dsim.damping, EPSILON);
+    }
 
-	private static class DummySimilarity implements Similarity<SparseVector> {
-		public final double damping;
+    private static class DummySimilarity implements Similarity<SparseVector> {
+        public final double damping;
 
-		@SuppressWarnings("unused")
-		@Inject
-		public DummySimilarity(@SimilarityDamper double d) {
-			damping = d;
-		}
+        @SuppressWarnings("unused")
+        @Inject
+        public DummySimilarity(@SimilarityDamper double d) {
+            damping = d;
+        }
 
-		@Override
-		public double similarity(SparseVector vec1, SparseVector vec2) {
-			return 0;
-		}
+        @Override
+        public double similarity(SparseVector vec1, SparseVector vec2) {
+            return 0;
+        }
 
-	}
+    }
 }

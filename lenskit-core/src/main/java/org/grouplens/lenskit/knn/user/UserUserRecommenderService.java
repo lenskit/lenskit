@@ -31,26 +31,26 @@ import com.google.inject.Inject;
  *
  */
 public class UserUserRecommenderService extends AbstractRecommenderService {
-	private final AbstractUserUserRatingRecommender recommender;
-	
-	@Inject
-	UserUserRecommenderService(AbstractUserUserRatingRecommender recommender) {
-		this.recommender = recommender;
-	}
+    private final AbstractUserUserRatingRecommender recommender;
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RecommenderService#getRatingRecommender()
-	 */
-	@Override
-	public RatingRecommender getRatingRecommender() {
-		return recommender;
-	}
+    @Inject
+    UserUserRecommenderService(AbstractUserUserRatingRecommender recommender) {
+        this.recommender = recommender;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RecommenderService#getRatingPredictor()
-	 */
-	@Override
-	public RatingPredictor getRatingPredictor() {
-		return recommender;
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RecommenderService#getRatingRecommender()
+     */
+    @Override
+    public RatingRecommender getRatingRecommender() {
+        return recommender;
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RecommenderService#getRatingPredictor()
+     */
+    @Override
+    public RatingPredictor getRatingPredictor() {
+        return recommender;
+    }
 }

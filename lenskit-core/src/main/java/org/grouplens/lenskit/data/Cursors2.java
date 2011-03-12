@@ -42,60 +42,60 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Cursors2 {
-	private static final Logger logger = LoggerFactory.getLogger(Cursors2.class);
+    private static final Logger logger = LoggerFactory.getLogger(Cursors2.class);
 
-	public static LongArrayList makeList(LongCursor cursor) {
-		LongArrayList list = null;
-		try {
-			int n = cursor.getRowCount();
-			if (n < 0) n = 10;
-			list = new LongArrayList(n);
-			while (cursor.hasNext()) {
-				list.add(cursor.nextLong());
-			}
-		} catch (OutOfMemoryError e) {
-			logger.error("Ran out of memory with {} users",
-					list == null ? -1 : list.size());
-			throw e;
-		} finally {
-			cursor.close();
-		}
-		list.trim();
-		return list;
-	}
+    public static LongArrayList makeList(LongCursor cursor) {
+        LongArrayList list = null;
+        try {
+            int n = cursor.getRowCount();
+            if (n < 0) n = 10;
+            list = new LongArrayList(n);
+            while (cursor.hasNext()) {
+                list.add(cursor.nextLong());
+            }
+        } catch (OutOfMemoryError e) {
+            logger.error("Ran out of memory with {} users",
+                    list == null ? -1 : list.size());
+            throw e;
+        } finally {
+            cursor.close();
+        }
+        list.trim();
+        return list;
+    }
 
-	public static LongCursor wrap(LongIterator iter) {
-		return new LongIteratorCursor(iter);
-	}
+    public static LongCursor wrap(LongIterator iter) {
+        return new LongIteratorCursor(iter);
+    }
 
-	public static LongCursor wrap(LongCollection collection) {
-		return new LongCollectionCursor(collection);
-	}
+    public static LongCursor wrap(LongCollection collection) {
+        return new LongCollectionCursor(collection);
+    }
 
-	public static <T> LongCursor makeLongCursor(final Cursor<Long> cursor) {
-		if (cursor instanceof LongCursor)
-			return (LongCursor) cursor;
+    public static <T> LongCursor makeLongCursor(final Cursor<Long> cursor) {
+        if (cursor instanceof LongCursor)
+            return (LongCursor) cursor;
 
-		return new LongCursor() {
-			public boolean hasNext() {
-				return cursor.hasNext();
-			}
-			public Long next() {
-				return cursor.next();
-			}
-			public long nextLong() {
-				return next();
-			}
-			public void close() {
-				cursor.close();
-			}
-			public int getRowCount() {
-				return cursor.getRowCount();
-			}
-			@Override
-			public LongIterator iterator() {
-				return new LongCursorIterator(this);
-			}
-		};
-	}
+        return new LongCursor() {
+            public boolean hasNext() {
+                return cursor.hasNext();
+            }
+            public Long next() {
+                return cursor.next();
+            }
+            public long nextLong() {
+                return next();
+            }
+            public void close() {
+                cursor.close();
+            }
+            public int getRowCount() {
+                return cursor.getRowCount();
+            }
+            @Override
+            public LongIterator iterator() {
+                return new LongCursorIterator(this);
+            }
+        };
+    }
 }

@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks an annotation as defining a recommender parameter.
- * 
+ *
  * <p>RefLens makes extensive use of annotations to define recommender parameters.
  * This annotation is a meta-annotation that should be applied to any annotation
  * defining a recommender parameter.  It serves to document the annotation as
@@ -36,9 +36,9 @@ import java.lang.annotation.Target;
  * <p>
  * Parameters can additionally be annotated by the various default annotations
  * in this package to specify their default values.
- * 
+ *
  * @see org.grouplens.lenskit.RecommenderCoreModule
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

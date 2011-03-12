@@ -23,5 +23,5 @@ package org.grouplens.lenskit.util.parallel;
  *
  */
 public interface IntWorker extends Worker {
-	public void doJob(int job);
+    public void doJob(int job);
 }

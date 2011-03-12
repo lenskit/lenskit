@@ -29,12 +29,12 @@ import org.grouplens.lenskit.data.ScoredId;
  *
  */
 public interface BasketRecommender {
-	/**
-	 * Recommend items for a user with a unary history.
-	 * @param user the user ID
-	 * @param basket the items in the user's purchase/visit history
-	 * @return a list of scored recommendations, sorted in nonincreasing order
-	 * of score.
-	 */
-	List<ScoredId> recommend(long user, Set<Long> basket);
+    /**
+     * Recommend items for a user with a unary history.
+     * @param user the user ID
+     * @param basket the items in the user's purchase/visit history
+     * @return a list of scored recommendations, sorted in nonincreasing order
+     * of score.
+     */
+    List<ScoredId> recommend(long user, Set<Long> basket);
 }

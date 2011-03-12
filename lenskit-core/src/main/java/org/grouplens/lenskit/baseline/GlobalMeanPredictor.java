@@ -34,43 +34,43 @@ import com.google.inject.Provider;
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
 
-	/**
-	 * Construct a new global mean predictor from a data source.
-	 * @param ratings A data source of ratings.
-	 */
-	public GlobalMeanPredictor(RatingDataSource ratings) {
-		super(computeMeanRating(ratings.getRatings()));
-	}
-	/**
-	 * Injectable constructor.  Takes a provider so the resulting predictor can
-	 * outlive the data source.
-	 * @param ratingProvider A provider to get rating data sources.
-	 */
-	@Inject
-	public GlobalMeanPredictor(Provider<RatingDataSource> ratingProvider) {
-		this(ratingProvider.get());
-	}
+    /**
+     * Construct a new global mean predictor from a data source.
+     * @param ratings A data source of ratings.
+     */
+    public GlobalMeanPredictor(RatingDataSource ratings) {
+        super(computeMeanRating(ratings.getRatings()));
+    }
+    /**
+     * Injectable constructor.  Takes a provider so the resulting predictor can
+     * outlive the data source.
+     * @param ratingProvider A provider to get rating data sources.
+     */
+    @Inject
+    public GlobalMeanPredictor(Provider<RatingDataSource> ratingProvider) {
+        this(ratingProvider.get());
+    }
 
-	/**
-	 * Helper method to compute the mean of all ratings in a cursor.
-	 * The cursor is closed after the ratings are computed.
-	 * @param ratings A cursor of ratings to average.
-	 * @return The arithmetic mean of all ratings.
-	 */
-	public static double computeMeanRating(@WillClose Cursor<Rating> ratings) {
-		double total = 0;
-		long count = 0;
-		try {
-			for (Rating r: ratings) {
-				total += r.getRating();
-				count += 1;
-			}
-		} finally {
-			ratings.close();
-		}
-		double avg = 0;
-		if (count > 0)
-			avg = total / count;
-		return avg;
-	}
+    /**
+     * Helper method to compute the mean of all ratings in a cursor.
+     * The cursor is closed after the ratings are computed.
+     * @param ratings A cursor of ratings to average.
+     * @return The arithmetic mean of all ratings.
+     */
+    public static double computeMeanRating(@WillClose Cursor<Rating> ratings) {
+        double total = 0;
+        long count = 0;
+        try {
+            for (Rating r: ratings) {
+                total += r.getRating();
+                count += 1;
+            }
+        } finally {
+            ratings.close();
+        }
+        double avg = 0;
+        if (count > 0)
+            avg = total / count;
+        return avg;
+    }
 }

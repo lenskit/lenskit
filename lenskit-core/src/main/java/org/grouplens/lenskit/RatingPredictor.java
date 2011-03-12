@@ -31,28 +31,28 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 /**
  * Interface for rating prediction.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @ParametersAreNonnullByDefault
 public interface RatingPredictor {
-	/**
-	 * Generate a prediction for a single item.
-	 * @param user the user ID
-	 * @param ratings the user's rating history
-	 * @param item the item for which a prediction is required
-	 * @return the prediction, or <tt>null</tt> if no prediction is possible
-	 */
-	@Nullable @CheckForNull
-	public ScoredId predict(long user, SparseVector ratings, long item);
-	
-	/**
-	 * Generate predictions for a collection of items.
-	 * @param user the user ID
-	 * @param ratings the user's ratings
-	 * @param items the items for which predictions are desired
-	 * @return A mapping from item IDs to predicted preference.  This mapping
-	 * may not contain all requested items.
-	 */
-	@Nonnull
-	public SparseVector predict(long user, SparseVector ratings, Collection<Long> items);
+    /**
+     * Generate a prediction for a single item.
+     * @param user the user ID
+     * @param ratings the user's rating history
+     * @param item the item for which a prediction is required
+     * @return the prediction, or <tt>null</tt> if no prediction is possible
+     */
+    @Nullable @CheckForNull
+    public ScoredId predict(long user, SparseVector ratings, long item);
+
+    /**
+     * Generate predictions for a collection of items.
+     * @param user the user ID
+     * @param ratings the user's ratings
+     * @param items the items for which predictions are desired
+     * @return A mapping from item IDs to predicted preference.  This mapping
+     * may not contain all requested items.
+     */
+    @Nonnull
+    public SparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 }

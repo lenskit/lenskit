@@ -46,77 +46,77 @@ import org.grouplens.lenskit.util.IndexedItemScore;
 @Immutable
 public class ItemItemModel implements Serializable {
 
-	private static final long serialVersionUID = 7040201805529926395L;
+    private static final long serialVersionUID = 7040201805529926395L;
 
-	private final Index itemIndexer;
-	private final SimilarityMatrix matrix;
-	private final RatingPredictor baseline;
-	private final LongSortedSet itemUniverse;
+    private final Index itemIndexer;
+    private final SimilarityMatrix matrix;
+    private final RatingPredictor baseline;
+    private final LongSortedSet itemUniverse;
 
-	public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix,
-			LongSortedSet items) {
-		this.itemIndexer = indexer;
-		this.baseline = baseline;
-		this.matrix = matrix;
-		this.itemUniverse = items;
-	}
+    public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix,
+            LongSortedSet items) {
+        this.itemIndexer = indexer;
+        this.baseline = baseline;
+        this.matrix = matrix;
+        this.itemUniverse = items;
+    }
 
-	public Iterable<IndexedItemScore> getNeighbors(long item) {
-		int idx = itemIndexer.getIndex(item);
-		if (idx >= 0) {
-			return matrix.getNeighbors(itemIndexer.getIndex(item));
-		} else {
-			return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
-		}
-	}
+    public Iterable<IndexedItemScore> getNeighbors(long item) {
+        int idx = itemIndexer.getIndex(item);
+        if (idx >= 0) {
+            return matrix.getNeighbors(itemIndexer.getIndex(item));
+        } else {
+            return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
+        }
+    }
 
-	public int getItemIndex(long id) {
-		return itemIndexer.getIndex(id);
-	}
+    public int getItemIndex(long id) {
+        return itemIndexer.getIndex(id);
+    }
 
-	public long getItem(int idx) {
-		return itemIndexer.getId(idx);
-	}
+    public long getItem(int idx) {
+        return itemIndexer.getId(idx);
+    }
 
-	public LongSortedSet getItemUniverse() {
-		return itemUniverse;
-	}
+    public LongSortedSet getItemUniverse() {
+        return itemUniverse;
+    }
 
-	public boolean hasBaseline() {
-		return baseline != null;
-	}
+    public boolean hasBaseline() {
+        return baseline != null;
+    }
 
-	/**
-	 * Subtract the baseline recommender from a set of ratings.
-	 * <p>
-	 * This method computes the baseline predictions for all items in <var>target</var>
-	 * and subtracts the prediction from the value in <var>target</var>.  This
-	 * subtraction is done in-place by calling {@link MutableSparseVector#subtract(MutableSparseVector)}
-	 * on <var>target</var>.
-	 *
-	 * @param user The user ID.
-	 * @param ratings The user's rating vector.
-	 * @param target The vector from which the baseline is to be subtracted.
-	 */
-	public void subtractBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-		if (baseline != null) {
-			SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
-			target.subtract(basePreds);
-		}
-	}
+    /**
+     * Subtract the baseline recommender from a set of ratings.
+     * <p>
+     * This method computes the baseline predictions for all items in <var>target</var>
+     * and subtracts the prediction from the value in <var>target</var>.  This
+     * subtraction is done in-place by calling {@link MutableSparseVector#subtract(MutableSparseVector)}
+     * on <var>target</var>.
+     *
+     * @param user The user ID.
+     * @param ratings The user's rating vector.
+     * @param target The vector from which the baseline is to be subtracted.
+     */
+    public void subtractBaseline(long user, SparseVector ratings, MutableSparseVector target) {
+        if (baseline != null) {
+            SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
+            target.subtract(basePreds);
+        }
+    }
 
-	public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-		if (baseline != null) {
-			SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
-			target.add(basePreds);
-		}
-	}
+    public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
+        if (baseline != null) {
+            SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
+            target.add(basePreds);
+        }
+    }
 
-	public double addBaseline(long user, SparseVector ratings, long item, double prediction) {
-		if (baseline != null) {
-			ScoredId basePred = baseline.predict(user, ratings, item);
-			prediction += basePred.getScore();
-		}
-		return prediction;
-	}
+    public double addBaseline(long user, SparseVector ratings, long item, double prediction) {
+        if (baseline != null) {
+            ScoredId basePred = baseline.predict(user, ratings, item);
+            prediction += basePred.getScore();
+        }
+        return prediction;
+    }
 }

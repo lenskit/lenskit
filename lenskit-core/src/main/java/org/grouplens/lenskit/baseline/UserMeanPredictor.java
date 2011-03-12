@@ -31,64 +31,64 @@ import com.google.inject.Provider;
 
 /**
  * Rating predictor that returns the user's average rating for all predictions.
- * 
+ *
  * If the user has no ratings, the global mean is returned.  This is done by
  * actually computing the average offset from the global mean and adding back
  * the global mean for the returned prediction.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class UserMeanPredictor implements RatingPredictor {
-	private final double globalMean;
-	
-	/**
-	 * Construct a predictor that does not do global mean offsetting.
-	 */
-	public UserMeanPredictor() {
-		globalMean = 0;
-	}
+    private final double globalMean;
 
-	/**
-	 * Construct a predictor that computes user means offset by the global mean.
-	 * @param ratings
-	 */
-	public UserMeanPredictor(RatingDataSource ratings) {
-		globalMean = GlobalMeanPredictor.computeMeanRating(ratings.getRatings());
-	}
-	
-	/**
-	 * Injectable constructor for offset-based user mean prediction.
-	 * @param ratingProvider
-	 */
-	@Inject
-	public UserMeanPredictor(Provider<RatingDataSource> ratingProvider) {
-		this(ratingProvider.get());
-	}
-	
-	static double average(SparseVector ratings, double offset) {
-		if (ratings.isEmpty()) return 0;
-		
-		double total = ratings.sum();
-		total -= ratings.size() * offset;
-		return total / ratings.size();
-	}
+    /**
+     * Construct a predictor that does not do global mean offsetting.
+     */
+    public UserMeanPredictor() {
+        globalMean = 0;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
-	 */
-	@Override
-	public MutableSparseVector predict(long user, SparseVector ratings,
-			Collection<Long> items) {
-		double mean = average(ratings, globalMean) + globalMean;
-		return ConstantPredictor.constantPredictions(items, mean);
-	}
+    /**
+     * Construct a predictor that computes user means offset by the global mean.
+     * @param ratings
+     */
+    public UserMeanPredictor(RatingDataSource ratings) {
+        globalMean = GlobalMeanPredictor.computeMeanRating(ratings.getRatings());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
-	 */
-	@Override
-	public ScoredId predict(long user, SparseVector ratings, long item) {
-		return new ScoredId(item, average(ratings, globalMean) + globalMean);
-	}
+    /**
+     * Injectable constructor for offset-based user mean prediction.
+     * @param ratingProvider
+     */
+    @Inject
+    public UserMeanPredictor(Provider<RatingDataSource> ratingProvider) {
+        this(ratingProvider.get());
+    }
+
+    static double average(SparseVector ratings, double offset) {
+        if (ratings.isEmpty()) return 0;
+
+        double total = ratings.sum();
+        total -= ratings.size() * offset;
+        return total / ratings.size();
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
+     */
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings,
+            Collection<Long> items) {
+        double mean = average(ratings, globalMean) + globalMean;
+        return ConstantPredictor.constantPredictions(items, mean);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
+     */
+    @Override
+    public ScoredId predict(long user, SparseVector ratings, long item) {
+        return new ScoredId(item, average(ratings, globalMean) + globalMean);
+    }
 }

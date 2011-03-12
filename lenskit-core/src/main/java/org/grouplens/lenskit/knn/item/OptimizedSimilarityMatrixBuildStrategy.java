@@ -38,52 +38,52 @@ import org.slf4j.LoggerFactory;
  *
  */
 class OptimizedSimilarityMatrixBuildStrategy implements
-		SimilarityMatrixBuildStrategy {
-	private static final Logger logger = LoggerFactory.getLogger(OptimizedSimilarityMatrixBuildStrategy.class);
-	private final SimilarityMatrixBuilderFactory matrixFactory;
-	private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
+        SimilarityMatrixBuildStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(OptimizedSimilarityMatrixBuildStrategy.class);
+    private final SimilarityMatrixBuilderFactory matrixFactory;
+    private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-	OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
-		matrixFactory = mfact;
-		similarityFunction = sim;
-	}
+    OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
+        matrixFactory = mfact;
+        similarityFunction = sim;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-	 */
-	@Override
-	public SimilarityMatrix buildMatrix(BuildState state) {
-		final SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
-		logger.debug("Building with AVL tree implementation");
-		final int nitems = state.itemCount;
-		for (int i = 0; i < nitems; i++) {
-			final SparseVector v = state.itemRatings.get(i);
-			final IntSet candidates = new IntOpenHashSet();
-			final LongIterator uiter = v.keySet().iterator();
-			while (uiter.hasNext()) {
-				long user = uiter.next();
-				IntSortedSet uitems = state.userItemSets.get(user);
-				candidates.addAll(uitems);
-			}
-			candidates.rem(i);
-			
-			final IntIterator iter = candidates.iterator();
-			while (iter.hasNext()) {
-				final int j = iter.nextInt();
-				final double sim = similarityFunction.similarity(v,
-						state.itemRatings.get(j));
-				builder.put(i,j,sim);
-			}
-		}
-		return builder.build();
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
+     */
+    @Override
+    public SimilarityMatrix buildMatrix(BuildState state) {
+        final SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
+        logger.debug("Building with AVL tree implementation");
+        final int nitems = state.itemCount;
+        for (int i = 0; i < nitems; i++) {
+            final SparseVector v = state.itemRatings.get(i);
+            final IntSet candidates = new IntOpenHashSet();
+            final LongIterator uiter = v.keySet().iterator();
+            while (uiter.hasNext()) {
+                long user = uiter.next();
+                IntSortedSet uitems = state.userItemSets.get(user);
+                candidates.addAll(uitems);
+            }
+            candidates.rem(i);
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
-	 */
-	@Override
-	public boolean needsUserItemSets() {
-		return true;
-	}
+            final IntIterator iter = candidates.iterator();
+            while (iter.hasNext()) {
+                final int j = iter.nextInt();
+                final double sim = similarityFunction.similarity(v,
+                        state.itemRatings.get(j));
+                builder.put(i,j,sim);
+            }
+        }
+        return builder.build();
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
+     */
+    @Override
+    public boolean needsUserItemSets() {
+        return true;
+    }
 
 }

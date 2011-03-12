@@ -22,7 +22,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
  * A similarity function of vectors that is optimizable based on its keys.
- * 
+ *
  * Optimizable similarity functions always return 0 if the id sets of the
  * two maps are disjoint, so the algorithm can optimize calls by skipping
  * computation for maps with disjoint sets.

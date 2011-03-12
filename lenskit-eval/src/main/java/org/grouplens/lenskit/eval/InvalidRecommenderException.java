@@ -30,67 +30,67 @@ import javax.annotation.Nullable;
  */
 @SuppressWarnings("serial")
 public class InvalidRecommenderException extends Exception {
-	private final @Nullable URI sourceUri;
+    private final @Nullable URI sourceUri;
 
-	/**
-	 * 
-	 */	
-	public InvalidRecommenderException() {
-		sourceUri = null;
-	}
+    /**
+     *
+     */
+    public InvalidRecommenderException() {
+        sourceUri = null;
+    }
 
-	/**
-	 * @param message
-	 */
-	public InvalidRecommenderException(String message) {
-		super(message);
-		sourceUri = null;
-	}
-	
-	public InvalidRecommenderException(URI uri, String message) {
-		super(message);
-		sourceUri = uri;
-	}
+    /**
+     * @param message
+     */
+    public InvalidRecommenderException(String message) {
+        super(message);
+        sourceUri = null;
+    }
 
-	/**
-	 * @param cause
-	 */
-	public InvalidRecommenderException(Throwable cause) {
-		super(cause);
-		sourceUri = null;
-	}
-	
-	public InvalidRecommenderException(URI uri, Throwable cause) {
-		super(cause);
-		sourceUri = uri;
-	}
+    public InvalidRecommenderException(URI uri, String message) {
+        super(message);
+        sourceUri = uri;
+    }
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public InvalidRecommenderException(String message, Throwable cause) {
-		super(message, cause);
-		sourceUri = null;
-	}
-	
-	public InvalidRecommenderException(URI uri, String message, Throwable cause) {
-		super(message, cause);
-		sourceUri = uri;
-	}
+    /**
+     * @param cause
+     */
+    public InvalidRecommenderException(Throwable cause) {
+        super(cause);
+        sourceUri = null;
+    }
 
-	public @Nullable URI getSourceUri() {
-		return sourceUri;
-	}
-	
-	@Override
-	public String getMessage() {
-		String msg = super.getMessage();
-		if (sourceUri != null) {
-			URI base = new File("").toURI();
-			URI simple = base.relativize(sourceUri);
-			msg += "\nEncountered in " + simple.toString();
-		}
-		return msg;
-	}
+    public InvalidRecommenderException(URI uri, Throwable cause) {
+        super(cause);
+        sourceUri = uri;
+    }
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public InvalidRecommenderException(String message, Throwable cause) {
+        super(message, cause);
+        sourceUri = null;
+    }
+
+    public InvalidRecommenderException(URI uri, String message, Throwable cause) {
+        super(message, cause);
+        sourceUri = uri;
+    }
+
+    public @Nullable URI getSourceUri() {
+        return sourceUri;
+    }
+
+    @Override
+    public String getMessage() {
+        String msg = super.getMessage();
+        if (sourceUri != null) {
+            URI base = new File("").toURI();
+            URI simple = base.relativize(sourceUri);
+            msg += "\nEncountered in " + simple.toString();
+        }
+        return msg;
+    }
 }

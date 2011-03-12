@@ -23,5 +23,5 @@ package org.grouplens.lenskit.util.parallel;
  *
  */
 public interface WorkerFactory<T extends Worker> {
-	public T create(Thread owner);
+    public T create(Thread owner);
 }

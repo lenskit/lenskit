@@ -32,8 +32,8 @@ import java.io.Serializable;
  *
  */
 public interface Index extends Serializable {
-	int getIndex(long obj);
-	long getId(int idx);
-	int getObjectCount();
-	LongList getIds();
+    int getIndex(long obj);
+    long getId(int idx);
+    int getObjectCount();
+    LongList getIds();
 }

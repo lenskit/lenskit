@@ -32,18 +32,18 @@ import org.grouplens.common.cursors.AbstractCursor;
  *
  */
 public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
-		LongCursor {
+        LongCursor {
 
-	/**
-	 * Implement {@link Cursor#next()} by delegating to {@link #nextLong()}.
-	 */
-	@Override
-	public Long next() {
-		return nextLong();
-	}
+    /**
+     * Implement {@link Cursor#next()} by delegating to {@link #nextLong()}.
+     */
+    @Override
+    public Long next() {
+        return nextLong();
+    }
 
-	public LongIterator iterator() {
-		return new LongCursorIterator(this);
-	}
+    public LongIterator iterator() {
+        return new LongCursorIterator(this);
+    }
 
 }

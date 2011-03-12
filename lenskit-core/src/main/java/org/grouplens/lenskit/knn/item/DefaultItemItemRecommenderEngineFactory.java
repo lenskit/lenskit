@@ -24,14 +24,14 @@ package org.grouplens.lenskit.knn.item;
  *
  */
 class DefaultItemItemRecommenderEngineFactory implements
-		ItemItemRecommenderServiceFactory {
+        ItemItemRecommenderServiceFactory {
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.knn.ItemItemRecommenderServiceFactory#create(org.grouplens.lenskit.knn.ItemItemModel)
-	 */
-	@Override
-	public ItemItemRecommenderService create(ItemItemModel model) {
-		return new ItemItemRecommenderService(model);
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.knn.ItemItemRecommenderServiceFactory#create(org.grouplens.lenskit.knn.ItemItemModel)
+     */
+    @Override
+    public ItemItemRecommenderService create(ItemItemModel model) {
+        return new ItemItemRecommenderService(model);
+    }
 
 }

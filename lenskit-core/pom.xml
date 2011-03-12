@@ -28,10 +28,10 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>com.google.guava</groupId>
-    	<artifactId>guava</artifactId>
-    	<type>jar</type>
-    	<scope>compile</scope>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -40,15 +40,15 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-    	<groupId>com.google.inject.extensions</groupId>
-    	<artifactId>guice-throwingproviders</artifactId>
-    	<version>3.0-rc2</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-throwingproviders</artifactId>
+      <version>3.0-rc2</version>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>org.grouplens.common</groupId>
-    	<artifactId>common-core</artifactId>
+      <groupId>org.grouplens.common</groupId>
+      <artifactId>common-core</artifactId>
     </dependency>
   </dependencies>
 
@@ -63,7 +63,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <profiles>
     <profile>
       <id>data-tests</id>

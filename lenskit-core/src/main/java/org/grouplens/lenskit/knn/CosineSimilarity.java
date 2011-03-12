@@ -32,31 +32,31 @@ import com.google.inject.Inject;
  *
  */
 public class CosineSimilarity
-	implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
-	private static final Logger logger = LoggerFactory.getLogger(CosineSimilarity.class);
-	
-	private final double dampingFactor;
-	
-	public CosineSimilarity() {
-		this(0.0);
-	}
-	
-	@Inject
-	public CosineSimilarity(@SimilarityDamper double dampingFactor) {
-		this.dampingFactor = dampingFactor;
-		logger.debug("Using damping factor {}", dampingFactor);
-	}
+    implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+    private static final Logger logger = LoggerFactory.getLogger(CosineSimilarity.class);
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.Similarity#similarity(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public double similarity(SparseVector vec1, SparseVector vec2) {
-		final double dot = vec1.dot(vec2);
-		final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-		if (denom == 0)
-			return 0;
-		
-		return dot / denom;
-	}
+    private final double dampingFactor;
+
+    public CosineSimilarity() {
+        this(0.0);
+    }
+
+    @Inject
+    public CosineSimilarity(@SimilarityDamper double dampingFactor) {
+        this.dampingFactor = dampingFactor;
+        logger.debug("Using damping factor {}", dampingFactor);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.Similarity#similarity(java.lang.Object, java.lang.Object)
+     */
+    @Override
+    public double similarity(SparseVector vec1, SparseVector vec2) {
+        final double dot = vec1.dot(vec2);
+        final double denom = vec1.norm() * vec2.norm() + dampingFactor;
+        if (denom == 0)
+            return 0;
+
+        return dot / denom;
+    }
 }

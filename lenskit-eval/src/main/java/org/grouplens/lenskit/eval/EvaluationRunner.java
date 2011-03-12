@@ -53,199 +53,199 @@ import com.google.inject.grapher.graphviz.GraphvizRenderer;
 
 /**
  * Main class for running k-fold cross-validation benchmarks on recommenders.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public final class EvaluationRunner {
-	private static Logger logger = LoggerFactory
-			.getLogger(EvaluationRunner.class);
-	
-	@SuppressWarnings("serial")
-	private static class AbortException extends RuntimeException {
-		private int code;
-		public AbortException(int code) {
-			super();
-			this.code = code;
-		}
-		
-		public int getCode() {
-			return code;
-		}
-	}
+    private static Logger logger = LoggerFactory
+            .getLogger(EvaluationRunner.class);
 
-	/**
-	 * Abort the program with an error message and exit code.
-	 * @see #fail(int, String, Exception)
-	 * @param code The exit code.
-	 * @param msg The message (will be printed on {@link System#err}).
-	 */
-	@SuppressWarnings("unused")
-	private static void fail(int code, String msg) {
-		// look for a no-return annotation for this method
-		fail(code, msg, null);
-	}
+    @SuppressWarnings("serial")
+    private static class AbortException extends RuntimeException {
+        private int code;
+        public AbortException(int code) {
+            super();
+            this.code = code;
+        }
 
-	/**
-	 * Abort the program with an exception stack trace.
-	 * @see #fail(int, String, Exception)
-	 * @param code The exit code.
-	 * @param err The exception to stacktrace.
-	 */
-	@SuppressWarnings("unused")
-	private static void fail(int code, Exception err) {
-		fail(code, null, err);
-	}
+        public int getCode() {
+            return code;
+        }
+    }
 
-	/**
-	 * Abort the program with an error message, possibly augmented with an
-	 * exception.
-	 * @param code The exit code.
-	 * @param msg The error message (can be <tt>null</tt>; otherwise, will be
-	 * printed to {@link System#err})
-	 * @param err The exception (if not <tt>null</tt>, its stack trace will be
-	 * printed to {@link System#err})
-	 */
-	private static void fail(int code, String msg, Exception err) {
-		logger.error("Aborting with code {}: {}", code, msg);
-		if (msg != null)
-			System.err.println(msg);
-		if (err != null)
-			err.printStackTrace(System.err);
-		throw new AbortException(code);
-	}
+    /**
+     * Abort the program with an error message and exit code.
+     * @see #fail(int, String, Exception)
+     * @param code The exit code.
+     * @param msg The message (will be printed on {@link System#err}).
+     */
+    @SuppressWarnings("unused")
+    private static void fail(int code, String msg) {
+        // look for a no-return annotation for this method
+        fail(code, msg, null);
+    }
 
-	/**
-	 * Entry point for the benchmark runner.  This just parses the command line
-	 * arguments, creates a benchmark runner, and gets it going.
-	 * @param args The command line arguments.
-	 */
-	public static void main(String[] args) {
-		EvaluatorOptions options = null;
-		try {
-			options = CliFactory.parseArguments(EvaluatorOptions.class, args);
-		} catch (ArgumentValidationException e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
-		}
+    /**
+     * Abort the program with an exception stack trace.
+     * @see #fail(int, String, Exception)
+     * @param code The exit code.
+     * @param err The exception to stacktrace.
+     */
+    @SuppressWarnings("unused")
+    private static void fail(int code, Exception err) {
+        fail(code, null, err);
+    }
 
-		EvaluationRunner runner = new EvaluationRunner(options);
-		try {
-			runner.run();
-		} catch (AbortException e) {
-			System.exit(e.getCode());
-		}
-	}
-	
-	/* The actual EvaluationRunner implementation starts here. */
+    /**
+     * Abort the program with an error message, possibly augmented with an
+     * exception.
+     * @param code The exit code.
+     * @param msg The error message (can be <tt>null</tt>; otherwise, will be
+     * printed to {@link System#err})
+     * @param err The exception (if not <tt>null</tt>, its stack trace will be
+     * printed to {@link System#err})
+     */
+    private static void fail(int code, String msg, Exception err) {
+        logger.error("Aborting with code {}: {}", code, msg);
+        if (msg != null)
+            System.err.println(msg);
+        if (err != null)
+            err.printStackTrace(System.err);
+        throw new AbortException(code);
+    }
 
-	private EvaluatorOptions options;
+    /**
+     * Entry point for the benchmark runner.  This just parses the command line
+     * arguments, creates a benchmark runner, and gets it going.
+     * @param args The command line arguments.
+     */
+    public static void main(String[] args) {
+        EvaluatorOptions options = null;
+        try {
+            options = CliFactory.parseArguments(EvaluatorOptions.class, args);
+        } catch (ArgumentValidationException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
 
-	/**
-	 * Instantiate a new benchmark runner with options.
-	 * @param options The options passed to the benchmark runner.
-	 */
-	private EvaluationRunner(EvaluatorOptions options) {
-		this.options = options;
-	}
+        EvaluationRunner runner = new EvaluationRunner(options);
+        try {
+            runner.run();
+        } catch (AbortException e) {
+            System.exit(e.getCode());
+        }
+    }
 
-	/**
-	 * Do the real work of running the benchmarks.
-	 */
-	private void run() {
-		List<AlgorithmInstance> algos = loadAlgorithms();
-		
-		if (options.getGraphMode()) {
-			File outFile = options.getOutputFile();
-			logger.info("Writing graph to file {}", outFile);
-			PrintWriter output = new PrintWriter(System.out);
-			try {
-				if (!outFile.getName().isEmpty()) {
-					try {
-						output = new PrintWriter(outFile);
-					} catch (FileNotFoundException e) {
-						fail(2, "Error opening output file", e);
-					}
-				}
-				Injector graphInjector = Guice.createInjector(new GrapherModule(), new GraphvizModule());
-				GraphvizRenderer renderer = graphInjector.getInstance(GraphvizRenderer.class);
-				renderer.setOut(output).setRankdir("TB");
-				Provider<InjectorGrapher> gprovider = graphInjector.getProvider(InjectorGrapher.class);
-				for (AlgorithmInstance algo: algos) {
-					Injector injector = Guice.createInjector(new AbstractModule() {
-						protected void configure() {
-						}
-						@SuppressWarnings("unused")
-						@Provides public RatingDataSource provideDataSource() {
-							throw new RuntimeException("No data source available");
-						}
-					}, algo.getModule());
-					try {
-						gprovider.get().of(injector).graph();
-					} catch (IOException e) {
-						fail(3, "Error graphing injector", e);
-					}
-				}
-			} finally {
-				if (outFile.getName().isEmpty())
-					output.close();
-			}
-			logger.info("Graph written, shutting down");
-			return;
-		}
-		
-		RatingDataSource data = null;
-		try {
-			data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
-			if (options.preloadData()) {
-				RatingDataSource source = data;
-				Cursor<Rating> ratings = null;
-				try {
-					ratings = source.getRatings();
-					data = new RatingCollectionDataSource(Cursors.makeList(ratings));
-				} finally {
-					if (ratings != null)
-						ratings.close();
-					source.close();
-				}
-			}
-			
-			Writer output = new OutputStreamWriter(System.out);
-			File outFile = options.getOutputFile();
-			if (!outFile.getName().isEmpty()) {
-				try {
-					output = new FileWriter(outFile);
-				} catch (IOException e) {
-					fail(2, "Error opening output file", e);
-				}
-			}
+    /* The actual EvaluationRunner implementation starts here. */
 
-			try {
-				CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos, output);
-				benchmark.run();
-			} catch (Exception e) {
-				fail(3, "Error running benchmark", e);
-			}
-		} catch (FileNotFoundException e) {
-			fail(2, "Error loading input data", e);
-			return; /* fail will not return */
-		} finally {
-			if (data != null)
-				data.close();
-		}
-		
-		
-	}
-	
-	List<AlgorithmInstance> loadAlgorithms() {
-		List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
-		for (File f: options.getRecommenderSpecs()) {
-			try {
-				algos.add(AlgorithmInstance.load(f));
-			} catch (InvalidRecommenderException e) {
-				fail(2, "Error loading specification " + f.getName(), e);
-			}
-		}
-		return algos;
-	}
+    private EvaluatorOptions options;
+
+    /**
+     * Instantiate a new benchmark runner with options.
+     * @param options The options passed to the benchmark runner.
+     */
+    private EvaluationRunner(EvaluatorOptions options) {
+        this.options = options;
+    }
+
+    /**
+     * Do the real work of running the benchmarks.
+     */
+    private void run() {
+        List<AlgorithmInstance> algos = loadAlgorithms();
+
+        if (options.getGraphMode()) {
+            File outFile = options.getOutputFile();
+            logger.info("Writing graph to file {}", outFile);
+            PrintWriter output = new PrintWriter(System.out);
+            try {
+                if (!outFile.getName().isEmpty()) {
+                    try {
+                        output = new PrintWriter(outFile);
+                    } catch (FileNotFoundException e) {
+                        fail(2, "Error opening output file", e);
+                    }
+                }
+                Injector graphInjector = Guice.createInjector(new GrapherModule(), new GraphvizModule());
+                GraphvizRenderer renderer = graphInjector.getInstance(GraphvizRenderer.class);
+                renderer.setOut(output).setRankdir("TB");
+                Provider<InjectorGrapher> gprovider = graphInjector.getProvider(InjectorGrapher.class);
+                for (AlgorithmInstance algo: algos) {
+                    Injector injector = Guice.createInjector(new AbstractModule() {
+                        protected void configure() {
+                        }
+                        @SuppressWarnings("unused")
+                        @Provides public RatingDataSource provideDataSource() {
+                            throw new RuntimeException("No data source available");
+                        }
+                    }, algo.getModule());
+                    try {
+                        gprovider.get().of(injector).graph();
+                    } catch (IOException e) {
+                        fail(3, "Error graphing injector", e);
+                    }
+                }
+            } finally {
+                if (outFile.getName().isEmpty())
+                    output.close();
+            }
+            logger.info("Graph written, shutting down");
+            return;
+        }
+
+        RatingDataSource data = null;
+        try {
+            data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
+            if (options.preloadData()) {
+                RatingDataSource source = data;
+                Cursor<Rating> ratings = null;
+                try {
+                    ratings = source.getRatings();
+                    data = new RatingCollectionDataSource(Cursors.makeList(ratings));
+                } finally {
+                    if (ratings != null)
+                        ratings.close();
+                    source.close();
+                }
+            }
+
+            Writer output = new OutputStreamWriter(System.out);
+            File outFile = options.getOutputFile();
+            if (!outFile.getName().isEmpty()) {
+                try {
+                    output = new FileWriter(outFile);
+                } catch (IOException e) {
+                    fail(2, "Error opening output file", e);
+                }
+            }
+
+            try {
+                CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos, output);
+                benchmark.run();
+            } catch (Exception e) {
+                fail(3, "Error running benchmark", e);
+            }
+        } catch (FileNotFoundException e) {
+            fail(2, "Error loading input data", e);
+            return; /* fail will not return */
+        } finally {
+            if (data != null)
+                data.close();
+        }
+
+
+    }
+
+    List<AlgorithmInstance> loadAlgorithms() {
+        List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
+        for (File f: options.getRecommenderSpecs()) {
+            try {
+                algos.add(AlgorithmInstance.load(f));
+            } catch (InvalidRecommenderException e) {
+                fail(2, "Error loading specification " + f.getName(), e);
+            }
+        }
+        return algos;
+    }
 }

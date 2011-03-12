@@ -41,44 +41,44 @@ import com.google.inject.Module;
  *
  */
 public abstract class ExpensiveRatingDataTest {
-	public static final String DATA_PATH = "org/grouplens/movielens/mldata/ml100k/ratings.dat";
-	protected RatingDataSource dataSource;
+    public static final String DATA_PATH = "org/grouplens/movielens/mldata/ml100k/ratings.dat";
+    protected RatingDataSource dataSource;
 
-	@BeforeClass
-	public static void printMessage() {
-		System.out.println("This test uses the MovieLens 100K data set.");
-		System.out.println("This data set is only licensed for non-commercial use.");
-		System.out.println("For more information, visit http://reflens.grouplens.org/ml-data/");
-	}
+    @BeforeClass
+    public static void printMessage() {
+        System.out.println("This test uses the MovieLens 100K data set.");
+        System.out.println("This data set is only licensed for non-commercial use.");
+        System.out.println("For more information, visit http://reflens.grouplens.org/ml-data/");
+    }
 
-	@BeforeClass
-	public static void getDataURL() {
+    @BeforeClass
+    public static void getDataURL() {
 
-	}
+    }
 
-	public ExpensiveRatingDataTest() {
-		super();
-	}
+    public ExpensiveRatingDataTest() {
+        super();
+    }
 
-	@Before
-	public void createDataSource() {
-		URL dataUrl = ClassLoader.getSystemClassLoader().getResource(DATA_PATH);
-		dataSource = new SimpleFileDataSource(dataUrl);
-	}
+    @Before
+    public void createDataSource() {
+        URL dataUrl = ClassLoader.getSystemClassLoader().getResource(DATA_PATH);
+        dataSource = new SimpleFileDataSource(dataUrl);
+    }
 
-	@After
-	public void closeDataSource() {
-		dataSource.close();
-		dataSource = null;
-	}
+    @After
+    public void closeDataSource() {
+        dataSource.close();
+        dataSource = null;
+    }
 
-	protected Module dataModule() {
-		return new AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(RatingDataSource.class).toInstance(dataSource);
-			}
-		};
-	}
+    protected Module dataModule() {
+        return new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(RatingDataSource.class).toInstance(dataSource);
+            }
+        };
+    }
 
 }

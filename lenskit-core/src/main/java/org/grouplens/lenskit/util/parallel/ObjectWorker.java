@@ -19,5 +19,5 @@
 package org.grouplens.lenskit.util.parallel;
 
 public interface ObjectWorker<T> extends Worker {
-	public void doJob(T object);
+    public void doJob(T object);
 }

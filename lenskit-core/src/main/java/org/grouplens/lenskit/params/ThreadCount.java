@@ -31,7 +31,7 @@ import com.google.inject.BindingAnnotation;
  * The number of threads to use for some operation.  The default value for this
  * parameter in the default modules is the number of CPUs available (determined
  * via {@link Runtime#availableProcessors()}).
- * 
+ *
  * <p>Due to limitations in Java's annotation mechanism, the default value for
  * this class is special-cased in the base recommender module.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

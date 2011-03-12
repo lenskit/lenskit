@@ -27,61 +27,61 @@ import java.util.Queue;
  *
  */
 public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
-	private final Iterator<I> iterator;
-	private final WorkerFactory<W> factory;
-	
-	public IteratorTaskQueue(Iterator<I> iter, WorkerFactory<W> factory) {
-		iterator = iter;
-		this.factory = factory;
-	}
-	
-	public void run(int nthreads) {
-		Queue<Thread> threads = new LinkedList<Thread>();
-		ThreadGroup group = new ThreadGroup(factory.getClass().getName());
-		for (int i = 0; i < nthreads; i++) {
-			String name = String.format("%s(%d)", factory.getClass().getName(), i);
-			Thread t = new TaskThread(group, name);
-			threads.add(t);
-			t.start();
-		}
-		while (!threads.isEmpty()) {
-			// FIXME handle exceptions in worker threads
-			Thread t = threads.element();
-			try {
-				t.join();
-				if (!t.isAlive())
-					threads.remove();
-			} catch (InterruptedException e) {
-				/* no-op, try again */
-			}
-		}
-	}
-	public static <I,W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
-		IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(iter, factory);
-		queue.run(nthreads);
-	}
-	
-	private synchronized I nextObject() {
-		if (iterator.hasNext()) {
-			return iterator.next();
-		} else {
-			return null;
-		}
-	}
-	
-	private class TaskThread extends Thread {
-		public TaskThread(ThreadGroup group, String name) {
-			super(group, name);
-		}
-		@Override
-		public void run() {
-			W worker = factory.create(this);
-			I item;
-			while ((item = nextObject()) != null) {
-				worker.doJob(item);
-			}
-			worker.finish();
-		}
-		
-	}
+    private final Iterator<I> iterator;
+    private final WorkerFactory<W> factory;
+
+    public IteratorTaskQueue(Iterator<I> iter, WorkerFactory<W> factory) {
+        iterator = iter;
+        this.factory = factory;
+    }
+
+    public void run(int nthreads) {
+        Queue<Thread> threads = new LinkedList<Thread>();
+        ThreadGroup group = new ThreadGroup(factory.getClass().getName());
+        for (int i = 0; i < nthreads; i++) {
+            String name = String.format("%s(%d)", factory.getClass().getName(), i);
+            Thread t = new TaskThread(group, name);
+            threads.add(t);
+            t.start();
+        }
+        while (!threads.isEmpty()) {
+            // FIXME handle exceptions in worker threads
+            Thread t = threads.element();
+            try {
+                t.join();
+                if (!t.isAlive())
+                    threads.remove();
+            } catch (InterruptedException e) {
+                /* no-op, try again */
+            }
+        }
+    }
+    public static <I,W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
+        IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(iter, factory);
+        queue.run(nthreads);
+    }
+
+    private synchronized I nextObject() {
+        if (iterator.hasNext()) {
+            return iterator.next();
+        } else {
+            return null;
+        }
+    }
+
+    private class TaskThread extends Thread {
+        public TaskThread(ThreadGroup group, String name) {
+            super(group, name);
+        }
+        @Override
+        public void run() {
+            W worker = factory.create(this);
+            I item;
+            while ((item = nextObject()) != null) {
+                worker.doJob(item);
+            }
+            worker.finish();
+        }
+
+    }
 }

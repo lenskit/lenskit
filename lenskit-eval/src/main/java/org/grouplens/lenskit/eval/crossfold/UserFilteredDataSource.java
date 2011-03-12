@@ -43,130 +43,130 @@ import com.google.common.base.Predicate;
  *
  */
 public class UserFilteredDataSource implements RatingDataSource {
-	private static final Logger logger = LoggerFactory.getLogger(UserFilteredDataSource.class);
-	private RatingDataSource base;
-	private final Predicate<Long> userFilter;
-	private final boolean closeBase;
-	private SoftReference<LongList> userCache;
+    private static final Logger logger = LoggerFactory.getLogger(UserFilteredDataSource.class);
+    private RatingDataSource base;
+    private final Predicate<Long> userFilter;
+    private final boolean closeBase;
+    private SoftReference<LongList> userCache;
 
-	public UserFilteredDataSource(RatingDataSource base, Predicate<Long> filter) {
-		this(base, false, filter);
-	}
+    public UserFilteredDataSource(RatingDataSource base, Predicate<Long> filter) {
+        this(base, false, filter);
+    }
 
-	public UserFilteredDataSource(RatingDataSource base, boolean closeBase, Predicate<Long> filter) {
-		this.base = base;
-		this.closeBase = closeBase;
-		userFilter = filter;
-	}
+    public UserFilteredDataSource(RatingDataSource base, boolean closeBase, Predicate<Long> filter) {
+        this.base = base;
+        this.closeBase = closeBase;
+        userFilter = filter;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.RatingDataSource#getRatings()
-	 */
-	@Override
-	public Cursor<Rating> getRatings() {
-		return org.grouplens.common.cursors.Cursors.filter(base.getRatings(), new RatingPredicate());
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings()
+     */
+    @Override
+    public Cursor<Rating> getRatings() {
+        return org.grouplens.common.cursors.Cursors.filter(base.getRatings(), new RatingPredicate());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.RatingDataSource#getRatings(org.grouplens.lenskit.data.SortOrder)
-	 */
-	@Override
-	public Cursor<Rating> getRatings(SortOrder order) {
-		return org.grouplens.common.cursors.Cursors.filter(base.getRatings(order), new RatingPredicate());
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings(org.grouplens.lenskit.data.SortOrder)
+     */
+    @Override
+    public Cursor<Rating> getRatings(SortOrder order) {
+        return org.grouplens.common.cursors.Cursors.filter(base.getRatings(order), new RatingPredicate());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatingProfiles()
-	 */
-	@Override
-	public Cursor<UserRatingProfile> getUserRatingProfiles() {
-		return org.grouplens.common.cursors.Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatingProfiles()
+     */
+    @Override
+    public Cursor<UserRatingProfile> getUserRatingProfiles() {
+        return org.grouplens.common.cursors.Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long)
-	 */
-	@Override
-	public Cursor<Rating> getUserRatings(long userId) {
-		if (userFilter.apply(userId))
-			return base.getUserRatings(userId);
-		else
-			return org.grouplens.common.cursors.Cursors.empty();
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long)
+     */
+    @Override
+    public Cursor<Rating> getUserRatings(long userId) {
+        if (userFilter.apply(userId))
+            return base.getUserRatings(userId);
+        else
+            return org.grouplens.common.cursors.Cursors.empty();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.SortOrder)
-	 */
-	@Override
-	public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
-		if (userFilter.apply(userId))
-			return base.getUserRatings(userId, order);
-		else
-			return org.grouplens.common.cursors.Cursors.empty();
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.SortOrder)
+     */
+    @Override
+    public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
+        if (userFilter.apply(userId))
+            return base.getUserRatings(userId, order);
+        else
+            return org.grouplens.common.cursors.Cursors.empty();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.DataSource#close()
-	 */
-	@Override
-	public void close() {
-		if (closeBase)
-			base.close();
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.DataSource#close()
+     */
+    @Override
+    public void close() {
+        if (closeBase)
+            base.close();
+    }
 
-	@Override
-	public int getItemCount() {
-		return base.getItemCount();
-	}
+    @Override
+    public int getItemCount() {
+        return base.getItemCount();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.DataSource#getItems()
-	 */
-	@Override
-	public LongCursor getItems() {
-		return base.getItems();
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.DataSource#getItems()
+     */
+    @Override
+    public LongCursor getItems() {
+        return base.getItems();
+    }
 
-	private LongList getCachedUsers() {
-		return userCache == null ? null : userCache.get();
-	}
+    private LongList getCachedUsers() {
+        return userCache == null ? null : userCache.get();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.DataSource#getUsers()
-	 */
-	@Override
-	public LongCursor getUsers() {
-		LongList users = getCachedUsers();
-		if (users == null) {
-			logger.trace("Returning fresh user list");
-			return Cursors2.makeLongCursor(org.grouplens.common.cursors.Cursors.filter(base.getUsers(), userFilter));
-		} else {
-			logger.trace("Returning cached user list");
-			return Cursors2.wrap(users);
-		}
-	}
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.DataSource#getUsers()
+     */
+    @Override
+    public LongCursor getUsers() {
+        LongList users = getCachedUsers();
+        if (users == null) {
+            logger.trace("Returning fresh user list");
+            return Cursors2.makeLongCursor(org.grouplens.common.cursors.Cursors.filter(base.getUsers(), userFilter));
+        } else {
+            logger.trace("Returning cached user list");
+            return Cursors2.wrap(users);
+        }
+    }
 
-	@Override
-	public int getUserCount() {
-		LongList users = getCachedUsers();
-		if (users == null) {
-			logger.trace("Caching user list");
-			users = Cursors2.makeList(getUsers());
-			userCache = new SoftReference<LongList>(users);
-		}
-		return users.size();
-	}
+    @Override
+    public int getUserCount() {
+        LongList users = getCachedUsers();
+        if (users == null) {
+            logger.trace("Caching user list");
+            users = Cursors2.makeList(getUsers());
+            userCache = new SoftReference<LongList>(users);
+        }
+        return users.size();
+    }
 
-	private class RatingPredicate implements Predicate<Rating> {
-		public boolean apply(Rating r) {
-			return userFilter.apply(r.getUserId());
-		}
-	}
+    private class RatingPredicate implements Predicate<Rating> {
+        public boolean apply(Rating r) {
+            return userFilter.apply(r.getUserId());
+        }
+    }
 
-	private class RatingProfilePredicate implements Predicate<UserRatingProfile> {
-		public boolean apply(UserRatingProfile profile) {
-			return userFilter.apply(profile.getUser());
-		}
-	}
+    private class RatingProfilePredicate implements Predicate<UserRatingProfile> {
+        public boolean apply(UserRatingProfile profile) {
+            return userFilter.apply(profile.getUser());
+        }
+    }
 
 }

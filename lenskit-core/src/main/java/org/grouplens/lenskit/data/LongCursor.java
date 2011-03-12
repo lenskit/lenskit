@@ -30,5 +30,5 @@ import org.grouplens.common.cursors.Cursor;
  *
  */
 public interface LongCursor extends Cursor<Long>, LongIterable {
-	public long nextLong();
+    public long nextLong();
 }
