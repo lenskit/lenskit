@@ -5,13 +5,12 @@
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
-  <groupId>org.grouplens.reflens</groupId>
-  <artifactId>reflens</artifactId>
+  <groupId>org.grouplens.lenskit</groupId>
+  <artifactId>lenskit</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>RefLens</name>
-  <description>Reference implementation of collaborative filtering
-  recommender systems.</description>
+  <name>LensKit</name>
+  <description>Collaborative filtering toolkit from GroupLens Research</description>
   <url>http://www-users.cs.umn.edu/~ekstrand/reflens</url>
   <organization>
     <name>GroupLens Research</name>
@@ -62,8 +61,8 @@
   </properties>
 
   <modules>
-    <module>reflens-core</module>
-    <module>reflens-eval</module>
+    <module>lenskit-core</module>
+    <module>lenskit-eval</module>
   </modules>
 
   <build>

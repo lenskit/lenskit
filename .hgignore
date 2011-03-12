@@ -6,3 +6,8 @@
 \.csv$
 
 
+\.orig\..*$
+\.orig$
+\.chg\..*$
+\.rej$
+\.conflict\~$
