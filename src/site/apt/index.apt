@@ -4,11 +4,11 @@
 
 About RefLens
 
-  RefLens is an open-source implementation of recommender algorithms
+  LensKit is an open-source implementation of recommender algorithms
   with an emphasis on collaborative filtering.  It is developed by
   {{{http://www.grouplens.org}GroupLens Research}}.
 
-  RefLens is currently alpha softare (see
+  LensKit is currently alpha softare (see
   {{{./versioning.html}Versioning}} for more information).  Please
   download it, try it out, and provide us with feedback on how it
   works for you, but be advised that it is still very much a
@@ -17,7 +17,7 @@ About RefLens
 
 Project Goals
 
-  RefLens is intended to be a reference implementation of common
+  LensKit is intended to be a reference implementation of common
   collaborative filtering algorithms and a useful starting point for
   recommender systems research and education.
 
@@ -31,7 +31,7 @@ Project Goals
   adaptive web and recommender technologies or for self-study on
   recommender implementation.
 
-  We also intend RefLens to be a good platform for experimenting with
+  We also intend LensKit to be a good platform for experimenting with
   new algorithms and evaluation metrics.  There are several specific
   design goals we have to further this objective:
 
@@ -66,7 +66,7 @@ Project Goals
 
 * Non-goals
 
-  RefLens is not intended to be an industry-strength implementation
+  LensKit is not intended to be an industry-strength implementation
   capable of running on a large e-commerce site (although we don't
   mind at all if you use it for that).  It is intended to be useful at
   research and education scales, and suitable for providing
