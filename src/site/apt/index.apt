@@ -74,5 +74,5 @@ Project Goals
 
 Development
 
-  RefLens is developed by GroupLens Research.  Development is hosted
-  on {{{https://bitbucket.org/grouplens/reflens}BitBucket}}.
+  RefLens is developed by GroupLens Research.  Development is managed with
+  {{{http://dev.grouplens.org/trac/lenskit}Trac}}
