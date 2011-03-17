@@ -24,13 +24,13 @@
     </license>
   </licenses>
   <issueManagement>
-    <system>BitBucket</system>
-    <url>http://bitbucket.org/elehack/reflens-dev/issues</url>
+    <system>Trac</system>
+    <url>http://dev.grouplens.org/trac/lenskit</url>
   </issueManagement>
   <scm>
-    <connection>scm:hg:http://bitbucket.org/grouplens/reflens</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/grouplens/reflens</developerConnection>
-    <url>http://bitbucket.org/grouplens/reflens</url>
+    <connection>scm:hg:http://dev.grouplens.org/hg/lenskit</connection>
+    <developerConnection>scm:hg:ssh://dev.grouplens.org//project/Grouplens/hg/lenskit</developerConnection>
+    <url>http://dev.grouplens.org/hg/lenskit</url>
   </scm>
 
   <distributionManagement>
