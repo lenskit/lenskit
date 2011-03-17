@@ -218,7 +218,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>6.1.0</version>
+        <version>6.2.2</version>
       </dependency>
       <dependency>
         <groupId>org.grouplens.common</groupId>
@@ -422,6 +422,10 @@
           </plugin>
         </plugins>
       </reporting>
+    </profile>
+    
+    <profile>
+      <id>data-tests</id>
     </profile>
   </profiles>
 </project>
