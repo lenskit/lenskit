@@ -63,6 +63,7 @@
   <modules>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-knn</module>
     <module>lenskit-svd</module>
   </modules>
 
@@ -426,7 +427,7 @@
     </profile>
     
     <profile>
-      <id>data-tests</id>
+      <id>smoketest</id>
     </profile>
   </profiles>
 </project>
