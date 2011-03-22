@@ -63,6 +63,7 @@
   <modules>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-svd</module>
   </modules>
 
   <build>
