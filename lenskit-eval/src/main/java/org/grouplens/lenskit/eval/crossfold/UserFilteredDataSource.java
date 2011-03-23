@@ -29,7 +29,7 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.slf4j.Logger;
@@ -39,23 +39,19 @@ import com.google.common.base.Predicate;
 
 /**
  * A data source which filters another data source with a user predicate.
+ * 
+ * FIXME: integrate with a build context
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserFilteredDataSource implements RatingDataSource {
+public class UserFilteredDataSource implements RatingDataAccessObject {
     private static final Logger logger = LoggerFactory.getLogger(UserFilteredDataSource.class);
-    private RatingDataSource base;
+    private RatingDataAccessObject base;
     private final Predicate<Long> userFilter;
-    private final boolean closeBase;
     private SoftReference<LongList> userCache;
 
-    public UserFilteredDataSource(RatingDataSource base, Predicate<Long> filter) {
-        this(base, false, filter);
-    }
-
-    public UserFilteredDataSource(RatingDataSource base, boolean closeBase, Predicate<Long> filter) {
+    public UserFilteredDataSource(RatingDataAccessObject base, Predicate<Long> filter) {
         this.base = base;
-        this.closeBase = closeBase;
         userFilter = filter;
     }
 
@@ -103,15 +99,6 @@ public class UserFilteredDataSource implements RatingDataSource {
             return base.getUserRatings(userId, order);
         else
             return org.grouplens.common.cursors.Cursors.empty();
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.DataSource#close()
-     */
-    @Override
-    public void close() {
-        if (closeBase)
-            base.close();
     }
 
     @Override

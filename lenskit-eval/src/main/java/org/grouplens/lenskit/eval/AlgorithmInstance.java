@@ -37,7 +37,7 @@ import org.grouplens.lenskit.RecommenderModuleComponent;
 import org.grouplens.lenskit.RecommenderNotAvailableException;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.RecommenderServiceProvider;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +113,8 @@ public class AlgorithmInstance {
     }
 
     private static class DataModule extends AbstractModule {
-        private RatingDataSource dataSource;
-        public DataModule(RatingDataSource source) {
+        private RatingDataAccessObject dataSource;
+        public DataModule(RatingDataAccessObject source) {
             dataSource = source;
         }
 
@@ -122,16 +122,16 @@ public class AlgorithmInstance {
         }
 
         @SuppressWarnings("unused")
-        @Provides public RatingDataSource provideDataSource() {
+        @Provides public RatingDataAccessObject provideDataSource() {
             return dataSource;
         }
     }
 
-    public Injector makeInjector(final RatingDataSource input) {
+    public Injector makeInjector(final RatingDataAccessObject input) {
         return Guice.createInjector(new DataModule(input), module);
     }
 
-    public RecommenderService getRecommenderService(final RatingDataSource input) throws RecommenderNotAvailableException {
+    public RecommenderService getRecommenderService(final RatingDataAccessObject input) throws RecommenderNotAvailableException {
         Injector inj = makeInjector(input);
         RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
         return provider.get();

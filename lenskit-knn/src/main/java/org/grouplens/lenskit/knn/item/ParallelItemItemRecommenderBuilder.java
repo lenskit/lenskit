@@ -41,7 +41,7 @@ import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.UserRatingProfile;
@@ -90,7 +90,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
         this.threadCount = threadCount;
     }
 
-    private Index indexItems(RatingDataSource data) {
+    private Index indexItems(RatingDataAccessObject data) {
         userItemMap = new Long2ObjectOpenHashMap<IntSortedSet>();
         Indexer indexer = new Indexer();
         Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
@@ -110,7 +110,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
     }
 
     @Override
-    public ItemItemRecommenderService build(RatingDataSource data, RatingPredictor baseline) {
+    public ItemItemRecommenderService build(RatingDataAccessObject data, RatingPredictor baseline) {
         logger.info("Building model with {} threads", threadCount);
         logger.debug("Indexing items");
         Index itemIndex = indexItems(data);
@@ -146,7 +146,7 @@ public class ParallelItemItemRecommenderBuilder implements RecommenderBuilder {
      * Transpose the ratings matrix so we have a list of item rating vectors.
      * @return An array of item rating vectors, mapping user IDs to ratings.
      */
-    private SparseVector[] buildItemRatings(final Index index, RatingDataSource data) {
+    private SparseVector[] buildItemRatings(final Index index, RatingDataAccessObject data) {
         final int nitems = data.getItemCount();
         final Long2DoubleMap[] itemWork = new Long2DoubleMap[nitems];
         for (int i = 0; i < nitems; i++) {

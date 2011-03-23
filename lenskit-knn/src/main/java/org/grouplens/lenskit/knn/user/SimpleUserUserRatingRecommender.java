@@ -30,7 +30,7 @@ import java.util.PriorityQueue;
 import javax.annotation.WillNotClose;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
@@ -45,7 +45,7 @@ import com.google.inject.Inject;
  *
  */
 public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecommender {
-    private final RatingDataSource dataSource;
+    private final RatingDataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
 
@@ -56,7 +56,7 @@ public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecom
      * @param similarity The similarity function to use.
      */
     @Inject
-    SimpleUserUserRatingRecommender(@WillNotClose RatingDataSource data,
+    SimpleUserUserRatingRecommender(@WillNotClose RatingDataAccessObject data,
             @NeighborhoodSize int nnbrs,
             @UserSimilarity Similarity<? super SparseVector> similarity) {
         dataSource = data;

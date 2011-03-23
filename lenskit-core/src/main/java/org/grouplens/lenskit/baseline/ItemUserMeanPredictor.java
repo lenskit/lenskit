@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -33,7 +33,6 @@ import org.grouplens.lenskit.params.MeanDamping;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -50,17 +49,12 @@ import com.google.inject.Provider;
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     protected final double damping;
 
-    @Inject
-    public ItemUserMeanPredictor(Provider<RatingDataSource> ratingProvider,
-            @MeanDamping double damping) {
-        this(ratingProvider.get(), damping);
-    }
-
-    public ItemUserMeanPredictor(RatingDataSource ratings) {
+    public ItemUserMeanPredictor(RatingDataAccessObject ratings) {
         this(ratings, 0);
     }
 
-    public ItemUserMeanPredictor(RatingDataSource ratings, double damping) {
+    @Inject
+    public ItemUserMeanPredictor(RatingDataAccessObject ratings, @MeanDamping double damping) {
         super(ratings, damping);
         this.damping = damping;
     }

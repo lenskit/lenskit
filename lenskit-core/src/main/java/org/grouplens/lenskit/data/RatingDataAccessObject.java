@@ -22,11 +22,17 @@ import org.grouplens.common.cursors.Cursor;
 
 
 /**
- * Represents a data source providing ratings data.
+ * DAO providing access to rating data.
+ * 
+ * <p>This interface provides a means of accessing rating data and registering to
+ * receive notification of rating changes.
+ * 
+ * @see UserItemDataAccessObject
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface RatingDataSource extends DataSource {
+public interface RatingDataAccessObject extends UserItemDataAccessObject {
     /**
      * Get all ratings from the data set.
      * @return A cursor iterating over all ratings.

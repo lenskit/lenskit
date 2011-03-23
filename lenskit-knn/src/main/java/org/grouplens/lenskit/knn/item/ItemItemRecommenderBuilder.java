@@ -40,7 +40,7 @@ import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.UserRatingProfile;
@@ -90,7 +90,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(RatingDataSource data, @Nullable RatingPredictor baseline,
+        public BuildState(RatingDataAccessObject data, @Nullable RatingPredictor baseline,
                 boolean trackItemSets) {
             this.baseline = baseline;
             Indexer itemIndexer;
@@ -111,7 +111,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
          * Transpose the ratings matrix so we have a list of item rating vectors.
          * @todo Fix this method to abstract item collection.
          */
-        private void buildItemRatings(Indexer itemIndexer, RatingDataSource data) {
+        private void buildItemRatings(Indexer itemIndexer, RatingDataAccessObject data) {
             Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
             final boolean collectItems = userItemSets != null;
             ArrayList<Long2DoubleMap> itemWork = new ArrayList<Long2DoubleMap>(100);
@@ -167,7 +167,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
     }
 
     @Override
-    public ItemItemRecommenderService build(RatingDataSource data, @Nullable RatingPredictor baseline) {
+    public ItemItemRecommenderService build(RatingDataAccessObject data, @Nullable RatingPredictor baseline) {
         BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);

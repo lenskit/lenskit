@@ -20,7 +20,7 @@ package org.grouplens.lenskit.testing;
 
 import java.net.URL;
 
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.SimpleFileDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +42,7 @@ import com.google.inject.Module;
  */
 public abstract class ExpensiveRatingDataTest {
     public static final String DATA_PATH = "org/grouplens/movielens/mldata/ml100k/ratings.dat";
-    protected RatingDataSource dataSource;
+    protected RatingDataAccessObject dataSource;
 
     @BeforeClass
     public static void printMessage() {
@@ -68,7 +68,6 @@ public abstract class ExpensiveRatingDataTest {
 
     @After
     public void closeDataSource() {
-        dataSource.close();
         dataSource = null;
     }
 
@@ -76,7 +75,7 @@ public abstract class ExpensiveRatingDataTest {
         return new AbstractModule() {
             @Override
             protected void configure() {
-                bind(RatingDataSource.class).toInstance(dataSource);
+                bind(RatingDataAccessObject.class).toInstance(dataSource);
             }
         };
     }

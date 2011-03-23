@@ -26,7 +26,7 @@ import java.util.Collections;
 
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.RatingCollectionDataSource;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -54,7 +54,7 @@ public abstract class RecommenderModuleTest {
             protected void configure() {
             }
             @SuppressWarnings("unused")
-            @Provides public RatingDataSource provideDataSource() {
+            @Provides public RatingDataAccessObject provideDataSource() {
                 Collection<Rating> ratings = Collections.emptyList();
                 return new RatingCollectionDataSource(ratings);
             }

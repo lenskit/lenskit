@@ -22,7 +22,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderModule;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.RecommenderServiceProvider;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
@@ -149,7 +149,7 @@ public class GradientDescentSVDModule extends RecommenderModule {
 
     @CheckedProvides(RecommenderServiceProvider.class)
     public RecommenderService buildRecommender(GradientDescentSVDRecommenderBuilder builder,
-            RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+            RatingDataAccessObject data, @BaselinePredictor RatingPredictor baseline) {
         return builder.build(data, baseline);
     }
 }

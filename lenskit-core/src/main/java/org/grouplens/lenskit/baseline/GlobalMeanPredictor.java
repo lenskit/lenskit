@@ -22,10 +22,9 @@ import javax.annotation.WillClose;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Rating predictor that predicts the global mean rating for all items.
@@ -38,17 +37,9 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * Construct a new global mean predictor from a data source.
      * @param ratings A data source of ratings.
      */
-    public GlobalMeanPredictor(RatingDataSource ratings) {
+	@Inject
+    public GlobalMeanPredictor(RatingDataAccessObject ratings) {
         super(computeMeanRating(ratings.getRatings()));
-    }
-    /**
-     * Injectable constructor.  Takes a provider so the resulting predictor can
-     * outlive the data source.
-     * @param ratingProvider A provider to get rating data sources.
-     */
-    @Inject
-    public GlobalMeanPredictor(Provider<RatingDataSource> ratingProvider) {
-        this(ratingProvider.get());
     }
 
     /**

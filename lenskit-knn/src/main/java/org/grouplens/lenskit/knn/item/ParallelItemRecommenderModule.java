@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.RecommenderServiceProvider;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.params.BaselinePredictor;
 
 import com.google.inject.Singleton;
@@ -37,7 +37,7 @@ public class ParallelItemRecommenderModule extends ItemRecommenderModule {
     @CheckedProvides(RecommenderServiceProvider.class)
     @Singleton
     public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-            RatingDataSource data, @BaselinePredictor RatingPredictor baseline) {
+            RatingDataAccessObject data, @BaselinePredictor RatingPredictor baseline) {
         return builder.build(data, baseline);
     }
 }

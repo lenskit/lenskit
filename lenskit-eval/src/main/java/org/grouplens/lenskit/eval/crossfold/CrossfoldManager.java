@@ -26,7 +26,7 @@ import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +46,14 @@ public class CrossfoldManager {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
     private Long2IntMap userPartitionMap;
     private final int chunkCount;
-    private RatingDataSource ratings;
+    private RatingDataAccessObject ratings;
 
     /**
      * Construct a new train/test ratings set.
      * @param nfolds The number of portions to divide the data set into.
      * @param ratings The ratings data to partition.
      */
-    public CrossfoldManager(int nfolds, RatingDataSource ratings) {
+    public CrossfoldManager(int nfolds, RatingDataAccessObject ratings) {
         logger.debug("Creating rating set with {} folds", nfolds);
         userPartitionMap = new Long2IntOpenHashMap();
         userPartitionMap.defaultReturnValue(nfolds);
@@ -88,17 +88,13 @@ public class CrossfoldManager {
      * @param testIndex The index of the test set to use.
      * @return The union of all data partitions except testIndex.
      */
-    public RatingDataSource trainingSet(final int testIndex) {
+    public RatingDataAccessObject trainingSet(final int testIndex) {
         Predicate<Long> filter = new Predicate<Long>() {
             public boolean apply(Long uid) {
                 return userPartitionMap.get(uid.longValue()) != testIndex;
             }
         };
-        return new UserFilteredDataSource(ratings, false, filter);
-    }
-
-    public void close() {
-        ratings.close();
+        return new UserFilteredDataSource(ratings, filter);
     }
 
     /**

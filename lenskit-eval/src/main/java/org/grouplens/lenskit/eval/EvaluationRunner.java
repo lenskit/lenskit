@@ -32,7 +32,7 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.RatingCollectionDataSource;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.SimpleFileDataSource;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.slf4j.Logger;
@@ -176,7 +176,7 @@ public final class EvaluationRunner {
                         protected void configure() {
                         }
                         @SuppressWarnings("unused")
-                        @Provides public RatingDataSource provideDataSource() {
+                        @Provides public RatingDataAccessObject provideDataSource() {
                             throw new RuntimeException("No data source available");
                         }
                     }, algo.getModule());
@@ -194,11 +194,11 @@ public final class EvaluationRunner {
             return;
         }
 
-        RatingDataSource data = null;
+        RatingDataAccessObject data = null;
         try {
             data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
             if (options.preloadData()) {
-                RatingDataSource source = data;
+                RatingDataAccessObject source = data;
                 Cursor<Rating> ratings = null;
                 try {
                     ratings = source.getRatings();
@@ -206,7 +206,6 @@ public final class EvaluationRunner {
                 } finally {
                     if (ratings != null)
                         ratings.close();
-                    source.close();
                 }
             }
 
@@ -229,12 +228,7 @@ public final class EvaluationRunner {
         } catch (FileNotFoundException e) {
             fail(2, "Error loading input data", e);
             return; /* fail will not return */
-        } finally {
-            if (data != null)
-                data.close();
         }
-
-
     }
 
     List<AlgorithmInstance> loadAlgorithms() {

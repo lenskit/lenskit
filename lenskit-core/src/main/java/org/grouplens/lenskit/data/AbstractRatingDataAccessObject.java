@@ -24,7 +24,6 @@ package org.grouplens.lenskit.data;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,18 +41,15 @@ import com.google.common.base.Predicate;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingDataSource implements RatingDataSource {
-    private SoftReference<LongSet> itemCache;
-    private SoftReference<LongSet> userCache;
-
+public abstract class AbstractRatingDataAccessObject implements UserItemDataAccessObject, RatingDataAccessObject {
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings(org.grouplens.lenskit.data.SortOrder)
+     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getRatings(org.grouplens.lenskit.data.SortOrder)
      */
     @Override
     public abstract Cursor<Rating> getRatings();
 
     /**
-     * Implement {@link RatingDataSource#getRatings(SortOrder)} by sorting the
+     * Implement {@link RatingDataAccessObject#getRatings(SortOrder)} by sorting the
      * output of {@link #getRatings()}.
      */
     @Override
@@ -115,7 +111,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatingProfiles()
+     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getUserRatingProfiles()
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
@@ -123,7 +119,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
     }
 
     /**
-     * Implement {@link RatingDataSource#getUserRatings(long)} by delegating to
+     * Implement {@link RatingDataAccessObject#getUserRatings(long)} by delegating to
      * {@link #getUserRatings(long, SortOrder)}.
      */
     @Override
@@ -132,7 +128,7 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
     }
 
     /**
-     * Implement {@link RatingDataSource#getUserRatings(long, SortOrder)} by
+     * Implement {@link RatingDataAccessObject#getUserRatings(long, SortOrder)} by
      * filtering the output of {@link #getRatings(SortOrder)}.
      */
     @Override
@@ -145,36 +141,24 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
         });
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.DataSource#close()
-     */
-    @Override
-    public void close() {
-        /* no-op */
-    }
-
     private LongSet getItemSet() {
         LongSet items = null;
-        if (itemCache != null)
-            items = itemCache.get();
-
-        if (items == null) {
-            items = new LongOpenHashSet();
-            Cursor<Rating> ratings = getRatings();
-            try {
-                for (Rating r: ratings) {
-                    items.add(r.getItemId());
-                }
-            } finally {
-                ratings.close();
-            }
-            itemCache = new SoftReference<LongSet>(items);
+        
+        items = new LongOpenHashSet();
+        Cursor<Rating> ratings = getRatings();
+        try {
+        	for (Rating r: ratings) {
+        		items.add(r.getItemId());
+        	}
+        } finally {
+        	ratings.close();
         }
+
         return items;
     }
 
     /**
-     * Implement {@link RatingDataSource#getItems()} by processing the output
+     * Implement {@link RatingDataAccessObject#getItems()} by processing the output
      * of {@link #getRatings()}.
      */
     @Override
@@ -188,22 +172,17 @@ public abstract class AbstractRatingDataSource implements RatingDataSource {
     }
 
     private LongSet getUserSet() {
-        LongSet users = null;
-        if (userCache != null)
-            users = userCache.get();
+    	LongSet users = new LongOpenHashSet();
+    	
+    	Cursor<Rating> ratings = getRatings();
+    	try {
+    		for (Rating r: ratings) {
+    			users.add(r.getUserId());
+    		}
+    	} finally {
+    		ratings.close();
+    	}
 
-        if (users == null) {
-            users = new LongOpenHashSet();
-            Cursor<Rating> ratings = getRatings();
-            try {
-                for (Rating r: ratings) {
-                    users.add(r.getUserId());
-                }
-            } finally {
-                ratings.close();
-            }
-            userCache = new SoftReference<LongSet>(users);
-        }
         return users;
     }
 

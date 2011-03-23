@@ -13,7 +13,7 @@ import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
@@ -43,12 +43,12 @@ public class CachedUserUserRatingRecommender extends AbstractUserUserRatingRecom
     @Inject
     CachedUserUserRatingRecommender(@UserSimilarity Similarity<? super SparseVector> sim,
             @NeighborhoodSize int nnbrs,
-            Provider<RatingDataSource> dataProvider) {
+            Provider<RatingDataAccessObject> dataProvider) {
         similarity = sim;
         neighborhoodSize = nnbrs;
         int nusers = 0;
         cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
-        RatingDataSource data = dataProvider.get();
+        RatingDataAccessObject data = dataProvider.get();
         Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
         try {
             LongSet visitedItems = new LongOpenHashSet();

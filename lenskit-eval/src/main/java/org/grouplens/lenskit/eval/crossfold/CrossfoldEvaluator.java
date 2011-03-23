@@ -32,7 +32,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderNotAvailableException;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -63,7 +63,7 @@ public class CrossfoldEvaluator implements Runnable {
     private int colBuildTime;
     private int colPredTime;
 
-    public CrossfoldEvaluator(RatingDataSource ratings, CrossfoldOptions options,
+    public CrossfoldEvaluator(RatingDataAccessObject ratings, CrossfoldOptions options,
             List<AlgorithmInstance> algorithms, Writer output) throws IOException {
         numFolds = options.getNumFolds();
         holdoutFraction = options.getHoldoutFraction();
@@ -86,7 +86,7 @@ public class CrossfoldEvaluator implements Runnable {
 
     public void run() {
         for (int i = 0; i < numFolds; i++) {
-            RatingDataSource train = manager.trainingSet(i);
+            RatingDataAccessObject train = manager.trainingSet(i);
             try {
                 Collection<UserRatingProfile> test = manager.testSet(i);
                 int nusers = train.getUserCount();
@@ -102,8 +102,6 @@ public class CrossfoldEvaluator implements Runnable {
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
-            } finally {
-                train.close();
             }
         }
         try {
@@ -137,7 +135,7 @@ public class CrossfoldEvaluator implements Runnable {
         return bld.makeWriter(output);
     }
 
-    private void benchmarkAlgorithm(int runNumber, AlgorithmInstance algo, RatingDataSource train, Collection<UserRatingProfile> test) {
+    private void benchmarkAlgorithm(int runNumber, AlgorithmInstance algo, RatingDataAccessObject train, Collection<UserRatingProfile> test) {
         TaskTimer timer = new TaskTimer();
         logger.debug("Benchmarking {}", algo.getName());
         RecommenderService engine;

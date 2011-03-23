@@ -18,10 +18,13 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 
 /**
  * Interface for recommender factories for the benchmarker to use.
+ * 
+ * FIXME: This class shouldn't exist.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -36,5 +39,5 @@ public interface RecommenderBuilder {
      * recommender.
      * @return A new recommender engine.
      */
-    public RecommenderService build(RatingDataSource ratings, RatingPredictor baseline);
+    public RecommenderService build(RatingDataAccessObject ratings, RatingPredictor baseline);
 }

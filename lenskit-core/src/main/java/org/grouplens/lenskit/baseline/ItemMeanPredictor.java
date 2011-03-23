@@ -34,7 +34,7 @@ import java.util.Collection;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Rating predictor that returns the item's mean rating for all predictions.
@@ -67,7 +66,7 @@ public class ItemMeanPredictor implements RatingPredictor {
      * Construct a new predictor with a damping of 0.
      * @param ratings The rating data.
      */
-    public ItemMeanPredictor(RatingDataSource ratings) {
+    public ItemMeanPredictor(RatingDataAccessObject ratings) {
         this(ratings, 0);
     }
 
@@ -77,17 +76,10 @@ public class ItemMeanPredictor implements RatingPredictor {
      * @param damping The damping factor (see
      * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
      */
-    public ItemMeanPredictor(RatingDataSource ratings, double damping) {
+    @Inject
+    public ItemMeanPredictor(RatingDataAccessObject ratings, @MeanDamping double damping) {
         itemMeans = new Long2DoubleOpenHashMap();
         globalMean = computeItemAverages(ratings, damping, itemMeans);
-    }
-
-    /**
-     * Injectable constructor taking a provider.
-     */
-    @Inject
-    public ItemMeanPredictor(Provider<RatingDataSource> ratingProvider, @MeanDamping double damping) {
-        this(ratingProvider.get(), damping);
     }
 
     /**
@@ -110,7 +102,7 @@ public class ItemMeanPredictor implements RatingPredictor {
      * @return The global mean rating.  The item means are stored in
      * <var>itemMeans</var>.
      */
-    public static double computeItemAverages(RatingDataSource data, double damping, Long2DoubleMap itemMeans) {
+    public static double computeItemAverages(RatingDataAccessObject data, double damping, Long2DoubleMap itemMeans) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so

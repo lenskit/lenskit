@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleFileDataSource extends AbstractRatingDataSource {
+public class SimpleFileDataSource extends AbstractRatingDataAccessObject {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileDataSource.class);
     private final File file;
     private final URL url;
@@ -85,7 +85,7 @@ public class SimpleFileDataSource extends AbstractRatingDataSource {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings()
+     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getRatings()
      */
     @Override
     public Cursor<Rating> getRatings() {

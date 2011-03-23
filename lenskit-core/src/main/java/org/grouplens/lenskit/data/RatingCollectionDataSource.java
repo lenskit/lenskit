@@ -31,7 +31,7 @@ import org.grouplens.common.cursors.Cursors;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RatingCollectionDataSource extends AbstractRatingDataSource {
+public class RatingCollectionDataSource extends AbstractRatingDataAccessObject {
     private Collection<Rating> ratings;
 
     /**
@@ -43,7 +43,7 @@ public class RatingCollectionDataSource extends AbstractRatingDataSource {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.AbstractRatingDataSource#getRatings()
+     * @see org.grouplens.lenskit.data.AbRatingDataAccessObjectAccessObject#getRatings()
      */
     @Override
     public Cursor<Rating> getRatings() {

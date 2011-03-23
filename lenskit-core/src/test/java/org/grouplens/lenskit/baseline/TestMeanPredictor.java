@@ -31,18 +31,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
-import org.grouplens.lenskit.baseline.ItemMeanPredictor;
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
-import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.RatingCollectionDataSource;
-import org.grouplens.lenskit.data.RatingDataSource;
+import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +48,7 @@ import org.junit.Test;
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private RatingDataSource ratings;
+    private RatingDataAccessObject ratings;
 
     @Before
     public void createRatingSource() {
@@ -63,11 +58,6 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
         ratings = new RatingCollectionDataSource(rs);
-    }
-
-    @After
-    public void closeRatingSource() {
-        ratings.close();
     }
 
     @Test
