@@ -41,7 +41,7 @@ import com.google.common.base.Predicate;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingDataAccessObject implements UserItemDataAccessObject, RatingDataAccessObject {
+public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.data.RatingDataAccessObject#getRatings(org.grouplens.lenskit.data.SortOrder)
      */

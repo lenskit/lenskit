@@ -27,6 +27,11 @@ import org.grouplens.common.cursors.Cursor;
  * <p>This interface provides a means of accessing rating data and registering to
  * receive notification of rating changes.
  * 
+ * <p>This interface extends {@link UserItemDataAccessObject} because it doesn't
+ * make much sense to have rating data without user/item data.  This decision can,
+ * of course, be reviewed.  It may be that, after implementing build contexts,
+ * we do not need the {@link UserItemDataAccessObject} any more.
+ * 
  * @see UserItemDataAccessObject
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
