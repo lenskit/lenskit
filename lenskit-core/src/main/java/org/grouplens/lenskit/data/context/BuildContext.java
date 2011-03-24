@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.FastCollection;
 
 import com.google.inject.ImplementedBy;

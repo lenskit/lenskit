@@ -32,8 +32,8 @@ import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingCollectionDataSource;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingCollectionDataSource;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;

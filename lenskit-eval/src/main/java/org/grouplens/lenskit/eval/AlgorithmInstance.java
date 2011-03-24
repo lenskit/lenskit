@@ -37,7 +37,7 @@ import org.grouplens.lenskit.RecommenderModuleComponent;
 import org.grouplens.lenskit.RecommenderNotAvailableException;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.RecommenderServiceProvider;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

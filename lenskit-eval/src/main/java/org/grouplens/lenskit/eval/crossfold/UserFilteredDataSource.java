@@ -29,9 +29,9 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings()
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
      */
     @Override
     public Cursor<Rating> getRatings() {
@@ -64,7 +64,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getRatings(org.grouplens.lenskit.data.SortOrder)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
      */
     @Override
     public Cursor<Rating> getRatings(SortOrder order) {
@@ -72,7 +72,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatingProfiles()
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
@@ -80,7 +80,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
      */
     @Override
     public Cursor<Rating> getUserRatings(long userId) {
@@ -91,7 +91,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.SortOrder)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
      */
     @Override
     public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
@@ -107,7 +107,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.DataSource#getItems()
+     * @see org.grouplens.lenskit.data.dao.DataSource#getItems()
      */
     @Override
     public LongCursor getItems() {
@@ -119,7 +119,7 @@ public class UserFilteredDataSource implements RatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.DataSource#getUsers()
+     * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
      */
     @Override
     public LongCursor getUsers() {

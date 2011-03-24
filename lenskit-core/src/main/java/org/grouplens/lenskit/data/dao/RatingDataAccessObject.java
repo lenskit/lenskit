@@ -16,9 +16,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.SortOrder;
+import org.grouplens.lenskit.data.UserRatingProfile;
 
 
 /**
@@ -31,8 +34,6 @@ import org.grouplens.common.cursors.Cursor;
  * make much sense to have rating data without user/item data.  This decision can,
  * of course, be reviewed.  It may be that, after implementing build contexts,
  * we do not need the {@link UserItemDataAccessObject} any more.
- * 
- * @see UserItemDataAccessObject
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

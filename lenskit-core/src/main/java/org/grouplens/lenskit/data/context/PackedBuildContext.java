@@ -16,7 +16,7 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -55,7 +55,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#getUserIds()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#getUserIds()
 	 */
 	@Override
 	public LongCollection getUserIds() {
@@ -64,7 +64,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#getItemIds()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#getItemIds()
 	 */
 	@Override
 	public LongCollection getItemIds() {
@@ -73,7 +73,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#userIndex()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#userIndex()
 	 */
 	@Override
 	public Index userIndex() {
@@ -82,7 +82,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#itemIndex()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#itemIndex()
 	 */
 	@Override
 	public Index itemIndex() {
@@ -91,7 +91,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#getRatings()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#getRatings()
 	 */
 	@Override
 	public FastCollection<IndexedRating> getRatings() {
@@ -99,7 +99,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#getUserRatings(long)
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#getUserRatings(long)
 	 */
 	@Override
 	public FastCollection<IndexedRating> getUserRatings(long userId) {
@@ -112,7 +112,7 @@ public class PackedBuildContext implements BuildContext {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.context.BuildContext#close()
+	 * @see org.grouplens.lenskit.data.dao.context.BuildContext#close()
 	 */
 	@Override
 	public void close() {

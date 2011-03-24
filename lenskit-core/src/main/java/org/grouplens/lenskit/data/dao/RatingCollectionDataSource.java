@@ -19,21 +19,36 @@
 /**
  *
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.dao;
+
+import java.util.Collection;
+
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.Rating;
 
 /**
- * Exception thrown when a data source receives an unsupported query.
+ * Data source backed by a collection of ratings.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UnsupportedQueryException extends IllegalArgumentException {
-    private static final long serialVersionUID = -1340119072527578247L;
+public class RatingCollectionDataSource extends AbstractRatingDataAccessObject {
+    private Collection<Rating> ratings;
 
-    public UnsupportedQueryException() {
+    /**
+     * Construct a new data source from a collection of ratings.
+     * @param ratings The ratings to use.
+     */
+    public RatingCollectionDataSource(Collection<Rating> ratings) {
+        this.ratings = ratings;
     }
 
-    public UnsupportedQueryException(String message) {
-        super(message);
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
+     */
+    @Override
+    public Cursor<Rating> getRatings() {
+        return Cursors.wrap(ratings);
     }
 
 }

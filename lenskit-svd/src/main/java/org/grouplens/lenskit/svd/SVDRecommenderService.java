@@ -110,7 +110,7 @@ public class SVDRecommenderService extends AbstractRecommenderService implements
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RecommenderService#predict(org.grouplens.lenskit.data.UserRatingProfile, java.lang.Object)
+     * @see org.grouplens.lenskit.RecommenderService#predict(org.grouplens.lenskit.data.dao.UserRatingProfile, java.lang.Object)
      */
     @Override
     public ScoredId predict(long user, SparseVector ratings, long item) {

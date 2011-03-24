@@ -16,43 +16,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.dao;
 
-import java.sql.ResultSet;
-
-import org.grouplens.lenskit.data.context.BuildContext;
-
-import com.google.inject.Provider;
+import org.grouplens.lenskit.data.LongCursor;
 
 /**
  * DAO for user-item ID data.
- *
- * <p>LensKit uses <a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data Access Objects</a>
- * to obtain access to rating data.  These objects allow LensKit to query for
- * users, items, ratings, etc.  Some DAOs also support registering for notification
- * of changes.  The DAO should generally be a singleton, therefore, to support change
- * notification and registration throughout the system.
- * 
- * <p>Also, it will often be desirable for cursors to share some backing resource
- * (e.g. all cursors created in a request to be served from the same database
- * connection).  This can be facilitated in a couple of ways:
- * 
- * <ol>
- * <li>Use thread-local
- * storage and reference counting to close the database connection when all cursors
- * have been closed.
- * <li>Inject a {@link Provider} of request-scoped database connections into
- * the DAO implementation, then use its {@link Provider#get()} method to access
- * the database connection in order to set up the cursor (which, in a JDBC
- * implementation, will generally wrap a {@link ResultSet}).  The surrounding
- * request-scoping framework can then take care of closing the database connection.
- * In a web environment, cursors shouldn't survive requests anyway.
- * </ol>
- * 
- * <p>The data access object makes no transactional or immutability guarantees,
- * and does not provide mutation.  An implementation is, of course, free to
- * provide mutation.  The recommender building process uses a {@link BuildContext}
- * so that it can make multiple passes over a snapshot of the data.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

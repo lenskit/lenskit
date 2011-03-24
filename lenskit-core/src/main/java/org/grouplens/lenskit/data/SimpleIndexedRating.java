@@ -17,7 +17,7 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.IndexedRating#getItemIndex()
+	 * @see org.grouplens.lenskit.data.dao.IndexedRating#getItemIndex()
 	 */
 	@Override
 	final public int getItemIndex() {
@@ -25,7 +25,7 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.IndexedRating#getUserIndex()
+	 * @see org.grouplens.lenskit.data.dao.IndexedRating#getUserIndex()
 	 */
 	@Override
 	final public int getUserIndex() {

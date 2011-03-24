@@ -26,8 +26,8 @@ import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

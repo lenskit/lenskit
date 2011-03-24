@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.dao;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 
 import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.SimpleRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +87,7 @@ public class SimpleFileDataSource extends AbstractRatingDataAccessObject {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getRatings()
+     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings()
      */
     @Override
     public Cursor<Rating> getRatings() {

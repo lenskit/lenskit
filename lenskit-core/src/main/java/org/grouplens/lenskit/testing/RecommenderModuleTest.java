@@ -25,8 +25,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingCollectionDataSource;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingCollectionDataSource;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;

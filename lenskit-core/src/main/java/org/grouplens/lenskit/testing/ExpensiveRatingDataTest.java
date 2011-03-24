@@ -20,8 +20,8 @@ package org.grouplens.lenskit.testing;
 
 import java.net.URL;
 
-import org.grouplens.lenskit.data.RatingDataAccessObject;
-import org.grouplens.lenskit.data.SimpleFileDataSource;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.SimpleFileDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

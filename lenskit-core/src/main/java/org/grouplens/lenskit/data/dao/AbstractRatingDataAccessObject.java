@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -34,6 +34,12 @@ import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.common.cursors.FilteredCursor;
+import org.grouplens.lenskit.data.BasicUserRatingProfile;
+import org.grouplens.lenskit.data.Cursors2;
+import org.grouplens.lenskit.data.LongCursor;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.SortOrder;
+import org.grouplens.lenskit.data.UserRatingProfile;
 
 import com.google.common.base.Predicate;
 
@@ -43,7 +49,7 @@ import com.google.common.base.Predicate;
  */
 public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getRatings(org.grouplens.lenskit.data.SortOrder)
+     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
      */
     @Override
     public abstract Cursor<Rating> getRatings();
@@ -111,7 +117,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.RatingDataAccessObject#getUserRatingProfiles()
+     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getUserRatingProfiles()
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
@@ -187,7 +193,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.DataSource#getUsers()
+     * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
      */
     @Override
     public LongCursor getUsers() {

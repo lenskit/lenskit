@@ -13,8 +13,8 @@ import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;

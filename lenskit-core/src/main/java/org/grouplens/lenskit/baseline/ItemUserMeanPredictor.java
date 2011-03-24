@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.MeanDamping;
