@@ -35,7 +35,7 @@ final class IndexManager {
 	 */
 	public int getIndex(int uidx, int iidx) {
 		if (uidx < 0) throw new IndexOutOfBoundsException();
-		if (uidx > mapping.size())
+		if (uidx >= mapping.size())
 			return -1;
 		return mapping.get(uidx).get(iidx);
 	}
