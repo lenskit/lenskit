@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
-  <url>http://www-users.cs.umn.edu/~ekstrand/reflens</url>
+  <url>http://lenskit.grouplens.org</url>
   <organization>
     <name>GroupLens Research</name>
     <url>http://www.grouplens.org</url>
@@ -36,8 +36,8 @@
   <distributionManagement>
     <site>
       <id>grouplens.org</id>
-      <name>RefLens Website</name>
-      <url>scpexe://caesar.cs.umn.edu/web/research01/reflens.grouplens.org/</url>
+      <name>LensKit Website</name>
+      <url>scpexe://caesar.cs.umn.edu/web/research01/lenskit.grouplens.org/</url>
     </site>
   </distributionManagement>
 
@@ -137,9 +137,6 @@
           <includes>
             <include>*/src/**/*.java</include>
           </includes>
-          <!-- <excludes>
-            <exclude>reflens-core/src/main/java/org/grouplens/reflens/util/TypeUtils.java</exclude>
-          </excludes> -->
           <mapping>
             <java>SLASHSTAR_STYLE</java>
           </mapping>
