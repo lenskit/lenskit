@@ -1,4 +1,4 @@
-RefLens, a reference implementation of recommender algorithms.
+LensKit, a reference implementation of recommender algorithms.
 Copyright 2010-2011 Regents of the University of Minnesota
 
 This program is free software; you can redistribute it and/or modify
