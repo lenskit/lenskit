@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.data.context;
 
+import org.grouplens.lenskit.data.AbstractRating;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
@@ -58,7 +59,7 @@ final class PackedRatingData {
 		return new SimpleIndexedRating(user, item, v, ts, uidx, iidx);
 	}
 	
-	final class IndirectRating implements IndexedRating {
+	final class IndirectRating extends AbstractRating implements IndexedRating {
 		int index;
 		public IndirectRating(int index) {
 			this.index = index;

@@ -22,6 +22,10 @@ import org.grouplens.lenskit.data.context.BuildContext;
 
 /**
  * Rating that also knows the indexes for its user and item.
+ * 
+ * <p>Implementations are not expected to consider index when comparing ratings
+ * for equality.
+ * 
  * @see BuildContext
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

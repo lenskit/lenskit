@@ -22,15 +22,18 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
+ * This class is not intended to be derived, so its key methods are
+ * <code>final</code>.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @ThreadSafe
-public class SimpleRating implements Rating {
-    private final long userId;
-    private final long itemId;
-    private final double rating;
-    private final long timestamp;
+public class SimpleRating extends AbstractRating {
+    final long userId;
+    final long itemId;
+    final double rating;
+    final long timestamp;
 
     /**
      * Construct a rating without a timestamp.
