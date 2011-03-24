@@ -55,6 +55,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
     private transient Double norm;
     private transient Double sum;
     private transient Double mean;
+    private transient Integer hashCode;
 
     public SparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
@@ -92,6 +93,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
         norm = null;
         sum = null;
         mean = null;
+        hashCode = null;
     }
 
     /**
@@ -242,7 +244,10 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
 
     @Override
     public int hashCode() {
-        return keys.hashCode() ^ values.hashCode();
+        if (hashCode == null) {
+            hashCode = Arrays.hashCode(keys) ^ Arrays.hashCode(values);
+        }
+        return hashCode;
     }
 
     @Override
