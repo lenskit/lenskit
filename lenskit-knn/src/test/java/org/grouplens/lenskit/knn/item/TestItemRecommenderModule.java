@@ -23,12 +23,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-
-import org.grouplens.lenskit.TestRecommenderModule;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.item.ItemRecommenderModule;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.SimilarityDamper;
@@ -47,7 +44,7 @@ import com.google.inject.TypeLiteral;
  *
  */
 public class TestItemRecommenderModule extends RecommenderModuleTest {
-    private static final double EPSILON = TestRecommenderModule.EPSILON;
+    private static final double EPSILON = 1.0e-6;
     private ItemRecommenderModule module;
 
     /**
