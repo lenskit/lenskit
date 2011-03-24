@@ -31,6 +31,12 @@ import com.google.inject.BindingAnnotation;
 /**
  * Parameter to damp means as recommended by Simon Funk.
  *
+ * <p>The mean damping factor is used to bias a mean towards the global mean.
+ * For a collection of `n` items `x_i`, a damping factor `D`, and a global mean
+ * `µ`, the damped mean is computed as `(\sum_{x_i} x_i + Dµ)/(n + D)`.
+ * See <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
+ * Try This at Home</a> by Simon Funk for documentation of this enhancement.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

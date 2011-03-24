@@ -90,14 +90,9 @@ public class ItemMeanPredictor implements RatingPredictor {
      * and returning the global mean, so that we can compute the global mean
      * and the item means in a single pass through the data source.
      *
-     * <p>The mean damping factor is used to bias the item means towards the
-     * global mean.  For a damping factor `D` and global mean `µ`, the item mean
-     * is computed as `(\sum_{u \in 𝓤_i}r_{u,i} + D)/(|𝓤_i|+D\mu)`.  See
-     * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update:
-     * Try This at Home</a> by Simon Funk for documentation of this enhancement.
-     *
      * @param data The data source to compute item averages from.
-     * @param damping The mean damping factor.
+     * @param damping The mean damping factor (see {@link MeanDamping} for how
+     * this is used).
      * @param itemMeans A map in which the means should be stored.
      * @return The global mean rating.  The item means are stored in
      * <var>itemMeans</var>.

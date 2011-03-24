@@ -38,10 +38,12 @@ import com.google.inject.Inject;
  * Predictor that returns the user's mean offset from item mean rating for all
  * predictions.
  *
- * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
+ * <p>This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
+ * 
+ * <p>It supports mean damping (see {@link MeanDamping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
