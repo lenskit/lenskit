@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingCollectionDataSource;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
@@ -57,7 +57,7 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
-        ratings = new RatingCollectionDataSource(rs);
+        ratings = new RatingCollectionDAO(rs);
     }
 
     @Test

@@ -43,13 +43,13 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleFileDataSource extends AbstractRatingDataAccessObject {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleFileDataSource.class);
+public class SimpleFileDAO extends AbstractRatingDataAccessObject {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleFileDAO.class);
     private final File file;
     private final URL url;
     private final Pattern splitter;
 
-    public SimpleFileDataSource(File file, String delimiter) throws FileNotFoundException {
+    public SimpleFileDAO(File file, String delimiter) throws FileNotFoundException {
         this.file = file;
         if (!file.exists())
             throw new FileNotFoundException(file.toString());
@@ -61,15 +61,15 @@ public class SimpleFileDataSource extends AbstractRatingDataAccessObject {
         splitter = Pattern.compile(Pattern.quote(delimiter));
     }
 
-    public SimpleFileDataSource(File file) throws FileNotFoundException {
+    public SimpleFileDAO(File file) throws FileNotFoundException {
         this(file, System.getProperty("org.grouplens.lenskit.bench.SimpleFileDataSource.delimiter", "\t"));
     }
 
-    public SimpleFileDataSource(URL url) {
+    public SimpleFileDAO(URL url) {
         this(url, System.getProperty("org.grouplens.lenskit.bench.SimpleFileDataSource.delimiter", "\t"));
     }
 
-    public SimpleFileDataSource(URL url, String delimiter) {
+    public SimpleFileDAO(URL url, String delimiter) {
         this.url = url;
         if (url.getProtocol().equals("file"))
             file = new File(url.getPath());

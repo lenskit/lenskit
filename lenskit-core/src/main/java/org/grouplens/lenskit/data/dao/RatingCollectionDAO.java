@@ -32,14 +32,14 @@ import org.grouplens.lenskit.data.Rating;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RatingCollectionDataSource extends AbstractRatingDataAccessObject {
+public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
     private Collection<Rating> ratings;
 
     /**
      * Construct a new data source from a collection of ratings.
      * @param ratings The ratings to use.
      */
-    public RatingCollectionDataSource(Collection<Rating> ratings) {
+    public RatingCollectionDAO(Collection<Rating> ratings) {
         this.ratings = ratings;
     }
 

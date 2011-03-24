@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingCollectionDataSource;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
 import com.google.inject.AbstractModule;
@@ -56,7 +56,7 @@ public abstract class RecommenderModuleTest {
             @SuppressWarnings("unused")
             @Provides public RatingDataAccessObject provideDataSource() {
                 Collection<Rating> ratings = Collections.emptyList();
-                return new RatingCollectionDataSource(ratings);
+                return new RatingCollectionDAO(ratings);
             }
         }, getModule());
         return injector.getInstance(key);

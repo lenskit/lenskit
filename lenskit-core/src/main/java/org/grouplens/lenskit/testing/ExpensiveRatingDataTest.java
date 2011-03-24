@@ -21,7 +21,7 @@ package org.grouplens.lenskit.testing;
 import java.net.URL;
 
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.SimpleFileDataSource;
+import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -63,7 +63,7 @@ public abstract class ExpensiveRatingDataTest {
     @Before
     public void createDataSource() {
         URL dataUrl = ClassLoader.getSystemClassLoader().getResource(DATA_PATH);
-        dataSource = new SimpleFileDataSource(dataUrl);
+        dataSource = new SimpleFileDAO(dataUrl);
     }
 
     @After
