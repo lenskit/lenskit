@@ -44,13 +44,13 @@ import com.google.common.base.Predicate;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserFilteredDataSource implements RatingDataAccessObject {
-    private static final Logger logger = LoggerFactory.getLogger(UserFilteredDataSource.class);
+public class UserFilteredDAO implements RatingDataAccessObject {
+    private static final Logger logger = LoggerFactory.getLogger(UserFilteredDAO.class);
     private RatingDataAccessObject base;
     private final Predicate<Long> userFilter;
     private SoftReference<LongList> userCache;
 
-    public UserFilteredDataSource(RatingDataAccessObject base, Predicate<Long> filter) {
+    public UserFilteredDAO(RatingDataAccessObject base, Predicate<Long> filter) {
         this.base = base;
         userFilter = filter;
     }

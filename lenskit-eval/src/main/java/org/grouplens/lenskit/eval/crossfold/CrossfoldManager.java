@@ -94,7 +94,7 @@ public class CrossfoldManager {
                 return userPartitionMap.get(uid.longValue()) != testIndex;
             }
         };
-        return new UserFilteredDataSource(ratings, filter);
+        return new UserFilteredDAO(ratings, filter);
     }
 
     /**

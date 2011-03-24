@@ -31,9 +31,9 @@ import java.util.List;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingCollectionDataSource;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.SimpleFileDataSource;
+import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,13 +196,13 @@ public final class EvaluationRunner {
 
         RatingDataAccessObject data = null;
         try {
-            data = new SimpleFileDataSource(options.getInputFile(), options.getDelimiter());
+            data = new SimpleFileDAO(options.getInputFile(), options.getDelimiter());
             if (options.preloadData()) {
                 RatingDataAccessObject source = data;
                 Cursor<Rating> ratings = null;
                 try {
                     ratings = source.getRatings();
-                    data = new RatingCollectionDataSource(Cursors.makeList(ratings));
+                    data = new RatingCollectionDAO(Cursors.makeList(ratings));
                 } finally {
                     if (ratings != null)
                         ratings.close();

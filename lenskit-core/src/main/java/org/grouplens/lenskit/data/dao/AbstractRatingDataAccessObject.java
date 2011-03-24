@@ -48,6 +48,7 @@ import com.google.common.base.Predicate;
  *
  */
 public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
+    private final RatingUpdateListenerManager updateListeners = new RatingUpdateListenerManager();
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
      */
@@ -245,5 +246,27 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
 
             return new BasicUserRatingProfile(uid, ratings);
         }
+    }
+    
+    @Override
+    public void addRatingUpdateListener(RatingUpdateListener listener) {
+        updateListeners.addListener(listener);
+    }
+    
+    @Override
+    public void removeRatingUpdateListener(RatingUpdateListener listener) {
+        updateListeners.removeListener(listener);
+    }
+    
+    /**
+     * Notify all registered listeners that the ratings have been updated.
+     * @see RatingUpdateListener
+     * @param oldRating The old rating or null.
+     * @param newRating The new rating or null.
+     */
+    protected void notifyRatingUpdate(Rating oldRating, Rating newRating) {
+        if (oldRating == null && newRating == null)
+            throw new IllegalArgumentException("At least one rating must be non-null");
+        updateListeners.invoke(oldRating, newRating);
     }
 }
