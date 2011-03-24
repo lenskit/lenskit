@@ -5,8 +5,8 @@
   <version position="right"/>
   <publishDate position="right"/>
   <body>
-    <menu name="RefLens Core">
-      <item name="Home" href="index.html"/>
+    <menu name="LensKit Eval">
+      <item name="About" href="index.html"/>
       <item ref="reports" inherit="bottom"/>
     </menu>
   </body>

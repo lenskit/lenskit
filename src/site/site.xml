@@ -2,7 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd"
-         name="RefLens Recommender Implementation">
+         name="LensKit Recommender Implementation">
   <skin>
     <groupId>org.grouplens.common</groupId>
     <artifactId>grouplens-skin</artifactId>
@@ -14,10 +14,10 @@
   <body>
     <breadcrumbs>
       <item name="GroupLens Research" href="http://www.grouplens.org"/>
-      <item name="RefLens (Recommender Implementation)"/>
+      <item name="LensKit (Recommender Implementation)"/>
     </breadcrumbs>
-    <menu name="RefLens">
-      <item name="Home" href="index.html"/>
+    <menu name="LensKit">
+      <item name="About" href="index.html"/>
       <item name="Getting Started" href="getting-started.html"/>
       <item name="Offline Evaluation" href="evaluating.html"/>
       <item name="Versioning" href="versioning.html"/>
