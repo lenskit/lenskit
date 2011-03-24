@@ -19,6 +19,7 @@
 package org.grouplens.lenskit;
 
 /**
+ * Base receommender service that does not support any recommender interfaces.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
