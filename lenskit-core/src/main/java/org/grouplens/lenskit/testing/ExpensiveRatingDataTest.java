@@ -33,7 +33,7 @@ import com.google.inject.Module;
  * Base class providing access to the MovieLens rating data for expensive tests.
  *
  * <p>This class provides the machinery to access the MovieLens 100K rating data
- * for expensive data-based tests.  It's used by the extra data tests in RefLens,
+ * for expensive data-based tests.  It's used by the extra data tests in LensKit,
  * and can be used to implement your own data-based tests (subject to the licensing
  * terms of the MovieLens rating data).</p>
  *
@@ -48,7 +48,7 @@ public abstract class ExpensiveRatingDataTest {
     public static void printMessage() {
         System.out.println("This test uses the MovieLens 100K data set.");
         System.out.println("This data set is only licensed for non-commercial use.");
-        System.out.println("For more information, visit http://reflens.grouplens.org/ml-data/");
+        System.out.println("For more information, visit http://lenskit.grouplens.org/ml-data/");
     }
 
     @BeforeClass

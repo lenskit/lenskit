@@ -17,6 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * Utility classes used by the rest of RefLens.
+ * Utility classes used by the rest of LensKit.
  */
 package org.grouplens.lenskit.util;

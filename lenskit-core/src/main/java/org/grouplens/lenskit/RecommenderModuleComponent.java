@@ -40,7 +40,7 @@ import com.google.inject.AbstractModule;
  * infrastructure and helpers to make writing recommender configuration modules
  * easier.
  *
- * <p>RefLens recommender modules should be built compositionally.  To create
+ * <p>LensKit recommender modules should be built compositionally.  To create
  * the base module for a new recommender, extend this module and create the
  * modules containing the various parameter sets you need as fields.  Install
  * them using {@link #install(com.google.inject.Module)} in your

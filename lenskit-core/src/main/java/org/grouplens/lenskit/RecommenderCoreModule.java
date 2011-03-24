@@ -34,9 +34,9 @@ import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.util.Providers;
 
 /**
- * Module for configuring the common RefLens parameters.
+ * Module for configuring the common LensKit parameters.
  *
- * <p>This module provides bean properties and bindings for the core RefLens
+ * <p>This module provides bean properties and bindings for the core LensKit
  * parameters, controlling the infrastructure and the common parameters used
  * across many algorithms.
  *
