@@ -51,10 +51,13 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class CrossfoldEvaluator implements Runnable {
+    public static enum SplitMode { RANDOM, TIME }
+    
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldEvaluator.class);
     private final CrossfoldManager manager;
     private final int numFolds;
     private final double holdoutFraction;
+    private final SplitMode splitMode;
     private final List<AlgorithmInstance> algorithms;
 
     private TableWriter writer, predWriter;
@@ -67,6 +70,11 @@ public class CrossfoldEvaluator implements Runnable {
             List<AlgorithmInstance> algorithms, Writer output) throws IOException {
         numFolds = options.getNumFolds();
         holdoutFraction = options.getHoldoutFraction();
+        if (options.timeSplit())
+            splitMode = SplitMode.TIME;
+        else
+            splitMode = SplitMode.RANDOM;
+        
         manager = new CrossfoldManager(numFolds, ratings);
         this.algorithms = algorithms;
         writer = makeWriter(output);
@@ -160,14 +168,30 @@ public class CrossfoldEvaluator implements Runnable {
         for (UserRatingProfile user: test) {
             final long uid = user.getUser();
             final List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
+            // Compute the split point - everything before it is train.
             final int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
-            Collections.shuffle(ratings);
+            
+            // Re-order ratings based on our split method
+            switch (splitMode) {
+            case RANDOM:
+                Collections.shuffle(ratings);
+                break;
+            case TIME:
+                Collections.sort(ratings, Ratings.TIMESTAMP_COMPARATOR);
+                break;
+            }
+            
+            // Extract query and probe sets
             final SparseVector queryRatings =
                 Ratings.userRatingVector(ratings.subList(0, midpt));
             final SparseVector probeRatings =
                 Ratings.userRatingVector(ratings.subList(midpt, ratings.size()));
             assert queryRatings.size() + probeRatings.size() == ratings.size();
+            
+            // Compute predictions
             final SparseVector predictions = rec.predict(uid, queryRatings, probeRatings.keySet());
+            
+            // Evaluate predictions
             for (final Long2DoubleMap.Entry entry: probeRatings.fast()) {
                 final long iid = entry.getLongKey();
                 final double rating = entry.getDoubleValue();

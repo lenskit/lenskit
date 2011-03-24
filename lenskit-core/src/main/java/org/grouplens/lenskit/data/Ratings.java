@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 
@@ -33,6 +34,15 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
  *
  */
 public final class Ratings {
+
+    public static final Comparator<Rating> TIMESTAMP_COMPARATOR = new Comparator<Rating>() {
+        @Override
+        public int compare(Rating r1, Rating r2) {
+            Long ts1 = r1.getTimestamp();
+            Long ts2 = r2.getTimestamp();
+            return ts1.compareTo(ts2);
+        }
+    };
 
     /**
      * Construct a rating vector that contains the ratings provided by each user.

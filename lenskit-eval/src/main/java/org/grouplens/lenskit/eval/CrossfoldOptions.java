@@ -27,12 +27,15 @@ public interface CrossfoldOptions {
      *         split).
      */
     @Option(longName = "num-folds", shortName = "n", defaultValue = "10")
-    public abstract int getNumFolds();
+    int getNumFolds();
 
     @Option(longName = "holdout-fraction", defaultValue = "0.3333333")
-    public abstract double getHoldoutFraction();
+    double getHoldoutFraction();
+    
+    @Option(longName = "time-split", description="Split user ratings on time rather than randomly")
+    boolean timeSplit();
 
     @Option(longName="write-predictions", defaultValue="",
             description="Write predictions to CSV file")
-    public String predictionFile();
+    String predictionFile();
 }
