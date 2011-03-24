@@ -3,7 +3,7 @@
                   ----------------------------------
 
 
-RefLens Evaluation Framework
+Lenskit Evaluation Framework
 
   This project implements the offline evaluation framework for
-  evaluating recommender algorithms with {{{../}RefLens}}.
+  evaluating recommender algorithms with {{{../}Lenskit}}.
