@@ -67,7 +67,7 @@ public interface UserItemDataAccessObject {
     /**
      * Get the number of users in the system.  This should be the same number
      * of users that will be returned by iterating {@link #getUsers()} (unless
-     * a user is added between the two calls).
+     * a user is added or removed between the two calls).
      * @return The number of users in the system.
      */
     public int getUserCount();
@@ -81,7 +81,7 @@ public interface UserItemDataAccessObject {
     /**
      * Get the number of items in the system.  This should be the same number
      * of items that will be returned by iterating {@link #getItems()} (unless
-     * an item is added between the two calls).
+     * an item is added or removed between the two calls).
      * @return The number of items in the system.
      */
     public int getItemCount();
