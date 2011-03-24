@@ -92,6 +92,7 @@ public class MutableSparseVector extends SparseVector {
         if (idx >= 0) {
             double v = values[idx];
             values[idx] = value;
+            clearCachedValues();
             return v;
         } else {
             return Double.NaN;
@@ -107,6 +108,7 @@ public class MutableSparseVector extends SparseVector {
     public double add(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
+            clearCachedValues();
             return values[idx] += value;
         } else {
             return Double.NaN;
