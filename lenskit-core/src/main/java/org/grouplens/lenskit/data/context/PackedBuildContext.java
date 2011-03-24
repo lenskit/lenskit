@@ -18,12 +18,20 @@ import org.grouplens.lenskit.data.RatingDataAccessObject;
 import org.grouplens.lenskit.util.FastCollection;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * A build context that an in-memory snapshot in packed arrays.
+ * 
+ * <p>By default, this class is injected as a singleton.  Deployments may want
+ * to override that in the Guice module to allow multiple build contexts to be
+ * built (e.g. every day).  Applications using LensKit will often want to use
+ * explicit providers for build contexts.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Singleton
 public class PackedBuildContext implements BuildContext {
 	private PackedRatingData data;
 	
