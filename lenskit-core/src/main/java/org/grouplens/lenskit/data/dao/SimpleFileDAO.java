@@ -142,8 +142,11 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
                 long uid = Long.parseLong(fields[0]);
                 long iid = Long.parseLong(fields[1]);
                 double r = Double.parseDouble(fields[2]);
+                long ts = -1;
+                if (fields.length >= 4)
+                    ts = Long.parseLong(fields[3]);
 
-                rating = new SimpleRating(uid, iid, r);
+                rating = new SimpleRating(uid, iid, r, ts);
             }
             return rating != null;
         }
