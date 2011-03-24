@@ -181,7 +181,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
     public TruncatingSimilarityMatrixBuilder(
             @NeighborhoodSize int neighborhoodSize,
             @Assisted int nitems) {
-        logger.debug("Using neighborhood size of {}", neighborhoodSize);
+        logger.debug("Using neighborhood size of {} for {} items", neighborhoodSize, nitems);
         maxNeighbors = neighborhoodSize;
         this.itemCount = nitems;
         setup();

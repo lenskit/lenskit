@@ -94,6 +94,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
                 boolean trackItemSets) {
             this.baseline = baseline;
             itemIndex = data.itemIndex();
+            itemCount = itemIndex.getObjectCount();
             itemRatings = new ArrayList<SparseVector>();
 
             if (trackItemSets)
@@ -103,21 +104,21 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
 
             logger.debug("Pre-processing ratings");
             buildItemRatings(data);
-            itemCount = itemRatings.size();
         }
 
         /**
          * Normalize and transpose the ratings matrix so we have a list of item
          * rating vectors.
          * @todo Fix this method to abstract item collection.
+         * @todo Review and document this method.
          */
         private void buildItemRatings(BuildContext data) {
             final boolean collectItems = userItemSets != null;
-            final int nusers = data.getUserIds().size();
+            final int nitems = itemCount;
 
             // Create and initialize the transposed array to collect ratings
-            ArrayList<Long2DoubleMap> workMatrix = new ArrayList<Long2DoubleMap>(nusers);
-            for (int i = 0; i < nusers; i++) {
+            ArrayList<Long2DoubleMap> workMatrix = new ArrayList<Long2DoubleMap>(nitems);
+            for (int i = 0; i < nitems; i++) {
             	workMatrix.add(new Long2DoubleOpenHashMap(20));
             }
             
@@ -139,6 +140,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
                 
                 for (IndexedRating rating: ratings) {
                     final int idx = rating.getItemIndex();
+                    assert idx > 0 && idx < nitems;
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(idx);
                     ivect.put(user, (double) rating.getRating());

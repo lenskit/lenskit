@@ -64,7 +64,7 @@ public class ItemItemModel implements Serializable {
     public Iterable<IndexedItemScore> getNeighbors(long item) {
         int idx = itemIndexer.getIndex(item);
         if (idx >= 0) {
-            return matrix.getNeighbors(itemIndexer.getIndex(item));
+            return matrix.getNeighbors(idx);
         } else {
             return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
         }

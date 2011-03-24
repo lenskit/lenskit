@@ -88,14 +88,17 @@ public interface BuildContext extends Closeable {
 	 * Get the collection of ratings in the snapshot.  The ratings are returned
 	 * in an undetermined order.  It is guaranteed that no duplicate ratings
 	 * appear - each <i>(user,item)</i> pair is rated at most once.
+	 * @return All ratings in the system.
 	 */
 	FastCollection<IndexedRating> getRatings();
 	
 	/**
 	 * Get the ratings for a particular user.  It is guaranteed that no duplicate
 	 * ratings appear - each <i>(user,item)</i> pair is rated at most once.
+	 * @param userId The user's ID.
+	 * @return The user's ratings, or an empty collection if the user is unknown.
 	 */
-	FastCollection<IndexedRating> getUserRatings(long itemId);
+	FastCollection<IndexedRating> getUserRatings(long userId);
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

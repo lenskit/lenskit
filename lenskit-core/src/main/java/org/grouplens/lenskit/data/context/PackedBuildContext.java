@@ -2,10 +2,12 @@ package org.grouplens.lenskit.data.context;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.WillNotClose;
 
@@ -15,6 +17,7 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
 import com.google.inject.Inject;
@@ -34,12 +37,13 @@ import com.google.inject.Singleton;
 @Singleton
 public class PackedBuildContext implements BuildContext {
 	private PackedRatingData data;
+	private List<IntList> userIndices;
 	
 	@Inject
 	public PackedBuildContext(RatingDataAccessObject dao) {
 		Cursor<Rating> ratings = dao.getRatings();
 		try {
-			data = packRatings(ratings);
+			packRatings(ratings);
 		} finally {
 			ratings.close();
 		}
@@ -91,17 +95,20 @@ public class PackedBuildContext implements BuildContext {
 	 */
 	@Override
 	public FastCollection<IndexedRating> getRatings() {
-		// TODO Auto-generated method stub
-		return null;
+		return new PackedRatingCollection(data);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.grouplens.lenskit.data.context.BuildContext#getUserRatings(long)
 	 */
 	@Override
-	public FastCollection<IndexedRating> getUserRatings(long itemId) {
-		// TODO Auto-generated method stub
-		return null;
+	public FastCollection<IndexedRating> getUserRatings(long userId) {
+	    requireValid();
+		int uidx = data.userIndex.getIndex(userId);
+		if (uidx < 0 || uidx >= userIndices.size())
+		    return CollectionUtils.emptyFastCollection();
+		else
+		    return new PackedRatingCollection(data, userIndices.get(uidx));
 	}
 
 	/* (non-Javadoc)
@@ -112,7 +119,7 @@ public class PackedBuildContext implements BuildContext {
 		data = null;
 	}
 	
-	static PackedRatingData packRatings(@WillNotClose Cursor<Rating> ratings) {
+	void packRatings(@WillNotClose Cursor<Rating> ratings) {
 		int size = ratings.getRowCount();
 		// default to something nice and large
 		if (size < 0) size = 10000;
@@ -178,13 +185,12 @@ public class PackedBuildContext implements BuildContext {
 		if (timestamps != null)
 			timestamps.trim();
 		
-		PackedRatingData data =
-			new PackedRatingData(users.elements(), items.elements(), values.elements(),
+		data = new PackedRatingData(users.elements(), items.elements(), values.elements(),
 				timestamps == null ? null : timestamps.elements(), itemIndex, userIndex);
 		assert data.users.length == nratings;
 		assert data.items.length == nratings;
 		assert data.values.length == nratings;
 		assert timestamps == null || data.timestamps.length == nratings;
-		return data;
+		userIndices = imgr.getUserIndexMatrix();
 	}
 }

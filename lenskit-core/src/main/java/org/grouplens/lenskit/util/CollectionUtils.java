@@ -26,9 +26,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.google.common.collect.Iterators;
 
 /**
  * Various helper methods for working with collections (particularly Fastutil
@@ -216,5 +219,33 @@ public class CollectionUtils {
     @Deprecated
     public static LongIterator fastIterator(final Iterator<Long> iter) {
         return LongIterators.asLongIterator(iter);
+    }
+    
+    public static <E> FastCollection<E> emptyFastCollection() {
+        return new EmptyFastCollection<E>();
+    }
+    
+    static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
+
+        @Override
+        public Iterator<E> fastIterator() {
+            return Iterators.emptyIterator();
+        }
+
+        @Override
+        public Iterable<E> fast() {
+            return this;
+        }
+
+        @Override
+        public Iterator<E> iterator() {
+            return Iterators.emptyIterator();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+        
     }
 }

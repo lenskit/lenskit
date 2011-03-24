@@ -3,12 +3,15 @@
  */
 package org.grouplens.lenskit.data.context;
 
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntList;
+
 import java.util.AbstractCollection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.util.FastCollection;
+import org.grouplens.lenskit.util.IntIntervalList;
 
 /**
  * Collection for packed rating data.
@@ -18,9 +21,16 @@ import org.grouplens.lenskit.util.FastCollection;
 class PackedRatingCollection extends AbstractCollection<IndexedRating>
 		implements FastCollection<IndexedRating> {
 	final private PackedRatingData data;
+	final private IntList indices;
 	
 	PackedRatingCollection(PackedRatingData data) {
+	    this.data = data;
+	    this.indices = new IntIntervalList(data.values.length);
+	}
+	
+	PackedRatingCollection(PackedRatingData data, IntList indices) {
 		this.data = data;
+		this.indices = indices;
 	}
 
 	@Override
@@ -49,25 +59,19 @@ class PackedRatingCollection extends AbstractCollection<IndexedRating>
 	}
 
 	private final class IteratorImpl implements Iterator<IndexedRating> {
-		private final int count;
-		private int index;
+		private final IntIterator iter;
 		
 		IteratorImpl() {
-			count = data.values.length;
-			index = -1;
+			iter = indices.iterator();
 		}
 		
 		public boolean hasNext() {
-			return index + 1 < count;
+			return iter.hasNext();
 		}
 		
 		public IndexedRating next() {
-			if (hasNext()) {
-				index += 1;
-				return data.makeRating(index);
-			} else {
-				throw new NoSuchElementException();
-			}
+			final int index = iter.next();
+			return data.makeRating(index);
 		}
 
 		@Override
@@ -77,25 +81,24 @@ class PackedRatingCollection extends AbstractCollection<IndexedRating>
 	}
 	
 	private final class FastIteratorImpl implements Iterator<IndexedRating> {
-		private final int count;
+		private final IntIterator iter;
 		private PackedRatingData.IndirectRating rating;
 		
 		FastIteratorImpl() {
-			count = data.values.length;
-			rating = data.makeIndirectRating(0);
+			iter = indices.iterator();
 		}
 		
 		public boolean hasNext() {
-			return rating.index < count;
+			return iter.hasNext();
 		}
 		
 		public IndexedRating next() {
-			if (rating.index + 1 < count) {
-				rating.index += 1;
-				return rating;
-			} else {
-				throw new NoSuchElementException();
-			}
+			final int index = iter.next();
+			if (rating == null)
+				rating = data.makeIndirectRating(index);
+			else
+				rating.index = index;
+			return rating;
 		}
 
 		@Override
