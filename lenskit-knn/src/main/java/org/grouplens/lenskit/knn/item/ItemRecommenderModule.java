@@ -22,7 +22,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderModule;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.RecommenderServiceProvider;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.BuildContext;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
@@ -81,7 +81,7 @@ public class ItemRecommenderModule extends RecommenderModule {
     @CheckedProvides(RecommenderServiceProvider.class)
     @Singleton
     public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-            RatingDataAccessObject data, @BaselinePredictor RatingPredictor baseline) {
+            BuildContext data, @BaselinePredictor RatingPredictor baseline) {
         return builder.build(data, baseline);
     }
 

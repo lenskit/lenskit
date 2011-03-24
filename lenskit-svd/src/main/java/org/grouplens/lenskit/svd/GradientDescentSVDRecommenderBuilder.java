@@ -23,15 +23,15 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.RecommenderService;
-import org.grouplens.lenskit.data.Indexer;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.context.BuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
@@ -96,7 +96,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
     }
 
     @Override
-    public RecommenderService build(RatingDataAccessObject data, RatingPredictor baseline) {
+    public RecommenderService build(BuildContext data, RatingPredictor baseline) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -107,11 +107,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         }
 
         Model model = new Model();
-        Indexer userIndex = new Indexer();
-        model.userIndex = userIndex;
-        Indexer itemIndex = new Indexer();
-        model.itemIndex = itemIndex;
-        List<SVDRating> ratings = indexData(data, baseline, userIndex, itemIndex, model);
+        List<SVDRating> ratings = indexData(data, baseline, model);
 
         // update each rating to start at the baseline
         for (SVDRating r: ratings) {
@@ -120,8 +116,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
-        model.userFeatures = new double[featureCount][userIndex.getObjectCount()];
-        model.itemFeatures = new double[featureCount][itemIndex.getObjectCount()];
+        
+        final int numUsers = data.getUserIds().size();
+        final int numItems = data.getItemIds().size();
+        model.userFeatures = new double[featureCount][numUsers];
+        model.itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
             trainFeature(model, ratings, i);
         }
@@ -131,7 +130,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         for (int feature = 0; feature < featureCount; feature++) {
             double[] ufv = model.userFeatures[feature];
             double ussq = 0;
-            int numUsers = model.userIndex.getObjectCount();
+            
             for (int i = 0; i < numUsers; i++) {
                 double uf = ufv[i];
                 ussq += uf * uf;
@@ -144,7 +143,6 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
             }
             double[] ifv = model.itemFeatures[feature];
             double issq = 0;
-            int numItems = model.itemIndex.getObjectCount();
             for (int i = 0; i < numItems; i++) {
                 double fv = ifv[i];
                 issq += fv * fv;
@@ -158,7 +156,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
             model.singularValues[feature] = unrm * inrm;
         }
 
-        return new SVDRecommenderService(featureCount, itemIndex, baseline, model.itemFeatures, model.singularValues,
+        return new SVDRecommenderService(featureCount, data.itemIndex(), baseline, model.itemFeatures, model.singularValues,
                 clampingFunction);
     }
 
@@ -215,33 +213,31 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         return Math.sqrt(ssq / ratings.size());
     }
 
-    private List<SVDRating> indexData(RatingDataAccessObject data, RatingPredictor baseline, Indexer userIndex, Indexer itemIndex, Model model) {
-        ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>();
+    private List<SVDRating> indexData(BuildContext data, RatingPredictor baseline, Model model) {
+        ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>(data.getUserIds().size());
 
-        Cursor<Rating> ratings = data.getRatings();
-        try {
-            int nratings = ratings.getRowCount();
-            logger.debug("pre-processing {} ratings", nratings);
-            ArrayList<SVDRating> svr = new ArrayList<SVDRating>(nratings >= 0 ? nratings : 100);
-            for (Rating r: ratings) {
-                SVDRating svdr = new SVDRating(model, r);
-                svr.add(svdr);
-                while (svdr.user >= ratingData.size()) {
-                    ratingData.add(new Long2DoubleOpenHashMap());
-                }
-                ratingData.get(svdr.user).put(svdr.iid, svdr.value);
-            }
-            model.userBaselines = new ArrayList<SparseVector>(ratingData.size());
-            for (int i = 0, sz = ratingData.size(); i < sz; i++) {
-                SparseVector rv = new MutableSparseVector(ratingData.get(i));
-                long uid = userIndex.getId(i);
-                model.userBaselines.add(baseline.predict(uid, rv, rv.keySet()));
-            }
-            svr.trimToSize();
-            return svr;
-        } finally {
-            ratings.close();
+        Collection<IndexedRating> ratings = data.getRatings();
+
+        int nratings = ratings.size();
+        logger.debug("pre-processing {} ratings", nratings);
+        ArrayList<SVDRating> svr = new ArrayList<SVDRating>(nratings);
+        for (IndexedRating r: ratings) {
+        	SVDRating svdr = new SVDRating(model, r);
+        	svr.add(svdr);
+        	while (svdr.user >= ratingData.size()) {
+        		ratingData.add(new Long2DoubleOpenHashMap());
+        	}
+        	ratingData.get(svdr.user).put(svdr.iid, svdr.value);
         }
+        model.userBaselines = new ArrayList<SparseVector>(ratingData.size());
+        final Index userIndex = data.userIndex();
+        for (int i = 0, sz = ratingData.size(); i < sz; i++) {
+        	SparseVector rv = new MutableSparseVector(ratingData.get(i));
+        	long uid = userIndex.getId(i);
+        	model.userBaselines.add(baseline.predict(uid, rv, rv.keySet()));
+        }
+        svr.trimToSize();
+        return svr;
     }
 
     private static final class Model {
@@ -249,10 +245,9 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         double userFeatures[][];
         double itemFeatures[][];
         double singularValues[];
-        Indexer userIndex;
-        Indexer itemIndex;
     }
 
+    // FIXME SVDRating shouldn't duplicate as much information
     private final class SVDRating {
         public final long uid, iid;
         public final int user;
@@ -260,11 +255,11 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         public final double value;
         public double cachedValue;
 
-        public SVDRating(Model model, Rating r) {
+        public SVDRating(Model model, IndexedRating r) {
             uid = r.getUserId();
             iid = r.getItemId();
-            user = model.userIndex.internId(uid);
-            item = model.itemIndex.internId(iid);
+            user = r.getUserIndex();
+            item = r.getItemIndex();
             this.value = r.getRating();
         }
 

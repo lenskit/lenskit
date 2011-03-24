@@ -20,6 +20,8 @@ package org.grouplens.lenskit.data;
 
 import java.sql.ResultSet;
 
+import org.grouplens.lenskit.data.context.BuildContext;
+
 import com.google.inject.Provider;
 
 /**

@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,16 +35,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.Indexer;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.RatingDataAccessObject;
+import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.util.IntSortedArraySet;
@@ -64,6 +62,8 @@ import com.google.inject.Inject;
  * The recommender engine builder uses an {@link ItemItemRecommenderServiceFactory}
  * to actually construct the recommender engine.  Re-binding that interface
  * allows alternative recommender engines to be used.
+ * 
+ * @todo Make normalization a strategy.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -90,71 +90,70 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(RatingDataAccessObject data, @Nullable RatingPredictor baseline,
+        public BuildState(BuildContext data, @Nullable RatingPredictor baseline,
                 boolean trackItemSets) {
             this.baseline = baseline;
-            Indexer itemIndexer;
-            itemIndex = itemIndexer = new Indexer();
+            itemIndex = data.itemIndex();
             itemRatings = new ArrayList<SparseVector>();
 
             if (trackItemSets)
-                userItemSets = new Long2ObjectOpenHashMap<IntSortedSet>();
+                userItemSets = new Long2ObjectOpenHashMap<IntSortedSet>(data.getUserIds().size());
             else
                 userItemSets = null;
 
             logger.debug("Pre-processing ratings");
-            buildItemRatings(itemIndexer, data);
+            buildItemRatings(data);
             itemCount = itemRatings.size();
         }
 
         /**
-         * Transpose the ratings matrix so we have a list of item rating vectors.
+         * Normalize and transpose the ratings matrix so we have a list of item
+         * rating vectors.
          * @todo Fix this method to abstract item collection.
          */
-        private void buildItemRatings(Indexer itemIndexer, RatingDataAccessObject data) {
-            Cursor<UserRatingProfile> cursor = data.getUserRatingProfiles();
+        private void buildItemRatings(BuildContext data) {
             final boolean collectItems = userItemSets != null;
-            ArrayList<Long2DoubleMap> itemWork = new ArrayList<Long2DoubleMap>(100);
-            try {
-                for (UserRatingProfile user: cursor) {
-                    Collection<Rating> ratings = user.getRatings();
-                    ratings = normalizeUserRatings(baseline, user.getUser(), ratings);
-                    final int nratings = ratings.size();
-                    // allocate the array ourselves to avoid an array copy
-                    int[] userItemArr = null;
-                    IntCollection userItems = null;
-                    if (collectItems) {
-                        userItemArr = new int[nratings];
-                        userItems = IntArrayList.wrap(userItemArr, 0);
-                    }
-                    for (Rating rating: ratings) {
-                        long item = rating.getItemId();
-                        int idx = itemIndexer.internId(item);
-                        Long2DoubleMap ivect;
-                        if (idx >= itemWork.size()) {
-                            // it's a new item - add one
-                            assert idx == itemWork.size();
-                            ivect = new Long2DoubleOpenHashMap();
-                            itemWork.add(ivect);
-                        } else {
-                            ivect = itemWork.get(idx);
-                        }
-                        ivect.put(user.getUser(), (double) rating.getRating());
-                        if (userItems != null)
-                            userItems.add(idx);
-                    }
-                    if (collectItems) {
-                        IntSortedSet itemSet = new IntSortedArraySet(userItemArr, 0, userItems.size());
-                        userItemSets.put(user.getUser(), itemSet);
-                    }
+            final int nusers = data.getUserIds().size();
+
+            // Create and initialize the transposed array to collect ratings
+            ArrayList<Long2DoubleMap> workMatrix = new ArrayList<Long2DoubleMap>(nusers);
+            for (int i = 0; i < nusers; i++) {
+            	workMatrix.add(new Long2DoubleOpenHashMap(20));
+            }
+            
+            LongIterator userIter = data.getUserIds().iterator();
+            while (userIter.hasNext()) {
+            	final long user = userIter.nextLong();
+            	Collection<IndexedRating> ratings = data.getUserRatings(user);
+            	MutableSparseVector ratingVector = Ratings.userRatingVector(ratings); 
+            	normalizeUserRatings(baseline, user, ratingVector);
+            	
+                final int nratings = ratings.size();
+                // allocate the array ourselves to avoid an array copy
+                int[] userItemArr = null;
+                IntCollection userItems = null;
+                if (collectItems) {
+                    userItemArr = new int[nratings];
+                    userItems = IntArrayList.wrap(userItemArr, 0);
                 }
-            } finally {
-                cursor.close();
+                
+                for (IndexedRating rating: ratings) {
+                    final int idx = rating.getItemIndex();
+                    // get the item's rating vector
+                    Long2DoubleMap ivect = workMatrix.get(idx);
+                    ivect.put(user, (double) rating.getRating());
+                    if (userItems != null)
+                        userItems.add(idx);
+                }
+                if (collectItems) {
+                    final IntSortedSet itemSet = new IntSortedArraySet(userItemArr, 0, userItems.size());
+                    userItemSets.put(user, itemSet);
+                }
             }
 
-            // convert the temporary work array into a real array
-            itemRatings = new ArrayList<SparseVector>(itemWork.size());
-            ListIterator<Long2DoubleMap> iter = itemWork.listIterator();
+            // convert the temporary work matrix into a real matrix
+            itemRatings = new ArrayList<SparseVector>(workMatrix.size());
+            ListIterator<Long2DoubleMap> iter = workMatrix.listIterator();
             while (iter.hasNext()) {
                 Long2DoubleMap ratings = iter.next();
                 SparseVector v = new SparseVector(ratings);
@@ -162,12 +161,12 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
                 itemRatings.add(v);
                 iter.set(null);                // clear the array so GC can free
             }
-            assert itemRatings.size() == itemWork.size();
+            assert itemRatings.size() == workMatrix.size();
         }
     }
 
     @Override
-    public ItemItemRecommenderService build(RatingDataAccessObject data, @Nullable RatingPredictor baseline) {
+    public ItemItemRecommenderService build(BuildContext data, @Nullable RatingPredictor baseline) {
         BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
@@ -182,22 +181,12 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
      * classes can customize the normalization method.
      * @param baseline The baseline predictor for this model build.
      * @param uid The user ID.
-     * @param ratings The user's ratings.
-     * @return A normalized version of the user's ratings.
+     * @param ratings The user's ratings, to be normalized in-place.
      */
-    protected Collection<Rating> normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, Collection<Rating> ratings) {
-        if (baseline == null) return ratings;
-
-        SparseVector rmap = Ratings.userRatingVector(ratings);
-        SparseVector base = baseline.predict(uid, rmap, rmap.keySet());
-        Collection<Rating> normed = new ArrayList<Rating>(ratings.size());
-
-        for (Rating r: ratings) {
-            long iid = r.getItemId();
-            double adj = r.getRating() - base.get(iid);
-            Rating r2 = new SimpleRating(r.getUserId(), r.getItemId(), adj, r.getTimestamp());
-            normed.add(r2);
+    protected void normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, MutableSparseVector ratings) {
+        if (baseline != null) {
+        	SparseVector base = baseline.predict(uid, ratings, ratings.keySet());
+        	ratings.subtract(base);
         }
-        return normed;
     }
 }

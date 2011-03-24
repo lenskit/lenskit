@@ -16,28 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
-
-import org.grouplens.lenskit.data.context.BuildContext;
-
 /**
- * Interface for recommender factories for the benchmarker to use.
- * 
- * FIXME: This class shouldn't exist.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * The build context interface and a simple implementation.
  */
-public interface RecommenderBuilder {
-    /**
-     * Construct a new recommender engine trained on the provided ratings.
-     *
-     * The caller is responsible for closing the data source once the recommender
-     * has been built.
-     *
-     * @param context The build context for building ratings.
-     * @param baseline The baseline predictor.
-     * @return A new recommender engine.
-     */
-    public RecommenderService build(BuildContext context, RatingPredictor baseline);
-}
+package org.grouplens.lenskit.data.context;

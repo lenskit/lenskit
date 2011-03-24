@@ -27,7 +27,7 @@ public final class Ratings {
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
      */
-    public static MutableSparseVector itemRatingVector(Collection<Rating> ratings) {
+    public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap();
         Long2LongMap tsMap = new Long2LongOpenHashMap();
         tsMap.defaultReturnValue(Long.MIN_VALUE);
@@ -53,7 +53,7 @@ public final class Ratings {
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
-    public static MutableSparseVector userRatingVector(Collection<Rating> ratings) {
+    public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap();
         Long2LongMap tsMap = new Long2LongOpenHashMap();
         tsMap.defaultReturnValue(Long.MIN_VALUE);

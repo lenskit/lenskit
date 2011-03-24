@@ -8,7 +8,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  */
 @ThreadSafe
-public final class SimpleRating implements Rating {
+public class SimpleRating implements Rating {
     private final long userId;
     private final long itemId;
     private final double rating;
@@ -38,19 +38,19 @@ public final class SimpleRating implements Rating {
         timestamp = ts;
     }
 
-    public long getUserId() {
+    final public long getUserId() {
         return userId;
     }
 
-    public long getItemId() {
+    final public long getItemId() {
         return itemId;
     }
 
-    public double getRating() {
+    final public double getRating() {
         return rating;
     }
 
-    public long getTimestamp() {
+    final public long getTimestamp() {
         return timestamp;
     }
 }
