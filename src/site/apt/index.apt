@@ -2,7 +2,7 @@
                                 About
                                -------
 
-About RefLens
+About LensKit
 
   LensKit is an open-source implementation of recommender algorithms
   with an emphasis on collaborative filtering.  It is developed by
@@ -74,5 +74,5 @@ Project Goals
 
 Development
 
-  RefLens is developed by GroupLens Research.  Development is managed with
+  LensKit is developed by GroupLens Research.  Development is managed with
   {{{http://dev.grouplens.org/trac/lenskit}Trac}}

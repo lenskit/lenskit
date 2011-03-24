@@ -4,11 +4,11 @@
 
 Using the Evaluator
 
-  RefLens provides an offline evaluation framework for testing
-  recommenders.  It is in the <<<reflens-eval>>> subpackage.  If you
-  run the Maven <<<package>>> phase for all of RefLens, it will
-  produce a complete jar that contains the evaluator, RefLens core,
-  and all dependencies in <<<reflens-eval/target>>>.  Run this jar
+  LensKit provides an offline evaluation framework for testing
+  recommenders.  It is in the <<<lenskit-eval>>> subpackage.  If you
+  run the Maven <<<package>>> phase for all of LensKit, it will
+  produce a complete jar that contains the evaluator, LensKit core,
+  and all dependencies in <<<lenskit-eval/target>>>.  Run this jar
   (with <<<java -jar>>>) with the <<<--help>>> option for a survey of
   command line arguments.
 
@@ -25,9 +25,9 @@ Configuring Recommenders
 
 +-------------------------------------------+
  rec.name = "UserUser"
- rec.module = org.grouplens.reflens.knn.user.UserRecommenderModule
+ rec.module = org.grouplens.lenskit.knn.user.UserRecommenderModule
  rec.module.knn.similarityDamping = 50
- rec.module.core.baseline = org.grouplens.reflens.baseline.ItemUserMeanPredictor
+ rec.module.core.baseline = org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 +-------------------------------------------+
 
   Scripts are passed as command line arguments to the evaluator after

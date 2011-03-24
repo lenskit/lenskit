@@ -136,8 +136,8 @@ Configuring and Creating the Recommender
   Module dataModule = new AbstractModule() {
       protected configure() { }
       @Provides @Singleton
-      public RatingDataSource provideDataSource() {
-          return new SimpleFileDataSource(fileName);
+      public RatingDataAccessObject provideDataSource() {
+          return new SimpleFileDAO(fileName);
       }
   };
   Module recModule = new ItemRecommenderModule();
@@ -159,36 +159,3 @@ Further Topics
   browse the {{{./apidocs/}API documentation}} and the
   {{{./xref/}sources}} to see more of how LensKit works and how to use
   it.
-
-* Data Source Lifecycles
-
-  In the example we provided above, the data source is a singleton
-  that never gets closed.  In real applications, you will want to
-  close your data sources.  LensKit does not provide a direct
-  architecture for doing that.  Recommenders assume that the data
-  source can be injected and that they can access it as needed.
-
-  The solution to this is twofold: first, do not hold on to
-  recommenders - obtain them as needed.  In a web application, this
-  means asking the injector for a recommender in each request.  A
-  RecommenderServiceProvider can be implemented which takes care of
-  caching so that recommenders do not need to be rebuilt every request
-  (we will be providing an example of this sometime in the future).
-  Ideally, you'll like dependency injection enough that you'll use
-  Guice for everything and inject the recommender into your request
-  handler.
-
-  The second piece of the solution is to use
-  {{{http://code.google.com/docreader/#p=google-guice&s=google-guice&t=Scopes}Guice
-  scopes}}, which allow object lifetimes to be managed more carefully.
-  Configuring data sources to live at the request scope, combined with
-  a servlet filter or Struts interceptor which closes or releases the
-  data source at the end of the request will accomplish this.  We're
-  still working on the details of this and will write more
-  documentation as we get it figured out.
-
-  This has a couple of implications for writing recommenders.  First,
-  you don't need to close data sources (although you do need to close
-  all your cursors).  Second, be careful how you hang on to data
-  sources.  If a recommender can be a singleton, don't hang on to the
-  data source; at most, hang on to a <<<Provider<DataSource>>>>.
