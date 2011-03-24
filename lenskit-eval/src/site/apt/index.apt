@@ -3,7 +3,7 @@
                   ----------------------------------
 
 
-Lenskit Evaluation Framework
+LensKit Evaluation Framework
 
   This project implements the offline evaluation framework for
-  evaluating recommender algorithms with {{{../}Lenskit}}.
+  evaluating recommender algorithms with {{{../}LensKit}}.
