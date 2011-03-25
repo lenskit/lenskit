@@ -18,6 +18,7 @@
         <exclude>**/*.log</exclude>
         <exclude>**/*~</exclude>
         <exclude>.hg</exclude>
+        <exclude>**/target/**</exclude>
       </excludes>
     </fileSet>
   </fileSets>
