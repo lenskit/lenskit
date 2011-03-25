@@ -18,29 +18,6 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.grouplens.lenskit</groupId>
-        <artifactId>lenskit-eval-maven-plugin</artifactId>
-        <version>${version}</version>
-        <executions>
-          <execution>
-            <id>rec-eval</id>
-            <goals>
-              <goal>crossfold-eval</goal>
-            </goals>
-            <phase>integration-test</phase>
-          </execution>
-        </executions>
-        <configuration>
-          <dataFile>/export/scratch/ekstrand/movie-data/ml-100k/u.data</dataFile>
-          <recommenderScript>etc/itemitem.js</recommenderScript>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
   <profiles>
     <profile>
       <id>smoketest</id>
