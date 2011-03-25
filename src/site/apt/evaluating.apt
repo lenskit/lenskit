@@ -5,12 +5,13 @@
 Using the Evaluator
 
   LensKit provides an offline evaluation framework for testing
-  recommenders.  It is in the <<<lenskit-eval>>> subpackage.  If you
-  run the Maven <<<package>>> phase for all of LensKit, it will
-  produce a complete jar that contains the evaluator, LensKit core,
-  and all dependencies in <<<lenskit-eval/target>>>.  Run this jar
-  (with <<<java -jar>>>) with the <<<--help>>> option for a survey of
-  command line arguments.
+  recommenders.  It is in the <<<lenskit-eval>>> subpackage.  The
+  resulting jar, however, does not include the core or any
+  recommenders.  We have created a {{{./lenskit-eval-maven-plugin/}Maven
+  plugin}} that takes care of running the recommender as a Maven task.
+  For now, that is the only supported means of running recommender
+  evaluations; we hope to add non-Maven-based evaluation methods later
+  (command line and possibly Ant-based).
 
 Configuring Recommenders
 
@@ -32,6 +33,51 @@ Configuring Recommenders
 
   Scripts are passed as command line arguments to the evaluator after
   the options.
+
+Running the Evaluator
+
+  Since the evaluator is a Maven plugin, you configure it in your
+  Maven POM.  You can do this in your recommender's project or in a
+  separate POM that depends on your chosen recommender implementation.
+  The following XML configures the evaluator to run with the MovieLens
+  100K data set against a recommender script in <<<etc/itemitem.js>>>.
+
++--------------------------------------------+
+ <project>
+ ...
+   <build>
+   ...
+     <plugins>
+     ...
+       <plugin>
+         <groupId>org.grouplens.lenskit</groupId>
+         <artifactId>lenskit-eval-maven-plugin</artifactId>
+         <version>${version}</version>
+         <executions>
+           <execution>
+             <id>rec-eval</id>
+             <goals>
+               <goal>crossfold-eval</goal>
+             </goals>
+             <phase>integration-test</phase>
+           </execution>
+         </executions>
+         <configuration>
+           <dataFile>/export/scratch/ekstrand/movie-data/ml-100k/u.data</dataFile>
+           <recommenderScript>etc/itemitem.js</recommenderScript>
+         </configuration>
+       </plugin>
+     ...
+     </plugins>
+   ...
+   </build>
+ ...
+  </project>
++--------------------------------------------+
+
+  See the
+  {{{./lenskit-eval-maven-plugin/crossfold-eval-mojo.html}crossfold-eval
+  mojo documentation}} for defails on configuring the plugin.
 
 Processing Output
 

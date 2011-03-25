@@ -51,7 +51,7 @@ public class CrossfoldEvaluator implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldEvaluator.class);
     private final CrossfoldManager manager;
     private final int numFolds;
-    private final UserRatingProfileSplitter splitter;
+    private final UserRatingProfileSplitter profileSplitter;
     private final List<AlgorithmInstance> algorithms;
 
     private TableWriter writer, predWriter;
@@ -59,19 +59,25 @@ public class CrossfoldEvaluator implements Runnable {
     private int colNTry, colNGood, colCoverage;
     private int colBuildTime;
     private int colPredTime;
+    
+    public CrossfoldEvaluator(RatingDataAccessObject ratings,
+            List<AlgorithmInstance> algorithms,
+            int numFolds,
+            UserRatingProfileSplitter splitter,
+            Writer output) throws IOException {
+        this.numFolds = numFolds;
+        this.algorithms = algorithms;
+        writer = makeWriter(output);
+        profileSplitter = splitter;
+        manager = new CrossfoldManager(numFolds, ratings);
+    }
 
     public CrossfoldEvaluator(RatingDataAccessObject ratings, CrossfoldOptions options,
             List<AlgorithmInstance> algorithms, Writer output) throws IOException {
-        numFolds = options.getNumFolds();
-        double holdout = options.getHoldoutFraction();
-        if (options.timeSplit())
-        	splitter = new TimestampUserRatingProfileSplitter(holdout);
-        else
-        	splitter = new RandomUserRatingProfileSplitter(holdout);
-        
-        manager = new CrossfoldManager(numFolds, ratings);
-        this.algorithms = algorithms;
-        writer = makeWriter(output);
+        this(ratings, algorithms, options.getNumFolds(),
+                (options.timeSplit() ? new TimestampUserRatingProfileSplitter(options.getHoldoutFraction())
+                    : new RandomUserRatingProfileSplitter(options.getHoldoutFraction())),
+                output);
 
         if (!options.predictionFile().isEmpty()) {
             logger.info("Writing predictions to {}", options.predictionFile());
@@ -161,7 +167,7 @@ public class CrossfoldEvaluator implements Runnable {
         int ngood = 0;				// total predictable ratings
         for (UserRatingProfile user: test) {
             final long uid = user.getUser();
-            SplitUserRatingProfile split = splitter.splitProfile(user);          
+            SplitUserRatingProfile split = profileSplitter.splitProfile(user);          
             
             // Compute predictions
             final SparseVector predictions = rec.predict(uid, split.getQueryVector(),

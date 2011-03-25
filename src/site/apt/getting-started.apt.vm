@@ -13,51 +13,27 @@ Overview
   recommender implementations to be highly modular and generic.  The
   basic process to create a project using LensKit follows these steps:
 
-  [[1]] Download and install LensKit (this will not be necessary once
-        we have published to the Maven central repository.
-
-  [[2]] Create a new Maven project that depends on <<<LensKit-core>>>.
-        In Eclipse with {{{http://m2eclipse.sonatype.org/}M2Eclipse}},
-        this can be done easily from the New Project wizard.  See
+  [[1]] Create a new Maven project that depends on <<<lenskit-core>>>
+        and the packages providing the recommenders you want (such as
+        <<<lenskit-knn>>>).  In Eclipse with
+        {{{http://m2eclipse.sonatype.org/}M2Eclipse}}, this can be
+        done easily from the New Project wizard.  See
         {{{http://www.sonatype.com/developing-with-eclipse-and-maven-book.html}Developing
         with Eclipse and Maven}} for more information on using Maven
         in Eclipse.
 
-  [[3]] Set up the recommender configuration, either by using one of
+  [[2]] Set up the recommender configuration, either by using one of
         the existing Guice modules or creating a new one.
 
-  [[4]] Configure the data source for recommendation.
+  [[3]] Configure the data source for recommendation.
 
-  [[5]] Create a Guice injector from the module and use it to create a
+  [[4]] Create a Guice injector from the module and use it to create a
         new <<<RecommenderServiceProvider>>>.
 
-  [[7]] Get a <<<RecommenderService>>> from the
+  [[5]] Get a <<<RecommenderService>>> from the
         <<<RecommenderServiceProvider>>>, get a
         <<<RatingRecommender>>> or <<<RatingPredictor>>> from the
         service provider, and start generating recommendations.
-
-Getting LensKit
-
-  LensKit has not yet been published to the master Maven repositories,
-  so we recommend that you get it from the
-  {{{http://dev.grouplens.org/hg/lenskit}Mercurial repository}}.
-  Clone the repository and install it to your local Maven repository:
-
-+--------------------------------------+
-  $ hg clone http://dev.grouplens.org/hg/lenskit
-  $ cd lenskit
-  $ mvn install
-+--------------------------------------+
-
-  This will build the jars and make them available to other Maven
-  projects.
-
-  You can also load LensKit into an Eclipse or NetBeans workspace.
-  Unfortunately, you cannot use M2Eclipse's "Check Out from Version
-  Control" feature since they do not have Mercurial support; however,
-  if you clone on the command line, you can import the project as an
-  existing Maven project.  If you have MercurialEclipse installed, it
-  will automatically detect that LensKit is a Mercurial project.
 
 Creating a Project
 
@@ -159,3 +135,26 @@ Further Topics
   browse the {{{./apidocs/}API documentation}} and the
   {{{./xref/}sources}} to see more of how LensKit works and how to use
   it.
+
+Getting LensKit from Mercurial
+
+  If you want to use the latest and greatest LensKit code, you can get
+  it from the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
+  repository}}.  Clone the repository and install it to your local
+  Maven repository:
+
++--------------------------------------+
+  $ hg clone http://dev.grouplens.org/hg/lenskit
+  $ cd lenskit
+  $ mvn install
++--------------------------------------+
+
+  This will build the jars and make them available to other Maven
+  projects.
+
+  You can also load LensKit into an Eclipse or NetBeans workspace.
+  Unfortunately, you cannot use M2Eclipse's "Check Out from Version
+  Control" feature since they do not have Mercurial support; however,
+  if you clone on the command line, you can import the project as an
+  existing Maven project.  If you have MercurialEclipse installed, it
+  will automatically detect that LensKit is a Mercurial project.

@@ -69,8 +69,14 @@ Project Goals
   LensKit is not intended to be an industry-strength implementation
   capable of running on a large e-commerce site (although we don't
   mind at all if you use it for that).  It is intended to be useful at
-  research and education scales, and suitable for providing
-  recommendations in smaller-scale web applications.
+  research and education scales and suitable for providing
+  recommendations in small- to medium-scale web applications.
+
+  In particular, distributed recommender implementations are
+  out-of-scope for LensKit — we are focusing on building high-quality
+  single-process (but potentially multi-threaded) implementations.  If
+  you want distributed recommendation engines, see
+  {{{http://mahout.apache.org}Apache Mahout}}.
 
 Development
 

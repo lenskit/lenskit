@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-svd</artifactId>
-  <name>LensKit SVD-based recommenders</name>
+  <name>LensKit SVD-based Recommenders</name>
   <dependencies>
   	<dependency>
   		<groupId>org.grouplens.lenskit</groupId>

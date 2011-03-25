@@ -1,0 +1,10 @@
+                    -----------------------------
+                       Evaluation Maven plugin
+                    -----------------------------
+
+About the Maven Plugin
+
+  This Maven plugin facilitates running offline evaluations of LensKit
+  recommenders within Maven.  This is useful to allow Maven's
+  repositories and dependency management facilities to be used to
+  locate recommender implementations and their dependencies.

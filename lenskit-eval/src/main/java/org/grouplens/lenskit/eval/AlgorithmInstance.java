@@ -136,12 +136,18 @@ public class AlgorithmInstance {
         RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
         return provider.get();
     }
-
+    
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
+        return load(f, null);
+    }
+
+    public static AlgorithmInstance load(File f, @Nullable ClassLoader classLoader) throws InvalidRecommenderException {
         logger.info("Loading recommender definition from {}", f);
         String xtn = fileExtension(f);
         logger.debug("Loading recommender from {} with extension {}", f, xtn);
-        ScriptEngineManager mgr = new ScriptEngineManager();
+        if (classLoader == null)
+            classLoader = Thread.currentThread().getContextClassLoader();
+        ScriptEngineManager mgr = new ScriptEngineManager(classLoader);
         ScriptEngine engine = mgr.getEngineByExtension(xtn);
         if (engine == null)
             throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);

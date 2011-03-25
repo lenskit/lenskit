@@ -37,7 +37,7 @@
     <site>
       <id>grouplens.org</id>
       <name>LensKit Website</name>
-      <url>scpexe://caesar.cs.umn.edu/web/research01/lenskit.grouplens.org/</url>
+      <url>file:///web/research01/lenskit.grouplens.org/</url>
     </site>
   </distributionManagement>
 
@@ -63,6 +63,7 @@
   <modules>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
   </modules>
@@ -126,36 +127,6 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>com.mycila.maven-license-plugin</groupId>
-        <artifactId>maven-license-plugin</artifactId>
-        <version>1.9.0</version>
-        <inherited>false</inherited>
-        <configuration>
-          <basedir>${basedir}</basedir>
-          <header>${basedir}/etc/header.txt</header>
-          <validHeaders>
-            <validHeader>${basedir}/etc/mit-header.txt</validHeader>
-          </validHeaders>
-          <aggregate>true</aggregate>
-          <strictCheck>true</strictCheck>
-          <includes>
-            <include>*/src/**/*.java</include>
-          </includes>
-          <mapping>
-            <java>SLASHSTAR_STYLE</java>
-          </mapping>
-        </configuration>
-        <executions>
-          <execution>
-            <id>check-headers</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -379,6 +350,37 @@
                 <configuration>
                   <removeAll>false</removeAll>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila.maven-license-plugin</groupId>
+            <artifactId>maven-license-plugin</artifactId>
+            <version>1.9.0</version>
+            <inherited>false</inherited>
+            <configuration>
+              <basedir>${basedir}</basedir>
+              <header>${basedir}/etc/header.txt</header>
+              <validHeaders>
+                <validHeader>${basedir}/etc/mit-header.txt</validHeader>
+              </validHeaders>
+              <aggregate>true</aggregate>
+              <strictCheck>true</strictCheck>
+              <includes>
+                <include>*/src/**/*.java</include>
+              </includes>
+              <mapping>
+                <java>SLASHSTAR_STYLE</java>
+              </mapping>
+            </configuration>
+            <executions>
+              <execution>
+                <id>check-headers</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>
