@@ -23,16 +23,12 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderNotAvailableException;
 import org.grouplens.lenskit.RecommenderService;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -51,13 +47,11 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class CrossfoldEvaluator implements Runnable {
-    public static enum SplitMode { RANDOM, TIME }
     
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldEvaluator.class);
     private final CrossfoldManager manager;
     private final int numFolds;
-    private final double holdoutFraction;
-    private final SplitMode splitMode;
+    private final UserRatingProfileSplitter splitter;
     private final List<AlgorithmInstance> algorithms;
 
     private TableWriter writer, predWriter;
@@ -69,11 +63,11 @@ public class CrossfoldEvaluator implements Runnable {
     public CrossfoldEvaluator(RatingDataAccessObject ratings, CrossfoldOptions options,
             List<AlgorithmInstance> algorithms, Writer output) throws IOException {
         numFolds = options.getNumFolds();
-        holdoutFraction = options.getHoldoutFraction();
+        double holdout = options.getHoldoutFraction();
         if (options.timeSplit())
-            splitMode = SplitMode.TIME;
+        	splitter = new TimestampUserRatingProfileSplitter(holdout);
         else
-            splitMode = SplitMode.RANDOM;
+        	splitter = new RandomUserRatingProfileSplitter(holdout);
         
         manager = new CrossfoldManager(numFolds, ratings);
         this.algorithms = algorithms;
@@ -167,32 +161,14 @@ public class CrossfoldEvaluator implements Runnable {
         int ngood = 0;				// total predictable ratings
         for (UserRatingProfile user: test) {
             final long uid = user.getUser();
-            final List<Rating> ratings = new ArrayList<Rating>(user.getRatings());
-            // Compute the split point - everything before it is train.
-            final int midpt = (int) Math.round(ratings.size() * (1.0 - holdoutFraction));
-            
-            // Re-order ratings based on our split method
-            switch (splitMode) {
-            case RANDOM:
-                Collections.shuffle(ratings);
-                break;
-            case TIME:
-                Collections.sort(ratings, Ratings.TIMESTAMP_COMPARATOR);
-                break;
-            }
-            
-            // Extract query and probe sets
-            final SparseVector queryRatings =
-                Ratings.userRatingVector(ratings.subList(0, midpt));
-            final SparseVector probeRatings =
-                Ratings.userRatingVector(ratings.subList(midpt, ratings.size()));
-            assert queryRatings.size() + probeRatings.size() == ratings.size();
+            SplitUserRatingProfile split = splitter.splitProfile(user);          
             
             // Compute predictions
-            final SparseVector predictions = rec.predict(uid, queryRatings, probeRatings.keySet());
+            final SparseVector predictions = rec.predict(uid, split.getQueryVector(),
+            		split.getProbeVector().keySet());
             
             // Evaluate predictions
-            for (final Long2DoubleMap.Entry entry: probeRatings.fast()) {
+            for (final Long2DoubleMap.Entry entry: split.getProbeVector().fast()) {
                 final long iid = entry.getLongKey();
                 final double rating = entry.getDoubleValue();
                 final double prediction = predictions.get(iid);
