@@ -135,11 +135,12 @@
         <executions>
           <execution>
             <id>default-single</id>
-            <phase>package</phase>
+            <phase>site</phase>
             <goals>
               <goal>single</goal>
             </goals>
             <configuration>
+              <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
               <descriptors>
                 <descriptor>src/assemble/source-package.xml</descriptor>
               </descriptors>
