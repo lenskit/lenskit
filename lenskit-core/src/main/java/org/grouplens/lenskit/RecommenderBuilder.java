@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 /**
  * Interface for recommender factories for the benchmarker to use.
@@ -39,5 +39,5 @@ public interface RecommenderBuilder {
      * @param baseline The baseline predictor.
      * @return A new recommender engine.
      */
-    public RecommenderService build(BuildContext context, RatingPredictor baseline);
+    public RecommenderService build(RatingBuildContext context, RatingPredictor baseline);
 }

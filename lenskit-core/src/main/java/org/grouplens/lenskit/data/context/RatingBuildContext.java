@@ -58,8 +58,8 @@ import com.google.inject.ImplementedBy;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe
-@ImplementedBy(PackedBuildContext.class)
-public interface BuildContext extends Closeable {
+@ImplementedBy(PackedRatingBuildContext.class)
+public interface RatingBuildContext extends Closeable {
 	/**
 	 * Get the set of user IDs in the snapshot.
 	 * @return A set of all known user IDs.

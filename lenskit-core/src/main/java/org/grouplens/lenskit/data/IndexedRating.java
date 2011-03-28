@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.data;
 
-import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 /**
  * Rating that also knows the indexes for its user and item.
@@ -26,7 +26,7 @@ import org.grouplens.lenskit.data.context.BuildContext;
  * <p>Implementations are not expected to consider index when comparing ratings
  * for equality.
  * 
- * @see BuildContext
+ * @see RatingBuildContext
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

@@ -81,7 +81,7 @@ final class IndexManager {
 	}
 	
 	/**
-	 * Retrieve a list of used indices.  This will allow the {@link PackedBuildContext}
+	 * Retrieve a list of used indices.  This will allow the {@link PackedRatingBuildContext}
 	 * to know what entries in its packed arrays are used by which users and allow
 	 * querying of a user's ratings.
 	 * @return A list containing, for each user, the global indexes registered

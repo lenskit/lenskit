@@ -43,14 +43,14 @@
  * 
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to
- * provide mutation.  The recommender building process uses a {@link BuildContext}
+ * provide mutation.  The recommender building process uses a {@link RatingBuildContext}
  * so that it can make multiple passes over a snapshot of the data.
  * 
  */
 package org.grouplens.lenskit.data.dao;
 import java.sql.ResultSet;
 
-import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 import com.google.inject.Provider;
 

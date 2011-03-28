@@ -31,7 +31,7 @@ import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
@@ -96,7 +96,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
     }
 
     @Override
-    public RecommenderService build(BuildContext data, RatingPredictor baseline) {
+    public RecommenderService build(RatingBuildContext data, RatingPredictor baseline) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -213,7 +213,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         return Math.sqrt(ssq / ratings.size());
     }
 
-    private List<SVDRating> indexData(BuildContext data, RatingPredictor baseline, Model model) {
+    private List<SVDRating> indexData(RatingBuildContext data, RatingPredictor baseline, Model model) {
         ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>(data.getUserIds().size());
 
         Collection<IndexedRating> ratings = data.getRatings();

@@ -53,12 +53,12 @@ import com.google.inject.Singleton;
  *
  */
 @Singleton
-public class PackedBuildContext implements BuildContext {
+public class PackedRatingBuildContext implements RatingBuildContext {
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
 	@Inject
-	public PackedBuildContext(RatingDataAccessObject dao) {
+	public PackedRatingBuildContext(RatingDataAccessObject dao) {
 		Cursor<Rating> ratings = dao.getRatings();
 		try {
 			packRatings(ratings);

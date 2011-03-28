@@ -40,7 +40,7 @@ import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.context.BuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
@@ -90,7 +90,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(BuildContext data, @Nullable RatingPredictor baseline,
+        public BuildState(RatingBuildContext data, @Nullable RatingPredictor baseline,
                 boolean trackItemSets) {
             this.baseline = baseline;
             itemIndex = data.itemIndex();
@@ -112,7 +112,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
          * @todo Fix this method to abstract item collection.
          * @todo Review and document this method.
          */
-        private void buildItemRatings(BuildContext data) {
+        private void buildItemRatings(RatingBuildContext data) {
             final boolean collectItems = userItemSets != null;
             final int nitems = itemCount;
 
@@ -168,7 +168,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
     }
 
     @Override
-    public ItemItemRecommenderService build(BuildContext data, @Nullable RatingPredictor baseline) {
+    public ItemItemRecommenderService build(RatingBuildContext data, @Nullable RatingPredictor baseline) {
         BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
