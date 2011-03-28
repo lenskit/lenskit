@@ -18,8 +18,9 @@
  */
 package org.grouplens.lenskit.knn.user;
 
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.RecommenderModule;
-import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
 
 /**
@@ -35,7 +36,8 @@ public class UserRecommenderModule extends RecommenderModule {
         super.configure();
         install(knn);
         bind(AbstractUserUserRatingRecommender.class).to(variant);
-        bind(RecommenderService.class).to(UserUserRecommenderService.class);
+        bind(RatingPredictor.class).to(AbstractUserUserRatingRecommender.class);
+        bind(RatingRecommender.class).to(AbstractUserUserRatingRecommender.class);
     }
 
     /**
@@ -50,5 +52,11 @@ public class UserRecommenderModule extends RecommenderModule {
      */
     public void setVariant(Class<? extends AbstractUserUserRatingRecommender> impl) {
         this.variant = impl;
+    }
+    
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        knn.setName(name);
     }
 }

@@ -1,4 +1,4 @@
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.grouplens.lenskit.AbstractRatingRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -17,15 +18,15 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PredictorBasedRatingRecommender extends AbstractRatingRecommender {
-    protected final DiscoverableRatingPredictor predictor;
+public class ItemItemRatingRecommender extends AbstractRatingRecommender {
+    protected final ItemItemRatingPredictor predictor;
     
     /**
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
     @Inject
-    public PredictorBasedRatingRecommender(DiscoverableRatingPredictor predictor) {
+    public ItemItemRatingRecommender(ItemItemRatingPredictor predictor) {
         this.predictor = predictor;
     }
     

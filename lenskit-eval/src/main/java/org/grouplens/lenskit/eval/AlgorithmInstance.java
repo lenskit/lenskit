@@ -32,11 +32,9 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderCoreModule;
 import org.grouplens.lenskit.RecommenderModuleComponent;
-import org.grouplens.lenskit.RecommenderNotAvailableException;
-import org.grouplens.lenskit.RecommenderService;
-import org.grouplens.lenskit.RecommenderServiceProvider;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,10 +129,9 @@ public class AlgorithmInstance {
         return Guice.createInjector(new DataModule(input), module);
     }
 
-    public RecommenderService getRecommenderService(final RatingDataAccessObject input) throws RecommenderNotAvailableException {
+    public RatingPredictor getRecommenderService(final RatingDataAccessObject input) {
         Injector inj = makeInjector(input);
-        RecommenderServiceProvider provider = inj.getInstance(RecommenderServiceProvider.class);
-        return provider.get();
+        return inj.getInstance(RatingPredictor.class);
     }
     
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {

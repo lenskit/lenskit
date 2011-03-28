@@ -18,10 +18,11 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.RecommenderModule;
-import org.grouplens.lenskit.RecommenderService;
-import org.grouplens.lenskit.RecommenderServiceProvider;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
@@ -33,10 +34,9 @@ import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
+import com.google.inject.Provider;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryProvider;
-import com.google.inject.throwingproviders.CheckedProvides;
 import com.google.inject.throwingproviders.ThrowingProviderBinder;
 
 /**
@@ -67,6 +67,8 @@ public class ItemRecommenderModule extends RecommenderModule {
         install(ThrowingProviderBinder.forModule(this));
         install(knn);
         configureSimilarityMatrix();
+        bind(RatingPredictor.class).to(ItemItemRatingPredictor.class);
+        bind(RatingRecommender.class).to(ItemItemRatingRecommender.class);
     }
 
     /**
@@ -76,13 +78,6 @@ public class ItemRecommenderModule extends RecommenderModule {
         bind(SimilarityMatrixBuilderFactory.class).toProvider(
                 FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
                         TruncatingSimilarityMatrixBuilder.class));
-    }
-
-    @CheckedProvides(RecommenderServiceProvider.class)
-    @Singleton
-    public RecommenderService provideRecommenderService(ItemItemRecommenderBuilder builder,
-            RatingBuildContext data, @BaselinePredictor RatingPredictor baseline) {
-        return builder.build(data, baseline);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -103,5 +98,11 @@ public class ItemRecommenderModule extends RecommenderModule {
             else
                 return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
         }
+    }
+    
+    @Provides
+    public ItemItemModel provideModel(ItemItemRecommenderBuilder builder,
+            Provider<RatingBuildContext> context, @Nullable @BaselinePredictor RatingPredictor baseline) {
+        return builder.build(context.get(), baseline);
     }
 }

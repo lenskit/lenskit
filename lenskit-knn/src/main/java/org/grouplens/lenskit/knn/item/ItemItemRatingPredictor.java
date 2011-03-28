@@ -9,7 +9,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.DiscoverableRatingPredictor;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -22,7 +22,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRatingPredictor implements DiscoverableRatingPredictor {
+public class ItemItemRatingPredictor implements RatingPredictor {
     protected final ItemItemModel model;
     
     @Inject
@@ -34,7 +34,6 @@ public class ItemItemRatingPredictor implements DiscoverableRatingPredictor {
         return model;
     }
     
-    @Override
     public LongSet getPredictableItems(long user, SparseVector ratings) {
         if (model.hasBaseline()) {
             return model.getItemUniverse();

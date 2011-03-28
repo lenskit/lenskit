@@ -27,8 +27,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderBuilder;
-import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
@@ -62,7 +60,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder {
+public class GradientDescentSVDRecommenderBuilder {
     private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDRecommenderBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
@@ -95,8 +93,7 @@ public class GradientDescentSVDRecommenderBuilder implements RecommenderBuilder 
         iterationCount = icount;
     }
 
-    @Override
-    public RecommenderService build(RatingBuildContext data, RatingPredictor baseline) {
+    public SVDRecommenderService build(RatingBuildContext data, RatingPredictor baseline) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);

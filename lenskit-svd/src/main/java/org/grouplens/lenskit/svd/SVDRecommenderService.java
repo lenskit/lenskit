@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRecommenderService;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.ScoredId;
@@ -49,7 +48,7 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRecommenderService extends AbstractRecommenderService implements RatingPredictor {
+public class SVDRecommenderService implements RatingPredictor {
 
     private final Index itemIndex;
     private final RatingPredictor baseline;
@@ -148,10 +147,5 @@ public class SVDRecommenderService extends AbstractRecommenderService implements
             values[i] = score;
         }
         return MutableSparseVector.wrap(keys, values);
-    }
-
-    @Override
-    public RatingPredictor getRatingPredictor() {
-        return this;
     }
 }

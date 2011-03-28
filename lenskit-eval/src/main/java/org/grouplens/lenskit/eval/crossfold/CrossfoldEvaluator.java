@@ -27,8 +27,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderNotAvailableException;
-import org.grouplens.lenskit.RecommenderService;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -146,15 +144,8 @@ public class CrossfoldEvaluator implements Runnable {
     private void benchmarkAlgorithm(int runNumber, AlgorithmInstance algo, RatingDataAccessObject train, Collection<UserRatingProfile> test) {
         TaskTimer timer = new TaskTimer();
         logger.debug("Benchmarking {}", algo.getName());
-        RecommenderService engine;
         logger.debug("Building recommender");
-        try {
-            engine = algo.getRecommenderService(train);
-        } catch (RecommenderNotAvailableException e) {
-            logger.error("Recommender not available: {}", e);
-            throw new RuntimeException(e);
-        }
-        RatingPredictor rec = engine.getRatingPredictor();
+        RatingPredictor rec = algo.getRecommenderService(train);
         writer.setValue(colBuildTime, timer.elapsed());
         logger.debug("Built model {} model in {}",
                 algo.getName(), timer.elapsedPretty());

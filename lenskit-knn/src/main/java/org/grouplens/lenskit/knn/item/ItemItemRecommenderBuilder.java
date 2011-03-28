@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
@@ -68,18 +67,14 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommenderBuilder implements RecommenderBuilder {
+public class ItemItemRecommenderBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 
-    private final @Nonnull ItemItemRecommenderServiceFactory engineFactory;
     private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
     @Inject
-    ItemItemRecommenderBuilder(
-            SimilarityMatrixBuildStrategy similarityStrategy,
-            ItemItemRecommenderServiceFactory engineFactory) {
+    ItemItemRecommenderBuilder(SimilarityMatrixBuildStrategy similarityStrategy) {
         this.similarityStrategy = similarityStrategy;
-        this.engineFactory = engineFactory;
     }
 
     @ParametersAreNonnullByDefault
@@ -167,14 +162,13 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
         }
     }
 
-    @Override
-    public ItemItemRecommenderService build(RatingBuildContext data, @Nullable RatingPredictor baseline) {
+    public ItemItemModel build(RatingBuildContext data, @Nullable RatingPredictor baseline) {
         BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix, items);
-        return engineFactory.create(model);
+        return model;
     }
 
     /**
