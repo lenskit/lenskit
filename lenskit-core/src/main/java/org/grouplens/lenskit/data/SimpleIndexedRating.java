@@ -39,7 +39,7 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 	 */
 	@Override
 	final public int getItemIndex() {
-		return userIndex;
+		return itemIndex;
 	}
 
 	/* (non-Javadoc)
@@ -47,6 +47,6 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 	 */
 	@Override
 	final public int getUserIndex() {
-		return itemIndex;
+		return userIndex;
 	}
 }
