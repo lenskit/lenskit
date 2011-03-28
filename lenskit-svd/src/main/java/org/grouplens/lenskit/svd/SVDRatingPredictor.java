@@ -48,7 +48,7 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRecommenderService implements RatingPredictor {
+public class SVDRatingPredictor implements RatingPredictor {
 
     private final Index itemIndex;
     private final RatingPredictor baseline;
@@ -58,7 +58,7 @@ public class SVDRecommenderService implements RatingPredictor {
     private final double singularValues[];
     private final DoubleFunction clampingFunction;
 
-    SVDRecommenderService(int nfeatures, Index itemIndexer,
+    SVDRatingPredictor(int nfeatures, Index itemIndexer,
             RatingPredictor baseline, double itemFeatures[][],
             double singularValues[],
             DoubleFunction clamp) {

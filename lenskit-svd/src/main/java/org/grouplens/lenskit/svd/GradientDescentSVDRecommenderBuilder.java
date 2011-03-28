@@ -93,7 +93,7 @@ public class GradientDescentSVDRecommenderBuilder {
         iterationCount = icount;
     }
 
-    public SVDRecommenderService build(RatingBuildContext data, RatingPredictor baseline) {
+    public SVDRatingPredictor build(RatingBuildContext data, RatingPredictor baseline) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -153,7 +153,7 @@ public class GradientDescentSVDRecommenderBuilder {
             model.singularValues[feature] = unrm * inrm;
         }
 
-        return new SVDRecommenderService(featureCount, data.itemIndex(), baseline, model.itemFeatures, model.singularValues,
+        return new SVDRatingPredictor(featureCount, data.itemIndex(), baseline, model.itemFeatures, model.singularValues,
                 clampingFunction);
     }
 
