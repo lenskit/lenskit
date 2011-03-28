@@ -43,6 +43,15 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 
 public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
 
+    /**
+     * Find neighboring users for particular items.
+     * @param user The user ID.
+     * @param ratings The user rating vector.
+     * @param items The items we're trying to recommend, or <tt>null</tt> to get
+     * get neighborhoods for all possible items.
+     * @return A map from item IDs to user neighborhoods for all items for which
+     * we can find neighboring users.
+     */
     protected abstract Long2ObjectMap<? extends Collection<Neighbor>>
         findNeighbors(long user, SparseVector ratings, LongSet items);
 
@@ -96,8 +105,9 @@ public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRe
         PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
         for (Long2DoubleMap.Entry pred: predictions.fast()) {
             final double v = pred.getDoubleValue();
-            if (!Double.isNaN(v)) {
-                queue.add(new ScoredId(pred.getLongKey(), v));
+            final long item = pred.getLongKey();
+            if (!Double.isNaN(v) && !exclude.contains(item)) {
+                queue.add(new ScoredId(item, v));
             }
         }
 
