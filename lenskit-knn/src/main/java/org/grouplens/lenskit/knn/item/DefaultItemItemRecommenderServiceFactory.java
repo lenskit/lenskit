@@ -23,7 +23,7 @@ package org.grouplens.lenskit.knn.item;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class DefaultItemItemRecommenderEngineFactory implements
+class DefaultItemItemRecommenderServiceFactory implements
         ItemItemRecommenderServiceFactory {
 
     /* (non-Javadoc)

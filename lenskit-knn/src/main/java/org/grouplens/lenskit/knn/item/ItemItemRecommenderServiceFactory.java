@@ -31,7 +31,7 @@ import com.google.inject.ImplementedBy;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ImplementedBy(DefaultItemItemRecommenderEngineFactory.class)
+@ImplementedBy(DefaultItemItemRecommenderServiceFactory.class)
 public interface ItemItemRecommenderServiceFactory {
     /**
      * Create a new recommender engine.
