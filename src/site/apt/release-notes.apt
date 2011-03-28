@@ -7,6 +7,11 @@ Release ${project.version}
   * Renamed <<<BuildContext>>> to <<<RatingBuildContext>>> to allow
     for a future <<<BasketBuildContext>>>.
 
+  * Added support for excluded items to recommendation API.
+
+  * Added <<<AbstractRatingRecommender>>> helper class to make
+    implementing rating recommenders easier.
+
   []
 
   API Compatibility Notes
@@ -14,6 +19,10 @@ Release ${project.version}
     * Code dependent on <<<BuildContext>>> or <<<PackedBuildContext>>>
       must be updated to use <<<RatingBuildContext>>> and
       <<<PackedRatingBuildContext>>> instead.
+
+    * Code implementing <<<RatingRecommender>>> must be updated to
+      implement the new API.  We recommend using
+      <<<AbstractRatingRecommender>>> to help with this.
 
     []
 
