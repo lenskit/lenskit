@@ -1,0 +1,24 @@
+                        ---------------------
+                        LensKit Release Notes
+                        ---------------------
+
+Release ${project.version}
+
+  * Renamed <<<BuildContext>>> to <<<RatingBuildContext>>> to allow
+    for a future <<<BasketBuildContext>>>.
+
+  []
+
+  API Compatibility Notes
+
+    * Code dependent on <<<BuildContext>>> or <<<PackedBuildContext>>>
+      must be updated to use <<<RatingBuildContext>>> and
+      <<<PackedRatingBuildContext>>> instead.
+
+    []
+
+Release 0.0.1 (March 25, 2011)
+
+  * Initial release
+
+  []
