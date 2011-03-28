@@ -66,135 +66,27 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  *
  */
 @Immutable
-public class ItemItemRecommenderService extends AbstractRecommenderService implements RatingRecommender, RatingPredictor, Serializable {
+public class ItemItemRecommenderService extends AbstractRecommenderService implements Serializable {
     private static final long serialVersionUID = 3157980766584927863L;
     protected final @Nonnull ItemItemModel model;
 
     /**
-     * Construct a new recommender from an item-item recommender model.
-     * @param model The backing model for the new recommender.
+     * Construct a new recommender from an item-item recommender predictor.
+     * @param predictor The backing predictor for the new recommender.
      */
     public ItemItemRecommenderService(@Nonnull ItemItemModel model) {
         this.model = model;
     }
 
     @Override
-    public ScoredId predict(long user, SparseVector ratings, long item) {
-        MutableSparseVector normed = MutableSparseVector.copy(ratings);
-        model.subtractBaseline(user, ratings, normed);
-        double sum = 0;
-        double totalWeight = 0;
-        for (IndexedItemScore score: model.getNeighbors(item)) {
-            long other = model.getItem(score.getIndex());
-            double s = score.getScore();
-            if (normed.containsId(other)) {
-                // FIXME this goes wacky with negative similarities
-                double rating = normed.get(other);
-                sum += rating * s;
-                totalWeight += abs(s);
-            }
-        }
-        double pred = 0;
-        if (totalWeight > 0)
-            pred = sum / totalWeight;
-        // FIXME Should return NULL if there is no baseline
-        return new ScoredId(item, model.addBaseline(user, ratings, item, pred));
-    }
-
-    @Override
-    public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        MutableSparseVector normed = MutableSparseVector.copy(ratings);
-        model.subtractBaseline(user, ratings, normed);
-
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet)
-            iset = (LongSortedSet) items;
-        else
-            iset = new LongSortedArraySet(items);
-
-        MutableSparseVector sums = new MutableSparseVector(iset);
-        MutableSparseVector weights = new MutableSparseVector(iset);
-        for (Long2DoubleMap.Entry rating: normed.fast()) {
-            final double r = rating.getDoubleValue();
-            for (IndexedItemScore score: model.getNeighbors(rating.getLongKey())) {
-                final double s = score.getScore();
-                final int idx = score.getIndex();
-                final long iid = model.getItem(idx);
-                weights.add(iid, abs(s));
-                sums.add(iid, s*r);
-            }
-        }
-
-        final boolean hasBaseline = model.hasBaseline();
-        LongIterator iter = sums.keySet().iterator();
-        while (iter.hasNext()) {
-            final long iid = iter.next();
-            final double w = weights.get(iid);
-            if (w > 0)
-                sums.set(iid, sums.get(iid) / w);
-            else
-                sums.set(iid, hasBaseline ? 0 : Double.NaN);
-        }
-
-        model.addBaseline(user, ratings, sums);
-        return sums;
-    }
-
-    LongSet getRecommendableItems(long user, SparseVector ratings) {
-        if (model.hasBaseline()) {
-            return model.getItemUniverse();
-        } else {
-            LongSet items = new LongOpenHashSet();
-            LongIterator iter = ratings.keySet().iterator();
-            while (iter.hasNext()) {
-                final long item = iter.nextLong();
-                for (IndexedItemScore n: model.getNeighbors(item)) {
-                    items.add(model.getItem(n.getIndex()));
-                }
-            }
-            return items;
-        }
-    }
-
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings) {
-        return recommend(user, ratings, -1, null);
-    }
-
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, Set<Long> candidates) {
-        return recommend(user, ratings, -1, candidates);
-    }
-
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n, Set<Long> candidates) {
-        if (candidates == null)
-            candidates = getRecommendableItems(user, ratings);
-        SparseVector predictions = predict(user, ratings, candidates);
-        PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
-        for (Long2DoubleMap.Entry pred: predictions.fast()) {
-            final double v = pred.getDoubleValue();
-            if (!Double.isNaN(v)) {
-                queue.add(new ScoredId(pred.getLongKey(), v));
-            }
-        }
-
-        ArrayList<ScoredId> finalPredictions =
-            new ArrayList<ScoredId>(n >= 0 ? n : queue.size());
-        for (int i = 0; !queue.isEmpty() && (n < 0 || i < n); i++) {
-            finalPredictions.add(queue.poll());
-        }
-
-        return finalPredictions;
-    }
-
-    @Override
-    public RatingPredictor getRatingPredictor() {
-        return this;
+    public ItemItemRatingPredictor getRatingPredictor() {
+        // FIXME Don't allocate all the time - use Guice
+        return new ItemItemRatingPredictor(model);
     }
 
     @Override
     public RatingRecommender getRatingRecommender() {
-        return this;
+        // FIXME Don't allocate all the time - use Guice
+        return new ItemItemRatingRecommender(getRatingPredictor());
     }
 }

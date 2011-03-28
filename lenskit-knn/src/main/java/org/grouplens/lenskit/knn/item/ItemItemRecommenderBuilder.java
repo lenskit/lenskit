@@ -57,7 +57,7 @@ import com.google.inject.Inject;
  * This class takes {@link RatingDataSource}es and builds item-item recommender
  * models from them.  It uses a build strategy and a baseline recommender to do
  * the actual building, constructs an {@link ItemItemModel} containing the
- * resulting recommender model, and finally builds a recommender around it.
+ * resulting recommender predictor, and finally builds a recommender around it.
  *
  * The recommender engine builder uses an {@link ItemItemRecommenderServiceFactory}
  * to actually construct the recommender engine.  Re-binding that interface
@@ -181,7 +181,7 @@ public class ItemItemRecommenderBuilder implements RecommenderBuilder {
      * Normalize a user's ratings.  This method is called on each user's ratings
      * prior to using the ratings to learn item similarities.  Deriving
      * classes can customize the normalization method.
-     * @param baseline The baseline predictor for this model build.
+     * @param baseline The baseline predictor for this predictor build.
      * @param uid The user ID.
      * @param ratings The user's ratings, to be normalized in-place.
      */

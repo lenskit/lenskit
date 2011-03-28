@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongComparator;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Arrays;
@@ -291,5 +293,25 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
     @Override
     public boolean rem(long k) {
         throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Compute the set difference of two sets.
+     */
+    public static LongSortedSet setDifference(LongSet items, LongSet exclude) {
+        long[] data = new long[items.size()];
+        LongIterator iter = items.iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            final long x = iter.nextLong();
+            if (!exclude.contains(x))
+                data[i++] = x;
+        }
+        if (!(items instanceof LongSortedSet))
+            Arrays.sort(data, 0, i);
+        // trim the array
+        if (data.length * 2 > i * 3)
+            data = Arrays.copyOf(data, i);
+        return new LongSortedArraySet(data, 0, i, true);
     }
 }

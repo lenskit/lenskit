@@ -31,19 +31,17 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.AbstractRatingRecommender;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public abstract class AbstractUserUserRatingRecommender implements RatingRecommender,
-    RatingPredictor {
+public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
 
     protected abstract Long2ObjectMap<? extends Collection<Neighbor>>
         findNeighbors(long user, SparseVector ratings, LongSet items);
@@ -91,8 +89,9 @@ public abstract class AbstractUserUserRatingRecommender implements RatingRecomme
     }
 
     @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n, Set<Long> candidates) {
+    public List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
         // TODO Share this code with the item-item code
+        // FIXME Make this support null candidate sets and exclude
         SparseVector predictions = predict(user, ratings, candidates);
         PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
         for (Long2DoubleMap.Entry pred: predictions.fast()) {
@@ -109,16 +108,6 @@ public abstract class AbstractUserUserRatingRecommender implements RatingRecomme
         }
 
         return finalPredictions;
-    }
-
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings) {
-        return recommend(user, ratings, -1, null);
-    }
-
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, Set<Long> candidates) {
-        return recommend(user, ratings, -1, candidates);
     }
 
     /**

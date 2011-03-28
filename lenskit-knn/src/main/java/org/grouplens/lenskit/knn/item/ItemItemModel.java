@@ -34,7 +34,7 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
 /**
- * Encapsulation of the model needed for item-item collaborative filtering.
+ * Encapsulation of the predictor needed for item-item collaborative filtering.
  *
  * This class is used by {@link ItemItemRecommenderService} to do actual item-item
  * recommendation.  It encapsulates the various data accesses needed to support

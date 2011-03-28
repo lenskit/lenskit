@@ -35,7 +35,7 @@ import com.google.inject.ImplementedBy;
 public interface ItemItemRecommenderServiceFactory {
     /**
      * Create a new recommender engine.
-     * @param model The model backing the engine.
+     * @param predictor The predictor backing the engine.
      * @return The newly-constructed recommender engine.
      */
     @Nonnull

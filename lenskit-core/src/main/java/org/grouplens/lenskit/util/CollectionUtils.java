@@ -58,7 +58,9 @@ public class CollectionUtils {
      * Get a Fastutil {@link LongSet} from a {@link Set} of longs.
      */
     public static LongSet fastSet(final Set<Long> longs) {
-        if (longs instanceof LongSet)
+        if (longs == null)
+            return null;
+        else if (longs instanceof LongSet)
             return (LongSet) longs;
         else
             return new LongSetWrapper(longs);
