@@ -47,7 +47,7 @@ public class TaskTimer {
     }
 
     public double elapsed() {
-        return elapsedMillis() * 0.0001;
+        return elapsedMillis() * 0.001;
     }
 
     public String elapsedPretty() {
