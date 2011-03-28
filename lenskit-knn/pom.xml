@@ -14,7 +14,7 @@
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-core</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
