@@ -23,7 +23,7 @@ Release ${project.version}
 
   []
 
-  API Compatibility Notes
+* API Compatibility Notes
 
     * Code dependent on <<<BuildContext>>> or <<<PackedBuildContext>>>
       must be updated to use <<<RatingBuildContext>>> and

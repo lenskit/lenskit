@@ -78,6 +78,19 @@ Project Goals
   you want distributed recommendation engines, see
   {{{http://mahout.apache.org}Apache Mahout}}.
 
+Getting LensKit
+
+  The easiest way to get LensKit is through Maven by adding it as a
+  dependency; see the {{{./getting-started.html}Getting Started
+  guide}} for more information.
+
+  Alternatively, you can download the source code as a
+  {{{./downloads/lenskit-${project.version}-source-package.tar.gz}gzipped
+  tar archive}} or a
+  {{{./downloads/lenskit-${project.version}-source-package.zip}zip
+  file}} or clone the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
+  repository}}.
+
 Development
 
   LensKit is developed by GroupLens Research.  Development is managed with
