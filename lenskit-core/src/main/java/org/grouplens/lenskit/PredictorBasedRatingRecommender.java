@@ -1,61 +1,39 @@
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractRatingRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 import com.google.inject.Inject;
 
 /**
- * Item-item rating recommender.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRatingRecommender extends AbstractRatingRecommender {
-    protected final ItemItemRatingPredictor predictor;
-    protected final ItemItemModel model;
+public class PredictorBasedRatingRecommender extends AbstractRatingRecommender {
+    protected final DiscoverableRatingPredictor predictor;
     
-    @Inject
-    ItemItemRatingRecommender(ItemItemRatingPredictor predictor) {
-        this.predictor = predictor;
-        model = predictor.getModel();
-    }
-    
-    LongSet getRecommendableItems(long user, SparseVector ratings) {
-        if (model.hasBaseline()) {
-            return model.getItemUniverse();
-        } else {
-            LongSet items = new LongOpenHashSet();
-            LongIterator iter = ratings.keySet().iterator();
-            while (iter.hasNext()) {
-                final long item = iter.nextLong();
-                for (IndexedItemScore n: model.getNeighbors(item)) {
-                    items.add(model.getItem(n.getIndex()));
-                }
-            }
-            return items;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.AbstractRatingRecommender#recommend(long, org.grouplens.lenskit.data.vector.SparseVector, int, it.unimi.dsi.fastutil.longs.LongSet, it.unimi.dsi.fastutil.longs.LongSet)
+    /**
+     * Construct a new recommender from a predictor.
+     * @param predictor The predictor to use.
      */
+    @Inject
+    public PredictorBasedRatingRecommender(DiscoverableRatingPredictor predictor) {
+        this.predictor = predictor;
+    }
+    
     @Override
     protected List<ScoredId> recommend(long user, SparseVector ratings, int n,
             LongSet candidates, LongSet exclude) {
         if (candidates == null)
-            candidates = getRecommendableItems(user, ratings);
+            candidates = predictor.getPredictableItems(user, ratings);
         if (!exclude.isEmpty())
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
         

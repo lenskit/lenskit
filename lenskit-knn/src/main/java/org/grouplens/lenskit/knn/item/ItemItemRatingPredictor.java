@@ -3,11 +3,13 @@ package org.grouplens.lenskit.knn.item;
 import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.DiscoverableRatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -20,7 +22,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRatingPredictor implements RatingPredictor {
+public class ItemItemRatingPredictor implements DiscoverableRatingPredictor {
     protected final ItemItemModel model;
     
     @Inject
@@ -30,6 +32,23 @@ public class ItemItemRatingPredictor implements RatingPredictor {
     
     public ItemItemModel getModel() {
         return model;
+    }
+    
+    @Override
+    public LongSet getPredictableItems(long user, SparseVector ratings) {
+        if (model.hasBaseline()) {
+            return model.getItemUniverse();
+        } else {
+            LongSet items = new LongOpenHashSet();
+            LongIterator iter = ratings.keySet().iterator();
+            while (iter.hasNext()) {
+                final long item = iter.nextLong();
+                for (IndexedItemScore n: model.getNeighbors(item)) {
+                    items.add(model.getItem(n.getIndex()));
+                }
+            }
+            return items;
+        }
     }
     
     @Override

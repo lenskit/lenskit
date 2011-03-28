@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.lenskit.AbstractRecommenderService;
+import org.grouplens.lenskit.PredictorBasedRatingRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.RecommenderBuilder;
@@ -87,6 +88,6 @@ public class ItemItemRecommenderService extends AbstractRecommenderService imple
     @Override
     public RatingRecommender getRatingRecommender() {
         // FIXME Don't allocate all the time - use Guice
-        return new ItemItemRatingRecommender(getRatingPredictor());
+        return new PredictorBasedRatingRecommender(getRatingPredictor());
     }
 }
