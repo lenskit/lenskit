@@ -119,8 +119,25 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
             return dft;
     }
 
-    public boolean containsKey(long id) {
-        return Arrays.binarySearch(keys, id) >= 0;
+    /**
+     * Query whether the vector contains an entry for the key in question.  If
+     * the vector contains an entry whose value is {@link Double#NaN}, <tt>true</tt>
+     * is still returned.  This can change if it is not useful. 
+     * @param key The key to search for.
+     * @return <tt>true</tt> if the key exists.
+     */
+    public boolean containsKey(long key) {
+        return Arrays.binarySearch(keys, key) >= 0;
+    }
+    
+    /**
+     * Deprecated alias for {@link #containsKey(long)}.
+     * @param id
+     * @return
+     */
+    @Deprecated
+    public boolean containsId(long id) {
+        return containsKey(id);
     }
 
     /**
