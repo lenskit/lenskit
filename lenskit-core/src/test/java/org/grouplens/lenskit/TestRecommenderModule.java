@@ -60,7 +60,7 @@ public class TestRecommenderModule {
 
     @Test
     public void testDefaults() {
-        assertEquals(Parameters.getDefaultDouble(MeanDamping.class), module.getDamping(), EPSILON);
+        assertEquals(Parameters.getDefaultDouble(MeanDamping.class), module.getMeanDamping(), EPSILON);
         assertEquals(Parameters.getDefaultDouble(MinRating.class), module.getMinRating(), EPSILON);
         assertEquals(Parameters.getDefaultDouble(MaxRating.class), module.getMaxRating(), EPSILON);
     }
@@ -94,12 +94,12 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setDamping(double)}.
+     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMeanDamping(double)}.
      */
     @Test
     public void testSetDamping() {
-        module.setDamping(500);
-        assertEquals(500, module.getDamping(), EPSILON);
+        module.setMeanDamping(500);
+        assertEquals(500, module.getMeanDamping(), EPSILON);
     }
 
     /**

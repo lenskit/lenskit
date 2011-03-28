@@ -211,7 +211,14 @@ public class GradientDescentSVDRecommenderBuilder {
     }
 
     private List<SVDRating> indexData(RatingBuildContext data, RatingPredictor baseline, Model model) {
-        ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>(data.getUserIds().size());
+        final Index userIndex = data.userIndex();
+        final int nusers = userIndex.getObjectCount();
+        
+        ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>(nusers);
+        for (int i = 0; i < nusers; i++) {
+            ratingData.add(new Long2DoubleOpenHashMap());
+        }
+        assert ratingData.size() == nusers;
 
         Collection<IndexedRating> ratings = data.getRatings();
 
@@ -221,13 +228,10 @@ public class GradientDescentSVDRecommenderBuilder {
         for (IndexedRating r: ratings) {
         	SVDRating svdr = new SVDRating(model, r);
         	svr.add(svdr);
-        	while (svdr.user >= ratingData.size()) {
-        		ratingData.add(new Long2DoubleOpenHashMap());
-        	}
+        	assert svdr.user < nusers;
         	ratingData.get(svdr.user).put(svdr.iid, svdr.value);
         }
         model.userBaselines = new ArrayList<SparseVector>(ratingData.size());
-        final Index userIndex = data.userIndex();
         for (int i = 0, sz = ratingData.size(); i < sz; i++) {
         	SparseVector rv = new MutableSparseVector(ratingData.get(i));
         	long uid = userIndex.getId(i);

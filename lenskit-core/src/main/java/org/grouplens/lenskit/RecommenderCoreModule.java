@@ -46,7 +46,7 @@ import com.google.inject.util.Providers;
  */
 public class RecommenderCoreModule extends RecommenderModuleComponent {
     private @ThreadCount int threadCount = Runtime.getRuntime().availableProcessors();
-    private @MeanDamping double damping;
+    private @MeanDamping double meanDamping;
     private @MinRating double minRating;
     private @MaxRating double maxRating;
     private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
@@ -83,18 +83,18 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
     }
 
     /**
-     * @return the damping
+     * @return the meanDamping
      */
     @Provides @MeanDamping
-    public double getDamping() {
-        return damping;
+    public double getMeanDamping() {
+        return meanDamping;
     }
 
     /**
-     * @param damping the damping to set
+     * @param meanDamping the meanDamping to set
      */
-    public void setDamping(double damping) {
-        this.damping = damping;
+    public void setMeanDamping(double damping) {
+        this.meanDamping = damping;
     }
 
     /**
