@@ -77,7 +77,7 @@ public class ItemItemRatingPredictor implements RatingPredictor {
         for (IndexedItemScore score: model.getNeighbors(item)) {
             long other = model.getItem(score.getIndex());
             double s = score.getScore();
-            if (normed.containsId(other)) {
+            if (normed.containsKey(other)) {
                 // FIXME this goes wacky with negative similarities
                 double rating = normed.get(other);
                 sum += rating * s;

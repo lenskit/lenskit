@@ -59,7 +59,7 @@ public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRe
     public ScoredId predict(long user, SparseVector ratings, long item) {
         LongSet items = LongSets.singleton(item);
         SparseVector vector = predict(user, ratings, items);
-        if (vector.containsId(item))
+        if (vector.containsKey(item))
             return new ScoredId(user, vector.get(item));
         else
             return null;

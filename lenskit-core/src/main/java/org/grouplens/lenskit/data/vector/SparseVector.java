@@ -43,7 +43,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * the items in key ID.
  *
  * <p>It is possible for vectors to contain NaN values, but be careful with this.
- * They will show up in enumeration and {@link #containsId(long)} will return
+ * They will show up in enumeration and {@link #containsKey(long)} will return
  * <tt>true</tt>, but {@link #get(long)} will not distinguish between them and
  * missing entries.
  *
@@ -119,7 +119,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
             return dft;
     }
 
-    public boolean containsId(long id) {
+    public boolean containsKey(long id) {
         return Arrays.binarySearch(keys, id) >= 0;
     }
 

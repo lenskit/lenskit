@@ -135,24 +135,24 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#containsId(long)}.
+     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#containsKey(long)}.
      */
     @Test
     public void testContainsId() {
-        assertFalse(emptyVector().containsId(5));
-        assertFalse(emptyVector().containsId(42));
-        assertFalse(emptyVector().containsId(-1));
+        assertFalse(emptyVector().containsKey(5));
+        assertFalse(emptyVector().containsKey(42));
+        assertFalse(emptyVector().containsKey(-1));
 
-        assertTrue(singleton().containsId(5));
-        assertFalse(singleton().containsId(3));
-        assertFalse(singleton().containsId(7));
+        assertTrue(singleton().containsKey(5));
+        assertFalse(singleton().containsKey(3));
+        assertFalse(singleton().containsKey(7));
 
-        assertFalse(simpleVector().containsId(1));
-        assertFalse(simpleVector().containsId(5));
-        assertFalse(simpleVector().containsId(42));
-        assertTrue(simpleVector().containsId(3));
-        assertTrue(simpleVector().containsId(7));
-        assertTrue(simpleVector().containsId(8));
+        assertFalse(simpleVector().containsKey(1));
+        assertFalse(simpleVector().containsKey(5));
+        assertFalse(simpleVector().containsKey(42));
+        assertTrue(simpleVector().containsKey(3));
+        assertTrue(simpleVector().containsKey(7));
+        assertTrue(simpleVector().containsKey(8));
     }
 
     /**

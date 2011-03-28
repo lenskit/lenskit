@@ -91,7 +91,7 @@ public class SVDRatingPredictor implements RatingPredictor {
      * will be the number of features.
      * @see #getFeatureCount()
      */
-    protected double[] foldIn(long user, SparseVector ratings, SparseVector base) {
+    protected double[] foldIn(long user, SparseVector ratings) {
         double featurePrefs[] = new double[numFeatures];
         DoubleArrays.fill(featurePrefs, 0.0);
 
@@ -99,7 +99,7 @@ public class SVDRatingPredictor implements RatingPredictor {
             long iid = rating.getLongKey();
             int idx = itemIndex.getIndex(iid);
             if (idx < 0) continue;
-            double r = rating.getValue() - base.get(iid);
+            double r = rating.getValue();
             for (int f = 0; f < numFeatures; f++) {
                 featurePrefs[f] += r * itemFeatures[f][idx] / singularValues[f];
             }
@@ -117,7 +117,7 @@ public class SVDRatingPredictor implements RatingPredictor {
         items.add(item);
         SparseVector scores = predict(user, ratings, items);
 
-        if (scores.containsId(item))
+        if (scores.containsKey(item))
             return new ScoredId(item, scores.get(item));
         else
             return null;
@@ -125,10 +125,13 @@ public class SVDRatingPredictor implements RatingPredictor {
 
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        LongSet tgtids = new LongOpenHashSet(ratings.keySet());
-        tgtids.addAll(items);
-        SparseVector base = baseline.predict(user, ratings, tgtids);
-        double uprefs[] = foldIn(user, ratings, base);
+        MutableSparseVector rtmp = MutableSparseVector.copy(ratings);
+        LongSet baseTargets = new LongOpenHashSet(ratings.size() + items.size());
+        baseTargets.addAll(ratings.keySet());
+        baseTargets.addAll(items);
+        SparseVector base = baseline.predict(user, ratings, baseTargets);
+        rtmp.subtract(base);
+        double uprefs[] = foldIn(user, rtmp);
 
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
         Arrays.sort(keys);
