@@ -4,6 +4,9 @@
 
 Release ${project.version}
 
+  This release contains a number of API changes to make the API
+  cleaner and easier to move forward.
+
   * Renamed <<<BuildContext>>> to <<<RatingBuildContext>>> to allow
     for a future <<<BasketBuildContext>>>.
 
@@ -11,6 +14,12 @@ Release ${project.version}
 
   * Added <<<AbstractRatingRecommender>>> helper class to make
     implementing rating recommenders easier.
+
+  * Removed the <<<RecommenderService>>> class and several related
+    classes to clean up the API.  Client code should directly request
+    <<<RatingRecommender>>> or <<<RatingPredictor>>> instances, and
+    modules should scope them and their dependencies appropriately to
+    avoid duplicating recommender models.
 
   []
 
@@ -23,6 +32,10 @@ Release ${project.version}
     * Code implementing <<<RatingRecommender>>> must be updated to
       implement the new API.  We recommend using
       <<<AbstractRatingRecommender>>> to help with this.
+
+    * All code must be updated to directly receive injected
+      <<<RatingRecommender>>> and/or <<<RatingPredictor>>> instances
+      (or providers thereof).
 
     []
 

@@ -28,12 +28,8 @@ Overview
   [[3]] Configure the data source for recommendation.
 
   [[4]] Create a Guice injector from the module and use it to create a
-        new <<<RecommenderServiceProvider>>>.
-
-  [[5]] Get a <<<RecommenderService>>> from the
-        <<<RecommenderServiceProvider>>>, get a
-        <<<RatingRecommender>>> or <<<RatingPredictor>>> from the
-        service provider, and start generating recommendations.
+        new <<<RatingRecommender>>> or <<<RatingPredictor>>> and start
+        generating recommendations.
 
 Creating a Project
 
@@ -118,15 +114,7 @@ Configuring and Creating the Recommender
   };
   Module recModule = new ItemRecommenderModule();
   Injector injector = Guice.createInjector(dataModule, recModule);
-  RecommenderServiceProvider provider =
-      injector.createInstance(RecommenderServiceProvider.class);
-  try {
-      RecommenderService recommender = provider.get();
-      // do some recommendation!
-  } catch (RecommenderNotAvailableException e) {
-      // recommender is not available for some reason
-      e.printStackTrace(System.err);
-  }
+  RatingRecommender recommender = injector.createInstance(RatingRecommender.class);
 +-----------------------------------------------------------------+
 
 Further Topics
