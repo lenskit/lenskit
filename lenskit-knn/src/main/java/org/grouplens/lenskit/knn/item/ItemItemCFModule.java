@@ -63,13 +63,13 @@ import com.google.inject.assistedinject.FactoryProvider;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemRecommenderModule extends RecommenderModule {
+public class ItemItemCFModule extends RecommenderModule {
     /**
      * Neighborhood recommender parameters.
      */
     public final NeighborhoodRecommenderModule knn;
 
-    public ItemRecommenderModule() {
+    public ItemItemCFModule() {
         knn = new NeighborhoodRecommenderModule();
     }
 

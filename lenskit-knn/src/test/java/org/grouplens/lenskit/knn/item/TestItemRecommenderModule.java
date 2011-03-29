@@ -45,14 +45,14 @@ import com.google.inject.TypeLiteral;
  */
 public class TestItemRecommenderModule extends RecommenderModuleTest {
     private static final double EPSILON = 1.0e-6;
-    private ItemRecommenderModule module;
+    private ItemItemCFModule module;
 
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
-        module = new ItemRecommenderModule();
+        module = new ItemItemCFModule();
     }
 
     public Module getModule() {
@@ -60,7 +60,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getNeighborhoodSize()}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#getNeighborhoodSize()}.
      */
     @Test
     public void testGetNeighborhoodSize() {
@@ -68,7 +68,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setNeighborhoodSize(int)}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#setNeighborhoodSize(int)}.
      */
     @Test
     public void testSetNeighborhoodSize() {
@@ -77,7 +77,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getSimilarityDamping()}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#getSimilarityDamping()}.
      */
     @Test
     public void testGetSimilarityDamping() {
@@ -85,7 +85,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setSimilarityDamping(double)}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#setSimilarityDamping(double)}.
      */
     @Test
     public void testSetSimilarityDamping() {
@@ -94,7 +94,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#getItemSimilarity()}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#getItemSimilarity()}.
      */
     @Test
     public void testGetItemSimilarity() {
@@ -102,7 +102,7 @@ public class TestItemRecommenderModule extends RecommenderModuleTest {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.knn.item.ItemRecommenderModule#setItemSimilarity(java.lang.Class)}.
+     * Test method for {@link org.grouplens.lenskit.knn.item.ItemItemCFModule#setItemSimilarity(java.lang.Class)}.
      */
     @Test
     public void testSetItemSimilarity() {

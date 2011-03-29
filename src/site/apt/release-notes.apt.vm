@@ -12,6 +12,9 @@ Release ${project.version}
     deprecated compatibility shim and will be removed before we reach
     1.0.).
 
+  * Renamed and refactored classes in the item-item CF recommender to
+    improve code clarity.
+
 Release 0.0.2 (March 28, 2011)
 
   This release contains a number of API changes to make the API
