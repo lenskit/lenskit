@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Model build strategy that avoids computing similarities between items with
+ * disjoint rating sets.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

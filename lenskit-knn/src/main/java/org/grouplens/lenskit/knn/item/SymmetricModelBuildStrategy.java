@@ -27,6 +27,11 @@ import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Build strategy that harnesses the symmetric nature of some similarity functions.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 class SymmetricModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SymmetricModelBuildStrategy.class);

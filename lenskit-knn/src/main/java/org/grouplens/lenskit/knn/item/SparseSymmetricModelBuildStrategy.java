@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Build strategy that uses symmetric similarities and avoids computing similarity
+ * between items with disjoint rating sets.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
