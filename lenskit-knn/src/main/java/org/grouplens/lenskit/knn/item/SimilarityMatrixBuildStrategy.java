@@ -24,7 +24,7 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
 /**
  * A strategy for computing similarity matrices.
  *
- * {@link ItemItemRecommenderBuilder} uses the Strategy pattern to optimize its
+ * {@link ItemItemModelBuilder} uses the Strategy pattern to optimize its
  * build algorithm based on what kind of similarity function is in use.  This is
  * the interface which makes that possible.
  *
@@ -44,5 +44,5 @@ interface SimilarityMatrixBuildStrategy {
      * @param state The build state containing data needed to build the matrix.
      * @return The completed similarity matrix
      */
-    SimilarityMatrix buildMatrix(ItemItemRecommenderBuilder.BuildState state);
+    SimilarityMatrix buildMatrix(ItemItemModelBuilder.BuildState state);
 }

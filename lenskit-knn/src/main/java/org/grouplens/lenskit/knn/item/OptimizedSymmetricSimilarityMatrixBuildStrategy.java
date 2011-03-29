@@ -29,7 +29,7 @@ import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilder;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
-import org.grouplens.lenskit.knn.item.ItemItemRecommenderBuilder.BuildState;
+import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

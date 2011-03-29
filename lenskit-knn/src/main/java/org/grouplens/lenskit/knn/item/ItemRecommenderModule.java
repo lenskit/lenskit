@@ -18,12 +18,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.RecommenderModule;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
@@ -31,17 +28,38 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
-import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
-import com.google.inject.Provider;
+import com.google.inject.ProvidedBy;
 import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryProvider;
-import com.google.inject.throwingproviders.ThrowingProviderBinder;
 
 /**
- * TODO Extract NeighborhoodRecommenderModule
- * TODO Document this class
+ * Module for configuring item-item CF recommenders.
+ * 
+ * <p>This module provides the base code for configuring item-item recommenders.
+ * Its {@link #configure()} method binds all parameters (including core and KNN
+ * parameters as defined by {@link NeighborhoodRecommenderModule}).  It then
+ * sets up the similarity matrix binding using the {@link #configureSimilarityMatrix()}
+ * method and finally binds the {@link RatingPredictor} and {@link RatingRecommender}
+ * classes to their respective implementations in this package.
+ * 
+ * <p>To modify the recommender configuration, there are a few of primary
+ * extension points:
+ * 
+ * <ul>
+ * <li>Override {@link #configureSimilarityMatrix()} to change what similarity
+ * matrix builder implementation is used.
+ * <li>Override {@link #configure()} and, after calling the superclass method,
+ * bind subclasses of {@link ItemItemRatingPredictor} or {@link ItemItemRatingRecommender}
+ * to change predictor or recommender logic.
+ * <li>Bind an alternative implementation or provider for {@link ItemItemModel},
+ * overriding its {@link ProvidedBy} annotation.
+ * </ul>
+ * 
+ * <p>Of course, other extensions are possible; consult the module source code
+ * and the Guice documentation for details.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -64,7 +82,6 @@ public class ItemRecommenderModule extends RecommenderModule {
     @Override
     protected void configure() {
         super.configure();
-        install(ThrowingProviderBinder.forModule(this));
         install(knn);
         configureSimilarityMatrix();
         bind(RatingPredictor.class).to(ItemItemRatingPredictor.class);
@@ -98,11 +115,5 @@ public class ItemRecommenderModule extends RecommenderModule {
             else
                 return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
         }
-    }
-    
-    @Provides
-    public ItemItemModel provideModel(ItemItemRecommenderBuilder builder,
-            Provider<RatingBuildContext> context, @Nullable @BaselinePredictor RatingPredictor baseline) {
-        return builder.build(context.get(), baseline);
     }
 }

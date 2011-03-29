@@ -67,13 +67,13 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommenderBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
+public class ItemItemModelBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
 
     @Inject
-    ItemItemRecommenderBuilder(SimilarityMatrixBuildStrategy similarityStrategy) {
+    ItemItemModelBuilder(SimilarityMatrixBuildStrategy similarityStrategy) {
         this.similarityStrategy = similarityStrategy;
     }
 

@@ -33,6 +33,8 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
+import com.google.inject.ProvidedBy;
+
 /**
  * Encapsulation of the predictor needed for item-item collaborative filtering.
  *
@@ -44,6 +46,7 @@ import org.grouplens.lenskit.util.IndexedItemScore;
  *
  */
 @Immutable
+@ProvidedBy(ItemItemModelProvider.class)
 public class ItemItemModel implements Serializable {
 
     private static final long serialVersionUID = 7040201805529926395L;
