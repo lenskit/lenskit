@@ -70,10 +70,10 @@ import com.google.inject.Inject;
 public class ItemItemModelBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
-    private final @Nonnull SimilarityMatrixBuildStrategy similarityStrategy;
+    private final @Nonnull ItemItemModelBuildStrategy similarityStrategy;
 
     @Inject
-    ItemItemModelBuilder(SimilarityMatrixBuildStrategy similarityStrategy) {
+    ItemItemModelBuilder(ItemItemModelBuildStrategy similarityStrategy) {
         this.similarityStrategy = similarityStrategy;
     }
 

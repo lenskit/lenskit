@@ -27,19 +27,14 @@ import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Similarity matrix strategy that assumes nothing about the similarity function.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-class SimpleSimilarityMatrixBuildStrategy implements
-        SimilarityMatrixBuildStrategy {
-    private final static Logger logger = LoggerFactory.getLogger(SimpleSimilarityMatrixBuildStrategy.class);
+class SymmetricModelBuildStrategy implements
+        ItemItemModelBuildStrategy {
+    private final static Logger logger = LoggerFactory.getLogger(SymmetricModelBuildStrategy.class);
 
     private final SimilarityMatrixBuilderFactory matrixFactory;
     private final Similarity<? super SparseVector> similarityFunction;
 
-    SimpleSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
+    SymmetricModelBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
         this.matrixFactory = matrixFactory;
         this.similarityFunction = similarity;
     }
@@ -53,10 +48,9 @@ class SimpleSimilarityMatrixBuildStrategy implements
         logger.debug("Building matrix with {} rows");
         SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
         for (int i = 0; i < nitems; i++) {
-            for (int j = 0; j < nitems; j++) {
-                if (i == j) continue;
+            for (int j = i+1; j < nitems; j++) {
                 double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-                builder.put(i, j, sim);
+                builder.putSymmetric(i, j, sim);
             }
         }
         return builder.build();

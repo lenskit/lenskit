@@ -99,21 +99,21 @@ public class ItemItemCFModule extends RecommenderModule {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Provides
-    protected SimilarityMatrixBuildStrategy buildStrategy(
+    protected ItemItemModelBuildStrategy buildStrategy(
             SimilarityMatrixBuilderFactory matrixFactory,
             @ItemSimilarity Similarity<? super SparseVector> similarity) {
         if (similarity instanceof OptimizableVectorSimilarity) {
             if (similarity instanceof SymmetricBinaryFunction)
-                return new OptimizedSymmetricSimilarityMatrixBuildStrategy(matrixFactory,
+                return new SparseSymmetricModelBuildStrategy(matrixFactory,
                         (OptimizableVectorSimilarity) similarity);
             else
-                return new OptimizedSimilarityMatrixBuildStrategy(matrixFactory,
+                return new SparseModelBuildStrategy(matrixFactory,
                         (OptimizableVectorSimilarity) similarity);
         } else {
             if (similarity instanceof SymmetricBinaryFunction)
-                return new SymmetricSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+                return new SymmetricModelBuildStrategy(matrixFactory, similarity);
             else
-                return new SimpleSimilarityMatrixBuildStrategy(matrixFactory, similarity);
+                return new SimpleModelBuildStrategy(matrixFactory, similarity);
         }
     }
 }

@@ -18,14 +18,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
+import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilder;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
@@ -34,18 +28,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Similarity matrix strategy that assumes nothing about the similarity function.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class OptimizedSimilarityMatrixBuildStrategy implements
-        SimilarityMatrixBuildStrategy {
-    private static final Logger logger = LoggerFactory.getLogger(OptimizedSimilarityMatrixBuildStrategy.class);
-    private final SimilarityMatrixBuilderFactory matrixFactory;
-    private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
+class SimpleModelBuildStrategy implements
+        ItemItemModelBuildStrategy {
+    private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
-    OptimizedSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
-        matrixFactory = mfact;
-        similarityFunction = sim;
+    private final SimilarityMatrixBuilderFactory matrixFactory;
+    private final Similarity<? super SparseVector> similarityFunction;
+
+    SimpleModelBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
+        this.matrixFactory = matrixFactory;
+        this.similarityFunction = similarity;
     }
 
     /* (non-Javadoc)
@@ -53,26 +49,14 @@ class OptimizedSimilarityMatrixBuildStrategy implements
      */
     @Override
     public SimilarityMatrix buildMatrix(BuildState state) {
-        final SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
-        logger.debug("Building with AVL tree implementation");
         final int nitems = state.itemCount;
+        logger.debug("Building matrix with {} rows");
+        SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
         for (int i = 0; i < nitems; i++) {
-            final SparseVector v = state.itemRatings.get(i);
-            final IntSet candidates = new IntOpenHashSet();
-            final LongIterator uiter = v.keySet().iterator();
-            while (uiter.hasNext()) {
-                long user = uiter.next();
-                IntSortedSet uitems = state.userItemSets.get(user);
-                candidates.addAll(uitems);
-            }
-            candidates.rem(i);
-
-            final IntIterator iter = candidates.iterator();
-            while (iter.hasNext()) {
-                final int j = iter.nextInt();
-                final double sim = similarityFunction.similarity(v,
-                        state.itemRatings.get(j));
-                builder.put(i,j,sim);
+            for (int j = 0; j < nitems; j++) {
+                if (i == j) continue;
+                double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
+                builder.put(i, j, sim);
             }
         }
         return builder.build();
@@ -83,7 +67,7 @@ class OptimizedSimilarityMatrixBuildStrategy implements
      */
     @Override
     public boolean needsUserItemSets() {
-        return true;
+        return false;
     }
 
 }

@@ -37,13 +37,13 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class OptimizedSymmetricSimilarityMatrixBuildStrategy implements
-        SimilarityMatrixBuildStrategy {
-    private static final Logger logger = LoggerFactory.getLogger(OptimizedSymmetricSimilarityMatrixBuildStrategy.class);
+class SparseSymmetricModelBuildStrategy implements
+        ItemItemModelBuildStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(SparseSymmetricModelBuildStrategy.class);
     private final SimilarityMatrixBuilderFactory matrixFactory;
     private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-    OptimizedSymmetricSimilarityMatrixBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
+    SparseSymmetricModelBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
         matrixFactory = mfact;
         similarityFunction = sim;
     }

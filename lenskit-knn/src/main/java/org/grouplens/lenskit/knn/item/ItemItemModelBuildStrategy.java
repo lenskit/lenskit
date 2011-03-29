@@ -31,7 +31,7 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-interface SimilarityMatrixBuildStrategy {
+interface ItemItemModelBuildStrategy {
     /**
      * Query whether this strategy requires the build state to have easy access
      * to the sets of items rated by each user.
