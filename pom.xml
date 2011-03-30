@@ -124,6 +124,16 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.5</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0</version>
+          <configuration>
+            <rules>
+              <requireJavaVersion><version>[1.6.0,)</version></requireJavaVersion>
+            </rules>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
