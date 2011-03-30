@@ -104,7 +104,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.3.1</version>
+          <version>2.3.2</version>
           <configuration>
             <effort>Max</effort>
           </configuration>
@@ -112,7 +112,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>2.2</version>
+          <version>3.0-beta-3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -259,11 +259,12 @@
     <reportSets>
       <reportSet>
         <id>main</id>
-            <reports>
-              <report>dependencies</report>
-              <report>dependency-convergence</report>
-              <report>dependency-management</report>
-            </reports>
+        <reports>
+          <report>index</report>
+          <report>dependencies</report>
+          <report>dependency-convergence</report>
+          <report>dependency-management</report>
+        </reports>
       </reportSet>
     </reportSets>
       </plugin>
@@ -414,7 +415,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.3.1</version>
           </plugin>
         </plugins>
       </reporting>
