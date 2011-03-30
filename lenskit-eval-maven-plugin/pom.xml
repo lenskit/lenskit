@@ -41,7 +41,7 @@
           <reportSet>
             <id>main</id>
             <reports>
-              <report>plugin-info</report>
+              <!-- <report>plugin-info</report> -->
               <report>dependencies</report>
               <report>dependency-convergence</report>
               <report>dependency-management</report>
