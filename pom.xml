@@ -113,6 +113,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.0-beta-3</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-module-docbook-simple</artifactId>
+              <version>1.1.5-SNAPSHOT</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -274,6 +281,7 @@
           <report>dependencies</report>
           <report>dependency-convergence</report>
           <report>dependency-management</report>
+          <report>plugins</report>
         </reports>
       </reportSet>
     </reportSets>

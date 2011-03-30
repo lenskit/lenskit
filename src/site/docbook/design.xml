@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.1//EN"
+"http://www.oasis-open.org/docbook/xml/simple/1.1/sdocbook.dtd">
+<article>
+  <articleinfo>
+    <title>LensKit Design Document</title>
+
+    <author>
+      <firstname>Michael</firstname>
+
+      <surname>Ekstrand</surname>
+
+      <affiliation>
+        <orgname>University of Minnesota</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate>March 29, 2011</pubdate>
+  </articleinfo>
+
+  <section>
+    <title>Design Goals</title>
+
+    <para>LensKit's design is driven by three primary goals:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>Clarity.</emphasis> LensKit should embody a clean,
+        straightforward but not naïve implementation of a recommender system
+        based on several algorithms.</para>
+      </listitem>
+
+      <listitem id="goal-modularity">
+        <para><emphasis>Modularity.</emphasis> LensKit's architecture and
+        algorithm implementations should be flexible and reconfigurable so
+        that new algorithm configurations can be assembled from the pieces of
+        existing algorithms. Algorithm pieces, such as normalizers and
+        similarity functions, should be loosely coupled so that they can be
+        reused with other algorithms.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Efficiency.</emphasis> LensKit should be efficient,
+        capable of running on significant data sets with reasonable hardware
+        requirements. Efficiency should not, however, come at the expense of
+        readability.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>High-Level Design Decisions</title>
+
+    <para>This section documents several high-level design and technology
+    selection decisions for the LensKit architecture and code base.</para>
+
+    <section>
+      <title>Java Platform</title>
+
+      <para>LensKit is implemented in Java 1.6. Several reasons contributed to
+      our selection of Java as the implementation language and
+      platform.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis>Approachability.</emphasis> Java is a widely-known
+          language, so a Java implementation will be understandable by a large
+          number of programmers and students. Implementing in Java allows the
+          code to be usable in a variety of educational settings and opens it
+          to use and extension by students, researchers, and other software
+          developers.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis>Performance.</emphasis> The Java virtual machine has
+          a high-quality optimizing compiler, allowing us to achieve good
+          performance with straightforward code if we take some care in our
+          choice of data structures and code structure.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Primitive Collections — Fastutil</title>
+
+      <para>Java's data model does not allow generic types, such as data
+      structures, to be parameterized over primitive types. Therefore code
+      wishing to store primitive types in collections must first box them into
+      the corresponding object types. For a package like LensKit which makes
+      extensive use of large collections of longs, doubles, and other
+      primitives, this boxing exacts a significant penalty both in memory use
+      and execution time as the memory allocator and garbage collector must
+      work noticably harder. We use the <ulink
+      url="http://fastutil.dsi.unimi.it/">Fastutil</ulink> library of
+      primitive collections extensively to be able to use high-level data
+      structures, such as sets, maps, and lists, without the memory and
+      performance penalty of boxing most numbers. This allows us to achieve
+      good performance without using and managing arrays directly all the
+      time.</para>
+
+      <para>There are several primitive collection libraries around, such as
+      PCJ and GNU Trove. We selected Fastutil because it supports generics
+      where appropriate and takes advantage of Java 5 features to provide a
+      clean API. Further, Fastutil classes implement the relevant Java
+      Collections interfaces so it is easy to integrate with code written
+      against the Java Collections API.</para>
+
+      <para>While Fastutil is used internally extensively, the APIs are
+      designed so that client code that only wants to use LensKit for
+      recommendation is not required to use Fastutil to interface with
+      recommenders and predictors. This also makes it easier to integrate
+      LensKit with other APIs that produce standard Java collections. When
+      collection objects are a Fastutil collection, however, the
+      implementations generally take advantage of that and avoid temporary
+      boxing.</para>
+
+      <para>We have also written some new primitive collection classes and
+      utilities. Some provide complete new primitive collections like
+      Fastutil's implementation does (such as
+      <literal>LongArraySortedSet</literal>), while others are entirely new
+      data structures (like <literal>SparseVector</literal>).</para>
+    </section>
+
+    <section id="id-dependency-injection">
+      <title>Dependency Injection</title>
+
+      <para>In order to make the <link
+      linkend="goal-modularity">modularity</link> LensKit intends to achieve
+      useful, we need a mechanism for assembling a collection of components to
+      make a complete recommender. As an example of the kind of configuration
+      we need to achieve, consider the process of building an item-item
+      collaborative filtering model. The model builder requires access to the
+      ratings data, a similarity function, a normalization strategy, and other
+      parameters such as the number of neighbors to retain.</para>
+
+      <para>One solution to this problem is to use constructor parameters. The
+      model builder exposes a constructor that requires each of the components
+      necessary to be passed in as a parameter. If we want to construct a
+      model builder, we can instantiate each of the components and then
+      construct a model builder with them. This can get tedious, as each of
+      the components may in turn depend on other components, but it is
+      possible and quite flexible. It further allows for unit testing, as each
+      piece is broken down into subcomponents and stub implementations can be
+      easily inserted.</para>
+
+      <para>This technique is a design pattern called <emphasis>dependency
+      injection</emphasis>. Each component declares the components it depends
+      on by requiring them as constructor parameters. Then, rather than having
+      the component itself directly instantiate or access its dependencies, it
+      access the objects passed in to its constructor. The code instantiating
+      the component is therefore responsible for selecting which
+      implementation of its various dependencies are intended to be used. If
+      it needs to construct many instances of some dependency, then it can
+      declare a depency on a factory or provider object which creates
+      instances.</para>
+
+      <para>Dependency injection allows us to have completely reconfigurable
+      recommenders, but without some additional assistance it requires a
+      complex sequence of setup code to even be able to use a recommender.
+      This is where dependency injection frameworks or containers come in.
+      These frameworks allow the programmer to configure which implementations
+      are to be used to satisfy dependencies on various interfaces and
+      abstract classes, handle transitive dependency resolution, and take care
+      of all the difficult work in building up trees of objects. After setting
+      up the framework with the desired configuration, code then asks the
+      framework to give it an instance of the desired object and the framework
+      builds the object with all its dependencies.</para>
+
+      <para>We use the <ulink
+      url="http://code.google.com/p/google-guice/">Guice</ulink> dependency
+      injection framework in LensKit. Guice is a commonly-used framework which
+      does its configuration entirely in Java, using a combination of
+      annotations and Java configuration classes called
+      <emphasis>modules</emphasis>. Annotations let us carefully describe
+      dependencies, including making numeric and string parameters
+      dependencies to be managed by Guice, and provide defaults for many of
+      the extensible aspects of the LensKit architecture. In order to use
+      LensKit, then, it is merely necessary to create a Guice module that
+      describes the recommender configuration desired. We provide
+      reconfigurable default modules for each of the recommender algorithms we
+      provide, so using standard algorithms is very easy. LensKit can further
+      be entirely reconfigured through more advanced use of Guice.</para>
+    </section>
+
+    <section>
+      <title>Strategy Pattern</title>
+
+      <para>In LensKit, we often encounter situations where there are several
+      approaches to a particular piece of code. One example of this is the
+      method for filling in the item-item similarity matrix for item-based
+      collaborative filtering: if the similarity function is symmetric, we can
+      loop over a triangular section of the matrix and treat item pairs as
+      unordered, while an asymmetric simialrity function requires considering
+      item pairs as ordered and iterating over the entire matrix. Another
+      example is in user-user collaborative filtering ― the high-level
+      structure is always the same (find neighbors, then aggregate), but
+      different neighborhood-finding strategies are possible.</para>
+
+      <para>There are a couple of ways of implementing this effect:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Create an abstract class containing the common logic and put
+          the replacable logic in an abstract method to be implemented in
+          derived classes for the various strategies.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use the <ulink
+          url="http://en.wikipedia.org/wiki/Strategy_pattern"><emphasis>strategy
+          pattern</emphasis></ulink>, a design pattern in which the replacable
+          code is defined via an interface, with the different strategies
+          implementing that interface. The interface is then used via
+          composition in class implementing the common logic.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>In LensKit, we prefer the strategy pattern. Composing strategies
+      works very well with dependency injection as the user-user recommender
+      can simply depend on the neighborhood-finding strategy. It also makes
+      the code more explicit at the call site, as it is clear that the method
+      implementing the strategy resides elsewhere and is pluggable, as opposed
+      to an abstract method where the method's declaration must be consulted
+      to see that it is intended to be overridden.</para>
+
+      <para>The current LensKit code is not yet consistent in its use of this
+      choice, but we are working on making it more so. Additionally, this
+      design decision is not a hard-and-fast rule. If it clearly makes more
+      sense to use inheritance than composition for a particular class,
+      readability and understandability should trump inordinate
+      consistency.</para>
+    </section>
+
+    <section>
+      <title>Logging Framework — SLF4J</title>
+
+      <para>In LensKit, we use the <ulink url="http://www.slf4j.org">Simple
+      Logging Facade for Java (<acronym>SLF4J</acronym>)</ulink> logging
+      framework. This allows LensKit to emit log messages independent of the
+      actual logging library used in the surrounding code. It can be cleanly
+      integrated with applications using Log4J, standard Java logging, Jakarta
+      Commons logging, or Logback. Applications included with LensKit use
+      <ulink url="http://logback.qos.ch/">Logback</ulink> as the logging
+      backend.</para>
+    </section>
+
+    <section>
+      <title>Build and Dependency Management — Maven</title>
+
+      <para>LensKit uses <ulink url="http://maven.apache.org">Apache
+      Maven</ulink> as its build system. This provides full dependency
+      management in the build system, so we do not need to include library
+      JARs in our version control or maintain them (and their dependencies)
+      ourself. It also makes it easy to use LensKit in other projects, as
+      Maven automatically fetches the appropriate version of LensKit from the
+      Maven central repositories — all that a client application needs to do
+      is declare a dependency on the LensKit packages it uses in its Maven POM
+      file.</para>
+
+      <para>Maven does come with some additional complexity, and can at times
+      be difficult to configure. Basic projects, however, can be created and
+      managed very easily. Additionally, LensKit can be easily used in
+      projects built with Ant by using <ulink
+      url="http://ant.apache.org/ivy/">Ivy</ulink>, a dependency management
+      extension to Ant that can load dependencies from Maven
+      repositories.</para>
+
+      <para>Maven also provides us with a unified framework for handling
+      project reporting and building the project web site with integrated
+      JavaDoc, hyperlinked source code, and reports such as package
+      dependencies, software licenses, and static code analysis.</para>
+    </section>
+  </section>
+</article>
