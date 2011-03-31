@@ -18,7 +18,7 @@
     <pubdate>March 29, 2011</pubdate>
   </articleinfo>
 
-  <section>
+  <section id="sec-design-goals">
     <title>Design Goals</title>
 
     <para>LensKit's design is driven by three primary goals:</para>
@@ -48,13 +48,13 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="sec-decisions">
     <title>High-Level Design Decisions</title>
 
     <para>This section documents several high-level design and technology
     selection decisions for the LensKit architecture and code base.</para>
 
-    <section>
+    <section id="sec-java-platform">
       <title>Java Platform</title>
 
       <para>LensKit is implemented in Java 1.6. Several reasons contributed to
@@ -80,7 +80,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="sec-fastutil">
       <title>Primitive Collections — Fastutil</title>
 
       <para>Java's data model does not allow generic types, such as data
@@ -182,7 +182,7 @@
       be entirely reconfigured through more advanced use of Guice.</para>
     </section>
 
-    <section>
+    <section id="sec-strategy">
       <title>Strategy Pattern</title>
 
       <para>In LensKit, we often encounter situations where there are several
@@ -231,7 +231,7 @@
       consistency.</para>
     </section>
 
-    <section>
+    <section id="sec-logging">
       <title>Logging Framework — SLF4J</title>
 
       <para>In LensKit, we use the <ulink url="http://www.slf4j.org">Simple
@@ -244,7 +244,7 @@
       backend.</para>
     </section>
 
-    <section>
+    <section id="sec-maven">
       <title>Build and Dependency Management — Maven</title>
 
       <para>LensKit uses <ulink url="http://maven.apache.org">Apache
@@ -270,5 +270,72 @@
       JavaDoc, hyperlinked source code, and reports such as package
       dependencies, software licenses, and static code analysis.</para>
     </section>
+
+  </section>
+
+  <section id="sec-data-access">
+    <title>Data Access API</title>
+
+    <para>In order to build recommender models and provide
+    recommendations, LensKit needs an API for obtaining rating or
+    purchase data from data sources. Further, this API needs to be
+    generic and flexible so that the recommenders can be integrated
+    into a variety of environments. Some recommenders may also need to
+    respond to rating data changes to update or invalidate
+    caches. Finally, while pre-computing recommender models it can be
+    necessary to iterate over the ratings data multiple times without
+    it changing in the process, necessitating a means for isolating
+    rating data reads.</para>
+
+    <para>To solve these problems, we have designed a rating API with
+    two primary components. The core part of the data access layer is
+    modeled after the J2EE <ulink
+    url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
+    Access Object</ulink> pattern. The
+    <literal>UserItemDataAccessObject</literal> interface provides
+    accesss to users and items, while the
+    <literal>RatingDataAccessObject</literal> interface makes rating
+    data available. These interfaces are intended to be implemented by
+    singletons, so all code across an application uses the same data
+    access object (and thus any object can register a listener to
+    receive notifications of rating updates).</para>
+
+    <para>Actual data access is mediated via cursor objects
+    implementing the <literal>Cursor</literal> interface. A cursor is
+    essentially an iterator that can be closed and may be able to
+    report its size. This allows backing resources, such as files or
+    database result sets, to be closed. Some care is needed to allow
+    cursors to share database handles, particularly in a multithreaded
+    application with a singleton data access object, but that is the
+    responsibility of impelmenters and is achievable with either
+    Guice's scoping features or a combination of thread-local
+    variables and reference counting.</para>
+
+    <para>In addition to data data access objects, we also have a
+    concept of <emphasis>build contexts</emphasis>, realized through
+    the <literal>RatingBuildContext</literal> interface. A build
+    context is a snapshot of the ratings data at a particular point in
+    time, suitable for repeated iteration to learn a recommender
+    model. It also captures characteristics such as the number of
+    users and items and provides a mapping from user and item IDs to
+    consecutive zero-based integers suitable for array
+    indexing. Further, the collection of ratings it captures supports
+    a concept borrwed from Fastutil called <emphasis>fast
+    iteration</emphasis>, where an iterator mutates a single object
+    in-place and returns it again rather than creating a new object
+    for each <literal>next()</literal> call. This allows large
+    collections of synthetic objects to be iterated more efficiently
+    when the objects are not needed outside the iterating loop
+    body.</para>
+
+    <para>The default build context simply iterates over all ratings
+    presented by the data access object and stores the rating data
+    efficiently in a set of parallel arrays, allowing for very fast
+    iteration.</para>
+
+    <para>This collection of interfaces allows LensKit to have access
+    to the data, provides a mechanism for applications to notify
+    LensKit components of rating updates, and stable snapshots for
+    iterative model building.</para>
   </section>
 </article>
