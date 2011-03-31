@@ -270,72 +270,263 @@
       JavaDoc, hyperlinked source code, and reports such as package
       dependencies, software licenses, and static code analysis.</para>
     </section>
-
   </section>
 
-  <section id="sec-data-access">
-    <title>Data Access API</title>
+  <section>
+    <title>API Design</title>
 
-    <para>In order to build recommender models and provide
-    recommendations, LensKit needs an API for obtaining rating or
-    purchase data from data sources. Further, this API needs to be
-    generic and flexible so that the recommenders can be integrated
-    into a variety of environments. Some recommenders may also need to
-    respond to rating data changes to update or invalidate
-    caches. Finally, while pre-computing recommender models it can be
-    necessary to iterate over the ratings data multiple times without
-    it changing in the process, necessitating a means for isolating
-    rating data reads.</para>
+    <section>
+      <title>Basic Data Model</title>
 
-    <para>To solve these problems, we have designed a rating API with
-    two primary components. The core part of the data access layer is
-    modeled after the J2EE <ulink
-    url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
-    Access Object</ulink> pattern. The
-    <literal>UserItemDataAccessObject</literal> interface provides
-    accesss to users and items, while the
-    <literal>RatingDataAccessObject</literal> interface makes rating
-    data available. These interfaces are intended to be implemented by
-    singletons, so all code across an application uses the same data
-    access object (and thus any object can register a listener to
-    receive notifications of rating updates).</para>
+      <para>In order to do recommendations, we need standard representations
+      for the basic entities in the recommender: users, items, and ratings or
+      occurrances. In selecting representations, we want to balance genericity
+      with efficiency. Allowing users and items to be arbitrary types, either
+      deriving from base <literal role="class">User</literal> or <literal
+      role="class">Item</literal> classes or as generic type parameters, would
+      allow a great deal of flexibility. This requires objects for every user
+      or item, however, and if users and items are integers then this can
+      impose significant overhead due to unnecessary boxing and
+      indirection.</para>
 
-    <para>Actual data access is mediated via cursor objects
-    implementing the <literal>Cursor</literal> interface. A cursor is
-    essentially an iterator that can be closed and may be able to
-    report its size. This allows backing resources, such as files or
-    database result sets, to be closed. Some care is needed to allow
-    cursors to share database handles, particularly in a multithreaded
-    application with a singleton data access object, but that is the
-    responsibility of impelmenters and is achievable with either
-    Guice's scoping features or a combination of thread-local
-    variables and reference counting.</para>
+      <para>In LensKit, we have opted to uniformly use <literal
+      role="type">long</literal> IDs for users and items. No restrictions are
+      placed on these IDs. Ratings are represented via the <literal
+      role="class">Rating</literal> interface, which exposes the user ID, item
+      ID, rating as a double, and optional timestamp. In some parts of the
+      API, we use sparse vectors mapping item (or user) IDs to ratings to
+      represent user (or item) rating vectors.</para>
 
-    <para>In addition to data data access objects, we also have a
-    concept of <emphasis>build contexts</emphasis>, realized through
-    the <literal>RatingBuildContext</literal> interface. A build
-    context is a snapshot of the ratings data at a particular point in
-    time, suitable for repeated iteration to learn a recommender
-    model. It also captures characteristics such as the number of
-    users and items and provides a mapping from user and item IDs to
-    consecutive zero-based integers suitable for array
-    indexing. Further, the collection of ratings it captures supports
-    a concept borrwed from Fastutil called <emphasis>fast
-    iteration</emphasis>, where an iterator mutates a single object
-    in-place and returns it again rather than creating a new object
-    for each <literal>next()</literal> call. This allows large
-    collections of synthetic objects to be iterated more efficiently
-    when the objects are not needed outside the iterating loop
-    body.</para>
+      <para>Sparse vectors are realized through our custom <literal
+      role="class">SparseVector</literal> interface and its subclass <literal
+      role="class">MutableSparseVector</literal>. SparseVector is an efficient
+      mapping from longs to doubles that uses parallel primitive arrays sorted
+      by key and binary search. Dot products can be computed very efficiently
+      by iterating over two arrays in parallel. The class also memoizes the
+      sum, mean, and L2 norm so that they can be accessed efficiently.
+      MutableSparseVector extends the sparse vector by allowing values (but
+      not keys) to be modified, allowing efficient in-place addition,
+      subtraction, and scaling of vectors.</para>
+    </section>
 
-    <para>The default build context simply iterates over all ratings
-    presented by the data access object and stores the rating data
-    efficiently in a set of parallel arrays, allowing for very fast
-    iteration.</para>
+    <section>
+      <title>Recommendation API</title>
 
-    <para>This collection of interfaces allows LensKit to have access
-    to the data, provides a mechanism for applications to notify
-    LensKit components of rating updates, and stable snapshots for
-    iterative model building.</para>
+      <para>The recommendation API in LensKit is broken into separate pieces
+      to allow different types of access and reflect the fact that not all
+      recommendation methods support all types of recommendation. There are
+      three primary interfaces in the recommendation API:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal role="class">RatingPredictor</literal> supports the
+          <emphasis>predict</emphasis> task, allowing client code to query for
+          the predicted value of a user's rating:</para>
+
+          <programlisting language="java">/**
+ * Interface for rating prediction.
+ * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
+ *
+ */
+@ParametersAreNonnullByDefault
+public interface RatingPredictor {
+    /**
+     * Generate a prediction for a single item.
+     * @param user the user ID
+     * @param ratings the user's rating history
+     * @param item the item for which a prediction is required
+     * @return the prediction, or &lt;tt&gt;null&lt;/tt&gt; if no prediction is possible
+     */
+    @Nullable @CheckForNull
+    public ScoredId predict(long user, SparseVector ratings, long item);
+
+    /**
+     * Generate predictions for a collection of items.
+     * @param user the user ID
+     * @param ratings the user's ratings
+     * @param items the items for which predictions are desired
+     * @return A mapping from item IDs to predicted preference.  This mapping
+     * may not contain all requested items.
+     */
+    @Nonnull
+    public SparseVector predict(long user, SparseVector ratings, Collection&lt;Long&gt; items);
+}</programlisting>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">RatingRecommender</literal> supports the
+          <emphasis>recommend</emphasis> task where users have expressed
+          ratings, allowing client code to query for recommendations based on
+          a user's ID and rating profile.</para>
+
+          <programlisting language="java">/**
+ * Recommender recommending items from ratings-based user profiles.
+ * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
+ *
+ */
+public interface RatingRecommender {
+    /**
+     * Recommend all possible items for a user. The
+     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
+     * has rated are not recommended).
+     * @param user The user ID.
+     * @param ratings The user's rating vector.
+     * @return The sorted list of scored items.
+     * @see #recommend(long, SparseVector, int, Set, Set)
+     */
+    @Nonnull
+    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings);
+    
+    /**
+     * Recommend up to &lt;var&gt;n&lt;/var&gt; items for a user. The
+     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
+     * has rated are not recommended).
+     * @param user The user ID.
+     * @param ratings The user's rating vector.
+     * @param n The number of recommendations to return.
+     * @return The sorted list of scored items.
+     * @see #recommend(long, SparseVector, int, Set, Set)
+     */
+    @Nonnull
+    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings, int n);
+
+    /**
+     * Recommend all possible items for a user from a set of candidates.  The
+     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
+     * has rated are not recommended).
+     * @param user The user ID.
+     * @param ratings The user's rating vector.
+     * @param candidates The candidate set (can be null to represent the
+     * universe).
+     * @return The sorted list of scored items.
+     * @see #recommend(long, SparseVector, int, Set, Set)
+     */
+    @Nonnull
+    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings,
+            @Nullable Set&lt;Long&gt; candidates);
+
+    /**
+     * Produce a set of recommendations for the user.
+     * @param user The user's ID
+     * @param ratings The user's ratings
+     * @param n The number of ratings to return.  If negative, recommend all
+     * possible items.
+     * @param candidates A set of candidate items which can be recommended.  If
+     * &lt;tt&gt;null&lt;/tt&gt;, the candidate set is considered to contain the universe.
+     * @param exclude A set of items to be excluded.  If &lt;tt&gt;null&lt;/tt&gt;, it is
+     * considered the empty set.  Exclusions are applied to the candidate set,
+     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus &lt;var&gt;exclude&lt;/var&gt;.
+     * @return a list of scored recommendations, sorted in nondecreasing order
+     * of score.
+     */
+    @Nonnull
+    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings, int n,
+            @Nullable Set&lt;Long&gt; candidates, @Nullable Set&lt;Long&gt; exclude);
+}</programlisting>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">BasketRecommender</literal> supports the
+          <emphasis>recommend</emphasis> task where user profiles are unary,
+          such as purchase history or shopping carts, allowing client code to
+          query for recommendations based on a user's ID and shopping basket.
+          The basket recommender API has not yet been implemented or used, so
+          it may chage as we gain experience with it.</para>
+
+          <programlisting language="java">/**
+ * Recommender that provides basket-based recommendations (unary user profiles)
+ * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
+ *
+ */
+public interface BasketRecommender {
+    /**
+     * Recommend items for a user with a unary history.
+     * @param user the user ID
+     * @param basket the items in the user's purchase/visit history
+     * @return a list of scored recommendations, sorted in nonincreasing order
+     * of score.
+     */
+    @Nonnull
+    List&lt;ScoredId&gt; recommend(long user, Set&lt;Long&gt; basket);
+}</programlisting>
+        </listitem>
+      </itemizedlist>
+
+      <para>Even for recommendation methods that support both basket- and
+      rating-based recommendation, it may be necessary to use different
+      builders that place different requirements on the data types available
+      to build recommenders capable of supporting each recommendation
+      form.</para>
+
+      <para>At present, we require client code to obtain the user's profile
+      before calling the recommendation API. This may change in the future,
+      allowing fo recommendation queries given only a user ID.</para>
+
+      <para>It would also be interesting to consider adding an <literal
+      role="class">ItemSimilarity</literal> interface for the find similar
+      items task, allowing it to be supported independently of basket-based
+      recommendation.</para>
+    </section>
+
+    <section id="sec-data-access">
+      <title>Data Access Layer</title>
+
+      <para>In order to build recommender models and provide recommendations,
+      LensKit needs an API for obtaining rating or purchase data from data
+      sources. Further, this API needs to be generic and flexible so that the
+      recommenders can be integrated into a variety of environments. Some
+      recommenders may also need to respond to rating data changes to update
+      or invalidate caches. Finally, while pre-computing recommender models it
+      can be necessary to iterate over the ratings data multiple times without
+      it changing in the process, necessitating a means for isolating rating
+      data reads.</para>
+
+      <para>To solve these problems, we have designed a rating API with two
+      primary components. The core part of the data access layer is modeled
+      after the J2EE <ulink
+      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
+      Access Object</ulink> pattern. The
+      <literal>UserItemDataAccessObject</literal> interface provides accesss
+      to users and items, while the <literal>RatingDataAccessObject</literal>
+      interface makes rating data available. These interfaces are intended to
+      be implemented by singletons, so all code across an application uses the
+      same data access object (and thus any object can register a listener to
+      receive notifications of rating updates).</para>
+
+      <para>Actual data access is mediated via cursor objects implementing the
+      <literal>Cursor</literal> interface. A cursor is essentially an iterator
+      that can be closed and may be able to report its size. This allows
+      backing resources, such as files or database result sets, to be closed.
+      Some care is needed to allow cursors to share database handles,
+      particularly in a multithreaded application with a singleton data access
+      object, but that is the responsibility of impelmenters and is achievable
+      with either Guice's scoping features or a combination of thread-local
+      variables and reference counting.</para>
+
+      <para>In addition to data data access objects, we also have a concept of
+      <emphasis>build contexts</emphasis>, realized through the
+      <literal>RatingBuildContext</literal> interface. A build context is a
+      snapshot of the ratings data at a particular point in time, suitable for
+      repeated iteration to learn a recommender model. It also captures
+      characteristics such as the number of users and items and provides a
+      mapping from user and item IDs to consecutive zero-based integers
+      suitable for array indexing. Further, the collection of ratings it
+      captures supports a concept borrwed from Fastutil called <emphasis>fast
+      iteration</emphasis>, where an iterator mutates a single object in-place
+      and returns it again rather than creating a new object for each
+      <literal>next()</literal> call. This allows large collections of
+      synthetic objects to be iterated more efficiently when the objects are
+      not needed outside the iterating loop body.</para>
+
+      <para>The default build context simply iterates over all ratings
+      presented by the data access object and stores the rating data
+      efficiently in a set of parallel arrays, allowing for very fast
+      iteration.</para>
+
+      <para>This collection of interfaces allows LensKit to have access to the
+      data, provides a mechanism for applications to notify LensKit components
+      of rating updates, and stable snapshots for iterative model
+      building.</para>
+    </section>
   </section>
 </article>
