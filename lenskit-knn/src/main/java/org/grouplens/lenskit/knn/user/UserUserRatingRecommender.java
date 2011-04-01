@@ -50,7 +50,7 @@ import com.google.inject.Inject;
  */
 public class UserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
 
-    private final NeighborhoodFinder neighborhoodFinder;
+    protected final NeighborhoodFinder neighborhoodFinder;
 
     @Inject
     public UserUserRatingRecommender(NeighborhoodFinder finder) {
