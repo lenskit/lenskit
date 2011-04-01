@@ -42,6 +42,11 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 
 import com.google.inject.Inject;
 
+/**
+ * A recommender and predictor using user-user collaborative filtering.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class UserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
 
     private final NeighborhoodFinder neighborhoodFinder;
