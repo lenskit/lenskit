@@ -22,6 +22,7 @@
       <item name="Getting Started" href="getting-started.html"/>
       <item name="Offline Evaluation" href="evaluating.html"/>
       <item name="Versioning" href="versioning.html"/>
+      <item name="Design Notes" href="design.html"/>
     </menu>
     <menu ref="modules"/>
     <menu ref="reports" inherit="bottom"/>
