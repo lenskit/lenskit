@@ -24,10 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.PriorityQueue;
-
-import javax.annotation.WillNotClose;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.UserRatingProfile;
@@ -40,11 +37,11 @@ import org.grouplens.lenskit.knn.params.UserSimilarity;
 import com.google.inject.Inject;
 
 /**
- * Actual predictor and recommender using the raw search.
+ * Neighborhood finder that does a fresh search over the data source ever time.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecommender {
+public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     private final RatingDataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
@@ -56,7 +53,7 @@ public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecom
      * @param similarity The similarity function to use.
      */
     @Inject
-    SimpleUserUserRatingRecommender(@WillNotClose RatingDataAccessObject data,
+    SimpleNeighborhoodFinder(RatingDataAccessObject data,
             @NeighborhoodSize int nnbrs,
             @UserSimilarity Similarity<? super SparseVector> similarity) {
         dataSource = data;
@@ -75,10 +72,9 @@ public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecom
      * @return A mapping of item IDs to neighborhoods.
      */
     @Override
-    protected Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
+    public Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
-        final Comparator<Neighbor> comp = new NeighborSimComparator();
 
         Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
 
@@ -98,7 +94,8 @@ public class SimpleUserUserRatingRecommender extends AbstractUserUserRatingRecom
 
                     PriorityQueue<Neighbor> heap = heaps.get(item);
                     if (heap == null) {
-                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1, comp);
+                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                Neighbor.SIMILARITY_COMPARATOR);
                         heaps.put(item, heap);
                     }
                     heap.add(n);

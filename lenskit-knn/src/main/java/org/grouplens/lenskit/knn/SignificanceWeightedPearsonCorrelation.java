@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn;
 import org.grouplens.lenskit.knn.params.SignificanceThreshold;
 
 /**
- * Significance-weighted variant of Pearson correlation.
+ * Significance-weighted neighborhoodFinder of Pearson correlation.
  *
  * This similarity function is like {@link PearsonCorrelation}, but it does
  * similarity weighting.  When applied to user rating vectors, if the number

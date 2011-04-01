@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -41,19 +40,16 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
+import com.google.inject.Inject;
 
-    /**
-     * Find neighboring users for particular items.
-     * @param user The user ID.
-     * @param ratings The user rating vector.
-     * @param items The items we're trying to recommend, or <tt>null</tt> to get
-     * get neighborhoods for all possible items.
-     * @return A map from item IDs to user neighborhoods for all items for which
-     * we can find neighboring users.
-     */
-    protected abstract Long2ObjectMap<? extends Collection<Neighbor>>
-        findNeighbors(long user, SparseVector ratings, LongSet items);
+public class UserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
+
+    private final NeighborhoodFinder neighborhoodFinder;
+
+    @Inject
+    public UserUserRatingRecommender(NeighborhoodFinder finder) {
+        neighborhoodFinder = finder;
+    }
 
     @Override
     public ScoredId predict(long user, SparseVector ratings, long item) {
@@ -74,7 +70,7 @@ public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRe
     @Override
     public SparseVector predict(long user, SparseVector ratings, @Nullable Collection<Long> items) {
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            findNeighbors(user, ratings, items != null ? new LongSortedArraySet(items) : null);
+            neighborhoodFinder.findNeighbors(user, ratings, items != null ? new LongSortedArraySet(items) : null);
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
         if (!(items instanceof LongSortedSet))
             Arrays.sort(keys);
@@ -118,32 +114,5 @@ public abstract class AbstractUserUserRatingRecommender extends AbstractRatingRe
         }
 
         return finalPredictions;
-    }
-
-    /**
-     * Representation of neighbors.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    protected static class Neighbor {
-        public final long userId;
-        public final SparseVector ratings;
-        public final double similarity;
-        public Neighbor(long user, SparseVector rv, double sim) {
-            userId = user;
-            ratings = rv;
-            similarity = sim;
-        }
-    }
-
-    /**
-     * Compartor to order neighbors by similarity.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    static class NeighborSimComparator implements Comparator<Neighbor> {
-        public int compare(Neighbor n1, Neighbor n2) {
-            return Double.compare(n1.similarity, n2.similarity);
-        }
     }
 }

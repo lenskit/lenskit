@@ -49,7 +49,7 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
             return 0;
 
         /*
-         * Basic strategy: walk in parallel across the two vectors, computing
+         * Basic neighborhoodFinder: walk in parallel across the two vectors, computing
          * the dot product and simultaneously computing the variance within each
          * vector of the items also contained in the other vector.  Pearson
          * correlation only considers items shared by both vectors; other items

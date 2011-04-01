@@ -29,29 +29,29 @@ import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
  */
 public class UserRecommenderModule extends RecommenderModule {
     public final NeighborhoodRecommenderModule knn = new NeighborhoodRecommenderModule();
-    protected Class<? extends AbstractUserUserRatingRecommender> variant;
+    protected Class<? extends NeighborhoodFinder> neighborhoodFinder;
 
     @Override
     protected void configure() {
         super.configure();
         install(knn);
-        bind(AbstractUserUserRatingRecommender.class).to(variant);
-        bind(RatingPredictor.class).to(AbstractUserUserRatingRecommender.class);
-        bind(RatingRecommender.class).to(AbstractUserUserRatingRecommender.class);
+        bind(NeighborhoodFinder.class).to(neighborhoodFinder);
+        bind(RatingPredictor.class).to(UserUserRatingRecommender.class);
+        bind(RatingRecommender.class).to(UserUserRatingRecommender.class);
     }
 
     /**
-     * @return the variant
+     * @return the neighborhoodFinder
      */
-    public Class<? extends AbstractUserUserRatingRecommender> getVariant() {
-        return variant;
+    public Class<? extends NeighborhoodFinder> getNeighborhoodFinder() {
+        return neighborhoodFinder;
     }
 
     /**
-     * @param variant the variant to set
+     * @param neighborhoodFinder the neighborhoodFinder to set
      */
-    public void setVariant(Class<? extends AbstractUserUserRatingRecommender> impl) {
-        this.variant = impl;
+    public void setNeighborhoodFinder(Class<? extends NeighborhoodFinder> impl) {
+        this.neighborhoodFinder = impl;
     }
     
     @Override

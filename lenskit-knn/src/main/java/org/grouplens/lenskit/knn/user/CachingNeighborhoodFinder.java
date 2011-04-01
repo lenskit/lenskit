@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
@@ -52,14 +51,14 @@ import com.google.inject.Provider;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CachedUserUserRatingRecommender extends AbstractUserUserRatingRecommender {
+public class CachingNeighborhoodFinder implements NeighborhoodFinder {
     private final Long2ObjectMap<Collection<UserRatingProfile>> cache;
     private final int userCount;
     private final Similarity<? super SparseVector> similarity;
     private final int neighborhoodSize;
 
     @Inject
-    CachedUserUserRatingRecommender(@UserSimilarity Similarity<? super SparseVector> sim,
+    CachingNeighborhoodFinder(@UserSimilarity Similarity<? super SparseVector> sim,
             @NeighborhoodSize int nnbrs,
             Provider<RatingDataAccessObject> dataProvider) {
         similarity = sim;
@@ -94,9 +93,8 @@ public class CachedUserUserRatingRecommender extends AbstractUserUserRatingRecom
         userCount = nusers;
     }
 
-    protected Long2ObjectMap<? extends Collection<Neighbor>>
+    public Long2ObjectMap<? extends Collection<Neighbor>>
         findNeighbors(long uid, SparseVector vector, LongSet items) {
-        final Comparator<Neighbor> comp = new NeighborSimComparator();
 
         if (items == null)
             items = cache.keySet();
@@ -110,7 +108,7 @@ public class CachedUserUserRatingRecommender extends AbstractUserUserRatingRecom
             final long item = iter.next();
             Collection<UserRatingProfile> users = cache.get(item);
             PriorityQueue<Neighbor> neighbors =
-                new PriorityQueue<Neighbor>(neighborhoodSize + 1, comp);
+                new PriorityQueue<Neighbor>(neighborhoodSize + 1, Neighbor.SIMILARITY_COMPARATOR);
             neighborhoods.put(item, neighbors);
             if (users == null) continue;
 
