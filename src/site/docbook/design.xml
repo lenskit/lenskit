@@ -116,22 +116,22 @@
 
       <para>We have also written some new primitive collection classes and
       utilities. Some provide complete new primitive collections like
-      Fastutil's implementation does (such as
-      <literal>LongArraySortedSet</literal>), while others are entirely new
-      data structures (like <literal>SparseVector</literal>).</para>
+      Fastutil's implementation does (such as <literal>
+      LongArraySortedSet</literal>), while others are entirely new data
+      structures (like <literal>SparseVector</literal>).</para>
     </section>
 
     <section id="id-dependency-injection">
       <title>Dependency Injection</title>
 
-      <para>In order to make the <link
-      linkend="goal-modularity">modularity</link> LensKit intends to achieve
-      useful, we need a mechanism for assembling a collection of components to
-      make a complete recommender. As an example of the kind of configuration
-      we need to achieve, consider the process of building an item-item
-      collaborative filtering model. The model builder requires access to the
-      ratings data, a similarity function, a normalization strategy, and other
-      parameters such as the number of neighbors to retain.</para>
+      <para>In order to make the <link linkend="goal-modularity">
+      modularity</link> LensKit intends to achieve useful, we need a mechanism
+      for assembling a collection of components to make a complete
+      recommender. As an example of the kind of configuration we need to
+      achieve, consider the process of building an item-item collaborative
+      filtering model. The model builder requires access to the ratings data,
+      a similarity function, a normalization strategy, and other parameters
+      such as the number of neighbors to retain.</para>
 
       <para>One solution to this problem is to use constructor parameters. The
       model builder exposes a constructor that requires each of the components
@@ -207,11 +207,12 @@
 
         <listitem>
           <para>Use the <ulink
-          url="http://en.wikipedia.org/wiki/Strategy_pattern"><emphasis>strategy
-          pattern</emphasis></ulink>, a design pattern in which the replacable
-          code is defined via an interface, with the different strategies
-          implementing that interface. The interface is then used via
-          composition in class implementing the common logic.</para>
+          url="http://en.wikipedia.org/wiki/Strategy_pattern">
+          <emphasis>strategy pattern</emphasis></ulink>, a design pattern in
+          which the replacable code is defined via an interface, with the
+          different strategies implementing that interface. The interface is
+          then used via composition in class implementing the common
+          logic.</para>
         </listitem>
       </itemizedlist>
 
@@ -234,7 +235,7 @@
     <section id="sec-logging">
       <title>Logging Framework — SLF4J</title>
 
-      <para>In LensKit, we use the <ulink url="http://www.slf4j.org">Simple
+      <para>In LensKit, we use the <ulink url="http://www.slf4j.org"> Simple
       Logging Facade for Java (<acronym>SLF4J</acronym>)</ulink> logging
       framework. This allows LensKit to emit log messages independent of the
       actual logging library used in the surrounding code. It can be cleanly
@@ -275,6 +276,10 @@
   <section>
     <title>API Design</title>
 
+    <para>LensKit provides a common API for all recommender implementations,
+    allowing the recommender algorithm for an application to be replaced with
+    minimal need to modify the application's code.</para>
+
     <section>
       <title>Basic Data Model</title>
 
@@ -283,9 +288,9 @@
       occurrances. In selecting representations, we want to balance genericity
       with efficiency. Allowing users and items to be arbitrary types, either
       deriving from base <literal role="class">User</literal> or <literal
-      role="class">Item</literal> classes or as generic type parameters, would
-      allow a great deal of flexibility. This requires objects for every user
-      or item, however, and if users and items are integers then this can
+      role="class"> Item</literal> classes or as generic type parameters,
+      would allow a great deal of flexibility. This requires objects for every
+      user or item, however, and if users and items are integers then this can
       impose significant overhead due to unnecessary boxing and
       indirection.</para>
 
@@ -484,10 +489,10 @@ public interface BasketRecommender {
       <para>To solve these problems, we have designed a rating API with two
       primary components. The core part of the data access layer is modeled
       after the J2EE <ulink
-      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
-      Access Object</ulink> pattern. The
-      <literal>UserItemDataAccessObject</literal> interface provides accesss
-      to users and items, while the <literal>RatingDataAccessObject</literal>
+      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">
+      Data Access Object</ulink> pattern. The <literal>
+      UserItemDataAccessObject</literal> interface provides accesss to users
+      and items, while the <literal> RatingDataAccessObject</literal>
       interface makes rating data available. These interfaces are intended to
       be implemented by singletons, so all code across an application uses the
       same data access object (and thus any object can register a listener to
@@ -514,7 +519,7 @@ public interface BasketRecommender {
       captures supports a concept borrwed from Fastutil called <emphasis>fast
       iteration</emphasis>, where an iterator mutates a single object in-place
       and returns it again rather than creating a new object for each
-      <literal>next()</literal> call. This allows large collections of
+      <literal> next()</literal> call. This allows large collections of
       synthetic objects to be iterated more efficiently when the objects are
       not needed outside the iterating loop body.</para>
 
@@ -527,6 +532,91 @@ public interface BasketRecommender {
       data, provides a mechanism for applications to notify LensKit components
       of rating updates, and stable snapshots for iterative model
       building.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Algorithm Implementation Design</title>
+
+    <para>Different recommender algorithms require specific design
+    considerations. This section documents those for the various algorithms
+    implemented in LensKit.</para>
+
+    <section>
+      <title>User-User Collaborative Filtering</title>
+
+      <para>Algorithmically, user-user CF divides into three
+      components:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Find user neighborhoods for items under consideration. For
+          recommendation, this may also involve finding the items which can
+          have neighborhoods.</para>
+        </listitem>
+
+        <listitem>
+          <para>Compute predicted preferences for items.</para>
+        </listitem>
+
+        <listitem>
+          <para>Generate recommendation list.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>The predict task, of course, only involves steps 1 and 2. It is
+      possible to combine one or more of the steps into a single loop, but we
+      separate them in order to allow them to be reconfigured
+      separately.</para>
+
+      <para>The class <literal
+      role="class">UserUserRatingRecommender</literal> implements the <literal
+      role="class">RatingRecommender</literal> and <literal
+      role="class">RatingPredictor</literal> interfaces, embodying the code
+      for steps 2 and 3. It depends in turn on a <literal
+      role="class">NeighborhoodFinder</literal>, providing the
+      neighborhood-finding logic required for step 1. NeighborhoodFinder's
+      interface follows:</para>
+
+      <programlisting language="java">/**
+ * Interface for neighborhood-finding strategies. These strategies are used by
+ * {@link UserUserRatingRecommender} to find neighbors for recommendation.
+ * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
+ *
+ */
+public interface NeighborhoodFinder {
+    /**
+     * Find neighboring users for particular items.
+     * @param user The user ID.
+     * @param ratings The user rating vector.
+     * @param items The items we're trying to recommend, or &lt;tt&gt;null&lt;/tt&gt; to get
+     * get neighborhoods for all possible items.
+     * @return A map from item IDs to user neighborhoods for all items for which
+     * we can find neighboring users.
+     */
+    
+    Long2ObjectMap&lt;? extends Collection&lt;Neighbor&gt;&gt; findNeighbors(long user,
+            @Nonnull SparseVector ratings, @Nullable LongSet items);
+}</programlisting>
+
+      <para>The <literal role="method">findNeighbors</literal> method finds
+      collections of neighbors by whatever means are appropriate. The <literal
+      role="class">Neighbor</literal> class contains the neighbor's user ID,
+      rating vector, and its similarity to the user in question. The specific
+      neighborhood finder implementation is responsible for using the
+      similarity function to identify neighbors and truncate the neighborhood
+      lists as appropriate. This allows the neighborhood strategy to be
+      implemented and selected entirely independently of the rating
+      aggregation logic.</para>
+
+      <para>Currently, the rating aggregation strategy — weighted averaging —
+      is hard-coded into <literal
+      role="class">UserUserRatingRecommender</literal>. At present, other
+      rating aggregation strategies are rarely used. It would be a relatively
+      simple matter to factor it out into another strategy interface, however,
+      if we want to be able to experiment with alternative strategies. At
+      present, if someone wants to change it, they can re-implement or
+      subclass the existing implementation.</para>
     </section>
   </section>
 </article>
