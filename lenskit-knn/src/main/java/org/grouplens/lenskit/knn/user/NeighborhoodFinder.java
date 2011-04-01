@@ -5,6 +5,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
@@ -24,5 +27,6 @@ public interface NeighborhoodFinder {
      * we can find neighboring users.
      */
     
-    Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long user, SparseVector ratings, LongSet items);
+    Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long user,
+            @Nonnull SparseVector ratings, @Nullable LongSet items);
 }
