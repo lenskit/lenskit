@@ -23,8 +23,6 @@ import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.PearsonCorrelation;
-import org.grouplens.lenskit.knn.Similarity;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -22,7 +22,6 @@ package org.grouplens.lenskit.knn;
 import static org.junit.Assert.assertEquals;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.CosineSimilarity;
 import org.junit.Before;
 import org.junit.Test;
 
