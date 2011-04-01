@@ -44,6 +44,7 @@ import com.google.inject.Inject;
 
 /**
  * A recommender and predictor using user-user collaborative filtering.
+ * Neighbor ratings are aggregated using weighted averaging. 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
