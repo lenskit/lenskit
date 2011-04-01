@@ -7,6 +7,7 @@
   <xsl:import href="urn:docbkx:stylesheet"/>
   <xsl:import href="urn:docbkx:stylesheet/highlight.xsl"/>
 
+  <xsl:param name="use.extensions" select="1"/>
   <xsl:param name="highlight.source" select="1"/>
 
 </xsl:stylesheet>
