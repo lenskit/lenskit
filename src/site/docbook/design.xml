@@ -537,14 +537,34 @@ public interface BasketRecommender {
   </section>
 
   <section>
-    <title>Algorithm Implementation Design</title>
+    <title id="sec-algorithms">Algorithm Implementation Design</title>
 
     <para>Different recommender algorithms require specific design
     considerations. This section documents those for the various algorithms
     implemented in LensKit.</para>
 
     <section>
-      <title>User-User Collaborative Filtering</title>
+      <title id="sec-normalization">Normalization</title>
+
+      <para>In keeping with LensKit's modular design, normalization is
+      considered to be a cross-cutting concern orthoganal to the recommender
+      algorithm employed.</para>
+
+      <para>Currently, the only supported normalization is baseline
+      subtraction, where the real recommender algorithm is supplied with a
+      baseline predictor and the prediction for each rating is subtracted from
+      the rating prior to processing. In the predict phase, the baseline is
+      added back to the predictions before returning them.</para>
+
+      <para>We are planning to add support for more flexibile normalization
+      strategies, so that baseline normalization is only one, but have not yet
+      figured out how we want to do that. It is being tracked in <ulink
+      url="http://dev.grouplens.org/trac/lenskit/ticket/31">bug
+      #31</ulink>.</para>
+    </section>
+
+    <section>
+      <title id="sec-user-cf">User-User Collaborative Filtering</title>
 
       <para>Algorithmically, user-user CF divides into three
       components:</para>
@@ -608,7 +628,31 @@ public interface NeighborhoodFinder {
       similarity function to identify neighbors and truncate the neighborhood
       lists as appropriate. This allows the neighborhood strategy to be
       implemented and selected entirely independently of the rating
-      aggregation logic.</para>
+      aggregation logic. There are two neighborhood strategies currently
+      provided with LensKit:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal role="class">SimpleNeighborhoodFinder</literal> uses
+          a similarity function, represented by an instance of <literal
+          role="class">Similarity&lt;SparseVector&gt;</literal>, and scans
+          over all the user profiles in the database to find the most similar
+          users. It does no caching and is therefore fairly
+          inefficient.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">CachingNeighborhoodFinder</literal>
+          caches user rating vectors in memory, indexed by the items they
+          contain. This allows the neighborhoods to be determined more quickly
+          by only considering users who have co-rated movies with the user in
+          question. It requires that the similarity function is
+          <emphasis>optimizable</emphasis>, or always returns 0 for two rating
+          vectors with disjoint item sets. Optimizable similarities implement
+          the <literal role="class">OptimizableVectorSimilarity</literal>
+          interface.</para>
+        </listitem>
+      </itemizedlist>
 
       <para>Currently, the rating aggregation strategy — weighted averaging —
       is hard-coded into <literal
@@ -618,6 +662,161 @@ public interface NeighborhoodFinder {
       if we want to be able to experiment with alternative strategies. At
       present, if someone wants to change it, they can re-implement or
       subclass the existing implementation.</para>
+    </section>
+
+    <section>
+      <title id="sec-item-cf">Item-Item Collaborative Filtering</title>
+
+      <para>Item-item CF is divided somewhat differently, as it uses a
+      pre-built model. It is therefore divided into separate classes as
+      follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal role="class">ItemItemModel</literal> contains the
+          item-item similarity matrix and neighborhood-finding code.
+          Currently, the neighborhood-finding strategy is fixed, but this can
+          be changed.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemItemModelBuilder</literal> uses a
+          <literal role="class">BuildContext</literal> and a normalizing
+          baseline to build a new Item-item model. It normalizes and
+          transposes the rating matrix (generating a set of item rating
+          vectors), then hands it off to an <literal
+          role="class">ItemItemModelBuildStrategy</literal> to compute the
+          actual similarity matrix.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemItemModelBuildStrategy</literal>
+          abstracts the process of computing an item-item similarity matrix
+          from a transposed ratings matrix. The exact strategy depends on what
+          can be assumed about the similarity function:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The naive method, implemented by <literal
+              role="class">SimpleModelBuildStrategy</literal>, computes the
+              pairwise similarity between all pairs of items. It makes no
+              assumptions about the nature of the similarity function but may
+              compute many unnecessary similarities.</para>
+            </listitem>
+
+            <listitem>
+              <para>If the similarity function is symmetric (indicated by
+              implementing the <literal
+              role="class">SymmetricBinaryFunction</literal> tag interface),
+              then the builder only needs to compute one triangle of the
+              matrix. The algorithm is still O(n^2), but avoids half the
+              similarity computations. <literal
+              role="class">SymmetricModelBuildStrategy</literal> handles this
+              case.</para>
+            </listitem>
+
+            <listitem>
+              <para>If the similarity function is optimizable, then only items
+              that have been rated by the same users need to be compared. With
+              the help of some additional bookkeeping data recorded during the
+              initial matrix transposition, this results in substantial
+              efficiency gains. <literal
+              role="class">SparseModelBuildStrategy</literal> implements this
+              approach.</para>
+            </listitem>
+
+            <listitem>
+              <para>Finally, <literal
+              role="class">SparseSymmetricModelBuildStrategy</literal> handles
+              similarity functions which are both optimizable and
+              symmetric.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para><literal
+          role="class">ItemItemModelBuildStrategyProvider</literal> is the
+          default means of providing build strategies for injection and
+          automatically selects the appropriate strategy based on the type of
+          the similarity function. This can be overridden by re-binding
+          <literal role="class">ItemItemModelBuildStrategy</literal> in a
+          Guice module.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemItemModelProvider</literal>
+          implements a Guice <literal role="class">Provider</literal> that
+          depends on a build context and baseline and uses the <literal
+          role="class">ItemItemModelBuilder</literal> to provide a model a
+          new. It is the default provider for <literal
+          role="class">ItemItemModel</literal> (using a
+          <literal>ProvidedBy</literal> annotation). It is also the extension
+          point for replacing the <literal
+          role="class">ItemItemModelBuilder</literal>; customizers can bind
+          <literal role="class">ItemItemModel</literal> to a different class
+          or provider to replace it and/or the model builder entirely.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemItemRatingPredictor</literal> wraps
+          an <literal role="class">ItemItemModel</literal> and provides the
+          rating prediction service. It also exposes the model, but this
+          feature is not for public use.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemItemRatingRecommender</literal>
+          takes an <literal role="class">ItemItemRatingPredictor</literal>,
+          with its exposed model, and provides a rating recommender built on
+          it. Rating recommendation is done in two passes: first the
+          recommendable items are collected (if the client has not provided a
+          candidate list), and then prediction is done. This allows
+          recommendations to be accumulated in sparse vectors rather than hash
+          tables and reduces data conversion overhead.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">SimilarityMatrixBuilder</literal>
+          abstracts building similarity matrices. It exposes <literal
+          role="method">put</literal> methods for putting similarities in the
+          matrix and a <literal role="class">build</literal> method that
+          compiles the accumulated similarities into an (usually truncated)
+          immutable matrix. The similarity matrix builder itself is split into
+          multiple stages:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Use a <literal
+              role="class">SimilarityMatrixBuilderFactory</literal> to get a
+              <literal role="class">SimilarityMatrixBuilder</literal> that
+              will build a matrix for a given number of rows. This is
+              necessary so the matrix builder can know the matrix size ahead
+              of time.</para>
+            </listitem>
+
+            <listitem>
+              <para>Accumulate similarities in the <literal
+              role="class">SimilarityMatrixBuilder</literal>.</para>
+            </listitem>
+
+            <listitem>
+              <para>Call the matrix builder's build() method to get a <literal
+              role="class">SimilarityMatrix</literal>.</para>
+            </listitem>
+          </orderedlist>
+
+          <para>The default (and currently only) implementation of the
+          similarity matrix framework is TruncatingSimilarityMatrixBuilder,
+          which accumulates and maintains the truncated rows of the similarity
+          matrix in priority queues. For a neighborhood size N, the matrix
+          builder only ever keeps the N most similar neighbors of each item in
+          memory.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>This level of division and declarative dependency structure allows
+      the item-item recommender to be extensively reconfigured and customized.
+      It should therefore be fairly easy to plug a new piece into it to test
+      new recommender ideas.</para>
     </section>
   </section>
 </article>
