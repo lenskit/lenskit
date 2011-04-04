@@ -6,6 +6,7 @@
 
   <step id="checkout" description="Update source from repository">
     <hg:clone url="http://dev.grouplens.org/hg/lenskit" revision="${revision}" />
+    <sh:exec executable="hg" args="summary"/>
   </step>
   
   <step id="build" description="Build and run unit tests">
