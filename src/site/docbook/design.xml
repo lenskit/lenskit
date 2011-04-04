@@ -420,7 +420,8 @@ public interface RatingRecommender {
      * &lt;tt&gt;null&lt;/tt&gt;, the candidate set is considered to contain the universe.
      * @param exclude A set of items to be excluded.  If &lt;tt&gt;null&lt;/tt&gt;, it is
      * considered the empty set.  Exclusions are applied to the candidate set,
-     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus &lt;var&gt;exclude&lt;/var&gt;.
+     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus
+     * &lt;var&gt;exclude&lt;/var&gt;.
      * @return a list of scored recommendations, sorted in nondecreasing order
      * of score.
      */
