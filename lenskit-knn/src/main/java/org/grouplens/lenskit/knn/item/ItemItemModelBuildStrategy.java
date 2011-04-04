@@ -20,6 +20,8 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 
+import com.google.inject.ProvidedBy;
+
 
 /**
  * A strategy for computing similarity matrices.
@@ -31,6 +33,7 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ProvidedBy(ItemItemModelBuildStrategyProvider.class)
 interface ItemItemModelBuildStrategy {
     /**
      * Query whether this strategy requires the build state to have easy access

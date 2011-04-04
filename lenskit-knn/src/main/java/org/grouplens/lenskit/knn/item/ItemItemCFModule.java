@@ -96,24 +96,4 @@ public class ItemItemCFModule extends RecommenderModule {
                 FactoryProvider.newFactory(SimilarityMatrixBuilderFactory.class,
                         TruncatingSimilarityMatrixBuilder.class));
     }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Provides
-    protected ItemItemModelBuildStrategy buildStrategy(
-            SimilarityMatrixBuilderFactory matrixFactory,
-            @ItemSimilarity Similarity<? super SparseVector> similarity) {
-        if (similarity instanceof OptimizableVectorSimilarity) {
-            if (similarity instanceof SymmetricBinaryFunction)
-                return new SparseSymmetricModelBuildStrategy(matrixFactory,
-                        (OptimizableVectorSimilarity) similarity);
-            else
-                return new SparseModelBuildStrategy(matrixFactory,
-                        (OptimizableVectorSimilarity) similarity);
-        } else {
-            if (similarity instanceof SymmetricBinaryFunction)
-                return new SymmetricModelBuildStrategy(matrixFactory, similarity);
-            else
-                return new SimpleModelBuildStrategy(matrixFactory, similarity);
-        }
-    }
 }
