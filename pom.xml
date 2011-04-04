@@ -59,6 +59,7 @@
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
+    <guice.version>3.0</guice.version>
   </properties>
 
   <modules>
@@ -225,14 +226,14 @@
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>3.0-rc2</version>
+        <version>${guice.version}</version>
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.google.inject.extensions</groupId>
         <artifactId>guice-assistedinject</artifactId>
-        <version>3.0-rc2</version>
+        <version>${guice.version}</version>
         <type>jar</type>
         <scope>compile</scope>
       </dependency>

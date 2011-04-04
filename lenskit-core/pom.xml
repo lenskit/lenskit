@@ -39,7 +39,7 @@
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-throwingproviders</artifactId>
-      <version>3.0-rc2</version>
+      <version>${guice.version}</version>
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
