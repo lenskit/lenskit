@@ -29,6 +29,13 @@
     	<type>jar</type>
     	<scope>provided</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.apache.maven.shared</groupId>
+    	<artifactId>file-management</artifactId>
+    	<version>1.2.1</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <reporting>
