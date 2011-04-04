@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.params.BaselinePredictor;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -35,7 +36,8 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     private RatingPredictor baselinePredictor;
     
     @Inject
-    public ItemItemModelProvider(ItemItemModelBuilder bldr, RatingBuildContext context, RatingPredictor baseline) {
+    public ItemItemModelProvider(ItemItemModelBuilder bldr, RatingBuildContext context,
+            @BaselinePredictor RatingPredictor baseline) {
         modelBuilder = bldr;
         buildContext = context;
         baselinePredictor = baseline;
