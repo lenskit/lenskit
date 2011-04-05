@@ -28,12 +28,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.DoubleFunction;
+
+import com.google.inject.Inject;
 
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
@@ -44,32 +45,17 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * user's ratings.
  *
  * @todo Look at using the user's feature preferences in some cases.
+ * @todo Revise this class's relationship with {@link SVDModel}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SVDRatingPredictor implements RatingPredictor {
+	protected final SVDModel model;
 
-    private final Index itemIndex;
-    private final RatingPredictor baseline;
-
-    private final int numFeatures;
-    private final double itemFeatures[][];
-    private final double singularValues[];
-    private final DoubleFunction clampingFunction;
-
-    SVDRatingPredictor(int nfeatures, Index itemIndexer,
-            RatingPredictor baseline, double itemFeatures[][],
-            double singularValues[],
-            DoubleFunction clamp) {
-        numFeatures = nfeatures;
-        this.itemIndex = itemIndexer;
-        this.baseline = baseline;
-        this.itemFeatures = itemFeatures;
-        this.singularValues = singularValues;
-        clampingFunction = clamp;
-        assert itemFeatures.length == numFeatures;
-        assert singularValues.length == numFeatures;
+	@Inject
+    protected SVDRatingPredictor(SVDModel m) {
+        model = m;
     }
 
     /**
@@ -77,7 +63,7 @@ public class SVDRatingPredictor implements RatingPredictor {
      * @return the feature count (rank) of the factorization.
      */
     public int getFeatureCount() {
-        return numFeatures;
+        return model.featureCount;
     }
 
     /**
@@ -92,16 +78,19 @@ public class SVDRatingPredictor implements RatingPredictor {
      * @see #getFeatureCount()
      */
     protected double[] foldIn(long user, SparseVector ratings) {
-        double featurePrefs[] = new double[numFeatures];
+    	final int nf = model.featureCount;
+    	final double[][] ifeats = model.itemFeatures;
+    	final double[] svals = model.singularValues;
+        double featurePrefs[] = new double[nf];
         DoubleArrays.fill(featurePrefs, 0.0);
 
         for (Long2DoubleMap.Entry rating: ratings.fast()) {
             long iid = rating.getLongKey();
-            int idx = itemIndex.getIndex(iid);
+            int idx = model.itemIndex.getIndex(iid);
             if (idx < 0) continue;
             double r = rating.getValue();
-            for (int f = 0; f < numFeatures; f++) {
-                featurePrefs[f] += r * itemFeatures[f][idx] / singularValues[f];
+            for (int f = 0; f < nf; f++) {
+                featurePrefs[f] += r * ifeats[f][idx] / svals[f];
             }
         }
 
@@ -129,23 +118,27 @@ public class SVDRatingPredictor implements RatingPredictor {
         LongSet baseTargets = new LongOpenHashSet(ratings.size() + items.size());
         baseTargets.addAll(ratings.keySet());
         baseTargets.addAll(items);
-        SparseVector base = baseline.predict(user, ratings, baseTargets);
+        SparseVector base = model.baseline.predict(user, ratings, baseTargets);
         rtmp.subtract(base);
         double uprefs[] = foldIn(user, rtmp);
 
+        final int nf = model.featureCount;
+        final double[] svals = model.singularValues;
+        final DoubleFunction clamp = model.clampingFunction;
+        
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
         Arrays.sort(keys);
         double[] values = new double[keys.length];
         for (int i = 0; i < keys.length; i++) {
             final long item = keys[i];
-            final int idx = itemIndex.getIndex(item);
+            final int idx = model.getItemIndex(item);
             if (idx < 0)
                 continue;
 
             double score = base.get(item);
-            for (int f = 0; f < numFeatures; f++) {
-                score += uprefs[f] * singularValues[f] * itemFeatures[f][idx];
-                score = clampingFunction.apply(score);
+            for (int f = 0; f < nf; f++) {
+                score += uprefs[f] * svals[f] * model.itemFeatureValue(idx, f);
+                score = clamp.apply(score);
             }
             values[i] = score;
         }

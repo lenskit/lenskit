@@ -169,10 +169,10 @@ public class GradientDescentSVDModuleTest extends RecommenderModuleTest {
     public void testDefaultInject() {
         module.core.setBaseline(ConstantPredictor.class);
         module.core.setConstantBaselineValue(3);
-        GradientDescentSVDRecommenderBuilder builder =
-            inject(Key.get(GradientDescentSVDRecommenderBuilder.class));
-        assertThat(builder, instanceOf(GradientDescentSVDRecommenderBuilder.class));
-        GradientDescentSVDRecommenderBuilder b = (GradientDescentSVDRecommenderBuilder) builder;
+        SVDModelBuilder builder =
+            inject(Key.get(GradientDescentSVDModelBuilder.class));
+        assertThat(builder, instanceOf(GradientDescentSVDModelBuilder.class));
+        GradientDescentSVDModelBuilder b = (GradientDescentSVDModelBuilder) builder;
         assertEquals(Parameters.getDefaultInt(FeatureCount.class), b.featureCount);
         assertEquals(Parameters.getDefaultDouble(LearningRate.class), b.learningRate, EPSILON);
         assertEquals(Parameters.getDefaultDouble(GradientDescentRegularization.class), b.trainingRegularization, EPSILON);

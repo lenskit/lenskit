@@ -20,8 +20,6 @@ package org.grouplens.lenskit.svd;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderModule;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.FeatureTrainingThreshold;
@@ -30,7 +28,6 @@ import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.util.DoubleFunction;
 
-import com.google.inject.Provider;
 import com.google.inject.Provides;
 
 public class GradientDescentSVDModule extends RecommenderModule {
@@ -49,6 +46,8 @@ public class GradientDescentSVDModule extends RecommenderModule {
     protected void configure() {
         super.configure();
         configureClamping();
+        bind(SVDModelBuilder.class).to(GradientDescentSVDModelBuilder.class);
+        bind(RatingPredictor.class).to(SVDRatingPredictor.class);
     }
 
     protected void configureClamping() {
@@ -143,11 +142,5 @@ public class GradientDescentSVDModule extends RecommenderModule {
      */
     public void setClampingFunction(Class<? extends DoubleFunction> clampingFunction) {
         this.clampingFunction = clampingFunction;
-    }
-
-    @Provides
-    public RatingPredictor buildRecommender(GradientDescentSVDRecommenderBuilder builder,
-            Provider<RatingBuildContext> data, @BaselinePredictor RatingPredictor baseline) {
-        return builder.build(data.get(), baseline);
     }
 }

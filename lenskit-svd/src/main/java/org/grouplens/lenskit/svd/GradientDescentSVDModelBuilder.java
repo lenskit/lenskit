@@ -60,8 +60,8 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDRecommenderBuilder {
-    private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDRecommenderBuilder.class);
+public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
+    private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDModelBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
@@ -78,7 +78,7 @@ public class GradientDescentSVDRecommenderBuilder {
     final int iterationCount;
 
     @Inject
-    public GradientDescentSVDRecommenderBuilder(
+    public GradientDescentSVDModelBuilder(
             @FeatureCount int features,
             @LearningRate double lrate,
             @FeatureTrainingThreshold double trainingThreshold,
@@ -93,7 +93,11 @@ public class GradientDescentSVDRecommenderBuilder {
         iterationCount = icount;
     }
 
-    public SVDRatingPredictor build(RatingBuildContext data, RatingPredictor baseline) {
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.svd.SVDModelBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext, org.grouplens.lenskit.RatingPredictor)
+     */
+    @Override
+    public SVDModel build(RatingBuildContext data, RatingPredictor baseline) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -152,9 +156,9 @@ public class GradientDescentSVDRecommenderBuilder {
             }
             model.singularValues[feature] = unrm * inrm;
         }
-
-        return new SVDRatingPredictor(featureCount, data.itemIndex(), baseline, model.itemFeatures, model.singularValues,
-                clampingFunction);
+        
+        return new SVDModel(featureCount, model.itemFeatures, model.singularValues,
+                clampingFunction, data.itemIndex(), baseline);
     }
 
     private final void trainFeature(Model model, List<SVDRating> ratings, int feature) {
