@@ -4,6 +4,10 @@
 
 Release ${project.version}
 
+  These release notes cover large, user-facing things.  See the
+  {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} for
+  complete change listings.
+
   * Fixed <<<SVDRatingPredictor>>>'s use of baselines to be correct
     and restore FunkSVD performance.
 
@@ -12,8 +16,16 @@ Release ${project.version}
     deprecated compatibility shim and will be removed before we reach
     1.0.).
 
-  * Renamed and refactored classes in the item-item CF recommender to
-    improve code clarity.
+  * Renamed and refactored classes in the recommender implementations
+    to improve clarity and consistency.
+
+  * Upgraded to Guice 3.0 and Maven 3.
+
+  * Added recommender graphing support to the Maven plugin.
+
+  * Lots of documentation improvements.
+
+  []
 
 Release 0.0.2 (March 28, 2011)
 
