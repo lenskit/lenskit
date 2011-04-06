@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn;
 import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class TestPearsonCorrelation {
 
     @Test
     public void testEmptyVector() {
-        SparseVector v = new SparseVector(Long2DoubleMaps.EMPTY_MAP);
+        SparseVector v = new ImmutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         assertEquals(0, sim.similarity(v, v), EPSILON);
     }
 

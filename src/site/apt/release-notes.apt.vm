@@ -25,6 +25,9 @@ Release ${project.version}
 
   * Lots of documentation improvements.
 
+  * Introduce <<<ImmutableSparseVector>>> and build more robust
+    type-checking for mutability guarantees on sparse vectors.
+
   []
 
 Release 0.0.2 (March 28, 2011)

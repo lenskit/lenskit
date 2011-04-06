@@ -40,6 +40,7 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
@@ -153,7 +154,7 @@ public class ItemItemModelBuilder {
             ListIterator<Long2DoubleMap> iter = workMatrix.listIterator();
             while (iter.hasNext()) {
                 Long2DoubleMap ratings = iter.next();
-                SparseVector v = new SparseVector(ratings);
+                SparseVector v = new ImmutableSparseVector(ratings);
                 assert v.size() == ratings.size();
                 itemRatings.add(v);
                 iter.set(null);                // clear the array so GC can free

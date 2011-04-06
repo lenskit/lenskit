@@ -53,7 +53,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * vectors that are guaranteed to be unchanging, see {@link ImmutableSparseVector}.
  *
  */
-public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
+public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
     private static final long serialVersionUID = 5097272716721395321L;
     protected final long[] keys;
     protected double[] values;
@@ -62,7 +62,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
     private volatile transient Double mean;
     private volatile transient Integer hashCode;
 
-    public SparseVector(Long2DoubleMap ratings) {
+    protected SparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
         Arrays.sort(keys);
         assert keys.length == ratings.size();
@@ -388,12 +388,12 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
      * @throws IllegalArgumentException if there is a problem with the provided
      * arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
-    public static SparseVector wrap(long[] keys, double[] values) {
+    public static MutableSparseVector wrap(long[] keys, double[] values) {
         if (values.length < keys.length)
             throw new IllegalArgumentException("ratings shorter than items");
         if (!isSorted(keys))
             throw new IllegalArgumentException("item array not sorted");
-        return new SparseVector(keys, values);
+        return new MutableSparseVector(keys, values);
     }
 
     /**
@@ -415,7 +415,7 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
      * @throws IllegalArgumentException if there is a problem with the provided
      * arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
-    public static SparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
+    public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
         if (removeNaN) {
             int pos = 0;
             for (int i = 0; i < keys.length; i++) {
