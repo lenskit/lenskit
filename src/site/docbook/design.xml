@@ -534,6 +534,74 @@ public interface BasketRecommender {
       of rating updates, and stable snapshots for iterative model
       building.</para>
     </section>
+
+    <section>
+      <title>Vectors</title>
+
+      <para>There are many places in recommender implementation where it is
+      useful to have sparse vectors (vectors where many of the values are
+      missing). To support these needs, LensKit includes a sparse vector
+      implementation in the <literal
+      role="package">org.grouplens.lenskit.data.vector</literal> package.
+      Sparse vectors are stored in parallel arrays sorted by <literal
+      role="type">long</literal> key. This allows efficient access to specific
+      values, and also allows binary operations such as dot products to be
+      computed efficiently with a single linear pass through the arrays
+      backing two vectors. It also provides a place to memoize single-vector
+      metrics such as sum and L2 norm.</para>
+
+      <para>The key sets of a sparse vector is immutable once the vector has
+      been created. This can be limiting, but it allows the implementation
+      code to be very simple and works out well in practice. A common pattern
+      is to accumulate values for a new vector in a fastutil hash table and
+      then convert it to a vector for subsequent operations.</para>
+
+      <para>The <literal role="class">MutableSparseVector</literal> class
+      provides a sparse vector which supports in-place mutation of values.
+      This allows vector addition, subtraction, and scaling to be handled
+      efficiently without incurring excess copying overhead. It does require
+      client code to occasionally create additional vectors, but it allows the
+      client code to control how many copies are made and potentially re-use
+      vectors.</para>
+
+      <para>Since sparse vectors can be mutated, we wanted a way to declare
+      methods so that a sparse vector that might be mutated later cannot be
+      passed to certain methods which may store the vector somewhere. We
+      therefore developed the following three-prong type family for sparse
+      vectors:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal role="class">SparseVector</literal> provides a
+          read-only view of a sparse vector. Objects of this type cannot be
+          modified; however, since <literal
+          role="class">MutableSparseVector</literal> is a subclass of <literal
+          role="class">SparseVector</literal>, other code may know the
+          object's real type and mutate it.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">MutableSparseVector</literal> is a
+          mutable sparse vector, as discussed above.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ImmutableSparseVector</literal> is a
+          read-only sparse vector that is guaranteed not to change. If an
+          object or method receives an immutable sparse vector, it can safely
+          save it and know that no other code will change it. Immutable sparse
+          vectors are also thread-safe (and are the only sparse vectors that
+          can be safely shared across thread boundaries).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The SparseVector class provides methods to convert to an
+      appropriate type of vector, avoiding copying when making an
+      already-immutable sparse vector immutable. Since the key set is
+      immutable, conversions requiring a copy only need to copy the value
+      array. Future work may allow the value array to also be shared by making
+      mutable sparse vectors copy-on-write.</para>
+    </section>
   </section>
 
   <section>
@@ -707,7 +775,7 @@ public interface NeighborhoodFinder {
             <listitem>
               <para>If the similarity function is symmetric (indicated by
               implementing the <literal
-              role="class">SymmetricBinaryFunction</literal> tag interface),
+              role="class">SymmetricBinaryFunction</literal> tag interfac),
               then the builder only needs to compute one triangle of the
               matrix. The algorithm is still O(n^2), but avoids half the
               similarity computations. <literal
@@ -817,6 +885,30 @@ public interface NeighborhoodFinder {
       the item-item recommender to be extensively reconfigured and customized.
       It should therefore be fairly easy to plug a new piece into it to test
       new recommender ideas.</para>
+    </section>
+
+    <section>
+      <title>Singular Value Decomposition</title>
+
+      <para>LensKit also provides a recommender (currently only implementing
+      the <literal role="class">RatingPredictor</literal> interface) built on
+      singular value decomposition.</para>
+
+      <para>The architecture of the SVD recommender is similar to but simpler
+      than the item-item CF implementation. Instead of having a single builder
+      class that uses pluggable strategies, it has an <literal
+      role="class">SVDModelBuilder</literal> interface that takes the build
+      context and baseline and builds an <literal
+      role="class">SVDModel</literal>. This is used by <literal
+      role="class">SVDModelProvider</literal> to provide models to Guice. This
+      difference is due to the increased dissimilarity between SVD
+      impelmentations; as we implement additional SVD algorithms, we may
+      consolidate code and introduce an additional strategy interface.</para>
+
+      <para>Currently there is a single SVD model builder, <literal
+      role="grade">GradientDescentSVDModelBuilder</literal>. It implements a
+      gradient descent approximation approach to SVD; configured with an
+      appropriately damped baseline, it becomes FunkSVD.</para>
     </section>
   </section>
 </article>
