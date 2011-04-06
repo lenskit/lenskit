@@ -62,22 +62,22 @@ public class MutableSparseVector extends SparseVector {
         super(normalizeKeys(keySet), new double[keySet.size()]);
         Arrays.fill(values, 0);
     }
-
-    static long[] normalizeKeys(LongSet set) {
-        long[] keys = set.toLongArray();
-        if (!(set instanceof LongSortedSet))
-            Arrays.sort(keys);
-        return keys;
-    }
-
+    
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length.
      * @param keys
      * @param values
      */
-    private MutableSparseVector(long[] keys, double[] values) {
+    protected MutableSparseVector(long[] keys, double[] values) {
         super(keys, values);
+    }
+
+    static long[] normalizeKeys(LongSet set) {
+        long[] keys = set.toLongArray();
+        if (!(set instanceof LongSortedSet))
+            Arrays.sort(keys);
+        return keys;
     }
 
     /**
@@ -203,18 +203,18 @@ public class MutableSparseVector extends SparseVector {
      * @return A new rating vector which is a copy of this one.
      */
     public MutableSparseVector copy() {
-        double[] newvals = DoubleArrays.copy(values);
-        // we can re-use the keys array since it is immutable
-        return new MutableSparseVector(keys, newvals);
+        return mutableCopy();
     }
 
     /**
      * Create a mutable copy of a sparse vector.
      * @param vector The base vector.
      * @return A mutable copy of <var>vector</var>.
+     * @deprecated Use {@link #mutableCopy()} instead.
      */
+    @Deprecated
     public static MutableSparseVector copy(SparseVector vector) {
-        return new MutableSparseVector(vector.keys, DoubleArrays.copy(vector.values));
+        return vector.mutableCopy();
     }
 
     @Override

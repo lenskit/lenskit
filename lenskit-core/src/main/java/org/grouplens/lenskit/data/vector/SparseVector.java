@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
- * Sparse vector representation
+ * Read-only interface to sparse vectors.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * <p>This vector class works a lot like a map, but it also caches some
@@ -45,17 +45,22 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * <p>It is possible for vectors to contain NaN values, but be careful with this.
  * They will show up in enumeration and {@link #containsKey(long)} will return
  * <tt>true</tt>, but {@link #get(long)} will not distinguish between them and
- * missing entries.
+ * missing entries ({@link #get(long, double)} will).
+ * 
+ * <p>This class provides a <em>read-only</em> interface to sparse vectors. It
+ * may actually be a {@link MutableSparseVector}, so the data may be modified
+ * by code elsewhere that has access to the mutable representation. For sparse
+ * vectors that are guaranteed to be unchanging, see {@link ImmutableSparseVector}.
  *
  */
 public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
     private static final long serialVersionUID = 5097272716721395321L;
     protected final long[] keys;
     protected double[] values;
-    private transient Double norm;
-    private transient Double sum;
-    private transient Double mean;
-    private transient Integer hashCode;
+    private volatile transient Double norm;
+    private volatile transient Double sum;
+    private volatile transient Double mean;
+    private volatile transient Integer hashCode;
 
     public SparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
@@ -348,6 +353,25 @@ public class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializabl
         public Double setValue(Double value) {
             return setValue(value.doubleValue());
         }
+    }
+    
+    /**
+     * Return an immutable snapshot of this sparse vector.
+     * @return An immutable sparse vector whose contents are the same as this
+     * vector. If the vector is already immutable, the returned object may be
+     * identical.
+     */
+    public ImmutableSparseVector immutable() {
+        return new ImmutableSparseVector(keys, values);
+    }
+    
+    /**
+     * Return a mutable copy of this sparse vector.
+     * @return A mutable sparse vector which can be modified without modifying
+     * this vector.
+     */
+    public MutableSparseVector mutableCopy() {
+        return new MutableSparseVector(keys, Arrays.copyOf(values, values.length));
     }
 
     /**
