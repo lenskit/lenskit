@@ -54,18 +54,9 @@ public class ImmutableSparseVector extends SparseVector {
     public ImmutableSparseVector clone() {
         return (ImmutableSparseVector) super.clone();
     }
-    
-    /**
-     * Make an immutable version of a sparse vector.  If the source vector is
-     * already immutable, it is returned.
-     * @param v The vector to mirror immutably.
-     * @return An immutable vector with the same contents as <var>v</var>.
-     */
-    public static ImmutableSparseVector make(SparseVector v) {
-        if (v instanceof ImmutableSparseVector)
-            return (ImmutableSparseVector) v;
-        else
-            return new ImmutableSparseVector(v.keys, Arrays.copyOf(v.values, v.size()));
-    }
 
+    @Override
+    public ImmutableSparseVector immutable() {
+        return this;
+    }
 }
