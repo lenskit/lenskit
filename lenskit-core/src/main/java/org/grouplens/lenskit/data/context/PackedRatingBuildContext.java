@@ -163,6 +163,7 @@ public class PackedRatingBuildContext implements RatingBuildContext {
 			int idx = imgr.getIndex(uidx, iidx);
 			if (idx < 0) {
 				// new rating
+				imgr.putIndex(uidx, iidx, nratings);
 				nratings++;
 				users.add(uidx);
 				items.add(iidx);

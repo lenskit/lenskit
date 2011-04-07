@@ -58,7 +58,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedRating>
 
 	@Override
 	public int size() {
-		return data.values.length;
+		return indices.size();
 	}
 
 	@Override
