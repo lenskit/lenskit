@@ -91,4 +91,20 @@ public class TestIntIntervalList {
         assertTrue(iter.hasPrevious());
         assertEquals(42, iter.previousInt());
     }
+	
+	@Test
+	public void testBroaderInterval() {
+	    IntList list = new IntIntervalList(5);
+	    assertFalse(list.isEmpty());
+	    assertEquals(5, list.size());
+	    for (int i = 0; i < 5; i++) {
+	        assertEquals(i, list.getInt(i));
+	    }
+	    try {
+	        list.getInt(5);
+	        fail("getInt(5) should throw");
+	    } catch (IndexOutOfBoundsException e) {
+	        /* no-op */
+	    }
+	}
 }
