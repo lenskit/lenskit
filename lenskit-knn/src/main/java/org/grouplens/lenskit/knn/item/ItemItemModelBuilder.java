@@ -136,7 +136,7 @@ public class ItemItemModelBuilder {
                 
                 for (IndexedRating rating: ratings) {
                     final int idx = rating.getItemIndex();
-                    assert idx > 0 && idx < nitems;
+                    assert idx >= 0 && idx < nitems;
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(idx);
                     ivect.put(user, (double) rating.getRating());
