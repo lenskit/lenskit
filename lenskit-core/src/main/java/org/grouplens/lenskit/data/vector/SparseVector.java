@@ -33,6 +33,9 @@ import java.util.NoSuchElementException;
 
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Longs;
+
 /**
  * Read-only interface to sparse vectors.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -57,6 +60,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     private static final long serialVersionUID = 5097272716721395321L;
     protected final long[] keys;
     protected double[] values;
+    protected final int size;
     private volatile transient Double norm;
     private volatile transient Double sum;
     private volatile transient Double mean;
@@ -64,9 +68,10 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     protected SparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
+        size = keys.length;
         Arrays.sort(keys);
         assert keys.length == ratings.size();
-        assert isSorted(keys);
+        assert isSorted(keys, size);
         values = new double[keys.length];
         final int len = keys.length;
         for (int i = 0; i < len; i++) {
@@ -83,11 +88,27 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     protected SparseVector(long[] keys, double[] values) {
         this.keys = keys;
         this.values = values;
-        assert isSorted(keys);
+        size = keys.length;
+        assert isSorted(keys, size);
+    }
+    
+    /**
+     * Construct a new sparse vector from existing arrays.  The arrays must
+     * be sorted by key; no checking is done.
+     * @param keys The array of keys.
+     * @param values The keys' values.
+     * @param length The size of the vector. Only the first <var>length</var>
+     * elements are used. 
+     */
+    protected SparseVector(long[] keys, double[] values, int length) {
+        this.keys = keys;
+        this.values = values;
+        size = length;
+        assert isSorted(keys, length);
     }
 
-    public static boolean isSorted(long[] array) {
-        for (int i = 1; i < array.length; i++) {
+    public static boolean isSorted(long[] array, int length) {
+        for (int i = 1; i < length; i++) {
             if (array[i] <= array[i-1])
                 return false;
         }
@@ -117,7 +138,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the value (or <var>dft</var> if no such key exists)
      */
     public double get(long key, double dft) {
-        int idx = Arrays.binarySearch(keys, key);
+        int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0)
             return values[idx];
         else
@@ -132,7 +153,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return <tt>true</tt> if the key exists.
      */
     public boolean containsKey(long key) {
-        return Arrays.binarySearch(keys, key) >= 0;
+        return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
     
     /**
@@ -172,15 +193,15 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     public LongSortedSet keySet() {
-        return new LongSortedArraySet(keys);
+        return new LongSortedArraySet(keys, 0, size);
     }
 
     public DoubleCollection values() {
-        return DoubleCollections.unmodifiable(new DoubleArrayList(values));
+        return DoubleCollections.unmodifiable(new DoubleArrayList(values, 0, size));
     }
 
     public int size() {
-        return keys.length;
+        return size;
     }
 
     public boolean isEmpty() {
@@ -194,7 +215,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public double norm() {
         if (norm == null) {
             double ssq = 0;
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < size; i++) {
                 double v = values[i];
                 ssq += v * v;
             }
@@ -210,7 +231,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public double sum() {
         if (sum == null) {
             double s = 0;
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < size; i++) {
                 s += values[i];
             }
             sum = s;
@@ -224,7 +245,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      */
     public double mean() {
         if (mean == null) {
-            mean = keys.length > 0 ? sum() / keys.length : 0;
+            mean = size > 0 ? sum() / size : 0;
         }
         return mean;
     }
@@ -238,7 +259,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         double dot = 0;
         int i = 0;
         int j = 0;
-        while (i < keys.length && j < other.keys.length) {
+        while (i < size && j < other.size) {
             if (keys[i] == other.keys[j]) {
                 dot += values[i] * other.values[j];
                 i++;
@@ -258,7 +279,23 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             return true;
         } else if (o instanceof SparseVector) {
             SparseVector vo = (SparseVector) o;
-            return Arrays.equals(keys, vo.keys) && Arrays.equals(values, vo.values);
+            int sz = size();
+            int osz = vo.size();
+            if (sz != osz) {
+                return false;
+            } else {
+                final long[] ks = keys;
+                final long[] kso = vo.keys;
+                final double[] vs = values;
+                final double[] vso = vo.values;
+                for (int i = 0; i < sz; i++) {
+                    if (ks[i] != kso[i])
+                        return false;
+                    if (vs[i] != vso[i])
+                        return false;
+                }
+                return true;
+            }
         } else {
             return false;
         }
@@ -267,20 +304,41 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     @Override
     public int hashCode() {
         if (hashCode == null) {
-            hashCode = Arrays.hashCode(keys) ^ Arrays.hashCode(values);
+            int hash = 0;
+            final int sz = size();
+            for (int i = 0; i < sz; i++) {
+                hash ^= Longs.hashCode(keys[i]);
+                hash ^= Doubles.hashCode(values[i]);
+            }
         }
         return hashCode;
     }
 
+    /**
+     * Clone the sparse vector. This implementation duplicates the value array
+     * so that the new sparse vector is disconnected; immutable implementations
+     * may leave them connected.
+     */
     @Override
     public SparseVector clone() {
+        return clone(true);
+    }
+    
+    /**
+     * Clone method parameterized on whether to copy the value array.
+     * @param copyValues If <tt>true</tt>, make a copy of the value array in the
+     * new object.
+     * @return A clone of this sparse vector.
+     */
+    protected SparseVector clone(boolean copyValues) {
         SparseVector v;
         try {
             v = (SparseVector) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-        v.values = DoubleArrays.copy(v.values);
+        if (copyValues)
+            v.values = DoubleArrays.copy(v.values);
         return v;
     }
 
@@ -288,7 +346,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         int pos = 0;
         @Override
         public boolean hasNext() {
-            return pos < keys.length;
+            return pos < size;
         }
         @Override
         public Entry next() {
@@ -307,7 +365,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         Entry entry = new Entry(-1);
         @Override
         public boolean hasNext() {
-            return entry.pos < keys.length - 1;
+            return entry.pos < size - 1;
         }
         @Override
         public Entry next() {
@@ -391,7 +449,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public static MutableSparseVector wrap(long[] keys, double[] values) {
         if (values.length < keys.length)
             throw new IllegalArgumentException("ratings shorter than items");
-        if (!isSorted(keys))
+        if (!isSorted(keys, keys.length))
             throw new IllegalArgumentException("item array not sorted");
         return new MutableSparseVector(keys, values);
     }
@@ -434,7 +492,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         }
         if (values.length < keys.length)
             throw new IllegalArgumentException("key/value length mismatch");
-        if (!isSorted(keys))
+        if (!isSorted(keys, keys.length))
             throw new IllegalArgumentException("key array not sorted");
         return wrap(keys, values);
     }

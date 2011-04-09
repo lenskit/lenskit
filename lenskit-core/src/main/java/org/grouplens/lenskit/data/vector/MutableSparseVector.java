@@ -18,7 +18,9 @@
  */
 package org.grouplens.lenskit.data.vector;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -58,8 +60,18 @@ public class MutableSparseVector extends SparseVector {
      * @param keys The keys to include in the vector.
      */
     public MutableSparseVector(LongSet keySet) {
+        this(keySet, 0);
+    }
+    
+    /**
+     * Construct a new vector with specified keys, setting all values to a constant
+     * value.
+     * @param keys The keys to include in the vector.
+     * @param value The value to assign for all keys.
+     */
+    public MutableSparseVector(LongSet keySet, double value) {
         super(normalizeKeys(keySet), new double[keySet.size()]);
-        Arrays.fill(values, 0);
+        Arrays.fill(values, value);
     }
     
     /**
@@ -70,6 +82,17 @@ public class MutableSparseVector extends SparseVector {
      */
     protected MutableSparseVector(long[] keys, double[] values) {
         super(keys, values);
+    }
+    
+    /**
+     * Construct a new vector from existing arrays.  It is assumed that the keys
+     * are sorted and duplicate-free, and that the values is the same length.
+     * @param keys
+     * @param values
+     * @param length Number of items to actually use.
+     */
+    protected MutableSparseVector(long[] keys, double[] values, int length) {
+        super(keys, values, length);
     }
 
     static long[] normalizeKeys(LongSet set) {
@@ -109,6 +132,27 @@ public class MutableSparseVector extends SparseVector {
         if (idx >= 0) {
             clearCachedValues();
             return values[idx] += value;
+        } else {
+            return Double.NaN;
+        }
+    }
+    
+    /**
+     * Add a value to the specified entry, replacing {@link Double#NaN}.  If the
+     * current value for <var>key</var> is {@link Double#NaN}, then the value is
+     * replaced by <var>value</var>; otherwise, it is increased by <var>value</var>.
+     * @param key The key whose value should be added.
+     * @param value The value to increase it by.
+     * @return The new value (or {@link Double#NaN} if no such key existed).
+     */
+    public double addOrReplace(long key, double value) {
+        final int idx = Arrays.binarySearch(keys, key);
+        if (idx >= 0) {
+            clearCachedValues();
+            if (Double.isNaN(values[idx]))
+                return values[idx] = value;
+            else
+                return values[idx] += value;
         } else {
             return Double.NaN;
         }
@@ -228,10 +272,26 @@ public class MutableSparseVector extends SparseVector {
     public static MutableSparseVector wrap(long[] keys, double[] values) {
         if (values.length < keys.length)
             throw new IllegalArgumentException("ratings shorter than items");
-        for (int i = 1; i < keys.length; i++) {
-            if (keys[i] <= keys[i-1])
-                throw new IllegalArgumentException("item array not sorted");
-        }
+        if (!isSorted(keys, keys.length))
+            throw new IllegalArgumentException("item array not sorted");
         return new MutableSparseVector(keys, values);
+    }
+    
+    /**
+     * Wrap key and value array lists in a mutable sparse vector. Don't modify
+     * the original lists once this has been called!
+     * @see SparseVector#wrap(long[], double[])
+     */
+    public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
+        if (valueList.size() < keyList.size())
+            throw new IllegalArgumentException("Value list too short");
+        
+        long[] keys = keyList.elements();
+        double[] values = valueList.elements();
+        
+        if (!isSorted(keys, keyList.size()))
+            throw new IllegalArgumentException("key array not sorted");
+        
+        return new MutableSparseVector(keys, values, keyList.size());
     }
 }

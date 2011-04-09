@@ -52,7 +52,7 @@ public class ImmutableSparseVector extends SparseVector {
     
     @Override
     public ImmutableSparseVector clone() {
-        return (ImmutableSparseVector) super.clone();
+        return (ImmutableSparseVector) super.clone(false);
     }
 
     @Override
