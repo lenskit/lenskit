@@ -35,21 +35,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
+import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Builds item-item recommender engines from data sources.
@@ -72,23 +70,23 @@ public class ItemItemModelBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private final @Nonnull ItemItemModelBuildStrategy similarityStrategy;
+    private final Provider<NormalizedRatingBuildContext> normDataProvider;
 
     @Inject
-    ItemItemModelBuilder(ItemItemModelBuildStrategy similarityStrategy) {
+    ItemItemModelBuilder(ItemItemModelBuildStrategy similarityStrategy,
+    		Provider<NormalizedRatingBuildContext> data) {
         this.similarityStrategy = similarityStrategy;
+        this.normDataProvider = data;
     }
 
     @ParametersAreNonnullByDefault
     final class BuildState {
-        public final @Nullable RatingPredictor baseline;
         public final Index itemIndex;
         public ArrayList<SparseVector> itemRatings;
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(RatingBuildContext data, @Nullable RatingPredictor baseline,
-                boolean trackItemSets) {
-            this.baseline = baseline;
+        public BuildState(NormalizedRatingBuildContext data, boolean trackItemSets) {
             itemIndex = data.itemIndex();
             itemCount = itemIndex.getObjectCount();
             itemRatings = new ArrayList<SparseVector>();
@@ -103,12 +101,12 @@ public class ItemItemModelBuilder {
         }
 
         /**
-         * Normalize and transpose the ratings matrix so we have a list of item
+         * Transpose the ratings matrix so we have a list of item
          * rating vectors.
          * @todo Fix this method to abstract item collection.
          * @todo Review and document this method.
          */
-        private void buildItemRatings(RatingBuildContext data) {
+        private void buildItemRatings(NormalizedRatingBuildContext data) {
             final boolean collectItems = userItemSets != null;
             final int nitems = itemCount;
 
@@ -122,9 +120,6 @@ public class ItemItemModelBuilder {
             while (userIter.hasNext()) {
             	final long user = userIter.nextLong();
             	Collection<IndexedRating> ratings = data.getUserRatings(user);
-            	// TODO Make this use the normalized rating build context
-            	MutableSparseVector ratingVector = Ratings.userRatingVector(ratings).mutableCopy();
-            	normalizeUserRatings(baseline, user, ratingVector);
             	
                 final int nratings = ratings.size();
                 // allocate the array ourselves to avoid an array copy
@@ -164,27 +159,13 @@ public class ItemItemModelBuilder {
         }
     }
 
-    public ItemItemModel build(RatingBuildContext data, @Nullable RatingPredictor baseline) {
-        BuildState state = new BuildState(data, baseline, similarityStrategy.needsUserItemSets());
+    public ItemItemModel build() {
+    	NormalizedRatingBuildContext data = normDataProvider.get();
+        BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
-        ItemItemModel model = new ItemItemModel(state.itemIndex, state.baseline, matrix, items);
+        ItemItemModel model = new ItemItemModel(state.itemIndex, data.getNormalizer(), matrix, items);
         return model;
-    }
-
-    /**
-     * Normalize a user's ratings.  This method is called on each user's ratings
-     * prior to using the ratings to learn item similarities.  Deriving
-     * classes can customize the normalization method.
-     * @param baseline The baseline predictor for this predictor build.
-     * @param uid The user ID.
-     * @param ratings The user's ratings, to be normalized in-place.
-     */
-    protected void normalizeUserRatings(@Nullable RatingPredictor baseline, long uid, MutableSparseVector ratings) {
-        if (baseline != null) {
-        	SparseVector base = baseline.predict(uid, ratings, ratings.keySet());
-        	ratings.subtract(base);
-        }
     }
 }

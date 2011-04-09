@@ -16,26 +16,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.params;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.grouplens.lenskit.params.meta.DefaultDouble;
+import org.grouplens.lenskit.params.meta.Parameter;
+
+import com.google.inject.BindingAnnotation;
 
 /**
- * Provider for item-item models that builds them with a model modelBuilder.
+ * The minimum total similarity weighting in order to attempt a prediction. When
+ * accumulating weights to predict a rating, if the total absolute weight is
+ * less than this threshold, the prediction is not made.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemModelProvider implements Provider<ItemItemModel> {
-    private ItemItemModelBuilder modelBuilder;
-    
-    @Inject
-    public ItemItemModelProvider(ItemItemModelBuilder bldr) {
-        modelBuilder = bldr;
-    }
-    
-    @Override
-    public ItemItemModel get() {
-        return modelBuilder.build();
-    }
+@BindingAnnotation
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Parameter
+@DefaultDouble(1.0e-3)
+public @interface SimilarityThreshold {
 }

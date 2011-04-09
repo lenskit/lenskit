@@ -21,17 +21,11 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.config.RecommenderModule;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder;
-import org.grouplens.lenskit.knn.params.ItemSimilarity;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 import com.google.inject.ProvidedBy;
-import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryProvider;
 
 /**

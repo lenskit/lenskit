@@ -23,6 +23,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.SimilarityDamper;
+import org.grouplens.lenskit.knn.params.SimilarityThreshold;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 
 import com.google.inject.Provides;
@@ -38,6 +39,7 @@ import com.google.inject.TypeLiteral;
 public class NeighborhoodRecommenderModule extends RecommenderModuleComponent {
     private @NeighborhoodSize int neighborhoodSize;
     private @SimilarityDamper double similarityDamping;
+    private @SimilarityThreshold double similarityThreshold;
     private @ItemSimilarity Class<? extends Similarity<? super SparseVector>> itemSimilarity;
     private @UserSimilarity Class<? extends Similarity<? super SparseVector>> userSimilarity;
 
@@ -75,6 +77,23 @@ public class NeighborhoodRecommenderModule extends RecommenderModuleComponent {
      */
     public void setSimilarityDamping(double similarityDamper) {
         this.similarityDamping = similarityDamper;
+    }
+
+    /**
+     * Get the similarity threshold.
+     * @return The similarity threshold.
+     */
+    @Provides @SimilarityThreshold
+    public double getSimilarityThreshold() {
+        return similarityThreshold;
+    }
+    
+    /**
+     * Set the similarity threshold.
+     * @param thresh The new similarity threshold.
+     */
+    public void setSimilarityThreshold(double thresh) {
+        similarityThreshold = thresh;
     }
 
     /**

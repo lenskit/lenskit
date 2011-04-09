@@ -25,12 +25,11 @@ import java.io.Serializable;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
 import com.google.inject.ProvidedBy;
@@ -53,13 +52,13 @@ public class ItemItemModel implements Serializable {
 
     private final Index itemIndexer;
     private final SimilarityMatrix matrix;
-    private final RatingPredictor baseline;
+    private final UserRatingVectorNormalizer normalizer;
     private final LongSortedSet itemUniverse;
 
-    public ItemItemModel(Index indexer, RatingPredictor baseline, SimilarityMatrix matrix,
-            LongSortedSet items) {
+    public ItemItemModel(Index indexer, UserRatingVectorNormalizer norm,
+            SimilarityMatrix matrix, LongSortedSet items) {
         this.itemIndexer = indexer;
-        this.baseline = baseline;
+        this.normalizer = norm;
         this.matrix = matrix;
         this.itemUniverse = items;
     }
@@ -84,42 +83,8 @@ public class ItemItemModel implements Serializable {
     public LongSortedSet getItemUniverse() {
         return itemUniverse;
     }
-
-    public boolean hasBaseline() {
-        return baseline != null;
-    }
-
-    /**
-     * Subtract the baseline recommender from a set of ratings.
-     * <p>
-     * This method computes the baseline predictions for all items in <var>target</var>
-     * and subtracts the prediction from the value in <var>target</var>.  This
-     * subtraction is done in-place by calling {@link MutableSparseVector#subtract(MutableSparseVector)}
-     * on <var>target</var>.
-     *
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @param target The vector from which the baseline is to be subtracted.
-     */
-    public void subtractBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-        if (baseline != null) {
-            SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
-            target.subtract(basePreds);
-        }
-    }
-
-    public void addBaseline(long user, SparseVector ratings, MutableSparseVector target) {
-        if (baseline != null) {
-            SparseVector basePreds = baseline.predict(user, ratings, target.keySet());
-            target.add(basePreds);
-        }
-    }
-
-    public double addBaseline(long user, SparseVector ratings, long item, double prediction) {
-        if (baseline != null) {
-            ScoredId basePred = baseline.predict(user, ratings, item);
-            prediction += basePred.getScore();
-        }
-        return prediction;
+    
+    public VectorTransformation normalizingTransformation(long uid, SparseVector ratings) {
+        return normalizer.makeTransformation(uid, ratings);
     }
 }

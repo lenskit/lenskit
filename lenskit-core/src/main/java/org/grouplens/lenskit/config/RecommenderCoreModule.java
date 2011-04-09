@@ -18,10 +18,14 @@
  */
 package org.grouplens.lenskit.config;
 
+import java.lang.reflect.Type;
+
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
+import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalization;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.params.MaxRating;
@@ -32,8 +36,6 @@ import org.grouplens.lenskit.params.ThreadCount;
 import org.grouplens.lenskit.util.TypeUtils;
 
 import com.google.inject.Provides;
-import com.google.inject.binder.LinkedBindingBuilder;
-import com.google.inject.util.Providers;
 
 /**
  * Module for configuring the common LensKit parameters.
@@ -52,7 +54,8 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
     private @MinRating double minRating;
     private @MaxRating double maxRating;
     private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
-    private Class<? extends UserRatingVectorNormalizer> normalizer;
+    private Class<? extends UserRatingVectorNormalizer> normalizer =
+        IdentityUserRatingVectorNormalization.class;
     private @ConstantPredictor.Value double constantBaselineValue;
 
     public RecommenderCoreModule() {
@@ -67,6 +70,7 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
     protected void configure() {
         getLogger().debug("Configuring core recommender module");
         configureBaseline();
+        configureNormalizer();
     }
 
     /**
@@ -131,17 +135,17 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
     }
 
     /**
-     * Configure the binding for the baseline predictor.
+     * Configure the binding for the baseline predictor (used by
+     * {@link BaselineSubtractingNormalizer}).
      *
      * @todo Make this capable of reifying generic types with
      * {@link TypeUtils#reifyType(Type, Class)}.
      */
     protected void configureBaseline() {
-        LinkedBindingBuilder<RatingPredictor> binder = bind(RatingPredictor.class).annotatedWith(BaselinePredictor.class);
-        if (baseline == null)
-            binder.toProvider(Providers.of((RatingPredictor) null));
-        else
-            binder.to(baseline);
+        if (baseline != null) {
+            bind(RatingPredictor.class).annotatedWith(BaselinePredictor.class)
+                .to(baseline);
+        }
     }
 
     public Class<? extends RatingPredictor> getBaseline() {

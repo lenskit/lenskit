@@ -79,6 +79,10 @@ public class NormalizedRatingBuildContext implements RatingBuildContext {
             assert ndone == normedData.length;
         }
     }
+    
+    public UserRatingVectorNormalizer getNormalizer() {
+    	return normalizer;
+    }
 
     @Override
     public LongCollection getUserIds() {
