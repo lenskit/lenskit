@@ -21,8 +21,8 @@
  */
 package org.grouplens.lenskit.svd;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.DoubleFunction;
 
 import com.google.inject.ProvidedBy;
@@ -40,16 +40,17 @@ public class SVDModel {
 	public final DoubleFunction clampingFunction;
 	
 	public final Index itemIndex;
-	public final RatingPredictor baseline;
+	public final UserRatingVectorNormalizer normalizer;
 	
 	public SVDModel(int nfeatures, double[][] ifeats, double[] svals,
-			DoubleFunction clamp, Index iidx, RatingPredictor base) {
+			DoubleFunction clamp, Index iidx,
+			UserRatingVectorNormalizer norm) {
 		featureCount = nfeatures;
 		itemFeatures = ifeats;
 		singularValues = svals;
 		clampingFunction = clamp;
 		itemIndex = iidx;
-		baseline = base;
+		normalizer = norm;
 	}
 	
 	public double itemFeatureValue(int item, int feature) {

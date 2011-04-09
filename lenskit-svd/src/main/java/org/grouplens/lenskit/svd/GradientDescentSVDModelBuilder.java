@@ -19,19 +19,14 @@
 package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.FeatureTrainingThreshold;
@@ -49,13 +44,15 @@ import com.google.inject.Inject;
  *
  * This recommender builder constructs an SVD-based recommender using gradient
  * descent, as pioneered by Simon Funk.  It also incorporates the regularizations
- * Funk did.  These are documented in
+ * Funk did. These are documented in
  * <a href="http://sifter.org/~simon/journal/20061211.html">Netflix Update: Try
- * This at Home</a>.
- *
- * This implementation is based in part on
+ * This at Home</a>. This implementation is based in part on
  * <a href="http://www.timelydevelopment.com/demos/NetflixPrize.aspx">Timely
  * Development's sample code</a>.
+ * 
+ * <p>The builder users a {@link NormalizedRatingBuildContext}, so normalization
+ * is handled separately from the SVD build. This has the downside that we cannot
+ * easily use Funk's clamping functions to further optimize the recommender.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -97,7 +94,7 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
      * @see org.grouplens.lenskit.svd.SVDModelBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext, org.grouplens.lenskit.RatingPredictor)
      */
     @Override
-    public SVDModel build(RatingBuildContext data, RatingPredictor baseline) {
+    public SVDModel build(NormalizedRatingBuildContext data) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -108,12 +105,7 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
         }
 
         Model model = new Model();
-        List<SVDRating> ratings = indexData(data, baseline, model);
-
-        // update each rating to start at the baseline
-        for (SVDRating r: ratings) {
-            r.cachedValue = model.userBaselines.get(r.user).get(r.iid);
-        }
+        List<SVDRating> ratings = indexData(data, model);
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
@@ -158,7 +150,7 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
         }
         
         return new SVDModel(featureCount, model.itemFeatures, model.singularValues,
-                clampingFunction, data.itemIndex(), baseline);
+                clampingFunction, data.itemIndex(), data.getNormalizer());
     }
 
     private final void trainFeature(Model model, List<SVDRating> ratings, int feature) {
@@ -214,16 +206,7 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
         return Math.sqrt(ssq / ratings.size());
     }
 
-    private List<SVDRating> indexData(RatingBuildContext data, RatingPredictor baseline, Model model) {
-        final Index userIndex = data.userIndex();
-        final int nusers = userIndex.getObjectCount();
-        
-        ArrayList<Long2DoubleMap> ratingData = new ArrayList<Long2DoubleMap>(nusers);
-        for (int i = 0; i < nusers; i++) {
-            ratingData.add(new Long2DoubleOpenHashMap());
-        }
-        assert ratingData.size() == nusers;
-
+    private List<SVDRating> indexData(RatingBuildContext data, Model model) {
         Collection<IndexedRating> ratings = data.getRatings();
 
         int nratings = ratings.size();
@@ -232,21 +215,12 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
         for (IndexedRating r: ratings) {
         	SVDRating svdr = new SVDRating(model, r);
         	svr.add(svdr);
-        	assert svdr.user < nusers;
-        	ratingData.get(svdr.user).put(svdr.iid, svdr.value);
-        }
-        model.userBaselines = new ArrayList<SparseVector>(ratingData.size());
-        for (int i = 0, sz = ratingData.size(); i < sz; i++) {
-        	SparseVector rv = new MutableSparseVector(ratingData.get(i));
-        	long uid = userIndex.getId(i);
-        	model.userBaselines.add(baseline.predict(uid, rv, rv.keySet()));
         }
         svr.trimToSize();
         return svr;
     }
 
     private static final class Model {
-        ArrayList<SparseVector> userBaselines;
         double userFeatures[][];
         double itemFeatures[][];
         double singularValues[];
@@ -254,18 +228,16 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
 
     // FIXME SVDRating shouldn't duplicate as much information
     private final class SVDRating {
-        public final long uid, iid;
         public final int user;
         public final int item;
         public final double value;
         public double cachedValue;
 
         public SVDRating(Model model, IndexedRating r) {
-            uid = r.getUserId();
-            iid = r.getItemId();
             user = r.getUserIndex();
             item = r.getItemIndex();
-            this.value = r.getRating();
+            value = r.getRating();
+            cachedValue = 0;
         }
 
         /**

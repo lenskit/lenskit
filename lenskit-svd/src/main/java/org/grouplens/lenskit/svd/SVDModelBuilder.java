@@ -18,12 +18,10 @@
  */
 package org.grouplens.lenskit.svd;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 
 public interface SVDModelBuilder {
 
-    public abstract SVDModel build(RatingBuildContext data,
-            RatingPredictor baseline);
+    public abstract SVDModel build(NormalizedRatingBuildContext data);
 
 }

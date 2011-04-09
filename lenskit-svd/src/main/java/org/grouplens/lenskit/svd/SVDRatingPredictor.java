@@ -21,18 +21,20 @@ package org.grouplens.lenskit.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.util.CollectionUtils;
+import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.util.LongSortedArraySet;
 
 import com.google.inject.Inject;
 
@@ -114,34 +116,39 @@ public class SVDRatingPredictor implements RatingPredictor {
 
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        MutableSparseVector rtmp = MutableSparseVector.copy(ratings);
+        MutableSparseVector rtmp = ratings.mutableCopy();
         LongSet baseTargets = new LongOpenHashSet(ratings.size() + items.size());
         baseTargets.addAll(ratings.keySet());
         baseTargets.addAll(items);
-        SparseVector base = model.baseline.predict(user, ratings, baseTargets);
-        rtmp.subtract(base);
+        VectorTransformation norm = model.normalizer.makeTransformation(user, ratings);
+        norm.apply(rtmp);
         double uprefs[] = foldIn(user, rtmp);
 
         final int nf = model.featureCount;
         final double[] svals = model.singularValues;
         final DoubleFunction clamp = model.clampingFunction;
         
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        Arrays.sort(keys);
-        double[] values = new double[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            final long item = keys[i];
+        LongSortedSet iset;
+        if (items instanceof LongSortedSet)
+        	iset = (LongSortedSet) items;
+        else
+        	iset = new LongSortedArraySet(items);
+        MutableSparseVector preds = new MutableSparseVector(iset);
+        LongIterator iter = iset.iterator();
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
             final int idx = model.getItemIndex(item);
             if (idx < 0)
                 continue;
 
-            double score = base.get(item);
+            double score = 0;
             for (int f = 0; f < nf; f++) {
                 score += uprefs[f] * svals[f] * model.itemFeatureValue(idx, f);
                 score = clamp.apply(score);
             }
-            values[i] = score;
+            preds.set(item, score);
         }
-        return MutableSparseVector.wrap(keys, values);
+        norm.unapply(preds);
+        return preds;
     }
 }

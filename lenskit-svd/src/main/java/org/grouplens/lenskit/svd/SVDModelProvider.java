@@ -18,9 +18,7 @@
  */
 package org.grouplens.lenskit.svd;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.params.BaselinePredictor;
+import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -32,20 +30,17 @@ import com.google.inject.Provider;
  */
 public class SVDModelProvider implements Provider<SVDModel> {
     private final SVDModelBuilder builder;
-    private final RatingBuildContext buildContext;
-    private final RatingPredictor baseline;
+    private final Provider<NormalizedRatingBuildContext> bcProvider;
     
     @Inject
-    public SVDModelProvider(SVDModelBuilder builder, RatingBuildContext ctx,
-            @BaselinePredictor RatingPredictor base) {
+    public SVDModelProvider(SVDModelBuilder builder, Provider<NormalizedRatingBuildContext> bcp) {
         this.builder = builder;
-        buildContext = ctx;
-        baseline = base;
+        bcProvider = bcp;
     }
 
     @Override
     public SVDModel get() {
-        return builder.build(buildContext, baseline);
+        return builder.build(bcProvider.get());
     }
 
 }
