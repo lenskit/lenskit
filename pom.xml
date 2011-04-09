@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
-  <url>http://lenskit.grouplens.org</url>
+  <url>${lenskit.web.url}</url>
   <organization>
     <name>GroupLens Research</name>
     <url>http://www.grouplens.org</url>
@@ -39,6 +39,11 @@
       <name>LensKit Website</name>
       <url>file:///web/research01/lenskit.grouplens.org/</url>
     </site>
+    <snapshotRepository>
+      <id>grouplens.org</id>
+      <name>GroupLens Maven repository</name>
+      <url>file:///web/research01/lenskit.grouplens.org/maven</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <repositories>
@@ -60,6 +65,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
     <guice.version>3.0</guice.version>
+    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
   </properties>
 
   <modules>
@@ -463,6 +469,20 @@
     
     <profile>
       <id>smoketest</id>
+    </profile>
+
+    <profile>
+      <id>continuous-integration</id>
+      <properties>
+        <lenskit.web.url>http://lenskit.grouplens.org/snapshot</lenskit.web.url>
+      </properties>
+      <distributionManagement>
+        <site>
+          <id>grouplens.org</id>
+          <name>LensKit Dev Website</name>
+          <url>file:///web/research01/lenskit.grouplens.org/snapshot</url>
+        </site>
+      </distributionManagement>
     </profile>
   </profiles>
 </project>

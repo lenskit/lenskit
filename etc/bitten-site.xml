@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<build xmlns:hg="http://bitten.edgewall.org/tools/hg"
+       xmlns:java="http://bitten.edgewall.org/tools/java"
+       xmlns:sh="http://bitten.edgewall.org/tools/sh"
+       xmlns:mvn="http://grouplens.org/bitten/mvn">
+
+  <step id="checkout" description="Update source from repository">
+    <hg:clone url="http://dev.grouplens.org/hg/lenskit" revision="${revision}" />
+    <sh:exec executable="hg" args="summary"/>
+  </step>
+  
+  <step id="build" description="Deploy Maven to snapshot repository">
+    <mvn:run goals="clean deploy" failmode="at-end"/>
+  </step>
+
+  <step id="site" description="Build and upload Maven site">
+    <mvn:run goals="site-deploy" profiles="static-analysis" failmode="at-end"/>
+  </step>
+
+</build>
