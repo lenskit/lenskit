@@ -36,6 +36,8 @@ import org.grouplens.lenskit.params.meta.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.inject.ConfigurationException;
+
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -131,7 +133,7 @@ public class TestRecommenderModule {
     /**
      * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#getBaseline()}.
      */
-    @Test
+    @Test(expected=ConfigurationException.class)
     public void testGetBaseline() {
         assertNull(module.getBaseline());
         assertNull(inject(module, RatingPredictor.class, BaselinePredictor.class));

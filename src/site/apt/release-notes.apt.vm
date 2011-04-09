@@ -30,6 +30,10 @@ Release ${project.version}
 
   * Introduce <<<ImmutableSparseVector>>> and build more robust
     type-checking for mutability guarantees on sparse vectors.
+    
+  * Make <<<BaselinePredictor>>> injections refuse to inject null. Classes taking
+    an optional <<<BaselinePredictor>>> should use an optional method injection
+    instead of a nullable constructor injection.
 
   []
 
