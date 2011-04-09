@@ -17,4 +17,8 @@
     <mvn:run goals="site-deploy" profiles="static-analysis" failmode="at-end"/>
   </step>
 
+  <step id="clean" description="Final cleanup">
+    <mvn:run goals="clean"/>
+  </step>
+
 </build>

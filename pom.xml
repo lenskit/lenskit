@@ -483,6 +483,26 @@
           <url>file:///web/research01/lenskit.grouplens.org/snapshot</url>
         </site>
       </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>clean-installed</id>
+                <phase>clean</phase>
+                <goals>
+                  <goal>remove-project-artifact</goal>
+                </goals>
+                <configuration>
+                  <removeAll>true</removeAll>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
