@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.util.FastCollection;
 
 /**
  * Utilities for working with ratings.
@@ -85,7 +86,12 @@ public final class Ratings {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap();
         Long2LongMap tsMap = new Long2LongOpenHashMap();
         tsMap.defaultReturnValue(Long.MIN_VALUE);
-        for (Rating r: ratings) {
+        
+        // Take advantage of fast iteration if possible
+        Iterable<? extends Rating> riter = ratings;
+        if (ratings instanceof FastCollection)
+            riter = ((FastCollection<? extends Rating>) ratings).fast();
+        for (Rating r: riter) {
             long iid = r.getItemId();
             long ts = r.getTimestamp();
             if (ts >= tsMap.get(iid)) {

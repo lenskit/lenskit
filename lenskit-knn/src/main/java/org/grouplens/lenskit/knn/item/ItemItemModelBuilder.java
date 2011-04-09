@@ -122,7 +122,8 @@ public class ItemItemModelBuilder {
             while (userIter.hasNext()) {
             	final long user = userIter.nextLong();
             	Collection<IndexedRating> ratings = data.getUserRatings(user);
-            	MutableSparseVector ratingVector = Ratings.userRatingVector(ratings); 
+            	// TODO Make this use the normalized rating build context
+            	MutableSparseVector ratingVector = Ratings.userRatingVector(ratings).mutableCopy();
             	normalizeUserRatings(baseline, user, ratingVector);
             	
                 final int nratings = ratings.size();

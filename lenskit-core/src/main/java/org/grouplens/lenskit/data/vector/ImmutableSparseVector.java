@@ -18,8 +18,6 @@
  */
 package org.grouplens.lenskit.data.vector;
 
-import java.util.Arrays;
-
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import javax.annotation.concurrent.Immutable;
