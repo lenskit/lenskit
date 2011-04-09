@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.config;
 
 import static org.grouplens.lenskit.params.meta.Parameters.getDefaultClass;
 import static org.grouplens.lenskit.params.meta.Parameters.getDefaultDouble;
@@ -36,15 +36,9 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 
 /**
- * Base class for modules providing recommender providers.  It provides general
- * infrastructure and helpers to make writing recommender configuration modules
- * easier.
- *
- * <p>LensKit recommender modules should be built compositionally.  To create
- * the base module for a new recommender, extend this module and create the
- * modules containing the various parameter sets you need as fields.  Install
- * them using {@link #install(com.google.inject.Module)} in your
- * {@link #configure()} implementation.
+ * Base class for modules portions of a recommender configuratio.  It provides
+ * general infrastructure and helpers to make writing recommender configuration
+ * modules easier.
  *
  * <p>This class provides the feature of automatically setting default values for
  * members.  For every field, including private fields, annotated with a parameter

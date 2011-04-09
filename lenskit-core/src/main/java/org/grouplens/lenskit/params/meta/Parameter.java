@@ -30,14 +30,14 @@ import java.lang.annotation.Target;
  * <p>LensKit makes extensive use of annotations to define recommender parameters.
  * This annotation is a meta-annotation that should be applied to any annotation
  * defining a recommender parameter.  It serves to document the annotation as
- * a parameter annotation, and is also used by {@link org.grouplens.lenskit.RecommenderCoreModule}
+ * a parameter annotation, and is also used by {@link org.grouplens.lenskit.config.RecommenderCoreModule}
  * to automatically set up default parameter values.  It may also be used by an
  * annotation processor someday to automatically handle parameter plumbing.
  * <p>
  * Parameters can additionally be annotated by the various default annotations
  * in this package to specify their default values.
  *
- * @see org.grouplens.lenskit.RecommenderCoreModule
+ * @see org.grouplens.lenskit.config.RecommenderCoreModule
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

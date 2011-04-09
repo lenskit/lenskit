@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn;
 
-import org.grouplens.lenskit.RecommenderModuleComponent;
+import org.grouplens.lenskit.config.RecommenderModuleComponent;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import org.grouplens.lenskit.baseline.ConstantPredictor;
+import org.grouplens.lenskit.config.RecommenderCoreModule;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MeanDamping;
@@ -50,7 +51,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setName(java.lang.String)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setName(java.lang.String)}.
      */
     @Test
     public void testSetName() {
@@ -66,7 +67,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getThreadCount()}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#getThreadCount()}.
      */
     @Test
     public void testGetThreadCount() {
@@ -74,7 +75,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setThreadCount(int)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setThreadCount(int)}.
      */
     @Test
     public void testSetThreadCount() {
@@ -94,7 +95,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMeanDamping(double)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setMeanDamping(double)}.
      */
     @Test
     public void testSetDamping() {
@@ -103,7 +104,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMinRating(double)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setMinRating(double)}.
      */
     @Test
     public void testSetMinRating() {
@@ -112,7 +113,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setMaxRating(double)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setMaxRating(double)}.
      */
     @Test
     public void testSetMaxRating() {
@@ -128,7 +129,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#getBaseline()}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#getBaseline()}.
      */
     @Test
     public void testGetBaseline() {
@@ -137,7 +138,7 @@ public class TestRecommenderModule {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.RecommenderCoreModule#setBaseline(java.lang.Class)}.
+     * Test method for {@link org.grouplens.lenskit.config.RecommenderCoreModule#setBaseline(java.lang.Class)}.
      */
     @Test
     public void testSetBaselineClass() {

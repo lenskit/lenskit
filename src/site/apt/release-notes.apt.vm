@@ -18,6 +18,9 @@ Release ${project.version}
 
   * Renamed and refactored classes in the recommender implementations
     to improve clarity and consistency.
+    
+  * Moved recommender configuration to <<<org.grouplens.lenskit.config>>>
+    package.
 
   * Upgraded to Guice 3.0 and Maven 3.
 
@@ -29,6 +32,17 @@ Release ${project.version}
     type-checking for mutability guarantees on sparse vectors.
 
   []
+
+* API Compatibility Notes
+
+  This release features a number of API changes. Several of the major ones:
+  
+  * <<<RecommenderModuleComponent>>> and related classes are moved to
+    <<<org.grouplens.lenskit.config>>>.
+    
+  * Internal classes for KNN and SVD recommender implementations have been
+    renamed and moved around. Code depending on those will need to be updated.
+    This may not really be an API change, though.
 
 Release 0.0.2 (March 28, 2011)
 

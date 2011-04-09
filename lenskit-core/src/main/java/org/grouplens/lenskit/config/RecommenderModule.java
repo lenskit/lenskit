@@ -16,12 +16,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.config;
+
 
 /**
  * Base class for recommender modules.  Provides access to the core component.
+ * Extend this class to create a module configuring a complete recommender network.
+ * For a module configuring a portion of the network, such as the common KNN
+ * parameters, subclass {@link RecommenderModuleComponent} instead.
+ * 
+ * <p>LensKit recommender modules should be built compositionally.  To create
+ * the base module for a new recommender, extend this module and create the
+ * modules containing the various parameter sets you need as fields.  Install
+ * them using {@link #install(com.google.inject.Module)} in your
+ * {@link #configure()} implementation.
  *
- * <p>Base classes must call {@link #configure()} to install the core module.
+ * <p>Base classes must call {@link #configure()} to install the core module; this
+ * is done by installing a {@link RecommenderCoreModule}.
  *
  * @see RecommenderModuleComponent
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

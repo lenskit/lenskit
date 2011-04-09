@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.svd;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderModule;
+import org.grouplens.lenskit.config.RecommenderModule;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.FeatureTrainingThreshold;

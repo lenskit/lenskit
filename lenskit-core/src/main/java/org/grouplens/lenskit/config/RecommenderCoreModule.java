@@ -16,10 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.config;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.params.MaxRating;

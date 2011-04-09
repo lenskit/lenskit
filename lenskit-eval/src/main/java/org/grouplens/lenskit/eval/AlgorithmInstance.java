@@ -33,8 +33,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderCoreModule;
-import org.grouplens.lenskit.RecommenderModuleComponent;
+import org.grouplens.lenskit.config.RecommenderCoreModule;
+import org.grouplens.lenskit.config.RecommenderModuleComponent;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -20,7 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
-import org.grouplens.lenskit.RecommenderModule;
+import org.grouplens.lenskit.config.RecommenderModule;
 import org.grouplens.lenskit.knn.NeighborhoodRecommenderModule;
 
 /**
