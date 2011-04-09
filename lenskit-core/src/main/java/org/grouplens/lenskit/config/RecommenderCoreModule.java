@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MeanDamping;
@@ -51,6 +52,7 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
     private @MinRating double minRating;
     private @MaxRating double maxRating;
     private @BaselinePredictor @Nullable Class<? extends RatingPredictor> baseline;
+    private Class<? extends UserRatingVectorNormalizer> normalizer;
     private @ConstantPredictor.Value double constantBaselineValue;
 
     public RecommenderCoreModule() {
@@ -153,6 +155,23 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
      */
     public void setBaseline(Class<? extends RatingPredictor> cls) {
         baseline = cls;
+    }
+    
+    /**
+     * Configure the binding for the normalizer.
+     */
+    protected void configureNormalizer() {
+        if (normalizer != null) {
+            bind(UserRatingVectorNormalizer.class).to(normalizer);
+        }
+    }
+    
+    public Class<? extends UserRatingVectorNormalizer> gerUserRatingVectorNormalizer() {
+        return normalizer;
+    }
+    
+    public void setUserRatingVectorNormalizer(Class<? extends UserRatingVectorNormalizer> norm) {
+        normalizer = norm;
     }
 
     @Provides @ConstantPredictor.Value
