@@ -170,7 +170,7 @@ public class RecommenderCoreModule extends RecommenderModuleComponent {
         }
     }
     
-    public Class<? extends UserRatingVectorNormalizer> gerUserRatingVectorNormalizer() {
+    public Class<? extends UserRatingVectorNormalizer> getUserRatingVectorNormalizer() {
         return normalizer;
     }
     
