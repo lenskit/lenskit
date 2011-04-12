@@ -258,11 +258,8 @@
 
       <para>The recommendation API in LensKit is broken into separate pieces
       to allow different types of access and reflect the fact that not all
-      recommendation methods support all types of recommendation. The
-      top-level <literal role="class">RecommenderService</literal> interface
-      is the primary object that LensKit clients will create. It provides
-      access to the various recommender components, defined by the following
-      interfaces:</para>
+      recommendation methods support all types of recommendation. Different
+      recommender operations are supported by the following interfaces:</para>
 
       <itemizedlist>
         <listitem>
@@ -431,9 +428,9 @@ public interface BasketRecommender {
         </listitem>
       </itemizedlist>
 
-      <para>A given recommender service may only support some of the
-      interfaces; attempts to obtain an unsupported component raise <literal
-      role="class">UnsupportedRecommenderComponentException</literal>.</para>
+      <para>Recommender operations are lightweight objects that wrap an
+      implementation-specific recommender model, which in turn contains all
+      the configuration and persistent data for the recommender.</para>
 
       <para>At present, we require client code to obtain the user's profile
       before calling the recommendation API. This may change in the future,
@@ -446,7 +443,7 @@ public interface BasketRecommender {
     </section>
 
     <section>
-      <title>Building Recommender Services</title>
+      <title>Building Recommender Models</title>
 
       <para>Before recommendation or prediction can be done, the program needs
       a recommender service. Recommender services are built using <literal
@@ -461,8 +458,8 @@ public interface BasketRecommender {
 
       <orderedlist>
         <listitem>
-          <para>Construct and configure the appropriate <literal
-          role="class">RecommenderServiceBuilder</literal>.</para>
+          <para>Construct and configure the appropriate recommender model
+          builder.</para>
         </listitem>
 
         <listitem>
@@ -476,7 +473,14 @@ public interface BasketRecommender {
 
         <listitem>
           <para>Pass the build context to the builder and get a recommender
-          service.</para>
+          model.</para>
+        </listitem>
+
+        <listitem>
+          <para>Create one or more recommender operations built on the model,
+          or wrap the model up with operation factories in a <literal
+          role="class">RecommenderService</literal> to make it easily
+          available throughout the application.</para>
         </listitem>
       </orderedlist>
 
@@ -486,12 +490,6 @@ public interface BasketRecommender {
       take build contexts and produce objects. They also memoize their
       results, so calling the build method twice with the same build context
       will produce the same object.</para>
-
-      <para>The <literal role="class">RecommenderServiceBuilder</literal> is
-      not a <literal role="class">Builder&lt;T&gt;</literal>. The object may
-      be a <literal role="class">Builder&lt;M&gt;</literal> for some model
-      type M, in which case the recommender service itself is probably a
-      lightweight wrapper around the model.</para>
 
       <para>This design will allow recommender services to be flexibly
       configured. Further, since many Java scripting languages support easy
