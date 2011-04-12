@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.data.vector;
 
-import static org.grouplens.common.test.MoreAsserts.assertIsEmpty;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,8 +39,6 @@ import java.util.NoSuchElementException;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.junit.Test;
 
@@ -247,7 +244,7 @@ public class TestSparseVector {
     @Test
     public void testIdSet() {
         LongSortedSet set = emptyVector().keySet();
-        assertIsEmpty(set);
+        assertTrue(set.isEmpty());
 
         long[] keys = singleton().keySet().toLongArray();
         assertThat(keys, equalTo(new long[]{5}));
@@ -261,7 +258,7 @@ public class TestSparseVector {
      */
     @Test
     public void testValues() {
-        assertIsEmpty(emptyVector().values());
+        assertTrue(emptyVector().values().isEmpty());
 
         double[] vals = singleton().values().toDoubleArray();
         assertEquals(1, vals.length);
