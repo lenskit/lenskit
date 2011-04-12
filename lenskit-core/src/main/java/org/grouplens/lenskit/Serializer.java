@@ -16,26 +16,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import java.io.File;
+import java.io.IOException;
 
-/**
- * Provider for item-item models that builds them with a model modelBuilder.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public class ItemItemModelProvider implements Provider<ItemItemModel> {
-    private ItemItemModelBuilder modelBuilder;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+
+public interface Serializer<R extends Recommender> {
+    public void write(R model, File toFile) throws IOException;
     
-    @Inject
-    public ItemItemModelProvider(ItemItemModelBuilder bldr) {
-        modelBuilder = bldr;
-    }
-    
-    @Override
-    public ItemItemModel get() {
-        return modelBuilder.build();
-    }
+    public R read(File fromFile, RatingDataAccessObject dao) throws IOException;
 }

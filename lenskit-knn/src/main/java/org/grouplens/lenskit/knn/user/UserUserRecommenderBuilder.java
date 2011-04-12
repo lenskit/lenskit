@@ -16,23 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params.meta;
+package org.grouplens.lenskit.knn.user;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class UserUserRecommenderBuilder {
 
-/**
- * Provide the default class value for a parameter.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-@Documented
-@Target(ElementType.ANNOTATION_TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface DefaultClass {
-    @SuppressWarnings("rawtypes")
-    Class value();
 }

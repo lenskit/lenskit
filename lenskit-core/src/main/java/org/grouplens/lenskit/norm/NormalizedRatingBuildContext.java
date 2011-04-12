@@ -24,10 +24,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
+import org.grouplens.lenskit.data.context.AbstractRatingBuildContext;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
@@ -36,11 +38,9 @@ import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /**
- * Rating build context wrapper that provides normalized ratings.
+ * Rating build context wrapper that provides normalized ratings. They are built
+ * with a {@link NormalizedRatingBuildContext#Builder}.
  * 
  * <p>This class wraps the rating build context to provide pre-normalized ratings.
  * It should share the same scope as the rating build context, so if you re-scope
@@ -64,15 +64,33 @@ import com.google.inject.Singleton;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Singleton
-public class NormalizedRatingBuildContext implements RatingBuildContext {
+public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
+    /**
+     * A RecommenderComponentBuilder used to create
+     * NormalizedRatingBuildContexts with a specific
+     * {@link UserRatingVectorNormalizer}.
+     * 
+     * @author Michael Ludwig
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<NormalizedRatingBuildContext> {
+        private UserRatingVectorNormalizer normalizer = new IdentityUserRatingVectorNormalization();
+        
+        public void setNormalizer(UserRatingVectorNormalizer normalizer) {
+            this.normalizer = normalizer;
+        }
+        
+        @Override
+        protected NormalizedRatingBuildContext buildNew(RatingBuildContext context) {
+            return new NormalizedRatingBuildContext(context, normalizer);
+        }
+    }
+    
     private static final Logger logger = LoggerFactory.getLogger(NormalizedRatingBuildContext.class);
     private final RatingBuildContext buildContext;
     private final UserRatingVectorNormalizer normalizer;
     private SparseVector[] normedData;
     
-    @Inject
-    public NormalizedRatingBuildContext(RatingBuildContext context, UserRatingVectorNormalizer norm) {
+    private NormalizedRatingBuildContext(RatingBuildContext context, UserRatingVectorNormalizer norm) {
         buildContext = context;
         normalizer = norm;
     }

@@ -16,22 +16,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.svd;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
-
-import com.google.inject.BindingAnnotation;
-
-@BindingAnnotation
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Parameter
-@DefaultDouble(5)
-public @interface MaxRating {
+public class SVDRecommenderBuilder {
+    // FIXME: in addition to the params defined in this project,
+    // it also needs the min and max ratings, which had previously been in core
+    // but this is the only recommender that needs it
 }

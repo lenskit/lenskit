@@ -29,8 +29,6 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.FastCollection;
 
-import com.google.inject.ImplementedBy;
-
 /**
  * Snapshot of the ratings data for building a recommender.
  * 
@@ -58,8 +56,16 @@ import com.google.inject.ImplementedBy;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe
-@ImplementedBy(PackedRatingBuildContext.class)
 public interface RatingBuildContext extends Closeable {
+    /**
+     * Key is a typed object that has instance identity semantics. It is used to
+     * store and retrieve cached values within a RatingBuildContext.
+     * 
+     * @author Michael Ludwig
+     * @param <T>
+     */
+    public static class Key<T> { }
+    
 	/**
 	 * Get the set of user IDs in the snapshot.
 	 * @return A set of all known user IDs.
@@ -99,6 +105,27 @@ public interface RatingBuildContext extends Closeable {
 	 * @return The user's ratings, or an empty collection if the user is unknown.
 	 */
 	FastCollection<IndexedRating> getUserRatings(long userId);
+
+    /**
+     * Return the value last associated with the given key.
+     * 
+     * @param <T> The return type
+     * @param key The key instance used to store the value in this context
+     * @return The cached value or null if no value was cached
+     */
+	<T> T get(Key<T> key);
+
+    /**
+     * Store a value in this RatingBuildContext so that it can be retrieved
+     * later. A common use case for this method is providing memoization support
+     * for Builders. This will overwrite any previous value associated with the
+     * key.
+     * 
+     * @param <T> The type of the stored value
+     * @param key The key that the value is associated with
+     * @param value The new value
+     */
+	<T> void put(Key<T> key, T value);
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

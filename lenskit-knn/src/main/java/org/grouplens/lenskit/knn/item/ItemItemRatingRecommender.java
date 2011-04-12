@@ -30,8 +30,6 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-import com.google.inject.Inject;
-
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -43,7 +41,6 @@ public class ItemItemRatingRecommender extends AbstractRatingRecommender {
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    @Inject
     public ItemItemRatingRecommender(ItemItemRatingPredictor predictor) {
         this.predictor = predictor;
     }

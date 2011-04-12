@@ -16,30 +16,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.baseline;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.Serializable;
 
-import org.grouplens.lenskit.params.meta.Parameter;
-
-import com.google.inject.BindingAnnotation;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Serializer;
 
 /**
- * The number of threads to use for some operation.  The default value for this
- * parameter in the default modules is the number of CPUs available (determined
- * via {@link Runtime#availableProcessors()}).
- *
- * <p>Due to limitations in Java's annotation mechanism, the default value for
- * this class is special-cased in the base recommender module.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * BaselinePredictor is a subtype of RatingPredictor that guarantees 100%
+ * coverage of items. It does not add any new methods to the RatingPredictor
+ * interface. Because BaselinePredictors are often part of a "model" used by a
+ * recommender algorithm, all BaselinePredictors are required to be Serializable
+ * so that they can be easily written to or read from a file with a
+ * {@link Serializer}.
+ * 
+ * @author Michael Ludwig
  */
-@BindingAnnotation
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Parameter
-public @interface ThreadCount {
+public interface BaselinePredictor extends RatingPredictor, Serializable {
+
 }

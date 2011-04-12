@@ -38,9 +38,6 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
 /**
  * A build context that an in-memory snapshot in packed arrays.
  * 
@@ -52,12 +49,10 @@ import com.google.inject.Singleton;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Singleton
-public class PackedRatingBuildContext implements RatingBuildContext {
+public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
-	@Inject
 	public PackedRatingBuildContext(RatingDataAccessObject dao) {
 		Cursor<Rating> ratings = dao.getRatings();
 		try {
@@ -134,6 +129,7 @@ public class PackedRatingBuildContext implements RatingBuildContext {
 	 */
 	@Override
 	public void close() {
+	    super.close();
 		data = null;
 	}
 	

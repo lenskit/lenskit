@@ -16,28 +16,17 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.params.meta.Parameter;
-
-import com.google.inject.BindingAnnotation;
-
-/**
- * The name of the recommender network.  This name is global to the entire
- * recommender configuration, and used if a piece of the recommender wants the
- * name for some reason.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-@BindingAnnotation
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Parameter
-public @interface RecommenderName {
+public interface Recommender {
+    @Nullable
+    public RatingPredictor getRatingPredictor();
+    
+    @Nullable
+    public RatingRecommender getRatingRecommender();
+    
+    @Nullable
+    public BasketRecommender getBasketRecommender();
 }

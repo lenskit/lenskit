@@ -18,23 +18,19 @@
  */
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.BaselinePredictor;
-
-import com.google.inject.Inject;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNormalizer {
-    protected final RatingPredictor baselinePredictor;
+    protected final BaselinePredictor baselinePredictor;
     
-    @Inject
-    public BaselineSubtractingNormalizer(@BaselinePredictor RatingPredictor baseline) {
+    public BaselineSubtractingNormalizer(BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 

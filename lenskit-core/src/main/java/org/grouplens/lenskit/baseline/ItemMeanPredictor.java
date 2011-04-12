@@ -32,18 +32,14 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 /**
  * Rating predictor that returns the item's mean rating for all predictions.
@@ -57,8 +53,10 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemMeanPredictor implements RatingPredictor {
+public class ItemMeanPredictor implements BaselinePredictor {
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
+    
     private final Long2DoubleMap itemMeans;
     protected final double globalMean;
 
@@ -76,8 +74,7 @@ public class ItemMeanPredictor implements RatingPredictor {
      * @param damping The damping factor (see
      * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
      */
-    @Inject
-    public ItemMeanPredictor(RatingDataAccessObject ratings, @MeanDamping double damping) {
+    public ItemMeanPredictor(RatingDataAccessObject ratings, double damping) {
         itemMeans = new Long2DoubleOpenHashMap();
         globalMean = computeItemAverages(ratings, damping, itemMeans);
     }

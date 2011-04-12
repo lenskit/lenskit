@@ -24,13 +24,9 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -38,6 +34,26 @@ import com.google.inject.assistedinject.Assisted;
  */
 public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TruncatingSimilarityMatrixBuilder.class);
+
+    /**
+     * The SimilarityMatrixBuilderFactory to use when creating
+     * TruncatingSimilarityMatrixBuilders.
+     * 
+     * @author Michael Ludwig
+     */
+    public static class Factory implements SimilarityMatrixBuilderFactory {
+        private int maxNeighbors = 100;
+        
+        public void setMaxNeighborhoodSize(int maxNeighbors) {
+            this.maxNeighbors = maxNeighbors;
+        }
+
+        @Override
+        public SimilarityMatrixBuilder create(int nrows) {
+            return new TruncatingSimilarityMatrixBuilder(maxNeighbors, nrows);
+        }
+    }
+    
     static final class Score implements IndexedItemScore {
         private final int index;
         private final double score;
@@ -177,10 +193,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
     private final int maxNeighbors;
     private final int itemCount;
 
-    @Inject
-    public TruncatingSimilarityMatrixBuilder(
-            @NeighborhoodSize int neighborhoodSize,
-            @Assisted int nitems) {
+    public TruncatingSimilarityMatrixBuilder(int neighborhoodSize, int nitems) {
         logger.debug("Using neighborhood size of {} for {} items", neighborhoodSize, nitems);
         maxNeighbors = neighborhoodSize;
         this.itemCount = nitems;

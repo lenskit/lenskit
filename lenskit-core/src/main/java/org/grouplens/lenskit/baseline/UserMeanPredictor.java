@@ -20,13 +20,10 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-
-import com.google.inject.Inject;
 
 /**
  * Rating predictor that returns the user's average rating for all predictions.
@@ -38,7 +35,9 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserMeanPredictor implements RatingPredictor {
+public class UserMeanPredictor implements BaselinePredictor {
+    private static final long serialVersionUID = 1L;
+
     private final double globalMean;
 
     /**
@@ -52,7 +51,6 @@ public class UserMeanPredictor implements RatingPredictor {
      * Construct a predictor that computes user means offset by the global mean.
      * @param ratings
      */
-    @Inject
     public UserMeanPredictor(RatingDataAccessObject ratings) {
         globalMean = GlobalMeanPredictor.computeMeanRating(ratings.getRatings());
     }

@@ -33,18 +33,15 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.params.SimilarityThreshold;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.BaselinePredictor;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -53,12 +50,11 @@ import com.google.inject.Inject;
 public class ItemItemRatingPredictor implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     
-    protected final ItemItemModel model;
-    private RatingPredictor baseline;
+    protected final ItemItemRecommender model;
+    private BaselinePredictor baseline;
     private final double similarityThreshold;
     
-    @Inject
-    ItemItemRatingPredictor(ItemItemModel model, @SimilarityThreshold double simThresh) {
+    public ItemItemRatingPredictor(ItemItemRecommender model, double simThresh) {
         this.model = model;
         similarityThreshold = simThresh;
     }
@@ -67,8 +63,7 @@ public class ItemItemRatingPredictor implements RatingPredictor {
      * Set the baseline predictor to use for this predictor.
      * @param baseline The baseline predictor
      */
-    @Inject(optional=true)
-    protected void setBaseline(@BaselinePredictor RatingPredictor baseline) {
+    protected void setBaseline(BaselinePredictor baseline) {
         logger.debug("Using baseline {}", baseline);
         this.baseline = baseline;
     }
@@ -78,16 +73,16 @@ public class ItemItemRatingPredictor implements RatingPredictor {
      * @return The baseline predictor if one has been configured.
      */
     @Nullable @CheckForNull
-    protected RatingPredictor baselinePredictor() {
+    protected RatingPredictor getBaselinePredictor() {
         return baseline;
     }
     
-    public ItemItemModel getModel() {
+    public ItemItemRecommender getRecommender() {
         return model;
     }
     
     public LongSet getPredictableItems(long user, SparseVector ratings) {
-        if (baselinePredictor() != null) {
+        if (getBaselinePredictor() != null) {
             return model.getItemUniverse();
         } else {
             LongSet items = new LongOpenHashSet();
@@ -129,7 +124,7 @@ public class ItemItemRatingPredictor implements RatingPredictor {
             MutableSparseVector v = MutableSparseVector.wrap(keys, preds);
             norm.unapply(v);
             return new ScoredId(item, preds[0]);
-        } else if ((baseline = baselinePredictor()) != null) {
+        } else if ((baseline = getBaselinePredictor()) != null) {
             // fall back to baseline
             return baseline.predict(user, ratings, item);
         } else {
@@ -184,7 +179,7 @@ public class ItemItemRatingPredictor implements RatingPredictor {
         MutableSparseVector preds = MutableSparseVector.wrap(predItems, predValues);
         norm.unapply(preds);
         
-        final RatingPredictor baseline = baselinePredictor();
+        final RatingPredictor baseline = getBaselinePredictor();
         if (baseline != null) {
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
             // Re-use the sums vector to merge predictions with baseline

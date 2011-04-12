@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.common.cursors.FilteredCursor;
 import org.grouplens.lenskit.data.BasicUserRatingProfile;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
@@ -141,7 +140,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     @Override
     public Cursor<Rating> getUserRatings(final long userId, SortOrder order) {
         Cursor<Rating> base = getRatings(order);
-        return new FilteredCursor<Rating>(base, new Predicate<Rating>() {
+        return Cursors.filter(base, new Predicate<Rating>() {
             public boolean apply(Rating r) {
                 return r.getUserId() == userId;
             }

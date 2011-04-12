@@ -16,28 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.knn.user;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class UserUserRecommender {
 
-import org.grouplens.lenskit.params.meta.Parameter;
-
-import com.google.inject.BindingAnnotation;
-
-/**
- * Annotation for a baseline predictor parameter.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-@BindingAnnotation
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Parameter
-public @interface BaselinePredictor {
 }

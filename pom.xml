@@ -64,7 +64,6 @@
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
-    <guice.version>3.0</guice.version>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
   </properties>
 
@@ -226,22 +225,8 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-test</artifactId>
-        <version>0.1</version>
+        <version>0.2-SNAPSHOT</version>
         <type>jar</type>
-      </dependency>
-      <dependency>
-        <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
-        <version>${guice.version}</version>
-        <type>jar</type>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.google.inject.extensions</groupId>
-        <artifactId>guice-assistedinject</artifactId>
-        <version>${guice.version}</version>
-        <type>jar</type>
-        <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -265,7 +250,7 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-core</artifactId>
-        <version>0.1</version>
+        <version>0.2-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -283,11 +268,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>common-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

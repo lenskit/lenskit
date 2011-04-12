@@ -19,12 +19,9 @@
 package org.grouplens.lenskit.knn;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.params.SimilarityDamper;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 /**
  * Similarity function using cosine similarity.
@@ -41,8 +38,7 @@ public class CosineSimilarity
         this(0.0);
     }
 
-    @Inject
-    public CosineSimilarity(@SimilarityDamper double dampingFactor) {
+    public CosineSimilarity(double dampingFactor) {
         this.dampingFactor = dampingFactor;
         logger.debug("Using damping factor {}", dampingFactor);
     }

@@ -100,7 +100,7 @@ public class SVDRatingPredictor implements RatingPredictor {
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RecommenderService#predict(org.grouplens.lenskit.data.dao.UserRatingProfile, java.lang.Object)
+     * @see org.grouplens.lenskit.Recommender#predict(org.grouplens.lenskit.data.dao.UserRatingProfile, java.lang.Object)
      */
     @Override
     public ScoredId predict(long user, SparseVector ratings, long item) {

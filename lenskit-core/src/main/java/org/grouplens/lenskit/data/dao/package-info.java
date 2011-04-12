@@ -52,5 +52,4 @@ import java.sql.ResultSet;
 
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 
-import com.google.inject.Provider;
 

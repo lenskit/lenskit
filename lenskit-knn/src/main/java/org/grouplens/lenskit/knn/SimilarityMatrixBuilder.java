@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+// FIXME: change this to SimilarityMatrixAccumulator
 public interface SimilarityMatrixBuilder {
     /**
      * Store the similarity between two entities. Calls to this method are

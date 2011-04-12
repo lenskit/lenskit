@@ -29,10 +29,7 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
 import org.grouplens.lenskit.util.CollectionUtils;
-
-import com.google.inject.Inject;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -49,14 +46,15 @@ import com.google.inject.Inject;
  *
  */
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
+    private static final long serialVersionUID = 1L;
+
     protected final double damping;
 
     public ItemUserMeanPredictor(RatingDataAccessObject ratings) {
         this(ratings, 0);
     }
 
-    @Inject
-    public ItemUserMeanPredictor(RatingDataAccessObject ratings, @MeanDamping double damping) {
+    public ItemUserMeanPredictor(RatingDataAccessObject ratings, double damping) {
         super(ratings, damping);
         this.damping = damping;
     }

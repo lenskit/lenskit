@@ -23,44 +23,23 @@ package org.grouplens.lenskit.baseline;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.util.CollectionUtils;
-
-import com.google.inject.BindingAnnotation;
-import com.google.inject.Inject;
 
 /**
  * Rating predictor that predicts a constant rating for all items.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ConstantPredictor implements RatingPredictor {
+public class ConstantPredictor implements BaselinePredictor {
+    private static final long serialVersionUID = 1L;
+    
     private final double value;
-
-    /**
-     * Annotation for value parameters to the recommender.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    @BindingAnnotation
-    @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Parameter
-    @DefaultDouble(0)
-    public static @interface Value {
-    }
 
     /**
      * Construct a rating vector with the same rating for all items.
@@ -83,8 +62,7 @@ public class ConstantPredictor implements RatingPredictor {
      * can use it as a fallback.
      * @param value
      */
-    @Inject
-    public ConstantPredictor(@Value double value) {
+    public ConstantPredictor(double value) {
         this.value = value;
     }
 

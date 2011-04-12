@@ -21,10 +21,8 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
-import java.io.Serializable;
-
-import javax.annotation.concurrent.Immutable;
-
+import org.grouplens.lenskit.BasketRecommender;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
@@ -32,37 +30,54 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
-import com.google.inject.ProvidedBy;
-
 /**
- * Encapsulation of the predictor needed for item-item collaborative filtering.
- *
- * This class is used by {@link ItemItemRecommenderService} to do actual item-item
- * recommendation.  It encapsulates the various data accesses needed to support
- * item-item CF.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * Recommender implementation that uses an item-item similarity matrix to create
+ * predictions and recommendations. It is built with an
+ * {@link ItemItemRecommenderBuilder}.
+ * 
+ * @author Michael Ludwig
  */
-@Immutable
-@ProvidedBy(ItemItemModelProvider.class)
-public class ItemItemModel implements Serializable {
-
-    private static final long serialVersionUID = 7040201805529926395L;
-
+public class ItemItemRecommender implements Recommender {
+    private ItemItemRatingPredictor predictor;
+    private ItemItemRatingRecommender recommender;
+    
     private final Index itemIndexer;
     private final SimilarityMatrix matrix;
     private final UserRatingVectorNormalizer normalizer;
     private final LongSortedSet itemUniverse;
-
-    public ItemItemModel(Index indexer, UserRatingVectorNormalizer norm,
-            SimilarityMatrix matrix, LongSortedSet items) {
+    
+    ItemItemRecommender(Index indexer, SimilarityMatrix matrix, 
+                        UserRatingVectorNormalizer norm, LongSortedSet items) {
         this.itemIndexer = indexer;
         this.normalizer = norm;
         this.matrix = matrix;
         this.itemUniverse = items;
     }
+    
+    protected void setRatingPredictor(ItemItemRatingPredictor predictor) {
+        this.predictor = predictor;
+    }
+    
+    protected void setRatingRecommender(ItemItemRatingRecommender recommender) {
+        this.recommender = recommender;
+    }
+    
+    @Override
+    public ItemItemRatingPredictor getRatingPredictor() {
+        return predictor;
+    }
 
+    @Override
+    public ItemItemRatingRecommender getRatingRecommender() {
+        return recommender;
+    }
+
+    @Override
+    public BasketRecommender getBasketRecommender() {
+        // TODO not implemented
+        return null;
+    }
+    
     public Iterable<IndexedItemScore> getNeighbors(long item) {
         int idx = itemIndexer.getIndex(item);
         if (idx >= 0) {

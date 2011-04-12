@@ -24,20 +24,18 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
-import com.google.inject.Inject;
-
 /**
  * Rating predictor that predicts the global mean rating for all items.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Construct a new global mean predictor from a data source.
      * @param ratings A data source of ratings.
      */
-	@Inject
     public GlobalMeanPredictor(RatingDataAccessObject ratings) {
         super(computeMeanRating(ratings.getRatings()));
     }

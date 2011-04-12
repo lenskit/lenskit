@@ -31,54 +31,94 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ListIterator;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.CosineSimilarity;
+import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
+import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
+import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
 /**
- * Builds item-item recommender engines from data sources.
- *
- * This class takes {@link RatingDataSource}es and builds item-item recommender
- * models from them.  It uses a build strategy and a baseline recommender to do
- * the actual building, constructs an {@link ItemItemModel} containing the
- * resulting recommender predictor, and finally builds a recommender around it.
- *
- * The recommender engine builder uses an {@link ItemItemRecommenderServiceFactory}
- * to actually construct the recommender engine.  Re-binding that interface
- * allows alternative recommender engines to be used.
+ * A Builder that can be used to create ItemItemRecommenders.
  * 
- * @todo Make normalization a strategy.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @author Michael Ludwig
  */
-public class ItemItemModelBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
+public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuilder<ItemItemRecommender> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 
-    private final @Nonnull ItemItemModelBuildStrategy similarityStrategy;
-    private final Provider<NormalizedRatingBuildContext> normDataProvider;
-
-    @Inject
-    ItemItemModelBuilder(ItemItemModelBuildStrategy similarityStrategy,
-    		Provider<NormalizedRatingBuildContext> data) {
-        this.similarityStrategy = similarityStrategy;
-        this.normDataProvider = data;
+    private Similarity<? super SparseVector> itemSimilarity;
+    private double similarityThreshold;
+    private SimilarityMatrixBuilderFactory matrixBuilderFactory;
+    
+    private BaselinePredictor baselinePredictor; // FIXME This will become a Builder<BaselinePredictor>
+    private RecommenderComponentBuilder<NormalizedRatingBuildContext> normalizedRBCBuilder;
+    
+    public ItemItemRecommenderBuilder() {
+        itemSimilarity = new CosineSimilarity(100);
+        similarityThreshold = 1e-3;
+        
+        matrixBuilderFactory = new TruncatingSimilarityMatrixBuilder.Factory();
+        
+        baselinePredictor = null;
+        normalizedRBCBuilder = new NormalizedRatingBuildContext.Builder();
     }
+    
+    public void setSimilarity(Similarity<? super SparseVector> similarity) {
+        itemSimilarity = similarity;
+    }
+    
+    public void setSimilarityThreshold(double threshold) {
+        similarityThreshold = threshold;
+    }
+    
+    public void setSimilarityMatrixBuilderFactory(SimilarityMatrixBuilderFactory factory) {
+        matrixBuilderFactory = factory;
+    }
+    
+    public void setBaselinePredictor(BaselinePredictor predictor) {
+        baselinePredictor = predictor;
+    }
+    
+    public void setNormalizedRatingBuildContextBuilder(RecommenderComponentBuilder<NormalizedRatingBuildContext> builder) {
+        normalizedRBCBuilder = builder;
+    }
+    
+    @Override
+    protected ItemItemRecommender buildNew(RatingBuildContext context) {
+        NormalizedRatingBuildContext data = normalizedRBCBuilder.build(context);
+        ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixBuilderFactory, itemSimilarity);
+        
+        BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 
+        SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
+        LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
+        
+        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), items);
+        ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
+        predictor.setBaseline(baselinePredictor); // FIXME: should this be a constructor arg?
+        
+        rec.setRatingPredictor(predictor);
+        rec.setRatingRecommender(new ItemItemRatingRecommender(predictor));
+        return rec;
+    }
+    
     @ParametersAreNonnullByDefault
     final class BuildState {
         public final Index itemIndex;
@@ -113,14 +153,14 @@ public class ItemItemModelBuilder {
             // Create and initialize the transposed array to collect ratings
             ArrayList<Long2DoubleMap> workMatrix = new ArrayList<Long2DoubleMap>(nitems);
             for (int i = 0; i < nitems; i++) {
-            	workMatrix.add(new Long2DoubleOpenHashMap(20));
+                workMatrix.add(new Long2DoubleOpenHashMap(20));
             }
             
             LongIterator userIter = data.getUserIds().iterator();
             while (userIter.hasNext()) {
-            	final long user = userIter.nextLong();
-            	Collection<IndexedRating> ratings = data.getUserRatings(user);
-            	
+                final long user = userIter.nextLong();
+                Collection<IndexedRating> ratings = data.getUserRatings(user);
+                
                 final int nratings = ratings.size();
                 // allocate the array ourselves to avoid an array copy
                 int[] userItemArr = null;
@@ -158,14 +198,22 @@ public class ItemItemModelBuilder {
             assert itemRatings.size() == workMatrix.size();
         }
     }
-
-    public ItemItemModel build() {
-    	NormalizedRatingBuildContext data = normDataProvider.get();
-        BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
-
-        SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
-        LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
-        ItemItemModel model = new ItemItemModel(state.itemIndex, data.getNormalizer(), matrix, items);
-        return model;
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected ItemItemModelBuildStrategy createBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, 
+                                                             Similarity<? super SparseVector> similarity) {
+        if (similarity instanceof OptimizableVectorSimilarity) {
+            if (similarity instanceof SymmetricBinaryFunction)
+                return new SparseSymmetricModelBuildStrategy(matrixFactory,
+                        (OptimizableVectorSimilarity) similarity);
+            else
+                return new SparseModelBuildStrategy(matrixFactory,
+                        (OptimizableVectorSimilarity) similarity);
+        } else {
+            if (similarity instanceof SymmetricBinaryFunction)
+                return new SymmetricModelBuildStrategy(matrixFactory, similarity);
+            else
+                return new SimpleModelBuildStrategy(matrixFactory, similarity);
+        }
     }
 }
