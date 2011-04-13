@@ -2,6 +2,10 @@
                         LensKit Release Notes
                         ---------------------
 
+#macro ( issue $id )##
+{{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
+#end
+
 Release ${project.version}
 
   These release notes cover large, user-facing things.  See the
@@ -12,9 +16,9 @@ Release ${project.version}
     and restore FunkSVD performance.
 
   * Renamed SparseVector.containsId to SparseVector.containsKey for
-    improved consistency (the original method is retained as a
+    improved consistency.  The original method is retained as a
     deprecated compatibility shim and will be removed before we reach
-    1.0.).
+    1.0.
 
   * Renamed and refactored classes in the recommender implementations
     to improve clarity and consistency.
@@ -22,7 +26,7 @@ Release ${project.version}
   * Moved recommender configuration to <<<org.grouplens.lenskit.config>>>
     package.
 
-  * Upgraded to Guice 3.0 and Maven 3.
+  * Upgraded to Guice 3.0 and Maven 3 (#issue(38)).
 
   * Added recommender graphing support to the Maven plugin.
 
