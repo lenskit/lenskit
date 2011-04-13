@@ -462,6 +462,18 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
+            <version>2.3.2</version>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <version>2.5</version>
+            <inherited>false</inherited>
+            <configuration>
+              <format>xml</format>
+              <aggregate>true</aggregate>
+              <targetJdk>1.6</targetJdk>
+            </configuration>
           </plugin>
         </plugins>
       </reporting>
@@ -503,6 +515,42 @@
           </plugin>
         </plugins>
       </build>
+
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>taglist-maven-plugin</artifactId>
+            <version>2.4</version>
+            <inherited>false</inherited>
+            <configuration>
+              <aggregate>true</aggregate>
+              <tagListOptions>
+                <tagClasses>
+                  <tagClass>
+                    <displayName>TODO items</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>@?todo</matchString>
+                        <matchType>regEx</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                  <tagClass>
+                    <displayName>FIXME items</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>FIXME</matchString>
+                        <matchType>exact</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                </tagClasses>
+              </tagListOptions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
   </profiles>
 </project>
