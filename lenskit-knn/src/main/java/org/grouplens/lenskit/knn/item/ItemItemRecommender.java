@@ -35,7 +35,8 @@ import org.grouplens.lenskit.util.IndexedItemScore;
  * predictions and recommendations. It is built with an
  * {@link ItemItemRecommenderBuilder}.
  * 
- * @author Michael Ludwig
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Michael Ludwig <mludwig@cs.umn.edu
  */
 public class ItemItemRecommender implements Recommender {
     private ItemItemRatingPredictor predictor;

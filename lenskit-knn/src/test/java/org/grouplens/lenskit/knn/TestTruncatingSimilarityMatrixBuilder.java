@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder.Score;
+import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator.Score;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,11 +43,11 @@ import com.google.common.primitives.Doubles;
 public class TestTruncatingSimilarityMatrixBuilder {
     private static final double EPSILON = 1.0e-6;
 
-    private TruncatingSimilarityMatrixBuilder builder;
+    private TruncatingSimilarityMatrixAccumulator builder;
 
     @Before
     public void createBuilder() {
-        builder = new TruncatingSimilarityMatrixBuilder(5, 10);
+        builder = new TruncatingSimilarityMatrixAccumulator(5, 10);
     }
 
     @Test

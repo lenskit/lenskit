@@ -18,13 +18,17 @@
  */
 package org.grouplens.lenskit.knn;
 
+import org.grouplens.lenskit.RecommenderComponentBuilder;
+
 /**
- * Interface for building similarity matrices for collaborative filtering.
+ * Interface for building similarity matrices for collaborative filtering. It is
+ * named Accumulator to dissociate it from the builders implementing
+ * {@link RecommenderComponentBuilder}.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-// FIXME: change this to SimilarityMatrixAccumulator
-public interface SimilarityMatrixBuilder {
+public interface SimilarityMatrixAccumulator {
     /**
      * Store the similarity between two entities. Calls to this method are
      * thread-safe with each other. Only one similary should be stored for each

@@ -26,7 +26,9 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -37,8 +39,25 @@ import org.grouplens.lenskit.util.CollectionUtils;
  *
  */
 public class ConstantPredictor implements BaselinePredictor {
-    private static final long serialVersionUID = 1L;
+    /**
+     * A builder to create ConstantPredictors.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<ConstantPredictor> {
+        private double value = 0;
+        
+        public void setConstantValue(double value) {
+            this.value = value;
+        }
+        
+        @Override
+        protected ConstantPredictor buildNew(RatingBuildContext context) {
+            return new ConstantPredictor(value);
+        }
+    }
     
+    private static final long serialVersionUID = 1L;
     private final double value;
 
     /**

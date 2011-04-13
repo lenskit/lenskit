@@ -18,48 +18,65 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import javax.annotation.WillClose;
+import java.util.Iterator;
 
-import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 /**
  * Rating predictor that predicts the global mean rating for all items.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
 public class GlobalMeanPredictor extends ConstantPredictor {
+    /**
+     * A builder used to create GlobalMeanPredictors.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<GlobalMeanPredictor> {
+
+        @Override
+        protected GlobalMeanPredictor buildNew(RatingBuildContext context) {
+            double avg = computeMeanRating(context.getRatings().fastIterator());
+            return new GlobalMeanPredictor(avg);
+        }
+    }
+    
     private static final long serialVersionUID = 1L;
 
     /**
-     * Construct a new global mean predictor from a data source.
-     * @param ratings A data source of ratings.
+     * Utility method to compute the mean or average of the rating values
+     * contained in the given collection of ratings.
+     * 
+     * @param ratings
+     * @return
      */
-    public GlobalMeanPredictor(RatingDataAccessObject ratings) {
-        super(computeMeanRating(ratings.getRatings()));
-    }
-
-    /**
-     * Helper method to compute the mean of all ratings in a cursor.
-     * The cursor is closed after the ratings are computed.
-     * @param ratings A cursor of ratings to average.
-     * @return The arithmetic mean of all ratings.
-     */
-    public static double computeMeanRating(@WillClose Cursor<Rating> ratings) {
+    public static double computeMeanRating(Iterator<? extends Rating> ratings) {
         double total = 0;
         long count = 0;
-        try {
-            for (Rating r: ratings) {
-                total += r.getRating();
-                count += 1;
-            }
-        } finally {
-            ratings.close();
+        
+        while(ratings.hasNext()) {
+            Rating r = ratings.next();
+            total += r.getRating();
+            count += 1;
         }
+        
         double avg = 0;
         if (count > 0)
             avg = total / count;
+        
         return avg;
+    }
+
+    /**
+     * Construct a new global mean predictor where it is assumed
+     * that the given value is the global mean.
+     * @param mean
+     */
+    protected GlobalMeanPredictor(double mean) {
+        super(mean);
     }
 }

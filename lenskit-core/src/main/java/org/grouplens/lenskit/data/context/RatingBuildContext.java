@@ -66,6 +66,12 @@ public interface RatingBuildContext extends Closeable {
      */
     public static class Key<T> { }
     
+    /**
+     * Return the dao that is backing this RatingBuildContext.
+     * @return
+     */
+    RatingDataAccessObject getDAO();
+    
 	/**
 	 * Get the set of user IDs in the snapshot.
 	 * @return A set of all known user IDs.

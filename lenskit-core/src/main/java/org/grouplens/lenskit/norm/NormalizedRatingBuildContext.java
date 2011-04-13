@@ -25,6 +25,7 @@ import java.util.AbstractCollection;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
@@ -32,6 +33,7 @@ import org.grouplens.lenskit.data.SimpleIndexedRating;
 import org.grouplens.lenskit.data.context.AbstractRatingBuildContext;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
@@ -57,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * PRODUCTION scope.
  * 
  * <p><strong>Warning:</strong> Do not bind this class as the implementation of
- * {@link RatingBuildContext} in your Guice configuration, as that will implement
+ * {@link RatingBuildContext} in any Guice configuration, as that will implement
  * circular loops and general brokenness. Classes which want a normalized rating
  * build context should depend on it directly.
  * 
@@ -70,18 +72,23 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
      * NormalizedRatingBuildContexts with a specific
      * {@link UserRatingVectorNormalizer}.
      * 
-     * @author Michael Ludwig
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends AbstractRecommenderComponentBuilder<NormalizedRatingBuildContext> {
-        private UserRatingVectorNormalizer normalizer = new IdentityUserRatingVectorNormalization();
+        private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizer;
         
-        public void setNormalizer(UserRatingVectorNormalizer normalizer) {
+        public Builder() {
+            normalizer = new IdentityUserRatingVectorNormalizer.Builder();
+        }
+        
+        public void setNormalizer(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizer) {
             this.normalizer = normalizer;
         }
         
         @Override
         protected NormalizedRatingBuildContext buildNew(RatingBuildContext context) {
-            return new NormalizedRatingBuildContext(context, normalizer);
+            UserRatingVectorNormalizer n = normalizer.build(context);
+            return new NormalizedRatingBuildContext(context, n);
         }
     }
     
@@ -118,6 +125,11 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
     
     public UserRatingVectorNormalizer getNormalizer() {
     	return normalizer;
+    }
+    
+    @Override
+    public RatingDataAccessObject getDAO() {
+        return buildContext.getDAO();
     }
 
     @Override

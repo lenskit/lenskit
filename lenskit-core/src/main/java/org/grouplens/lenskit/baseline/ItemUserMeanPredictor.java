@@ -19,14 +19,16 @@
 package org.grouplens.lenskit.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -46,16 +48,32 @@ import org.grouplens.lenskit.util.CollectionUtils;
  *
  */
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
+    /**
+     * A builder that creates ItemUserMeanPredictors.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<ItemUserMeanPredictor> {
+        private double damping = 0;
+        
+        public void setDamping(double damping) {
+            this.damping = damping;
+        }
+        
+        @Override
+        protected ItemUserMeanPredictor buildNew(RatingBuildContext context) {
+            Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
+            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            
+            return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
+        }
+    }
+    
     private static final long serialVersionUID = 1L;
-
     protected final double damping;
 
-    public ItemUserMeanPredictor(RatingDataAccessObject ratings) {
-        this(ratings, 0);
-    }
-
-    public ItemUserMeanPredictor(RatingDataAccessObject ratings, double damping) {
-        super(ratings, damping);
+    protected ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
+        super(itemMeans, globalMean);
         this.damping = damping;
     }
 
@@ -64,7 +82,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @param ratings the user's rating profile
      * @return the mean offset from item mean rating.
      */
-    double computeUserAverage(SparseVector ratings) {
+    protected double computeUserAverage(SparseVector ratings) {
         if (ratings.isEmpty()) return 0;
 
         Collection<Double> values = ratings.values();

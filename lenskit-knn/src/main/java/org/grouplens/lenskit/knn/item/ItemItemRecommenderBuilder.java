@@ -46,8 +46,8 @@ import org.grouplens.lenskit.knn.CosineSimilarity;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
-import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -58,14 +58,14 @@ import org.slf4j.LoggerFactory;
 /**
  * A Builder that can be used to create ItemItemRecommenders.
  * 
- * @author Michael Ludwig
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
 public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuilder<ItemItemRecommender> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
 
     private Similarity<? super SparseVector> itemSimilarity;
     private double similarityThreshold;
-    private SimilarityMatrixBuilderFactory matrixBuilderFactory;
+    private SimilarityMatrixAccumulatorFactory matrixBuilderFactory;
     
     private BaselinePredictor baselinePredictor; // FIXME This will become a Builder<BaselinePredictor>
     private RecommenderComponentBuilder<NormalizedRatingBuildContext> normalizedRBCBuilder;
@@ -74,7 +74,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         itemSimilarity = new CosineSimilarity(100);
         similarityThreshold = 1e-3;
         
-        matrixBuilderFactory = new TruncatingSimilarityMatrixBuilder.Factory();
+        matrixBuilderFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
         
         baselinePredictor = null;
         normalizedRBCBuilder = new NormalizedRatingBuildContext.Builder();
@@ -88,7 +88,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         similarityThreshold = threshold;
     }
     
-    public void setSimilarityMatrixBuilderFactory(SimilarityMatrixBuilderFactory factory) {
+    public void setSimilarityMatrixBuilderFactory(SimilarityMatrixAccumulatorFactory factory) {
         matrixBuilderFactory = factory;
     }
     
@@ -200,7 +200,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     }
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, 
+    protected ItemItemModelBuildStrategy createBuildStrategy(SimilarityMatrixAccumulatorFactory matrixFactory, 
                                                              Similarity<? super SparseVector> similarity) {
         if (similarity instanceof OptimizableVectorSimilarity) {
             if (similarity instanceof SymmetricBinaryFunction)

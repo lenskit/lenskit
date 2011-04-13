@@ -22,6 +22,6 @@ package org.grouplens.lenskit.knn;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface SimilarityMatrixBuilderFactory {
-    public SimilarityMatrixBuilder create(int nrows);
+public interface SimilarityMatrixAccumulatorFactory {
+    public SimilarityMatrixAccumulator create(int nrows);
 }

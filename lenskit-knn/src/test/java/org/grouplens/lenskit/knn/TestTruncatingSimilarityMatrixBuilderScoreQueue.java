@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixBuilder.ScoreQueue;
+import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator.ScoreQueue;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.junit.Before;
 import org.junit.Test;

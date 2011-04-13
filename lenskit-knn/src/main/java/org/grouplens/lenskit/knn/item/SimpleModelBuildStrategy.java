@@ -21,8 +21,8 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
-import org.grouplens.lenskit.knn.SimilarityMatrixBuilder;
-import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.item.ItemItemRecommenderBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +36,10 @@ class SimpleModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
-    private final SimilarityMatrixBuilderFactory matrixFactory;
+    private final SimilarityMatrixAccumulatorFactory matrixFactory;
     private final Similarity<? super SparseVector> similarityFunction;
 
-    SimpleModelBuildStrategy(SimilarityMatrixBuilderFactory matrixFactory, Similarity<? super SparseVector> similarity) {
+    SimpleModelBuildStrategy(SimilarityMatrixAccumulatorFactory matrixFactory, Similarity<? super SparseVector> similarity) {
         this.matrixFactory = matrixFactory;
         this.similarityFunction = similarity;
     }
@@ -51,7 +51,7 @@ class SimpleModelBuildStrategy implements
     public SimilarityMatrix buildMatrix(BuildState state) {
         final int nitems = state.itemCount;
         logger.debug("Building matrix with {} rows");
-        SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
+        SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
         for (int i = 0; i < nitems; i++) {
             for (int j = 0; j < nitems; j++) {
                 if (i == j) continue;

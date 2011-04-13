@@ -50,10 +50,14 @@ import org.grouplens.lenskit.util.FastCollection;
  *
  */
 public class PackedRatingBuildContext extends AbstractRatingBuildContext {
+    private final RatingDataAccessObject dao;
+    
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
 	public PackedRatingBuildContext(RatingDataAccessObject dao) {
+	    this.dao = dao;
+	    
 		Cursor<Rating> ratings = dao.getRatings();
 		try {
 			packRatings(ratings);
@@ -65,6 +69,14 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	private void requireValid() {
 		if (data == null)
 			throw new IllegalStateException("build context closed");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.grouplens.lenskit.data.dao.context.RatingBuildContext#getDAO()
+	 */
+	@Override
+	public RatingDataAccessObject getDAO() {
+	    return dao;
 	}
 
 	/* (non-Javadoc)

@@ -20,8 +20,9 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -36,23 +37,28 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  *
  */
 public class UserMeanPredictor implements BaselinePredictor {
-    private static final long serialVersionUID = 1L;
-
-    private final double globalMean;
-
     /**
-     * Construct a predictor that does not do global mean offsetting.
+     * A builder that creates UserMeanPredictors.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public UserMeanPredictor() {
-        globalMean = 0;
+    public static class Builder extends AbstractRecommenderComponentBuilder<UserMeanPredictor> {
+        @Override
+        protected UserMeanPredictor buildNew(RatingBuildContext context) {
+            double mean = GlobalMeanPredictor.computeMeanRating(context.getRatings().fastIterator());
+            return new UserMeanPredictor(mean);
+        }
     }
+    
+    private static final long serialVersionUID = 1L;
+    private final double globalMean;
 
     /**
      * Construct a predictor that computes user means offset by the global mean.
      * @param ratings
      */
-    public UserMeanPredictor(RatingDataAccessObject ratings) {
-        globalMean = GlobalMeanPredictor.computeMeanRating(ratings.getRatings());
+    protected UserMeanPredictor(double globalMean) {
+        this.globalMean = globalMean;
     }
 
     static double average(SparseVector ratings, double offset) {

@@ -32,16 +32,16 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(TruncatingSimilarityMatrixBuilder.class);
+public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
+    private static final Logger logger = LoggerFactory.getLogger(TruncatingSimilarityMatrixAccumulator.class);
 
     /**
-     * The SimilarityMatrixBuilderFactory to use when creating
-     * TruncatingSimilarityMatrixBuilders.
+     * The SimilarityMatrixAccumulatorFactory to use when creating
+     * TruncatingSimilarityMatrixAccumulators.
      * 
-     * @author Michael Ludwig
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Factory implements SimilarityMatrixBuilderFactory {
+    public static class Factory implements SimilarityMatrixAccumulatorFactory {
         private int maxNeighbors = 100;
         
         public void setMaxNeighborhoodSize(int maxNeighbors) {
@@ -49,8 +49,8 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
         }
 
         @Override
-        public SimilarityMatrixBuilder create(int nrows) {
-            return new TruncatingSimilarityMatrixBuilder(maxNeighbors, nrows);
+        public TruncatingSimilarityMatrixAccumulator create(int nrows) {
+            return new TruncatingSimilarityMatrixAccumulator(maxNeighbors, nrows);
         }
     }
     
@@ -193,7 +193,7 @@ public class TruncatingSimilarityMatrixBuilder implements SimilarityMatrixBuilde
     private final int maxNeighbors;
     private final int itemCount;
 
-    public TruncatingSimilarityMatrixBuilder(int neighborhoodSize, int nitems) {
+    public TruncatingSimilarityMatrixAccumulator(int neighborhoodSize, int nitems) {
         logger.debug("Using neighborhood size of {} for {} items", neighborhoodSize, nitems);
         maxNeighbors = neighborhoodSize;
         this.itemCount = nitems;

@@ -32,10 +32,11 @@ import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
+import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Before;
@@ -48,7 +49,7 @@ import org.junit.Test;
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private RatingDataAccessObject ratings;
+    private RatingBuildContext ratings;
 
     @Before
     public void createRatingSource() {
@@ -57,12 +58,12 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
-        ratings = new RatingCollectionDAO(rs);
+        ratings = new PackedRatingBuildContext(new RatingCollectionDAO(rs));
     }
 
     @Test
     public void testMeanBaseline() {
-        RatingPredictor pred = new GlobalMeanPredictor(ratings);
+        RatingPredictor pred = new GlobalMeanPredictor.Builder().build(ratings);
         SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         ScoredId score = pred.predict(10l, map, 2l);
         assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.00001);
@@ -70,7 +71,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserMeanBaseline() {
-        RatingPredictor pred = new UserMeanPredictor(ratings);
+        RatingPredictor pred = new UserMeanPredictor.Builder().build(ratings);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -85,7 +86,7 @@ public class TestMeanPredictor {
     @Test
     public void testUserMeanBaselineNoFastutil() {
         // FIXME: is this method still necessary?
-        RatingPredictor pred = new UserMeanPredictor(ratings);
+        RatingPredictor pred = new UserMeanPredictor.Builder().build(ratings);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -110,7 +111,7 @@ public class TestMeanPredictor {
      */
     @Test
     public void testUserMeanBaselineFallback() {
-        RatingPredictor pred = new UserMeanPredictor(ratings);
+        RatingPredictor pred = new UserMeanPredictor.Builder().build(ratings);
         SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         ScoredId score = pred.predict(10l, map, 2l);
         assertEquals(RATINGS_DAT_MEAN, score.getScore(), 0.001);
@@ -118,7 +119,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testItemMeanBaseline() {
-        RatingPredictor pred = new ItemMeanPredictor(ratings);
+        RatingPredictor pred = new ItemMeanPredictor.Builder().build(ratings);
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, values);
@@ -140,7 +141,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserItemMeanBaseline() {
-        RatingPredictor pred = new ItemUserMeanPredictor(ratings);
+        RatingPredictor pred = new ItemUserMeanPredictor.Builder().build(ratings);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);

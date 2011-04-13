@@ -27,8 +27,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
-import org.grouplens.lenskit.knn.SimilarityMatrixBuilder;
-import org.grouplens.lenskit.knn.SimilarityMatrixBuilderFactory;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.item.ItemItemRecommenderBuilder.BuildState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +42,10 @@ import org.slf4j.LoggerFactory;
 class SparseSymmetricModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private static final Logger logger = LoggerFactory.getLogger(SparseSymmetricModelBuildStrategy.class);
-    private final SimilarityMatrixBuilderFactory matrixFactory;
+    private final SimilarityMatrixAccumulatorFactory matrixFactory;
     private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-    SparseSymmetricModelBuildStrategy(SimilarityMatrixBuilderFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
+    SparseSymmetricModelBuildStrategy(SimilarityMatrixAccumulatorFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
         matrixFactory = mfact;
         similarityFunction = sim;
     }
@@ -55,7 +55,7 @@ class SparseSymmetricModelBuildStrategy implements
      */
     @Override
     public SimilarityMatrix buildMatrix(BuildState state) {
-        final SimilarityMatrixBuilder builder = matrixFactory.create(state.itemCount);
+        final SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
         final int nitems = state.itemCount;
         logger.debug("Building matrix with {} rows", nitems);
         for (int i = 0; i < nitems; i++) {

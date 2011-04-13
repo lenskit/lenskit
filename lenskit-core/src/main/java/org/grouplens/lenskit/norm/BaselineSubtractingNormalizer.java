@@ -18,7 +18,11 @@
  */
 package org.grouplens.lenskit.norm;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.ConstantPredictor;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -28,6 +32,30 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  *
  */
 public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNormalizer {
+    /**
+     * Builder for BaselineSubtractingNormalizer. Its sole parameter takes a
+     * builder for a BaselinePredictor.
+     * 
+     * @author Michael Ludwig
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<BaselineSubtractingNormalizer> {
+        private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
+        
+        public Builder() {
+            baselineBuilder = new ConstantPredictor.Builder();
+        }
+        
+        public void setBaselinePredictor(RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
+            baselineBuilder = predictor;
+        }
+
+        @Override
+        protected BaselineSubtractingNormalizer buildNew(RatingBuildContext context) {
+            BaselinePredictor predictor = baselineBuilder.build(context);
+            return new BaselineSubtractingNormalizer(predictor);
+        }
+    }
+    
     protected final BaselinePredictor baselinePredictor;
     
     public BaselineSubtractingNormalizer(BaselinePredictor baseline) {

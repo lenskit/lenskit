@@ -30,11 +30,12 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 
-import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -51,9 +52,31 @@ import org.slf4j.LoggerFactory;
  * mean µ).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  *
  */
 public class ItemMeanPredictor implements BaselinePredictor {
+    /**
+     * A builder to create ItemMeanPredictors.
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     *
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<ItemMeanPredictor> {
+        private double damping = 0;
+        
+        public void setDamping(double damping) {
+            this.damping = damping;
+        }
+        
+        @Override
+        protected ItemMeanPredictor buildNew(RatingBuildContext context) {
+            Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
+            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            
+            return new ItemMeanPredictor(itemMeans, globalMean);
+        }
+    }
+    
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
     
@@ -61,22 +84,14 @@ public class ItemMeanPredictor implements BaselinePredictor {
     protected final double globalMean;
 
     /**
-     * Construct a new predictor with a damping of 0.
-     * @param ratings The rating data.
-     */
-    public ItemMeanPredictor(RatingDataAccessObject ratings) {
-        this(ratings, 0);
-    }
-
-    /**
-     * Construct a new predictor.
+     * Construct a new predictor. This assumes ownership of the provided map.
      * @param ratings The rating data.
      * @param damping The damping factor (see
      * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
      */
-    public ItemMeanPredictor(RatingDataAccessObject ratings, double damping) {
-        itemMeans = new Long2DoubleOpenHashMap();
-        globalMean = computeItemAverages(ratings, damping, itemMeans);
+    protected ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
+        this.itemMeans = itemMeans;
+        this.globalMean = globalMean;
     }
 
     /**
@@ -87,14 +102,14 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * and returning the global mean, so that we can compute the global mean
      * and the item means in a single pass through the data source.
      *
-     * @param data The data source to compute item averages from.
+     * @param ratings The collection of ratings the averages are based on
      * @param damping The mean damping factor (see {@link MeanDamping} for how
      * this is used).
      * @param itemMeans A map in which the means should be stored.
      * @return The global mean rating.  The item means are stored in
      * <var>itemMeans</var>.
      */
-    public static double computeItemAverages(RatingDataAccessObject data, double damping, Long2DoubleMap itemMeans) {
+    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeans) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -106,18 +121,14 @@ public class ItemMeanPredictor implements BaselinePredictor {
         Long2IntMap itemCounts = new Long2IntOpenHashMap();
         itemCounts.defaultReturnValue(0);
 
-        Cursor<Rating> ratings = data.getRatings();
-        try {
-            for (Rating r: ratings) {
-                long i = r.getItemId();
-                double v = r.getRating();
-                total += v;
-                count++;
-                itemMeans.put(i, v + itemMeans.get(i));
-                itemCounts.put(i, 1 + itemCounts.get(i));
-            }
-        } finally {
-            ratings.close();
+        while(ratings.hasNext()) {
+            Rating r = ratings.next();
+            long i = r.getItemId();
+            double v = r.getRating();
+            total += v;
+            count++;
+            itemMeans.put(i, v + itemMeans.get(i));
+            itemCounts.put(i, 1 + itemCounts.get(i));
         }
 
         final double mean = count > 0 ? total / count : 0;
