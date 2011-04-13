@@ -18,6 +18,30 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-public class UserUserRecommenderBuilder {
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 
+/**
+ * UserUserRecommenderBuilder is a RecommenderComponentBuilder that is used to
+ * provide UserUserRecommenders.
+ * 
+ * @author Michael Ludwig
+ */
+public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuilder<UserUserRecommender> {
+    private RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhoodBuilder;
+    
+    public UserUserRecommenderBuilder() {
+        neighborhoodBuilder = new SimpleNeighborhoodFinder.Builder();
+    }
+    
+    public void setNeighborhoodFinder(RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhood) {
+        neighborhoodBuilder = neighborhood;
+    }
+    
+    @Override
+    protected UserUserRecommender buildNew(RatingBuildContext context) {
+        NeighborhoodFinder n = neighborhoodBuilder.build(context);
+        return new UserUserRecommender(new UserUserRatingRecommender(n));
+    }
 }

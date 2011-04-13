@@ -67,8 +67,8 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     private double similarityThreshold;
     private SimilarityMatrixAccumulatorFactory matrixBuilderFactory;
     
-    private BaselinePredictor baselinePredictor; // FIXME This will become a Builder<BaselinePredictor>
-    private RecommenderComponentBuilder<NormalizedRatingBuildContext> normalizedRBCBuilder;
+    private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
+    private RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> normalizedRBCBuilder;
     
     public ItemItemRecommenderBuilder() {
         itemSimilarity = new CosineSimilarity(100);
@@ -76,7 +76,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         
         matrixBuilderFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
         
-        baselinePredictor = null;
+        baselineBuilder = null;
         normalizedRBCBuilder = new NormalizedRatingBuildContext.Builder();
     }
     
@@ -92,11 +92,11 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         matrixBuilderFactory = factory;
     }
     
-    public void setBaselinePredictor(BaselinePredictor predictor) {
-        baselinePredictor = predictor;
+    public void setBaselinePredictor(@Nullable RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
+        baselineBuilder = predictor;
     }
     
-    public void setNormalizedRatingBuildContextBuilder(RecommenderComponentBuilder<NormalizedRatingBuildContext> builder) {
+    public void setNormalizedRatingBuildContext(RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> builder) {
         normalizedRBCBuilder = builder;
     }
     
@@ -110,9 +110,9 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
-        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), items);
+        BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
+        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), baseline, items);
         ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
-        predictor.setBaseline(baselinePredictor); // FIXME: should this be a constructor arg?
         
         rec.setRatingPredictor(predictor);
         rec.setRatingRecommender(new ItemItemRatingRecommender(predictor));

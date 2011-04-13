@@ -40,8 +40,6 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-import com.google.inject.Inject;
-
 /**
  * A recommender and predictor using user-user collaborative filtering.
  * Neighbor ratings are aggregated using weighted averaging. 
@@ -49,10 +47,8 @@ import com.google.inject.Inject;
  *
  */
 public class UserUserRatingRecommender extends AbstractRatingRecommender implements RatingPredictor {
-
     protected final NeighborhoodFinder neighborhoodFinder;
 
-    @Inject
     public UserUserRatingRecommender(NeighborhoodFinder finder) {
         neighborhoodFinder = finder;
     }

@@ -29,16 +29,14 @@ import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
-
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * User-user CF implementation that caches user data for faster computation.
@@ -49,50 +47,81 @@ import com.google.inject.Provider;
  * @todo Make it support updating its caches in response to changes in the data
  * source.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  *
  */
 public class CachingNeighborhoodFinder implements NeighborhoodFinder {
+    /**
+     * Builder for creating CachingNeighborhoodFinders.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<CachingNeighborhoodFinder> {
+        private int neighborhoodSize;
+        private Similarity<? super SparseVector> similarity;
+        
+        public Builder() {
+            neighborhoodSize = 100;
+            similarity = new PearsonCorrelation();
+        }
+        
+        public void setNeighborhoodSize(int neighborhood) {
+            neighborhoodSize = neighborhood;
+        }
+        
+        public void setSimilarity(Similarity<? super SparseVector> similarity) {
+            this.similarity = similarity;
+        }
+        
+        @Override
+        protected CachingNeighborhoodFinder buildNew(RatingBuildContext context) {
+            int nusers = 0;
+            Long2ObjectMap<Collection<UserRatingProfile>> cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
+            RatingDataAccessObject data = context.getDAO();
+            
+            Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
+            try {
+                LongSet visitedItems = new LongOpenHashSet();
+                for(UserRatingProfile user: users) {
+                    visitedItems.clear();
+                    nusers++;
+                    for (Rating r: user.getRatings()) {
+                        long iid = r.getItemId();
+                        if (!visitedItems.contains(iid)) {
+                            Collection<UserRatingProfile> cxn = cache.get(iid);
+                            if (cxn == null) {
+                                cxn = new ArrayList<UserRatingProfile>(100);
+                                cache.put(iid, cxn);
+                            }
+                            cxn.add(user);
+                        }
+                    }
+                }
+            } finally {
+                users.close();
+            }
+            for (Collection<UserRatingProfile> c: cache.values()) {
+                ((ArrayList<UserRatingProfile>) c).trimToSize();
+            }
+            
+            return new CachingNeighborhoodFinder(similarity, neighborhoodSize, nusers, cache);
+        }
+    }
+    
     private final Long2ObjectMap<Collection<UserRatingProfile>> cache;
     private final int userCount;
     private final Similarity<? super SparseVector> similarity;
     private final int neighborhoodSize;
 
-    @Inject
-    CachingNeighborhoodFinder(@UserSimilarity Similarity<? super SparseVector> sim,
-            @NeighborhoodSize int nnbrs,
-            Provider<RatingDataAccessObject> dataProvider) {
+    protected CachingNeighborhoodFinder(Similarity<? super SparseVector> sim, int nnbrs, int nusers,
+                                        Long2ObjectMap<Collection<UserRatingProfile>> cache) {
+        this.cache = cache;
         similarity = sim;
         neighborhoodSize = nnbrs;
-        int nusers = 0;
-        cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
-        RatingDataAccessObject data = dataProvider.get();
-        Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
-        try {
-            LongSet visitedItems = new LongOpenHashSet();
-            for(UserRatingProfile user: users) {
-                visitedItems.clear();
-                nusers++;
-                for (Rating r: user.getRatings()) {
-                    long iid = r.getItemId();
-                    if (!visitedItems.contains(iid)) {
-                        Collection<UserRatingProfile> cxn = cache.get(iid);
-                        if (cxn == null) {
-                            cxn = new ArrayList<UserRatingProfile>(100);
-                            cache.put(iid, cxn);
-                        }
-                        cxn.add(user);
-                    }
-                }
-            }
-        } finally {
-            users.close();
-        }
-        for (Collection<UserRatingProfile> c: cache.values()) {
-            ((ArrayList<UserRatingProfile>) c).trimToSize();
-        }
         userCount = nusers;
     }
 
+    @Override
     public Long2ObjectMap<? extends Collection<Neighbor>>
         findNeighbors(long uid, SparseVector vector, LongSet items) {
 

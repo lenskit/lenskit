@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
@@ -45,12 +46,15 @@ public class ItemItemRecommender implements Recommender {
     private final Index itemIndexer;
     private final SimilarityMatrix matrix;
     private final UserRatingVectorNormalizer normalizer;
+    private final BaselinePredictor baseline;
     private final LongSortedSet itemUniverse;
     
     ItemItemRecommender(Index indexer, SimilarityMatrix matrix, 
-                        UserRatingVectorNormalizer norm, LongSortedSet items) {
+                        UserRatingVectorNormalizer norm, BaselinePredictor baseline,
+                        LongSortedSet items) {
         this.itemIndexer = indexer;
         this.normalizer = norm;
+        this.baseline = baseline;
         this.matrix = matrix;
         this.itemUniverse = items;
     }
@@ -98,6 +102,10 @@ public class ItemItemRecommender implements Recommender {
 
     public LongSortedSet getItemUniverse() {
         return itemUniverse;
+    }
+    
+    public BaselinePredictor getBaselinePredictor() {
+        return baseline;
     }
     
     public VectorTransformation normalizingTransformation(long uid, SparseVector ratings) {

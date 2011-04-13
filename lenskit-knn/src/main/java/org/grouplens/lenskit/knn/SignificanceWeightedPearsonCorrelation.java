@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.knn;
 
-import org.grouplens.lenskit.knn.params.SignificanceThreshold;
 
 /**
  * Significance-weighted neighborhoodFinder of Pearson correlation.
@@ -35,7 +34,7 @@ import org.grouplens.lenskit.knn.params.SignificanceThreshold;
 public class SignificanceWeightedPearsonCorrelation extends PearsonCorrelation {
     private final int threshold;
 
-    public SignificanceWeightedPearsonCorrelation(@SignificanceThreshold int thresh) {
+    public SignificanceWeightedPearsonCorrelation(int thresh) {
         threshold = thresh;
     }
 

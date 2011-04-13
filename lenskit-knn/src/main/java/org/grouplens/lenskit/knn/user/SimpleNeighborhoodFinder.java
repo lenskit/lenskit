@@ -27,14 +27,13 @@ import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
-
-import com.google.inject.Inject;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -42,6 +41,33 @@ import com.google.inject.Inject;
  *
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
+    /**
+     * Builder for creating SimpleNeighborhoodFinders.
+     * 
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     */
+    public static class Builder extends AbstractRecommenderComponentBuilder<SimpleNeighborhoodFinder> {
+        private int neighborhoodSize;
+        private Similarity<? super SparseVector> similarity;
+        
+        public Builder() {
+            neighborhoodSize = 100;
+            similarity = new PearsonCorrelation();
+        }
+        
+        public void setNeighborhoodSize(int neighborhood) {
+            neighborhoodSize = neighborhood;
+        }
+        
+        public void setSimilarity(Similarity<? super SparseVector> similarity) {
+            this.similarity = similarity;
+        }
+        @Override
+        protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
+            return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity);
+        }
+    }
+    
     private final RatingDataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
@@ -52,10 +78,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
      * @param nnbrs The number of neighbors to consider for each item.
      * @param similarity The similarity function to use.
      */
-    @Inject
-    SimpleNeighborhoodFinder(RatingDataAccessObject data,
-            @NeighborhoodSize int nnbrs,
-            @UserSimilarity Similarity<? super SparseVector> similarity) {
+    protected SimpleNeighborhoodFinder(RatingDataAccessObject data, int nnbrs, 
+                                       Similarity<? super SparseVector> similarity) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         this.similarity = similarity;

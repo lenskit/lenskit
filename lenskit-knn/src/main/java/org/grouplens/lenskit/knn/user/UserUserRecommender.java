@@ -18,6 +18,38 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-public class UserUserRecommender {
+import org.grouplens.lenskit.BasketRecommender;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RatingRecommender;
+import org.grouplens.lenskit.Recommender;
 
+/**
+ * UserUserRecommender is a Recommender implementation that uses user-user
+ * collaborative filtering to compute predictions and recommendations. They are
+ * built using a {@link UserUserRecommenderBuilder}.
+ * 
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
+ */
+public class UserUserRecommender implements Recommender {
+    private final UserUserRatingRecommender rec; // This is also the predictor
+    
+    UserUserRecommender(UserUserRatingRecommender rec) {
+        this.rec = rec;
+    }
+    
+    @Override
+    public RatingPredictor getRatingPredictor() {
+        return rec;
+    }
+
+    @Override
+    public RatingRecommender getRatingRecommender() {
+        return rec;
+    }
+
+    @Override
+    public BasketRecommender getBasketRecommender() {
+        // TODO Implement?
+        return null;
+    }
 }
