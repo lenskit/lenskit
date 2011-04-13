@@ -146,12 +146,11 @@
 
         <listitem>
           <para>Use the <ulink
-          url="http://en.wikipedia.org/wiki/Strategy_pattern">
-          <emphasis>strategy pattern</emphasis></ulink>, a design pattern in
-          which the replacable code is defined via an interface, with the
-          different strategies implementing that interface. The interface is
-          then used via composition in class implementing the common
-          logic.</para>
+          url="http://en.wikipedia.org/wiki/Strategy_pattern"><emphasis>strategy
+          pattern</emphasis></ulink>, a design pattern in which the replacable
+          code is defined via an interface, with the different strategies
+          implementing that interface. The interface is then used via
+          composition in class implementing the common logic.</para>
         </listitem>
       </itemizedlist>
 
@@ -489,7 +488,9 @@ public interface BasketRecommender {
       role="class">Builder&lt;T&gt;</literal> interface is provided. Builders
       take build contexts and produce objects. They also memoize their
       results, so calling the build method twice with the same build context
-      will produce the same object.</para>
+      will produce the same object. The memoization facility does impose the
+      limitation that a builder instance cannot be reconfigured and used to
+      build a second object from the same rating build context.</para>
 
       <para>This design will allow recommender services to be flexibly
       configured. Further, since many Java scripting languages support easy
@@ -497,6 +498,14 @@ public interface BasketRecommender {
       with scripts in JavaScript or other Java-compatible scripting languages
       that look much like configuration files: a sequence of parameter
       assignments with the occasional object construction.</para>
+
+      <para>Builder objects are also fully composable: builders can use other
+      builders to build subcomponents of their target objects, allowing
+      recommender components to be nested and configured almost arbitrarily.
+      Configuration code will need to take care to use the same builder
+      instance when the same type of object is needed in multiple places to
+      avoid unnecessarily duplicating objects, but this will hopefully not
+      impose an unreasonable burden.</para>
     </section>
 
     <section id="sec-data-access">
@@ -515,8 +524,8 @@ public interface BasketRecommender {
       <para>To solve these problems, we have designed a rating API with two
       primary components. The core part of the data access layer is modeled
       after the J2EE <ulink
-      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">
-      Data Access Object</ulink> pattern. The <literal>
+      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
+      Access Object</ulink> pattern. The <literal>
       UserItemDataAccessObject</literal> interface provides accesss to users
       and items, while the <literal> RatingDataAccessObject</literal>
       interface makes rating data available. These interfaces are intended to
@@ -547,11 +556,16 @@ public interface BasketRecommender {
       and returns it again rather than creating a new object for each
       <literal> next()</literal> call. This allows large collections of
       synthetic objects to be iterated more efficiently when the objects are
-      not needed outside the iterating loop body.</para>
+      not needed outside the iterating loop body. Rating build contexts also
+      have a type-safe object storage facility using unique keys to allow
+      builders to store memoized objects on the build context rather than
+      internally; this allows intermediate objects to be more easily garbage
+      collected once the build process has finished.</para>
 
-      <para>The default build context simply iterates over all ratings
-      presented by the data access object and stores the rating data
-      efficiently in a set of parallel arrays, allowing for very fast
+      <para>The primary build context implementation, <literal
+      role="class">PackedRatingBuildContext</literal>, simply iterates over
+      all ratings presented by the data access object and stores the rating
+      data efficiently in a set of parallel arrays, allowing for very fast
       iteration.</para>
 
       <para>This collection of interfaces allows LensKit to have access to the
