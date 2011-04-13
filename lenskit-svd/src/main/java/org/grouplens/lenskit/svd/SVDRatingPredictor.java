@@ -36,8 +36,6 @@ import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-import com.google.inject.Inject;
-
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
  *
@@ -55,7 +53,6 @@ import com.google.inject.Inject;
 public class SVDRatingPredictor implements RatingPredictor {
 	protected final SVDModel model;
 
-	@Inject
     protected SVDRatingPredictor(SVDModel m) {
         model = m;
     }
@@ -143,7 +140,7 @@ public class SVDRatingPredictor implements RatingPredictor {
 
             double score = 0;
             for (int f = 0; f < nf; f++) {
-                score += uprefs[f] * svals[f] * model.itemFeatureValue(idx, f);
+                score += uprefs[f] * svals[f] * model.getItemFeatureValue(idx, f);
                 score = clamp.apply(score);
             }
             preds.set(item, score);

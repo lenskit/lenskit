@@ -18,8 +18,25 @@
  */
 package org.grouplens.lenskit.svd;
 
-public class SVDRecommenderBuilder {
-    // FIXME: in addition to the params defined in this project,
-    // it also needs the min and max ratings, which had previously been in core
-    // but this is the only recommender that needs it
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
+
+/**
+ * SVDRecommenderBuilder is a builder used to create SVDRecommender instances.
+ * 
+ * @author Michael Ludwig
+ */
+public class SVDRecommenderBuilder extends AbstractRecommenderComponentBuilder<SVDRecommender> {
+    private RecommenderComponentBuilder<? extends SVDModel> modelBuilder;
+    
+    public SVDRecommenderBuilder() {
+        modelBuilder = new GradientDescentSVDModelBuilder();
+    }
+
+    @Override
+    protected SVDRecommender buildNew(RatingBuildContext context) {
+        SVDModel model = modelBuilder.build(context);
+        return new SVDRecommender(model, new SVDRatingPredictor(model));
+    }
 }

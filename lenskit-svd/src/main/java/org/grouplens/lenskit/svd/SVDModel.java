@@ -25,14 +25,11 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.DoubleFunction;
 
-import com.google.inject.ProvidedBy;
-
 /**
  * The SVD model used for recommendation and prediction.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-@ProvidedBy(SVDModelProvider.class)
 public class SVDModel {
 	public final int featureCount;
 	public final double itemFeatures[][];
@@ -43,8 +40,8 @@ public class SVDModel {
 	public final UserRatingVectorNormalizer normalizer;
 	
 	public SVDModel(int nfeatures, double[][] ifeats, double[] svals,
-			DoubleFunction clamp, Index iidx,
-			UserRatingVectorNormalizer norm) {
+	                DoubleFunction clamp, Index iidx,
+	                UserRatingVectorNormalizer norm) {
 		featureCount = nfeatures;
 		itemFeatures = ifeats;
 		singularValues = svals;
@@ -53,7 +50,7 @@ public class SVDModel {
 		normalizer = norm;
 	}
 	
-	public double itemFeatureValue(int item, int feature) {
+	public double getItemFeatureValue(int item, int feature) {
 	    return itemFeatures[feature][item];
 	}
 	

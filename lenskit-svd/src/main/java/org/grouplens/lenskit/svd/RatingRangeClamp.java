@@ -18,18 +18,13 @@
  */
 package org.grouplens.lenskit.svd;
 
-import org.grouplens.lenskit.params.MaxRating;
-import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.util.DoubleFunction;
-
-import com.google.inject.Inject;
 
 public final class RatingRangeClamp implements DoubleFunction {
 
     private final double minRating, maxRating;
 
-    @Inject
-    RatingRangeClamp(@MinRating double min, @MaxRating double max) {
+    public RatingRangeClamp(double min, double max) {
         minRating = min;
         maxRating = max;
     }

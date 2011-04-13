@@ -24,20 +24,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
-import org.grouplens.lenskit.svd.params.ClampingFunction;
-import org.grouplens.lenskit.svd.params.FeatureCount;
-import org.grouplens.lenskit.svd.params.FeatureTrainingThreshold;
-import org.grouplens.lenskit.svd.params.GradientDescentRegularization;
-import org.grouplens.lenskit.svd.params.IterationCount;
-import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 /**
  * SVD recommender builder using gradient descent (Funk SVD).
@@ -57,7 +51,7 @@ import com.google.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
+public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponentBuilder<SVDModel> {
     private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDModelBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
@@ -67,34 +61,56 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
     // Internal epsilon to avoid division by 0
     private static final double MIN_FEAT_NORM = 0.0000000001;
 
-    final int featureCount;
-    final double learningRate;
-    final double trainingThreshold;
-    final double trainingRegularization;
-    final DoubleFunction clampingFunction;
-    final int iterationCount;
+    private int featureCount;
+    private double learningRate;
+    private double trainingThreshold;
+    private double trainingRegularization;
+    private DoubleFunction clampingFunction;
+    private int iterationCount;
+    
+    private RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> normalContextBuilder;
 
-    @Inject
-    public GradientDescentSVDModelBuilder(
-            @FeatureCount int features,
-            @LearningRate double lrate,
-            @FeatureTrainingThreshold double trainingThreshold,
-            @IterationCount int icount,
-            @GradientDescentRegularization double reg,
-            @ClampingFunction DoubleFunction clamp) {
-        featureCount = features;
-        learningRate = lrate;
-        this.trainingThreshold = trainingThreshold;
-        trainingRegularization = reg;
-        clampingFunction = clamp;
-        iterationCount = icount;
+    public GradientDescentSVDModelBuilder() {
+        featureCount = 100;
+        learningRate = 0.001;
+        trainingThreshold = 1.0e-5;
+        trainingRegularization = 0.015;
+        clampingFunction = new DoubleFunction.Identity();
+        iterationCount = 0;
+        
+        normalContextBuilder = new NormalizedRatingBuildContext.Builder();
     }
+    
+    public void setFeatureCount(int count) {
+        featureCount = count;
+    }
+    
+    public void setLearningRate(double rate) {
+        learningRate = rate;
+    }
+    
+    public void setTrainingThreshold(double threshold) {
+        trainingThreshold = threshold;
+    }
+    
+    public void setGradientDescentRegularization(double regularization) {
+        trainingRegularization = regularization;
+    }
+    
+    public void setClampingFunction(DoubleFunction function) {
+        clampingFunction = function;
+    }
+    
+    public void setIterationCount(int count) {
+        iterationCount = count;
+    }
+    
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.svd.SVDModelBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext, org.grouplens.lenskit.RatingPredictor)
+     * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
      */
     @Override
-    public SVDModel build(NormalizedRatingBuildContext data) {
+    protected SVDModel buildNew(RatingBuildContext context) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -104,6 +120,9 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
+        // Get the NormalizedRatingBuildContext for this context
+        NormalizedRatingBuildContext data = normalContextBuilder.build(context);
+        
         Model model = new Model();
         List<SVDRating> ratings = indexData(data, model);
 
@@ -150,7 +169,7 @@ public class GradientDescentSVDModelBuilder implements SVDModelBuilder {
         }
         
         return new SVDModel(featureCount, model.itemFeatures, model.singularValues,
-                clampingFunction, data.itemIndex(), data.getNormalizer());
+                            clampingFunction, data.itemIndex(), data.getNormalizer());
     }
 
     private final void trainFeature(Model model, List<SVDRating> ratings, int feature) {
