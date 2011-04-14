@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -145,7 +146,8 @@ public class CrossfoldEvaluator implements Runnable {
         TaskTimer timer = new TaskTimer();
         logger.debug("Benchmarking {}", algo.getName());
         logger.debug("Building recommender");
-        RatingPredictor rec = algo.getRecommenderService(train);
+        Recommender rec = algo.buildRecommender(train);
+        RatingPredictor predictor = rec.getRatingPredictor();
         writer.setValue(colBuildTime, timer.elapsed());
         logger.debug("Built model {} model in {}",
                 algo.getName(), timer.elapsedPretty());
@@ -161,7 +163,7 @@ public class CrossfoldEvaluator implements Runnable {
             SplitUserRatingProfile split = profileSplitter.splitProfile(user);          
             
             // Compute predictions
-            final SparseVector predictions = rec.predict(uid, split.getQueryVector(),
+            final SparseVector predictions = predictor.predict(uid, split.getQueryVector(),
             		split.getProbeVector().keySet());
             
             // Evaluate predictions

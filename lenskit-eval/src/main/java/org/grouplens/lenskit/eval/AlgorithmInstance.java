@@ -32,17 +32,13 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.config.RecommenderCoreModule;
-import org.grouplens.lenskit.config.RecommenderModuleComponent;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -52,7 +48,7 @@ import com.google.inject.Provides;
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private @Nonnull String algoName;
-    private @Nullable RecommenderModuleComponent module;
+    private @Nullable RecommenderComponentBuilder<Recommender> builder;
     private @Nonnull Map<String,String> attributes;
 
     public AlgorithmInstance() {
@@ -89,49 +85,33 @@ public class AlgorithmInstance {
      */
     public void setName(String name) {
         algoName = name;
-        if (module != null)
-            module.setName(name);
     }
 
     public Map<String,String> getAttributes() {
         return attributes;
     }
 
-    public RecommenderModuleComponent getModule() {
-        return module;
+    public RecommenderComponentBuilder<Recommender> getBuilder() {
+        return builder;
     }
 
-    public void setModule(RecommenderModuleComponent mod) {
-        module = mod;
-        mod.setName(getName());
+    public void setBuilder(RecommenderComponentBuilder<Recommender> b) {
+        builder = b;
     }
 
-    public void setModule(Class<? extends RecommenderCoreModule> mod) throws InstantiationException, IllegalAccessException {
-        setModule(mod.newInstance());
+    public void setBuilder(Class<? extends RecommenderComponentBuilder<Recommender>> mod) throws InstantiationException, IllegalAccessException {
+        setBuilder(mod.newInstance());
     }
 
-    private static class DataModule extends AbstractModule {
-        private RatingDataAccessObject dataSource;
-        public DataModule(RatingDataAccessObject source) {
-            dataSource = source;
+    public Recommender buildRecommender(final RatingDataAccessObject dao) {
+        if (builder == null)
+            throw new IllegalStateException("no builder set");
+        RatingBuildContext ctx = new PackedRatingBuildContext(dao);
+        try {
+            return builder.build(ctx);
+        } finally {
+            ctx.close();
         }
-
-        @Override protected void configure() {
-        }
-
-        @SuppressWarnings("unused")
-        @Provides public RatingDataAccessObject provideDataSource() {
-            return dataSource;
-        }
-    }
-
-    public Injector makeInjector(final RatingDataAccessObject input) {
-        return Guice.createInjector(new DataModule(input), module);
-    }
-
-    public RatingPredictor getRecommenderService(final RatingDataAccessObject input) {
-        Injector inj = makeInjector(input);
-        return inj.getInstance(RatingPredictor.class);
     }
     
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
@@ -156,7 +136,7 @@ public class AlgorithmInstance {
             Reader r = new FileReader(f);
             try {
                 engine.eval(r);
-                if (algo.getModule() != null)
+                if (algo.getBuilder() != null)
                     return algo;
                 else
                     throw new InvalidRecommenderException(f.toURI(), "No recommender configured");

@@ -48,10 +48,6 @@ interface EvaluatorOptions extends CrossfoldOptions {
     @Option(longName="output-file", shortName="o", defaultValue="")
     File getOutputFile();
 
-    @Option(longName="graph-module", shortName="G",
-            description="Produce DOT graph of recommender rather than benchmark")
-    boolean getGraphMode();
-
     @Unparsed(name="FILES")
     List<File> getRecommenderSpecs();
 
