@@ -81,6 +81,10 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
             normalizer = new IdentityUserRatingVectorNormalizer.Builder();
         }
         
+        public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
+            return normalizer;
+        }
+        
         public void setNormalizer(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizer) {
             this.normalizer = normalizer;
         }

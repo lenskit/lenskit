@@ -1,6 +1,6 @@
 /* Configuration script to run a pretty good item-item recommender. */
-rec.name = "ItemItem"
-rec.module = org.grouplens.lenskit.knn.item.ItemItemCFModule
-rec.module.knn.similarityDamping = 50
-rec.module.core.baseline = org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-rec.module.core.userRatingVectorNormalizer = org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
+rec.name = "ItemItem";
+rec.builder = org.grouplens.lenskit.knn.item.ItemItemRecommenderBuilder;
+rec.builder.baselinePredictor = new org.grouplens.lenskit.baseline.ItemUserMeanPredictor.Builder();
+rec.builder.normalizedRatingBuildContext.normalizer = new org.grouplens.lenskit.norm.BaselineSubtractingNormalizer.Builder();
+rec.builder.normalizedRatingBuildContext.normalizer.baselinePredictor = rec.builder.baselinePredictor;

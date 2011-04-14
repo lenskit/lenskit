@@ -65,7 +65,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
 
     private Similarity<? super SparseVector> itemSimilarity;
     private double similarityThreshold;
-    private SimilarityMatrixAccumulatorFactory matrixBuilderFactory;
+    private SimilarityMatrixAccumulatorFactory matrixSimilarityFactory;
     
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
     private RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> normalizedRBCBuilder;
@@ -74,26 +74,46 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         itemSimilarity = new CosineSimilarity(100);
         similarityThreshold = 1e-3;
         
-        matrixBuilderFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
+        matrixSimilarityFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
         
         baselineBuilder = null;
         normalizedRBCBuilder = new NormalizedRatingBuildContext.Builder();
+    }
+    
+    public Similarity<? super SparseVector> getSimilarity() {
+        return itemSimilarity;
     }
     
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
         itemSimilarity = similarity;
     }
     
+    public double getSimilarityThreshold() {
+        return similarityThreshold;
+    }
+    
     public void setSimilarityThreshold(double threshold) {
         similarityThreshold = threshold;
     }
     
-    public void setSimilarityMatrixBuilderFactory(SimilarityMatrixAccumulatorFactory factory) {
-        matrixBuilderFactory = factory;
+    public SimilarityMatrixAccumulatorFactory getSimilarityMatrixAccumulatorFactory() {
+        return matrixSimilarityFactory;
+    }
+    
+    public void setSimilarityMatrixAccumulatorFactory(SimilarityMatrixAccumulatorFactory factory) {
+        matrixSimilarityFactory = factory;
+    }
+    
+    public @Nullable RecommenderComponentBuilder<? extends BaselinePredictor> getBaselinePredictor() {
+        return baselineBuilder;
     }
     
     public void setBaselinePredictor(@Nullable RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
         baselineBuilder = predictor;
+    }
+    
+    public RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> getNormalizedRatingBuildContext() {
+        return normalizedRBCBuilder;
     }
     
     public void setNormalizedRatingBuildContext(RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> builder) {
@@ -103,7 +123,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     @Override
     protected ItemItemRecommender buildNew(RatingBuildContext context) {
         NormalizedRatingBuildContext data = normalizedRBCBuilder.build(context);
-        ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixBuilderFactory, itemSimilarity);
+        ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
         
         BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 
