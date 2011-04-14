@@ -121,67 +121,6 @@
       structures (like <literal>SparseVector</literal>).</para>
     </section>
 
-    <section id="id-dependency-injection">
-      <title>Dependency Injection</title>
-
-      <para>In order to make the <link linkend="goal-modularity">
-      modularity</link> LensKit intends to achieve useful, we need a mechanism
-      for assembling a collection of components to make a complete
-      recommender. As an example of the kind of configuration we need to
-      achieve, consider the process of building an item-item collaborative
-      filtering model. The model builder requires access to the ratings data,
-      a similarity function, a normalization strategy, and other parameters
-      such as the number of neighbors to retain.</para>
-
-      <para>One solution to this problem is to use constructor parameters. The
-      model builder exposes a constructor that requires each of the components
-      necessary to be passed in as a parameter. If we want to construct a
-      model builder, we can instantiate each of the components and then
-      construct a model builder with them. This can get tedious, as each of
-      the components may in turn depend on other components, but it is
-      possible and quite flexible. It further allows for unit testing, as each
-      piece is broken down into subcomponents and stub implementations can be
-      easily inserted.</para>
-
-      <para>This technique is a design pattern called <emphasis>dependency
-      injection</emphasis>. Each component declares the components it depends
-      on by requiring them as constructor parameters. Then, rather than having
-      the component itself directly instantiate or access its dependencies, it
-      access the objects passed in to its constructor. The code instantiating
-      the component is therefore responsible for selecting which
-      implementation of its various dependencies are intended to be used. If
-      it needs to construct many instances of some dependency, then it can
-      declare a depency on a factory or provider object which creates
-      instances.</para>
-
-      <para>Dependency injection allows us to have completely reconfigurable
-      recommenders, but without some additional assistance it requires a
-      complex sequence of setup code to even be able to use a recommender.
-      This is where dependency injection frameworks or containers come in.
-      These frameworks allow the programmer to configure which implementations
-      are to be used to satisfy dependencies on various interfaces and
-      abstract classes, handle transitive dependency resolution, and take care
-      of all the difficult work in building up trees of objects. After setting
-      up the framework with the desired configuration, code then asks the
-      framework to give it an instance of the desired object and the framework
-      builds the object with all its dependencies.</para>
-
-      <para>We use the <ulink
-      url="http://code.google.com/p/google-guice/">Guice</ulink> dependency
-      injection framework in LensKit. Guice is a commonly-used framework which
-      does its configuration entirely in Java, using a combination of
-      annotations and Java configuration classes called
-      <emphasis>modules</emphasis>. Annotations let us carefully describe
-      dependencies, including making numeric and string parameters
-      dependencies to be managed by Guice, and provide defaults for many of
-      the extensible aspects of the LensKit architecture. In order to use
-      LensKit, then, it is merely necessary to create a Guice module that
-      describes the recommender configuration desired. We provide
-      reconfigurable default modules for each of the recommender algorithms we
-      provide, so using standard algorithms is very easy. LensKit can further
-      be entirely reconfigured through more advanced use of Guice.</para>
-    </section>
-
     <section id="sec-strategy">
       <title>Strategy Pattern</title>
 
@@ -207,12 +146,11 @@
 
         <listitem>
           <para>Use the <ulink
-          url="http://en.wikipedia.org/wiki/Strategy_pattern">
-          <emphasis>strategy pattern</emphasis></ulink>, a design pattern in
-          which the replacable code is defined via an interface, with the
-          different strategies implementing that interface. The interface is
-          then used via composition in class implementing the common
-          logic.</para>
+          url="http://en.wikipedia.org/wiki/Strategy_pattern"><emphasis>strategy
+          pattern</emphasis></ulink>, a design pattern in which the replacable
+          code is defined via an interface, with the different strategies
+          implementing that interface. The interface is then used via
+          composition in class implementing the common logic.</para>
         </listitem>
       </itemizedlist>
 
@@ -319,8 +257,8 @@
 
       <para>The recommendation API in LensKit is broken into separate pieces
       to allow different types of access and reflect the fact that not all
-      recommendation methods support all types of recommendation. There are
-      three primary interfaces in the recommendation API:</para>
+      recommendation methods support all types of recommendation. Different
+      recommender operations are supported by the following interfaces:</para>
 
       <itemizedlist>
         <listitem>
@@ -343,7 +281,7 @@ public interface RatingPredictor {
      * @return the prediction, or &lt;tt&gt;null&lt;/tt&gt; if no prediction is possible
      */
     @Nullable @CheckForNull
-    public ScoredId predict(long user, SparseVector ratings, long item);
+    public ScoredItem predict(long user, Collection&lt;Rating&gt; ratings, long item);
 
     /**
      * Generate predictions for a collection of items.
@@ -352,6 +290,18 @@ public interface RatingPredictor {
      * @param items the items for which predictions are desired
      * @return A mapping from item IDs to predicted preference.  This mapping
      * may not contain all requested items.
+     */
+    @Nonnull
+    public SparseVector predict(long user, Collection&lt;Rating&gt; ratings, Collection&lt;Long&gt; items);
+
+    /**
+     * Generate predictions for a collection of items, given a user's rating vector.
+     * @param user the user ID
+     * @param ratings the user's rating vector
+     * @param items the items for which predictions are desired.
+     * @return A mapping from item IDs to predicted preference. This mapping may
+     * not contain all requested items.
+     * @see #predict(long,Collection,Collection)
      */
     @Nonnull
     public SparseVector predict(long user, SparseVector ratings, Collection&lt;Long&gt; items);
@@ -380,7 +330,7 @@ public interface RatingRecommender {
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
     @Nonnull
-    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings);
+    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings);
     
     /**
      * Recommend up to &lt;var&gt;n&lt;/var&gt; items for a user. The
@@ -393,7 +343,7 @@ public interface RatingRecommender {
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
     @Nonnull
-    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings, int n);
+    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates.  The
@@ -407,7 +357,7 @@ public interface RatingRecommender {
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
     @Nonnull
-    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings,
+    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings,
             @Nullable Set&lt;Long&gt; candidates);
 
     /**
@@ -426,7 +376,26 @@ public interface RatingRecommender {
      * of score.
      */
     @Nonnull
-    public List&lt;ScoredId&gt; recommend(long user, SparseVector ratings, int n,
+    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings, int n,
+            @Nullable Set&lt;Long&gt; candidates, @Nullable Set&lt;Long&gt; exclude);
+
+    /**
+     * Produce a set of recommendations for the user given their rating vector.
+     * @param user The user's ID
+     * @param ratings The user's rating vector
+     * @param n The number of ratings to return.  If negative, recommend all
+     * possible items.
+     * @param candidates A set of candidate items which can be recommended.  If
+     * &lt;tt&gt;null&lt;/tt&gt;, the candidate set is considered to contain the universe.
+     * @param exclude A set of items to be excluded.  If &lt;tt&gt;null&lt;/tt&gt;, it is
+     * considered the empty set.  Exclusions are applied to the candidate set,
+     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus
+     * &lt;var&gt;exclude&lt;/var&gt;.
+     * @return a list of scored recommendations, sorted in nondecreasing order
+     * of score.
+     */
+    @Nonnull
+    public List&lt;ScoredItem&gt; recommend(long user, SparseVector ratings, int n,
             @Nullable Set&lt;Long&gt; candidates, @Nullable Set&lt;Long&gt; exclude);
 }</programlisting>
         </listitem>
@@ -453,16 +422,14 @@ public interface BasketRecommender {
      * of score.
      */
     @Nonnull
-    List&lt;ScoredId&gt; recommend(long user, Set&lt;Long&gt; basket);
+    List&lt;ScoredItem&gt; recommend(long user, Set&lt;Long&gt; basket);
 }</programlisting>
         </listitem>
       </itemizedlist>
 
-      <para>Even for recommendation methods that support both basket- and
-      rating-based recommendation, it may be necessary to use different
-      builders that place different requirements on the data types available
-      to build recommenders capable of supporting each recommendation
-      form.</para>
+      <para>Recommender operations are lightweight objects that wrap an
+      implementation-specific recommender model, which in turn contains all
+      the configuration and persistent data for the recommender.</para>
 
       <para>At present, we require client code to obtain the user's profile
       before calling the recommendation API. This may change in the future,
@@ -472,6 +439,73 @@ public interface BasketRecommender {
       role="class">ItemSimilarity</literal> interface for the find similar
       items task, allowing it to be supported independently of basket-based
       recommendation.</para>
+    </section>
+
+    <section>
+      <title>Building Recommender Models</title>
+
+      <para>Before recommendation or prediction can be done, the program needs
+      a recommender service. Recommender services are built using <literal
+      role="class">RecommenderServiceBuilder</literal> instances. Each
+      recommender implementation will provide a recommender service builder
+      that knows how to build it from its constituent components. Service
+      builders provide getters and setters to configure the various parameters
+      used by a particular recommender and a <literal
+      role="class">build(RatingBuildContext)</literal> method that actually
+      builds the recommender. The basic procedure for setting up a recommender
+      is as follows:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Construct and configure the appropriate recommender model
+          builder.</para>
+        </listitem>
+
+        <listitem>
+          <para>Set up a rating data access object (see <link
+          linkend="sec-data-access">Data Access Layer</link>).</para>
+        </listitem>
+
+        <listitem>
+          <para>Create a build context from the data acces object.</para>
+        </listitem>
+
+        <listitem>
+          <para>Pass the build context to the builder and get a recommender
+          model.</para>
+        </listitem>
+
+        <listitem>
+          <para>Create one or more recommender operations built on the model,
+          or wrap the model up with operation factories in a <literal
+          role="class">RecommenderService</literal> to make it easily
+          available throughout the application.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Many recommenders will have subcomponents that also need to be
+      built from a build context. For this purpose, the <literal
+      role="class">Builder&lt;T&gt;</literal> interface is provided. Builders
+      take build contexts and produce objects. They also memoize their
+      results, so calling the build method twice with the same build context
+      will produce the same object. The memoization facility does impose the
+      limitation that a builder instance cannot be reconfigured and used to
+      build a second object from the same rating build context.</para>
+
+      <para>This design will allow recommender services to be flexibly
+      configured. Further, since many Java scripting languages support easy
+      access to Bean properties, it will be possible to configure recommenders
+      with scripts in JavaScript or other Java-compatible scripting languages
+      that look much like configuration files: a sequence of parameter
+      assignments with the occasional object construction.</para>
+
+      <para>Builder objects are also fully composable: builders can use other
+      builders to build subcomponents of their target objects, allowing
+      recommender components to be nested and configured almost arbitrarily.
+      Configuration code will need to take care to use the same builder
+      instance when the same type of object is needed in multiple places to
+      avoid unnecessarily duplicating objects, but this will hopefully not
+      impose an unreasonable burden.</para>
     </section>
 
     <section id="sec-data-access">
@@ -490,8 +524,8 @@ public interface BasketRecommender {
       <para>To solve these problems, we have designed a rating API with two
       primary components. The core part of the data access layer is modeled
       after the J2EE <ulink
-      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">
-      Data Access Object</ulink> pattern. The <literal>
+      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
+      Access Object</ulink> pattern. The <literal>
       UserItemDataAccessObject</literal> interface provides accesss to users
       and items, while the <literal> RatingDataAccessObject</literal>
       interface makes rating data available. These interfaces are intended to
@@ -522,11 +556,16 @@ public interface BasketRecommender {
       and returns it again rather than creating a new object for each
       <literal> next()</literal> call. This allows large collections of
       synthetic objects to be iterated more efficiently when the objects are
-      not needed outside the iterating loop body.</para>
+      not needed outside the iterating loop body. Rating build contexts also
+      have a type-safe object storage facility using unique keys to allow
+      builders to store memoized objects on the build context rather than
+      internally; this allows intermediate objects to be more easily garbage
+      collected once the build process has finished.</para>
 
-      <para>The default build context simply iterates over all ratings
-      presented by the data access object and stores the rating data
-      efficiently in a set of parallel arrays, allowing for very fast
+      <para>The primary build context implementation, <literal
+      role="class">PackedRatingBuildContext</literal>, simply iterates over
+      all ratings presented by the data access object and stores the rating
+      data efficiently in a set of parallel arrays, allowing for very fast
       iteration.</para>
 
       <para>This collection of interfaces allows LensKit to have access to the
