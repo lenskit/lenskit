@@ -58,7 +58,7 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
-        ratings = new PackedRatingBuildContext(new RatingCollectionDAO(rs));
+        ratings = PackedRatingBuildContext.make(new RatingCollectionDAO(rs));
     }
 
     @Test

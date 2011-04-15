@@ -106,7 +106,7 @@ public class AlgorithmInstance {
     public Recommender buildRecommender(final RatingDataAccessObject dao) {
         if (builder == null)
             throw new IllegalStateException("no builder set");
-        RatingBuildContext ctx = new PackedRatingBuildContext(dao);
+        RatingBuildContext ctx = PackedRatingBuildContext.make(dao);
         try {
             return builder.build(ctx);
         } finally {

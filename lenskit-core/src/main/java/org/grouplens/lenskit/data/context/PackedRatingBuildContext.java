@@ -55,15 +55,11 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
-	public PackedRatingBuildContext(RatingDataAccessObject dao) {
+	protected PackedRatingBuildContext(RatingDataAccessObject dao, 
+	        PackedRatingData data, List<IntList> userIndices) {
 	    this.dao = dao;
-	    
-		Cursor<Rating> ratings = dao.getRatings();
-		try {
-			packRatings(ratings);
-		} finally {
-			ratings.close();
-		}
+	    this.data = data;
+	    this.userIndices = userIndices;
 	}
 	
 	private void requireValid() {
@@ -145,66 +141,79 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		data = null;
 	}
 	
-	void packRatings(@WillNotClose Cursor<Rating> ratings) {
-		int size = ratings.getRowCount();
-		// default to something nice and large
-		if (size < 0) size = 10000;
-		
-		// Track the indices where everything appears.  ArrayList user indices
-		// to map of item indices to global indices.
-		IndexManager imgr = new IndexManager(2000);
-		
-		// initialize arrays. we only track timestamps when we find them.
-		IntArrayList users = new IntArrayList(size);
-		IntArrayList items = new IntArrayList(size);
-		DoubleArrayList values = new DoubleArrayList(size);
-		LongArrayList timestamps = null;
-		Indexer itemIndex = new Indexer();
-		Indexer userIndex = new Indexer();
-		int nratings = 0;
-		
-		for (Rating r: ratings) {
-			final int uidx = userIndex.internId(r.getUserId());
-			final int iidx = itemIndex.internId(r.getItemId());
-			final double v = r.getRating();
-			final long ts = r.getTimestamp();
-			int idx = imgr.getIndex(uidx, iidx);
-			if (idx < 0) {
-				// new rating
-				imgr.putIndex(uidx, iidx, nratings);
-				nratings++;
-				users.add(uidx);
-				items.add(iidx);
-				values.add(v);
-				assert users.size() == nratings;
-				assert items.size() == nratings;
-				assert values.size() == nratings;
-				if (ts >= 0) {
-					if (timestamps == null) {
-						long[] tss = new long[values.elements().length];
-						Arrays.fill(tss, 0, nratings - 1, -1);
-						timestamps = LongArrayList.wrap(tss, nratings - 1);
-					}
-					timestamps.add(ts);
-					assert timestamps.size() == nratings;
-				}
-			} else {
-				// be careful with timestamps
-				if (timestamps == null) {
-					if (ts < 0) {
-						values.set(idx, v);
-					} else {
-						timestamps = new LongArrayList(values.elements().length);
-						Arrays.fill(timestamps.elements(), 0, nratings, -1);
-						timestamps.set(idx, ts);
-						values.set(idx, v);
-					}
-				} else if (ts >= timestamps.get(idx)) {
-					values.set(idx, v);
-					timestamps.set(idx, ts);
-				} // fall through - not null && not newer
-			}
-		}
+	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
+	    Cursor<Rating> ratings = dao.getRatings();
+	    
+	    IntArrayList users;
+	    IntArrayList items;
+	    DoubleArrayList values;
+	    LongArrayList timestamps;
+	    Indexer itemIndex = new Indexer();
+	    Indexer userIndex = new Indexer();
+        // Track the indices where everything appears.  ArrayList user indices
+        // to map of item indices to global indices.
+	    IndexManager imgr = new IndexManager(2000);
+	    
+	    int nratings = 0;
+	    
+	    try {
+	        int size = ratings.getRowCount();
+	        // default to something nice and large
+	        if (size < 0) size = 10000;
+
+	        // initialize arrays. we only track timestamps when we find them.
+	        users = new IntArrayList(size);
+	        items = new IntArrayList(size);
+	        values = new DoubleArrayList(size);
+	        timestamps = null;
+	        itemIndex = new Indexer();
+	        userIndex = new Indexer();
+
+	        for (Rating r: ratings) {
+	            final int iidx = itemIndex.internId(r.getItemId());
+	            final int uidx = userIndex.internId(r.getUserId());
+	            final double v = r.getRating();
+	            final long ts = r.getTimestamp();
+	            int idx = imgr.getIndex(uidx, iidx);
+	            if (idx < 0) {
+	                // new rating
+	                imgr.putIndex(uidx, iidx, nratings);
+	                nratings++;
+	                users.add(uidx);
+	                items.add(iidx);
+	                values.add(v);
+	                assert users.size() == nratings;
+	                assert items.size() == nratings;
+	                assert values.size() == nratings;
+	                if (ts >= 0) {
+	                    if (timestamps == null) {
+	                        long[] tss = new long[values.elements().length];
+	                        Arrays.fill(tss, 0, nratings - 1, -1);
+	                        timestamps = LongArrayList.wrap(tss, nratings - 1);
+	                    }
+	                    timestamps.add(ts);
+	                    assert timestamps.size() == nratings;
+	                }
+	            } else {
+	                // be careful with timestamps
+	                if (timestamps == null) {
+	                    if (ts < 0) {
+	                        values.set(idx, v);
+	                    } else {
+	                        timestamps = new LongArrayList(values.elements().length);
+	                        Arrays.fill(timestamps.elements(), 0, nratings, -1);
+	                        timestamps.set(idx, ts);
+	                        values.set(idx, v);
+	                    }
+	                } else if (ts >= timestamps.get(idx)) {
+	                    values.set(idx, v);
+	                    timestamps.set(idx, ts);
+	                } // fall through - not null && not newer
+	            }
+	        }
+	    } finally {
+	        ratings.close();
+	    }
 		
 		users.trim();
 		items.trim();
@@ -212,12 +221,14 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		if (timestamps != null)
 			timestamps.trim();
 		
-		data = new PackedRatingData(users.elements(), items.elements(), values.elements(),
+		PackedRatingData data =
+		    new PackedRatingData(users.elements(), items.elements(), values.elements(),
 				timestamps == null ? null : timestamps.elements(), itemIndex, userIndex);
 		assert data.users.length == nratings;
 		assert data.items.length == nratings;
 		assert data.values.length == nratings;
 		assert timestamps == null || data.timestamps.length == nratings;
-		userIndices = imgr.getUserIndexMatrix();
+		List<IntList> userIndices = imgr.getUserIndexMatrix();
+		return new PackedRatingBuildContext(dao, data, userIndices);
 	}
 }

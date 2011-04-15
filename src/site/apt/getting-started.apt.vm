@@ -4,14 +4,8 @@
 
 Overview
 
-  LensKit uses a couple of key Java technologies aimed at making it
-  easier to configure and use the recommender while allowing a great
-  deal of flexibility in how the recommender is configured.  These are
-  {{{http://maven.apache.org}Maven}}, a Java project and build
-  framework which also takes care of resolving dependencies, and
-  {{{http://code.google.com/p/google-guice/}Guice}}, which allows
-  recommender implementations to be highly modular and generic.  The
-  basic process to create a project using LensKit follows these steps:
+  The basic process to create a project using LensKit follows these
+  steps:
 
   [[1]] Create a new Maven project that depends on <<<lenskit-core>>>
         and the packages providing the recommenders you want (such as
@@ -22,14 +16,12 @@ Overview
         with Eclipse and Maven}} for more information on using Maven
         in Eclipse.
 
-  [[2]] Set up the recommender configuration, either by using one of
-        the existing Guice modules or creating a new one.
+  [[2]] Configure a recommender builder.
 
   [[3]] Configure the data source for recommendation.
 
-  [[4]] Create a Guice injector from the module and use it to create a
-        new <<<RatingRecommender>>> or <<<RatingPredictor>>> and start
-        generating recommendations.
+  [[4]] Use the builder and a <<<RatingBuildContext>>> derived from
+        the data source to build a recommender.
 
 Creating a Project
 
@@ -79,50 +71,40 @@ Configuring and Creating the Recommender
 
   The recommender implementations in LensKit are highly modular to
   allow their behavior to be customized and to allow individual pieces
-  to be individually replaced.  In order to facilitate this kind of
-  modularity, it is useful to have some way to configure the pieces to
-  be used to build a particular recommender.  LensKit accomplishes
-  this through the {{{http://code.google.com/p/google-guice/}Guice
-  dependency injection framework}}.
+  to be individually replaced.  LensKit builder classes provide
+  properties to configure recommender behavior and allow subcomponents
+  to be specified via their respective builders.  Further, builders
+  memoize their results, so expensive object construction is not
+  repeated unnecessarily so long as builder instances are shared where
+  appropriate.
 
-  LensKit is configured through Guice <modules>.  These are classes
-  which use the Guice API to configure the recommender, e.g. defining
-  that <<<org.grouplens.LensKit.knn.CosineSimilarity>>> should be used
-  to compute item similarities.  Each recommender provides a default
-  module that exposes the various parameters of that recommender via
-  Bean properties, so in many cases you will not need to write a Guice
-  module yourself.  One such module is
-  {{{./apidocs/org/grouplens/LensKit/knn/item/ItemRecommenderModule}ItemRecommenderModule}}},
-  which configures an item-item collaborative filter.
+  After configuring a builder, you also need to configure your data
+  source.  The recommendation framework depends on having access to
+  data sources via the <<<RatingDataAccessObject>>> interface.
 
-  You also need to configure your data source.  The recommendation
-  framework depends on having access to data sources via the
-  <<<RatingDataSource>>> interface.
-
-  Once you have a recommender configuration, use it to create a Guice
-  injector and get the recommender.  The following code does this,
-  using an anonymous class to provide access to the data source and
-  setting up the recommender module:
+  Once you have a builder and a data access object, create a new
+  rating build context (<<<PackedRatingBuildContext>>>) from the DAO
+  and provide it to the builder:
 
 +-----------------------------------------------------------------+
-  Module dataModule = new AbstractModule() {
-      protected configure() { }
-      @Provides @Singleton
-      public RatingDataAccessObject provideDataSource() {
-          return new SimpleFileDAO(fileName);
-      }
-  };
-  Module recModule = new ItemRecommenderModule();
-  Injector injector = Guice.createInjector(dataModule, recModule);
-  RatingRecommender recommender = injector.createInstance(RatingRecommender.class);
+  RecommenderComponentBuilder<Recommender> builder = new ItemItemRecommenderBuilder();
+  RatingDataAccessObject dao = new SimpleFileDAO(fileName);
+  RatingBuildContext context = PackedRatingBuildContext.make(dao);
+  Recommender rec;
+  try {
+      rec = builder.build(context);
+  } finally {
+      context.close();
+  }
+  RatingRecommender recommender = rec.getRatingRecommender();
 +-----------------------------------------------------------------+
 
 Further Topics
 
-  There are quite a few things that need to be documented.  For now,
-  browse the {{{./apidocs/}API documentation}} and the
-  {{{./xref/}sources}} to see more of how LensKit works and how to use
-  it.
+  See the {{{./design.html}design document}}} for information on how
+  LensKit was designed and why.  Also, the {{{./apidocs/}API
+  documentation}} and the {{{./xref/}sources}} provide more
+  information about how LensKit works and how to use it.
 
 Getting LensKit from Mercurial
 
