@@ -19,9 +19,12 @@
 package org.grouplens.lenskit.baseline;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Serializer;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
  * BaselinePredictor is a subtype of RatingPredictor that guarantees 100%
@@ -34,5 +37,9 @@ import org.grouplens.lenskit.Serializer;
  * @author Michael Ludwig
  */
 public interface BaselinePredictor extends RatingPredictor, Serializable {
-
+    /**
+     * Refine predict to return mutable sparse verctors.
+     * @see RatingPredictor#predict(long, SparseVector, Collection)
+     */
+    MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 }
