@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  */
 public interface BaselinePredictor extends RatingPredictor, Serializable {
     /**
-     * Refine predict to return mutable sparse verctors.
+     * Refine predict to return mutable sparse vectors.
      * @see RatingPredictor#predict(long, SparseVector, Collection)
      */
     MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
