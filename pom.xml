@@ -223,12 +223,6 @@
         <type>jar</type>
       </dependency>
       <dependency>
-        <groupId>org.grouplens.common</groupId>
-        <artifactId>common-test</artifactId>
-        <version>0.2-SNAPSHOT</version>
-        <type>jar</type>
-      </dependency>
-      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>r08</version>
@@ -250,7 +244,7 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-core</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
