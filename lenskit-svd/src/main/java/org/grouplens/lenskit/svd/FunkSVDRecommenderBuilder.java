@@ -20,20 +20,17 @@ package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponentBuilder<SVDModel> {
-    private static Logger logger = LoggerFactory.getLogger(GradientDescentSVDModelBuilder.class);
+public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuilder<FunkSVDRecommender> {
+    private static Logger logger = LoggerFactory.getLogger(FunkSVDRecommenderBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
@@ -74,7 +71,7 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
     
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
 
-    public GradientDescentSVDModelBuilder() {
+    public FunkSVDRecommenderBuilder() {
         featureCount = 100;
         learningRate = 0.001;
         trainingThreshold = 1.0e-5;
@@ -144,7 +141,7 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
      */
     @Override
-    protected SVDModel buildNew(RatingBuildContext context) {
+    protected FunkSVDRecommender buildNew(RatingBuildContext context) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -154,30 +151,26 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        // FIXME Use the baseline predictor directly.
-        UserRatingVectorNormalizer blnorm = new BaselineSubtractingNormalizer.Builder()
-            .setBaselinePredictor(baselineBuilder)
-            .build(context);
-        NormalizedRatingBuildContext data = context.normalize(blnorm);
+        BaselinePredictor baseline = baselineBuilder.build(context);
         
-        Model model = new Model();
-        List<SVDRating> ratings = indexData(data, model);
+        MutableSparseVector[] estimates = initializeEstimates(context, baseline);
+        FastCollection<IndexedRating> ratings = context.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
         
-        final int numUsers = data.getUserIds().size();
-        final int numItems = data.getItemIds().size();
-        model.userFeatures = new double[featureCount][numUsers];
-        model.itemFeatures = new double[featureCount][numItems];
+        final int numUsers = context.getUserIds().size();
+        final int numItems = context.getItemIds().size();
+        double[][] userFeatures = new double[featureCount][numUsers];
+        double[][] itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
-            trainFeature(model, ratings, i);
+            trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
         }
 
         logger.debug("Extracting singular values");
-        model.singularValues = new double[featureCount];
+        double[] singularValues = new double[featureCount];
         for (int feature = 0; feature < featureCount; feature++) {
-            double[] ufv = model.userFeatures[feature];
+            double[] ufv = userFeatures[feature];
             double ussq = 0;
             
             for (int i = 0; i < numUsers; i++) {
@@ -190,7 +183,7 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
                     ufv[i] /= unrm;
                 }
             }
-            double[] ifv = model.itemFeatures[feature];
+            double[] ifv = itemFeatures[feature];
             double issq = 0;
             for (int i = 0; i < numItems; i++) {
                 double fv = ifv[i];
@@ -202,19 +195,35 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
                     ifv[i] /= inrm;
                 }
             }
-            model.singularValues[feature] = unrm * inrm;
+            singularValues[feature] = unrm * inrm;
         }
         
-        return new SVDModel(featureCount, model.itemFeatures, model.singularValues,
-                            clampingFunction, data.itemIndex(), data.getNormalizer());
+        return new FunkSVDRecommender(featureCount, itemFeatures, singularValues,
+                            clampingFunction, context.itemIndex(), baseline);
     }
 
-    private final void trainFeature(Model model, List<SVDRating> ratings, int feature) {
+    private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
+            BaselinePredictor baseline) {
+        final int nusers = context.userIndex().getObjectCount();
+        MutableSparseVector[] estimates = new MutableSparseVector[nusers];
+        for (int i = 0; i < nusers; i++) {
+            final long uid = context.userIndex().getId(i);
+            MutableSparseVector urv = Ratings.userRatingVector(context.getUserRatings(uid));
+            MutableSparseVector blpreds = baseline.predict(uid, urv, urv.keySet());
+            estimates[i] = blpreds;
+        }
+        return estimates;
+    }
+
+    private final void trainFeature(double[][] ufvs, double[][] ifvs,
+            MutableSparseVector[] estimates,
+            FastCollection<IndexedRating> ratings, int feature) {
+        
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
-        double ufv[] = model.userFeatures[feature];
-        double ifv[] = model.itemFeatures[feature];
+        final double[] ufv = ufvs[feature];
+        final double[] ifv = ifvs[feature];
         DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
         DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
 
@@ -236,7 +245,7 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
             // Save the old RMSE so that we can measure change in error
             oldRmse = rmse;
             // Run the iteration and save the error
-            rmse = trainFeatureIteration(ratings, ufv, ifv, trailingValue);
+            rmse = trainFeatureIteration(ratings, ufv, ifv, estimates, trailingValue);
             logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
         }
 
@@ -245,69 +254,28 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        for (SVDRating r: ratings) {
-            r.updateCachedValue(ufv, ifv);
+        for (IndexedRating r: ratings) {
+            final int uidx = r.getUserIndex();
+            final int iidx = r.getItemIndex();
+            final long item = r.getItemId();
+            double est = estimates[uidx].get(item);
+            est = clampingFunction.apply(est + ufv[uidx] * ifv[iidx]);
+            estimates[uidx].set(item, est);
         }
     }
 
-    private final double trainFeatureIteration(List<SVDRating> ratings,
-            double[] ufv, double[] ifv, final double trailingValue) {
+    private final double trainFeatureIteration(FastCollection<IndexedRating> ratings,
+            double[] ufv, double[] ifv, MutableSparseVector[] estimates, double trailingValue) {
         // We'll need to keep track of our sum of squares
         double ssq = 0;
-        for (SVDRating r: ratings) {
-            ssq += r.trainStep(ufv, ifv, trailingValue);
-        }
-        // We're done with this feature.  Compute the total error (RMSE)
-        // and head off to the next iteration.
-        return Math.sqrt(ssq / ratings.size());
-    }
-
-    private List<SVDRating> indexData(RatingBuildContext data, Model model) {
-        Collection<IndexedRating> ratings = data.getRatings();
-
-        int nratings = ratings.size();
-        logger.debug("pre-processing {} ratings", nratings);
-        ArrayList<SVDRating> svr = new ArrayList<SVDRating>(nratings);
-        for (IndexedRating r: ratings) {
-        	SVDRating svdr = new SVDRating(model, r);
-        	svr.add(svdr);
-        }
-        svr.trimToSize();
-        return svr;
-    }
-
-    private static final class Model {
-        double userFeatures[][];
-        double itemFeatures[][];
-        double singularValues[];
-    }
-
-    // FIXME SVDRating shouldn't duplicate as much information
-    private final class SVDRating {
-        public final int user;
-        public final int item;
-        public final double value;
-        public double cachedValue;
-
-        public SVDRating(Model model, IndexedRating r) {
-            user = r.getUserIndex();
-            item = r.getItemIndex();
-            value = r.getRating();
-            cachedValue = 0;
-        }
-
-        /**
-         * Train one step on the user and item feature vectors against this rating.
-         * The relevant entries in <var>ufv</var> and <var>ifv</var> are updated.
-         * @param ufv The current user-feature preference vector.
-         * @param ifv The current item-feature relevance vector.
-         * @param trailingValue The trailing feature value to add to the prediction
-         * @return The squared error in the prediction.
-         */
-        public double trainStep(double[] ufv, double[] ifv, double trailingValue) {
+        for (IndexedRating r: ratings.fast()) {
+            final int uidx = r.getUserIndex();
+            final int iidx = r.getItemIndex();
+            final double value = r.getRating();
             // Step 1: get the predicted value (based on preceding features
             // and the current feature values)
-            double pred = cachedValue + ufv[user] * ifv[item];
+            final double estimate = estimates[uidx].get(r.getItemId());
+            double pred = estimate + ufv[uidx] * ifv[iidx];
             pred = clampingFunction.apply(pred);
 
             // Step 1b: add the estimate from remaining trailing values
@@ -319,21 +287,20 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
             final double err = value - pred;
 
             // Step 3: update the feature values.  We'll save the old values first.
-            final double ouf = ufv[user];
-            final double oif = ifv[item];
+            final double ouf = ufv[uidx];
+            final double oif = ifv[iidx];
             // Then we'll update user feature preference
             final double udelta = err * oif - trainingRegularization * ouf;
-            ufv[user] += udelta * learningRate;
-            // And finally the item feature relevance.
+            ufv[uidx] += udelta * learningRate;
+            // And the item feature relevance.
             final double idelta = err * ouf - trainingRegularization * oif;
-            ifv[item] += idelta * learningRate;
+            ifv[iidx] += idelta * learningRate;
 
             // Finally, return the squared error to the caller
             return err * err;
         }
-
-        public void updateCachedValue(double[] ufv, double[] ifv) {
-            cachedValue = clampingFunction.apply(cachedValue + ufv[user] * ifv[item]);
-        }
+        // We're done with this feature.  Compute the total error (RMSE)
+        // and head off to the next iteration.
+        return Math.sqrt(ssq / ratings.size());
     }
 }

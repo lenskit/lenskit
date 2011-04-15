@@ -32,7 +32,6 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
@@ -45,15 +44,15 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * user's ratings.
  *
  * @todo Look at using the user's feature preferences in some cases.
- * @todo Revise this class's relationship with {@link SVDModel}.
+ * @todo Revise this class's relationship with {@link FunkSVDRecommender}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SVDRatingPredictor implements RatingPredictor {
-	protected final SVDModel model;
+	protected final FunkSVDRecommender model;
 
-    protected SVDRatingPredictor(SVDModel m) {
+    protected SVDRatingPredictor(FunkSVDRecommender m) {
         model = m;
     }
 
@@ -117,8 +116,8 @@ public class SVDRatingPredictor implements RatingPredictor {
         LongSet baseTargets = new LongOpenHashSet(ratings.size() + items.size());
         baseTargets.addAll(ratings.keySet());
         baseTargets.addAll(items);
-        VectorTransformation norm = model.normalizer.makeTransformation(user, ratings);
-        norm.apply(rtmp);
+        MutableSparseVector bl = model.baseline.predict(user, ratings, ratings.keySet());
+        rtmp.subtract(bl);
         double uprefs[] = foldIn(user, rtmp);
 
         final int nf = model.featureCount;
@@ -145,7 +144,8 @@ public class SVDRatingPredictor implements RatingPredictor {
             }
             preds.set(item, score);
         }
-        norm.unapply(preds);
+        bl = model.baseline.predict(user, ratings, items);
+        preds.add(bl);
         return preds;
     }
 }

@@ -21,8 +21,12 @@
  */
 package org.grouplens.lenskit.svd;
 
+import org.grouplens.lenskit.BasketRecommender;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RatingRecommender;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.DoubleFunction;
 
 /**
@@ -30,24 +34,24 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class SVDModel {
+public class FunkSVDRecommender implements Recommender {
 	public final int featureCount;
 	public final double itemFeatures[][];
 	public final double singularValues[];
 	public final DoubleFunction clampingFunction;
 	
 	public final Index itemIndex;
-	public final UserRatingVectorNormalizer normalizer;
+	public final BaselinePredictor baseline;
 	
-	public SVDModel(int nfeatures, double[][] ifeats, double[] svals,
+	public FunkSVDRecommender(int nfeatures, double[][] ifeats, double[] svals,
 	                DoubleFunction clamp, Index iidx,
-	                UserRatingVectorNormalizer norm) {
+	                BaselinePredictor baseline) {
 		featureCount = nfeatures;
 		itemFeatures = ifeats;
 		singularValues = svals;
 		clampingFunction = clamp;
 		itemIndex = iidx;
-		normalizer = norm;
+		this.baseline = baseline;
 	}
 	
 	public double getItemFeatureValue(int item, int feature) {
@@ -57,4 +61,19 @@ public class SVDModel {
 	public int getItemIndex(long item) {
 	    return itemIndex.getIndex(item);
 	}
+
+    @Override
+    public RatingPredictor getRatingPredictor() {
+        return new SVDRatingPredictor(this);
+    }
+
+    @Override
+    public RatingRecommender getRatingRecommender() {
+        return null;
+    }
+
+    @Override
+    public BasketRecommender getBasketRecommender() {
+        return null;
+    }
 }
