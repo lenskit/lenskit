@@ -8,49 +8,27 @@
 
 Release ${project.version}
 
-  These release notes cover large, user-facing things.  See the
-  {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} for
-  complete change listings.
+  This release contains many large changes, including significant
+  architectural and API changes to make it easier to take LensKit
+  forward.  See the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
+  changelog}} for complete change listings.  Highlights include:
 
-  * Fixed <<<SVDRatingPredictor>>>'s use of baselines to be correct
-    and restore FunkSVD performance.
-
-  * Renamed SparseVector.containsId to SparseVector.containsKey for
-    improved consistency.  The original method is retained as a
-    deprecated compatibility shim and will be removed before we reach
-    1.0.
+  * Dropped our use of Guice for dependency injection and
+    configuration.  Recommenders are now configured directly with the
+    <<<RecommenderComponentBuilder>>> interface and subclasses.
 
   * Renamed and refactored classes in the recommender implementations
     to improve clarity and consistency.
     
-  * Moved recommender configuration to <<<org.grouplens.lenskit.config>>>
-    package.
-
-  * Upgraded to Guice 3.0 and Maven 3 (#issue(38)).
-
-  * Added recommender graphing support to the Maven plugin.
+  * Upgraded to Maven 3 (#issue(38)); Maven 2 should still work for
+    building everything except the web site.
 
   * Lots of documentation improvements.
 
   * Introduce <<<ImmutableSparseVector>>> and build more robust
     type-checking for mutability guarantees on sparse vectors.
     
-  * Make <<<BaselinePredictor>>> injections refuse to inject null. Classes taking
-    an optional <<<BaselinePredictor>>> should use an optional method injection
-    instead of a nullable constructor injection.
-
   []
-
-* API Compatibility Notes
-
-  This release features a number of API changes. Several of the major ones:
-  
-  * <<<RecommenderModuleComponent>>> and related classes are moved to
-    <<<org.grouplens.lenskit.config>>>.
-    
-  * Internal classes for KNN and SVD recommender implementations have been
-    renamed and moved around. Code depending on those will need to be updated.
-    This may not really be an API change, though.
 
 Release 0.0.2 (March 28, 2011)
 
