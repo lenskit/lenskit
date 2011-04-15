@@ -34,6 +34,21 @@ public class SVDRecommenderBuilder extends AbstractRecommenderComponentBuilder<S
         modelBuilder = new GradientDescentSVDModelBuilder();
     }
 
+    /**
+     * @return the modelBuilder
+     */
+    public RecommenderComponentBuilder<? extends SVDModel> getModelBuilder() {
+        return modelBuilder;
+    }
+
+    /**
+     * @param modelBuilder the modelBuilder to set
+     */
+    public void setModelBuilder(
+            RecommenderComponentBuilder<? extends SVDModel> modelBuilder) {
+        this.modelBuilder = modelBuilder;
+    }
+
     @Override
     protected SVDRecommender buildNew(RatingBuildContext context) {
         SVDModel model = modelBuilder.build(context);

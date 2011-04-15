@@ -26,9 +26,13 @@ import java.util.List;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +72,7 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
     private DoubleFunction clampingFunction;
     private int iterationCount;
     
-    private RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> normalContextBuilder;
+    private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
 
     public GradientDescentSVDModelBuilder() {
         featureCount = 100;
@@ -77,34 +81,64 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
         trainingRegularization = 0.015;
         clampingFunction = new DoubleFunction.Identity();
         iterationCount = 0;
-        
-        normalContextBuilder = new NormalizedRatingBuildContext.Builder();
+        baselineBuilder = new ItemUserMeanPredictor.Builder();
+    }
+    
+    public int getFeatureCount() {
+        return featureCount;
     }
     
     public void setFeatureCount(int count) {
         featureCount = count;
     }
     
+    public double getLearningRate() {
+        return learningRate;
+    }
+    
     public void setLearningRate(double rate) {
         learningRate = rate;
+    }
+    
+    public double getTrainingThreshold() {
+        return trainingThreshold;
     }
     
     public void setTrainingThreshold(double threshold) {
         trainingThreshold = threshold;
     }
     
+    public double getGradientDescentRegularization() {
+        return trainingRegularization;
+    }
+    
     public void setGradientDescentRegularization(double regularization) {
         trainingRegularization = regularization;
+    }
+    
+    public DoubleFunction getClampingFunction() {
+        return clampingFunction;
     }
     
     public void setClampingFunction(DoubleFunction function) {
         clampingFunction = function;
     }
     
+    public int getIterationCount() {
+        return iterationCount;
+    }
+    
     public void setIterationCount(int count) {
         iterationCount = count;
     }
     
+    public RecommenderComponentBuilder<? extends BaselinePredictor> getBaseline() {
+        return baselineBuilder;
+    }
+    
+    public void setBaseline(RecommenderComponentBuilder<? extends BaselinePredictor> baseline) {
+        baselineBuilder = baseline;
+    }
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
@@ -120,8 +154,11 @@ public class GradientDescentSVDModelBuilder extends AbstractRecommenderComponent
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        // Get the NormalizedRatingBuildContext for this context
-        NormalizedRatingBuildContext data = normalContextBuilder.build(context);
+        // FIXME Use the baseline predictor directly.
+        UserRatingVectorNormalizer blnorm = new BaselineSubtractingNormalizer.Builder()
+            .setBaselinePredictor(baselineBuilder)
+            .build(context);
+        NormalizedRatingBuildContext data = context.normalize(blnorm);
         
         Model model = new Model();
         List<SVDRating> ratings = indexData(data, model);

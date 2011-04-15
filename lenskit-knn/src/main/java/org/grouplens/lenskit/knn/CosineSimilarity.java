@@ -40,7 +40,7 @@ public class CosineSimilarity
 
     public CosineSimilarity(double dampingFactor) {
         this.dampingFactor = dampingFactor;
-        logger.debug("Using damping factor {}", dampingFactor);
+        logger.debug("Using smoothing factor {}", dampingFactor);
     }
 
     /* (non-Javadoc)

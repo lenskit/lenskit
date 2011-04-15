@@ -42,7 +42,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  * 
- * <p>It supports mean damping (see {@link MeanDamping}).
+ * <p>It supports mean smoothing (see {@link MeanDamping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -54,27 +54,32 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends AbstractRecommenderComponentBuilder<ItemUserMeanPredictor> {
-        private double damping = 0;
+        private double smoothing = 0;
         
-        public void setDamping(double damping) {
-            this.damping = damping;
+        public double getSmoothing() {
+            return smoothing;
+        }
+        
+        public Builder setSmoothing(double s) {
+            smoothing = s;
+            return this;
         }
         
         @Override
         protected ItemUserMeanPredictor buildNew(RatingBuildContext context) {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(context.getRatings().fastIterator(), smoothing, itemMeans);
             
-            return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
+            return new ItemUserMeanPredictor(itemMeans, globalMean, smoothing);
         }
     }
     
     private static final long serialVersionUID = 1L;
-    protected final double damping;
+    protected final double smoothing;
 
-    protected ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
+    protected ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double smooth) {
         super(itemMeans, globalMean);
-        this.damping = damping;
+        this.smoothing = smooth;
     }
 
     /**
@@ -95,7 +100,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
             long iid = rating.getLongKey();
             total += r - getItemMean(iid);
         }
-        return total / (values.size() + damping);
+        return total / (values.size() + smoothing);
     }
 
     /* (non-Javadoc)

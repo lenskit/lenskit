@@ -1,7 +1,6 @@
 // Configure the gradient descent SVD to behave mostly like FunkSVD
 rec.name = "FunkSVD"
-rec.module = org.grouplens.lenskit.svd.GradientDescentSVDModule
-rec.module.core.meanDamping = 25
-rec.module.core.baseline = org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-rec.module.core.userRatingVectorNormalizer = org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
+rec.builder = new org.grouplens.lenskit.svd.SVDRecommenderBuilder();
+rec.builder.modelBuilder.baseline = new org.grouplens.lenskit.baseline.ItemUserMeanPredictor.Builder();
+rec.builder.modelBuilder.baseline.smoothing = 25
 // rec.module.clampingFunction = org.grouplens.lenskit.svd.RatingRangeClamp
