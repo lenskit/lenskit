@@ -37,6 +37,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
@@ -48,7 +49,9 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
+import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
@@ -68,7 +71,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     private SimilarityMatrixAccumulatorFactory matrixSimilarityFactory;
     
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
-    private RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> normalizedRBCBuilder;
+    private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
     
     public ItemItemRecommenderBuilder() {
         itemSimilarity = new CosineSimilarity(100);
@@ -76,8 +79,8 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         
         matrixSimilarityFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
         
-        baselineBuilder = null;
-        normalizedRBCBuilder = new NormalizedRatingBuildContext.Builder();
+        baselineBuilder = new UserMeanPredictor.Builder();
+        normalizerBuilder = new BaselineSubtractingNormalizer.Builder(baselineBuilder);
     }
     
     public Similarity<? super SparseVector> getSimilarity() {
@@ -112,17 +115,25 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         baselineBuilder = predictor;
     }
     
-    public RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> getNormalizedRatingBuildContext() {
-        return normalizedRBCBuilder;
+    /**
+     * @return the normalizerBuilder
+     */
+    public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
+        return normalizerBuilder;
     }
-    
-    public void setNormalizedRatingBuildContext(RecommenderComponentBuilder<? extends NormalizedRatingBuildContext> builder) {
-        normalizedRBCBuilder = builder;
+
+    /**
+     * @param normalizerBuilder the normalizerBuilder to set
+     */
+    public void setNormalizer(
+            RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
+        this.normalizerBuilder = normalizerBuilder;
     }
     
     @Override
     protected ItemItemRecommender buildNew(RatingBuildContext context) {
-        NormalizedRatingBuildContext data = normalizedRBCBuilder.build(context);
+        UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
+        NormalizedRatingBuildContext data = context.normalize(norm);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
         
         BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());

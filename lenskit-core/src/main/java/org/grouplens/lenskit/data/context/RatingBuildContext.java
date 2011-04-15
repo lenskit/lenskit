@@ -27,6 +27,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.FastCollection;
 
 /**
@@ -132,6 +134,14 @@ public interface RatingBuildContext extends Closeable {
      * @param value The new value
      */
 	<T> void put(Key<T> key, T value);
+	
+	/**
+	 * Create a normalized rating build context backed by this context.
+	 * @param norm The normalizer.
+	 * @return A normalized build context backed by this context. Contexts are
+	 * memoized and will only be built once per normalization instance.
+	 */
+	NormalizedRatingBuildContext normalize(UserRatingVectorNormalizer norm);
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

@@ -101,7 +101,7 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
     private final UserRatingVectorNormalizer normalizer;
     private SparseVector[] normedData;
     
-    private NormalizedRatingBuildContext(RatingBuildContext context, UserRatingVectorNormalizer norm) {
+    public NormalizedRatingBuildContext(RatingBuildContext context, UserRatingVectorNormalizer norm) {
         buildContext = context;
         normalizer = norm;
     }
