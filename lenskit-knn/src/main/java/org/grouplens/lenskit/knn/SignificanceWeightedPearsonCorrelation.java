@@ -32,9 +32,21 @@ package org.grouplens.lenskit.knn;
  *
  */
 public class SignificanceWeightedPearsonCorrelation extends PearsonCorrelation {
-    private final int threshold;
+    private int threshold;
+    
+    public SignificanceWeightedPearsonCorrelation() {
+        threshold = 0;
+    }
 
     public SignificanceWeightedPearsonCorrelation(int thresh) {
+        threshold = thresh;
+    }
+    
+    public int getThreshold() {
+        return threshold;
+    }
+    
+    public void setThreshold(int thresh) {
         threshold = thresh;
     }
 

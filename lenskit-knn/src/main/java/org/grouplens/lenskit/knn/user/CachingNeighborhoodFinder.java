@@ -65,8 +65,16 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
             similarity = new PearsonCorrelation();
         }
         
+        public int getNeighborhoodSize() {
+            return neighborhoodSize;
+        }
+        
         public void setNeighborhoodSize(int neighborhood) {
             neighborhoodSize = neighborhood;
+        }
+        
+        public Similarity<? super SparseVector> getSimilarity() {
+            return similarity;
         }
         
         public void setSimilarity(Similarity<? super SparseVector> similarity) {
