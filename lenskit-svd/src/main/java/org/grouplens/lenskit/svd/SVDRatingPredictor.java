@@ -20,7 +20,6 @@ package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -28,8 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -49,10 +47,11 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRatingPredictor implements RatingPredictor {
+public class SVDRatingPredictor extends AbstractDynamicRatingPredictor {
 	protected final FunkSVDRecommender model;
 
     protected SVDRatingPredictor(FunkSVDRecommender m) {
+        super(m.dao);
         model = m;
     }
 
@@ -93,21 +92,6 @@ public class SVDRatingPredictor implements RatingPredictor {
         }
 
         return featurePrefs;
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.Recommender#predict(org.grouplens.lenskit.data.dao.UserRatingProfile, java.lang.Object)
-     */
-    @Override
-    public ScoredId predict(long user, SparseVector ratings, long item) {
-        LongArrayList items = new LongArrayList(1);
-        items.add(item);
-        SparseVector scores = predict(user, ratings, items);
-
-        if (scores.containsKey(item))
-            return new ScoredId(item, scores.get(item));
-        else
-            return null;
     }
 
     @Override

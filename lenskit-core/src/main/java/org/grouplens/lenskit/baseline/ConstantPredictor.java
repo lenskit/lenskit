@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -88,13 +87,5 @@ public class ConstantPredictor implements BaselinePredictor {
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
         return constantPredictions(items, value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(java.lang.Object, java.util.Map, java.lang.Object)
-     */
-    @Override
-    public ScoredId predict(long user, SparseVector profile, long item) {
-        return new ScoredId(item, value);
     }
 }

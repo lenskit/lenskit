@@ -25,6 +25,7 @@ import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
@@ -48,15 +49,17 @@ public class ItemItemRecommender implements Recommender {
     private final UserRatingVectorNormalizer normalizer;
     private final BaselinePredictor baseline;
     private final LongSortedSet itemUniverse;
+    private final RatingDataAccessObject dao;
     
     ItemItemRecommender(Index indexer, SimilarityMatrix matrix, 
                         UserRatingVectorNormalizer norm, BaselinePredictor baseline,
-                        LongSortedSet items) {
+                        LongSortedSet items, RatingDataAccessObject dao) {
         this.itemIndexer = indexer;
         this.normalizer = norm;
         this.baseline = baseline;
         this.matrix = matrix;
         this.itemUniverse = items;
+        this.dao = dao;
     }
     
     protected void setRatingPredictor(ItemItemRatingPredictor predictor) {
@@ -69,6 +72,11 @@ public class ItemItemRecommender implements Recommender {
     
     @Override
     public ItemItemRatingPredictor getRatingPredictor() {
+        return predictor;
+    }
+    
+    @Override
+    public ItemItemRatingPredictor getDynamicRatingPredictor() {
         return predictor;
     }
 
@@ -98,6 +106,10 @@ public class ItemItemRecommender implements Recommender {
 
     public long getItem(int idx) {
         return itemIndexer.getId(idx);
+    }
+    
+    public RatingDataAccessObject getDAO() {
+        return dao;
     }
 
     public LongSortedSet getItemUniverse() {

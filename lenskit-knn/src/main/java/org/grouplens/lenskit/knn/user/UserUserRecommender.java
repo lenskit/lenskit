@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.BasketRecommender;
+import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
@@ -31,15 +32,22 @@ import org.grouplens.lenskit.Recommender;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
 public class UserUserRecommender implements Recommender {
-    private final UserUserRatingRecommender rec; // This is also the predictor
+    private final UserUserRatingPredictor pred;
+    private final UserUserRatingRecommender rec;
     
-    UserUserRecommender(UserUserRatingRecommender rec) {
+    UserUserRecommender(UserUserRatingPredictor pred, UserUserRatingRecommender rec) {
+        this.pred = pred;
         this.rec = rec;
     }
     
     @Override
     public RatingPredictor getRatingPredictor() {
-        return rec;
+        return pred;
+    }
+    
+    @Override
+    public DynamicRatingPredictor getDynamicRatingPredictor() {
+        return pred;
     }
 
     @Override

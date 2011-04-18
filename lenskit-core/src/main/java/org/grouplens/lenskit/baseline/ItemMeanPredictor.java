@@ -34,7 +34,6 @@ import java.util.Iterator;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -163,14 +162,6 @@ public class ItemMeanPredictor implements BaselinePredictor {
             preds[i] = getItemMean(keys[i]);
         }
         return MutableSparseVector.wrap(keys, preds);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
-     */
-    @Override
-    public ScoredId predict(long user, SparseVector ratings, long item) {
-        return new ScoredId(item, getItemMean(item));
     }
 
     protected double getItemMean(long id) {

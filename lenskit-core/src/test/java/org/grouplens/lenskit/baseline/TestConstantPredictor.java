@@ -23,10 +23,8 @@ package org.grouplens.lenskit.baseline;
 
 import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.ConstantPredictor;
-import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Test;
@@ -39,9 +37,9 @@ public class TestConstantPredictor {
 
     @Test
     public void testConstantPredict() {
-        RatingPredictor pred = new ConstantPredictor(5);
+        BaselinePredictor pred = new ConstantPredictor(5);
         SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-        ScoredId score = pred.predict(10l, map, 2l);
-        assertEquals(5, score.getScore(), 0.00001);
+        SparseVector pv = pred.predict(10l, map, new LongArrayList(new long[]{2l}));
+        assertEquals(5, pv.get(2l), 0.00001);
     }
 }

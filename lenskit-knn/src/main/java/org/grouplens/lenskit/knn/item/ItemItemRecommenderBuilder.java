@@ -142,7 +142,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
         BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
-        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), baseline, items);
+        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), baseline, items, context.getDAO());
         ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
         
         rec.setRatingPredictor(predictor);

@@ -198,8 +198,9 @@ public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuild
             singularValues[feature] = unrm * inrm;
         }
         
-        return new FunkSVDRecommender(featureCount, itemFeatures, singularValues,
-                            clampingFunction, context.itemIndex(), baseline);
+        return new FunkSVDRecommender(context.getDAO(),
+                featureCount, itemFeatures, singularValues,
+                clampingFunction, context.itemIndex(), baseline);
     }
 
     private MutableSparseVector[] initializeEstimates(RatingBuildContext context,

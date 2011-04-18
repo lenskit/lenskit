@@ -29,8 +29,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.norm.VectorTransformation;
@@ -41,11 +41,12 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRatingPredictor implements RatingPredictor {
+public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final ItemItemRecommender model;
     private final double similarityThreshold;
     
     public ItemItemRatingPredictor(ItemItemRecommender model, double simThresh) {
+        super(model.getDAO());
         this.model = model;
         similarityThreshold = simThresh;
     }
@@ -67,41 +68,6 @@ public class ItemItemRatingPredictor implements RatingPredictor {
                 }
             }
             return items;
-        }
-    }
-    
-    @Override
-    public ScoredId predict(long user, SparseVector ratings, long item) {
-        VectorTransformation norm = model.normalizingTransformation(user, ratings);
-        MutableSparseVector normed = ratings.mutableCopy();
-        norm.apply(normed);
-        double sum = 0;
-        double totalWeight = 0;
-        for (IndexedItemScore score: model.getNeighbors(item)) {
-            long other = model.getItem(score.getIndex());
-            double s = score.getScore();
-            if (normed.containsKey(other)) {
-                // FIXME this goes wacky with negative similarities
-                double rating = normed.get(other);
-                sum += rating * s;
-                totalWeight += abs(s);
-            }
-        }
-        
-        RatingPredictor baseline;
-        
-        if (totalWeight >= similarityThreshold) {
-            // denormalize
-            long[] keys = {item};
-            double[] preds = {sum / totalWeight};
-            MutableSparseVector v = MutableSparseVector.wrap(keys, preds);
-            norm.unapply(v);
-            return new ScoredId(item, preds[0]);
-        } else if ((baseline = model.getBaselinePredictor()) != null) {
-            // fall back to baseline
-            return baseline.predict(user, ratings, item);
-        } else {
-            return null;
         }
     }
 
@@ -152,7 +118,7 @@ public class ItemItemRatingPredictor implements RatingPredictor {
         MutableSparseVector preds = MutableSparseVector.wrap(predItems, predValues);
         norm.unapply(preds);
         
-        final RatingPredictor baseline = model.getBaselinePredictor();
+        final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null) {
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
             // Re-use the sums vector to merge predictions with baseline

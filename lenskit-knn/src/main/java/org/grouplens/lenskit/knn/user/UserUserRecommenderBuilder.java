@@ -42,6 +42,8 @@ public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuil
     @Override
     protected UserUserRecommender buildNew(RatingBuildContext context) {
         NeighborhoodFinder n = neighborhoodBuilder.build(context);
-        return new UserUserRecommender(new UserUserRatingRecommender(n));
+        UserUserRatingPredictor pred = new UserUserRatingPredictor(context.getDAO(), n);
+        UserUserRatingRecommender rec = new UserUserRatingRecommender(pred);
+        return new UserUserRecommender(pred, rec);
     }
 }

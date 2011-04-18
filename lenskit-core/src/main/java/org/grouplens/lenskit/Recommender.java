@@ -25,6 +25,9 @@ public interface Recommender {
     public RatingPredictor getRatingPredictor();
     
     @Nullable
+    public DynamicRatingPredictor getDynamicRatingPredictor();
+    
+    @Nullable
     public RatingRecommender getRatingRecommender();
     
     @Nullable

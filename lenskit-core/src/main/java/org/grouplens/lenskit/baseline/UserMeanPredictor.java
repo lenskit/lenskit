@@ -21,7 +21,6 @@ package org.grouplens.lenskit.baseline;
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -77,13 +76,5 @@ public class UserMeanPredictor implements BaselinePredictor {
             Collection<Long> items) {
         double mean = average(ratings, globalMean) + globalMean;
         return ConstantPredictor.constantPredictions(items, mean);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, long)
-     */
-    @Override
-    public ScoredId predict(long user, SparseVector ratings, long item) {
-        return new ScoredId(item, average(ratings, globalMean) + globalMean);
     }
 }

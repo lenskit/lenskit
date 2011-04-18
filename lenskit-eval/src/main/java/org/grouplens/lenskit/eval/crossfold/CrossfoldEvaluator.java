@@ -26,7 +26,7 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -147,7 +147,7 @@ public class CrossfoldEvaluator implements Runnable {
         logger.debug("Benchmarking {}", algo.getName());
         logger.debug("Building recommender");
         Recommender rec = algo.buildRecommender(train);
-        RatingPredictor predictor = rec.getRatingPredictor();
+        DynamicRatingPredictor predictor = rec.getDynamicRatingPredictor();
         writer.setValue(colBuildTime, timer.elapsed());
         logger.debug("Built model {} model in {}",
                 algo.getName(), timer.elapsedPretty());

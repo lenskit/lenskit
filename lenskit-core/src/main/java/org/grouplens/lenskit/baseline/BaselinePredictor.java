@@ -21,25 +21,24 @@ package org.grouplens.lenskit.baseline;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.Serializer;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * BaselinePredictor is a subtype of RatingPredictor that guarantees 100%
- * coverage of items. It does not add any new methods to the RatingPredictor
- * interface. Because BaselinePredictors are often part of a "model" used by a
+ * Rating predictor that operates on sparse vectors and guarantees 100% coverage
+ * of items. Because BaselinePredictors are often part of a "model" used by a
  * recommender algorithm, all BaselinePredictors are required to be Serializable
  * so that they can be easily written to or read from a file with a
  * {@link Serializer}.
  * 
  * @author Michael Ludwig
  */
-public interface BaselinePredictor extends RatingPredictor, Serializable {
+public interface BaselinePredictor extends Serializable {
     /**
-     * Refine predict to return mutable sparse vectors.
-     * @see RatingPredictor#predict(long, SparseVector, Collection)
+     * Predict method that returns mutable sparse vectors.
+     * @see DynamicRatingPredictor#predict(long, SparseVector, Collection)
      */
     MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 }
