@@ -20,12 +20,11 @@ package org.grouplens.lenskit.eval.maven;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +39,10 @@ import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.crossfold.RandomUserRatingProfileSplitter;
 import org.grouplens.lenskit.eval.crossfold.TimestampUserRatingProfileSplitter;
 import org.grouplens.lenskit.eval.crossfold.UserRatingProfileSplitter;
+import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
+import org.grouplens.lenskit.eval.predict.MAEEvaluator;
+import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 
 /**
  * Run a crossfold evaluation with LensKit.
@@ -145,21 +148,19 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             } catch (InvalidRecommenderException e) {
                 throw new MojoExecutionException("Invalid recommender", e);
             }
-            Writer output;
-            try {
-                output = new FileWriter(outputFile);
-            } catch (IOException e) {
-                throw new MojoExecutionException("Error opening output file " + outputFile, e);
-            }
             CrossfoldEvaluator eval;
             try {
-                eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter, output);
+                eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter);
             } catch (IOException e) {
                 throw new MojoExecutionException("Error loading evaluator.", e);
             }
+            List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
+            evaluators.add(new CoverageEvaluator());
+            evaluators.add(new MAEEvaluator());
+            evaluators.add(new RMSEEvaluator());
 
             try {
-                eval.run();
+                eval.run(evaluators, outputFile);
             } catch (Exception e) {
                 throw new MojoExecutionException("Unexpected failure running recommender evaluation.", e);
             }

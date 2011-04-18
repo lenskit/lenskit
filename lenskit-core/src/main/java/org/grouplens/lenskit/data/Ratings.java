@@ -23,10 +23,13 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 /**
@@ -101,5 +104,15 @@ public final class Ratings {
         }
         return new MutableSparseVector(vect);
     }
-
+    
+    /**
+     * Convert a sparse vector into a rating list
+     */
+    public static List<Rating> fromUserVector(long user, SparseVector v) {
+        List<Rating> ratings = new ArrayList<Rating>(v.size());
+        for (Long2DoubleMap.Entry e: v.fast()) {
+            ratings.add(new SimpleRating(user, e.getLongKey(), e.getDoubleValue()));
+        }
+        return ratings;
+    }
 }

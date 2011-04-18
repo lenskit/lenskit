@@ -20,10 +20,6 @@ package org.grouplens.lenskit.eval;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +30,10 @@ import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
+import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
+import org.grouplens.lenskit.eval.predict.MAEEvaluator;
+import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,20 +158,15 @@ public final class EvaluationRunner {
                         ratings.close();
                 }
             }
-
-            Writer output = new OutputStreamWriter(System.out);
-            File outFile = options.getOutputFile();
-            if (!outFile.getName().isEmpty()) {
-                try {
-                    output = new FileWriter(outFile);
-                } catch (IOException e) {
-                    fail(2, "Error opening output file", e);
-                }
-            }
+            
+            List<PredictionEvaluator> evals = new ArrayList<PredictionEvaluator>();
+            evals.add(new CoverageEvaluator());
+            evals.add(new MAEEvaluator());
+            evals.add(new RMSEEvaluator());
 
             try {
-                CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos, output);
-                benchmark.run();
+                CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos);
+                benchmark.run(evals, options.getOutputFile());
             } catch (Exception e) {
                 fail(3, "Error running benchmark", e);
             }

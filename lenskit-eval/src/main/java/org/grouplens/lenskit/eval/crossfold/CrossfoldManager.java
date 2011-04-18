@@ -18,20 +18,27 @@
  */
 package org.grouplens.lenskit.eval.crossfold;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.Cursors2;
+import org.grouplens.lenskit.data.LongCursor;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * Implementation of a train/test ratings set. It takes care of partitioning the
@@ -44,7 +51,7 @@ import com.google.common.base.Predicate;
  */
 public class CrossfoldManager {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
-    private Long2IntMap userPartitionMap;
+    private Long2ObjectMap<SparseVector>[] querySets;
     private final int chunkCount;
     private RatingDataAccessObject ratings;
 
@@ -53,26 +60,28 @@ public class CrossfoldManager {
      * @param nfolds The number of portions to divide the data set into.
      * @param ratings The ratings data to partition.
      */
-    public CrossfoldManager(int nfolds, RatingDataAccessObject ratings) {
+    @SuppressWarnings("unchecked")
+    public CrossfoldManager(int nfolds, RatingDataAccessObject ratings,
+            UserRatingProfileSplitter splitter) {
         logger.debug("Creating rating set with {} folds", nfolds);
-        userPartitionMap = new Long2IntOpenHashMap();
-        userPartitionMap.defaultReturnValue(nfolds);
+        querySets = new Long2ObjectMap[nfolds];
+        for (int i = 0; i < nfolds; i++) {
+            querySets[i] = new Long2ObjectOpenHashMap<SparseVector>();
+        }
         chunkCount = nfolds;
         this.ratings = ratings;
 
-        Random splitter = new Random();
-        Cursor<Long> userCursor = ratings.getUsers();
+        Random rnd = new Random();
+        Cursor<UserRatingProfile> userCursor = ratings.getUserRatingProfiles();
         try {
-            int nusers = userCursor.getRowCount();
-            if (nusers >= 0) {
-                userPartitionMap = new Long2IntOpenHashMap(nusers);
-            } else {
-                userPartitionMap = new Long2IntOpenHashMap();
+            int nusers = 0;
+            for (UserRatingProfile user: userCursor) {
+                int n = rnd.nextInt(nfolds);
+                SplitUserRatingProfile sp = splitter.splitProfile(user);
+                querySets[n].put(sp.getUserId(), sp.getProbeVector());
+                nusers++;
             }
-            for (long uid: userCursor) {
-                userPartitionMap.put(uid, splitter.nextInt(nfolds));
-            }
-            logger.info("Partitioned {} users into {} folds", userPartitionMap.size(), nfolds);
+            logger.info("Partitioned {} users into {} folds", nusers, nfolds);
         } finally {
             userCursor.close();
         }
@@ -89,26 +98,50 @@ public class CrossfoldManager {
      * @return The union of all data partitions except testIndex.
      */
     public RatingDataAccessObject trainingSet(final int testIndex) {
-        Predicate<Long> filter = new Predicate<Long>() {
-            public boolean apply(Long uid) {
-                return userPartitionMap.get(uid.longValue()) != testIndex;
+        final Long2ObjectMap<SparseVector> qmap = querySets[testIndex];
+        Predicate<Rating> filter = new Predicate<Rating>() {
+            public boolean apply(Rating r) {
+                SparseVector v = qmap.get(r.getUserId());
+                return v == null || !v.containsKey(r.getItemId());
             }
         };
-        return new UserFilteredDAO(ratings, filter);
+        return new RatingFilteredDAO(ratings, filter);
     }
 
     /**
      * Return a test data set.
      * @param testIndex The index of the test set to use.
      * @return The test set of users.
+     *
+     * @todo Fix this method to be more efficient - currently, we convert from
+     * vectors to ratings to later be converted back to vectors. That's slow.
      */
-    public Collection<UserRatingProfile> testSet(final int testIndex) {
-        Predicate<UserRatingProfile> filter = new Predicate<UserRatingProfile>() {
-            public boolean apply(UserRatingProfile profile) {
-                int part = userPartitionMap.get(profile.getUser());
-                return part == testIndex;
+    public RatingDataAccessObject testSet(final int testIndex) {
+        return new AbstractRatingDataAccessObject() {
+            Long2ObjectMap<SparseVector> queryMap = querySets[testIndex];
+            @Override
+            public LongCursor getUsers() {
+                return Cursors2.wrap(queryMap.keySet());
+            }
+            @Override
+            public Cursor<Rating> getRatings() {
+                return Cursors.wrap(Iterators.concat(new Iterator<Iterator<Rating>>() {
+                    Iterator<Long2ObjectMap.Entry<SparseVector>> iter =
+                        queryMap.long2ObjectEntrySet().iterator();
+                    @Override
+                    public boolean hasNext() {
+                        return iter.hasNext();
+                    }
+                    @Override
+                    public Iterator<Rating> next() {
+                        Long2ObjectMap.Entry<SparseVector> e = iter.next();
+                        long uid = e.getLongKey();
+                        SparseVector v = e.getValue();
+                        return Ratings.fromUserVector(uid, v).iterator();
+                    }
+                    public void remove() { throw new UnsupportedOperationException(); }
+                }));
             }
         };
-        return Cursors.makeList(org.grouplens.common.cursors.Cursors.filter(ratings.getUserRatingProfiles(), filter));
     }
 }
