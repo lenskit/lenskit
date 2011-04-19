@@ -144,7 +144,8 @@ public class MultiRunTableResultManager {
         @Override
         public void finishBuild() {
             buildTimer.stop();
-            logger.info("Build finished in {}", buildTimer.elapsedPretty());
+            logger.info("Build of {} finished in {}", algo.getName(),
+                    buildTimer.elapsedPretty());
         }
 
         @Override
@@ -155,7 +156,7 @@ public class MultiRunTableResultManager {
         @Override
         public void finish() {
             testTimer.stop();
-            logger.info("Test finished in {}", testTimer.elapsedPretty());
+            logger.info("Test of {} finished in {}", algo.getName(), testTimer.elapsedPretty());
             
             writer.setValue(COL_BUILD_TIME, buildTimer.elapsed());
             writer.setValue(COL_TEST_TIME, testTimer.elapsed());

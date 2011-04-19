@@ -31,6 +31,10 @@ import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.model.fileset.FileSet;
+import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -77,9 +81,14 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
     /**
      * Location of the recommender configuration script.
      * @parameter expression="${lenskit.recommenderScript}"
-     * @required
      */
     private File recommenderScript;
+    
+    /**
+     * Set of recommender scripts.
+     * @parameter expression="${lenskit.recommenderScripts}"
+     */
+    private FileSet recommenderScripts;
     
     /**
      * Input data location.
@@ -107,6 +116,12 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
     private int numFolds;
     
     /**
+     * Preload the ratings?
+     * @parameter expression="${lenskit.preload}" default-value="false"
+     */
+    private boolean preload;
+    
+    /**
      * Holdout fraction for test users.
      * @parameter expression="${lenskit.holdoutFraction}" default-value="0.333333"
      */
@@ -116,6 +131,8 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
         // Before we can run, we need to replace our class loader to include
         // the project's output directory.  Kinda icky, but it's the brakes.
         // TODO: find a better way to set up our class loader
+        if (recommenderScript == null && recommenderScripts == null)
+            throw new MojoExecutionException("No recommender script(s) specified");
         URL outputUrl;
         try {
             outputUrl = classDirectory.toURI().toURL();
@@ -141,10 +158,28 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             } catch (FileNotFoundException e1) {
                 throw new MojoExecutionException("Input file " + dataFile + " not found", e1);
             }
+            if (preload)
+                ratings = new RatingCollectionDAO(Cursors.makeList(ratings.getRatings()));
 
             List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
             try {
-                algorithms.add(AlgorithmInstance.load(recommenderScript, loader));
+                if (recommenderScripts != null) {
+                    getLog().debug("Loading multiple recommender scripts");
+                    getLog().debug("Directory: " + recommenderScripts.getDirectory());
+                    getLog().debug("Excludes: " + recommenderScripts.getExcludes());
+                    getLog().debug("Includes: " + recommenderScripts.getIncludes());
+                    FileSetManager fsmgr = new FileSetManager();
+                    String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
+                    File base = new File(recommenderScripts.getDirectory());
+                    for (String name: scriptNames) {
+                        File scriptFile = new File(base, name);
+                        getLog().info("Loading recommender from " + scriptFile.getPath());
+                        algorithms.add(AlgorithmInstance.load(scriptFile, loader));                    
+                    }
+                }
+                
+                if (recommenderScript != null)
+                    algorithms.add(AlgorithmInstance.load(recommenderScript, loader));
             } catch (InvalidRecommenderException e) {
                 throw new MojoExecutionException("Invalid recommender", e);
             }
