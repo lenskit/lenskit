@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.crossfold;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -71,13 +72,19 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
     public Cursor<Rating> getRatings(SortOrder order) {
         return Cursors.filter(base.getRatings(order), filter);
     }
+    
+    private AtomicBoolean urpUsed = new AtomicBoolean(false);
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
-        logger.warn("Using expensive rating-filtered user rating profile");
+        if (!urpUsed.get()) {
+            logger.warn("Using expensive rating-filtered user rating profile");
+            logger.info("Future warnings about slow user rating profiles suppressed.");
+            urpUsed.set(true);
+        }
         return Cursors.transform(base.getUserRatingProfiles(),
                 new Function<UserRatingProfile, UserRatingProfile>() {
             public UserRatingProfile apply(final UserRatingProfile p) {

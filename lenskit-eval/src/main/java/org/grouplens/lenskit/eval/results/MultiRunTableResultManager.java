@@ -18,12 +18,16 @@
  */
 package org.grouplens.lenskit.eval.results;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -52,6 +56,7 @@ public class MultiRunTableResultManager {
     
     private List<PredictionEvaluator> evaluators;
     private TableWriter writer;
+    private TableWriter predictionWriter;
 
     public MultiRunTableResultManager(List<AlgorithmInstance> algos,
             List<PredictionEvaluator> evals,
@@ -74,7 +79,23 @@ public class MultiRunTableResultManager {
         } catch (IOException e) {
             throw new RuntimeException("Error creating table writer", e);
         }
-        
+    }
+    
+    public void setPredictionOutput(@Nullable File f) throws IOException {
+    	if (predictionWriter != null)
+    		predictionWriter.finish();
+    	predictionWriter = null;
+    	
+    	if (f != null) {
+    		TableWriterBuilder twb = new CSVWriterBuilder();
+    		twb.addColumn("Run");
+    		twb.addColumn("Algorithm");
+    		twb.addColumn("User");
+    		twb.addColumn("Item");
+    		twb.addColumn("Rating");
+    		twb.addColumn("Prediction");
+    		predictionWriter = twb.makeWriter(new FileWriter(f));
+    	}
     }
     
     public ResultAccumulator makeAccumulator(final int run) {
@@ -84,7 +105,7 @@ public class MultiRunTableResultManager {
                     AlgorithmInstance algo) {
                 writer.setValue(COL_RUN, run);
                 writer.setValue(COL_ALGORITHM, algo.getName());
-                return new MRTAlgorithmTestAccumulator();
+                return new MRTAlgorithmTestAccumulator(run, algo);
             }
         };
     }
@@ -92,6 +113,8 @@ public class MultiRunTableResultManager {
     public void finish() {
         try {
             writer.finish();
+            if (predictionWriter != null)
+                predictionWriter.finish();
         } catch (IOException e) {
             throw new RuntimeException("Error closing table writer", e);
         }
@@ -101,8 +124,12 @@ public class MultiRunTableResultManager {
         private List<PredictionEvaluationAccumulator> evalAccums;
         TaskTimer buildTimer;
         TaskTimer testTimer;
+        int run;
+        AlgorithmInstance algo;
         
-        MRTAlgorithmTestAccumulator() {
+        MRTAlgorithmTestAccumulator(int r, AlgorithmInstance a) {
+        	run = r;
+        	algo = a;
             evalAccums = new ArrayList<PredictionEvaluationAccumulator>(evaluators.size());
             for (PredictionEvaluator eval: evaluators) {
                 evalAccums.add(eval.makeAccumulator());
@@ -147,8 +174,22 @@ public class MultiRunTableResultManager {
         }
 
         @Override
-        public void evaluatePrediction(SparseVector ratings,
+        public void evaluatePrediction(long user, SparseVector ratings,
                 SparseVector predictions) {
+        	if (predictionWriter != null) {
+        		try {
+        			for (Long2DoubleMap.Entry r: ratings) {
+        				long iid = r.getLongKey();
+        				double p = predictions.get(iid);
+        				predictionWriter.writeRow(run, algo.getName(), user, iid,
+        						r.getDoubleValue(),
+        						Double.isNaN(p) ? "NA" : p);
+        			}
+        		} catch (IOException e) {
+        			logger.error("Error writing prediction", e);
+        			predictionWriter = null;
+        		}
+        	}
             for (PredictionEvaluationAccumulator ea: evalAccums) {
                 ea.evaluatePrediction(ratings, predictions);
             }

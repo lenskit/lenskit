@@ -50,5 +50,5 @@ public interface AlgorithmTestAccumulator {
      * Post a prediction to the evaluation.
      * @see PredictionEvaluationAccumulator#evaluatePrediction(SparseVector, SparseVector)
      */
-    void evaluatePrediction(SparseVector ratings, SparseVector predictions);
+    void evaluatePrediction(long user, SparseVector ratings, SparseVector predictions);
 }

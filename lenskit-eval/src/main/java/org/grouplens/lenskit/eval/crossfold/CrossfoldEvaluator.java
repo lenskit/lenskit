@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
@@ -43,39 +45,36 @@ public class CrossfoldEvaluator {
     private final CrossfoldManager manager;
     private final int numFolds;
     private final List<AlgorithmInstance> algorithms;
+    private final File predictionFile;
     
     public CrossfoldEvaluator(RatingDataAccessObject ratings,
             List<AlgorithmInstance> algorithms,
             int numFolds,
-            UserRatingProfileSplitter splitter) throws IOException {
+            UserRatingProfileSplitter splitter,
+            @Nullable File predFile) throws IOException {
         this.numFolds = numFolds;
         this.algorithms = algorithms;
         manager = new CrossfoldManager(numFolds, ratings, splitter);
+        predictionFile = predFile;
     }
 
+    // TODO Clean this up. Majorly.
     public CrossfoldEvaluator(RatingDataAccessObject ratings,
             CrossfoldOptions options,
             List<AlgorithmInstance> algorithms) throws IOException {
         this(ratings, algorithms, options.getNumFolds(),
                 (options.timeSplit() ? new TimestampUserRatingProfileSplitter(options.getHoldoutFraction())
-                    : new RandomUserRatingProfileSplitter(options.getHoldoutFraction())));
-
-        if (!options.predictionFile().isEmpty()) {
-            logger.warn("Prediction writing not supported");
-//            logger.info("Writing predictions to {}", options.predictionFile());
-//            TableWriterBuilder builder = new CSVWriterBuilder();
-//            builder.addColumn("Fold");
-//            builder.addColumn("Algorithm");
-//            builder.addColumn("User");
-//            builder.addColumn("Item");
-//            builder.addColumn("Rating");
-//            builder.addColumn("Prediction");
-//            predWriter = builder.makeWriter(new FileWriter(options.predictionFile()));
-        }
+                    : new RandomUserRatingProfileSplitter(options.getHoldoutFraction())),
+                    options.predictionFile().isEmpty() ? null : new File(options.predictionFile()));
     }
 
     public void run(List<PredictionEvaluator> evaluators, File output) {
         MultiRunTableResultManager mgr = new MultiRunTableResultManager(algorithms, evaluators, output);
+        try {
+			mgr.setPredictionOutput(predictionFile);
+		} catch (IOException e) {
+			logger.error("Could not set up prediction file", e);
+		}
         for (int i = 0; i < numFolds; i++) {
             RatingDataAccessObject train = manager.trainingSet(i);
             RatingDataAccessObject test = manager.testSet(i);
