@@ -21,13 +21,13 @@ package org.grouplens.lenskit.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -47,7 +47,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRatingPredictor extends AbstractDynamicRatingPredictor {
+public class SVDRatingPredictor extends AbstractRatingPredictor {
 	protected final FunkSVDRecommender model;
 
     protected SVDRatingPredictor(FunkSVDRecommender m) {
@@ -93,26 +93,17 @@ public class SVDRatingPredictor extends AbstractDynamicRatingPredictor {
 
         return featurePrefs;
     }
-
-    @Override
-    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        MutableSparseVector rtmp = ratings.mutableCopy();
-        LongSet baseTargets = new LongOpenHashSet(ratings.size() + items.size());
-        baseTargets.addAll(ratings.keySet());
-        baseTargets.addAll(items);
-        MutableSparseVector bl = model.baseline.predict(user, ratings, ratings.keySet());
-        rtmp.subtract(bl);
-        double uprefs[] = foldIn(user, rtmp);
-
+    
+    private MutableSparseVector predict(long user, double[] uprefs, SparseVector ratings, Collection<Long> items) {
         final int nf = model.featureCount;
         final double[] svals = model.singularValues;
         final DoubleFunction clamp = model.clampingFunction;
         
         LongSortedSet iset;
         if (items instanceof LongSortedSet)
-        	iset = (LongSortedSet) items;
+            iset = (LongSortedSet) items;
         else
-        	iset = new LongSortedArraySet(items);
+            iset = new LongSortedArraySet(items);
         MutableSparseVector preds = new MutableSparseVector(iset);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
@@ -128,8 +119,21 @@ public class SVDRatingPredictor extends AbstractDynamicRatingPredictor {
             }
             preds.set(item, score);
         }
-        bl = model.baseline.predict(user, ratings, items);
+        if (ratings == null)
+            ratings = Ratings.userRatingVector(
+                    Cursors.makeList(model.dao.getUserRatings(user)));
+        SparseVector bl = model.baseline.predict(user, ratings, items);
         preds.add(bl);
         return preds;
+    }
+    
+    @Override
+    public MutableSparseVector predict(long user, Collection<Long> items) {
+        int uidx = model.userIndex.getIndex(user);
+        double[] uprefs = new double[model.featureCount];
+        for (int i = 0; i < uprefs.length; i++) {
+            uprefs[i] = model.userFeatures[i][uidx];
+        }
+        return predict(user, uprefs, null, items);
     }
 }

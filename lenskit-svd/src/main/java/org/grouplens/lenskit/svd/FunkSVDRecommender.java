@@ -40,22 +40,26 @@ public class FunkSVDRecommender implements Recommender {
     public final RatingDataAccessObject dao;
 	public final int featureCount;
 	public final double itemFeatures[][];
+	public final double userFeatures[][];
 	public final double singularValues[];
 	public final DoubleFunction clampingFunction;
 	
 	public final Index itemIndex;
+	public final Index userIndex;
 	public final BaselinePredictor baseline;
 	
 	public FunkSVDRecommender(RatingDataAccessObject dao,
-	        int nfeatures, double[][] ifeats, double[] svals,
-	        DoubleFunction clamp, Index iidx,
+	        int nfeatures, double[][] ifeats, double[][] ufeats, double[] svals,
+	        DoubleFunction clamp, Index iidx, Index uidx,
 	        BaselinePredictor baseline) {
 	    this.dao = dao;
 		featureCount = nfeatures;
 		itemFeatures = ifeats;
+		userFeatures = ufeats;
 		singularValues = svals;
 		clampingFunction = clamp;
 		itemIndex = iidx;
+		userIndex = uidx;
 		this.baseline = baseline;
 	}
 	
