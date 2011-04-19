@@ -150,7 +150,7 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             }
             CrossfoldEvaluator eval;
             try {
-                eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter);
+                eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter, null);
             } catch (IOException e) {
                 throw new MojoExecutionException("Error loading evaluator.", e);
             }
