@@ -32,9 +32,11 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
@@ -56,6 +58,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         public Builder() {
             neighborhoodSize = 100;
             similarity = new PearsonCorrelation();
+            normalizerBuilder = new IdentityUserRatingVectorNormalizer.Builder();
         }
         
         public int getNeighborhoodSize() {
@@ -75,42 +78,46 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         }
         
         /**
-         * Set the normalizer builder.
-         * @param normalizerBuilder The normalizer builder instance.
-         */
-        public void setNormalizerBuilder(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
-            this.normalizerBuilder = normalizerBuilder;
-        }
-
-        /**
          * Get the normalizer builder.
          * @return The normalizer builder.
          */
-        public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizerBuilder() {
+        public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
             return normalizerBuilder;
+        }
+        
+        /**
+         * Set the normalizer builder.
+         * @param normalizerBuilder The normalizer builder instance.
+         */
+        public void setNormalizer(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
+            this.normalizerBuilder = normalizerBuilder;
         }
         
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
-            return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity);
+            return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity,
+            		normalizerBuilder.build(context));
         }
     }
     
     private final RatingDataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
+	private final UserRatingVectorNormalizer normalizer;
 
     /**
      * Construct a new user-user recommender.
      * @param data The data source to scan.
      * @param nnbrs The number of neighbors to consider for each item.
-     * @param similarity The similarity function to use.
+     * @param sim The similarity function to use.
      */
     protected SimpleNeighborhoodFinder(RatingDataAccessObject data, int nnbrs, 
-                                       Similarity<? super SparseVector> similarity) {
+                                       Similarity<? super SparseVector> sim,
+                                       UserRatingVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
-        this.similarity = similarity;
+        similarity = sim;
+        normalizer = norm;
     }
 
     /**
@@ -129,13 +136,18 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
         Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
+        
+        MutableSparseVector nratings = ratings.mutableCopy();
+        normalizer.normalize(uid, nratings);
 
         try {
             for (UserRatingProfile user: users) {
                 if (user.getUser() == uid) continue;
 
                 final SparseVector urv = user.getRatingVector();
-                final double sim = similarity.similarity(ratings, urv);
+                MutableSparseVector nurv = urv.mutableCopy();
+                normalizer.normalize(user.getUser(), nurv);
+                final double sim = similarity.similarity(nratings, nurv);
                 final Neighbor n = new Neighbor(user.getUser(), urv.mutableCopy(), sim);
 
                 LongIterator iit = urv.keySet().iterator();
