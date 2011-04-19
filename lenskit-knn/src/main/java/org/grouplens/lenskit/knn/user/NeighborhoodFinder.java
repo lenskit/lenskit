@@ -36,7 +36,9 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  */
 public interface NeighborhoodFinder {
     /**
-     * Find neighboring users for particular items.
+     * Find neighboring users for particular items. <var>ratings</var> and the
+     * returned rating vectors are <emph>unnormalized</emph>.  Any normalization
+     * used by the neighborhood finder is only for comparing neighbors.
      * @param user The user ID.
      * @param ratings The user rating vector.
      * @param items The items we're trying to recommend, or <tt>null</tt> to get
@@ -44,7 +46,6 @@ public interface NeighborhoodFinder {
      * @return A map from item IDs to user neighborhoods for all items for which
      * we can find neighboring users.
      */
-    
     Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long user,
             @Nonnull SparseVector ratings, @Nullable LongSet items);
 }

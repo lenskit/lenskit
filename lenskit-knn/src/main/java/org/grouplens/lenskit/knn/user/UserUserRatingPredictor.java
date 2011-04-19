@@ -21,8 +21,9 @@ package org.grouplens.lenskit.knn.user;
 import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceSet;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import javax.annotation.Nullable;
@@ -30,9 +31,13 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.util.CollectionUtils;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+
+import com.google.common.collect.Iterables;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -40,10 +45,26 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final NeighborhoodFinder neighborhoodFinder;
+    protected final UserRatingVectorNormalizer normalizer;
     
-    UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf) {
+    UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf, UserRatingVectorNormalizer norm) {
         super(dao);
         neighborhoodFinder = nbrf;
+        normalizer = norm;
+    }
+    
+    /**
+     * Normalize all neighbor rating vectors, taking care to normalize each one
+     * only once.
+     * @param neighborhoods
+     */
+    protected void normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
+        ReferenceSet<SparseVector> seen = new ReferenceOpenHashSet<SparseVector>();
+        for (Neighbor n: Iterables.concat(neighborhoods)) {
+            if (seen.contains(n)) continue;
+            
+            normalizer.normalize(n.userId, n.ratings);
+        }
     }
     
     /**
@@ -54,11 +75,17 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
      */
     @Override
     public SparseVector predict(long user, SparseVector ratings, @Nullable Collection<Long> items) {
+        LongSortedSet iset;
+        if (items == null)
+            iset = null;
+        else if (items instanceof LongSortedSet)
+            iset = (LongSortedSet) items;
+        else
+            iset = new LongSortedArraySet(items);
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            neighborhoodFinder.findNeighbors(user, ratings, items != null ? new LongSortedArraySet(items) : null);
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
+            neighborhoodFinder.findNeighbors(user, ratings, iset);
+        normalizeNeighborRatings(neighborhoods.values());
+        long[] keys = iset.toLongArray();
         double[] preds = new double[keys.length];
         for (int i = 0; i < keys.length; i++) {
             final long item = keys[i];
@@ -75,6 +102,10 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds[i] = Double.NaN;
             }
         }
-        return SparseVector.wrap(keys, preds, true);
+        // Denormalize and return the results
+        VectorTransformation vo = normalizer.makeTransformation(user, ratings);
+        MutableSparseVector v = SparseVector.wrap(keys, preds, true);
+        vo.unapply(v);
+        return v;
     }
 }

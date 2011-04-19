@@ -21,6 +21,8 @@ package org.grouplens.lenskit.knn.user;
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
  * UserUserRecommenderBuilder is a RecommenderComponentBuilder that is used to
@@ -30,19 +32,44 @@ import org.grouplens.lenskit.data.context.RatingBuildContext;
  */
 public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuilder<UserUserRecommender> {
     private RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhoodBuilder;
+    private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
     
     public UserUserRecommenderBuilder() {
         neighborhoodBuilder = new SimpleNeighborhoodFinder.Builder();
+        normalizerBuilder = new IdentityUserRatingVectorNormalizer.Builder();
+    }
+    
+    public RecommenderComponentBuilder<? extends NeighborhoodFinder> getNeighborhoodFinder() {
+        return neighborhoodBuilder;
     }
     
     public void setNeighborhoodFinder(RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhood) {
         neighborhoodBuilder = neighborhood;
     }
     
+    /**
+     * Set the normalizer builder.
+     * @param normalizerBuilder The normalizer builder instance.
+     */
+    public void setNormalizer(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
+        this.normalizerBuilder = normalizerBuilder;
+    }
+
+    /**
+     * Get the normalizer builder.
+     * @return The normalizer builder.
+     */
+    public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
+        return normalizerBuilder;
+    }
+
     @Override
     protected UserUserRecommender buildNew(RatingBuildContext context) {
         NeighborhoodFinder n = neighborhoodBuilder.build(context);
-        UserUserRatingPredictor pred = new UserUserRatingPredictor(context.getDAO(), n);
+        UserRatingVectorNormalizer norm = null;
+        if (normalizerBuilder != null)
+            norm = normalizerBuilder.build(context);
+        UserUserRatingPredictor pred = new UserUserRatingPredictor(context.getDAO(), n, norm);
         UserUserRatingRecommender rec = new UserUserRatingRecommender(pred);
         return new UserUserRecommender(pred, rec);
     }

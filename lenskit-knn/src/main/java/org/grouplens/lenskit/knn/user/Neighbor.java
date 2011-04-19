@@ -20,7 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import java.util.Comparator;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 
 /**
  * Representation of a single neighboring user.
@@ -29,9 +29,16 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  */
 public class Neighbor {
     public final long userId;
-    public final SparseVector ratings;
+    public final MutableSparseVector ratings;
     public final double similarity;
-    public Neighbor(long user, SparseVector rv, double sim) {
+    
+    /**
+     * Construct a new neighbor.
+     * @param user The user ID of the neighbor.
+     * @param rv The neighbor's ratings vector.
+     * @param sim The neighbor's similarity to the query user.
+     */
+    public Neighbor(long user, MutableSparseVector rv, double sim) {
         userId = user;
         ratings = rv;
         similarity = sim;

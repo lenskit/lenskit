@@ -155,7 +155,7 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
                 if (nbr == null) {
                     SparseVector v = user.getRatingVector();
                     double sim = similarity.similarity(vector, v);
-                    nbr = new Neighbor(id, v, sim);
+                    nbr = new Neighbor(id, v.mutableCopy(), sim);
                     neighborCache.put(id, nbr);
                 }
                 neighbors.add(nbr);

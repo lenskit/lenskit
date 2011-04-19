@@ -28,12 +28,14 @@ import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -49,6 +51,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public static class Builder extends AbstractRecommenderComponentBuilder<SimpleNeighborhoodFinder> {
         private int neighborhoodSize;
         private Similarity<? super SparseVector> similarity;
+        private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
         
         public Builder() {
             neighborhoodSize = 100;
@@ -70,6 +73,23 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         public void setSimilarity(Similarity<? super SparseVector> similarity) {
             this.similarity = similarity;
         }
+        
+        /**
+         * Set the normalizer builder.
+         * @param normalizerBuilder The normalizer builder instance.
+         */
+        public void setNormalizerBuilder(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
+            this.normalizerBuilder = normalizerBuilder;
+        }
+
+        /**
+         * Get the normalizer builder.
+         * @return The normalizer builder.
+         */
+        public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizerBuilder() {
+            return normalizerBuilder;
+        }
+        
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
             return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity);
@@ -116,7 +136,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
 
                 final SparseVector urv = user.getRatingVector();
                 final double sim = similarity.similarity(ratings, urv);
-                final Neighbor n = new Neighbor(user.getUser(), urv, sim);
+                final Neighbor n = new Neighbor(user.getUser(), urv.mutableCopy(), sim);
 
                 LongIterator iit = urv.keySet().iterator();
                 ITEMS: while (iit.hasNext()) {
