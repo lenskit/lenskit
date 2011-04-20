@@ -29,7 +29,8 @@ Release ${project.version}
     type-checking for mutability guarantees on sparse vectors.
 
   * Drop thread safety guarantee on <<<UserRatingProfile>>>. Many
-    profiles will likely be thread-safe, but we're not promising it.
+    profile implementations will likely be thread-safe, but we're not
+    promising it any more.
     
   []
 
