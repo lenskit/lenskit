@@ -30,6 +30,7 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
@@ -49,8 +50,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
-            return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity,
-            		normalizerBuilder.build(context));
+            return new SimpleNeighborhoodFinder(context.getDataSession().getDAO(),
+                                                neighborhoodSize, similarity,
+                                                normalizerBuilder.build(context));
         }
     }
     
@@ -88,13 +90,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
-
-        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
         
         MutableSparseVector nratings = ratings.mutableCopy();
         normalizer.normalize(uid, nratings);
-
+        
+        RatingDataSession session = dataSource.getSession();
+        Cursor<UserRatingProfile> users = null;
         try {
+            users = session.getUserRatingProfiles();
             for (UserRatingProfile user: users) {
                 if (user.getUser() == uid) continue;
 
@@ -124,7 +127,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
                 }
             }
         } finally {
-            users.close();
+            if (users != null)
+                users.close();
+            session.release();
         }
         return heaps;
     }

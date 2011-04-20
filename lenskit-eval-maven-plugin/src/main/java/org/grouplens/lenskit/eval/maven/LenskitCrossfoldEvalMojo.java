@@ -36,6 +36,7 @@ import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
@@ -159,8 +160,14 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             } catch (FileNotFoundException e1) {
                 throw new MojoExecutionException("Input file " + dataFile + " not found", e1);
             }
-            if (preload)
-                ratings = new RatingCollectionDAO(Cursors.makeList(ratings.getRatings()));
+            if (preload) {
+                RatingDataSession session = ratings.getSession();
+                try {
+                    ratings = new RatingCollectionDAO(Cursors.makeList(session.getRatings()));
+                } finally {
+                    session.release();
+                }
+            }
 
             List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
             try {

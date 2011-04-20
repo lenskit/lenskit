@@ -37,6 +37,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,11 +107,17 @@ public class AlgorithmInstance {
     public Recommender buildRecommender(final RatingDataAccessObject dao) {
         if (builder == null)
             throw new IllegalStateException("no builder set");
-        RatingBuildContext ctx = PackedRatingBuildContext.make(dao);
+        RatingDataSession session = null;
+        RatingBuildContext ctx = null;
         try {
+            session = dao.getSession();
+            ctx = PackedRatingBuildContext.make(session);
             return builder.build(ctx);
         } finally {
-            ctx.close();
+            if (ctx != null)
+                ctx.close();
+            if (session != null)
+                session.release();
         }
     }
     

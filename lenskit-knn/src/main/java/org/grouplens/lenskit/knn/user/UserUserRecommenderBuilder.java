@@ -69,7 +69,8 @@ public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuil
         UserRatingVectorNormalizer norm = null;
         if (normalizerBuilder != null)
             norm = normalizerBuilder.build(context);
-        UserUserRatingPredictor pred = new UserUserRatingPredictor(context.getDAO(), n, norm);
+        UserUserRatingPredictor pred =
+            new UserUserRatingPredictor(context.getDataSession().getDAO(), n, norm);
         UserUserRatingRecommender rec = new UserUserRatingRecommender(pred);
         return new UserUserRecommender(pred, rec);
     }

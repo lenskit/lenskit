@@ -28,7 +28,7 @@ import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -43,11 +43,11 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    private RatingDataAccessObject trainingDao;
-    private RatingDataAccessObject testDao;
+    private RatingDataSession trainingDao;
+    private RatingDataSession testDao;
 
-    public TrainTestPredictEvaluator(RatingDataAccessObject train,
-            RatingDataAccessObject test) {
+    public TrainTestPredictEvaluator(RatingDataSession train,
+            RatingDataSession test) {
         trainingDao = train;
         testDao = test;
     }

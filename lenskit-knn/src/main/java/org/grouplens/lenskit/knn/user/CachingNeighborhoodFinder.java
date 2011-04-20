@@ -32,7 +32,7 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
@@ -61,7 +61,7 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
         protected CachingNeighborhoodFinder buildNew(RatingBuildContext context) {
             int nusers = 0;
             Long2ObjectMap<Collection<UserRatingProfile>> cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
-            RatingDataAccessObject data = context.getDAO();
+            RatingDataSession data = context.getDataSession();
             
             Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
             try {

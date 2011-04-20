@@ -33,6 +33,7 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.dao.RatingUpdateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,88 +57,9 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
         this.base = base;
         this.filter = filter;
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
-     */
-    @Override
-    public Cursor<Rating> getRatings() {
-        return Cursors.filter(base.getRatings(), filter);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
-     */
-    @Override
-    public Cursor<Rating> getRatings(SortOrder order) {
-        return Cursors.filter(base.getRatings(order), filter);
-    }
     
-    private AtomicBoolean urpUsed = new AtomicBoolean(false);
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
-     */
-    @Override
-    public Cursor<UserRatingProfile> getUserRatingProfiles() {
-        if (!urpUsed.get()) {
-            logger.warn("Using expensive rating-filtered user rating profile");
-            logger.info("Future warnings about slow user rating profiles suppressed.");
-            urpUsed.set(true);
-        }
-        return Cursors.transform(base.getUserRatingProfiles(),
-                new Function<UserRatingProfile, UserRatingProfile>() {
-            public UserRatingProfile apply(final UserRatingProfile p) {
-                Collection<Rating> ratings = new ArrayList<Rating>();
-                for (Rating r: p.getRatings()) {
-                    if (filter.apply(r))
-                        ratings.add(r);
-                }
-                return new BasicUserRatingProfile(p.getUser(), ratings);
-            }
-        });
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
-     */
-    @Override
-    public Cursor<Rating> getUserRatings(long userId) {
-        return Cursors.filter(base.getUserRatings(userId), filter);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
-     */
-    @Override
-    public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
-        return Cursors.filter(base.getUserRatings(userId, order), filter);
-    }
-
-    @Override
-    public int getItemCount() {
-        return base.getItemCount();
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.DataSource#getItems()
-     */
-    @Override
-    public LongCursor getItems() {
-        return base.getItems();
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
-     */
-    @Override
-    public LongCursor getUsers() {
-        return base.getUsers();
-    }
-
-    @Override
-    public int getUserCount() {
-        return base.getUserCount();
+    public RatingDataSession getSession() {
+        return new Session(base.getSession());
     }
 
     @Override
@@ -150,4 +72,103 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
         /* we do not support update listeners */
     }
 
+    class Session implements RatingDataSession {
+        RatingDataSession base;
+        
+        Session(RatingDataSession base) {
+            this.base = base;
+        }
+        
+        public RatingDataAccessObject getDAO() {
+            return RatingFilteredDAO.this;
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
+         */
+        @Override
+        public Cursor<Rating> getRatings() {
+            return Cursors.filter(base.getRatings(), filter);
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
+         */
+        @Override
+        public Cursor<Rating> getRatings(SortOrder order) {
+            return Cursors.filter(base.getRatings(order), filter);
+        }
+
+        private AtomicBoolean urpUsed = new AtomicBoolean(false);
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
+         */
+        @Override
+        public Cursor<UserRatingProfile> getUserRatingProfiles() {
+            if (!urpUsed.get()) {
+                logger.warn("Using expensive rating-filtered user rating profile");
+                logger.info("Future warnings about slow user rating profiles suppressed.");
+                urpUsed.set(true);
+            }
+            return Cursors.transform(base.getUserRatingProfiles(),
+                                     new Function<UserRatingProfile, UserRatingProfile>() {
+                public UserRatingProfile apply(final UserRatingProfile p) {
+                    Collection<Rating> ratings = new ArrayList<Rating>();
+                    for (Rating r: p.getRatings()) {
+                        if (filter.apply(r))
+                            ratings.add(r);
+                    }
+                    return new BasicUserRatingProfile(p.getUser(), ratings);
+                }
+            });
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
+         */
+        @Override
+        public Cursor<Rating> getUserRatings(long userId) {
+            return Cursors.filter(base.getUserRatings(userId), filter);
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
+         */
+        @Override
+        public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
+            return Cursors.filter(base.getUserRatings(userId, order), filter);
+        }
+
+        @Override
+        public int getItemCount() {
+            return base.getItemCount();
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.DataSource#getItems()
+         */
+        @Override
+        public LongCursor getItems() {
+            return base.getItems();
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
+         */
+        @Override
+        public LongCursor getUsers() {
+            return base.getUsers();
+        }
+
+        @Override
+        public int getUserCount() {
+            return base.getUserCount();
+        }
+        
+        @Override
+        public void release() {
+            base.release();
+        }
+    }
 }

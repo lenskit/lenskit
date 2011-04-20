@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -48,14 +48,14 @@ import org.grouplens.lenskit.util.FastCollection;
  *
  */
 public class PackedRatingBuildContext extends AbstractRatingBuildContext {
-    private final RatingDataAccessObject dao;
+    private final RatingDataSession session;
     
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
-	protected PackedRatingBuildContext(RatingDataAccessObject dao, 
+	protected PackedRatingBuildContext(RatingDataSession session, 
 	        PackedRatingData data, List<IntList> userIndices) {
-	    this.dao = dao;
+	    this.session = session;
 	    this.data = data;
 	    this.userIndices = userIndices;
 	}
@@ -69,8 +69,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	 * @see org.grouplens.lenskit.data.dao.context.RatingBuildContext#getDAO()
 	 */
 	@Override
-	public RatingDataAccessObject getDAO() {
-	    return dao;
+	public RatingDataSession getDataSession() {
+	    return session;
 	}
 
 	/* (non-Javadoc)
@@ -139,8 +139,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		data = null;
 	}
 	
-	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
-	    Cursor<Rating> ratings = dao.getRatings();
+	public static PackedRatingBuildContext make(RatingDataSession session) {
+	    Cursor<Rating> ratings = session.getRatings();
 	    
 	    IntArrayList users;
 	    IntArrayList items;
@@ -227,6 +227,6 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		assert data.values.length == nratings;
 		assert timestamps == null || data.timestamps.length == nratings;
 		List<IntList> userIndices = imgr.getUserIndexMatrix();
-		return new PackedRatingBuildContext(dao, data, userIndices);
+		return new PackedRatingBuildContext(session, data, userIndices);
 	}
 }

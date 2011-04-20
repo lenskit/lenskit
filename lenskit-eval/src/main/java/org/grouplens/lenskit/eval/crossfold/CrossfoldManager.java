@@ -32,7 +32,9 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.AbstractRatingDataSession;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +74,10 @@ public class CrossfoldManager {
         this.ratings = ratings;
 
         Random rnd = new Random();
-        Cursor<UserRatingProfile> userCursor = ratings.getUserRatingProfiles();
+        RatingDataSession session = ratings.getSession();
+        Cursor<UserRatingProfile> userCursor = null;
         try {
+            userCursor = session.getUserRatingProfiles();
             int nusers = 0;
             for (UserRatingProfile user: userCursor) {
                 int n = rnd.nextInt(nfolds);
@@ -83,7 +87,9 @@ public class CrossfoldManager {
             }
             logger.info("Partitioned {} users into {} folds", nusers, nfolds);
         } finally {
-            userCursor.close();
+            if (userCursor != null)
+                userCursor.close();
+            session.release();
         }
     }
 
@@ -97,7 +103,7 @@ public class CrossfoldManager {
      * @param testIndex The index of the test set to use.
      * @return The union of all data partitions except testIndex.
      */
-    public RatingDataAccessObject trainingSet(final int testIndex) {
+    public RatingDataSession trainingSet(final int testIndex) {
         final Long2ObjectMap<SparseVector> qmap = querySets[testIndex];
         Predicate<Rating> filter = new Predicate<Rating>() {
             public boolean apply(Rating r) {
@@ -105,7 +111,7 @@ public class CrossfoldManager {
                 return v == null || !v.containsKey(r.getItemId());
             }
         };
-        return new RatingFilteredDAO(ratings, filter);
+        return new RatingFilteredDAO(ratings, filter).getSession();
     }
 
     /**
@@ -116,9 +122,26 @@ public class CrossfoldManager {
      * @todo Fix this method to be more efficient - currently, we convert from
      * vectors to ratings to later be converted back to vectors. That's slow.
      */
-    public RatingDataAccessObject testSet(final int testIndex) {
-        return new AbstractRatingDataAccessObject() {
-            Long2ObjectMap<SparseVector> queryMap = querySets[testIndex];
+    public RatingDataSession testSet(final int testIndex) {
+        return new TestDAO(testIndex).getSession();
+    }
+    
+    class TestDAO extends AbstractRatingDataAccessObject {
+        Long2ObjectMap<SparseVector> queryMap;
+        public TestDAO(int testIndex) {
+            queryMap = querySets[testIndex];
+        }
+        
+        @Override
+        public RatingDataSession getSession() {
+            return new Session();
+        }
+        
+        class Session extends AbstractRatingDataSession {
+            Session() {
+                super(TestDAO.this);
+            }
+            
             @Override
             public LongCursor getUsers() {
                 return Cursors2.wrap(queryMap.keySet());
@@ -142,6 +165,6 @@ public class CrossfoldManager {
                     public void remove() { throw new UnsupportedOperationException(); }
                 }));
             }
-        };
+        }
     }
 }

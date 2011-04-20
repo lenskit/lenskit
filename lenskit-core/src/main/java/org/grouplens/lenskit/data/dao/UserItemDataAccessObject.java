@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.data.LongCursor;
 
 /**
  * DAO for user-item ID data.
@@ -28,30 +27,13 @@ import org.grouplens.lenskit.data.LongCursor;
  */
 public interface UserItemDataAccessObject {
     /**
-     * Retrieve the users from the data source.
-     * @return a cursor iterating the user IDs.
+     * Get a session of user-item data.
+     * 
+     * <p>
+     * It should be cheap to get and discard sessions so that code doesn't have
+     * to pass sessions around all the time. Implementations should consider
+     * using thread-local storage and reference counting to share session
+     * implementations.
      */
-    public LongCursor getUsers();
-
-    /**
-     * Get the number of users in the system.  This should be the same number
-     * of users that will be returned by iterating {@link #getUsers()} (unless
-     * a user is added or removed between the two calls).
-     * @return The number of users in the system.
-     */
-    public int getUserCount();
-
-    /**
-     * Retrieve the items from the data source.
-     * @return a cursor iterating the item IDs.
-     */
-    public LongCursor getItems();
-
-    /**
-     * Get the number of items in the system.  This should be the same number
-     * of items that will be returned by iterating {@link #getItems()} (unless
-     * an item is added or removed between the two calls).
-     * @return The number of items in the system.
-     */
-    public int getItemCount();
+    UserItemDataSession getSession();
 }

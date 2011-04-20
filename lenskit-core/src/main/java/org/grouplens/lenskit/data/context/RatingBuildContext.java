@@ -27,6 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.FastCollection;
@@ -72,7 +73,7 @@ public interface RatingBuildContext extends Closeable {
      * Return the dao that is backing this RatingBuildContext.
      * @return
      */
-    RatingDataAccessObject getDAO();
+    RatingDataSession getDataSession();
     
 	/**
 	 * Get the set of user IDs in the snapshot.

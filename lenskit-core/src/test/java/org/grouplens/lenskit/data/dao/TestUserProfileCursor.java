@@ -62,7 +62,7 @@ public class TestUserProfileCursor {
     @Test
     public void testCursor() {
         Cursor<UserRatingProfile> cursor =
-            new AbstractRatingDataAccessObject.UserProfileCursor(ratingCursor);
+            new AbstractRatingDataSession.UserProfileCursor(ratingCursor);
         assertTrue(cursor.hasNext());
         UserRatingProfile profile = cursor.next();
         assertTrue(cursor.hasNext());

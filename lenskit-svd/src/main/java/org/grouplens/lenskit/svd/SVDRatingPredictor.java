@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
@@ -119,9 +118,9 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
             }
             preds.set(item, score);
         }
-        if (ratings == null)
-            ratings = Ratings.userRatingVector(
-                    Cursors.makeList(model.dao.getUserRatings(user)));
+        if (ratings == null) {
+            ratings = Ratings.userRatingVector(getUserRatings(user));
+        }
         SparseVector bl = model.baseline.predict(user, ratings, items);
         preds.add(bl);
         return preds;

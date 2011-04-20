@@ -77,43 +77,54 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
     }
     
     @Override
-    public LongCursor getUsers() {
-    	requireUserCache();
-    	return Cursors2.wrap(users.keySet());
+    public RatingDataSession getSession() {
+        return new Session();
     }
     
-    @Override
-    public Cursor<Rating> getUserRatings(long user, SortOrder order) {
-    	requireUserCache();
-    	Collection<Rating> ratings = users.get(user).getRatings();
-    	if (ratings == null) return Cursors.empty();
-    	
-    	ArrayList<Rating> copy;
-    	
-    	switch (order) {
-    	case ANY:
-    		return Cursors.wrap(ratings);
-    	case TIMESTAMP:
-    		copy = new ArrayList<Rating>(ratings);
-    		Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
-    		return Cursors.wrap(copy);
-    	default:
-    		throw new UnsupportedQueryException();
-    	}
-    }
-    
-    @Override
-    public Cursor<UserRatingProfile> getUserRatingProfiles() {
-    	requireUserCache();
-    	return Cursors.wrap(users.values().iterator());
-    }
+    class Session extends AbstractRatingDataSession {
+        public Session() {
+            super(RatingCollectionDAO.this);
+        }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
-     */
-    @Override
-    public Cursor<Rating> getRatings() {
-        return Cursors.wrap(ratings);
+        @Override
+        public LongCursor getUsers() {
+            requireUserCache();
+            return Cursors2.wrap(users.keySet());
+        }
+
+        @Override
+        public Cursor<Rating> getUserRatings(long user, SortOrder order) {
+            requireUserCache();
+            Collection<Rating> ratings = users.get(user).getRatings();
+            if (ratings == null) return Cursors.empty();
+
+            ArrayList<Rating> copy;
+
+            switch (order) {
+            case ANY:
+                return Cursors.wrap(ratings);
+            case TIMESTAMP:
+                copy = new ArrayList<Rating>(ratings);
+                Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
+                return Cursors.wrap(copy);
+            default:
+                throw new UnsupportedQueryException();
+            }
+        }
+
+        @Override
+        public Cursor<UserRatingProfile> getUserRatingProfiles() {
+            requireUserCache();
+            return Cursors.wrap(users.values().iterator());
+        }
+
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
+         */
+        @Override
+        public Cursor<Rating> getRatings() {
+            return Cursors.wrap(ratings);
+        }
     }
 
 }

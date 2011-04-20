@@ -85,29 +85,41 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
     public URL getURL() {
         return url;
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings()
-     */
+    
     @Override
-    public Cursor<Rating> getRatings() {
-        Scanner scanner;
-        try {
-            if (file != null) {
-                logger.debug("Opening {}", file.getPath());
-                scanner = new Scanner(file);
-            } else {
-                logger.debug("Opening {}", url.toString());
-                InputStream instr = url.openStream();
-                scanner = new Scanner(instr);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return new RatingScannerCursor(scanner);
+    public RatingDataSession getSession() {
+        return new Session();
     }
+    
+    class Session extends AbstractRatingDataSession {
+        public Session() {
+            super(SimpleFileDAO.this);
+        }
 
-    private class RatingScannerCursor extends AbstractCursor<Rating> {
+        /* (non-Javadoc)
+         * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings()
+         */
+        @Override
+        public Cursor<Rating> getRatings() {
+            Scanner scanner;
+            try {
+                if (file != null) {
+                    logger.debug("Opening {}", file.getPath());
+                    scanner = new Scanner(file);
+                } else {
+                    logger.debug("Opening {}", url.toString());
+                    InputStream instr = url.openStream();
+                    scanner = new Scanner(instr);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return new RatingScannerCursor(scanner);
+        }
+
+    }
+    
+    class RatingScannerCursor extends AbstractCursor<Rating> {
         private Scanner scanner;
         private int lineno;
         private Rating rating;
