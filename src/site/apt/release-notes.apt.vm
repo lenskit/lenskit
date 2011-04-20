@@ -27,6 +27,9 @@ Release ${project.version}
 
   * Introduce <<<ImmutableSparseVector>>> and build more robust
     type-checking for mutability guarantees on sparse vectors.
+
+  * Drop thread safety guarantee on <<<UserRatingProfile>>>. Many
+    profiles will likely be thread-safe, but we're not promising it.
     
   []
 
