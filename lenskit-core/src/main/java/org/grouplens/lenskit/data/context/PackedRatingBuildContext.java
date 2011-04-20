@@ -27,8 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.WillNotClose;
-
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;

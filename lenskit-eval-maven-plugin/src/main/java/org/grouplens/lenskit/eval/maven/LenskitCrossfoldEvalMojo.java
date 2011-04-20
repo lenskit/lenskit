@@ -62,6 +62,7 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
      * @required
      * @readonly
      */
+    @SuppressWarnings("unused")
     private MavenProject project;
     
     /**
