@@ -18,14 +18,9 @@
  */
 package org.grouplens.lenskit.data;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-
-import java.lang.ref.SoftReference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
-
-import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -34,24 +29,22 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ThreadSafe
 public class BasicUserRatingProfile implements UserRatingProfile {
 
     private long user;
-    private Long2ObjectMap<Rating> ratings;
-    private transient SoftReference<SparseVector> vector;
+    private Collection<Rating> ratings;
+    private transient volatile SparseVector vector;
 
     /**
      * Construct a new basic user profile.
      * @param user The user ID.
-     * @param ratings The user's rating collection.
+     * @param ratings The user's rating collection. The collection is <b>not</b>
+     * copied, so make sure that it is not changed after the user rating profile
+     * takes ownership.
      */
     public BasicUserRatingProfile(long user, Collection<Rating> ratings) {
         this.user = user;
-        this.ratings = new Long2ObjectOpenHashMap<Rating>();
-        for (Rating r: ratings) {
-            this.ratings.put(r.getItemId(), r);
-        }
+        this.ratings = Collections.unmodifiableCollection(ratings);
     }
 
     /**
@@ -64,26 +57,20 @@ public class BasicUserRatingProfile implements UserRatingProfile {
 
     @Override
     public double getRating(long item) {
-        Rating r = ratings.get(item);
-        if (r == null)
-            return Double.NaN;
-        else
-            return r.getRating();
+        return getRatingVector().get(item);
     }
 
     @Override
-    public synchronized SparseVector getRatingVector() {
-        SparseVector v = vector != null ? vector.get() : null;
-        if (v == null) {
-            v = Ratings.userRatingVector(getRatings());
-            vector = new SoftReference<SparseVector>(v);
+    public SparseVector getRatingVector() {
+        if (vector == null) {
+            vector = Ratings.userRatingVector(getRatings());
         }
-        return v;
+        return vector;
     }
 
     @Override
     public Collection<Rating> getRatings() {
-        return ratings.values();
+        return ratings;
     }
 
     @Override

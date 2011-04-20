@@ -60,8 +60,8 @@ public final class Ratings {
      * @return A sparse vector mapping user IDs to ratings.
      */
     public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
-        Long2DoubleMap vect = new Long2DoubleOpenHashMap();
-        Long2LongMap tsMap = new Long2LongOpenHashMap();
+        Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
+        Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
         tsMap.defaultReturnValue(Long.MIN_VALUE);
         for (Rating r: ratings) {
             long uid = r.getUserId();
@@ -86,8 +86,8 @@ public final class Ratings {
      * @return A sparse vector mapping item IDs to ratings
      */
     public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-        Long2DoubleMap vect = new Long2DoubleOpenHashMap();
-        Long2LongMap tsMap = new Long2LongOpenHashMap();
+        Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
+        Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
         tsMap.defaultReturnValue(Long.MIN_VALUE);
         
         // Take advantage of fast iteration if possible

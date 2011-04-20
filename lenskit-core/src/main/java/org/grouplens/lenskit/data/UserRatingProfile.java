@@ -20,8 +20,6 @@ package org.grouplens.lenskit.data;
 
 import java.util.Collection;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
@@ -32,10 +30,14 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ThreadSafe
 public interface UserRatingProfile {
     public long getUser();
+    /**
+     * Get the rating profile's collection of ratings.
+     * @return
+     */
     public Collection<Rating> getRatings();
     public SparseVector getRatingVector();
+    @Deprecated
     public double getRating(long item);
 }
