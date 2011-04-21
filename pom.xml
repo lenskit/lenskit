@@ -460,13 +460,13 @@
     <profile>
       <id>continuous-integration</id>
       <properties>
-        <lenskit.web.url>http://lenskit.grouplens.org/snapshot</lenskit.web.url>
+        <lenskit.web.url>http://lenskit.grouplens.org/trunk</lenskit.web.url>
       </properties>
       <distributionManagement>
         <site>
           <id>grouplens.org</id>
           <name>LensKit Dev Website</name>
-          <url>file:///web/research01/lenskit.grouplens.org/snapshot</url>
+          <url>file:///web/research01/lenskit.grouplens.org/trunk</url>
         </site>
       </distributionManagement>
       <build>
