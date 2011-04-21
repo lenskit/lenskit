@@ -60,7 +60,13 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     
     @Override
     public RatingDataSession getSession() {
-        return new Session(base.getSession());
+        RatingDataSession s = base.getSession();
+        try {
+            return new Session(s);
+        } catch (RuntimeException e) {
+            s.release();
+            throw e;
+        }
     }
     
     @Override
