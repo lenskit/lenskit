@@ -140,7 +140,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	}
 	
 	public static PackedRatingBuildContext make(RatingDataSession session) {
-	    Cursor<Rating> ratings = session.getRatings();
+	    Cursor<Rating> ratings = null;
 	    
 	    IntArrayList users;
 	    IntArrayList items;
@@ -155,6 +155,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	    int nratings = 0;
 	    
 	    try {
+	        ratings = session.getRatings();
 	        int size = ratings.getRowCount();
 	        // default to something nice and large
 	        if (size < 0) size = 10000;
@@ -210,7 +211,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	            }
 	        }
 	    } finally {
-	        ratings.close();
+	        if (ratings != null)
+	            ratings.close();
 	    }
 		
 		users.trim();
