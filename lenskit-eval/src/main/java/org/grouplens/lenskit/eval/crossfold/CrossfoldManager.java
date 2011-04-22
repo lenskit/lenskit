@@ -32,9 +32,7 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.AbstractRatingDataSession;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,10 +72,9 @@ public class CrossfoldManager {
         this.ratings = ratings;
 
         Random rnd = new Random();
-        RatingDataSession session = ratings.getSession();
         Cursor<UserRatingProfile> userCursor = null;
         try {
-            userCursor = session.getUserRatingProfiles();
+            userCursor = ratings.getUserRatingProfiles();
             int nusers = 0;
             for (UserRatingProfile user: userCursor) {
                 int n = rnd.nextInt(nfolds);
@@ -89,7 +86,6 @@ public class CrossfoldManager {
         } finally {
             if (userCursor != null)
                 userCursor.close();
-            session.release();
         }
     }
 
@@ -103,7 +99,7 @@ public class CrossfoldManager {
      * @param testIndex The index of the test set to use.
      * @return The union of all data partitions except testIndex.
      */
-    public RatingDataSession trainingSet(final int testIndex) {
+    public RatingDataAccessObject trainingSet(final int testIndex) {
         final Long2ObjectMap<SparseVector> qmap = querySets[testIndex];
         Predicate<Rating> filter = new Predicate<Rating>() {
             public boolean apply(Rating r) {
@@ -111,7 +107,7 @@ public class CrossfoldManager {
                 return v == null || !v.containsKey(r.getItemId());
             }
         };
-        return new RatingFilteredDAO(ratings, filter).getSession();
+        return new RatingFilteredDAO(ratings, filter);
     }
 
     /**
@@ -122,8 +118,8 @@ public class CrossfoldManager {
      * @todo Fix this method to be more efficient - currently, we convert from
      * vectors to ratings to later be converted back to vectors. That's slow.
      */
-    public RatingDataSession testSet(final int testIndex) {
-        return new TestDAO(testIndex).getSession();
+    public RatingDataAccessObject testSet(final int testIndex) {
+        return new TestDAO(testIndex);
     }
     
     class TestDAO extends AbstractRatingDataAccessObject {
@@ -131,40 +127,29 @@ public class CrossfoldManager {
         public TestDAO(int testIndex) {
             queryMap = querySets[testIndex];
         }
-        
+
         @Override
-        public RatingDataSession getSession() {
-            return new Session();
+        public LongCursor getUsers() {
+            return Cursors2.wrap(queryMap.keySet());
         }
-        
-        class Session extends AbstractRatingDataSession {
-            Session() {
-                super(TestDAO.this);
-            }
-            
-            @Override
-            public LongCursor getUsers() {
-                return Cursors2.wrap(queryMap.keySet());
-            }
-            @Override
-            public Cursor<Rating> getRatings() {
-                return Cursors.wrap(Iterators.concat(new Iterator<Iterator<Rating>>() {
-                    Iterator<Long2ObjectMap.Entry<SparseVector>> iter =
-                        queryMap.long2ObjectEntrySet().iterator();
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-                    @Override
-                    public Iterator<Rating> next() {
-                        Long2ObjectMap.Entry<SparseVector> e = iter.next();
-                        long uid = e.getLongKey();
-                        SparseVector v = e.getValue();
-                        return Ratings.fromUserVector(uid, v).iterator();
-                    }
-                    public void remove() { throw new UnsupportedOperationException(); }
-                }));
-            }
+        @Override
+        public Cursor<Rating> getRatings() {
+            return Cursors.wrap(Iterators.concat(new Iterator<Iterator<Rating>>() {
+                Iterator<Long2ObjectMap.Entry<SparseVector>> iter =
+                    queryMap.long2ObjectEntrySet().iterator();
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+                @Override
+                public Iterator<Rating> next() {
+                    Long2ObjectMap.Entry<SparseVector> e = iter.next();
+                    long uid = e.getLongKey();
+                    SparseVector v = e.getValue();
+                    return Ratings.fromUserVector(uid, v).iterator();
+                }
+                public void remove() { throw new UnsupportedOperationException(); }
+            }));
         }
     }
 }

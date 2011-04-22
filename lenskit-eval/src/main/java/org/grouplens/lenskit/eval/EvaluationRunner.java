@@ -28,7 +28,6 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
@@ -148,19 +147,18 @@ public final class EvaluationRunner {
         RatingDataAccessObject data = null;
         try {
             data = new SimpleFileDAO(options.getInputFile(), options.getDelimiter());
+            data.openSession();
             if (options.preloadData()) {
                 RatingDataAccessObject source = data;
-                RatingDataSession session = null;
                 Cursor<Rating> ratings = null;
                 try {
-                    session = source.getSession();
-                    ratings = session.getRatings();
+                    ratings = source.getRatings();
                     data = new RatingCollectionDAO(Cursors.makeList(ratings));
+                    source.closeSession();
+                    data.openSession();
                 } finally {
                     if (ratings != null)
                         ratings.close();
-                    if (session != null)
-                        session.release();
                 }
             }
             
@@ -178,6 +176,9 @@ public final class EvaluationRunner {
         } catch (FileNotFoundException e) {
             fail(2, "Error loading input data", e);
             return; /* fail will not return */
+        } finally {
+            if (data != null)
+                data.closeSession();
         }
     }
 

@@ -22,13 +22,13 @@ import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -43,11 +43,11 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    private RatingDataSession trainingDao;
-    private RatingDataSession testDao;
+    private RatingDataAccessObject trainingDao;
+    private RatingDataAccessObject testDao;
 
-    public TrainTestPredictEvaluator(RatingDataSession train,
-            RatingDataSession test) {
+    public TrainTestPredictEvaluator(RatingDataAccessObject train,
+            RatingDataAccessObject test) {
         trainingDao = train;
         testDao = test;
     }

@@ -144,7 +144,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
         ItemItemRecommenderEngine rec =
             new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
-                                    baseline, items, context.getDataSession().getDAO());
+                                    baseline, items, context.getDAO());
         ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
         
         rec.setRatingPredictor(predictor);

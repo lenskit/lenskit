@@ -32,7 +32,7 @@ Release ${project.version}
     profile implementations will likely be thread-safe, but we're not
     promising it any more.
 
-  * Add a session layer to data access objects to make it easier to
+  * Add a session concept to data access objects to make it easier to
     deal with database handle scoping and related issues.
     
   []

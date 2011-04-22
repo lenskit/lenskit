@@ -31,9 +31,7 @@ import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.dao.AbstractRatingDataSession;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.dao.RatingUpdateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +55,7 @@ public class UserFilteredDAO implements RatingDataAccessObject {
         this.base = base;
         userFilter = filter;
     }
-    
-    @Override
-    public RatingDataSession getSession() {
-        RatingDataSession s = base.getSession();
-        try {
-            return new Session(s);
-        } catch (RuntimeException e) {
-            s.release();
-            throw e;
-        }
-    }
-    
+
     @Override
     public void addRatingUpdateListener(RatingUpdateListener listener) {
         /* we do not support update listeners. */
@@ -78,102 +65,94 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     public void removeRatingUpdateListener(RatingUpdateListener listener) {
         /* we do not support update listeners */
     }
-    
-    class Session extends AbstractRatingDataSession {
-        RatingDataSession base;
-        Session(RatingDataSession base) {
-            super(UserFilteredDAO.this);
-            this.base = base;
-        }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
-         */
-        @Override
-        public Cursor<Rating> getRatings() {
-            return org.grouplens.common.cursors.Cursors.filter(base.getRatings(), new RatingPredicate());
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
+     */
+    @Override
+    public Cursor<Rating> getRatings() {
+        return org.grouplens.common.cursors.Cursors.filter(base.getRatings(), new RatingPredicate());
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
-         */
-        @Override
-        public Cursor<Rating> getRatings(SortOrder order) {
-            return org.grouplens.common.cursors.Cursors.filter(base.getRatings(order), new RatingPredicate());
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings(org.grouplens.lenskit.data.dao.SortOrder)
+     */
+    @Override
+    public Cursor<Rating> getRatings(SortOrder order) {
+        return org.grouplens.common.cursors.Cursors.filter(base.getRatings(order), new RatingPredicate());
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
-         */
-        @Override
-        public Cursor<UserRatingProfile> getUserRatingProfiles() {
-            return org.grouplens.common.cursors.Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatingProfiles()
+     */
+    @Override
+    public Cursor<UserRatingProfile> getUserRatingProfiles() {
+        return org.grouplens.common.cursors.Cursors.filter(base.getUserRatingProfiles(), new RatingProfilePredicate());
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
-         */
-        @Override
-        public Cursor<Rating> getUserRatings(long userId) {
-            if (userFilter.apply(userId))
-                return base.getUserRatings(userId);
-            else
-                return org.grouplens.common.cursors.Cursors.empty();
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
+     */
+    @Override
+    public Cursor<Rating> getUserRatings(long userId) {
+        if (userFilter.apply(userId))
+            return base.getUserRatings(userId);
+        else
+            return org.grouplens.common.cursors.Cursors.empty();
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
-         */
-        @Override
-        public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
-            if (userFilter.apply(userId))
-                return base.getUserRatings(userId, order);
-            else
-                return org.grouplens.common.cursors.Cursors.empty();
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
+     */
+    @Override
+    public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
+        if (userFilter.apply(userId))
+            return base.getUserRatings(userId, order);
+        else
+            return org.grouplens.common.cursors.Cursors.empty();
+    }
 
-        @Override
-        public int getItemCount() {
-            return base.getItemCount();
-        }
+    @Override
+    public int getItemCount() {
+        return base.getItemCount();
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.DataSource#getItems()
-         */
-        @Override
-        public LongCursor getItems() {
-            return base.getItems();
-        }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.DataSource#getItems()
+     */
+    @Override
+    public LongCursor getItems() {
+        return base.getItems();
+    }
 
-        private LongList getCachedUsers() {
-            return userCache == null ? null : userCache.get();
-        }
+    private LongList getCachedUsers() {
+        return userCache == null ? null : userCache.get();
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
-         */
-        @Override
-        public LongCursor getUsers() {
-            LongList users = getCachedUsers();
-            if (users == null) {
-                logger.trace("Returning fresh user list");
-                return Cursors2.makeLongCursor(org.grouplens.common.cursors.Cursors.filter(base.getUsers(), userFilter));
-            } else {
-                logger.trace("Returning cached user list");
-                return Cursors2.wrap(users);
-            }
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.DataSource#getUsers()
+     */
+    @Override
+    public LongCursor getUsers() {
+        LongList users = getCachedUsers();
+        if (users == null) {
+            logger.trace("Returning fresh user list");
+            return Cursors2.makeLongCursor(org.grouplens.common.cursors.Cursors.filter(base.getUsers(), userFilter));
+        } else {
+            logger.trace("Returning cached user list");
+            return Cursors2.wrap(users);
         }
+    }
 
-        @Override
-        public int getUserCount() {
-            LongList users = getCachedUsers();
-            if (users == null) {
-                logger.trace("Caching user list");
-                users = Cursors2.makeList(getUsers());
-                userCache = new SoftReference<LongList>(users);
-            }
-            return users.size();
+    @Override
+    public int getUserCount() {
+        LongList users = getCachedUsers();
+        if (users == null) {
+            logger.trace("Caching user list");
+            users = Cursors2.makeList(getUsers());
+            userCache = new SoftReference<LongList>(users);
         }
+        return users.size();
     }
 
     private class RatingPredicate implements Predicate<Rating> {
@@ -186,5 +165,16 @@ public class UserFilteredDAO implements RatingDataAccessObject {
         public boolean apply(UserRatingProfile profile) {
             return userFilter.apply(profile.getUser());
         }
+    }
+
+    @Override
+    public void openSession() {
+        /* no-op - sessions managed by underlying DAO. */
+    }
+
+    @Override
+    public void closeSession() {
+        /* no-op - sessions maanged by underlying DAO. */
+        // FIXME Revisit wrapping DAO session management.
     }
 }

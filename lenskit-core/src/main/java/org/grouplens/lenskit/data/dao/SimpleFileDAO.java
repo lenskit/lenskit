@@ -87,38 +87,23 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
     }
     
     @Override
-    public RatingDataSession getSession() {
-        return new Session();
-    }
-    
-    class Session extends AbstractRatingDataSession {
-        public Session() {
-            super(SimpleFileDAO.this);
-        }
-
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getRatings()
-         */
-        @Override
-        public Cursor<Rating> getRatings() {
-            Scanner scanner;
-            try {
-                if (file != null) {
-                    logger.debug("Opening {}", file.getPath());
-                    scanner = new Scanner(file);
-                } else {
-                    logger.debug("Opening {}", url.toString());
-                    InputStream instr = url.openStream();
-                    scanner = new Scanner(instr);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+    public Cursor<Rating> getRatings() {
+        Scanner scanner;
+        try {
+            if (file != null) {
+                logger.debug("Opening {}", file.getPath());
+                scanner = new Scanner(file);
+            } else {
+                logger.debug("Opening {}", url.toString());
+                InputStream instr = url.openStream();
+                scanner = new Scanner(instr);
             }
-            return new RatingScannerCursor(scanner);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
+        return new RatingScannerCursor(scanner);
     }
-    
+
     class RatingScannerCursor extends AbstractCursor<Rating> {
         private Scanner scanner;
         private int lineno;
@@ -148,7 +133,7 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
                 String[] fields = splitter.split(line);
                 if (fields.length < 3) {
                     logger.error("Invalid input at {} line {}, skipping",
-                            file, lineno);
+                                 file, lineno);
                     continue;
                 }
                 long uid = Long.parseLong(fields[0]);
@@ -170,6 +155,5 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
             rating = null;
             return r;
         }
-
     }
 }

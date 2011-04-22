@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -48,14 +48,14 @@ import org.grouplens.lenskit.util.FastCollection;
  *
  */
 public class PackedRatingBuildContext extends AbstractRatingBuildContext {
-    private final RatingDataSession session;
+    private final RatingDataAccessObject dao;
     
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
-	protected PackedRatingBuildContext(RatingDataSession session, 
+	protected PackedRatingBuildContext(RatingDataAccessObject dao, 
 	        PackedRatingData data, List<IntList> userIndices) {
-	    this.session = session;
+	    this.dao = dao;
 	    this.data = data;
 	    this.userIndices = userIndices;
 	}
@@ -69,8 +69,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	 * @see org.grouplens.lenskit.data.dao.context.RatingBuildContext#getDAO()
 	 */
 	@Override
-	public RatingDataSession getDataSession() {
-	    return session;
+	public RatingDataAccessObject getDAO() {
+	    return dao;
 	}
 
 	/* (non-Javadoc)
@@ -139,7 +139,12 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		data = null;
 	}
 	
-	public static PackedRatingBuildContext make(RatingDataSession session) {
+	/**
+	 * Construct a new rating build context within a DAO.
+	 * @param dao The data access object. It must have an open session.
+	 * @return A new rating build context.
+	 */
+	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
 	    Cursor<Rating> ratings = null;
 	    
 	    IntArrayList users;
@@ -155,7 +160,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	    int nratings = 0;
 	    
 	    try {
-	        ratings = session.getRatings();
+	        ratings = dao.getRatings();
 	        int size = ratings.getRowCount();
 	        // default to something nice and large
 	        if (size < 0) size = 10000;
@@ -229,6 +234,6 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		assert data.values.length == nratings;
 		assert timestamps == null || data.timestamps.length == nratings;
 		List<IntList> userIndices = imgr.getUserIndexMatrix();
-		return new PackedRatingBuildContext(session, data, userIndices);
+		return new PackedRatingBuildContext(dao, data, userIndices);
 	}
 }

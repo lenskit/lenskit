@@ -30,7 +30,6 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
@@ -50,7 +49,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
-            return new SimpleNeighborhoodFinder(context.getDataSession().getDAO(),
+            return new SimpleNeighborhoodFinder(context.getDAO(),
                                                 neighborhoodSize, similarity,
                                                 normalizerBuilder.build(context));
         }
@@ -94,10 +93,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         MutableSparseVector nratings = ratings.mutableCopy();
         normalizer.normalize(uid, nratings);
         
-        RatingDataSession session = dataSource.getSession();
-        Cursor<UserRatingProfile> users = null;
+        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
         try {
-            users = session.getUserRatingProfiles();
             for (UserRatingProfile user: users) {
                 if (user.getUser() == uid) continue;
 
@@ -127,9 +124,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
                 }
             }
         } finally {
-            if (users != null)
-                users.close();
-            session.release();
+            users.close();
         }
         return heaps;
     }

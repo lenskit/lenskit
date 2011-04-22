@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import org.grouplens.lenskit.data.LongCursor;
+
 
 /**
  * DAO for user-item ID data.
@@ -27,13 +29,44 @@ package org.grouplens.lenskit.data.dao;
  */
 public interface UserItemDataAccessObject {
     /**
-     * Get a session of user-item data.
-     * 
-     * <p>
-     * It should be cheap to get and discard sessions so that code doesn't have
-     * to pass sessions around all the time. Implementations should consider
-     * using thread-local storage and reference counting to share session
-     * implementations.
+     * Retrieve the users from the data source.
+     * @return a cursor iterating the user IDs.
      */
-    UserItemDataSession getSession();
+    LongCursor getUsers();
+
+    /**
+     * Get the number of users in the system.  This should be the same number
+     * of users that will be returned by iterating {@link #getUsers()} (unless
+     * a user is added or removed between the two calls).
+     * @return The number of users in the system.
+     */
+    int getUserCount();
+
+    /**
+     * Retrieve the items from the data source.
+     * @return a cursor iterating the item IDs.
+     */
+    LongCursor getItems();
+
+    /**
+     * Get the number of items in the system.  This should be the same number
+     * of items that will be returned by iterating {@link #getItems()} (unless
+     * an item is added or removed between the two calls).
+     * @return The number of items in the system.
+     */
+    int getItemCount();
+    
+    /**
+     * Open a DAO session for the current thread. All other methods are only
+     * valid inside a session.
+     * @throws IllegalStateException if a session is already open for the current
+     * thread.
+     */
+    void openSession();
+    
+    /**
+     * Close the session on the current thread.
+     * @throws IllegalStateException if no session is active on the curren thread.
+     */
+    void closeSession();
 }

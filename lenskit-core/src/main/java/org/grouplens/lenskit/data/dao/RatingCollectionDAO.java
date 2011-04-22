@@ -54,77 +54,65 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
     public RatingCollectionDAO(Collection<Rating> ratings) {
         this.ratings = ratings;
     }
-    
+
     private synchronized void requireUserCache() {
-    	if (users == null) {
-    	    Long2ObjectMap<ArrayList<Rating>> ratingCs =
-    	        new Long2ObjectOpenHashMap<ArrayList<Rating>>();
-    		for (Rating r: ratings) {
-    			final long uid = r.getUserId();
-    			ArrayList<Rating> userRatings = ratingCs.get(uid);
-    			if (userRatings == null) {
-    				userRatings = new ArrayList<Rating>(20);
-    				ratingCs.put(uid, userRatings);
-    			}
-    			userRatings.add(r);
-    		}
-    		users = new Long2ObjectOpenHashMap<UserRatingProfile>(ratingCs.size());
-    		for (Long2ObjectMap.Entry<ArrayList<Rating>> e: ratingCs.long2ObjectEntrySet()) {
-    		    e.getValue().trimToSize();
-    		    users.put(e.getLongKey(), new BasicUserRatingProfile(e));
-    		}
-    	}
-    }
-    
-    @Override
-    public RatingDataSession getSession() {
-        return new Session();
-    }
-    
-    class Session extends AbstractRatingDataSession {
-        public Session() {
-            super(RatingCollectionDAO.this);
-        }
-
-        @Override
-        public LongCursor getUsers() {
-            requireUserCache();
-            return Cursors2.wrap(users.keySet());
-        }
-
-        @Override
-        public Cursor<Rating> getUserRatings(long user, SortOrder order) {
-            requireUserCache();
-            Collection<Rating> ratings = users.get(user).getRatings();
-            if (ratings == null) return Cursors.empty();
-
-            ArrayList<Rating> copy;
-
-            switch (order) {
-            case ANY:
-                return Cursors.wrap(ratings);
-            case TIMESTAMP:
-                copy = new ArrayList<Rating>(ratings);
-                Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
-                return Cursors.wrap(copy);
-            default:
-                throw new UnsupportedQueryException();
+        if (users == null) {
+            Long2ObjectMap<ArrayList<Rating>> ratingCs =
+                new Long2ObjectOpenHashMap<ArrayList<Rating>>();
+            for (Rating r: ratings) {
+                final long uid = r.getUserId();
+                ArrayList<Rating> userRatings = ratingCs.get(uid);
+                if (userRatings == null) {
+                    userRatings = new ArrayList<Rating>(20);
+                    ratingCs.put(uid, userRatings);
+                }
+                userRatings.add(r);
+            }
+            users = new Long2ObjectOpenHashMap<UserRatingProfile>(ratingCs.size());
+            for (Long2ObjectMap.Entry<ArrayList<Rating>> e: ratingCs.long2ObjectEntrySet()) {
+                e.getValue().trimToSize();
+                users.put(e.getLongKey(), new BasicUserRatingProfile(e));
             }
         }
+    }
 
-        @Override
-        public Cursor<UserRatingProfile> getUserRatingProfiles() {
-            requireUserCache();
-            return Cursors.wrap(users.values().iterator());
-        }
+    @Override
+    public LongCursor getUsers() {
+        requireUserCache();
+        return Cursors2.wrap(users.keySet());
+    }
 
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
-         */
-        @Override
-        public Cursor<Rating> getRatings() {
+    @Override
+    public Cursor<Rating> getUserRatings(long user, SortOrder order) {
+        requireUserCache();
+        Collection<Rating> ratings = users.get(user).getRatings();
+        if (ratings == null) return Cursors.empty();
+
+        ArrayList<Rating> copy;
+
+        switch (order) {
+        case ANY:
             return Cursors.wrap(ratings);
+        case TIMESTAMP:
+            copy = new ArrayList<Rating>(ratings);
+            Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
+            return Cursors.wrap(copy);
+        default:
+            throw new UnsupportedQueryException();
         }
     }
 
+    @Override
+    public Cursor<UserRatingProfile> getUserRatingProfiles() {
+        requireUserCache();
+        return Cursors.wrap(users.values().iterator());
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
+     */
+    @Override
+    public Cursor<Rating> getRatings() {
+        return Cursors.wrap(ratings);
+    }
 }

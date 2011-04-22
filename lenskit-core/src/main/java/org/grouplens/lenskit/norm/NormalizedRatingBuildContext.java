@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.SimpleIndexedRating;
 import org.grouplens.lenskit.data.context.AbstractRatingBuildContext;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
@@ -132,8 +132,8 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
     }
     
     @Override
-    public RatingDataSession getDataSession() {
-        return buildContext.getDataSession();
+    public RatingDataAccessObject getDAO() {
+        return buildContext.getDAO();
     }
 
     @Override
