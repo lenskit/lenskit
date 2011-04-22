@@ -114,6 +114,8 @@ public class CrossfoldManager {
      * Return a test data set.
      * @param testIndex The index of the test set to use.
      * @return The test set of users.
+     * 
+     * FIXME: This method should not return a DAO.
      *
      * @todo Fix this method to be more efficient - currently, we convert from
      * vectors to ratings to later be converted back to vectors. That's slow.
