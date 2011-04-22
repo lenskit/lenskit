@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
-public interface Serializer<R extends Recommender> {
+public interface Serializer<R extends RecommenderEngine> {
     public void write(R model, File toFile) throws IOException;
     
     public R read(File fromFile, RatingDataAccessObject dao) throws IOException;

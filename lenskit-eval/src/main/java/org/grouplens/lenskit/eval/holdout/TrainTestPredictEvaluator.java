@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
@@ -55,11 +55,11 @@ public class TrainTestPredictEvaluator {
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
         for (AlgorithmInstance algo: algorithms) {
             AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-            RecommenderComponentBuilder<Recommender> builder = algo.getBuilder();
+            RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
             logger.debug("Building {}", algo.getName());
             acc.startBuildTimer();
             RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao);
-            Recommender rec = builder.build(rbc);
+            RecommenderEngine rec = builder.build(rbc);
             RatingPredictor pred = rec.getRatingPredictor();
             acc.finishBuild();
             

@@ -25,16 +25,16 @@ import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
- * UserUserRecommenderBuilder is a RecommenderComponentBuilder that is used to
+ * UserUserRecommenderEngineBuilder is a RecommenderComponentBuilder that is used to
  * provide UserUserRecommenders.
  * 
  * @author Michael Ludwig
  */
-public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuilder<UserUserRecommender> {
+public class UserUserRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<UserUserRecommenderEngine> {
     private RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhoodBuilder;
     private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
     
-    public UserUserRecommenderBuilder() {
+    public UserUserRecommenderEngineBuilder() {
         neighborhoodBuilder = new SimpleNeighborhoodFinder.Builder();
         normalizerBuilder = new IdentityUserRatingVectorNormalizer.Builder();
     }
@@ -64,7 +64,7 @@ public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuil
     }
 
     @Override
-    protected UserUserRecommender buildNew(RatingBuildContext context) {
+    protected UserUserRecommenderEngine buildNew(RatingBuildContext context) {
         NeighborhoodFinder n = neighborhoodBuilder.build(context);
         UserRatingVectorNormalizer norm = null;
         if (normalizerBuilder != null)
@@ -72,6 +72,6 @@ public class UserUserRecommenderBuilder extends AbstractRecommenderComponentBuil
         UserUserRatingPredictor pred =
             new UserUserRatingPredictor(context.getDataSession().getDAO(), n, norm);
         UserUserRatingRecommender rec = new UserUserRatingRecommender(pred);
-        return new UserUserRecommender(pred, rec);
+        return new UserUserRecommenderEngine(pred, rec);
     }
 }

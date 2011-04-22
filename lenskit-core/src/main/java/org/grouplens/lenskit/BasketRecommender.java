@@ -24,7 +24,7 @@ import java.util.Set;
 import org.grouplens.lenskit.data.ScoredId;
 
 /**
- * Recommender that provides basket-based recommendations (unary user profiles)
+ * RecommenderEngine that provides basket-based recommendations (unary user profiles)
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

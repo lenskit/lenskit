@@ -20,7 +20,7 @@ package org.grouplens.lenskit;
 
 import javax.annotation.Nullable;
 
-public interface Recommender {
+public interface RecommenderEngine {
     @Nullable
     public RatingPredictor getRatingPredictor();
     

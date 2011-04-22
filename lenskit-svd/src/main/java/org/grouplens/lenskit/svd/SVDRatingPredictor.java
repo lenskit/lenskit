@@ -41,15 +41,15 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * user's ratings.
  *
  * @todo Look at using the user's feature preferences in some cases.
- * @todo Revise this class's relationship with {@link FunkSVDRecommender}.
+ * @todo Revise this class's relationship with {@link FunkSVDRecommenderEngine}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SVDRatingPredictor extends AbstractRatingPredictor {
-	protected final FunkSVDRecommender model;
+	protected final FunkSVDRecommenderEngine model;
 
-    protected SVDRatingPredictor(FunkSVDRecommender m) {
+    protected SVDRatingPredictor(FunkSVDRecommenderEngine m) {
         super(m.dao);
         model = m;
     }

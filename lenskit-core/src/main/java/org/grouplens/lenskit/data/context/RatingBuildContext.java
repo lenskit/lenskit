@@ -44,7 +44,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * 
  * <p>Implementers have a variety of options for implementing build contexts.
  * They can be in-memory snapshots, database transactions, database clones,
- * or even disk files.  Recommender build code does assume, however, that
+ * or even disk files.  RecommenderEngine build code does assume, however, that
  * multiple iterations is pretty fast.  Therefore, implementations should avoid
  * re-fetching the data over a network connection for each request.
  * 
