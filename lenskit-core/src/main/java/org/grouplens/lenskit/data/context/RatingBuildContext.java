@@ -18,19 +18,12 @@
  */
 package org.grouplens.lenskit.data.context;
 
-import it.unimi.dsi.fastutil.longs.LongCollection;
-
 import java.io.Closeable;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.RatingDataSession;
-import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.util.FastCollection;
 
 /**
  * Snapshot of the ratings data for building a recommender.
@@ -57,6 +50,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * contexts.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @ThreadSafe
 public interface RatingBuildContext extends Closeable {
@@ -68,52 +62,6 @@ public interface RatingBuildContext extends Closeable {
      * @param <T>
      */
     public static class Key<T> { }
-    
-    /**
-     * Return the dao that is backing this RatingBuildContext.
-     * @return
-     */
-    RatingDataSession getDataSession();
-    
-	/**
-	 * Get the set of user IDs in the snapshot.
-	 * @return A set of all known user IDs.
-	 */
-	LongCollection getUserIds();
-
-	/**
-	 * Get the set of item IDs in the snapshot.
-	 * @return A set of all known item IDs.
-	 */
-	LongCollection getItemIds();
-	
-	/**
-	 * Get the user ID index.
-	 * @return The index mapping between user IDs and user indices.
-	 */
-	Index userIndex();
-	
-	/**
-	 * Get the item ID index.
-	 * @return The index mapping between user IDs and user indices.
-	 */
-	Index itemIndex();
-	
-	/**
-	 * Get the collection of ratings in the snapshot.  The ratings are returned
-	 * in an undetermined order.  It is guaranteed that no duplicate ratings
-	 * appear - each <i>(user,item)</i> pair is rated at most once.
-	 * @return All ratings in the system.
-	 */
-	FastCollection<IndexedRating> getRatings();
-	
-	/**
-	 * Get the ratings for a particular user.  It is guaranteed that no duplicate
-	 * ratings appear - each <i>(user,item)</i> pair is rated at most once.
-	 * @param userId The user's ID.
-	 * @return The user's ratings, or an empty collection if the user is unknown.
-	 */
-	FastCollection<IndexedRating> getUserRatings(long userId);
 
     /**
      * Return the value last associated with the given key.
@@ -137,12 +85,22 @@ public interface RatingBuildContext extends Closeable {
 	<T> void put(Key<T> key, T value);
 	
 	/**
-	 * Create a normalized rating build context backed by this context.
-	 * @param norm The normalizer.
-	 * @return A normalized build context backed by this context. Contexts are
-	 * memoized and will only be built once per normalization instance.
+	 * Get a RatingSnapshot suitable for training a recommender.
+	 * 
+	 * Based on the build context parameters, this snapshot will contain
+	 * a portion of the data, with the rest held out in the tuningSnapshot
+	 * @return	a RatingSnapshot for viewing the training data
 	 */
-	NormalizedRatingBuildContext normalize(UserRatingVectorNormalizer norm);
+	RatingSnapshot trainingSnapshot();
+	
+	/**
+	 * Get a RatingSnapshot suitable for testing a recommender.
+	 * 
+	 * Based on the build context parameters, this this snapshot will contain
+	 * the portion of the data that was held out from the training data.
+	 * @return	a RatingSnapshot for viewing the testing data
+	 */
+	RatingSnapshot tuningSnapshot();
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

@@ -44,7 +44,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     public static class Builder extends AbstractRecommenderComponentBuilder<UserMeanPredictor> {
         @Override
         protected UserMeanPredictor buildNew(RatingBuildContext context) {
-            double mean = GlobalMeanPredictor.computeMeanRating(context.getRatings().fastIterator());
+            double mean = GlobalMeanPredictor.computeMeanRating(context.trainingSnapshot().getRatings().fastIterator());
             return new UserMeanPredictor(mean);
         }
     }

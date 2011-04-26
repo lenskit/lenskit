@@ -24,17 +24,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
+import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 public abstract class AbstractRatingBuildContext implements RatingBuildContext {
     private final Map<Object, Object> cachedValues;
-    private final IdentityHashMap<UserRatingVectorNormalizer, NormalizedRatingBuildContext>
-        normalizedContexts;
+    private final IdentityHashMap<UserRatingVectorNormalizer, NormalizedRatingSnapshot>
+        normalizedSnapshots;
     
     public AbstractRatingBuildContext() {
         cachedValues = new ConcurrentHashMap<Object, Object>();
-        normalizedContexts = new IdentityHashMap<UserRatingVectorNormalizer, NormalizedRatingBuildContext>();
+        normalizedSnapshots = new IdentityHashMap<UserRatingVectorNormalizer, NormalizedRatingSnapshot>();
     }
 
     @Override
@@ -51,26 +51,14 @@ public abstract class AbstractRatingBuildContext implements RatingBuildContext {
             throw new NullPointerException("Key and value cannot be null");
         cachedValues.put(key, value);
     }
-    
-    @Override
-    public NormalizedRatingBuildContext normalize(UserRatingVectorNormalizer norm) {
-        synchronized (normalizedContexts) {
-            NormalizedRatingBuildContext nrbc = normalizedContexts.get(norm);
-            if (nrbc == null) {
-                nrbc = new NormalizedRatingBuildContext(this, norm);
-                normalizedContexts.put(norm, nrbc);
-            }
-            return nrbc;
-        }
-    }
 
     @Override
     @OverridingMethodsMustInvokeSuper
     public void close() {
         // Help the garbage collector out and clear the cache now
         cachedValues.clear();
-        synchronized (normalizedContexts) {
-            normalizedContexts.clear();
+        synchronized (normalizedSnapshots) {
+            normalizedSnapshots.clear();
         }
     }
 }

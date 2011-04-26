@@ -26,7 +26,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -58,7 +58,7 @@ public class TrainTestPredictEvaluator {
             RecommenderComponentBuilder<Recommender> builder = algo.getBuilder();
             logger.debug("Building {}", algo.getName());
             acc.startBuildTimer();
-            RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao);
+            RatingBuildContext rbc = PackedRatingSnapshot.make(trainingDao);
             Recommender rec = builder.build(rbc);
             RatingPredictor pred = rec.getRatingPredictor();
             acc.finishBuild();

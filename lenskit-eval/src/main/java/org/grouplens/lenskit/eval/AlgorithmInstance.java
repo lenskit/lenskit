@@ -34,7 +34,7 @@ import javax.script.ScriptException;
 
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.RatingDataSession;
@@ -111,7 +111,7 @@ public class AlgorithmInstance {
         RatingBuildContext ctx = null;
         try {
             session = dao.getSession();
-            ctx = PackedRatingBuildContext.make(session);
+            ctx = PackedRatingSnapshot.make(session);
             return builder.build(ctx);
         } finally {
             if (ctx != null)
