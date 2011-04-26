@@ -3,7 +3,7 @@
 (^|/)\.(project|classpath)$
 (^|/)\.settings/
 ~$
-\.csv$
+\.[ct]sv$
 
 
 \.orig\..*$

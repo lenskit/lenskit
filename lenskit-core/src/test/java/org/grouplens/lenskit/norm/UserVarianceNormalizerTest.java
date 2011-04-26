@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -19,7 +19,7 @@ import org.junit.Test;
  */
 public class UserVarianceNormalizerTest {
 	
-	final static RatingBuildContext rbc;
+	final static RatingSnapshot rs;
 	final static SparseVector userRatings;
 	final static SparseVector uniformUserRatings;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
@@ -49,7 +49,9 @@ public class UserVarianceNormalizerTest {
 			ps.println("1,5,3");
 			ps.println("1,6,3");
 			SimpleFileDAO sfdao = new SimpleFileDAO(tempFile, ",");
-			rbc = PackedRatingBuildContext.make(sfdao);
+			sfdao.openSession();
+			rs = PackedRatingSnapshot.make(sfdao);
+			sfdao.closeSession();
 		} catch (IOException ioe) {
 			throw new RuntimeException("Failed to initialize test data");
 		}
@@ -59,7 +61,7 @@ public class UserVarianceNormalizerTest {
 	public void testRatingBuildContextConstructor() {
 		UserVarianceNormalizer urvn = new UserVarianceNormalizer(0, null);
 		Assert.assertEquals(0.0, urvn.globalVariance, 0.0);
-		urvn = new UserVarianceNormalizer(3, rbc);
+		urvn = new UserVarianceNormalizer(3, rs);
 		Assert.assertEquals(3.0, urvn.smoothing, 0.0);
 		Assert.assertEquals(2.0, urvn.globalVariance, MIN_DOUBLE_PRECISION);
 	}
@@ -105,7 +107,7 @@ public class UserVarianceNormalizerTest {
 	@Test
 	public void testSmoothing() {
 		UserVarianceNormalizer urvn;
-		urvn = new UserVarianceNormalizer(3, rbc);
+		urvn = new UserVarianceNormalizer(3, rs);
 		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		final double mean = 2.0;

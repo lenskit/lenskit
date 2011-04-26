@@ -58,7 +58,7 @@ public class TrainTestPredictEvaluator {
             RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
             logger.debug("Building {}", algo.getName());
             acc.startBuildTimer();
-            RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao);
+            RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao, 1.0);
             RecommenderEngine rec = builder.build(rbc);
             RatingPredictor pred = rec.getRatingPredictor();
             acc.finishBuild();

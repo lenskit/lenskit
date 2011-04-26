@@ -50,7 +50,7 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
-import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
+import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -133,7 +133,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
     @Override
     protected ItemItemRecommenderEngine buildNew(RatingBuildContext context) {
         UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
-        NormalizedRatingBuildContext data = context.normalize(norm);
+        NormalizedRatingSnapshot data = context.trainingSnapshot().normalize(norm);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
         
         BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
@@ -144,7 +144,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
         ItemItemRecommenderEngine rec =
             new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
-                                    baseline, items, context.getDAO());
+                                    baseline, items, data.getDAO());
         ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
         
         rec.setRatingPredictor(predictor);
@@ -159,7 +159,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(NormalizedRatingBuildContext data, boolean trackItemSets) {
+        public BuildState(NormalizedRatingSnapshot data, boolean trackItemSets) {
             itemIndex = data.itemIndex();
             itemCount = itemIndex.getObjectCount();
             itemRatings = new ArrayList<SparseVector>();
@@ -179,7 +179,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
          * @todo Fix this method to abstract item collection.
          * @todo Review and document this method.
          */
-        private void buildItemRatings(NormalizedRatingBuildContext data) {
+        private void buildItemRatings(NormalizedRatingSnapshot data) {
             final boolean collectItems = userItemSets != null;
             final int nitems = itemCount;
 

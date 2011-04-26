@@ -108,7 +108,7 @@ public class AlgorithmInstance {
             throw new IllegalStateException("no builder set");
         RatingBuildContext ctx = null;
         try {
-            ctx = PackedRatingBuildContext.make(dao);
+            ctx = PackedRatingBuildContext.make(dao, 1.0);
             return builder.build(ctx);
         } finally {
             if (ctx != null)

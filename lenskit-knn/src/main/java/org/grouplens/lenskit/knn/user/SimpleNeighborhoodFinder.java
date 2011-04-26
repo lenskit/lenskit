@@ -49,7 +49,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
-            return new SimpleNeighborhoodFinder(context.getDAO(),
+            return new SimpleNeighborhoodFinder(context.trainingSnapshot().getDAO(),
                                                 neighborhoodSize, similarity,
                                                 normalizerBuilder.build(context));
         }

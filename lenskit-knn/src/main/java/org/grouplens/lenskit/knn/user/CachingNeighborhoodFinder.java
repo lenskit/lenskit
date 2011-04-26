@@ -61,7 +61,7 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
         protected CachingNeighborhoodFinder buildNew(RatingBuildContext context) {
             int nusers = 0;
             Long2ObjectMap<Collection<UserRatingProfile>> cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
-            RatingDataAccessObject data = context.getDAO();
+            RatingDataAccessObject data = context.trainingSnapshot().getDAO();
             
             Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
             try {

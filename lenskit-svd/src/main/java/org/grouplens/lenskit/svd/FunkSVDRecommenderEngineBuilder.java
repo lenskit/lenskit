@@ -27,8 +27,8 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -154,13 +154,14 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         BaselinePredictor baseline = baselineBuilder.build(context);
         
         MutableSparseVector[] estimates = initializeEstimates(context, baseline);
-        FastCollection<IndexedRating> ratings = context.getRatings();
+        RatingSnapshot snapshot = context.trainingSnapshot();
+        FastCollection<IndexedRating> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
         
-        final int numUsers = context.getUserIds().size();
-        final int numItems = context.getItemIds().size();
+        final int numUsers = snapshot.getUserIds().size();
+        final int numItems = snapshot.getItemIds().size();
         double[][] userFeatures = new double[featureCount][numUsers];
         double[][] itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
@@ -198,18 +199,19 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             singularValues[feature] = unrm * inrm;
         }
         
-        return new FunkSVDRecommenderEngine(context.getDAO(),
+        return new FunkSVDRecommenderEngine(snapshot.getDAO(),
                 featureCount, itemFeatures, userFeatures, singularValues,
-                clampingFunction, context.itemIndex(), context.userIndex(), baseline);
+                clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
     private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
             BaselinePredictor baseline) {
-        final int nusers = context.userIndex().getObjectCount();
+    	RatingSnapshot snapshot = context.trainingSnapshot();
+        final int nusers = snapshot.userIndex().getObjectCount();
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
         for (int i = 0; i < nusers; i++) {
-            final long uid = context.userIndex().getId(i);
-            MutableSparseVector urv = Ratings.userRatingVector(context.getUserRatings(uid));
+            final long uid = snapshot.userIndex().getId(i);
+            MutableSparseVector urv = Ratings.userRatingVector(snapshot.getUserRatings(uid));
             MutableSparseVector blpreds = baseline.predict(uid, urv, urv.keySet());
             estimates[i] = blpreds;
         }

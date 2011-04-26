@@ -70,7 +70,7 @@ public class UserUserRecommenderEngineBuilder extends AbstractRecommenderCompone
         if (normalizerBuilder != null)
             norm = normalizerBuilder.build(context);
         UserUserRatingPredictor pred =
-            new UserUserRatingPredictor(context.getDAO(), n, norm);
+            new UserUserRatingPredictor(context.trainingSnapshot().getDAO(), n, norm);
         UserUserRatingRecommender rec = new UserUserRatingRecommender(pred);
         return new UserUserRecommenderEngine(pred, rec);
     }

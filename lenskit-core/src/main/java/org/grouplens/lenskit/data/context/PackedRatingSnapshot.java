@@ -37,23 +37,23 @@ import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
 
 /**
- * A build context that an in-memory snapshot in packed arrays.
+ * A build context that is an in-memory snapshot in packed arrays.
  * 
  * <p>By default, this class is injected as a singleton.  Deployments may want
  * to override that in the Guice module to allow multiple build contexts to be
  * built (e.g. every day).  Applications using LensKit will often want to use
- * explicit providers for build contexts.
+ * explicit providers for build contexts. @TODO No longer relevant
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PackedRatingBuildContext extends AbstractRatingBuildContext {
+public class PackedRatingSnapshot extends AbstractRatingSnapshot {
     private final RatingDataAccessObject dao;
     
 	private PackedRatingData data;
 	private List<IntList> userIndices;
 	
-	protected PackedRatingBuildContext(RatingDataAccessObject dao, 
+	protected PackedRatingSnapshot(RatingDataAccessObject dao, 
 	        PackedRatingData data, List<IntList> userIndices) {
 	    this.dao = dao;
 	    this.data = data;
@@ -144,7 +144,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	 * @param dao The data access object. It must have an open session.
 	 * @return A new rating build context.
 	 */
-	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
+	public static PackedRatingSnapshot make(RatingDataAccessObject dao) {
 	    Cursor<Rating> ratings = null;
 	    
 	    IntArrayList users;
@@ -234,6 +234,6 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		assert data.values.length == nratings;
 		assert timestamps == null || data.timestamps.length == nratings;
 		List<IntList> userIndices = imgr.getUserIndexMatrix();
-		return new PackedRatingBuildContext(dao, data, userIndices);
+		return new PackedRatingSnapshot(dao, data, userIndices);
 	}
 }
