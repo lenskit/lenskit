@@ -21,6 +21,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleFileDAO extends AbstractRatingDataAccessObject {
+public class SimpleFileDAO extends AbstractRatingDataAccessObject<Closeable> {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileDAO.class);
     private final File file;
     private final URL url;
@@ -88,6 +89,7 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
     
     @Override
     public Cursor<Rating> getRatings() {
+        checkSession();
         Scanner scanner;
         try {
             if (file != null) {
@@ -155,5 +157,10 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
             rating = null;
             return r;
         }
+    }
+    
+    @Override
+    protected Closeable openNewSession() {
+        return new DummySession();
     }
 }

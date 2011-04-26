@@ -43,6 +43,7 @@ import com.google.common.base.Predicate;
  * 
  * FIXME: integrate with a build context
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @review Is no-op the appropraite behavior w.r.t. closing sessions?
  *
  */
 public class UserFilteredDAO implements RatingDataAccessObject {
@@ -175,6 +176,10 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     @Override
     public void closeSession() {
         /* no-op - sessions maanged by underlying DAO. */
-        // FIXME Revisit wrapping DAO session management.
+    }
+    
+    @Override
+    public boolean isSessionOpen() {
+        return base.isSessionOpen();
     }
 }

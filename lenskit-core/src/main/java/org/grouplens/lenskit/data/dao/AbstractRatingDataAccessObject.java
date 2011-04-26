@@ -24,11 +24,16 @@ package org.grouplens.lenskit.data.dao;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
@@ -39,15 +44,26 @@ import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 
 /**
+ * Abstract implementation of {@link RatingDataAccessObject}, delegating
+ * to a few core methods.  It also handles thread-local session management,
+ * requiring subclasses only to provide the {@link #openNewSession()} method.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @param <S> The type of session objects.
  */
-public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
+public abstract class AbstractRatingDataAccessObject<S extends Closeable> implements RatingDataAccessObject {
+    protected final Logger logger;
     private final RatingUpdateListenerManager updateListeners = new RatingUpdateListenerManager();
+    
+    protected AbstractRatingDataAccessObject() {
+        logger = LoggerFactory.getLogger(getClass());
+    }
     
     /**
      * Implement {@link RatingDataAccessObject#getRatings(SortOrder)} by sorting the
@@ -55,6 +71,8 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
      */
     @Override
     public Cursor<Rating> getRatings(SortOrder order) {
+        checkSession();
+        
         Comparator<Rating> comp = null;
 
         switch (order) {
@@ -145,9 +163,9 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     private LongSet getItemSet() {
         LongSet items = null;
         
-        items = new LongOpenHashSet();
         Cursor<Rating> ratings = getRatings();
         try {
+            items = new LongOpenHashSet();
             for (Rating r: ratings) {
                 items.add(r.getItemId());
             }
@@ -173,10 +191,11 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     }
 
     private LongSet getUserSet() {
-        LongSet users = new LongOpenHashSet();
+        LongSet users;
         
         Cursor<Rating> ratings = getRatings();
         try {
+            users = new LongOpenHashSet();
             for (Rating r: ratings) {
                 users.add(r.getUserId());
             }
@@ -264,31 +283,88 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
         updateListeners.invoke(oldRating, newRating);
     }
     
-    private ThreadLocal<Boolean> sessionActive = new ThreadLocal<Boolean>() {
-        @Override protected Boolean initialValue() {
-            return false;
-        }
-    };
+    private ThreadLocal<S> activeSession = new ThreadLocal<S>();
     
     /**
      * Verify that no session is already open.
      */
     @Override
     public void openSession() {
-        if (sessionActive.get())
+        if (activeSession.get() != null)
             throw new IllegalStateException("Session already open");
         else
-            sessionActive.set(true);
+            activeSession.set(openNewSession());
     }
     
     /**
      * Close the session.
+     * @review Is logging and swallowing errors the appropriate approach?
      */
     @Override
     public void closeSession() {
-        if (!sessionActive.get())
-            throw new IllegalStateException("No session active");
+        Closeable session = activeSession.get();
+        if (session == null) {
+            throw new NoSessionException();
+        } else {
+            activeSession.set(null);
+            try {
+                session.close();
+            } catch (IOException e) {
+                logger.error("Error closing session", e);
+            }
+        }
+    }
+    
+    @Override
+    public boolean isSessionOpen() {
+        return activeSession.get() != null;
+    }
+    
+    /**
+     * Get the session object.
+     * @throws NoSessionException if there is not an open session.
+     */
+    protected @Nonnull S getSession() {
+        return getSession(true);
+    }
+    
+    /**
+     * Require an open session.
+     * @throws NoSessionException if there is not an open session.
+     */
+    protected void checkSession() {
+        getSession();
+    }
+    
+    /**
+     * Get the session object without failing.
+     * @param require If <tt>true</tt>, fail if no session is available.
+     * @throws NoSessionException if no session is available and <var>require</var>
+     * is <tt>true</tt>.
+     */
+    protected @Nullable S getSession(boolean require) {
+        S session = activeSession.get();
+        if (session == null && require)
+            throw new NoSessionException();
         else
-            sessionActive.set(true);
+            return session;
+    }
+    
+    /**
+     * Open and return a new session object.  Errors closing the returned object
+     * are logged and swallowed.
+     * @return
+     */
+    protected abstract S openNewSession();
+    
+    /**
+     * Dummy session implementation for DAOs without sessions.
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     *
+     */
+    protected static class DummySession implements Closeable {
+        public void close() {
+            /* no-op */
+        }
     }
 }

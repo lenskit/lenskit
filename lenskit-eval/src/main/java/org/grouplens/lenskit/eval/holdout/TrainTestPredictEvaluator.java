@@ -18,9 +18,9 @@
  */
 package org.grouplens.lenskit.eval.holdout;
 
+import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderEngine;
@@ -44,12 +44,12 @@ import org.slf4j.LoggerFactory;
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
     private RatingDataAccessObject trainingDao;
-    private RatingDataAccessObject testDao;
+    private Collection<UserRatingProfile> testProfiles;
 
     public TrainTestPredictEvaluator(RatingDataAccessObject train,
-            RatingDataAccessObject test) {
+            Collection<UserRatingProfile> test) {
         trainingDao = train;
-        testDao = test;
+        testProfiles = test;
     }
     
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
@@ -66,16 +66,11 @@ public class TrainTestPredictEvaluator {
             logger.debug("Testing {}", algo.getName());
             acc.startTestTimer();
             
-            Cursor<UserRatingProfile> profiles = testDao.getUserRatingProfiles();
-            try {
-                for (UserRatingProfile p: profiles) {
-                    SparseVector ratings = Ratings.userRatingVector(p.getRatings());
-                    SparseVector predictions =
-                        pred.predict(p.getUser(), ratings.keySet());
-                    acc.evaluatePrediction(p.getUser(), ratings, predictions);
-                }
-            } finally {
-                profiles.close();
+            for (UserRatingProfile p: testProfiles) {
+                SparseVector ratings = Ratings.userRatingVector(p.getRatings());
+                SparseVector predictions =
+                    pred.predict(p.getUser(), ratings.keySet());
+                acc.evaluatePrediction(p.getUser(), ratings, predictions);
             }
             
             acc.finish();

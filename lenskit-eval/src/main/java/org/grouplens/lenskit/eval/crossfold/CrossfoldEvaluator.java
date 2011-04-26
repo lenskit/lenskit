@@ -20,10 +20,12 @@ package org.grouplens.lenskit.eval.crossfold;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
@@ -77,23 +79,19 @@ public class CrossfoldEvaluator {
 		}
         for (int i = 0; i < numFolds; i++) {
             RatingDataAccessObject train = null;
-            RatingDataAccessObject test = null;
             try {
                 train = manager.trainingSet(i);
                 train.openSession();
-                test = manager.testSet(i);
-                test.openSession();
+                Collection<UserRatingProfile> test = manager.testSet(i); 
                 int nusers = train.getUserCount();
                 logger.info(String.format("Running benchmark %d with %d training and %d test users",
-                                          i+1, nusers, test.getUserCount()));
+                                          i+1, nusers, test.size()));
                 TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(train, test);
                 ResultAccumulator accum = mgr.makeAccumulator(i);
                 eval.evaluateAlgorithms(algorithms, accum);
             } finally {
-                if (test != null)
-                    test.closeSession();
                 if (train != null)
-                    test.closeSession();
+                    train.closeSession();
             }
         }
         mgr.finish();

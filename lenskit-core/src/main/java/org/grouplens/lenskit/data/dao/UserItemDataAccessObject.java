@@ -31,6 +31,7 @@ public interface UserItemDataAccessObject {
     /**
      * Retrieve the users from the data source.
      * @return a cursor iterating the user IDs.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     LongCursor getUsers();
 
@@ -39,6 +40,7 @@ public interface UserItemDataAccessObject {
      * of users that will be returned by iterating {@link #getUsers()} (unless
      * a user is added or removed between the two calls).
      * @return The number of users in the system.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     int getUserCount();
 
@@ -53,6 +55,7 @@ public interface UserItemDataAccessObject {
      * of items that will be returned by iterating {@link #getItems()} (unless
      * an item is added or removed between the two calls).
      * @return The number of items in the system.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     int getItemCount();
     
@@ -66,7 +69,13 @@ public interface UserItemDataAccessObject {
     
     /**
      * Close the session on the current thread.
-     * @throws IllegalStateException if no session is active on the curren thread.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     void closeSession();
+    
+    /**
+     * Query whether a session is open on this thread.
+     * @return <tt>true</tt> if the current thread has an open session.
+     */
+    boolean isSessionOpen();
 }

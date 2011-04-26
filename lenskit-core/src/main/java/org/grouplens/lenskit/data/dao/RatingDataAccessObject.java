@@ -50,6 +50,7 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * Get all ratings from the data set.
      * 
      * @return A cursor iterating over all ratings.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<Rating> getRatings();
     
@@ -59,6 +60,7 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * @param order The sort to apply for the ratings.
      * @return The ratings in order.
      * @throws UnsupportedQueryException if the sort order cannot be supported.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<Rating> getRatings(SortOrder order);
 
@@ -67,6 +69,7 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * 
      * @return A cursor returning the user rating profile for each user in the
      *         data source.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<UserRatingProfile> getUserRatingProfiles();
 
@@ -75,6 +78,7 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * 
      * @param userId The ID of the user whose ratings are requested.
      * @return An iterator over the user's ratings.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<Rating> getUserRatings(long userId);
 
@@ -86,6 +90,7 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * @return An iterator over the user's ratings.
      * @throws UnsupportedQueryException if the specified sort order is not
      *             supported.
+     * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<Rating> getUserRatings(long userId, SortOrder order);
     

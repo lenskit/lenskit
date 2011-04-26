@@ -24,6 +24,7 @@ package org.grouplens.lenskit.data.dao;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +44,7 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
+public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeable> {
     private Collection<Rating> ratings;
     private Long2ObjectMap<UserRatingProfile> users;
 
@@ -78,12 +79,14 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
 
     @Override
     public LongCursor getUsers() {
+        checkSession();
         requireUserCache();
         return Cursors2.wrap(users.keySet());
     }
 
     @Override
     public Cursor<Rating> getUserRatings(long user, SortOrder order) {
+        checkSession();
         requireUserCache();
         Collection<Rating> ratings = users.get(user).getRatings();
         if (ratings == null) return Cursors.empty();
@@ -104,6 +107,7 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
 
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
+        checkSession();
         requireUserCache();
         return Cursors.wrap(users.values().iterator());
     }
@@ -113,6 +117,12 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
      */
     @Override
     public Cursor<Rating> getRatings() {
+        checkSession();
         return Cursors.wrap(ratings);
+    }
+    
+    @Override
+    protected Closeable openNewSession() {
+        return new DummySession();
     }
 }
