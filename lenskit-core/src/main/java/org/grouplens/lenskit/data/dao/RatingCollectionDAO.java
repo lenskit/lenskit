@@ -28,6 +28,8 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -47,6 +49,7 @@ import org.grouplens.lenskit.data.UserRatingProfile;
 public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeable> {
     private Collection<Rating> ratings;
     private Long2ObjectMap<UserRatingProfile> users;
+    private Long2ObjectMap<ArrayList<Rating>> items;
 
     /**
      * Construct a new data source from a collection of ratings.
@@ -58,6 +61,7 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
 
     private synchronized void requireUserCache() {
         if (users == null) {
+            logger.debug("Caching user rating profiles");
             Long2ObjectMap<ArrayList<Rating>> ratingCs =
                 new Long2ObjectOpenHashMap<ArrayList<Rating>>();
             for (Rating r: ratings) {
@@ -76,6 +80,22 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
             }
         }
     }
+    
+    private synchronized void requireItemCache() {
+        if (items == null) {
+            logger.debug("Caching item rating collections");
+            items = new Long2ObjectOpenHashMap<ArrayList<Rating>>();
+            for (Rating r: ratings) {
+                final long iid = r.getItemId();
+                ArrayList<Rating> itemRatings = items.get(iid);
+                if (itemRatings == null) {
+                    itemRatings = new ArrayList<Rating>(20);
+                    items.put(iid, itemRatings);
+                }
+                itemRatings.add(r);
+            }
+        }
+    }
 
     @Override
     public LongCursor getUsers() {
@@ -91,18 +111,29 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
         Collection<Rating> ratings = users.get(user).getRatings();
         if (ratings == null) return Cursors.empty();
 
-        ArrayList<Rating> copy;
 
+        Comparator<Rating> comp = null;
         switch (order) {
         case ANY:
-            return Cursors.wrap(ratings);
+            break;
+        case USER:
+            comp = Ratings.USER_COMPARATOR;
+            break;
+        case ITEM:
+            comp = Ratings.ITEM_COMPARATOR;
+            break;
         case TIMESTAMP:
-            copy = new ArrayList<Rating>(ratings);
-            Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
-            return Cursors.wrap(copy);
+            comp = Ratings.TIMESTAMP_COMPARATOR;
+            break;
         default:
             throw new UnsupportedQueryException();
         }
+        if (comp != null) {
+            List<Rating> sratings = new ArrayList<Rating>(ratings);
+            Collections.sort(sratings, comp);
+            ratings = sratings;
+        }
+        return Cursors.wrap(ratings);
     }
 
     @Override
@@ -110,6 +141,37 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
         checkSession();
         requireUserCache();
         return Cursors.wrap(users.values().iterator());
+    }
+    
+    @Override
+    public Cursor<Rating> getItemRatings(long item, SortOrder order) {
+        checkSession();
+        requireItemCache();
+        
+        List<Rating> ratings = items.get(item);
+        if (ratings == null) return Cursors.empty();
+        
+        Comparator<Rating> comp = null;
+        switch (order) {
+        case ANY:
+            break;
+        case USER:
+            comp = Ratings.USER_COMPARATOR;
+            break;
+        case ITEM:
+            comp = Ratings.ITEM_COMPARATOR;
+            break;
+        case TIMESTAMP:
+            comp = Ratings.TIMESTAMP_COMPARATOR;
+            break;
+        default:
+            throw new UnsupportedQueryException();
+        }
+        if (comp != null) {
+            ratings = new ArrayList<Rating>(ratings);
+            Collections.sort(ratings, comp);
+        }
+        return Cursors.wrap(ratings);
     }
 
     /* (non-Javadoc)

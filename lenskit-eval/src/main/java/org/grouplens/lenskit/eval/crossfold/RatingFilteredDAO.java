@@ -108,20 +108,24 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
         });
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long)
-     */
     @Override
     public Cursor<Rating> getUserRatings(long userId) {
         return Cursors.filter(base.getUserRatings(userId), filter);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
-     */
     @Override
     public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
         return Cursors.filter(base.getUserRatings(userId, order), filter);
+    }
+    
+    @Override
+    public Cursor<Rating> getItemRatings(long itemId) {
+        return Cursors.filter(base.getItemRatings(itemId), filter);
+    }
+
+    @Override
+    public Cursor<Rating> getItemRatings(long itemId, SortOrder order) {
+        return Cursors.filter(base.getItemRatings(itemId, order), filter);
     }
 
     @Override

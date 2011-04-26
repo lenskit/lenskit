@@ -95,6 +95,28 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
     public Cursor<Rating> getUserRatings(long userId, SortOrder order);
     
     /**
+     * Get all ratings for the specified item.
+     * 
+     * @param itemId The ID of the item whose ratings are requested.
+     * @throws UnsupportedQueryException if the specified sort order is not
+     * supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getItemRatings(long itemId);
+   
+    /**
+     * Get all ratings for the specified item.
+     * 
+     * @param itemId The ID of the item whose ratings are requested.
+     * @param order The sort order for the ratings.
+     * @return An iterator over the user's ratings.
+     * @throws UnsupportedQueryException if the specified sort order is not
+     *             supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getItemRatings(long itemId, SortOrder order);
+    
+    /**
      * Register a listener for rating updates (new, changed, or deleted
      * ratings).
      * 

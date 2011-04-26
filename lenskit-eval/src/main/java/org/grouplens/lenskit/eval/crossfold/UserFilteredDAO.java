@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import java.lang.ref.SoftReference;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
@@ -102,15 +103,22 @@ public class UserFilteredDAO implements RatingDataAccessObject {
             return org.grouplens.common.cursors.Cursors.empty();
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataSource#getUserRatings(long, org.grouplens.lenskit.data.dao.SortOrder)
-     */
     @Override
     public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
         if (userFilter.apply(userId))
             return base.getUserRatings(userId, order);
         else
             return org.grouplens.common.cursors.Cursors.empty();
+    }
+    
+    @Override
+    public Cursor<Rating> getItemRatings(long itemId) {
+        return Cursors.filter(base.getItemRatings(itemId), new RatingPredicate());
+    }
+    
+    @Override
+    public Cursor<Rating> getItemRatings(long itemId, SortOrder order) {
+        return Cursors.filter(base.getItemRatings(itemId, order), new RatingPredicate());
     }
 
     @Override

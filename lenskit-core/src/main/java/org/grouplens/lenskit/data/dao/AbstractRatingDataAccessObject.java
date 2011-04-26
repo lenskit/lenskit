@@ -159,6 +159,28 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
             }
         });
     }
+    
+    /**
+     * Implement {@link RatingDataAccessObject#getItemRatings(long)} by delegating
+     * to {@link #getItemRatings(long, SortOrder)}.
+     */
+    @Override
+    public Cursor<Rating> getItemRatings(long itemId) {
+        return getItemRatings(itemId, SortOrder.ANY);
+    }
+    
+    /**
+     * Implement {@link RatingDataAccessObject#getItemRatings(long, SortOrder)}
+     * by filtering the output of {@link #getRatings(SortOrder)}.
+     */
+    @Override
+    public Cursor<Rating> getItemRatings(final long itemId, SortOrder order) {
+        return Cursors.filter(getRatings(order), new Predicate<Rating>() {
+            public boolean apply(Rating r) {
+                return r.getItemId() == itemId;
+            }
+        });
+    }
 
     private LongSet getItemSet() {
         LongSet items = null;

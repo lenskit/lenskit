@@ -28,6 +28,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.WillClose;
+
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
@@ -44,6 +47,22 @@ public final class Ratings {
         public int compare(Rating r1, Rating r2) {
             Long ts1 = r1.getTimestamp();
             Long ts2 = r2.getTimestamp();
+            return ts1.compareTo(ts2);
+        }
+    };
+    public static final Comparator<Rating> USER_COMPARATOR = new Comparator<Rating>() {
+        @Override
+        public int compare(Rating r1, Rating r2) {
+            Long ts1 = r1.getUserId();
+            Long ts2 = r2.getUserId();
+            return ts1.compareTo(ts2);
+        }
+    };
+    public static final Comparator<Rating> ITEM_COMPARATOR = new Comparator<Rating>() {
+        @Override
+        public int compare(Rating r1, Rating r2) {
+            Long ts1 = r1.getItemId();
+            Long ts2 = r2.getItemId();
             return ts1.compareTo(ts2);
         }
     };
@@ -103,6 +122,29 @@ public final class Ratings {
             }
         }
         return new MutableSparseVector(vect);
+    }
+    
+    public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
+        try {
+            int initialSize = ratings.getRowCount();
+            if (initialSize < 0) initialSize = 20;
+            Long2DoubleMap vect = new Long2DoubleOpenHashMap(initialSize);
+            Long2LongMap tsMap = new Long2LongOpenHashMap(initialSize);
+            tsMap.defaultReturnValue(Long.MIN_VALUE);
+            
+            for (Rating r: ratings) {
+                long iid = r.getItemId();
+                long ts = r.getTimestamp();
+                if (ts >= tsMap.get(iid)) {
+                    vect.put(r.getItemId(), r.getRating());
+                    tsMap.put(iid, ts);
+                }
+            }
+            return new MutableSparseVector(vect);
+        } finally {
+            ratings.close();
+        }
+        
     }
     
     /**

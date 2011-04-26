@@ -20,20 +20,25 @@ package org.grouplens.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -41,6 +46,8 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
  *
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
+    
     /**
      * Builder for creating SimpleNeighborhoodFinders.
      * 
@@ -93,39 +100,58 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         MutableSparseVector nratings = ratings.mutableCopy();
         normalizer.normalize(uid, nratings);
         
-        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
-        try {
-            for (UserRatingProfile user: users) {
-                if (user.getUser() == uid) continue;
+        LongSet users = findRatingUsers(dataSource, uid, ratings.keySet());
+        LongIterator uiter = users.iterator();
+        while (uiter.hasNext()) {
+            final long user = uiter.nextLong();
+            MutableSparseVector urv = Ratings.userRatingVector(dataSource.getUserRatings(user));
+            MutableSparseVector nurv = urv.mutableCopy();
+            normalizer.normalize(user, nurv);
+            
+            final double sim = similarity.similarity(nratings, nurv);
+            final Neighbor n = new Neighbor(user, urv.mutableCopy(), sim);
 
-                final SparseVector urv = user.getRatingVector();
-                MutableSparseVector nurv = urv.mutableCopy();
-                normalizer.normalize(user.getUser(), nurv);
-                final double sim = similarity.similarity(nratings, nurv);
-                final Neighbor n = new Neighbor(user.getUser(), urv.mutableCopy(), sim);
+            LongIterator iit = urv.keySet().iterator();
+            ITEMS: while (iit.hasNext()) {
+                final long item = iit.nextLong();
+                if (items != null && !items.contains(item))
+                    continue ITEMS;
 
-                LongIterator iit = urv.keySet().iterator();
-                ITEMS: while (iit.hasNext()) {
-                    final long item = iit.nextLong();
-                    if (items != null && !items.contains(item))
-                        continue ITEMS;
-
-                    PriorityQueue<Neighbor> heap = heaps.get(item);
-                    if (heap == null) {
-                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                                Neighbor.SIMILARITY_COMPARATOR);
-                        heaps.put(item, heap);
-                    }
-                    heap.add(n);
-                    if (heap.size() > neighborhoodSize) {
-                        assert heap.size() == neighborhoodSize + 1;
-                        heap.remove();
-                    }
+                PriorityQueue<Neighbor> heap = heaps.get(item);
+                if (heap == null) {
+                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                            Neighbor.SIMILARITY_COMPARATOR);
+                    heaps.put(item, heap);
+                }
+                heap.add(n);
+                if (heap.size() > neighborhoodSize) {
+                    assert heap.size() == neighborhoodSize + 1;
+                    heap.remove();
                 }
             }
-        } finally {
-            users.close();
         }
         return heaps;
+    }
+
+    private LongSet findRatingUsers(RatingDataAccessObject dao,
+                                    long user, LongCollection keySet) {
+        LongSet users = new LongOpenHashSet(100);
+        
+        LongIterator items = keySet.iterator();
+        while (items.hasNext()) {
+            final long item = items.nextLong();
+            Cursor<Rating> ratings = dao.getItemRatings(item);
+            try {
+                for (Rating r: ratings) {
+                    long uid = r.getUserId();
+                    if (uid == user) continue;
+                    users.add(uid);
+                }
+            } finally {
+                ratings.close();
+            }
+        }
+        
+        return users;
     }
 }
