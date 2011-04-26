@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<component-set>
+  <components>
+    <!-- Define a custom lifecycle for LensKit evaluation projects -->
+    <component>
+      <role>org.apache.maven.lifecycle.Lifecycle</role>
+      <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
+      <role-hint>lenskit-eval</role-hint>
+      <configuration>
+        <id>lenskit-eval</id>
+        <phases>
+          <phase>lk-pre-eval</phase>
+          <phase>lk-eval</phase>
+          <phase>lk-post-eval</phase>
+        </phases>
+      </configuration>
+    </component>
+  </components>
+</component-set>

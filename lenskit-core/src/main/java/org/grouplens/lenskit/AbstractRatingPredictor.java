@@ -20,6 +20,10 @@ package org.grouplens.lenskit;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.util.Collection;
+
+import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -35,6 +39,10 @@ public abstract class AbstractRatingPredictor implements RatingPredictor {
 
     protected RatingDataAccessObject getDAO() {
         return dao;
+    }
+    
+    protected Collection<Rating> getUserRatings(long user) {
+        return Cursors.makeList(dao.getUserRatings(user));
     }
 
     /**

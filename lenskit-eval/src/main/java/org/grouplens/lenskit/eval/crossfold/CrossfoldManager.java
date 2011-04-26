@@ -18,25 +18,28 @@
  */
 package org.grouplens.lenskit.eval.crossfold;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.Cursors2;
-import org.grouplens.lenskit.data.LongCursor;
+import org.grouplens.lenskit.data.BasicUserRatingProfile;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
+import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
@@ -72,8 +75,9 @@ public class CrossfoldManager {
         this.ratings = ratings;
 
         Random rnd = new Random();
-        Cursor<UserRatingProfile> userCursor = ratings.getUserRatingProfiles();
+        Cursor<UserRatingProfile> userCursor = null;
         try {
+            userCursor = ratings.getUserRatingProfiles();
             int nusers = 0;
             for (UserRatingProfile user: userCursor) {
                 int n = rnd.nextInt(nfolds);
@@ -83,7 +87,8 @@ public class CrossfoldManager {
             }
             logger.info("Partitioned {} users into {} folds", nusers, nfolds);
         } finally {
-            userCursor.close();
+            if (userCursor != null)
+                userCursor.close();
         }
     }
 
@@ -116,31 +121,25 @@ public class CrossfoldManager {
      * @todo Fix this method to be more efficient - currently, we convert from
      * vectors to ratings to later be converted back to vectors. That's slow.
      */
-    public RatingDataAccessObject testSet(final int testIndex) {
-        return new AbstractRatingDataAccessObject() {
-            Long2ObjectMap<SparseVector> queryMap = querySets[testIndex];
-            @Override
-            public LongCursor getUsers() {
-                return Cursors2.wrap(queryMap.keySet());
+    public Collection<UserRatingProfile> testSet(final int testIndex) {
+        return new AbstractCollection<UserRatingProfile>() {
+            public int size() {
+                return querySets[testIndex].size();
             }
-            @Override
-            public Cursor<Rating> getRatings() {
-                return Cursors.wrap(Iterators.concat(new Iterator<Iterator<Rating>>() {
-                    Iterator<Long2ObjectMap.Entry<SparseVector>> iter =
-                        queryMap.long2ObjectEntrySet().iterator();
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
+            
+            public Iterator<UserRatingProfile> iterator() {
+                return Iterators.transform(querySets[testIndex].long2ObjectEntrySet().iterator(),
+                                           new Function<Long2ObjectMap.Entry<SparseVector>, UserRatingProfile>() {
+                    public UserRatingProfile apply(Long2ObjectMap.Entry<SparseVector> entry) {
+                        long uid = entry.getLongKey();
+                        SparseVector v = entry.getValue();
+                        List<Rating> ratings = new ArrayList<Rating>(v.size());
+                        for (Long2DoubleMap.Entry e: v.fast()) {
+                            ratings.add(new SimpleRating(uid, e.getLongKey(), e.getDoubleValue()));
+                        }
+                        return new BasicUserRatingProfile(uid, ratings);
                     }
-                    @Override
-                    public Iterator<Rating> next() {
-                        Long2ObjectMap.Entry<SparseVector> e = iter.next();
-                        long uid = e.getLongKey();
-                        SparseVector v = e.getValue();
-                        return Ratings.fromUserVector(uid, v).iterator();
-                    }
-                    public void remove() { throw new UnsupportedOperationException(); }
-                }));
+                });
             }
         };
     }

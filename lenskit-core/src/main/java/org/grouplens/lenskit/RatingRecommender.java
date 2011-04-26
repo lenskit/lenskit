@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Recommender recommending items from ratings-based user profiles.
+ * RecommenderEngine recommending items from ratings-based user profiles.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

@@ -63,8 +63,8 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuilder<ItemItemRecommender> {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderBuilder.class);
+public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<ItemItemRecommenderEngine> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngineBuilder.class);
 
     private Similarity<? super SparseVector> itemSimilarity;
     private double similarityThreshold;
@@ -73,7 +73,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
     private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
     
-    public ItemItemRecommenderBuilder() {
+    public ItemItemRecommenderEngineBuilder() {
         itemSimilarity = new CosineSimilarity(100);
         similarityThreshold = 1e-3;
         
@@ -131,7 +131,7 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
     }
     
     @Override
-    protected ItemItemRecommender buildNew(RatingBuildContext context) {
+    protected ItemItemRecommenderEngine buildNew(RatingBuildContext context) {
         UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
         NormalizedRatingBuildContext data = context.normalize(norm);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
@@ -142,7 +142,9 @@ public class ItemItemRecommenderBuilder extends AbstractRecommenderComponentBuil
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
         BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
-        ItemItemRecommender rec = new ItemItemRecommender(state.itemIndex, matrix, data.getNormalizer(), baseline, items, context.getDAO());
+        ItemItemRecommenderEngine rec =
+            new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
+                                    baseline, items, context.getDAO());
         ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
         
         rec.setRatingPredictor(predictor);

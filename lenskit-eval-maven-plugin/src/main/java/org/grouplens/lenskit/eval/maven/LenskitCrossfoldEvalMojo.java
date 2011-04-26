@@ -62,6 +62,7 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
      * @required
      * @readonly
      */
+    @SuppressWarnings("unused")
     private MavenProject project;
     
     /**
@@ -155,49 +156,58 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             RatingDataAccessObject ratings;
             try {
                 ratings = new SimpleFileDAO(dataFile, inputDelimiter);
+                ratings.openSession();
             } catch (FileNotFoundException e1) {
                 throw new MojoExecutionException("Input file " + dataFile + " not found", e1);
             }
-            if (preload)
-                ratings = new RatingCollectionDAO(Cursors.makeList(ratings.getRatings()));
-
-            List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
             try {
-                if (recommenderScripts != null) {
-                    getLog().debug("Loading multiple recommender scripts");
-                    getLog().debug("Directory: " + recommenderScripts.getDirectory());
-                    getLog().debug("Excludes: " + recommenderScripts.getExcludes());
-                    getLog().debug("Includes: " + recommenderScripts.getIncludes());
-                    FileSetManager fsmgr = new FileSetManager();
-                    String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
-                    File base = new File(recommenderScripts.getDirectory());
-                    for (String name: scriptNames) {
-                        File scriptFile = new File(base, name);
-                        getLog().info("Loading recommender from " + scriptFile.getPath());
-                        algorithms.add(AlgorithmInstance.load(scriptFile, loader));                    
-                    }
+                if (preload) {
+                    RatingDataAccessObject source = ratings;
+                    ratings = new RatingCollectionDAO(Cursors.makeList(ratings.getRatings()));
+                    source.closeSession();
+                    ratings.openSession();
                 }
-                
-                if (recommenderScript != null)
-                    algorithms.add(AlgorithmInstance.load(recommenderScript, loader));
-            } catch (InvalidRecommenderException e) {
-                throw new MojoExecutionException("Invalid recommender", e);
-            }
-            CrossfoldEvaluator eval;
-            try {
-                eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter, null);
-            } catch (IOException e) {
-                throw new MojoExecutionException("Error loading evaluator.", e);
-            }
-            List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
-            evaluators.add(new CoverageEvaluator());
-            evaluators.add(new MAEEvaluator());
-            evaluators.add(new RMSEEvaluator());
 
-            try {
-                eval.run(evaluators, outputFile);
-            } catch (Exception e) {
-                throw new MojoExecutionException("Unexpected failure running recommender evaluation.", e);
+                List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
+                try {
+                    if (recommenderScripts != null) {
+                        getLog().debug("Loading multiple recommender scripts");
+                        getLog().debug("Directory: " + recommenderScripts.getDirectory());
+                        getLog().debug("Excludes: " + recommenderScripts.getExcludes());
+                        getLog().debug("Includes: " + recommenderScripts.getIncludes());
+                        FileSetManager fsmgr = new FileSetManager();
+                        String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
+                        File base = new File(recommenderScripts.getDirectory());
+                        for (String name: scriptNames) {
+                            File scriptFile = new File(base, name);
+                            getLog().info("Loading recommender from " + scriptFile.getPath());
+                            algorithms.add(AlgorithmInstance.load(scriptFile, loader));                    
+                        }
+                    }
+
+                    if (recommenderScript != null)
+                        algorithms.add(AlgorithmInstance.load(recommenderScript, loader));
+                } catch (InvalidRecommenderException e) {
+                    throw new MojoExecutionException("Invalid recommender", e);
+                }
+                CrossfoldEvaluator eval;
+                try {
+                    eval = new CrossfoldEvaluator(ratings, algorithms, numFolds, splitter, null);
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Error loading evaluator.", e);
+                }
+                List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
+                evaluators.add(new CoverageEvaluator());
+                evaluators.add(new MAEEvaluator());
+                evaluators.add(new RMSEEvaluator());
+
+                try {
+                    eval.run(evaluators, outputFile);
+                } catch (Exception e) {
+                    throw new MojoExecutionException("Unexpected failure running recommender evaluation.", e);
+                }
+            } finally {
+                ratings.closeSession();
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);

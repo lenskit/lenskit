@@ -43,6 +43,7 @@ import com.google.common.base.Predicate;
  * 
  * FIXME: integrate with a build context
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @review Is no-op the appropraite behavior w.r.t. closing sessions?
  *
  */
 public class UserFilteredDAO implements RatingDataAccessObject {
@@ -54,6 +55,16 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     public UserFilteredDAO(RatingDataAccessObject base, Predicate<Long> filter) {
         this.base = base;
         userFilter = filter;
+    }
+
+    @Override
+    public void addRatingUpdateListener(RatingUpdateListener listener) {
+        /* we do not support update listeners. */
+    }
+
+    @Override
+    public void removeRatingUpdateListener(RatingUpdateListener listener) {
+        /* we do not support update listeners */
     }
 
     /* (non-Javadoc)
@@ -158,13 +169,17 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     }
 
     @Override
-    public void addRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners. */
+    public void openSession() {
+        /* no-op - sessions managed by underlying DAO. */
     }
 
     @Override
-    public void removeRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners */
+    public void closeSession() {
+        /* no-op - sessions maanged by underlying DAO. */
     }
-
+    
+    @Override
+    public boolean isSessionOpen() {
+        return base.isSessionOpen();
+    }
 }

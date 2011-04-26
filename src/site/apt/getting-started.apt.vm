@@ -89,14 +89,19 @@ Configuring and Creating the Recommender
 +-----------------------------------------------------------------+
   RecommenderComponentBuilder<Recommender> builder = new ItemItemRecommenderBuilder();
   RatingDataAccessObject dao = new SimpleFileDAO(fileName);
-  RatingBuildContext context = PackedRatingBuildContext.make(dao);
-  Recommender rec;
+  RatingBuildContext context = null;
+  dao.openSession();
   try {
+      context = PackedRatingBuildContext.make(dao);
+      Recommender rec;
       rec = builder.build(context);
   } finally {
-      context.close();
+      if (context != null)
+          context.close();
+      dao.closeSession();
   }
   RatingRecommender recommender = rec.getRatingRecommender();
+  /* open a session, use the recommender, close the session. */
 +-----------------------------------------------------------------+
 
 Further Topics

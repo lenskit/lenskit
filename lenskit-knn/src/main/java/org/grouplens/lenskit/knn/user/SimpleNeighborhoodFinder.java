@@ -27,16 +27,12 @@ import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
@@ -50,53 +46,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<SimpleNeighborhoodFinder> {
-        private int neighborhoodSize;
-        private Similarity<? super SparseVector> similarity;
-        private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
-        
-        public Builder() {
-            neighborhoodSize = 100;
-            similarity = new PearsonCorrelation();
-            normalizerBuilder = new IdentityUserRatingVectorNormalizer.Builder();
-        }
-        
-        public int getNeighborhoodSize() {
-            return neighborhoodSize;
-        }
-        
-        public void setNeighborhoodSize(int neighborhood) {
-            neighborhoodSize = neighborhood;
-        }
-        
-        public Similarity<? super SparseVector> getSimilarity() {
-            return similarity;
-        }
-        
-        public void setSimilarity(Similarity<? super SparseVector> similarity) {
-            this.similarity = similarity;
-        }
-        
-        /**
-         * Get the normalizer builder.
-         * @return The normalizer builder.
-         */
-        public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
-            return normalizerBuilder;
-        }
-        
-        /**
-         * Set the normalizer builder.
-         * @param normalizerBuilder The normalizer builder instance.
-         */
-        public void setNormalizer(RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
-            this.normalizerBuilder = normalizerBuilder;
-        }
-        
+    public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
         @Override
         protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
-            return new SimpleNeighborhoodFinder(context.getDAO(), neighborhoodSize, similarity,
-            		normalizerBuilder.build(context));
+            return new SimpleNeighborhoodFinder(context.getDAO(),
+                                                neighborhoodSize, similarity,
+                                                normalizerBuilder.build(context));
         }
     }
     
@@ -134,12 +89,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(long uid, SparseVector ratings, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
-
-        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
         
         MutableSparseVector nratings = ratings.mutableCopy();
         normalizer.normalize(uid, nratings);
-
+        
+        Cursor<UserRatingProfile> users = dataSource.getUserRatingProfiles();
         try {
             for (UserRatingProfile user: users) {
                 if (user.getUser() == uid) continue;

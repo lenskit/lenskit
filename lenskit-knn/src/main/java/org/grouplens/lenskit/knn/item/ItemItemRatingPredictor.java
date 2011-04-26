@@ -42,16 +42,16 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
-    protected final ItemItemRecommender model;
+    protected final ItemItemRecommenderEngine model;
     private final double similarityThreshold;
     
-    public ItemItemRatingPredictor(ItemItemRecommender model, double simThresh) {
+    public ItemItemRatingPredictor(ItemItemRecommenderEngine model, double simThresh) {
         super(model.getDAO());
         this.model = model;
         similarityThreshold = simThresh;
     }
     
-    public ItemItemRecommender getRecommender() {
+    public ItemItemRecommenderEngine getRecommender() {
         return model;
     }
     

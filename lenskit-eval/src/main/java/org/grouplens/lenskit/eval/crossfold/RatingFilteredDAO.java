@@ -57,6 +57,16 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
         this.filter = filter;
     }
 
+    @Override
+    public void addRatingUpdateListener(RatingUpdateListener listener) {
+        /* we do not support update listeners. */
+    }
+
+    @Override
+    public void removeRatingUpdateListener(RatingUpdateListener listener) {
+        /* we do not support update listeners */
+    }
+
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.data.dao.RatingDataSource#getRatings()
      */
@@ -72,7 +82,7 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
     public Cursor<Rating> getRatings(SortOrder order) {
         return Cursors.filter(base.getRatings(order), filter);
     }
-    
+
     private AtomicBoolean urpUsed = new AtomicBoolean(false);
 
     /* (non-Javadoc)
@@ -86,7 +96,7 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
             urpUsed.set(true);
         }
         return Cursors.transform(base.getUserRatingProfiles(),
-                new Function<UserRatingProfile, UserRatingProfile>() {
+                                 new Function<UserRatingProfile, UserRatingProfile>() {
             public UserRatingProfile apply(final UserRatingProfile p) {
                 Collection<Rating> ratings = new ArrayList<Rating>();
                 for (Rating r: p.getRatings()) {
@@ -141,13 +151,17 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
     }
 
     @Override
-    public void addRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners. */
+    public void openSession() {
+        /* no-op - sessions are managed by base DAO. */
     }
 
     @Override
-    public void removeRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners */
+    public void closeSession() {
+        /* no-op - sessions are managed by base DAO. */
     }
-
+    
+    @Override
+    public boolean isSessionOpen() {
+        return base.isSessionOpen();
+    }
 }

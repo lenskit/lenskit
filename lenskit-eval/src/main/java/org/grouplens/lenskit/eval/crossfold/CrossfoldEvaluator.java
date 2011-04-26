@@ -20,10 +20,12 @@ package org.grouplens.lenskit.eval.crossfold;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
@@ -76,14 +78,21 @@ public class CrossfoldEvaluator {
 			logger.error("Could not set up prediction file", e);
 		}
         for (int i = 0; i < numFolds; i++) {
-            RatingDataAccessObject train = manager.trainingSet(i);
-            RatingDataAccessObject test = manager.testSet(i);
-            int nusers = train.getUserCount();
-            logger.info(String.format("Running benchmark %d with %d training and %d test users",
-                    i+1, nusers, test.getUserCount()));
-            TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(train, test);
-            ResultAccumulator accum = mgr.makeAccumulator(i);
-            eval.evaluateAlgorithms(algorithms, accum);
+            RatingDataAccessObject train = null;
+            try {
+                train = manager.trainingSet(i);
+                train.openSession();
+                Collection<UserRatingProfile> test = manager.testSet(i); 
+                int nusers = train.getUserCount();
+                logger.info(String.format("Running benchmark %d with %d training and %d test users",
+                                          i+1, nusers, test.size()));
+                TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(train, test);
+                ResultAccumulator accum = mgr.makeAccumulator(i);
+                eval.evaluateAlgorithms(algorithms, accum);
+            } finally {
+                if (train != null)
+                    train.closeSession();
+            }
         }
         mgr.finish();
     }

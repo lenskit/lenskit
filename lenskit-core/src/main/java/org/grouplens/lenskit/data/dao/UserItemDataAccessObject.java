@@ -20,6 +20,7 @@ package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.lenskit.data.LongCursor;
 
+
 /**
  * DAO for user-item ID data.
  * 
@@ -30,28 +31,51 @@ public interface UserItemDataAccessObject {
     /**
      * Retrieve the users from the data source.
      * @return a cursor iterating the user IDs.
+     * @throws NoSessionException if no session is open on the current thread.
      */
-    public LongCursor getUsers();
+    LongCursor getUsers();
 
     /**
      * Get the number of users in the system.  This should be the same number
      * of users that will be returned by iterating {@link #getUsers()} (unless
      * a user is added or removed between the two calls).
      * @return The number of users in the system.
+     * @throws NoSessionException if no session is open on the current thread.
      */
-    public int getUserCount();
+    int getUserCount();
 
     /**
      * Retrieve the items from the data source.
      * @return a cursor iterating the item IDs.
      */
-    public LongCursor getItems();
+    LongCursor getItems();
 
     /**
      * Get the number of items in the system.  This should be the same number
      * of items that will be returned by iterating {@link #getItems()} (unless
      * an item is added or removed between the two calls).
      * @return The number of items in the system.
+     * @throws NoSessionException if no session is open on the current thread.
      */
-    public int getItemCount();
+    int getItemCount();
+    
+    /**
+     * Open a DAO session for the current thread. All other methods are only
+     * valid inside a session.
+     * @throws IllegalStateException if a session is already open for the current
+     * thread.
+     */
+    void openSession();
+    
+    /**
+     * Close the session on the current thread.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    void closeSession();
+    
+    /**
+     * Query whether a session is open on this thread.
+     * @return <tt>true</tt> if the current thread has an open session.
+     */
+    boolean isSessionOpen();
 }

@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
@@ -42,15 +41,15 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * user's ratings.
  *
  * @todo Look at using the user's feature preferences in some cases.
- * @todo Revise this class's relationship with {@link FunkSVDRecommender}.
+ * @todo Revise this class's relationship with {@link FunkSVDRecommenderEngine}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SVDRatingPredictor extends AbstractRatingPredictor {
-	protected final FunkSVDRecommender model;
+	protected final FunkSVDRecommenderEngine model;
 
-    protected SVDRatingPredictor(FunkSVDRecommender m) {
+    protected SVDRatingPredictor(FunkSVDRecommenderEngine m) {
         super(m.dao);
         model = m;
     }
@@ -119,9 +118,9 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
             }
             preds.set(item, score);
         }
-        if (ratings == null)
-            ratings = Ratings.userRatingVector(
-                    Cursors.makeList(model.dao.getUserRatings(user)));
+        if (ratings == null) {
+            ratings = Ratings.userRatingVector(getUserRatings(user));
+        }
         SparseVector bl = model.baseline.predict(user, ratings, items);
         preds.add(bl);
         return preds;

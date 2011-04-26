@@ -100,6 +100,11 @@
                 <placement>a</placement>
                 <head>To Do:</head>
               </tag>
+              <tag>
+                <name>review</name>
+                <placement>a</placement>
+                <head>Review:</head>
+              </tag>
             </tags>
           </configuration>
         </plugin>
@@ -127,6 +132,76 @@
               <version>1.1.5-SNAPSHOT</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <reportPlugins>
+              
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reports>
+                  <report>index</report>
+                  <report>dependencies</report>
+                  <report>dependency-convergence</report>
+                  <report>dependency-management</report>
+                  <report>plugins</report>
+                </reports>
+              </plugin>
+              
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                  <quiet>true</quiet>
+                  <tags>
+                    <tag>
+                      <name>todo</name>
+                      <placement>a</placement>
+                      <head>To Do:</head>
+                    </tag>
+                    <tag>
+                      <name>review</name>
+                      <placement>a</placement>
+                      <head>Review:</head>
+                    </tag>
+                  </tags>
+                  <detectJavaApiLink>false</detectJavaApiLink>
+                  <links>
+                    <link>http://download.oracle.com/javase/6/docs/api/</link>
+                    <link>http://fastutil.dsi.unimi.it/docs/</link>
+                    <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+                  </links>
+                  <doclet>org.jboss.apiviz.APIviz</doclet>
+                  <docletArtifact>
+                    <groupId>org.jboss.apiviz</groupId>
+                    <artifactId>apiviz</artifactId>
+                    <version>1.3.1.GA</version>
+                  </docletArtifact>
+                  <useStandardDocletOptions>true</useStandardDocletOptions>
+                </configuration>
+              </plugin>
+              
+              <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jdepend-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+              </plugin>
+
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.2</version>
+                <reports>
+                  <report>jxr</report>
+                  <report>test-jxr</report>
+                </reports>
+                <configuration>
+                  <linkJavadoc>true</linkJavadoc>
+                </configuration>
+              </plugin>
+              
+            </reportPlugins>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -190,6 +265,28 @@
           <htmlCustomization>${docbook.xsl.custom}/common.xsl</htmlCustomization>
           <xhtmlCustomization>${docbook.xsl.custom}/common.xsl</xhtmlCustomization>
           <foCustomization>${docbook.xsl.custom}/fo.xsl</foCustomization>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <inherited>false</inherited>
+
+        <configuration>
+          <reportPlugins>
+
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jxr-plugin</artifactId>
+              <version>2.2</version>
+              <configuration>
+                <linkJavadoc>true</linkJavadoc>
+                <aggregate>true</aggregate>
+              </configuration>
+            </plugin>
+            
+          </reportPlugins>
         </configuration>
       </plugin>
 
@@ -269,69 +366,6 @@
       <artifactId>jsr305</artifactId>
     </dependency>
   </dependencies>
-
-  <reporting>
-    <plugins>
-      <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-project-info-reports-plugin</artifactId>
-    <version>2.3.1</version>
-    <reportSets>
-      <reportSet>
-        <id>main</id>
-        <reports>
-          <report>index</report>
-          <report>dependencies</report>
-          <report>dependency-convergence</report>
-          <report>dependency-management</report>
-          <report>plugins</report>
-        </reports>
-      </reportSet>
-    </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.2</version>
-        <inherited>false</inherited>
-        <configuration>
-          <linkJavadoc>true</linkJavadoc>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <quiet>true</quiet>
-          <tags>
-            <tag>
-              <name>todo</name>
-              <placement>a</placement>
-              <head>To Do:</head>
-            </tag>
-          </tags>
-          <links>
-            <link>http://fastutil.dsi.unimi.it/docs/</link>
-            <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
-          </links>
-          <doclet>org.jboss.apiviz.APIviz</doclet>
-          <docletArtifact>
-            <groupId>org.jboss.apiviz</groupId>
-            <artifactId>apiviz</artifactId>
-            <version>1.3.1.GA</version>
-          </docletArtifact>
-          <useStandardDocletOptions>true</useStandardDocletOptions>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jdepend-maven-plugin</artifactId>
-        <version>2.0-beta-2</version>
-      </plugin>
-    </plugins>
-  </reporting>
 
   <profiles>
     <profile>
@@ -428,29 +462,55 @@
               </execution>
             </executions>
           </plugin>
-        </plugins>
-      </build>
 
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>2.3.2</version>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-pmd-plugin</artifactId>
-            <version>2.5</version>
-            <inherited>false</inherited>
+            <artifactId>maven-site-plugin</artifactId>
             <configuration>
-              <format>xml</format>
-              <aggregate>true</aggregate>
-              <targetJdk>1.6</targetJdk>
+              <reportPlugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-pmd-plugin</artifactId>
+                  <version>2.5</version>
+                  <configuration>
+                    <format>xml</format>
+                    <aggregate>true</aggregate>
+                    <targetJdk>1.6</targetJdk>
+                  </configuration>
+                </plugin>
+              </reportPlugins>
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-site-plugin</artifactId>
+              <configuration>
+                <reportPlugins>
+                  <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <reports><report>findbugs</report></reports>
+                  </plugin>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>2.5</version>
+                    <configuration>
+                      <format>xml</format>
+                      <targetJdk>1.6</targetJdk>
+                    </configuration>
+                  </plugin>
+                </reportPlugins>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
     </profile>
     
     <profile>
@@ -460,13 +520,13 @@
     <profile>
       <id>continuous-integration</id>
       <properties>
-        <lenskit.web.url>http://lenskit.grouplens.org/snapshot</lenskit.web.url>
+        <lenskit.web.url>http://lenskit.grouplens.org/trunk</lenskit.web.url>
       </properties>
       <distributionManagement>
         <site>
           <id>grouplens.org</id>
           <name>LensKit Dev Website</name>
-          <url>file:///web/research01/lenskit.grouplens.org/snapshot</url>
+          <url>file:///web/research01/lenskit.grouplens.org/trunk</url>
         </site>
       </distributionManagement>
       <build>
@@ -487,44 +547,49 @@
               </execution>
             </executions>
           </plugin>
-        </plugins>
-      </build>
 
-      <reporting>
-        <plugins>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>taglist-maven-plugin</artifactId>
-            <version>2.4</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
             <inherited>false</inherited>
             <configuration>
-              <aggregate>true</aggregate>
-              <tagListOptions>
-                <tagClasses>
-                  <tagClass>
-                    <displayName>TODO items</displayName>
-                    <tags>
-                      <tag>
-                        <matchString>@?todo</matchString>
-                        <matchType>regEx</matchType>
-                      </tag>
-                    </tags>
-                  </tagClass>
-                  <tagClass>
-                    <displayName>FIXME items</displayName>
-                    <tags>
-                      <tag>
-                        <matchString>FIXME</matchString>
-                        <matchType>exact</matchType>
-                      </tag>
-                    </tags>
-                  </tagClass>
-                </tagClasses>
-              </tagListOptions>
+              <reportPlugins>
+                <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>taglist-maven-plugin</artifactId>
+                  <version>2.4</version>
+                  <reports><report>taglist</report></reports>
+                  <configuration>
+                    <aggregate>true</aggregate>
+                    <tagListOptions>
+                      <tagClasses>
+                        <tagClass>
+                          <displayName>TODO items</displayName>
+                          <tags>
+                            <tag>
+                              <matchString>@?todo</matchString>
+                              <matchType>regEx</matchType>
+                            </tag>
+                          </tags>
+                        </tagClass>
+                        <tagClass>
+                          <displayName>FIXME items</displayName>
+                          <tags>
+                            <tag>
+                              <matchString>FIXME</matchString>
+                              <matchType>exact</matchType>
+                            </tag>
+                          </tags>
+                        </tagClass>
+                      </tagClasses>
+                    </tagListOptions>
+                  </configuration>
+                </plugin>
+              </reportPlugins>
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
     </profile>
   </profiles>
 </project>

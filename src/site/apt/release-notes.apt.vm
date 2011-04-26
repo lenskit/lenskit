@@ -27,6 +27,13 @@ Release ${project.version}
 
   * Introduce <<<ImmutableSparseVector>>> and build more robust
     type-checking for mutability guarantees on sparse vectors.
+
+  * Drop thread safety guarantee on <<<UserRatingProfile>>>. Many
+    profile implementations will likely be thread-safe, but we're not
+    promising it any more.
+
+  * Add a session concept to data access objects to make it easier to
+    deal with database handle scoping and related issues.
     
   []
 

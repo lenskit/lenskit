@@ -25,21 +25,14 @@
  * of changes.  The DAO should generally be a singleton, therefore, to support change
  * notification and registration throughout the system.
  * 
- * <p>Also, it will often be desirable for cursors to share some backing resource
- * (e.g. all cursors created in a request to be served from the same database
- * connection).  This can be facilitated in a couple of ways:
- * 
- * <ol>
- * <li>Use thread-local
- * storage and reference counting to close the database connection when all cursors
- * have been closed.
- * <li>Inject a {@link Provider} of request-scoped database connections into
- * the DAO implementation, then use its {@link Provider#get()} method to access
- * the database connection in order to set up the cursor (which, in a JDBC
- * implementation, will generally wrap a {@link ResultSet}).  The surrounding
- * request-scoping framework can then take care of closing the database connection.
- * In a web environment, cursors shouldn't survive requests anyway.
- * </ol>
+ * <p>DAOs use <emph>sessions</emph> to provide actual data access.  The session
+ * is managed internally by the DAO and is not directly exposed, except for the
+ * {@link UserItemDataAccessObject#openSession()} and
+ * {@link UserItemDataAccessObject#closeSession()} methods. These methods open
+ * and close a session on the current thread; all other DAO access except for
+ * registering listeners must happen within a context.  Therefore, client code
+ * must open a session before it can use the recommender, and close that session
+ * when it is done.
  * 
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to
@@ -48,8 +41,5 @@
  * 
  */
 package org.grouplens.lenskit.data.dao;
-import java.sql.ResultSet;
-
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 

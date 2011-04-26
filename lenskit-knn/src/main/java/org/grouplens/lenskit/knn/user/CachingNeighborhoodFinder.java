@@ -29,14 +29,14 @@ import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.PearsonCorrelation;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 
 /**
  * User-user CF implementation that caches user data for faster computation.
@@ -56,31 +56,7 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<CachingNeighborhoodFinder> {
-        private int neighborhoodSize;
-        private Similarity<? super SparseVector> similarity;
-        
-        public Builder() {
-            neighborhoodSize = 100;
-            similarity = new PearsonCorrelation();
-        }
-        
-        public int getNeighborhoodSize() {
-            return neighborhoodSize;
-        }
-        
-        public void setNeighborhoodSize(int neighborhood) {
-            neighborhoodSize = neighborhood;
-        }
-        
-        public Similarity<? super SparseVector> getSimilarity() {
-            return similarity;
-        }
-        
-        public void setSimilarity(Similarity<? super SparseVector> similarity) {
-            this.similarity = similarity;
-        }
-        
+    public static class Builder extends AbstractNeighborhoodFinderBuilder<CachingNeighborhoodFinder> {
         @Override
         protected CachingNeighborhoodFinder buildNew(RatingBuildContext context) {
             int nusers = 0;
@@ -112,7 +88,10 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
                 ((ArrayList<UserRatingProfile>) c).trimToSize();
             }
             
-            return new CachingNeighborhoodFinder(similarity, neighborhoodSize, nusers, cache);
+            UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
+            
+            return new CachingNeighborhoodFinder(similarity, neighborhoodSize,
+                    nusers, cache, norm);
         }
     }
     
@@ -120,13 +99,17 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
     private final int userCount;
     private final Similarity<? super SparseVector> similarity;
     private final int neighborhoodSize;
+    private final UserRatingVectorNormalizer normalizer;
 
     protected CachingNeighborhoodFinder(Similarity<? super SparseVector> sim, int nnbrs, int nusers,
-                                        Long2ObjectMap<Collection<UserRatingProfile>> cache) {
+                                        Long2ObjectMap<Collection<UserRatingProfile>> cache,
+                                        UserRatingVectorNormalizer norm) {
         this.cache = cache;
         similarity = sim;
         neighborhoodSize = nnbrs;
         userCount = nusers;
+        normalizer = norm;
+        
     }
 
     @Override
@@ -139,6 +122,9 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
         Long2ObjectMap<Collection<Neighbor>> neighborhoods =
             new Long2ObjectOpenHashMap<Collection<Neighbor>>(items.size());
         Long2ObjectMap<Neighbor> neighborCache = new Long2ObjectOpenHashMap<Neighbor>(userCount);
+        
+        MutableSparseVector nv = vector.mutableCopy();
+        normalizer.normalize(uid, nv);
 
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
@@ -154,7 +140,9 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
                 Neighbor nbr = neighborCache.get(id);
                 if (nbr == null) {
                     SparseVector v = user.getRatingVector();
-                    double sim = similarity.similarity(vector, v);
+                    MutableSparseVector urv = v.mutableCopy();
+                    normalizer.normalize(uid, urv);
+                    double sim = similarity.similarity(nv, urv);
                     nbr = new Neighbor(id, v.mutableCopy(), sim);
                     neighborCache.put(id, nbr);
                 }

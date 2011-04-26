@@ -257,7 +257,9 @@
 
       <para>The recommendation API in LensKit is broken into separate pieces
       to allow different types of access and reflect the fact that not all
-      recommendation methods support all types of recommendation. Different
+      recommendation methods support all types of recommendation. The <literal
+      role="class">RecommenderEngine</literal> interface is the primary entry
+      point for using a recommender. It provides access to different
       recommender operations are supported by the following interfaces:</para>
 
       <itemizedlist>
@@ -485,12 +487,13 @@ public interface BasketRecommender {
 
       <para>Many recommenders will have subcomponents that also need to be
       built from a build context. For this purpose, the <literal
-      role="class">Builder&lt;T&gt;</literal> interface is provided. Builders
-      take build contexts and produce objects. They also memoize their
-      results, so calling the build method twice with the same build context
-      will produce the same object. The memoization facility does impose the
-      limitation that a builder instance cannot be reconfigured and used to
-      build a second object from the same rating build context.</para>
+      role="class">RecommenderComponentBuilder&lt;T&gt;</literal> interface is
+      provided. Builders take build contexts and produce objects. They also
+      memoize their results, so calling the build method twice with the same
+      build context will produce the same object. The memoization facility
+      does impose the limitation that a builder instance cannot be
+      reconfigured and used to build a second object from the same rating
+      build context.</para>
 
       <para>This design will allow recommender services to be flexibly
       configured. Further, since many Java scripting languages support easy
@@ -536,12 +539,19 @@ public interface BasketRecommender {
       <para>Actual data access is mediated via cursor objects implementing the
       <literal>Cursor</literal> interface. A cursor is essentially an iterator
       that can be closed and may be able to report its size. This allows
-      backing resources, such as files or database result sets, to be closed.
-      Some care is needed to allow cursors to share database handles,
-      particularly in a multithreaded application with a singleton data access
-      object, but that is the responsibility of impelmenters and is achievable
-      with either Guice's scoping features or a combination of thread-local
-      variables and reference counting.</para>
+      backing resources, such as files or database result sets, to be
+      closed.</para>
+
+      <para>Cursors must exist in sessions. <literal
+      role="class">RatingDataAccessObject</literal> provides <literal
+      role="method">openSession()</literal> and <literal
+      role="method">closeSession()</literal> methods which open and close the
+      active session on a particular thread. Requesting a cursor without an
+      active session is an error. Client code is responsible for making sure
+      that all recommender access occurs within a session; servlet filters or
+      Struts interceptors are a good place to make sure this happens. Data
+      access object implementations should use thread-local storage to allow
+      each thread to have its own session.</para>
 
       <para>In addition to data data access objects, we also have a concept of
       <emphasis>build contexts</emphasis>, realized through the

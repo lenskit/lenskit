@@ -32,8 +32,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private @Nonnull String algoName;
-    private @Nullable RecommenderComponentBuilder<Recommender> builder;
+    private @Nullable RecommenderComponentBuilder<RecommenderEngine> builder;
     private @Nonnull Map<String,String> attributes;
 
     public AlgorithmInstance() {
@@ -91,26 +91,28 @@ public class AlgorithmInstance {
         return attributes;
     }
 
-    public RecommenderComponentBuilder<Recommender> getBuilder() {
+    public RecommenderComponentBuilder<RecommenderEngine> getBuilder() {
         return builder;
     }
 
-    public void setBuilder(RecommenderComponentBuilder<Recommender> b) {
+    public void setBuilder(RecommenderComponentBuilder<RecommenderEngine> b) {
         builder = b;
     }
 
-    public void setBuilder(Class<? extends RecommenderComponentBuilder<Recommender>> mod) throws InstantiationException, IllegalAccessException {
+    public void setBuilder(Class<? extends RecommenderComponentBuilder<RecommenderEngine>> mod) throws InstantiationException, IllegalAccessException {
         setBuilder(mod.newInstance());
     }
 
-    public Recommender buildRecommender(final RatingDataAccessObject dao) {
+    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao) {
         if (builder == null)
             throw new IllegalStateException("no builder set");
-        RatingBuildContext ctx = PackedRatingBuildContext.make(dao);
+        RatingBuildContext ctx = null;
         try {
+            ctx = PackedRatingBuildContext.make(dao);
             return builder.build(ctx);
         } finally {
-            ctx.close();
+            if (ctx != null)
+                ctx.close();
         }
     }
     

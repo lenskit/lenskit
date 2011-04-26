@@ -16,20 +16,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.data.dao;
 
-import javax.annotation.Nullable;
+/**
+ * Exception raised when a {@link RatingDataAccessObject} has no open session
+ * but requires one.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+public class NoSessionException extends IllegalStateException {
+    private static final long serialVersionUID = 1L;
 
-public interface Recommender {
-    @Nullable
-    public RatingPredictor getRatingPredictor();
-    
-    @Nullable
-    public DynamicRatingPredictor getDynamicRatingPredictor();
-    
-    @Nullable
-    public RatingRecommender getRatingRecommender();
-    
-    @Nullable
-    public BasketRecommender getBasketRecommender();
+    public NoSessionException() {
+    }
+
+    public NoSessionException(String message) {
+        super(message);
+    }
+
+    public NoSessionException(Throwable cause) {
+        super(cause);
+    }
+
+    public NoSessionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

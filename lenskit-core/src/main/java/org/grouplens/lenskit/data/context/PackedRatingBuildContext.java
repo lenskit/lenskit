@@ -27,8 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.WillNotClose;
-
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
@@ -141,8 +139,13 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 		data = null;
 	}
 	
+	/**
+	 * Construct a new rating build context within a DAO.
+	 * @param dao The data access object. It must have an open session.
+	 * @return A new rating build context.
+	 */
 	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
-	    Cursor<Rating> ratings = dao.getRatings();
+	    Cursor<Rating> ratings = null;
 	    
 	    IntArrayList users;
 	    IntArrayList items;
@@ -157,6 +160,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	    int nratings = 0;
 	    
 	    try {
+	        ratings = dao.getRatings();
 	        int size = ratings.getRowCount();
 	        // default to something nice and large
 	        if (size < 0) size = 10000;
@@ -212,7 +216,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	            }
 	        }
 	    } finally {
-	        ratings.close();
+	        if (ratings != null)
+	            ratings.close();
 	    }
 		
 		users.trim();

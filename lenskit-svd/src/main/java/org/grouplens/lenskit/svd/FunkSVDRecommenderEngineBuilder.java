@@ -52,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuilder<FunkSVDRecommender> {
-    private static Logger logger = LoggerFactory.getLogger(FunkSVDRecommenderBuilder.class);
+public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<FunkSVDRecommenderEngine> {
+    private static Logger logger = LoggerFactory.getLogger(FunkSVDRecommenderEngineBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
@@ -71,7 +71,7 @@ public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuild
     
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
 
-    public FunkSVDRecommenderBuilder() {
+    public FunkSVDRecommenderEngineBuilder() {
         featureCount = 100;
         learningRate = 0.001;
         trainingThreshold = 1.0e-5;
@@ -141,7 +141,7 @@ public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuild
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
      */
     @Override
-    protected FunkSVDRecommender buildNew(RatingBuildContext context) {
+    protected FunkSVDRecommenderEngine buildNew(RatingBuildContext context) {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -198,7 +198,7 @@ public class FunkSVDRecommenderBuilder extends AbstractRecommenderComponentBuild
             singularValues[feature] = unrm * inrm;
         }
         
-        return new FunkSVDRecommender(context.getDAO(),
+        return new FunkSVDRecommenderEngine(context.getDAO(),
                 featureCount, itemFeatures, userFeatures, singularValues,
                 clampingFunction, context.itemIndex(), context.userIndex(), baseline);
     }

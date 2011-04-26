@@ -18,13 +18,18 @@
  */
 package org.grouplens.lenskit;
 
-import java.io.File;
-import java.io.IOException;
+import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-
-public interface Serializer<R extends RecommenderEngine> {
-    public void write(R model, File toFile) throws IOException;
+public interface RecommenderEngine {
+    @Nullable
+    public RatingPredictor getRatingPredictor();
     
-    public R read(File fromFile, RatingDataAccessObject dao) throws IOException;
+    @Nullable
+    public DynamicRatingPredictor getDynamicRatingPredictor();
+    
+    @Nullable
+    public RatingRecommender getRatingRecommender();
+    
+    @Nullable
+    public BasketRecommender getBasketRecommender();
 }

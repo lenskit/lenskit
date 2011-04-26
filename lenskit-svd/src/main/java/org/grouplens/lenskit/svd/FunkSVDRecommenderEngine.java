@@ -25,7 +25,7 @@ import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -36,7 +36,7 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class FunkSVDRecommender implements Recommender {
+public class FunkSVDRecommenderEngine implements RecommenderEngine {
     public final RatingDataAccessObject dao;
 	public final int featureCount;
 	public final double itemFeatures[][];
@@ -48,7 +48,7 @@ public class FunkSVDRecommender implements Recommender {
 	public final Index userIndex;
 	public final BaselinePredictor baseline;
 	
-	public FunkSVDRecommender(RatingDataAccessObject dao,
+	public FunkSVDRecommenderEngine(RatingDataAccessObject dao,
 	        int nfeatures, double[][] ifeats, double[][] ufeats, double[] svals,
 	        DoubleFunction clamp, Index iidx, Index uidx,
 	        BaselinePredictor baseline) {
