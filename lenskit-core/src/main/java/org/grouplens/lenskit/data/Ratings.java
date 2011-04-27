@@ -24,8 +24,8 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -102,6 +102,30 @@ public final class Ratings {
         }
         return new MutableSparseVector(vect);
     }
+    
+    /**
+     * Real implementation of {@link #userRatingVector(Collection)}, using a list
+     * we are free to sort.
+     * @param ratings
+     * @return
+     */
+    private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
+    	Collections.sort(ratings, ITEM_TIME_COMPARATOR);
+    	
+    	// collect the list of unique item IDs
+    	long[] items = new long[ratings.size()];
+    	double[] values = new double[ratings.size()];
+    	int li = -1;
+    	for (Rating r: ratings) {
+    		long iid = r.getItemId();
+    		if (li < 0 || items[li] != iid)
+    			li++;
+    		items[li] = iid;
+    		values[li] = r.getRating();
+    	}
+    	
+    	return MutableSparseVector.wrap(items, values, li+1);
+    }
 
     /**
      * Construct a rating vector that contains the ratings provided for each item.
@@ -115,24 +139,15 @@ public final class Ratings {
      * @return A sparse vector mapping item IDs to ratings
      */
     public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-    	Rating[] rsort = ratings.toArray(new Rating[ratings.size()]);
-    	Arrays.sort(rsort, ITEM_TIME_COMPARATOR);
-    	
-    	// collect the list of unique item IDs
-    	long[] items = new long[rsort.length];
-    	double[] values = new double[rsort.length];
-    	int li = -1;
-    	for (Rating r: rsort) {
-    		long iid = r.getItemId();
-    		if (li < 0 || items[li] != iid)
-    			li++;
-    		items[li] = iid;
-    		values[li] = r.getRating();
-    	}
-    	
-    	return MutableSparseVector.wrap(items, values, li+1);
+    	return userRatingVector(new ArrayList<Rating>(ratings));
     }
     
+    /**
+     * Extract a user rating vector from a rating cursor.
+     * @param ratings The rating cursor.
+     * @return
+     * @see #userRatingVector(Collection)
+     */
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
     	return userRatingVector(Cursors.makeList(ratings));
     }

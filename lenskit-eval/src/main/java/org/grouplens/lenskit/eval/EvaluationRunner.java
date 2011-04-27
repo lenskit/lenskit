@@ -149,17 +149,13 @@ public final class EvaluationRunner {
             data = new SimpleFileDAO(options.getInputFile(), options.getDelimiter());
             data.openSession();
             if (options.preloadData()) {
-                RatingDataAccessObject source = data;
-                Cursor<Rating> ratings = null;
-                try {
-                    ratings = source.getRatings();
-                    data = new RatingCollectionDAO(Cursors.makeList(ratings));
-                    source.closeSession();
-                    data.openSession();
-                } finally {
-                    if (ratings != null)
-                        ratings.close();
-                }
+            	RatingDataAccessObject source = data;
+
+            	ArrayList<Rating> rlist = Cursors.makeList(source.getRatings());
+            	rlist.trimToSize();
+            	data = new RatingCollectionDAO(rlist);
+            	source.closeSession();
+            	data.openSession();
             }
             
             List<PredictionEvaluator> evals = new ArrayList<PredictionEvaluator>();

@@ -34,6 +34,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
@@ -163,7 +164,9 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
             try {
                 if (preload) {
                     RatingDataAccessObject source = ratings;
-                    ratings = new RatingCollectionDAO(Cursors.makeList(ratings.getRatings()));
+                    ArrayList<Rating> rlist = Cursors.makeList(ratings.getRatings());
+                    rlist.trimToSize();
+                    ratings = new RatingCollectionDAO(rlist);
                     source.closeSession();
                     ratings.openSession();
                 }
