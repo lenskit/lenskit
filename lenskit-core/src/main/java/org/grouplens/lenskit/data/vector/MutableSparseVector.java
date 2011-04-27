@@ -46,6 +46,13 @@ import java.util.Arrays;
  */
 public class MutableSparseVector extends SparseVector {
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * Construct a new empty vector.
+     */
+    public MutableSparseVector() {
+    	this(new long[0], new double[0]);
+    }
 
     /**
      * Construct a new vector from the contents of a map.
@@ -275,6 +282,18 @@ public class MutableSparseVector extends SparseVector {
         if (!isSorted(keys, keys.length))
             throw new IllegalArgumentException("item array not sorted");
         return new MutableSparseVector(keys, values);
+    }
+    
+    /**
+     * Wrap key and value arrays in a mutable sparse vector.
+     * @see SparseVector#wrap(long[], double[])
+     */
+    public static MutableSparseVector wrap(long[] keys, double[] values, int size) {
+        if (values.length < keys.length)
+            throw new IllegalArgumentException("ratings shorter than items");
+        if (!isSorted(keys, keys.length))
+            throw new IllegalArgumentException("item array not sorted");
+        return new MutableSparseVector(keys, values, size);
     }
     
     /**

@@ -35,6 +35,7 @@ import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.slf4j.Logger;
@@ -46,7 +47,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
     
     /**
      * Builder for creating SimpleNeighborhoodFinders.
@@ -100,7 +102,16 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
         MutableSparseVector nratings = ratings.mutableCopy();
         normalizer.normalize(uid, nratings);
         
-        LongSet users = findRatingUsers(dataSource, uid, ratings.keySet());
+        /* Find candidate neighbors. To reduce scanning, we limit users to those
+         * rating target items. If the similarity is sparse and the user has
+         * fewer items than target items, then we use the user's rated items to
+         * attempt to minimize the number of users considered.
+         */
+        LongSet queryItems = items;
+        if (similarity instanceof OptimizableVectorSimilarity<?> && ratings.size() < items.size())
+        	queryItems = ratings.keySet();
+        LongSet users = findRatingUsers(dataSource, uid, queryItems);
+        
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
             final long user = uiter.nextLong();
