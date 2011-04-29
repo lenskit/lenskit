@@ -59,9 +59,8 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
             return smoothing;
         }
         
-        public Builder setSmoothing(double s) {
+        public void setSmoothing(double s) {
             smoothing = s;
-            return this;
         }
         
         @Override
