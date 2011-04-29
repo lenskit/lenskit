@@ -61,9 +61,10 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     protected void normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
         ReferenceSet<SparseVector> seen = new ReferenceOpenHashSet<SparseVector>();
         for (Neighbor n: Iterables.concat(neighborhoods)) {
-            if (seen.contains(n)) continue;
+            if (seen.contains(n.ratings)) continue;
             
             normalizer.normalize(n.userId, n.ratings);
+            seen.add(n.ratings);
         }
     }
     
