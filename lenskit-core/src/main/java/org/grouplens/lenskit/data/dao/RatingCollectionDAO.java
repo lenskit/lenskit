@@ -76,6 +76,7 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
             users = new Long2ObjectOpenHashMap<UserRatingProfile>(ratingCs.size());
             for (Long2ObjectMap.Entry<ArrayList<Rating>> e: ratingCs.long2ObjectEntrySet()) {
                 e.getValue().trimToSize();
+                Collections.sort(e.getValue(), Ratings.ITEM_TIME_COMPARATOR);
                 users.put(e.getLongKey(), new BasicUserRatingProfile(e));
             }
         }
@@ -93,6 +94,9 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
                     items.put(iid, itemRatings);
                 }
                 itemRatings.add(r);
+            }
+            for (ArrayList<Rating> rs: items.values()) {
+                rs.trimToSize();
             }
         }
     }

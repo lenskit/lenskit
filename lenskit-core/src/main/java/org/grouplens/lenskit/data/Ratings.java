@@ -36,6 +36,7 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
+import com.google.common.collect.Collections2;
 import com.google.common.primitives.Longs;
 
 /**
@@ -110,7 +111,14 @@ public final class Ratings {
      * @return
      */
     private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
-    	Collections.sort(ratings, ITEM_TIME_COMPARATOR);
+    	Rating rp = null;
+    	for (Rating r: ratings) {
+    		if (rp != null && ITEM_TIME_COMPARATOR.compare(rp, r) > 0) {
+    			Collections.sort(ratings, ITEM_TIME_COMPARATOR);
+    			break;
+    		}
+    		rp = r;
+    	}
     	
     	// collect the list of unique item IDs
     	long[] items = new long[ratings.size()];

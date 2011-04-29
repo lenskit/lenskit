@@ -55,9 +55,8 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
             return predictor;
         }
         
-        public Builder setBaselinePredictor(RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
+        public void setBaselinePredictor(RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
             baselineBuilder = predictor;
-            return this;
         }
 
         @Override

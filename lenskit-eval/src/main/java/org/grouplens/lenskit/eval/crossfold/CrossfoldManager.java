@@ -103,14 +103,7 @@ public class CrossfoldManager {
      * @return The union of all data partitions except testIndex.
      */
     public RatingDataAccessObject trainingSet(final int testIndex) {
-        final Long2ObjectMap<SparseVector> qmap = querySets[testIndex];
-        Predicate<Rating> filter = new Predicate<Rating>() {
-            public boolean apply(Rating r) {
-                SparseVector v = qmap.get(r.getUserId());
-                return v == null || !v.containsKey(r.getItemId());
-            }
-        };
-        return new RatingFilteredDAO(ratings, filter);
+        return new RatingFilteredDAO(ratings, querySets[testIndex]);
     }
 
     /**
