@@ -27,6 +27,11 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Evaluate a recommender's prediction accuracy with RMSE.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class RMSEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(RMSEEvaluator.class);
     

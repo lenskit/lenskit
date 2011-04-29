@@ -24,6 +24,13 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 
+/**
+ * Simple evaluator that records user, rating and prediction counts and computes
+ * recommender coverage over the queried items.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class CoverageEvaluator implements PredictionEvaluator {
     private int colUsers;
     private int colAttempts;

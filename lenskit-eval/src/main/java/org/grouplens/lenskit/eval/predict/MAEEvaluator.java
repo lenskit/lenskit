@@ -27,6 +27,18 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
+ * RMSE ({@link RMSEEvaluator}) to MAE.
+ * 
+ * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
+ * where the absolute error is averaged over all predictions. The second is
+ * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
+ * over all users.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class MAEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
     
