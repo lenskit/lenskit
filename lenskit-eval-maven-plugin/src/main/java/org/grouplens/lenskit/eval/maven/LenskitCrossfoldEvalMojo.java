@@ -46,6 +46,7 @@ import org.grouplens.lenskit.eval.crossfold.TimestampUserRatingProfileSplitter;
 import org.grouplens.lenskit.eval.crossfold.UserRatingProfileSplitter;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
+import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 
@@ -203,6 +204,7 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
                 evaluators.add(new CoverageEvaluator());
                 evaluators.add(new MAEEvaluator());
                 evaluators.add(new RMSEEvaluator());
+                evaluators.add(new NDCGEvaluator());
 
                 try {
                     eval.run(evaluators, outputFile);

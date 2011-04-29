@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
+import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 import org.slf4j.Logger;
@@ -162,6 +163,7 @@ public final class EvaluationRunner {
             evals.add(new CoverageEvaluator());
             evals.add(new MAEEvaluator());
             evals.add(new RMSEEvaluator());
+            evals.add(new NDCGEvaluator());
 
             try {
                 CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos);
