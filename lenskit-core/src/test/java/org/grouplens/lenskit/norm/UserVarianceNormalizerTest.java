@@ -1,15 +1,19 @@
 package org.grouplens.lenskit.norm;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.SimpleFileDAO;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -18,41 +22,47 @@ import org.junit.Test;
  *
  */
 public class UserVarianceNormalizerTest {
-	
-	final static RatingBuildContext rbc;
-	final static SparseVector userRatings;
-	final static SparseVector uniformUserRatings;
+	RatingDataAccessObject dao;
+	RatingBuildContext rbc;
+	SparseVector userRatings;
+	SparseVector uniformUserRatings;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
 	
-	static {
+	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
+	    ratings.add(new SimpleRating(uid, iid, value));
+	}
+	
+	@Before
+	public void setUp() {
 		long[] keys = {0L, 1L, 2L};
 		double[] values = {0., 2., 4.};
 		userRatings = SparseVector.wrap(keys, values);
 		double[] uniformValues = {2., 2., 2.};
 		uniformUserRatings = SparseVector.wrap(keys, uniformValues);
-		try {
-			File tempFile = File.createTempFile("VURVN_junit", null);
-			tempFile.deleteOnExit();
-			PrintStream ps = new PrintStream(tempFile);
-			ps.println("0,0,0");
-			ps.println("0,1,1");
-			ps.println("0,2,2");
-			ps.println("0,3,3");
-			ps.println("0,4,4");
-			ps.println("0,5,5");
-			ps.println("0,6,6");
-			ps.println("1,0,3");
-			ps.println("1,1,3");
-			ps.println("1,2,3");
-			ps.println("1,3,3");
-			ps.println("1,4,3");
-			ps.println("1,5,3");
-			ps.println("1,6,3");
-			SimpleFileDAO sfdao = new SimpleFileDAO(tempFile, ",");
-			rbc = PackedRatingBuildContext.make(sfdao);
-		} catch (IOException ioe) {
-			throw new RuntimeException("Failed to initialize test data");
-		}
+		List<Rating> ratings = new ArrayList<Rating>();
+		addRating(ratings, 0, 0, 0);
+		addRating(ratings, 0, 1, 1);
+		addRating(ratings, 0, 2, 2);
+		addRating(ratings, 0, 3, 3);
+		addRating(ratings, 0, 4, 4);
+		addRating(ratings, 0, 5, 5);
+		addRating(ratings, 0, 6, 6);
+		addRating(ratings, 1, 0, 3);
+		addRating(ratings, 1, 1, 3);
+		addRating(ratings, 1, 2, 3);
+		addRating(ratings, 1, 3, 3);
+		addRating(ratings, 1, 4, 3);
+		addRating(ratings, 1, 5, 3);
+		addRating(ratings, 1, 6, 3);
+		dao = new RatingCollectionDAO(ratings);
+		dao.openSession();
+		rbc = PackedRatingBuildContext.make(dao);
+	}
+	
+	@After
+	public void close() {
+	    rbc.close();
+	    dao.closeSession();
 	}
 
 	@Test
