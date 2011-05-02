@@ -36,9 +36,11 @@ import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,6 +51,7 @@ import org.junit.Test;
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
+    private RatingDataAccessObject dao;
     private RatingBuildContext ratings;
 
     @Before
@@ -58,7 +61,14 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
-        ratings = PackedRatingBuildContext.make(new RatingCollectionDAO(rs).getSession());
+        dao = new RatingCollectionDAO(rs);
+        dao.openSession();
+        ratings = PackedRatingBuildContext.make(dao);
+    }
+    
+    @After
+    public void closeRatingSession() {
+        dao.closeSession();
     }
     
     LongSortedSet itemSet(long item) {

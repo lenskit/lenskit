@@ -18,8 +18,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.grouplens.lenskit.eval.EvaluationRunner"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${build_files}-n 5 -i ${ML_DATA}/ml-100k/u.data -o ${workspace_loc:lenskit-knn}/target/useruser.csv --preload --write-predictions ${workspace_loc:lenskit-knn}/target/useruser-preds.csv ${workspace_loc:lenskit-knn}/etc/useruser.js"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-n 5 -i &quot;${ML_DATA}/ml-100k/u.data&quot; -o &quot;${workspace_loc:lenskit-knn}/target/useruser.csv&quot; --preload &quot;${workspace_loc:lenskit-knn}/etc/useruser.js&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="lenskit-eval"/>
-<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.maven.ide.eclipse.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dlogging.level=debug -ea -agentlib:hprof=cpu=samples,depth=8,file=${workspace_loc:lenskit-knn}/target/useruser-profile.txt"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dlogging.level=debug -ea"/>
 </launchConfiguration>

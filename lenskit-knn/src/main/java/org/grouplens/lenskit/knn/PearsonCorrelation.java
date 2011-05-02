@@ -34,7 +34,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  *
  * <p>See Desrosiers, C. and Karypis, G., <i>A Comprehensive Survey of
  * Neighborhood-based Recommendation Methods</i>.  In Ricci, F., Rokach, L.,
- * Shapira, B., and Kantor, P. (eds.), <i>Recommender Systems Handbook</i>,
+ * Shapira, B., and Kantor, P. (eds.), <i>RecommenderEngine Systems Handbook</i>,
  * Springer. 2010, pp. 107-144.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -49,7 +49,7 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
             return 0;
 
         /*
-         * Basic neighborhoodFinder: walk in parallel across the two vectors, computing
+         * Basic similarity: walk in parallel across the two vectors, computing
          * the dot product and simultaneously computing the variance within each
          * vector of the items also contained in the other vector.  Pearson
          * correlation only considers items shared by both vectors; other items

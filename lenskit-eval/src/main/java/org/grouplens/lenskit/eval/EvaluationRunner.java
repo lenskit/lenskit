@@ -28,11 +28,11 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
+import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 import org.slf4j.Logger;
@@ -148,26 +148,22 @@ public final class EvaluationRunner {
         RatingDataAccessObject data = null;
         try {
             data = new SimpleFileDAO(options.getInputFile(), options.getDelimiter());
+            data.openSession();
             if (options.preloadData()) {
-                RatingDataAccessObject source = data;
-                RatingDataSession session = null;
-                Cursor<Rating> ratings = null;
-                try {
-                    session = source.getSession();
-                    ratings = session.getRatings();
-                    data = new RatingCollectionDAO(Cursors.makeList(ratings));
-                } finally {
-                    if (ratings != null)
-                        ratings.close();
-                    if (session != null)
-                        session.release();
-                }
+            	RatingDataAccessObject source = data;
+
+            	ArrayList<Rating> rlist = Cursors.makeList(source.getRatings());
+            	rlist.trimToSize();
+            	data = new RatingCollectionDAO(rlist);
+            	source.closeSession();
+            	data.openSession();
             }
             
             List<PredictionEvaluator> evals = new ArrayList<PredictionEvaluator>();
             evals.add(new CoverageEvaluator());
             evals.add(new MAEEvaluator());
             evals.add(new RMSEEvaluator());
+            evals.add(new NDCGEvaluator());
 
             try {
                 CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos);
@@ -178,6 +174,9 @@ public final class EvaluationRunner {
         } catch (FileNotFoundException e) {
             fail(2, "Error loading input data", e);
             return; /* fail will not return */
+        } finally {
+            if (data != null)
+                data.closeSession();
         }
     }
 

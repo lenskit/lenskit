@@ -22,43 +22,65 @@ import static java.lang.Math.sqrt;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.tablewriter.TableWriter;
+import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Evaluate a recommender's prediction accuracy with RMSE.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class RMSEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(RMSEEvaluator.class);
+    
+    int colRMSE, colUserRMSE;
 
     @Override
-    public PredictionEvaluationAccumulator makeAccumulator() {
+    public Accumulator makeAccumulator() {
         return new Accum();
     }
 
     @Override
-    public String getName() {
-        return "RMSE";
+    public void setup(TableWriterBuilder builder) {
+        colRMSE = builder.addColumn("RMSE.ByRating");
+        colUserRMSE = builder.addColumn("RMSE.ByUser");
     }
     
-    static class Accum implements PredictionEvaluationAccumulator {
+    class Accum implements Accumulator {
         private double sse = 0;
-        private int n = 0;
+        private double totalRMSE = 0;
+        private int nratings = 0;
+        private int nusers = 0;
         
         @Override
-        public void evaluatePrediction(SparseVector ratings,
-                SparseVector predictions) {
+        public void evaluatePredictions(long user, SparseVector ratings,
+                                        SparseVector predictions) {
+            
+            double usse = 0;
+            int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
                 
                 double err = e.getDoubleValue() - ratings.get(e.getLongKey());
-                sse += err * err;
+                usse += err * err;
                 n++;
+            }
+            sse += usse;
+            nratings += n;
+            if (n > 0) {
+                totalRMSE += usse / n;
+                nusers ++;
             }
         }
 
         @Override
-        public double finish() {
-            double v = sqrt(sse / n);
+        public void finalize(TableWriter writer) {
+            double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
-            return v;
+            writer.setValue(colRMSE, v);
+            writer.setValue(colUserRMSE, totalRMSE / nusers);
         }
         
     }

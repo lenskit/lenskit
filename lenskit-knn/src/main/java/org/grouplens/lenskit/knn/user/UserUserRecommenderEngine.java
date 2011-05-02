@@ -22,20 +22,20 @@ import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderEngine;
 
 /**
- * UserUserRecommender is a Recommender implementation that uses user-user
+ * UserUserRecommenderEngine is a RecommenderEngine implementation that uses user-user
  * collaborative filtering to compute predictions and recommendations. They are
- * built using a {@link UserUserRecommenderBuilder}.
+ * built using a {@link UserUserRecommenderEngineBuilder}.
  * 
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-public class UserUserRecommender implements Recommender {
+public class UserUserRecommenderEngine implements RecommenderEngine {
     private final UserUserRatingPredictor pred;
     private final UserUserRatingRecommender rec;
     
-    UserUserRecommender(UserUserRatingPredictor pred, UserUserRatingRecommender rec) {
+    UserUserRecommenderEngine(UserUserRatingPredictor pred, UserUserRatingRecommender rec) {
         this.pred = pred;
         this.rec = rec;
     }

@@ -16,27 +16,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
+import javax.annotation.Nullable;
 
-/**
- * Result accumulator for a {@link PredictionEvaluator}.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
- */
-public interface PredictionEvaluationAccumulator {
-    /**
-     * Evaluate predictions against true ratings and add the result to the
-     * accumulator.
-     * @param ratings The user's true ratings.
-     * @param predictions The user's predictions for the corresponding items.
-     */
-    void evaluatePrediction(SparseVector ratings, SparseVector predictions);
-
-    /**
-     * Finalize and return the accumulated results.
-     * @return The accumlated or aggregated results.
-     */
-    double finish();
+public interface RecommenderEngine {
+    @Nullable
+    public RatingPredictor getRatingPredictor();
+    
+    @Nullable
+    public DynamicRatingPredictor getDynamicRatingPredictor();
+    
+    @Nullable
+    public RatingRecommender getRatingRecommender();
+    
+    @Nullable
+    public BasketRecommender getBasketRecommender();
 }

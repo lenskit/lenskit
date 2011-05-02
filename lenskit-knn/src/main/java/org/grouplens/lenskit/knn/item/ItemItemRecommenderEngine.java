@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
 import org.grouplens.lenskit.BasketRecommender;
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -33,14 +33,14 @@ import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
 /**
- * Recommender implementation that uses an item-item similarity matrix to create
+ * RecommenderEngine implementation that uses an item-item similarity matrix to create
  * predictions and recommendations. It is built with an
- * {@link ItemItemRecommenderBuilder}.
+ * {@link ItemItemRecommenderEngineBuilder}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu
  */
-public class ItemItemRecommender implements Recommender {
+public class ItemItemRecommenderEngine implements RecommenderEngine {
     private ItemItemRatingPredictor predictor;
     private ItemItemRatingRecommender recommender;
     
@@ -51,7 +51,7 @@ public class ItemItemRecommender implements Recommender {
     private final LongSortedSet itemUniverse;
     private final RatingDataAccessObject dao;
     
-    ItemItemRecommender(Index indexer, SimilarityMatrix matrix, 
+    ItemItemRecommenderEngine(Index indexer, SimilarityMatrix matrix, 
                         UserRatingVectorNormalizer norm, BaselinePredictor baseline,
                         LongSortedSet items, RatingDataAccessObject dao) {
         this.itemIndexer = indexer;

@@ -20,6 +20,11 @@ package org.grouplens.lenskit.data.dao;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.SortOrder;
+import org.grouplens.lenskit.data.UserRatingProfile;
+
 /**
  * DAO providing access to rating data.
  * 
@@ -41,8 +46,76 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface RatingDataAccessObject extends UserItemDataAccessObject {
-    RatingDataSession getSession();
+    /**
+     * Get all ratings from the data set.
+     * 
+     * @return A cursor iterating over all ratings.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getRatings();
+    
+    /**
+     * Get all ratings with a sort order.
+     * 
+     * @param order The sort to apply for the ratings.
+     * @return The ratings in order.
+     * @throws UnsupportedQueryException if the sort order cannot be supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getRatings(SortOrder order);
 
+    /**
+     * Get all user rating profiles from the system.
+     * 
+     * @return A cursor returning the user rating profile for each user in the
+     *         data source.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<UserRatingProfile> getUserRatingProfiles();
+
+    /**
+     * Get all ratings for the specified user.
+     * 
+     * @param userId The ID of the user whose ratings are requested.
+     * @return An iterator over the user's ratings.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getUserRatings(long userId);
+
+    /**
+     * Get all ratings for the specified user.
+     * 
+     * @param userId The ID of the user whose ratings are requested.
+     * @param order The sort order for the ratings.
+     * @return An iterator over the user's ratings.
+     * @throws UnsupportedQueryException if the specified sort order is not
+     *             supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getUserRatings(long userId, SortOrder order);
+    
+    /**
+     * Get all ratings for the specified item.
+     * 
+     * @param itemId The ID of the item whose ratings are requested.
+     * @throws UnsupportedQueryException if the specified sort order is not
+     * supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getItemRatings(long itemId);
+   
+    /**
+     * Get all ratings for the specified item.
+     * 
+     * @param itemId The ID of the item whose ratings are requested.
+     * @param order The sort order for the ratings.
+     * @return An iterator over the user's ratings.
+     * @throws UnsupportedQueryException if the specified sort order is not
+     *             supported.
+     * @throws NoSessionException if no session is open on the current thread.
+     */
+    public Cursor<Rating> getItemRatings(long itemId, SortOrder order);
+    
     /**
      * Register a listener for rating updates (new, changed, or deleted
      * ratings).
@@ -58,4 +131,5 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * @param listener The listener to be notified of rating changes.
      */
     void removeRatingUpdateListener(RatingUpdateListener listener);
+
 }

@@ -21,37 +21,60 @@ package org.grouplens.lenskit.eval.predict;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.tablewriter.TableWriter;
+import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 
+/**
+ * Simple evaluator that records user, rating and prediction counts and computes
+ * recommender coverage over the queried items.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class CoverageEvaluator implements PredictionEvaluator {
+    private int colUsers;
+    private int colAttempts;
+    private int colGood;
+    private int colCoverage;
 
     @Override
-    public PredictionEvaluationAccumulator makeAccumulator() {
+    public Accumulator makeAccumulator() {
         return new Accum();
     }
-
+    
     @Override
-    public String getName() {
-        return "Coverage";
+    public void setup(TableWriterBuilder builder) {
+        colUsers = builder.addColumn("NUsers");
+        colAttempts = builder.addColumn("NAttempted");
+        colGood = builder.addColumn("NGood");
+        colCoverage = builder.addColumn("Coverage");
     }
     
-    static class Accum implements PredictionEvaluationAccumulator {
+    class Accum implements Accumulator {
         private int npreds = 0;
         private int ngood = 0;
+        private int nusers = 0;
         
         @Override
-        public void evaluatePrediction(SparseVector ratings,
-                SparseVector predictions) {
+        public void evaluatePredictions(long user, SparseVector ratings,
+                                        SparseVector predictions) {
             for (Long2DoubleMap.Entry e: ratings.fast()) {
                 double pv = predictions.get(e.getLongKey());
                 npreds += 1;
                 if (!Double.isNaN(pv))
                     ngood += 1;
             }
+            nusers += 1;
         }
 
         @Override
-        public double finish() {
-            return (double) ngood / npreds;
+        public void finalize(TableWriter writer) {
+            writer.setValue(colUsers, nusers);
+            writer.setValue(colAttempts, npreds);
+            writer.setValue(colGood, ngood);
+            
+            double coverage = (double) ngood / npreds;
+            writer.setValue(colCoverage, coverage);
         }
         
     }

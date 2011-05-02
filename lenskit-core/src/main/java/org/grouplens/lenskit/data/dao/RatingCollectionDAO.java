@@ -24,9 +24,12 @@ package org.grouplens.lenskit.data.dao;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -43,9 +46,10 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
+public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeable> {
     private Collection<Rating> ratings;
     private Long2ObjectMap<UserRatingProfile> users;
+    private Long2ObjectMap<ArrayList<Rating>> items;
 
     /**
      * Construct a new data source from a collection of ratings.
@@ -54,77 +58,137 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
     public RatingCollectionDAO(Collection<Rating> ratings) {
         this.ratings = ratings;
     }
-    
+
     private synchronized void requireUserCache() {
-    	if (users == null) {
-    	    Long2ObjectMap<ArrayList<Rating>> ratingCs =
-    	        new Long2ObjectOpenHashMap<ArrayList<Rating>>();
-    		for (Rating r: ratings) {
-    			final long uid = r.getUserId();
-    			ArrayList<Rating> userRatings = ratingCs.get(uid);
-    			if (userRatings == null) {
-    				userRatings = new ArrayList<Rating>(20);
-    				ratingCs.put(uid, userRatings);
-    			}
-    			userRatings.add(r);
-    		}
-    		users = new Long2ObjectOpenHashMap<UserRatingProfile>(ratingCs.size());
-    		for (Long2ObjectMap.Entry<ArrayList<Rating>> e: ratingCs.long2ObjectEntrySet()) {
-    		    e.getValue().trimToSize();
-    		    users.put(e.getLongKey(), new BasicUserRatingProfile(e));
-    		}
-    	}
+        if (users == null) {
+            logger.debug("Caching user rating profiles");
+            Long2ObjectMap<ArrayList<Rating>> ratingCs =
+                new Long2ObjectOpenHashMap<ArrayList<Rating>>();
+            for (Rating r: ratings) {
+                final long uid = r.getUserId();
+                ArrayList<Rating> userRatings = ratingCs.get(uid);
+                if (userRatings == null) {
+                    userRatings = new ArrayList<Rating>(20);
+                    ratingCs.put(uid, userRatings);
+                }
+                userRatings.add(r);
+            }
+            users = new Long2ObjectOpenHashMap<UserRatingProfile>(ratingCs.size());
+            for (Long2ObjectMap.Entry<ArrayList<Rating>> e: ratingCs.long2ObjectEntrySet()) {
+                e.getValue().trimToSize();
+                Collections.sort(e.getValue(), Ratings.ITEM_TIME_COMPARATOR);
+                users.put(e.getLongKey(), new BasicUserRatingProfile(e));
+            }
+        }
+    }
+    
+    private synchronized void requireItemCache() {
+        if (items == null) {
+            logger.debug("Caching item rating collections");
+            items = new Long2ObjectOpenHashMap<ArrayList<Rating>>();
+            for (Rating r: ratings) {
+                final long iid = r.getItemId();
+                ArrayList<Rating> itemRatings = items.get(iid);
+                if (itemRatings == null) {
+                    itemRatings = new ArrayList<Rating>(20);
+                    items.put(iid, itemRatings);
+                }
+                itemRatings.add(r);
+            }
+            for (ArrayList<Rating> rs: items.values()) {
+                rs.trimToSize();
+            }
+        }
+    }
+
+    @Override
+    public LongCursor getUsers() {
+        checkSession();
+        requireUserCache();
+        return Cursors2.wrap(users.keySet());
+    }
+
+    @Override
+    public Cursor<Rating> getUserRatings(long user, SortOrder order) {
+        checkSession();
+        requireUserCache();
+        Collection<Rating> ratings = users.get(user).getRatings();
+        if (ratings == null) return Cursors.empty();
+
+
+        Comparator<Rating> comp = null;
+        switch (order) {
+        case ANY:
+            break;
+        case USER:
+            comp = Ratings.USER_COMPARATOR;
+            break;
+        case ITEM:
+            comp = Ratings.ITEM_COMPARATOR;
+            break;
+        case TIMESTAMP:
+            comp = Ratings.TIMESTAMP_COMPARATOR;
+            break;
+        default:
+            throw new UnsupportedQueryException();
+        }
+        if (comp != null) {
+            List<Rating> sratings = new ArrayList<Rating>(ratings);
+            Collections.sort(sratings, comp);
+            ratings = sratings;
+        }
+        return Cursors.wrap(ratings);
+    }
+
+    @Override
+    public Cursor<UserRatingProfile> getUserRatingProfiles() {
+        checkSession();
+        requireUserCache();
+        return Cursors.wrap(users.values().iterator());
     }
     
     @Override
-    public RatingDataSession getSession() {
-        return new Session();
+    public Cursor<Rating> getItemRatings(long item, SortOrder order) {
+        checkSession();
+        requireItemCache();
+        
+        List<Rating> ratings = items.get(item);
+        if (ratings == null) return Cursors.empty();
+        
+        Comparator<Rating> comp = null;
+        switch (order) {
+        case ANY:
+            break;
+        case USER:
+            comp = Ratings.USER_COMPARATOR;
+            break;
+        case ITEM:
+            comp = Ratings.ITEM_COMPARATOR;
+            break;
+        case TIMESTAMP:
+            comp = Ratings.TIMESTAMP_COMPARATOR;
+            break;
+        default:
+            throw new UnsupportedQueryException();
+        }
+        if (comp != null) {
+            ratings = new ArrayList<Rating>(ratings);
+            Collections.sort(ratings, comp);
+        }
+        return Cursors.wrap(ratings);
+    }
+
+    /* (non-Javadoc)
+     * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
+     */
+    @Override
+    public Cursor<Rating> getRatings() {
+        checkSession();
+        return Cursors.wrap(ratings);
     }
     
-    class Session extends AbstractRatingDataSession {
-        public Session() {
-            super(RatingCollectionDAO.this);
-        }
-
-        @Override
-        public LongCursor getUsers() {
-            requireUserCache();
-            return Cursors2.wrap(users.keySet());
-        }
-
-        @Override
-        public Cursor<Rating> getUserRatings(long user, SortOrder order) {
-            requireUserCache();
-            Collection<Rating> ratings = users.get(user).getRatings();
-            if (ratings == null) return Cursors.empty();
-
-            ArrayList<Rating> copy;
-
-            switch (order) {
-            case ANY:
-                return Cursors.wrap(ratings);
-            case TIMESTAMP:
-                copy = new ArrayList<Rating>(ratings);
-                Collections.sort(copy, Ratings.TIMESTAMP_COMPARATOR);
-                return Cursors.wrap(copy);
-            default:
-                throw new UnsupportedQueryException();
-            }
-        }
-
-        @Override
-        public Cursor<UserRatingProfile> getUserRatingProfiles() {
-            requireUserCache();
-            return Cursors.wrap(users.values().iterator());
-        }
-
-        /* (non-Javadoc)
-         * @see org.grouplens.lenskit.data.dao.AbRatingDataAccessObjectAccessObject#getRatings()
-         */
-        @Override
-        public Cursor<Rating> getRatings() {
-            return Cursors.wrap(ratings);
-        }
+    @Override
+    protected Closeable openNewSession() {
+        return new DummySession();
     }
-
 }

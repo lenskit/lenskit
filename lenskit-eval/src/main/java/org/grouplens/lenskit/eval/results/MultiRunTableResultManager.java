@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.TaskTimer;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluationAccumulator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
@@ -48,11 +47,10 @@ import org.slf4j.LoggerFactory;
 public class MultiRunTableResultManager {
     private static final Logger logger = LoggerFactory.getLogger(MultiRunTableResultManager.class);
     
-    static final int COL_RUN = 0;
-    static final int COL_ALGORITHM = 1;
-    static final int COL_BUILD_TIME = 2;
-    static final int COL_TEST_TIME = 3;
-    static final int COL_EVAL_BASE = 4;
+    private int colRun;
+    private int colAlgorithm;
+    private int colBuildTime;
+    private int colTestTime;
     
     private List<PredictionEvaluator> evaluators;
     private TableWriter writer;
@@ -64,12 +62,12 @@ public class MultiRunTableResultManager {
         evaluators = evals;
         
         TableWriterBuilder twb = new CSVWriterBuilder();
-        twb.addColumn("Run");
-        twb.addColumn("Algorithm");
-        twb.addColumn("BuildTime");
-        twb.addColumn("TestTime");
+        colRun = twb.addColumn("Run");
+        colAlgorithm = twb.addColumn("Algorithm");
+        colBuildTime = twb.addColumn("BuildTime");
+        colTestTime = twb.addColumn("TestTime");
         for (PredictionEvaluator ev: evaluators) {
-            twb.addColumn(ev.getName());
+            ev.setup(twb);
         }
         
         Writer fw;
@@ -103,8 +101,8 @@ public class MultiRunTableResultManager {
             @Override
             public AlgorithmTestAccumulator makeAlgorithmAccumulator(
                     AlgorithmInstance algo) {
-                writer.setValue(COL_RUN, run);
-                writer.setValue(COL_ALGORITHM, algo.getName());
+                writer.setValue(colRun, run);
+                writer.setValue(colAlgorithm, algo.getName());
                 return new MRTAlgorithmTestAccumulator(run, algo);
             }
         };
@@ -121,7 +119,7 @@ public class MultiRunTableResultManager {
     }
     
     class MRTAlgorithmTestAccumulator implements AlgorithmTestAccumulator {
-        private List<PredictionEvaluationAccumulator> evalAccums;
+        private List<PredictionEvaluator.Accumulator> evalAccums;
         TaskTimer buildTimer;
         TaskTimer testTimer;
         int run;
@@ -130,7 +128,7 @@ public class MultiRunTableResultManager {
         MRTAlgorithmTestAccumulator(int r, AlgorithmInstance a) {
         	run = r;
         	algo = a;
-            evalAccums = new ArrayList<PredictionEvaluationAccumulator>(evaluators.size());
+            evalAccums = new ArrayList<PredictionEvaluator.Accumulator>(evaluators.size());
             for (PredictionEvaluator eval: evaluators) {
                 evalAccums.add(eval.makeAccumulator());
             }
@@ -158,13 +156,11 @@ public class MultiRunTableResultManager {
             testTimer.stop();
             logger.info("Test of {} finished in {}", algo.getName(), testTimer.elapsedPretty());
             
-            writer.setValue(COL_BUILD_TIME, buildTimer.elapsed());
-            writer.setValue(COL_TEST_TIME, testTimer.elapsed());
+            writer.setValue(colBuildTime, buildTimer.elapsed());
+            writer.setValue(colTestTime, testTimer.elapsed());
             
-            int col = COL_EVAL_BASE;
-            for (PredictionEvaluationAccumulator ea: evalAccums) {
-                writer.setValue(col, ea.finish());
-                col++;
+            for (PredictionEvaluator.Accumulator ea: evalAccums) {
+                ea.finalize(writer);
             }
             try {
                 writer.finishRow();
@@ -191,8 +187,8 @@ public class MultiRunTableResultManager {
         			predictionWriter = null;
         		}
         	}
-            for (PredictionEvaluationAccumulator ea: evalAccums) {
-                ea.evaluatePrediction(ratings, predictions);
+            for (PredictionEvaluator.Accumulator ea: evalAccums) {
+                ea.evaluatePredictions(user, ratings, predictions);
             }
         }
     }

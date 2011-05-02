@@ -27,7 +27,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingDataSession;
 import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.FastCollection;
@@ -44,7 +43,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * 
  * <p>Implementers have a variety of options for implementing build contexts.
  * They can be in-memory snapshots, database transactions, database clones,
- * or even disk files.  Recommender build code does assume, however, that
+ * or even disk files.  RecommenderEngine build code does assume, however, that
  * multiple iterations is pretty fast.  Therefore, implementations should avoid
  * re-fetching the data over a network connection for each request.
  * 
@@ -73,7 +72,7 @@ public interface RatingBuildContext extends Closeable {
      * Return the dao that is backing this RatingBuildContext.
      * @return
      */
-    RatingDataSession getDataSession();
+    RatingDataAccessObject getDAO();
     
 	/**
 	 * Get the set of user IDs in the snapshot.

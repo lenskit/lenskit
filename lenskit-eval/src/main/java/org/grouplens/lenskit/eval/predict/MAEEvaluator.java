@@ -22,42 +22,70 @@ import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.tablewriter.TableWriter;
+import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
+ * RMSE ({@link RMSEEvaluator}) to MAE.
+ * 
+ * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
+ * where the absolute error is averaged over all predictions. The second is
+ * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
+ * over all users.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public class MAEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
     
+    int colMAE, colUserMAE;
+
     @Override
-    public PredictionEvaluationAccumulator makeAccumulator() {
+    public Accumulator makeAccumulator() {
         return new Accum();
     }
 
     @Override
-    public String getName() {
-        return "MAE";
+    public void setup(TableWriterBuilder builder) {
+        colMAE = builder.addColumn("MAE.ByRating");
+        colUserMAE = builder.addColumn("MAE.ByUser");
     }
     
-    static class Accum implements PredictionEvaluationAccumulator {
-        private double err = 0;
-        private int n = 0;
+    class Accum implements Accumulator {
+        private double totalError = 0;
+        private double totalMAE = 0;
+        private int nratings = 0;
+        private int nusers = 0;
         
         @Override
-        public void evaluatePrediction(SparseVector ratings,
-                SparseVector predictions) {
+        public void evaluatePredictions(long user, SparseVector ratings,
+                                        SparseVector predictions) {
+            double err = 0;
+            int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
                 
                 err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
                 n++;
             }
+            totalError += err;
+            nratings += n;
+            if (n > 0) {
+                totalMAE += err / n;
+                nusers ++;
+            }
         }
 
         @Override
-        public double finish() {
-            double v = err / n;
+        public void finalize(TableWriter writer) {
+            double v = totalError / nratings;
             logger.info("MAE: {}", v);
-            return v;
+            writer.setValue(colMAE, v);
+            writer.setValue(colUserMAE, totalMAE / nusers);
         }
         
     }
