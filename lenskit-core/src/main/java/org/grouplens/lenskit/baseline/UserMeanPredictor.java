@@ -42,30 +42,39 @@ public class UserMeanPredictor implements BaselinePredictor {
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends AbstractRecommenderComponentBuilder<UserMeanPredictor> {
-        @Override
+        private double smoothing = 0;
+        
+        public void setSmoothing(double smoothing) {
+        	this.smoothing = smoothing;
+        }
+        
+        public double getSmoothing() {
+        	return smoothing;
+        }
+    	
+    	@Override
         protected UserMeanPredictor buildNew(RatingBuildContext context) {
             double mean = GlobalMeanPredictor.computeMeanRating(context.getRatings().fastIterator());
-            return new UserMeanPredictor(mean);
+            return new UserMeanPredictor(mean, smoothing);
         }
     }
     
     private static final long serialVersionUID = 1L;
     private final double globalMean;
+    private final double smoothing;
 
     /**
      * Construct a predictor that computes user means offset by the global mean.
      * @param ratings
      */
-    protected UserMeanPredictor(double globalMean) {
+    protected UserMeanPredictor(double globalMean, double smoothing) {
         this.globalMean = globalMean;
+        this.smoothing = smoothing;
     }
 
-    static double average(SparseVector ratings, double offset) {
-        if (ratings.isEmpty()) return 0;
-
-        double total = ratings.sum();
-        total -= ratings.size() * offset;
-        return total / ratings.size();
+    static double average(SparseVector ratings, double globalMean, double smoothing) {
+        if (ratings.isEmpty()) return globalMean;
+        return (ratings.sum() + smoothing*globalMean)/(ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
@@ -74,7 +83,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings,
             Collection<Long> items) {
-        double mean = average(ratings, globalMean) + globalMean;
+        double mean = average(ratings, globalMean,smoothing);
         return ConstantPredictor.constantPredictions(items, mean);
     }
 }
