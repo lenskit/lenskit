@@ -173,7 +173,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	        itemIndex = new Indexer();
 	        userIndex = new Indexer();
 
-	        for (Rating r: ratings) {
+	        for (Rating r: ratings.fast()) {
 	            final int iidx = itemIndex.internId(r.getItemId());
 	            final int uidx = userIndex.internId(r.getUserId());
 	            final double v = r.getRating();
