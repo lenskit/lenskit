@@ -59,7 +59,6 @@ import com.google.common.base.Predicate;
  */
 public abstract class AbstractRatingDataAccessObject<S extends Closeable> implements RatingDataAccessObject {
     protected final Logger logger;
-    private final RatingUpdateListenerManager updateListeners = new RatingUpdateListenerManager();
     
     protected AbstractRatingDataAccessObject() {
         logger = LoggerFactory.getLogger(getClass());
@@ -281,28 +280,6 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
 
             return new BasicUserRatingProfile(uid, ratings);
         }
-    }
-
-    @Override
-    public void addRatingUpdateListener(RatingUpdateListener listener) {
-        updateListeners.addListener(listener);
-    }
-    
-    @Override
-    public void removeRatingUpdateListener(RatingUpdateListener listener) {
-        updateListeners.removeListener(listener);
-    }
-    
-    /**
-     * Notify all registered listeners that the ratings have been updated.
-     * @see RatingUpdateListener
-     * @param oldRating The old rating or null.
-     * @param newRating The new rating or null.
-     */
-    protected void notifyRatingUpdate(Rating oldRating, Rating newRating) {
-        if (oldRating == null && newRating == null)
-            throw new IllegalArgumentException("At least one rating must be non-null");
-        updateListeners.invoke(oldRating, newRating);
     }
     
     private ThreadLocal<S> activeSession = new ThreadLocal<S>();

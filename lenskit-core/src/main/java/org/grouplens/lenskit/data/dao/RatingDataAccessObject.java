@@ -29,10 +29,6 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * DAO providing access to rating data.
  * 
  * <p>
- * This interface provides a means of accessing rating data and registering to
- * receive notification of rating changes.
- * 
- * <p>
  * This interface extends {@link UserItemDataAccessObject} because it doesn't
  * make much sense to have rating data without user/item data. This decision
  * can, of course, be reviewed. It may be that, after implementing build
@@ -115,21 +111,4 @@ public interface RatingDataAccessObject extends UserItemDataAccessObject {
      * @throws NoSessionException if no session is open on the current thread.
      */
     public Cursor<Rating> getItemRatings(long itemId, SortOrder order);
-    
-    /**
-     * Register a listener for rating updates (new, changed, or deleted
-     * ratings).
-     * 
-     * @param listener The listener to be notified of rating changes.
-     */
-    void addRatingUpdateListener(RatingUpdateListener listener);
-
-    /**
-     * Remove a registered listener for rating updates (new, changed, or deleted
-     * ratings).
-     * 
-     * @param listener The listener to be notified of rating changes.
-     */
-    void removeRatingUpdateListener(RatingUpdateListener listener);
-
 }

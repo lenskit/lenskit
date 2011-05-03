@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.RatingUpdateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,16 +55,6 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     public UserFilteredDAO(RatingDataAccessObject base, Predicate<Long> filter) {
         this.base = base;
         userFilter = filter;
-    }
-
-    @Override
-    public void addRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners. */
-    }
-
-    @Override
-    public void removeRatingUpdateListener(RatingUpdateListener listener) {
-        /* we do not support update listeners */
     }
 
     /* (non-Javadoc)
