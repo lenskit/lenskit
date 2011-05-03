@@ -8,9 +8,18 @@
     <hg:clone url="http://dev.grouplens.org/hg/lenskit" revision="${revision}" />
     <sh:exec executable="hg" args="summary"/>
   </step>
-  
+
+  <step id="examine" description="Examine Maven environment">
+    <mvn:run goals="help:active-profiles" profiles="static-analysis"/>
+    <mvn:run goals="help:effective-pom"
+             profiles="static-analysis"
+             output="target/effective-pom.xml"/>
+    <attach file="target/effective-pom.xml"
+            description="Effective POM"/>
+  </step>
+
   <step id="build" description="Deploy Maven to snapshot repository">
-    <mvn:run goals="clean deploy" failmode="at-end"/>
+    <mvn:run goals="clean install" failmode="at-end"/>
   </step>
 
   <step id="site" description="Build and upload Maven site">
