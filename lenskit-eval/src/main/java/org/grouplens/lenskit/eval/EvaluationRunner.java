@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;

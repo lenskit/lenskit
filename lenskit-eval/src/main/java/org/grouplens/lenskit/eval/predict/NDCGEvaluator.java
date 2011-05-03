@@ -19,9 +19,7 @@
 package org.grouplens.lenskit.eval.predict;
 
 import static java.lang.Math.log;
-import static java.lang.Math.sqrt;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongIterator;

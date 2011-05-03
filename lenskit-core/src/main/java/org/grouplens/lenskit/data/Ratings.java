@@ -36,7 +36,6 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
-import com.google.common.collect.Collections2;
 import com.google.common.primitives.Longs;
 
 /**
