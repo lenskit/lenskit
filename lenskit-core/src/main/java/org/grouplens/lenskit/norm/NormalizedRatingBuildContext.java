@@ -262,6 +262,14 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
                 return brating.getTimestamp();
             }
             
+            public IndexedRating clone() {
+                try {
+                    return (IndexedRating) super.clone();
+                } catch (CloneNotSupportedException e) {
+                    throw new AssertionError("rating not cloneable");
+                }
+            }
+            
         }
     }
 

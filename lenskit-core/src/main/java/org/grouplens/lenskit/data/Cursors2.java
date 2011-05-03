@@ -27,8 +27,8 @@ package org.grouplens.lenskit.data;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -82,6 +82,12 @@ public class Cursors2 {
             }
             public Long next() {
                 return cursor.next();
+            }
+            public Long fastNext() {
+                return cursor.fastNext();
+            }
+            public LongIterable fast() {
+                return this;
             }
             public long nextLong() {
                 return next();

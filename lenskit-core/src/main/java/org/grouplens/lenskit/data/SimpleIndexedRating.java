@@ -49,4 +49,8 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 	final public int getUserIndex() {
 		return userIndex;
 	}
+	
+	public IndexedRating clone() {
+	    return (IndexedRating) super.clone();
+	}
 }

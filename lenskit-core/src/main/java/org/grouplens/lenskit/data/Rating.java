@@ -34,7 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  */
 @ThreadSafe
-public interface Rating {
+public interface Rating extends Cloneable {
     /**
      * Get the user ID.
      * @return The user ID of the rating.
@@ -56,4 +56,9 @@ public interface Rating {
      * timestamp).
      */
     long getTimestamp();
+    
+    /**
+     * Clone the rating.
+     */
+    Rating clone();
 }

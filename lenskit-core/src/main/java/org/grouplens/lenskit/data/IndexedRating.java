@@ -44,4 +44,6 @@ public interface IndexedRating extends Rating {
 	 * @return The item index.
 	 */
 	int getItemIndex();
+	
+	IndexedRating clone();
 }

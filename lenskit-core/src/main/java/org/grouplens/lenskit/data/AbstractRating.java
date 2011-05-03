@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.data;
 
+
 /**
  * Abstract rating implementation.  This just provides the {@link #equals(Object)}
  * and {@link #hashCode()} methods so classes don't have to duplicate the code.
@@ -45,6 +46,14 @@ public abstract class AbstractRating implements Rating {
             ^ Long.valueOf(getItemId()).hashCode()
             ^ Double.valueOf(getRating()).hashCode()
             ^ Long.valueOf(getTimestamp()).hashCode();
+    }
+    
+    public Rating clone() {
+        try {
+            return (Rating) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("Rating not cloneable");
+        }
     }
 
 }

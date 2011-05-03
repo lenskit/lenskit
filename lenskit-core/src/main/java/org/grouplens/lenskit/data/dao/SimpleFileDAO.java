@@ -32,8 +32,8 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.data.AbstractRatingCursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.slf4j.Logger;
@@ -63,11 +63,11 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject<Closeable> {
     }
 
     public SimpleFileDAO(File file) throws FileNotFoundException {
-        this(file, System.getProperty("org.grouplens.lenskit.bench.SimpleFileDataSource.delimiter", "\t"));
+        this(file, System.getProperty("lenskit.delimiter", "\t"));
     }
 
     public SimpleFileDAO(URL url) {
-        this(url, System.getProperty("org.grouplens.lenskit.bench.SimpleFileDataSource.delimiter", "\t"));
+        this(url, System.getProperty("lenskit.delimiter", "\t"));
     }
 
     public SimpleFileDAO(URL url, String delimiter) {
@@ -105,16 +105,44 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject<Closeable> {
         }
         return new RatingScannerCursor(scanner);
     }
+    
+    /**
+     * Rating implementation for mutation by {@link RatingScannerCursor}.
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     *
+     */
+    private static class MutableRating implements Rating {
+        long uid;
+        long iid;
+        double value;
+        long timestamp;
+        
+        public long getUserId() {
+            return uid;
+        }
+        public long getItemId() {
+            return iid;
+        }
+        public double getRating() {
+            return value;
+        }
+        public long getTimestamp() {
+            return timestamp;
+        }
+        public Rating clone() {
+            return new SimpleRating(uid, iid, value, timestamp);
+        }
+    }
 
-    class RatingScannerCursor extends AbstractCursor<Rating> {
+    class RatingScannerCursor extends AbstractRatingCursor<Rating> {
         private Scanner scanner;
         private int lineno;
-        private Rating rating;
+        private MutableRating rating;
 
         public RatingScannerCursor(Scanner s) {
             lineno = 0;
             scanner = s;
-            rating = null;
+            rating = new MutableRating();
         }
 
         @Override
@@ -124,12 +152,11 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject<Closeable> {
             scanner = null;
             rating = null;
         }
-
-        @Override
-        public boolean hasNext() {
-            if (scanner == null) return false;
-
-            while (rating == null && scanner.hasNextLine()) {
+        
+        protected Rating poll() {
+            if (scanner == null) return null;
+            
+            while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 lineno += 1;
                 String[] fields = splitter.split(line);
@@ -138,24 +165,17 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject<Closeable> {
                                  file, lineno);
                     continue;
                 }
-                long uid = Long.parseLong(fields[0]);
-                long iid = Long.parseLong(fields[1]);
-                double r = Double.parseDouble(fields[2]);
-                long ts = -1;
+                rating.uid = Long.parseLong(fields[0]);
+                rating.iid = Long.parseLong(fields[1]);
+                rating.value = Double.parseDouble(fields[2]);
+                rating.timestamp = -1;
                 if (fields.length >= 4)
-                    ts = Long.parseLong(fields[3]);
+                    rating.timestamp = Long.parseLong(fields[3]);
 
-                rating = new SimpleRating(uid, iid, r, ts);
+                return rating;
             }
-            return rating != null;
-        }
-
-        @Override
-        public Rating next() {
-            if (!hasNext()) throw new NoSuchElementException();
-            Rating r = rating;
-            rating = null;
-            return r;
+            
+            return null;
         }
     }
     

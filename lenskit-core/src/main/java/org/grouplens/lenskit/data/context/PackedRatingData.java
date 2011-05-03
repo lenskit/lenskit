@@ -88,5 +88,9 @@ final class PackedRatingData {
 		public long getUserId() {
 			return userIndex.getId(getUserIndex());
 		}
+		
+		public IndexedRating clone() {
+		    return (IndexedRating) super.clone();
+		}
 	}
 }
