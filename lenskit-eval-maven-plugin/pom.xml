@@ -36,6 +36,13 @@
     	<type>jar</type>
     	<scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.grouplens.common</groupId>
+    	<artifactId>slf4j-maven-shim</artifactId>
+    	<version>0.2-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <reporting>
@@ -64,5 +71,9 @@
       </plugin>
     </plugins>
   </reporting>
+  <dependencyManagement>
+  	<dependencies>
+  	</dependencies>
+  </dependencyManagement>
         
 </project>

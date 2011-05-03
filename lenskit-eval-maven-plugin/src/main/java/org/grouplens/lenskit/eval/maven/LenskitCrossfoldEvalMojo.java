@@ -34,6 +34,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.common.slf4j.maven.MavenLoggerFactory;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -146,7 +147,7 @@ public class LenskitCrossfoldEvalMojo extends AbstractMojo {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(loader);
         try {
-            MavenLoggerFactory.getInstance().setLog(getLog());
+            MavenLoggerFactory.setLog(getLog());
             UserRatingProfileSplitter splitter;
             if (splitMode.toLowerCase().equals("random"))
                 splitter = new RandomUserRatingProfileSplitter(holdoutFraction);
