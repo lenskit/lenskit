@@ -52,7 +52,7 @@ import org.junit.Test;
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
     private RatingDataAccessObject dao;
-    private RatingBuildContext ratings;
+    private RatingBuildContext ratingBuildContext;
 
     @Before
     public void createRatingSource() {
@@ -63,7 +63,7 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(8, 5, 4));
         dao = new RatingCollectionDAO(rs);
         dao.openSession();
-        ratings = PackedRatingBuildContext.make(dao);
+        ratingBuildContext = PackedRatingBuildContext.make(dao);
     }
     
     @After
@@ -77,7 +77,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testMeanBaseline() {
-        BaselinePredictor pred = new GlobalMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new GlobalMeanPredictor.Builder().build(ratingBuildContext);
         SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(10l, map, itemSet(2l));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2l), 0.00001);
@@ -85,7 +85,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserMeanBaseline() {
-        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratingBuildContext);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -100,7 +100,7 @@ public class TestMeanPredictor {
     @Test
     public void testUserMeanBaselineNoFastutil() {
         // FIXME: is this method still necessary?
-        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratingBuildContext);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);
@@ -125,7 +125,7 @@ public class TestMeanPredictor {
      */
     @Test
     public void testUserMeanBaselineFallback() {
-        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new UserMeanPredictor.Builder().build(ratingBuildContext);
         SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(10l, map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
@@ -133,7 +133,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testItemMeanBaseline() {
-        BaselinePredictor pred = new ItemMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new ItemMeanPredictor.Builder().build(ratingBuildContext);
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, values);
@@ -155,7 +155,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserItemMeanBaseline() {
-        BaselinePredictor pred = new ItemUserMeanPredictor.Builder().build(ratings);
+        BaselinePredictor pred = new ItemUserMeanPredictor.Builder().build(ratingBuildContext);
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings);

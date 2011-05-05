@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import java.util.Collection;
 
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -70,7 +70,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 	 * @param smoothing			smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
 	 * @param ratings			used to calculate global variance for use in smoothing calculations.
 	 */
-	public UserVarianceNormalizer(double smoothing, RatingBuildContext ratings) {
+	public UserVarianceNormalizer(double smoothing, RatingSnapshot ratings) {
 		this.smoothing = smoothing;
 		
 		// Don't bother wasting cycles if not smoothing

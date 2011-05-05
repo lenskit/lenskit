@@ -30,10 +30,10 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
-import org.grouplens.lenskit.data.context.AbstractRatingBuildContext;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.AbstractRatingSnapshot;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * 
  * <p>This class wraps the rating build context to provide pre-normalized ratings.
  * It should share the same scope as the rating build context, so if you re-scope
- * {@link PackedRatingBuildContext} (or some other rating build context implementation)
+ * {@link PackedRatingSnapshot} (or some other rating build context implementation)
  * in your Guice configuration, you must re-scope this class as well.
  * 
  * <p>This class
@@ -66,15 +66,15 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
+public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
     /**
      * A RecommenderComponentBuilder used to create
-     * NormalizedRatingBuildContexts with a specific
+     * NormalizedRatingSnapshots with a specific
      * {@link UserRatingVectorNormalizer}.
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<NormalizedRatingBuildContext> {
+    public static class Builder extends AbstractRecommenderComponentBuilder<NormalizedRatingSnapshot> {
         private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizer;
         
         public Builder() {
@@ -90,35 +90,35 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
         }
         
         @Override
-        protected NormalizedRatingBuildContext buildNew(RatingBuildContext context) {
+        protected NormalizedRatingSnapshot buildNew(RatingBuildContext context) {
             UserRatingVectorNormalizer n = normalizer.build(context);
-            return new NormalizedRatingBuildContext(context, n);
+            return new NormalizedRatingSnapshot(context.ratingSnapshot(), n);
         }
     }
     
-    private static final Logger logger = LoggerFactory.getLogger(NormalizedRatingBuildContext.class);
-    private final RatingBuildContext buildContext;
+    private static final Logger logger = LoggerFactory.getLogger(NormalizedRatingSnapshot.class);
+    private final RatingSnapshot snapshot;
     private final UserRatingVectorNormalizer normalizer;
     private SparseVector[] normedData;
     
-    public NormalizedRatingBuildContext(RatingBuildContext context, UserRatingVectorNormalizer norm) {
-        buildContext = context;
+    public NormalizedRatingSnapshot(RatingSnapshot snapshot, UserRatingVectorNormalizer norm) {
+        this.snapshot = snapshot;
         normalizer = norm;
     }
     
     private synchronized void requireNormedData() {
         if (normedData == null) {
             logger.debug("Computing normalized build context");
-            LongCollection users = buildContext.getUserIds();
+            LongCollection users = snapshot.getUserIds();
             normedData = new SparseVector[users.size()];
             LongIterator uit = users.iterator();
-            Index uidx = buildContext.userIndex();
+            Index uidx = snapshot.userIndex();
             int ndone = 0; // for debugging
             while (uit.hasNext()) {
                 final long uid = uit.nextLong();
                 final int i = uidx.getIndex(uid);
                 assert normedData[i] == null;
-                MutableSparseVector rv = Ratings.userRatingVector(buildContext.getUserRatings(uid));
+                MutableSparseVector rv = Ratings.userRatingVector(snapshot.getUserRatings(uid));
                 normalizer.normalize(uid, rv);
                 normedData[i] = rv;
                 ndone++;
@@ -130,42 +130,37 @@ public class NormalizedRatingBuildContext extends AbstractRatingBuildContext {
     public UserRatingVectorNormalizer getNormalizer() {
     	return normalizer;
     }
-    
-    @Override
-    public RatingDataAccessObject getDAO() {
-        return buildContext.getDAO();
-    }
 
     @Override
     public LongCollection getUserIds() {
-        return buildContext.getUserIds();
+        return snapshot.getUserIds();
     }
 
     @Override
     public LongCollection getItemIds() {
-        return buildContext.getItemIds();
+        return snapshot.getItemIds();
     }
 
     @Override
     public Index userIndex() {
-        return buildContext.userIndex();
+        return snapshot.userIndex();
     }
 
     @Override
     public Index itemIndex() {
-        return buildContext.itemIndex();
+        return snapshot.itemIndex();
     }
 
     @Override
     public FastCollection<IndexedRating> getRatings() {
         requireNormedData();
-        return new NormalizingCollection(normedData, buildContext.getRatings());
+        return new NormalizingCollection(normedData, snapshot.getRatings());
     }
 
     @Override
     public FastCollection<IndexedRating> getUserRatings(long userId) {
         requireNormedData();
-        return new NormalizingCollection(normedData, buildContext.getUserRatings(userId));
+        return new NormalizingCollection(normedData, snapshot.getUserRatings(userId));
     }
 
     /**

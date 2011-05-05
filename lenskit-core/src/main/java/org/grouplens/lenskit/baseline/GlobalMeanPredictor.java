@@ -40,7 +40,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
 
         @Override
         protected GlobalMeanPredictor buildNew(RatingBuildContext context) {
-            double avg = computeMeanRating(context.getRatings().fastIterator());
+            double avg = computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
             return new GlobalMeanPredictor(avg);
         }
     }

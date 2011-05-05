@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
-import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
 import org.grouplens.lenskit.eval.predict.NDCGEvaluator;

@@ -70,7 +70,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
         @Override
         protected ItemMeanPredictor buildNew(RatingBuildContext context) {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(context.ratingSnapshot().getRatings().fastIterator(), damping, itemMeans);
             
             return new ItemMeanPredictor(itemMeans, globalMean);
         }
