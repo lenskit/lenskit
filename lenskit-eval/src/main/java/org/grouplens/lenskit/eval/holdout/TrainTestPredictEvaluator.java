@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.holdout;
 
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.util.List;
 
@@ -45,14 +46,23 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    Connection connection;
-    String trainingTable;
-    String testTable;
+    private Connection connection;
+    private String trainingTable;
+    private String testTable;
+    private PrintStream progressStream;
 
     public TrainTestPredictEvaluator(Connection dbc, String train, String test) {
         connection = dbc;
         trainingTable = train;
         testTable = test;
+    }
+    
+    /**
+     * Set print stream for outputting progress within evaluations.
+     * @param s
+     */
+    public void setProgressStream(PrintStream s) {
+        progressStream = s;
     }
     
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
@@ -67,6 +77,9 @@ public class TrainTestPredictEvaluator {
         JDBCRatingDAO testDao = new JDBCRatingDAO(null, testfac);
         testDao.openSession(connection);
         try {
+            int nusers = testDao.getUserCount();
+            logger.debug("Evaluating algorithms with {} users", nusers);
+            
             for (AlgorithmInstance algo: algorithms) {
                 AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
                 RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
@@ -77,17 +90,25 @@ public class TrainTestPredictEvaluator {
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
-                logger.debug("Testing {}", algo.getName());
+                logger.info("Testing {}", algo.getName());
                 acc.startTestTimer();
 
                 Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
                 try {
+                    int n = 0;
                     for (UserRatingProfile p: userProfiles) {
+                        if (progressStream != null) {
+                            progressStream.format("users: %d / %d\r", n, nusers);
+                        }
+                        
                         SparseVector ratings = Ratings.userRatingVector(p.getRatings());
                         SparseVector predictions =
                             pred.predict(p.getUser(), ratings.keySet());
                         acc.evaluatePrediction(p.getUser(), ratings, predictions);
+                        n++;
                     }
+                    if (progressStream != null)
+                        progressStream.format("tested users: %d / %d\n", n, nusers);
                 } finally {
                     userProfiles.close();
                 }

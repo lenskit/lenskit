@@ -172,6 +172,8 @@ public class TrainTestEvalMojo extends AbstractMojo {
                     Connection dbc = DriverManager.getConnection(dsn);
                     getLog().debug("Creating evaluator");
                     eval = new TrainTestPredictEvaluator(dbc, "train", "test");
+                    if (getLog().isInfoEnabled())
+                        eval.setProgressStream(System.out);
                     getLog().debug("Evaluating algorithms");
                     eval.evaluateAlgorithms(algorithms, output.makeAccumulator(name));
                 }
