@@ -291,7 +291,7 @@ public class CrossfoldSplitMojo extends AbstractMojo {
                 }
                 
                 // Insert test data
-                for (Rating r: urs.subList(0, midpt)) {
+                for (Rating r: urs.subList(midpt, urs.size())) {
                     long iid = r.getItemId();
                     double v = r.getRating();
                     long ts = r.getTimestamp();
