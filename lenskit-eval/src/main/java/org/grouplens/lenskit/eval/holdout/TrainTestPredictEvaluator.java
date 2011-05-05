@@ -23,13 +23,17 @@ import java.sql.Connection;
 import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -83,9 +87,16 @@ public class TrainTestPredictEvaluator {
             for (AlgorithmInstance algo: algorithms) {
                 AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
                 RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
+                RatingDataAccessObject tdao = dao;
+                if (algo.getPreload()) {
+                    logger.info("Preloading rating data for {}", algo.getName());
+                    List<Rating> ratings = Cursors.makeList(dao.getRatings());
+                    tdao = new RatingCollectionDAO(ratings);
+                    tdao.openSession();
+                }
                 logger.debug("Building {}", algo.getName());
                 acc.startBuildTimer();
-                RatingBuildContext rbc = PackedRatingBuildContext.make(dao);
+                RatingBuildContext rbc = PackedRatingBuildContext.make(tdao);
                 RecommenderEngine rec = builder.build(rbc);
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
@@ -114,6 +125,10 @@ public class TrainTestPredictEvaluator {
                 }
 
                 acc.finish();
+                // cleanup, but no biggie if it doesn't happen since it's an
+                // in-memory data source
+                if (algo.getPreload())
+                    tdao.closeSession();
             }
         } finally {
             dao.closeSession();
