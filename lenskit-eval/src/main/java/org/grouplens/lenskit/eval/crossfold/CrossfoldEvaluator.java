@@ -79,7 +79,7 @@ public class CrossfoldEvaluator {
             String test = manager.testSet(i);
             TrainTestPredictEvaluator eval =
                 new TrainTestPredictEvaluator(manager.getConnection(), train, test);
-            ResultAccumulator accum = mgr.makeAccumulator(i);
+            ResultAccumulator accum = mgr.makeAccumulator(String.valueOf(i));
             eval.evaluateAlgorithms(algorithms, accum);
         }
         mgr.finish();

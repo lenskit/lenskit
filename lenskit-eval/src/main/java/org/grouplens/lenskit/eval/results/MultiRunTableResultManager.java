@@ -96,7 +96,7 @@ public class MultiRunTableResultManager {
     	}
     }
     
-    public ResultAccumulator makeAccumulator(final int run) {
+    public ResultAccumulator makeAccumulator(final String run) {
         return new ResultAccumulator() {
             @Override
             public AlgorithmTestAccumulator makeAlgorithmAccumulator(
@@ -122,10 +122,10 @@ public class MultiRunTableResultManager {
         private List<PredictionEvaluator.Accumulator> evalAccums;
         TaskTimer buildTimer;
         TaskTimer testTimer;
-        int run;
+        String run;
         AlgorithmInstance algo;
         
-        MRTAlgorithmTestAccumulator(int r, AlgorithmInstance a) {
+        MRTAlgorithmTestAccumulator(String r, AlgorithmInstance a) {
         	run = r;
         	algo = a;
             evalAccums = new ArrayList<PredictionEvaluator.Accumulator>(evaluators.size());

@@ -19,38 +19,41 @@
 package org.grouplens.lenskit.eval.maven;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.common.slf4j.maven.MavenLoggerFactory;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
-import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
-import org.grouplens.lenskit.eval.crossfold.RandomUserRatingProfileSplitter;
-import org.grouplens.lenskit.eval.crossfold.TimestampUserRatingProfileSplitter;
-import org.grouplens.lenskit.eval.crossfold.UserRatingProfileSplitter;
+import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
 import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
+import org.grouplens.lenskit.eval.results.MultiRunTableResultManager;
 
 /**
- * Run a crossfold evaluation with LensKit.
- * 
- * @goal crossfold-eval
+ * Do a train-test evaluation of a set of algorithms.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @goal train-test
  * @requiresDependencyResolution runtime
  */
-public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
+public class TrainTestEvalMojo extends AbstractMojo {
     /**
      * The project.
      * @parameter expression="${project}"
@@ -61,18 +64,25 @@ public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
     private MavenProject project;
     
     /**
+     * The database driver.
+     * @parameter expression="${lenskit.databaseDriver}"
+     */
+    private String databaseDriver;
+    
+    /**
+     * The databases for evaluation.
+     * @parameter expression="${lenskit.databases}"
+     * @required
+     */
+    private FileSet databases;
+    
+    /**
      * Location of the output file.
      * 
      * @parameter expression="${lenskit.outputFile}" default-value="${project.build.directory}/lenskit.csv"
      * @required
      */
     private File outputFile;
-    
-    /**
-     * @parameter expression="${lenskit.table}" default-value="ratings"
-     * @required
-     */
-    private String table;
     
     /**
      * Location of the output class directory for this project's build.
@@ -91,24 +101,6 @@ public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
      * @parameter expression="${lenskit.recommenderScripts}"
      */
     private FileSet recommenderScripts;
-    
-    /**
-     * Split mode.
-     * @parameter expression="${lenskit.splitMode}" default-value="random"
-     */
-    private String splitMode;
-    
-    /**
-     * Fold count.
-     * @parameter expression="${lenskit.numFolds}" default-value="5"
-     */
-    private int numFolds;
-    
-    /**
-     * Holdout fraction for test users.
-     * @parameter expression="${lenskit.holdoutFraction}" default-value="0.333333"
-     */
-    private double holdoutFraction;
 
     public void execute() throws MojoExecutionException {
         if (databaseDriver != null) {
@@ -134,14 +126,9 @@ public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
         Thread.currentThread().setContextClassLoader(loader);
         try {
             MavenLoggerFactory.setLog(getLog());
-            UserRatingProfileSplitter splitter;
-            if (splitMode.toLowerCase().equals("random"))
-                splitter = new RandomUserRatingProfileSplitter(holdoutFraction);
-            else if (splitMode.toLowerCase().equals("timestamp"))
-                splitter = new TimestampUserRatingProfileSplitter(holdoutFraction);
-            else
-                throw new MojoExecutionException("Invalid split mode: " + splitMode);
 
+            FileSetManager fsmgr = new FileSetManager();
+            
             List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
             try {
                 if (recommenderScripts != null) {
@@ -149,7 +136,6 @@ public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
                     getLog().debug("Directory: " + recommenderScripts.getDirectory());
                     getLog().debug("Excludes: " + recommenderScripts.getExcludes());
                     getLog().debug("Includes: " + recommenderScripts.getIncludes());
-                    FileSetManager fsmgr = new FileSetManager();
                     String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
                     File base = new File(recommenderScripts.getDirectory());
                     for (String name: scriptNames) {
@@ -164,23 +150,33 @@ public class LenskitCrossfoldEvalMojo extends AbstractDatabaseMojo {
             } catch (InvalidRecommenderException e) {
                 throw new MojoExecutionException("Invalid recommender", e);
             }
-            CrossfoldEvaluator eval;
-            try {
-                String db = "jdbc:sqlite:" + databaseFile;
-                eval = new CrossfoldEvaluator(db, table, algorithms, numFolds, splitter, null);
-            } catch (IOException e) {
-                throw new MojoExecutionException("Error loading evaluator.", e);
-            }
+            
             List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
             evaluators.add(new CoverageEvaluator());
             evaluators.add(new MAEEvaluator());
             evaluators.add(new RMSEEvaluator());
             evaluators.add(new NDCGEvaluator());
-
+            
+            MultiRunTableResultManager output =
+                new MultiRunTableResultManager(algorithms, evaluators, outputFile);
+            
+            TrainTestPredictEvaluator eval;
             try {
-                eval.run(evaluators, outputFile);
-            } catch (Exception e) {
-                throw new MojoExecutionException("Unexpected failure running recommender evaluation.", e);
+                String[] dbNames = fsmgr.getIncludedFiles(databases);
+                for (String db: dbNames) {
+                    File dbf = new File(databases.getDirectory(), db);
+                    String name = FileUtils.basename(db);
+                    getLog().info("Running evaluation on " + name);
+                    String dsn = "jdbc:sqlite:" + dbf.getPath();
+                    getLog().debug("Opening database " + dsn);
+                    Connection dbc = DriverManager.getConnection(dsn);
+                    getLog().debug("Creating evaluator");
+                    eval = new TrainTestPredictEvaluator(dbc, "train", "test");
+                    getLog().debug("Evaluating algorithms");
+                    eval.evaluateAlgorithms(algorithms, output.makeAccumulator(name));
+                }
+            } catch (SQLException e) {
+                throw new MojoExecutionException("Error opening database", e);
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
