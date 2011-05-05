@@ -19,9 +19,6 @@
 package org.grouplens.lenskit.eval.predict;
 
 import static java.lang.Math.log;
-import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 
@@ -63,27 +60,6 @@ public class NDCGEvaluator implements PredictionEvaluator {
     }
     
     /**
-     * Sort the keys of a vector in decreasing order by value.
-     * @param vector The vector to query.
-     * @return The {@link SparseVector#keySet()} of <var>vector</var>, sorted
-     * by value.
-     */
-    static LongList sortKeys(final SparseVector vector) {
-        long[] items = vector.keySet().toLongArray();
-        for (int i = 0; i < items.length; i++) {
-            if (Double.isNaN(vector.get(items[i])))
-                throw new RuntimeException("Unexpected NaN");
-        }
-        LongArrays.quickSort(items, new AbstractLongComparator() {
-            @Override
-            public int compare(long k1, long k2) {
-                return Double.compare(vector.get(k2), vector.get(k1));
-            }
-        });
-        return LongArrayList.wrap(items);
-    }
-    
-    /**
      * Compute the DCG of a list of items with respect to a value vector.
      */
     static double computeDCG(LongList items, SparseVector values) {
@@ -113,8 +89,8 @@ public class NDCGEvaluator implements PredictionEvaluator {
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-            LongList ideal = sortKeys(ratings);
-            LongList actual = sortKeys(predictions);
+            LongList ideal = RankEvaluationUtils.sortKeys(ratings);
+            LongList actual = RankEvaluationUtils.sortKeys(predictions);
             double idealGain = computeDCG(ideal, ratings);
             double gain = computeDCG(actual, ratings);
             total += gain / idealGain;
