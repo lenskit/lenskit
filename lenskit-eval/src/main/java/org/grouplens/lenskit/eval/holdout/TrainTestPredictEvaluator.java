@@ -129,6 +129,7 @@ public class TrainTestPredictEvaluator {
                 // in-memory data source
                 if (algo.getPreload())
                     tdao.closeSession();
+                tdao = null;
             }
         } finally {
             dao.closeSession();
