@@ -24,6 +24,8 @@ import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rating predictor that returns the user's average rating for all predictions.
@@ -36,6 +38,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  *
  */
 public class UserMeanPredictor implements BaselinePredictor {
+    private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**
      * A builder that creates UserMeanPredictors.
      * 
@@ -44,6 +47,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     public static class Builder extends AbstractRecommenderComponentBuilder<UserMeanPredictor> {
         @Override
         protected UserMeanPredictor buildNew(RatingBuildContext context) {
+            logger.debug("Building new user mean predictor");
             double mean = GlobalMeanPredictor.computeMeanRating(context.getRatings().fastIterator());
             return new UserMeanPredictor(mean);
         }

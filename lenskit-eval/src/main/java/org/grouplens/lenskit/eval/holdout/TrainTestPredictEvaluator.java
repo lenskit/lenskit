@@ -18,9 +18,10 @@
  */
 package org.grouplens.lenskit.eval.holdout;
 
-import java.util.Collection;
+import java.sql.Connection;
 import java.util.List;
 
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderEngine;
@@ -28,7 +29,8 @@ import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
+import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -43,37 +45,58 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    private RatingDataAccessObject trainingDao;
-    private Collection<UserRatingProfile> testProfiles;
+    Connection connection;
+    String trainingTable;
+    String testTable;
 
-    public TrainTestPredictEvaluator(RatingDataAccessObject train,
-            Collection<UserRatingProfile> test) {
-        trainingDao = train;
-        testProfiles = test;
+    public TrainTestPredictEvaluator(Connection dbc, String train, String test) {
+        connection = dbc;
+        trainingTable = train;
+        testTable = test;
     }
     
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
-        for (AlgorithmInstance algo: algorithms) {
-            AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-            RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
-            logger.debug("Building {}", algo.getName());
-            acc.startBuildTimer();
-            RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao);
-            RecommenderEngine rec = builder.build(rbc);
-            RatingPredictor pred = rec.getRatingPredictor();
-            acc.finishBuild();
-            
-            logger.debug("Testing {}", algo.getName());
-            acc.startTestTimer();
-            
-            for (UserRatingProfile p: testProfiles) {
-                SparseVector ratings = Ratings.userRatingVector(p.getRatings());
-                SparseVector predictions =
-                    pred.predict(p.getUser(), ratings.keySet());
-                acc.evaluatePrediction(p.getUser(), ratings, predictions);
+        BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
+        sfac.setTableName(trainingTable);
+        JDBCRatingDAO dao = new JDBCRatingDAO(null, sfac);
+        dao.openSession(connection);
+        
+        BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
+        testfac.setTableName(testTable);
+        testfac.setTimestampColumn(null);
+        JDBCRatingDAO testDao = new JDBCRatingDAO(null, testfac);
+        testDao.openSession(connection);
+        try {
+            for (AlgorithmInstance algo: algorithms) {
+                AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
+                RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
+                logger.debug("Building {}", algo.getName());
+                acc.startBuildTimer();
+                RatingBuildContext rbc = PackedRatingBuildContext.make(dao);
+                RecommenderEngine rec = builder.build(rbc);
+                RatingPredictor pred = rec.getRatingPredictor();
+                acc.finishBuild();
+
+                logger.debug("Testing {}", algo.getName());
+                acc.startTestTimer();
+
+                Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
+                try {
+                    for (UserRatingProfile p: userProfiles) {
+                        SparseVector ratings = Ratings.userRatingVector(p.getRatings());
+                        SparseVector predictions =
+                            pred.predict(p.getUser(), ratings.keySet());
+                        acc.evaluatePrediction(p.getUser(), ratings, predictions);
+                    }
+                } finally {
+                    userProfiles.close();
+                }
+
+                acc.finish();
             }
-            
-            acc.finish();
+        } finally {
+            dao.closeSession();
+            testDao.closeSession();
         }
     }
 }

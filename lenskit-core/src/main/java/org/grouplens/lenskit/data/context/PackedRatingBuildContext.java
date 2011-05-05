@@ -35,6 +35,8 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A build context that an in-memory snapshot in packed arrays.
@@ -48,6 +50,7 @@ import org.grouplens.lenskit.util.FastCollection;
  *
  */
 public class PackedRatingBuildContext extends AbstractRatingBuildContext {
+    private static final Logger logger = LoggerFactory.getLogger(PackedRatingBuildContext.class);
     private final RatingDataAccessObject dao;
     
 	private PackedRatingData data;
@@ -145,6 +148,7 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	 * @return A new rating build context.
 	 */
 	public static PackedRatingBuildContext make(RatingDataAccessObject dao) {
+	    logger.debug("Packing build context");
 	    Cursor<Rating> ratings = null;
 	    
 	    IntArrayList users;
@@ -215,6 +219,8 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
 	                } // fall through - not null && not newer
 	            }
 	        }
+	        
+	        logger.debug("Packed {} ratings", users.size());
 	    } finally {
 	        if (ratings != null)
 	            ratings.close();

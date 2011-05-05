@@ -128,8 +128,9 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
         return Cursors.wrap(ratings.iterator());
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getUserRatingProfiles()
+    /**
+     * Implement {@link RatingDataAccessObject#getUserRatingProfiles()} by
+     * processing the output of {@link #getRatings(SortOrder)} sorted by user ID.
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
@@ -296,6 +297,23 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
     }
     
     /**
+     * Explicitly open a new session object (for additional session-opening
+     * methods).
+     * @param session
+     */
+    protected void openSession(S session) {
+        if (isSessionOpen()) {
+            try {
+                session.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Error closing new session for already-open thread", e);
+            }
+            throw new IllegalStateException("Session already open");
+        }
+        activeSession.set(session);
+    }
+    
+    /**
      * Close the session.
      * @review Is logging and swallowing errors the appropriate approach?
      */
@@ -309,7 +327,7 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
             try {
                 session.close();
             } catch (IOException e) {
-                logger.error("Error closing session", e);
+                logger.error("Error closing session: " + e.getMessage(), e);
             }
         }
     }

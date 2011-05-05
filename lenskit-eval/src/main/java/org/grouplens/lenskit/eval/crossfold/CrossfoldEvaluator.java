@@ -20,13 +20,10 @@ package org.grouplens.lenskit.eval.crossfold;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
 import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
@@ -49,22 +46,22 @@ public class CrossfoldEvaluator {
     private final List<AlgorithmInstance> algorithms;
     private final File predictionFile;
     
-    public CrossfoldEvaluator(RatingDataAccessObject ratings,
+    public CrossfoldEvaluator(String database, String table,
             List<AlgorithmInstance> algorithms,
             int numFolds,
             UserRatingProfileSplitter splitter,
             @Nullable File predFile) throws IOException {
         this.numFolds = numFolds;
         this.algorithms = algorithms;
-        manager = new CrossfoldManager(numFolds, ratings, splitter);
+        manager = new CrossfoldManager(numFolds, database, table, splitter);
         predictionFile = predFile;
     }
 
     // TODO Clean this up. Majorly.
-    public CrossfoldEvaluator(RatingDataAccessObject ratings,
+    public CrossfoldEvaluator(String database, String table,
             CrossfoldOptions options,
             List<AlgorithmInstance> algorithms) throws IOException {
-        this(ratings, algorithms, options.getNumFolds(),
+        this(database, table, algorithms, options.getNumFolds(),
                 (options.timeSplit() ? new TimestampUserRatingProfileSplitter(options.getHoldoutFraction())
                     : new RandomUserRatingProfileSplitter(options.getHoldoutFraction())),
                     options.predictionFile().isEmpty() ? null : new File(options.predictionFile()));
@@ -78,22 +75,15 @@ public class CrossfoldEvaluator {
 			logger.error("Could not set up prediction file", e);
 		}
         for (int i = 0; i < numFolds; i++) {
-            RatingDataAccessObject train = null;
-            try {
-                train = manager.trainingSet(i);
-                train.openSession();
-                Collection<UserRatingProfile> test = manager.testSet(i); 
-                int nusers = train.getUserCount();
-                logger.info(String.format("Running benchmark %d with %d training and %d test users",
-                                          i+1, nusers, test.size()));
-                TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(train, test);
-                ResultAccumulator accum = mgr.makeAccumulator(i);
-                eval.evaluateAlgorithms(algorithms, accum);
-            } finally {
-                if (train != null)
-                    train.closeSession();
-            }
+            String train = manager.trainingSet(i);
+            String test = manager.testSet(i);
+            TrainTestPredictEvaluator eval =
+                new TrainTestPredictEvaluator(manager.getConnection(), train, test);
+            ResultAccumulator accum = mgr.makeAccumulator(i);
+            eval.evaluateAlgorithms(algorithms, accum);
         }
         mgr.finish();
+        // TODO Fix the error handling for calling close
+        manager.close();
     }
 }
