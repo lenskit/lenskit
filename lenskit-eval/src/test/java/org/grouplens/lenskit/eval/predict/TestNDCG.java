@@ -38,21 +38,4 @@ public class TestNDCG {
 		assertEquals(eval.computeHLU(RankEvaluationUtils.sortKeys(v2),v2), 20.9661, 0.0001);
 		assertEquals(eval.computeHLU(RankEvaluationUtils.sortKeys(v3),v3), 20.0381, 0.0001);
 	}
-	
-	@Test void testEvaluateNDCGPredictions() {
-		
-		long[] items = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10};
-		double[] rate1 = {5, 4, 4, 3, 5, 3, 4, 3, 2, 5};
-		double[] predict1 = {5, 5, 4, 4, 4, 3, 2, 2, 3, 4};
-		double[] rate2 = {4, 5, 4, 2, 3, 1, 3, 4, 5, 2};
-		double[] predict2 = {4, 4, 5, 3, 3, 2, 4, 4, 5, 3}; //21.4109
-		MutableSparseVector ratings1 = MutableSparseVector.wrap(items,rate1);
-		MutableSparseVector predictions1 = MutableSparseVector.wrap(items, predict1);
-		MutableSparseVector ratings2 = MutableSparseVector.wrap(items, rate2);
-		MutableSparseVector predictions2 = MutableSparseVector.wrap(items, predict2);
-		Accumulator acc = (new NDCGEvaluator()).makeAccumulator();
-		acc.evaluatePredictions(0, ratings1, predictions1);
-		acc.evaluatePredictions(0, ratings2, predictions2);
-	}
-
 }
