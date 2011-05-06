@@ -61,16 +61,22 @@ public class ItemMeanPredictor implements BaselinePredictor {
      *
      */
     public static class Builder extends AbstractRecommenderComponentBuilder<ItemMeanPredictor> {
-        private double damping = 0;
+        private double smoothing = 0;
         
-        public void setDamping(double damping) {
-            this.damping = damping;
+        public void setSmoothing(double smoothing) {
+            this.smoothing = smoothing;
+        }
+        
+        public double getSmoothing() {
+        	return smoothing;
         }
         
         @Override
         protected ItemMeanPredictor buildNew(RatingBuildContext context) {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.ratingSnapshot().getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(
+                context.ratingSnapshot().getRatings().fastIterator(), 
+                smoothing, itemMeans);
             
             return new ItemMeanPredictor(itemMeans, globalMean);
         }
@@ -108,7 +114,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @return The global mean rating.  The item means are stored in
      * <var>itemMeans</var>.
      */
-    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeans) {
+    public static double computeItemAverages(Iterator<? extends Rating> ratings, double smoothing, Long2DoubleMap itemMeans) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -134,13 +140,12 @@ public class ItemMeanPredictor implements BaselinePredictor {
         logger.debug("Computed global mean {} for {} items",
                 mean, itemMeans.size());
 
-        logger.debug("Computing item means, smoothing={}", damping);
-
+        logger.debug("Computing item means, smoothing={}", smoothing);
         LongIterator items = itemCounts.keySet().iterator();
         while (items.hasNext()) {
             long iid = items.nextLong();
-            double ct = itemCounts.get(iid) + damping;
-            double t = itemMeans.get(iid) + damping * mean;
+            double ct = itemCounts.get(iid) + smoothing;
+            double t = itemMeans.get(iid) + smoothing * mean;
             double avg = 0.0;
             if (ct > 0) avg = t / ct - mean;
             itemMeans.put(iid, avg);
