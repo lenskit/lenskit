@@ -85,7 +85,6 @@ public class CrossfoldSplitMojo extends AbstractMojo {
     /**
      * The delimiter for parsing the input file.
      * @parameter expression="${lenskit.delimiter}"
-     * @required
      */
     private String delimiter = "\t";
     
