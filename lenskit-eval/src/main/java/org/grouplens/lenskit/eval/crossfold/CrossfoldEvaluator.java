@@ -28,7 +28,7 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
 import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
-import org.grouplens.lenskit.eval.results.MultiRunTableResultManager;
+import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +68,7 @@ public class CrossfoldEvaluator {
     }
 
     public void run(List<PredictionEvaluator> evaluators, File output) {
-        MultiRunTableResultManager mgr = new MultiRunTableResultManager(algorithms, evaluators, output);
+        AlgorithmEvaluationRecipe mgr = new AlgorithmEvaluationRecipe(algorithms, evaluators, output);
         try {
 			mgr.setPredictionOutput(predictionFile);
 		} catch (IOException e) {

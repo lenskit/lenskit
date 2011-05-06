@@ -26,7 +26,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -44,12 +43,7 @@ import org.grouplens.common.slf4j.maven.MavenLoggerFactory;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
-import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
-import org.grouplens.lenskit.eval.predict.MAEEvaluator;
-import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
-import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
-import org.grouplens.lenskit.eval.results.MultiRunTableResultManager;
+import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
 
 /**
@@ -93,10 +87,10 @@ public class TrainTestEvalMojo extends AbstractMojo {
     /**
      * Location of the output file.
      * 
-     * @parameter expression="${lenskit.outputFile}" default-value="${project.build.directory}/lenskit.csv"
+     * @parameter expression="${lenskit.outputDirectory}" default-value="${project.build.directory}/lenskit-results"
      * @required
      */
-    private File outputFile;
+    private File outputDirectory;
     
     /**
      * Location of the output class directory for this project's build.
@@ -105,14 +99,9 @@ public class TrainTestEvalMojo extends AbstractMojo {
     private File classDirectory;
     
     /**
-     * Location of the recommender configuration script.
-     * @parameter expression="${lenskit.recommenderScript}"
-     */
-    private File recommenderScript;
-    
-    /**
      * Set of recommender scripts.
      * @parameter expression="${lenskit.recommenderScripts}"
+     * @required
      */
     private FileSet recommenderScripts;
     
@@ -134,8 +123,6 @@ public class TrainTestEvalMojo extends AbstractMojo {
         // Before we can run, we need to replace our class loader to include
         // the project's output directory.  Kinda icky, but it's the brakes.
         // TODO: find a better way to set up our class loader
-        if (recommenderScript == null && recommenderScripts == null)
-            throw new MojoExecutionException("No recommender script(s) specified");
         URL outputUrl;
         try {
             outputUrl = classDirectory.toURI().toURL();
@@ -150,36 +137,25 @@ public class TrainTestEvalMojo extends AbstractMojo {
 
             FileSetManager fsmgr = new FileSetManager();
             
-            List<AlgorithmInstance> algorithms = new LinkedList<AlgorithmInstance>();
+            List<AlgorithmEvaluationRecipe> algorithms = new ArrayList<AlgorithmEvaluationRecipe>();
             try {
                 if (recommenderScripts != null) {
                     getLog().debug("Loading multiple recommender scripts");
-                    getLog().debug("Directory: " + recommenderScripts.getDirectory());
-                    getLog().debug("Excludes: " + recommenderScripts.getExcludes());
-                    getLog().debug("Includes: " + recommenderScripts.getIncludes());
                     String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
-                    File base = new File(recommenderScripts.getDirectory());
+                    String dir = recommenderScripts.getDirectory();
                     for (String name: scriptNames) {
-                        File scriptFile = new File(base, name);
-                        getLog().info("Loading recommender from " + scriptFile.getPath());
-                        algorithms.add(AlgorithmInstance.load(scriptFile, loader));                    
+                        String fn = FileUtils.catPath(dir, name);
+                        getLog().info("Loading recommender from " + fn);
+                        
+                        String outfn = FileUtils.removeExtension(fn) + ".js";
+                        File outf = new File(outputDirectory, outfn);
+                        outf.mkdirs();
+                        algorithms.add(AlgorithmEvaluationRecipe.load(new File(fn), outf));                    
                     }
                 }
-
-                if (recommenderScript != null)
-                    algorithms.add(AlgorithmInstance.load(recommenderScript, loader));
             } catch (InvalidRecommenderException e) {
                 throw new MojoExecutionException("Invalid recommender", e);
             }
-            
-            List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
-            evaluators.add(new CoverageEvaluator());
-            evaluators.add(new MAEEvaluator());
-            evaluators.add(new RMSEEvaluator());
-            evaluators.add(new NDCGEvaluator());
-            
-            MultiRunTableResultManager output =
-                new MultiRunTableResultManager(algorithms, evaluators, outputFile);
             
             getLog().info(String.format("Evaluating recommenders in %d threads", threadCount));
             ExecutorService svc = Executors.newFixedThreadPool(threadCount);
@@ -187,28 +163,30 @@ public class TrainTestEvalMojo extends AbstractMojo {
                 List<Future<?>> results = new ArrayList<Future<?>>();
                 
                 String[] dbNames = fsmgr.getIncludedFiles(databases);
-                for (String db: dbNames) {
-                    File dbf = new File(databases.getDirectory(), db);
-                    String name = FileUtils.basename(db, ".db");
-                    String dsn = "jdbc:sqlite:" + dbf.getPath();
-                    Runnable task = new EvalTask(name, dsn, algorithms, output.makeAccumulator(name));
-                    results.add(svc.submit(task));
+                for (AlgorithmEvaluationRecipe recipe: algorithms) {
+                    for (String db: dbNames) {
+                        File dbf = new File(databases.getDirectory(), db);
+                        String name = FileUtils.basename(db, ".db");
+                        String dsn = "jdbc:sqlite:" + dbf.getPath();
+                        Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
+                            recipe.makeAccumulator(name));
+                        results.add(svc.submit(task));
+                    }
                 }
-                if (svc != null) {
-                    for (Future<?> f: results) {
-                        boolean done = false;
-                        while (!done) {
-                            try {
-                                f.get();
-                                done = true;
-                            } catch (InterruptedException e) {
-                                /* no-op, try again */
-                            } catch (ExecutionException e) {
-                                Throwable base = e;
-                                if (e.getCause() != null)
-                                    base = e;
-                                throw new MojoExecutionException("Error testing recommender", base);
-                            }
+                
+                for (Future<?> f: results) {
+                    boolean done = false;
+                    while (!done) {
+                        try {
+                            f.get();
+                            done = true;
+                        } catch (InterruptedException e) {
+                            /* no-op, try again */
+                        } catch (ExecutionException e) {
+                            Throwable base = e;
+                            if (e.getCause() != null)
+                                base = e;
+                            throw new MojoExecutionException("Error testing recommender", base);
                         }
                     }
                 }
