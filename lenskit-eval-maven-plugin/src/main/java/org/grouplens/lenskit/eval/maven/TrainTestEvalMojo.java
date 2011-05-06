@@ -28,6 +28,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -46,6 +50,7 @@ import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.eval.predict.RMSEEvaluator;
 import org.grouplens.lenskit.eval.results.MultiRunTableResultManager;
+import org.grouplens.lenskit.eval.results.ResultAccumulator;
 
 /**
  * Do a train-test evaluation of a set of algorithms.
@@ -71,12 +76,6 @@ public class TrainTestEvalMojo extends AbstractMojo {
      * @readonly
      */
     private Settings settings;
-    
-    /**
-     * The number of threads to use.
-     * @parameter expression="${threadCount}"
-     */
-    private int threadCount;
     
     /**
      * The database driver.
@@ -116,6 +115,12 @@ public class TrainTestEvalMojo extends AbstractMojo {
      * @parameter expression="${lenskit.recommenderScripts}"
      */
     private FileSet recommenderScripts;
+    
+    /**
+     * The number of evaluation threads to run.
+     * @parameter expression="${lenskit.threadCount}"
+     */
+    private int threadCount = 1;
 
     public void execute() throws MojoExecutionException {
         if (databaseDriver != null) {
@@ -176,28 +181,77 @@ public class TrainTestEvalMojo extends AbstractMojo {
             MultiRunTableResultManager output =
                 new MultiRunTableResultManager(algorithms, evaluators, outputFile);
             
-            TrainTestPredictEvaluator eval;
+            getLog().info(String.format("Evaluating recommenders in %d threads", threadCount));
+            ExecutorService svc = Executors.newFixedThreadPool(threadCount);
             try {
+                List<Future<?>> results = new ArrayList<Future<?>>();
+                
                 String[] dbNames = fsmgr.getIncludedFiles(databases);
                 for (String db: dbNames) {
                     File dbf = new File(databases.getDirectory(), db);
-                    String name = FileUtils.basename(db);
-                    getLog().info("Running evaluation on " + name);
+                    String name = FileUtils.basename(db, ".db");
                     String dsn = "jdbc:sqlite:" + dbf.getPath();
-                    getLog().debug("Opening database " + dsn);
-                    Connection dbc = DriverManager.getConnection(dsn);
-                    getLog().debug("Creating evaluator");
-                    eval = new TrainTestPredictEvaluator(dbc, "train", "test");
-                    if (getLog().isInfoEnabled() && settings.isInteractiveMode())
-                        eval.setProgressStream(System.out);
-                    getLog().debug("Evaluating algorithms");
-                    eval.evaluateAlgorithms(algorithms, output.makeAccumulator(name));
+                    Runnable task = new EvalTask(name, dsn, algorithms, output.makeAccumulator(name));
+                    results.add(svc.submit(task));
                 }
-            } catch (SQLException e) {
-                throw new MojoExecutionException("Error opening database", e);
+                if (svc != null) {
+                    for (Future<?> f: results) {
+                        boolean done = false;
+                        while (!done) {
+                            try {
+                                f.get();
+                                done = true;
+                            } catch (InterruptedException e) {
+                                /* no-op, try again */
+                            } catch (ExecutionException e) {
+                                Throwable base = e;
+                                if (e.getCause() != null)
+                                    base = e;
+                                throw new MojoExecutionException("Error testing recommender", base);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                svc.shutdown();
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+    
+    private boolean showProgress() {
+        return getLog().isInfoEnabled() && settings.isInteractiveMode() && threadCount == 1;
+    }
+    
+    class EvalTask implements Runnable {
+        private String name;
+        private String dsn;
+        private List<AlgorithmInstance> algorithms;
+        private ResultAccumulator accum;
+        
+        public EvalTask(String name, String dsn, List<AlgorithmInstance> algos, ResultAccumulator acc) {
+            this.name = name;
+            this.dsn = dsn;
+            algorithms = algos;
+            accum = acc;
+        }
+        public void run() {
+            getLog().info("Running evaluation on " + name);
+            getLog().debug("Opening database " + dsn);
+            Connection dbc;
+            try {
+                dbc = DriverManager.getConnection(dsn);
+            } catch (SQLException e) {
+                throw new RuntimeException("Error opening database", e);
+            }
+            getLog().debug("Creating evaluator");
+            TrainTestPredictEvaluator eval =
+                new TrainTestPredictEvaluator(dbc, "train", "test");
+            if (showProgress())
+                eval.setProgressStream(System.out);
+            getLog().debug("Evaluating algorithms");
+            eval.evaluateAlgorithms(algorithms, accum);
         }
     }
 }
