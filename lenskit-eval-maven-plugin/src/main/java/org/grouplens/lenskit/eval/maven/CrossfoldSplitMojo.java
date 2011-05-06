@@ -40,6 +40,7 @@ import java.util.Random;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.slf4j.maven.MavenLoggerFactory;
@@ -55,6 +56,14 @@ import org.grouplens.lenskit.data.sql.JDBCUtils;
  * @goal crossfold-split
  */
 public class CrossfoldSplitMojo extends AbstractMojo {
+    
+    /**
+     * @parameter expression="${settings}"
+     * @required
+     * @readonly
+     */
+    private Settings settings;
+    
     /**
      * The file containing rating data to split.
      * @parameter expression="${lenskit.dataFile}"
@@ -223,6 +232,8 @@ public class CrossfoldSplitMojo extends AbstractMojo {
             while (iter.hasNext())
                 userRatings.put(iter.nextLong(), new ArrayList<Rating>());
             
+            final boolean progress = getLog().isInfoEnabled() && settings.isInteractiveMode();
+            
             // take pass through ratings, collecting by user and adding to
             // training sets
             getLog().info("Processing ratings");
@@ -249,10 +260,10 @@ public class CrossfoldSplitMojo extends AbstractMojo {
                         }
                     }
                     n++;
-                    if (n % 50 == 0 && getLog().isInfoEnabled())
+                    if (progress && n % 50 == 0)
                         System.out.format("%d\r", n);
                 }
-                if (getLog().isInfoEnabled())
+                if (progress)
                     System.out.format("%d\n", n);
             } finally {
                 ratings.close();
@@ -309,10 +320,10 @@ public class CrossfoldSplitMojo extends AbstractMojo {
                 urs.clear();
                 
                 n++;
-                if (n % 50 == 0 && getLog().isInfoEnabled())
+                if (progress && n % 50 == 0)
                     System.out.format("%d\r", n);
             }
-            if (getLog().isInfoEnabled())
+            if (progress)
                 System.out.format("%d\n", n);
             
             userRatings = null;

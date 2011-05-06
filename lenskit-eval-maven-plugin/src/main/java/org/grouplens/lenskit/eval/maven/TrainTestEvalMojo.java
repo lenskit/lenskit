@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
 import org.codehaus.plexus.util.FileUtils;
@@ -62,6 +63,20 @@ public class TrainTestEvalMojo extends AbstractMojo {
      */
     @SuppressWarnings("unused")
     private MavenProject project;
+    
+    /**
+     * Whether we are in interactive mode.
+     * @parameter expression="${settings}"
+     * @required
+     * @readonly
+     */
+    private Settings settings;
+    
+    /**
+     * The number of threads to use.
+     * @parameter expression="${threadCount}"
+     */
+    private int threadCount;
     
     /**
      * The database driver.
@@ -110,6 +125,7 @@ public class TrainTestEvalMojo extends AbstractMojo {
                 throw new MojoExecutionException("Database driver " + databaseDriver + " not found");
             }
         }
+        getLog().info("Running with thread count " + threadCount);
         // Before we can run, we need to replace our class loader to include
         // the project's output directory.  Kinda icky, but it's the brakes.
         // TODO: find a better way to set up our class loader
@@ -172,7 +188,7 @@ public class TrainTestEvalMojo extends AbstractMojo {
                     Connection dbc = DriverManager.getConnection(dsn);
                     getLog().debug("Creating evaluator");
                     eval = new TrainTestPredictEvaluator(dbc, "train", "test");
-                    if (getLog().isInfoEnabled())
+                    if (getLog().isInfoEnabled() && settings.isInteractiveMode())
                         eval.setProgressStream(System.out);
                     getLog().debug("Evaluating algorithms");
                     eval.evaluateAlgorithms(algorithms, output.makeAccumulator(name));
