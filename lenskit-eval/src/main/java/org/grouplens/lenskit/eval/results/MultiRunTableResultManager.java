@@ -101,8 +101,6 @@ public class MultiRunTableResultManager {
             @Override
             public AlgorithmTestAccumulator makeAlgorithmAccumulator(
                     AlgorithmInstance algo) {
-                writer.setValue(colRun, run);
-                writer.setValue(colAlgorithm, algo.getName());
                 return new MRTAlgorithmTestAccumulator(run, algo);
             }
         };
@@ -156,16 +154,25 @@ public class MultiRunTableResultManager {
             testTimer.stop();
             logger.info("Test of {} finished in {}", algo.getName(), testTimer.elapsedPretty());
             
-            writer.setValue(colBuildTime, buildTimer.elapsed());
-            writer.setValue(colTestTime, testTimer.elapsed());
-            
-            for (PredictionEvaluator.Accumulator ea: evalAccums) {
-                ea.finalize(writer);
+            writer.startRow();
+            try {
+                writer.setValue(colRun, run);
+                writer.setValue(colAlgorithm, algo.getName());
+                writer.setValue(colBuildTime, buildTimer.elapsed());
+                writer.setValue(colTestTime, testTimer.elapsed());
+
+                for (PredictionEvaluator.Accumulator ea: evalAccums) {
+                    ea.finalize(writer);
+                }
+            } catch (RuntimeException e) {
+                writer.cancelRow();
+                throw e;
             }
+            
             try {
                 writer.finishRow();
             } catch (IOException e) {
-                logger.error("Error finishing row", e);
+                logger.error("Error finishing row: " + e.getMessage(), e);
                 throw new RuntimeException(e);
             }
         }

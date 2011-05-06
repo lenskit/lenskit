@@ -18,88 +18,32 @@
  */
 package org.grouplens.lenskit.tablewriter;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CSVWriter implements TableWriter {
+public class CSVWriter extends AbstractTableWriter {
     private Writer writer;
-    private final String[] columns;
-    private String[] values;
 
     CSVWriter(Writer w, String[] cnames) throws IOException {
+        super(cnames);
         writer = w;
-        columns = cnames;
-        writeRow(new ObjectArrayList<String>(cnames));
+        writeRow(cnames);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#finish()
-     */
     @Override
     public void finish() throws IOException {
-        if (values != null)
-            finishRow();
+        if (isRowActive())
+            throw new IllegalStateException("Row in progress");
         writer.close();
         writer = null;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#finishRow()
-     */
-    @Override
-    public void finishRow() throws IOException {
-        requireRow();
-        for (int i = 0; i < columns.length; i++) {
-            if (i > 0) writer.write(',');
-            if (values[i] != null) writer.write(values[i]);
-        }
-        writer.write('\n');
-        writer.flush();
-        values = null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#getColumnCount()
-     */
-    @Override
-    public int getColumnCount() {
-        return columns.length;
-    }
-
-    private void requireRow() {
-        if (values == null)
-            values = new String[columns.length];
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#setValue(int, long)
-     */
-    @Override
-    public void setValue(int col, long val) {
-        requireRow();
-        values[col] = Long.toString(val);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#setValue(int, double)
-     */
-    @Override
-    public void setValue(int col, double val) {
-        requireRow();
-        values[col] = Double.toString(val);
-    }
-
-    private String quote(String e) {
+    String quote(String e) {
         if (e == null)
             return "";
 
@@ -110,55 +54,18 @@ public class CSVWriter implements TableWriter {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#setValue(int, java.lang.String)
-     */
     @Override
-    public void setValue(int col, String val) {
-        requireRow();
-        values[col] = quote(val);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#writeRow(java.util.List)
-     */
-    @Override
-    public void writeRow(List<String> row) throws IOException {
-        if (row.size() > columns.length)
+    public synchronized void writeRow(String[] row) throws IOException {
+        if (row.length > columns.length)
             throw new RuntimeException("row too long");
-        if (values != null)
-            finishRow();
-        int i = 0;
-        for (String s: row) {
-            setValue(i, s);
-            i++;
-        }
-        finishRow();
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriter#writeRow(java.util.Map)
-     */
-    @Override
-    public <V> void writeRow(Map<String, V> data) throws IOException {
-        if (values != null)
-            finishRow();
+        
         for (int i = 0; i < columns.length; i++) {
-            V v = data.get(columns[i]);
-            if (v != null)
-                setValue(i, v.toString());
+            if (i > 0) writer.write(',');
+            if (i < row.length)
+                writer.write(quote(row[i]));
         }
-        finishRow();
-    }
-
-    @Override
-    public void writeRow(Object... columns) throws IOException {
-        List<String> cols = new ArrayList<String>(columns.length);
-        for (int i = 0; i < columns.length; i++) {
-            Object o = columns[i];
-            cols.add(o == null ? null : o.toString());
-        }
-        writeRow(cols);
+        writer.write('\n');
+        writer.flush();
     }
 
 }
