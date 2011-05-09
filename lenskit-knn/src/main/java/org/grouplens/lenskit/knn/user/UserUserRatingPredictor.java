@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -46,11 +48,14 @@ import com.google.common.collect.Iterables;
 public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserRatingVectorNormalizer normalizer;
+    protected final BaselinePredictor baseline;
     
-    UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf, UserRatingVectorNormalizer norm) {
+    UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf,
+        UserRatingVectorNormalizer norm, @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
         normalizer = norm;
+        this.baseline = baseline;
     }
     
     /**
@@ -88,6 +93,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         normalizeNeighborRatings(neighborhoods.values());
         long[] keys = iset.toLongArray();
         double[] preds = new double[keys.length];
+        LongArrayList missing = new LongArrayList();
         for (int i = 0; i < keys.length; i++) {
             final long item = keys[i];
             double sum = 0;
@@ -101,8 +107,22 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds[i] = sum / weight;
             } else {
                 preds[i] = Double.NaN;
+                missing.add(item);
             }
         }
+        
+        // Use the baseline
+        if (baseline != null && missing.size() > 0) {
+            LongSortedSet mset = LongSortedArraySet.ofList(missing);
+            MutableSparseVector blpreds = baseline.predict(user, ratings, mset);
+            for (int i = 0; i < keys.length; i++) {
+                // TODO make this a parallel walk to avoid excess log factor
+                if (Double.isNaN(preds[i])) {
+                    preds[i] = blpreds.get(keys[i]);
+                }
+            }
+        }
+        
         // Denormalize and return the results
         VectorTransformation vo = normalizer.makeTransformation(user, ratings);
         MutableSparseVector v = SparseVector.wrap(keys, preds, true);

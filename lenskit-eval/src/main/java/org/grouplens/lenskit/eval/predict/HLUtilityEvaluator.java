@@ -50,7 +50,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 
 	@Override
 	public void setup(TableWriterBuilder builder) {
-		colHLU = builder.addColumn("HLU");
+		colHLU = builder.addColumn("HLUtility");
 	}
 
 	public double computeHLU(LongList items, SparseVector values) {
@@ -88,7 +88,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 		public void finalize(TableWriter writer) {
 			
 			double v = totalUtil/nUsers;
-			logger.info("HLU: {}", v);
+			logger.info("Half-life utility: {}", v);
 			writer.setValue(colHLU, v);
 		}
 

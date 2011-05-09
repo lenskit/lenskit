@@ -33,12 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
-import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
@@ -47,6 +42,9 @@ import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,29 +237,27 @@ public class AlgorithmEvaluationRecipe {
     public static AlgorithmEvaluationRecipe load(File sourceFile, File outputFile) throws InvalidRecommenderException {
         logger.info("Loading recommender definition from {}", sourceFile);
         URI uri = sourceFile.toURI();
-        String xtn = FileUtils.extension(sourceFile.getName());
-        logger.debug("Loading recommender from {} with extension {}", sourceFile, xtn);
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        ScriptEngine engine = mgr.getEngineByExtension(xtn);
-        if (engine == null)
-            throw new InvalidRecommenderException(uri, "Cannot find engine for extension " + xtn);
-        ScriptEngineFactory factory = engine.getFactory();
-        logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
-        ScriptedBuilder builder = new ScriptedBuilder();
-        mgr.put("recipe", builder);
+        Context cx = Context.enter();
         try {
+            Scriptable scope = cx.initStandardObjects();
+            
+            ScriptedBuilder builder = new ScriptedBuilder();
+            Object wbld = Context.javaToJS(builder, scope);
+            ScriptableObject.putProperty(scope, "recipe", wbld);
+            Logger slog = LoggerFactory.getLogger(sourceFile.getPath());
+            ScriptableObject.putProperty(scope, "logger", Context.javaToJS(slog, scope));
+            
             Reader r = new FileReader(sourceFile);
-            engine.put(ScriptEngine.FILENAME, sourceFile.toString());
             try {
-                engine.eval(r);
+                cx.evaluateReader(scope, r, sourceFile.getPath(), 1, null);
                 return builder.build(outputFile);
             } finally {
                 r.close();
             }
-        } catch (ScriptException e) {
-            throw new InvalidRecommenderException(uri, e);
         } catch (IOException e) {
             throw new InvalidRecommenderException(uri, e);
+        } finally {
+            Context.exit();
         }
     }
     
@@ -270,7 +266,7 @@ public class AlgorithmEvaluationRecipe {
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      *
      */
-    static class ScriptedBuilder {
+    public static class ScriptedBuilder {
         List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
         List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
         
@@ -319,6 +315,7 @@ public class AlgorithmEvaluationRecipe {
         }
         
         AlgorithmEvaluationRecipe build(File file) {
+            logger.info("Loaded {} algorithms", algorithms.size());
             return new AlgorithmEvaluationRecipe(algorithms, evaluators, file);
         }
     }
