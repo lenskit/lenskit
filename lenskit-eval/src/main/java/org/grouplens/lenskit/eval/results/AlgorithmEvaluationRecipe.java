@@ -189,11 +189,12 @@ public class AlgorithmEvaluationRecipe {
                 writer.setValue(colBuildTime, buildTimer.elapsed());
                 writer.setValue(colTestTime, testTimer.elapsed());
                 
-                Map<String,String> attrs = algo.getAttributes();
+                Map<String,Object> attrs = algo.getAttributes();
                 for (Map.Entry<String, Integer> ae: algoAttrCols.entrySet()) {
                     String k = ae.getKey();
                     if (attrs.containsKey(k))
-                        writer.setValue(ae.getValue(), attrs.get(k));
+                        writer.setValue(ae.getValue(),
+                                        attrs.get(k).toString());
                 }
 
                 for (PredictionEvaluator.Accumulator ea: evalAccums) {

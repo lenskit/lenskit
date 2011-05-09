@@ -49,11 +49,11 @@ public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private @Nonnull String algoName;
     private @Nullable RecommenderComponentBuilder<RecommenderEngine> builder;
-    private @Nonnull Map<String,String> attributes;
+    private @Nonnull Map<String,Object> attributes;
     private boolean preload = false;
 
     public AlgorithmInstance() {
-        attributes = new HashMap<String,String>();
+        attributes = new HashMap<String,Object>();
     }
 
     /**
@@ -101,7 +101,7 @@ public class AlgorithmInstance {
         preload = pl;
     }
 
-    public Map<String,String> getAttributes() {
+    public Map<String,Object> getAttributes() {
         return attributes;
     }
 

@@ -142,15 +142,15 @@ public class TrainTestEvalMojo extends AbstractMojo {
                 if (recommenderScripts != null) {
                     getLog().debug("Loading multiple recommender scripts");
                     String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
-                    String dir = recommenderScripts.getDirectory();
+                    File dir = new File(recommenderScripts.getDirectory());
                     for (String name: scriptNames) {
-                        String fn = FileUtils.catPath(dir, name);
-                        getLog().info("Loading recommender from " + fn);
+                        File f = new File(dir, name);
+                        getLog().info("Loading recommender from " + f.getPath());
                         
-                        String outfn = FileUtils.removeExtension(fn) + ".js";
+                        String outfn = FileUtils.removeExtension(name) + ".csv";
                         File outf = new File(outputDirectory, outfn);
-                        outf.mkdirs();
-                        algorithms.add(AlgorithmEvaluationRecipe.load(new File(fn), outf));                    
+                        outf.getParentFile().mkdirs();
+                        algorithms.add(AlgorithmEvaluationRecipe.load(f, outf));                    
                     }
                 }
             } catch (InvalidRecommenderException e) {
