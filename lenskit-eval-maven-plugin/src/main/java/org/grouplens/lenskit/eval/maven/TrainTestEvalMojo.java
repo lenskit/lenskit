@@ -177,10 +177,9 @@ public class TrainTestEvalMojo extends AbstractMojo {
                     }
                 });
                 for (int i = 0; i < dbFiles.length; i++) {
-                    String db = dbNames[i];
                     File dbf = dbFiles[i];
                     for (AlgorithmEvaluationRecipe recipe: algorithms) {
-                        String name = FileUtils.basename(db, ".db");
+                        String name = FileUtils.basename(dbf.getName(), ".db");
                         String dsn = "jdbc:sqlite:" + dbf.getPath();
                         Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
                             recipe.makeAccumulator(name));
@@ -236,14 +235,22 @@ public class TrainTestEvalMojo extends AbstractMojo {
                 dbc = DriverManager.getConnection(dsn);
             } catch (SQLException e) {
                 throw new RuntimeException("Error opening database", e);
+            } 
+            try {
+                getLog().debug("Creating evaluator");
+                TrainTestPredictEvaluator eval =
+                    new TrainTestPredictEvaluator(dbc, "train", "test");
+                if (showProgress())
+                    eval.setProgressStream(System.out);
+                getLog().debug("Evaluating algorithms");
+                eval.evaluateAlgorithms(algorithms, accum);
+            } finally {
+                try {
+                    dbc.close();
+                } catch (SQLException e) {
+                    getLog().error(e);
+                }
             }
-            getLog().debug("Creating evaluator");
-            TrainTestPredictEvaluator eval =
-                new TrainTestPredictEvaluator(dbc, "train", "test");
-            if (showProgress())
-                eval.setProgressStream(System.out);
-            getLog().debug("Evaluating algorithms");
-            eval.evaluateAlgorithms(algorithms, accum);
         }
     }
 }
