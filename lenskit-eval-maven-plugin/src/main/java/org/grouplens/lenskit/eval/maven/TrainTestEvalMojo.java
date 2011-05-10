@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +47,8 @@ import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
 import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
+
+import com.google.common.primitives.Longs;
 
 /**
  * Do a train-test evaluation of a set of algorithms.
@@ -163,9 +167,19 @@ public class TrainTestEvalMojo extends AbstractMojo {
                 List<Future<?>> results = new ArrayList<Future<?>>();
                 
                 String[] dbNames = fsmgr.getIncludedFiles(databases);
-                for (AlgorithmEvaluationRecipe recipe: algorithms) {
-                    for (String db: dbNames) {
-                        File dbf = new File(databases.getDirectory(), db);
+                File[] dbFiles = new File[dbNames.length];
+                for (int i = 0; i < dbNames.length; i++) {
+                    dbFiles[i] = new File(databases.getDirectory(), dbNames[i]);
+                }
+                Arrays.sort(dbFiles, new Comparator<File>() {
+                    public int compare(File f1, File f2) {
+                        return Longs.compare(f1.length(), f2.length());
+                    }
+                });
+                for (int i = 0; i < dbFiles.length; i++) {
+                    String db = dbNames[i];
+                    File dbf = dbFiles[i];
+                    for (AlgorithmEvaluationRecipe recipe: algorithms) {
                         String name = FileUtils.basename(db, ".db");
                         String dsn = "jdbc:sqlite:" + dbf.getPath();
                         Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
