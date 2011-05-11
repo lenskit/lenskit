@@ -290,7 +290,7 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
     @Override
     public void openSession() {
         if (activeSession.get() != null)
-            throw new IllegalStateException("Session already open");
+            throw new IllegalStateException("RatingDao already open");
         else
             activeSession.set(openNewSession());
     }

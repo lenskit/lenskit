@@ -32,11 +32,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,21 +55,23 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  *
  */
+@Built
 public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      *
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<ItemMeanPredictor> {
+    public static class Builder extends RecommenderComponentBuilder<ItemMeanPredictor> {
         private double damping = 0;
         
+        @MeanDamping
         public void setDamping(double damping) {
             this.damping = damping;
         }
         
         @Override
-        protected ItemMeanPredictor buildNew(RatingBuildContext context) {
+        public ItemMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
             
@@ -84,31 +87,33 @@ public class ItemMeanPredictor implements BaselinePredictor {
 
     /**
      * Construct a new predictor. This assumes ownership of the provided map.
+     * 
      * @param ratings The rating data.
-     * @param smoothing The smoothing factor (see
-     * {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}).
+     * @param smoothing The smoothing factor, see
+     *            {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}
      */
-    protected ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
+    public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
         this.itemMeans = itemMeans;
         this.globalMean = globalMean;
     }
 
     /**
-     * Compute item averages from a rating data source.  Used to construct
+     * <p>
+     * Compute item averages from a rating data source. Used to construct
      * predictors that need this data.
-     *
-     * <p>This method's interface is a little weird, using an output parameter
-     * and returning the global mean, so that we can compute the global mean
-     * and the item means in a single pass through the data source.
-     *
+     * <p>
+     * This method's interface is a little weird, using an output parameter and
+     * returning the global mean, so that we can compute the global mean and the
+     * item means in a single pass through the data source.
+     * 
      * @param ratings The collection of ratings the averages are based on
-     * @param smoothing The mean smoothing factor (see {@link MeanDamping} for how
-     * this is used).
-     * @param itemMeans A map in which the means should be stored.
-     * @return The global mean rating.  The item means are stored in
-     * <var>itemMeans</var>.
+     * @param smoothing The mean smoothing factor (see {@link MeanDamping} for
+     *            how this is used).
+     * @param itemMeansResult A map in which the means should be stored.
+     * @return The global mean rating. The item means are stored in
+     *         <var>itemMeans</var>.
      */
-    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeans) {
+    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeansResult) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -116,7 +121,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
         // pass through the data.
         double total = 0.0;
         int count = 0;
-        itemMeans.defaultReturnValue(0.0);
+        itemMeansResult.defaultReturnValue(0.0);
         Long2IntMap itemCounts = new Long2IntOpenHashMap();
         itemCounts.defaultReturnValue(0);
 
@@ -126,13 +131,13 @@ public class ItemMeanPredictor implements BaselinePredictor {
             double v = r.getRating();
             total += v;
             count++;
-            itemMeans.put(i, v + itemMeans.get(i));
+            itemMeansResult.put(i, v + itemMeansResult.get(i));
             itemCounts.put(i, 1 + itemCounts.get(i));
         }
 
         final double mean = count > 0 ? total / count : 0;
         logger.debug("Computed global mean {} for {} items",
-                mean, itemMeans.size());
+                mean, itemMeansResult.size());
 
         logger.debug("Computing item means, smoothing={}", damping);
 
@@ -140,10 +145,10 @@ public class ItemMeanPredictor implements BaselinePredictor {
         while (items.hasNext()) {
             long iid = items.nextLong();
             double ct = itemCounts.get(iid) + damping;
-            double t = itemMeans.get(iid) + damping * mean;
+            double t = itemMeansResult.get(iid) + damping * mean;
             double avg = 0.0;
             if (ct > 0) avg = t / ct - mean;
-            itemMeans.put(iid, avg);
+            itemMeansResult.put(iid, avg);
         }
         return mean;
     }

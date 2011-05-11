@@ -20,10 +20,10 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.meta.Built;
 
 /**
  * Rating predictor that returns the user's average rating for all predictions.
@@ -35,15 +35,16 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Built
 public class UserMeanPredictor implements BaselinePredictor {
     /**
      * A builder that creates UserMeanPredictors.
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<UserMeanPredictor> {
+    public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
         @Override
-        protected UserMeanPredictor buildNew(RatingBuildContext context) {
+        public UserMeanPredictor build() {
             double mean = GlobalMeanPredictor.computeMeanRating(context.getRatings().fastIterator());
             return new UserMeanPredictor(mean);
         }
@@ -54,9 +55,10 @@ public class UserMeanPredictor implements BaselinePredictor {
 
     /**
      * Construct a predictor that computes user means offset by the global mean.
+     * 
      * @param ratings
      */
-    protected UserMeanPredictor(double globalMean) {
+    public UserMeanPredictor(double globalMean) {
         this.globalMean = globalMean;
     }
 

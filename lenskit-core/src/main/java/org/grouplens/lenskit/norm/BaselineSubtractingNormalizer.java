@@ -18,57 +18,25 @@
  */
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ConstantPredictor;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.Baseline;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNormalizer {
-    /**
-     * Builder for BaselineSubtractingNormalizer. Its sole parameter takes a
-     * builder for a BaselinePredictor.
-     * 
-     * @author Michael Ludwig
-     */
-    public static class Builder extends AbstractRecommenderComponentBuilder<BaselineSubtractingNormalizer> {
-        private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
-        
-        public Builder() {
-            this(new ConstantPredictor.Builder());
-        }
-        
-        public Builder(RecommenderComponentBuilder<? extends BaselinePredictor> builder) {
-            baselineBuilder = builder;
-        }
-
-        public RecommenderComponentBuilder<? extends BaselinePredictor> predictor;
-        
-        public RecommenderComponentBuilder<? extends BaselinePredictor> getBaselinePredictor() {
-            return predictor;
-        }
-        
-        public void setBaselinePredictor(RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
-            baselineBuilder = predictor;
-        }
-
-        @Override
-        protected BaselineSubtractingNormalizer buildNew(RatingBuildContext context) {
-            BaselinePredictor predictor = baselineBuilder.build(context);
-            return new BaselineSubtractingNormalizer(predictor);
-        }
-    }
-    
     protected final BaselinePredictor baselinePredictor;
-    
-    public BaselineSubtractingNormalizer(BaselinePredictor baseline) {
+
+    /**
+     * Create a new BaselineSubtractingNormalizer with the given baseline.
+     * 
+     * @param baseline
+     */
+    public BaselineSubtractingNormalizer(@Baseline BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 
@@ -111,7 +79,5 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
             SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
             vector.add(base);
         }
-        
     }
-
 }
