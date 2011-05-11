@@ -4,6 +4,7 @@
 package org.grouplens.lenskit.eval.ant;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -40,6 +41,7 @@ public class TrainTestTask extends Task {
 	private File outputDirectory;
 	private FileSet recommenderScripts;
 	private int threadCount = 1;
+	private File predictionOutput;
 	
 	public void setDatabaseDriver(String driver) {
 		databaseDriver = driver;
@@ -51,6 +53,10 @@ public class TrainTestTask extends Task {
 	
 	public void setThreadCount(int n) {
 		threadCount = n;
+	}
+	
+	public void setPredictions(File f) {
+		predictionOutput = f;
 	}
 	
 	public void addConfiguredDatabases(FileSet dbs) {
@@ -83,7 +89,15 @@ public class TrainTestTask extends Task {
 				String outfn = FileUtils.removeExtension(name) + ".csv";
 				File outf = new File(outputDirectory, outfn);
 				outf.getParentFile().mkdirs();
-				algorithms.add(AlgorithmEvaluationRecipe.load(f, outf));                    
+				AlgorithmEvaluationRecipe r = AlgorithmEvaluationRecipe.load(f, outf);
+				if (predictionOutput != null) {
+					try {
+						r.setPredictionOutput(predictionOutput);
+					} catch (IOException e) {
+						handleErrorOutput("Cannot open prediction output");
+					}
+				}
+				algorithms.add(r);
 			}
 		} catch (InvalidRecommenderException e) {
 			throw new BuildException("Invalid recommender", e);

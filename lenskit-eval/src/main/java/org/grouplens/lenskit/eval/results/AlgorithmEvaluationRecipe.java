@@ -106,6 +106,7 @@ public class AlgorithmEvaluationRecipe {
     }
     
     public void setPredictionOutput(@Nullable File f) throws IOException {
+		// TODO Make prediction output work intelligently again
     	if (predictionWriter != null)
     		predictionWriter.finish();
     	predictionWriter = null;
