@@ -239,11 +239,8 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         // Initialize our counters and error tracking
         double rmse = Double.MAX_VALUE, oldRmse = 0.0;
         int epoch;
-        // We have two potential terminating conditions: if iterationCount is
-        // specified, we run for that many iterations irregardless of error.
-        // Otherwise, we run until the change in error is less than the training
-        // threshold.
-        for (epoch = 0; (iterationCount > 0) ? (epoch < iterationCount) : (epoch < MIN_EPOCHS || rmse < oldRmse - trainingThreshold); epoch++) {
+        
+        for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
             logger.trace("Running epoch {} of feature {}", epoch, feature);
             // Save the old RMSE so that we can measure change in error
             oldRmse = rmse;
@@ -252,12 +249,12 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
         }
 
-        logger.debug("Finished feature {} in {} epochs", feature, epoch);
-        logger.debug("Final RMSE for feature {} was {}", feature, rmse);
+        logger.debug("Finished feature {} in {} epochs, rmse={}",
+        		new Object[]{feature, epoch, rmse});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        for (IndexedRating r: ratings) {
+        for (IndexedRating r: ratings.fast()) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
             final long item = r.getItemId();
@@ -265,6 +262,25 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             est = clampingFunction.apply(est + ufv[uidx] * ifv[iidx]);
             estimates[uidx].set(item, est);
         }
+    }
+
+	/**
+	 * We have two potential terminating conditions: if iterationCount is
+	 * specified, we run for that many iterations irregardless of error.
+	 * Otherwise, we run until the change in error is less than the training
+	 * threshold.
+	 * 
+	 * @param epoch
+	 * @param rmse
+	 * @param oldRmse
+	 * @return <tt>true</tt> if the feature is sufficiently trained
+	 */
+    protected final boolean isDone(int epoch, double rmse, double oldRmse) {
+    	if (iterationCount > 0) {
+    		return epoch >= iterationCount;
+    	} else {
+    		return epoch >= MIN_EPOCHS && rmse < oldRmse - trainingThreshold;
+    	}
     }
 
     private final double trainFeatureIteration(FastCollection<IndexedRating> ratings,
@@ -299,8 +315,8 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             final double idelta = err * ouf - trainingRegularization * oif;
             ifv[iidx] += idelta * learningRate;
 
-            // Finally, return the squared error to the caller
-            return err * err;
+            // Finally, accumulate the squared error
+            ssq += err * err;
         }
         // We're done with this feature.  Compute the total error (RMSE)
         // and head off to the next iteration.
