@@ -38,6 +38,8 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
@@ -46,6 +48,7 @@ import com.google.common.collect.Iterables;
  *
  */
 public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
+    private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserRatingVectorNormalizer normalizer;
     protected final BaselinePredictor baseline;
@@ -81,6 +84,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
      */
     @Override
     public SparseVector predict(long user, SparseVector ratings, @Nullable Collection<Long> items) {
+        logger.trace("Predicting for user {} with {} ratings", user, ratings.size());
         LongSortedSet iset;
         if (items == null)
             iset = null;
@@ -99,11 +103,12 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
             double sum = 0;
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
-            if (nbrs != null) {
+            if (nbrs != null && !nbrs.isEmpty()) {
                 for (final Neighbor n: neighborhoods.get(item)) {
                     weight += abs(n.similarity);
                     sum += n.similarity * n.ratings.get(item);
                 }
+                logger.trace("Total neighbor weight for item {} is {}", item, weight);
                 preds[i] = sum / weight;
             } else {
                 preds[i] = Double.NaN;
@@ -113,6 +118,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
+            logger.trace("Filling in {} missing ratings with baseline", missing.size());
             LongSortedSet mset = LongSortedArraySet.ofList(missing);
             MutableSparseVector blpreds = baseline.predict(user, ratings, mset);
             for (int i = 0; i < keys.length; i++) {
@@ -126,6 +132,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         // Denormalize and return the results
         VectorTransformation vo = normalizer.makeTransformation(user, ratings);
         MutableSparseVector v = SparseVector.wrap(keys, preds, true);
+        logger.trace("Returning {} predictions (wanted {})", v.size(), items.size());
         vo.unapply(v);
         return v;
     }
