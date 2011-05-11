@@ -56,7 +56,6 @@ import org.grouplens.lenskit.data.sql.JDBCUtils;
 public class CrossfoldSplitTask extends Task {
 	private String dataFile;
 	private String dbFilePattern;
-	private boolean force = false;
 	private String delimiter = "\t";
 	private int numFolds = 5;
 	private boolean useTimestamp = true;
@@ -67,9 +66,6 @@ public class CrossfoldSplitTask extends Task {
 	}
 	public void setDbFile(String dbFilePattern) {
 		this.dbFilePattern = dbFilePattern;
-	}
-	public void setForce(boolean force) {
-		this.force = force;
 	}
 	public void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;

@@ -56,8 +56,8 @@ import com.google.common.primitives.Longs;
 public class TrainTestTask extends Task {
 	private String databaseDriver = "org.sqlite.JDBC";
 	private FileSet databases;
-	private File outputDirectory;
-	private FileSet recommenderScripts;
+	private File outFile;
+	private File script;
 	private int threadCount = 1;
 	private File predictionOutput;
 	
@@ -65,8 +65,12 @@ public class TrainTestTask extends Task {
 		databaseDriver = driver;
 	}
 	
-	public void setDir(File dir) {
-		outputDirectory = dir;
+	public void setOutput(File f) {
+		outFile = f;
+	}
+	
+	public void setScript(File s) {
+	    script = s;
 	}
 	
 	public void setThreadCount(int n) {
@@ -81,10 +85,6 @@ public class TrainTestTask extends Task {
 		databases = dbs;
 	}
 	
-	public void addConfiguredScripts(FileSet scripts) {
-		recommenderScripts = scripts;
-	}
-	
 	public void execute() throws BuildException {
 		if (databaseDriver != null) {
 			try {
@@ -94,29 +94,17 @@ public class TrainTestTask extends Task {
 			}
 		}
 		log("Running with thread count " + threadCount);
-		List<AlgorithmEvaluationRecipe> algorithms = new ArrayList<AlgorithmEvaluationRecipe>();
-		DirectoryScanner scriptScanner = recommenderScripts.getDirectoryScanner();
-		scriptScanner.scan();
-		String[] scriptNames = scriptScanner.getIncludedFiles();
-		File dir = scriptScanner.getBasedir();
+		AlgorithmEvaluationRecipe recipe;
 		try {
-			for (String name: scriptNames) {
-				File f = new File(dir, name);
-				log("Loading recommender from " + f.getPath());
-
-				String outfn = FileUtils.removeExtension(name) + ".csv";
-				File outf = new File(outputDirectory, outfn);
-				outf.getParentFile().mkdirs();
-				AlgorithmEvaluationRecipe r = AlgorithmEvaluationRecipe.load(f, outf);
-				if (predictionOutput != null) {
-					try {
-						r.setPredictionOutput(predictionOutput);
-					} catch (IOException e) {
-						handleErrorOutput("Cannot open prediction output");
-					}
-				}
-				algorithms.add(r);
-			}
+		    log("Loading recommender from " + script.getPath());
+		    recipe = AlgorithmEvaluationRecipe.load(script, outFile);
+		    if (predictionOutput != null) {
+		        try {
+		            recipe.setPredictionOutput(predictionOutput);
+		        } catch (IOException e) {
+		            handleErrorOutput("Cannot open prediction output");
+		        }
+		    }
 		} catch (InvalidRecommenderException e) {
 			throw new BuildException("Invalid recommender", e);
 		}
@@ -139,13 +127,11 @@ public class TrainTestTask extends Task {
 			});
 			for (int i = 0; i < dbFiles.length; i++) {
 				File dbf = dbFiles[i];
-				for (AlgorithmEvaluationRecipe recipe: algorithms) {
-					String name = FileUtils.basename(dbf.getName(), ".db");
-					String dsn = "jdbc:sqlite:" + dbf.getPath();
-					Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
-							recipe.makeAccumulator(name));
-					results.add(svc.submit(task));
-				}
+				String name = FileUtils.basename(dbf.getName(), ".db");
+				String dsn = "jdbc:sqlite:" + dbf.getPath();
+				Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
+				    recipe.makeAccumulator(name));
+				results.add(svc.submit(task));
 			}
 
 			for (Future<?> f: results) {

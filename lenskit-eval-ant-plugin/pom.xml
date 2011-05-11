@@ -31,13 +31,6 @@
   		<scope>compile</scope>
   	</dependency>
   	<dependency>
-  		<groupId>org.codehaus.plexus</groupId>
-  		<artifactId>plexus-utils</artifactId>
-  		<version>2.0.7</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  	<dependency>
   		<groupId>org.xerial</groupId>
   		<artifactId>sqlite-jdbc</artifactId>
   		<version>3.7.2</version>
