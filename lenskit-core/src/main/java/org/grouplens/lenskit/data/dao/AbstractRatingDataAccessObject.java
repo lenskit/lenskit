@@ -24,16 +24,11 @@ package org.grouplens.lenskit.data.dao;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
@@ -57,7 +52,7 @@ import com.google.common.base.Predicate;
  *
  * @param <S> The type of session objects.
  */
-public abstract class AbstractRatingDataAccessObject<S extends Closeable> implements RatingDataAccessObject {
+public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
     protected final Logger logger;
     
     protected AbstractRatingDataAccessObject() {
@@ -70,8 +65,6 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
      */
     @Override
     public Cursor<Rating> getRatings(SortOrder order) {
-        checkSession();
-        
         Comparator<Rating> comp = null;
 
         switch (order) {
@@ -128,8 +121,9 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
         return Cursors.wrap(ratings.iterator());
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.data.dao.RatingDataAccessObject#getUserRatingProfiles()
+    /**
+     * Implement {@link RatingDataAccessObject#getUserRatingProfiles()} by
+     * processing the output of {@link #getRatings(SortOrder)} sorted by user ID.
      */
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
@@ -279,91 +273,6 @@ public abstract class AbstractRatingDataAccessObject<S extends Closeable> implem
             } while (lastRating != null && lastRating.getUserId() == uid);
 
             return new BasicUserRatingProfile(uid, ratings);
-        }
-    }
-    
-    private ThreadLocal<S> activeSession = new ThreadLocal<S>();
-    
-    /**
-     * Verify that no session is already open.
-     */
-    @Override
-    public void openSession() {
-        if (activeSession.get() != null)
-            throw new IllegalStateException("RatingDao already open");
-        else
-            activeSession.set(openNewSession());
-    }
-    
-    /**
-     * Close the session.
-     * @review Is logging and swallowing errors the appropriate approach?
-     */
-    @Override
-    public void closeSession() {
-        Closeable session = activeSession.get();
-        if (session == null) {
-            throw new NoSessionException();
-        } else {
-            activeSession.set(null);
-            try {
-                session.close();
-            } catch (IOException e) {
-                logger.error("Error closing session", e);
-            }
-        }
-    }
-    
-    @Override
-    public boolean isSessionOpen() {
-        return activeSession.get() != null;
-    }
-    
-    /**
-     * Get the session object.
-     * @throws NoSessionException if there is not an open session.
-     */
-    protected @Nonnull S getSession() {
-        return getSession(true);
-    }
-    
-    /**
-     * Require an open session.
-     * @throws NoSessionException if there is not an open session.
-     */
-    protected void checkSession() {
-        getSession();
-    }
-    
-    /**
-     * Get the session object without failing.
-     * @param require If <tt>true</tt>, fail if no session is available.
-     * @throws NoSessionException if no session is available and <var>require</var>
-     * is <tt>true</tt>.
-     */
-    protected @Nullable S getSession(boolean require) {
-        S session = activeSession.get();
-        if (session == null && require)
-            throw new NoSessionException();
-        else
-            return session;
-    }
-    
-    /**
-     * Open and return a new session object.  Errors closing the returned object
-     * are logged and swallowed.
-     * @return
-     */
-    protected abstract S openNewSession();
-    
-    /**
-     * Dummy session implementation for DAOs without sessions.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    protected static class DummySession implements Closeable {
-        public void close() {
-            /* no-op */
         }
     }
 }

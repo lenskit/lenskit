@@ -24,7 +24,6 @@ package org.grouplens.lenskit.data.dao;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +45,27 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeable> {
+public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
+    public static class Manager implements DataAccessObjectManager<RatingCollectionDAO> {
+        private final Collection<Rating> ratings;
+        private transient RatingCollectionDAO singleton;
+        
+        public Manager(Collection<Rating> ratings) {
+            this.ratings = ratings;
+        }
+        
+        @Override
+        public RatingCollectionDAO open() {
+            if (singleton == null) {
+                singleton = new RatingCollectionDAO(ratings);
+                singleton.requireItemCache();
+                singleton.requireUserCache();
+            }
+            
+            return singleton;
+        }
+    }
+    
     private Collection<Rating> ratings;
     private Long2ObjectMap<UserRatingProfile> users;
     private Long2ObjectMap<ArrayList<Rating>> items;
@@ -103,14 +122,12 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
 
     @Override
     public LongCursor getUsers() {
-        checkSession();
         requireUserCache();
         return Cursors2.wrap(users.keySet());
     }
 
     @Override
     public Cursor<Rating> getUserRatings(long user, SortOrder order) {
-        checkSession();
         requireUserCache();
         Collection<Rating> ratings = users.get(user).getRatings();
         if (ratings == null) return Cursors.empty();
@@ -142,14 +159,12 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
 
     @Override
     public Cursor<UserRatingProfile> getUserRatingProfiles() {
-        checkSession();
         requireUserCache();
         return Cursors.wrap(users.values().iterator());
     }
     
     @Override
     public Cursor<Rating> getItemRatings(long item, SortOrder order) {
-        checkSession();
         requireItemCache();
         
         List<Rating> ratings = items.get(item);
@@ -183,12 +198,11 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject<Closeabl
      */
     @Override
     public Cursor<Rating> getRatings() {
-        checkSession();
         return Cursors.wrap(ratings);
     }
-    
+
     @Override
-    protected Closeable openNewSession() {
-        return new DummySession();
+    public void close() {
+        // do nothing, there is nothing to close
     }
 }

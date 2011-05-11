@@ -18,17 +18,24 @@
  */
 package org.grouplens.lenskit.eval.holdout;
 
-import java.util.Collection;
+import java.io.PrintStream;
+import java.sql.Connection;
 import java.util.List;
 
+import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
+import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -43,37 +50,90 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    private RatingDataAccessObject trainingDao;
-    private Collection<UserRatingProfile> testProfiles;
+    private Connection connection;
+    private String trainingTable;
+    private String testTable;
+    private PrintStream progressStream;
 
-    public TrainTestPredictEvaluator(RatingDataAccessObject train,
-            Collection<UserRatingProfile> test) {
-        trainingDao = train;
-        testProfiles = test;
+    public TrainTestPredictEvaluator(Connection dbc, String train, String test) {
+        connection = dbc;
+        trainingTable = train;
+        testTable = test;
+    }
+    
+    /**
+     * Set print stream for outputting progress within evaluations.
+     * @param s
+     */
+    public void setProgressStream(PrintStream s) {
+        progressStream = s;
     }
     
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
-        for (AlgorithmInstance algo: algorithms) {
-            AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-            RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
-            logger.debug("Building {}", algo.getName());
-            acc.startBuildTimer();
-            RatingBuildContext rbc = PackedRatingBuildContext.make(trainingDao);
-            RecommenderEngine rec = builder.build(rbc);
-            RatingPredictor pred = rec.getRatingPredictor();
-            acc.finishBuild();
+        BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
+        sfac.setTableName(trainingTable);
+        JDBCRatingDAO dao = new JDBCRatingDAO(null, sfac);
+        dao.openSession(connection);
+        
+        BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
+        testfac.setTableName(testTable);
+        testfac.setTimestampColumn(null);
+        JDBCRatingDAO testDao = new JDBCRatingDAO(null, testfac);
+        testDao.openSession(connection);
+        try {
+            int nusers = testDao.getUserCount();
+            logger.debug("Evaluating algorithms with {} users", nusers);
             
-            logger.debug("Testing {}", algo.getName());
-            acc.startTestTimer();
-            
-            for (UserRatingProfile p: testProfiles) {
-                SparseVector ratings = Ratings.userRatingVector(p.getRatings());
-                SparseVector predictions =
-                    pred.predict(p.getUser(), ratings.keySet());
-                acc.evaluatePrediction(p.getUser(), ratings, predictions);
+            for (AlgorithmInstance algo: algorithms) {
+                AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
+                RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
+                RatingDataAccessObject tdao = dao;
+                if (algo.getPreload()) {
+                    logger.info("Preloading rating data for {}", algo.getName());
+                    List<Rating> ratings = Cursors.makeList(dao.getRatings());
+                    tdao = new RatingCollectionDAO(ratings);
+                    tdao.openSession();
+                }
+                logger.debug("Building {}", algo.getName());
+                acc.startBuildTimer();
+                RatingBuildContext rbc = PackedRatingBuildContext.make(tdao);
+                RecommenderEngine rec = builder.build(rbc);
+                RatingPredictor pred = rec.getRatingPredictor();
+                acc.finishBuild();
+
+                logger.info("Testing {}", algo.getName());
+                acc.startTestTimer();
+
+                Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
+                try {
+                    int n = 0;
+                    for (UserRatingProfile p: userProfiles) {
+                        if (progressStream != null) {
+                            progressStream.format("users: %d / %d\r", n, nusers);
+                        }
+                        
+                        SparseVector ratings = Ratings.userRatingVector(p.getRatings());
+                        SparseVector predictions =
+                            pred.predict(p.getUser(), ratings.keySet());
+                        acc.evaluatePrediction(p.getUser(), ratings, predictions);
+                        n++;
+                    }
+                    if (progressStream != null)
+                        progressStream.format("tested users: %d / %d\n", n, nusers);
+                } finally {
+                    userProfiles.close();
+                }
+
+                acc.finish();
+                // cleanup, but no biggie if it doesn't happen since it's an
+                // in-memory data source
+                if (algo.getPreload())
+                    tdao.closeSession();
+                tdao = null;
             }
-            
-            acc.finish();
+        } finally {
+            dao.closeSession();
+            testDao.closeSession();
         }
     }
 }

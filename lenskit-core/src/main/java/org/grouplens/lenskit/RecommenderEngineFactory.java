@@ -17,6 +17,7 @@ import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
@@ -42,12 +43,11 @@ public class RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
     private final Map<Class<?>, Class<?>> defaultBindings;
     
-    public RecommenderEngineFactory(Class<? extends Builder<? extends RatingDataAccessObject>> daoBuilderClass) {
+    public RecommenderEngineFactory() {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Class<?>>();
         
         bindDefault(RatingBuildContext.class, PackedRatingBuildContext.class);
-        bindDefaultBuilder(RatingDataAccessObject.class, daoBuilderClass);
     }
     
     public synchronized void setRecommender(Class<? extends Recommender> type) {
@@ -146,12 +146,12 @@ public class RecommenderEngineFactory {
         }
     }
     
-    public RecommenderEngine create() {
-        return create(null);
+    public RecommenderEngine create(DataAccessObjectManager<? extends RatingDataAccessObject> manager) {
+        return create(manager, null);
     }
     
     @SuppressWarnings("rawtypes")
-    protected RecommenderEngine create(PicoContainer parent) {
+    protected RecommenderEngine create(DataAccessObjectManager<? extends RatingDataAccessObject> manager, PicoContainer parent) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
         Map<Class<?>, Class<?>> defaultBindings;
         
@@ -166,8 +166,8 @@ public class RecommenderEngineFactory {
         MutablePicoContainer buildContainer = new JustInTimePicoContainer(jitBuilderFactory, new StartableLifecycleStrategy(daoMonitor),
                                                                           parent, daoMonitor);
         
-        // We assume that these generated bindings include configurations for a dao and build context
-        // and recommender types
+        // We assume that these generated bindings include configurations for a build context
+        // and recommender type
         Map<Object, Object> keyBindings = generateBindings(annotationBindings, defaultBindings);
 
         // Push all bindings into the build container
@@ -178,14 +178,23 @@ public class RecommenderEngineFactory {
                 buildContainer.addComponent(binding.getKey(), binding.getValue());
         }
         
-        // Construct all known objects to discover dependencies and to build things made by builders
-        buildContainer.getComponents();
+        // Stash a dao into the container for the build
+        RatingDataAccessObject buildDao = manager.open();
+        try {
+            buildContainer.addComponent(buildDao);
+            RatingBuildContext context = buildContainer.getComponent(RatingBuildContext.class);
+            try {
+                // Construct all known objects to discover dependencies and to build things made by builders
+                buildContainer.getComponents();
+            } finally {
+                context.close();
+            }
+        } finally {
+            // Close the opened dao
+            buildDao.close();
+        }
         Set<Object> daoDependentKeys = daoMonitor.getDependentKeys();
-        
-        // Close any opened dao
-        RatingDataAccessObject buildSession = buildContainer.getComponent(RatingDataAccessObject.class);
-        buildSession.close();
-        
+
         // Create a new container that will be used by the RecommenderEngine.
         // This container will not contain builders or any of the components depending on a dao
         //  - built instances will be stored instead
@@ -234,10 +243,7 @@ public class RecommenderEngineFactory {
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
 
-        // Add the DAO binding in as a session binding
-        sessionBindings.put(RatingDataAccessObject.class, keyBindings.get(RatingDataAccessObject.class));
-        
-        RecommenderEngine engine = new RecommenderEngineImpl(recommenderContainer, sessionBindings);
+        RecommenderEngine engine = new RecommenderEngineImpl(manager, recommenderContainer, sessionBindings);
         Recommender testOpen = engine.open();
         testOpen.close();
         
@@ -345,15 +351,18 @@ public class RecommenderEngineFactory {
     private static class RecommenderEngineImpl implements RecommenderEngine {
         private final PicoContainer recommenderContainer;
         private final Map<Object, Object> sessionBindings;
+        private final DataAccessObjectManager<? extends RatingDataAccessObject> manager;
         
-        public RecommenderEngineImpl(PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
+        public RecommenderEngineImpl(DataAccessObjectManager<? extends RatingDataAccessObject> manager,
+                                     PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
+            this.manager = manager;
             this.recommenderContainer = recommenderContainer;
             this.sessionBindings = sessionBindings;
         }
 
         @Override
         public Recommender open() {
-            return open(null);
+            return open(manager.open());
         }
 
         @Override
@@ -366,25 +375,16 @@ public class RecommenderEngineFactory {
         private Recommender open(RatingDataAccessObject dao) {
             MutablePicoContainer sessionContainer = new JustInTimePicoContainer(new ParameterAnnotationInjector.Factory(), 
                                                                                 recommenderContainer);
-
             // Configure session container
             for (Entry<Object, Object> binding: sessionBindings.entrySet()) {
-                Object value = binding.getValue();
-                if ((value instanceof Class && RatingDataAccessObject.class.isAssignableFrom((Class<?>) value))
-                    || value instanceof RatingDataAccessObject) {
-                    if (dao != null) {
-                        // Another dao has been provided, so use that as a binding
-                        sessionContainer.addComponent(binding.getKey(), dao);
-                    } else {
-                        // Bind dao like any other session component
-                        sessionContainer.addComponent(binding.getKey(), value);
-                    }
-                } else {
-                    // Regular session-level component
-                    sessionContainer.addComponent(binding.getKey(), value);
-                }
+                sessionContainer.addComponent(binding.getKey(), binding.getValue());
             }
             
+            // Add in the dao
+            sessionContainer.addComponent(dao);
+            
+            // Ask for and return a Recommender. The Recommender should have a 
+            // session injected and it is responsible for closing it
             return sessionContainer.getComponent(Recommender.class);
         }
     }

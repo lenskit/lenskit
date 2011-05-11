@@ -63,7 +63,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         @Override
         public ItemUserMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(context.ratingSnapshot().getRatings().fastIterator(), damping, itemMeans);
             
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }

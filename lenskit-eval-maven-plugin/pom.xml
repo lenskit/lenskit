@@ -45,35 +45,27 @@
     </dependency>
   </dependencies>
 
-  <reporting>
+  <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.3.1</version>
-        <reportSets>
-          <reportSet>
-            <id>main</id>
-            <reports>
-              <!-- <report>plugin-info</report> -->
-              <report>dependencies</report>
-              <report>dependency-convergence</report>
-              <report>dependency-management</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>2.7</version>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <reportPlugins combine.children="append">
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-plugin-plugin</artifactId>
+              <version>2.7</version>
+            </plugin>
+          </reportPlugins>
+        </configuration>
       </plugin>
     </plugins>
-  </reporting>
+  </build>
+
   <dependencyManagement>
-  	<dependencies>
-  	</dependencies>
+    <dependencies>
+    </dependencies>
   </dependencyManagement>
         
 </project>

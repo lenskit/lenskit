@@ -20,6 +20,7 @@ package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.AbstractLongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSortedSet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongCollection;
@@ -313,5 +314,13 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
         if (data.length * 2 > i * 3)
             data = Arrays.copyOf(data, i);
         return new LongSortedArraySet(data, 0, i, true);
+    }
+    
+    /**
+     * Convert a {@link LongArrayList} to a sorted array set. The array list's
+     * internal storage will be sorted and re-used.
+     */
+    public static LongSortedSet ofList(LongArrayList list) {
+        return new LongSortedArraySet(list.elements(), 0, list.size());
     }
 }

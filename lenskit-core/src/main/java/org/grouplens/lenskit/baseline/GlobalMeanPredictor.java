@@ -40,7 +40,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     public static class Builder extends RecommenderComponentBuilder<GlobalMeanPredictor> {
         @Override
         public GlobalMeanPredictor build() {
-            double avg = computeMeanRating(context.getRatings().fastIterator());
+            double avg = computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
             return new GlobalMeanPredictor(avg);
         }
     }

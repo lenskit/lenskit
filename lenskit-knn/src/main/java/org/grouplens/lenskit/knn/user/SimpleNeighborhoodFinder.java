@@ -39,7 +39,6 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.slf4j.Logger;
@@ -159,12 +158,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
          * fewer items than target items, then we use the user's rated items to
          * attempt to minimize the number of users considered.
          */
-        LongSet queryItems = items;
-        if (similarity instanceof OptimizableVectorSimilarity<?> && ratings.size() < items.size()) {
-            logger.trace("Using rating rather than query set");
-            queryItems = ratings.keySet();
-        }
-        LongSet users = findRatingUsers(uid, queryItems);
+        LongSet users = findRatingUsers(uid, items);
         
         logger.trace("Found {} candidate neighbors", users.size());
         

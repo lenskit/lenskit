@@ -70,7 +70,7 @@ public class RMSEEvaluator implements PredictionEvaluator {
             sse += usse;
             nratings += n;
             if (n > 0) {
-                totalRMSE += usse / n;
+                totalRMSE += sqrt(usse / n);
                 nusers ++;
             }
         }

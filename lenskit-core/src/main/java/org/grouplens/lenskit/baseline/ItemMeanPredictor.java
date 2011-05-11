@@ -73,7 +73,9 @@ public class ItemMeanPredictor implements BaselinePredictor {
         @Override
         public ItemMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(
+                context.ratingSnapshot().getRatings().fastIterator(), 
+                damping, itemMeans);
             
             return new ItemMeanPredictor(itemMeans, globalMean);
         }
@@ -140,7 +142,6 @@ public class ItemMeanPredictor implements BaselinePredictor {
                 mean, itemMeansResult.size());
 
         logger.debug("Computing item means, smoothing={}", damping);
-
         LongIterator items = itemCounts.keySet().iterator();
         while (items.hasNext()) {
             long iid = items.nextLong();

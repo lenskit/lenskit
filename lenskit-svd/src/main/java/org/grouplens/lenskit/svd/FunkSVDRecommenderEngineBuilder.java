@@ -27,8 +27,8 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.norm.NormalizedRatingBuildContext;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -154,13 +154,14 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         BaselinePredictor baseline = baselineBuilder.build(context);
         
         MutableSparseVector[] estimates = initializeEstimates(context, baseline);
-        FastCollection<IndexedRating> ratings = context.getRatings();
+        RatingSnapshot snapshot = context.ratingSnapshot();
+        FastCollection<IndexedRating> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
         
-        final int numUsers = context.getUserIds().size();
-        final int numItems = context.getItemIds().size();
+        final int numUsers = snapshot.getUserIds().size();
+        final int numItems = snapshot.getItemIds().size();
         double[][] userFeatures = new double[featureCount][numUsers];
         double[][] itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
@@ -200,16 +201,17 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         
         return new FunkSVDRecommenderEngine(context.getDAO(),
                 featureCount, itemFeatures, userFeatures, singularValues,
-                clampingFunction, context.itemIndex(), context.userIndex(), baseline);
+                clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
     private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
             BaselinePredictor baseline) {
-        final int nusers = context.userIndex().getObjectCount();
+    	RatingSnapshot snapshot = context.ratingSnapshot();
+        final int nusers = snapshot.userIndex().getObjectCount();
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
         for (int i = 0; i < nusers; i++) {
-            final long uid = context.userIndex().getId(i);
-            MutableSparseVector urv = Ratings.userRatingVector(context.getUserRatings(uid));
+            final long uid = snapshot.userIndex().getId(i);
+            MutableSparseVector urv = Ratings.userRatingVector(snapshot.getUserRatings(uid));
             MutableSparseVector blpreds = baseline.predict(uid, urv, urv.keySet());
             estimates[i] = blpreds;
         }
@@ -237,11 +239,8 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         // Initialize our counters and error tracking
         double rmse = Double.MAX_VALUE, oldRmse = 0.0;
         int epoch;
-        // We have two potential terminating conditions: if iterationCount is
-        // specified, we run for that many iterations irregardless of error.
-        // Otherwise, we run until the change in error is less than the training
-        // threshold.
-        for (epoch = 0; (iterationCount > 0) ? (epoch < iterationCount) : (epoch < MIN_EPOCHS || rmse < oldRmse - trainingThreshold); epoch++) {
+        
+        for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
             logger.trace("Running epoch {} of feature {}", epoch, feature);
             // Save the old RMSE so that we can measure change in error
             oldRmse = rmse;
@@ -250,12 +249,12 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
         }
 
-        logger.debug("Finished feature {} in {} epochs", feature, epoch);
-        logger.debug("Final RMSE for feature {} was {}", feature, rmse);
+        logger.debug("Finished feature {} in {} epochs, rmse={}",
+        		new Object[]{feature, epoch, rmse});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        for (IndexedRating r: ratings) {
+        for (IndexedRating r: ratings.fast()) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
             final long item = r.getItemId();
@@ -265,43 +264,69 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         }
     }
 
+	/**
+	 * We have two potential terminating conditions: if iterationCount is
+	 * specified, we run for that many iterations irregardless of error.
+	 * Otherwise, we run until the change in error is less than the training
+	 * threshold.
+	 * 
+	 * @param epoch
+	 * @param rmse
+	 * @param oldRmse
+	 * @return <tt>true</tt> if the feature is sufficiently trained
+	 */
+    protected final boolean isDone(int epoch, double rmse, double oldRmse) {
+    	if (iterationCount > 0) {
+    		return epoch >= iterationCount;
+    	} else {
+    		return epoch >= MIN_EPOCHS && rmse < oldRmse - trainingThreshold;
+    	}
+    }
+
     private final double trainFeatureIteration(FastCollection<IndexedRating> ratings,
             double[] ufv, double[] ifv, MutableSparseVector[] estimates, double trailingValue) {
         // We'll need to keep track of our sum of squares
         double ssq = 0;
         for (IndexedRating r: ratings.fast()) {
-            final int uidx = r.getUserIndex();
-            final int iidx = r.getItemIndex();
-            final double value = r.getRating();
-            // Step 1: get the predicted value (based on preceding features
-            // and the current feature values)
-            final double estimate = estimates[uidx].get(r.getItemId());
-            double pred = estimate + ufv[uidx] * ifv[iidx];
-            pred = clampingFunction.apply(pred);
-
-            // Step 1b: add the estimate from remaining trailing values
-            // and clamp the result.
-            pred = clampingFunction.apply(pred + trailingValue);
-
-            // Step 2: compute the prediction error. We will follow this for
-            // the gradient descent.
-            final double err = value - pred;
-
-            // Step 3: update the feature values.  We'll save the old values first.
-            final double ouf = ufv[uidx];
-            final double oif = ifv[iidx];
-            // Then we'll update user feature preference
-            final double udelta = err * oif - trainingRegularization * ouf;
-            ufv[uidx] += udelta * learningRate;
-            // And the item feature relevance.
-            final double idelta = err * ouf - trainingRegularization * oif;
-            ifv[iidx] += idelta * learningRate;
-
-            // Finally, return the squared error to the caller
-            return err * err;
+            ssq += trainRating(ufv, ifv, estimates, trailingValue, r);
         }
         // We're done with this feature.  Compute the total error (RMSE)
         // and head off to the next iteration.
         return Math.sqrt(ssq / ratings.size());
+    }
+
+    private final double trainRating(double[] ufv, double[] ifv,
+                                 MutableSparseVector[] estimates,
+                                 double trailingValue,
+                                 IndexedRating r) {
+        final int uidx = r.getUserIndex();
+        final int iidx = r.getItemIndex();
+        final double value = r.getRating();
+        // Step 1: get the predicted value (based on preceding features
+        // and the current feature values)
+        final double estimate = estimates[uidx].get(r.getItemId());
+        double pred = estimate + ufv[uidx] * ifv[iidx];
+        pred = clampingFunction.apply(pred);
+
+        // Step 1b: add the estimate from remaining trailing values
+        // and clamp the result.
+        pred = clampingFunction.apply(pred + trailingValue);
+
+        // Step 2: compute the prediction error. We will follow this for
+        // the gradient descent.
+        final double err = value - pred;
+
+        // Step 3: update the feature values.  We'll save the old values first.
+        final double ouf = ufv[uidx];
+        final double oif = ifv[iidx];
+        // Then we'll update user feature preference
+        final double udelta = err * oif - trainingRegularization * ouf;
+        ufv[uidx] += udelta * learningRate;
+        // And the item feature relevance.
+        final double idelta = err * ouf - trainingRegularization * oif;
+        ifv[iidx] += idelta * learningRate;
+
+        // Finally, accumulate the squared error
+        return err * err;
     }
 }

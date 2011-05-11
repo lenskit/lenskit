@@ -24,6 +24,7 @@ import java.util.List;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -41,7 +42,7 @@ import org.junit.Test;
  */
 public class UserVarianceNormalizerTest {
 	RatingDataAccessObject dao;
-	RatingBuildContext rbc;
+	RatingBuildContext context;
 	SparseVector userRatings;
 	SparseVector uniformUserRatings;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
@@ -72,24 +73,15 @@ public class UserVarianceNormalizerTest {
 		addRating(ratings, 1, 4, 3);
 		addRating(ratings, 1, 5, 3);
 		addRating(ratings, 1, 6, 3);
-		dao = new RatingCollectionDAO(ratings);
-		dao.openSession();
-		rbc = PackedRatingBuildContext.make(dao);
+		dao = new RatingCollectionDAO.Manager(ratings).open();
+		PackedRatingSnapshot rs = new PackedRatingSnapshot.Builder(dao).build();
+		context = new PackedRatingBuildContext(dao, rs);
 	}
 	
 	@After
 	public void close() {
-	    rbc.close();
-	    dao.closeSession();
-	}
-
-	@Test
-	public void testRatingBuildContextConstructor() {
-		UserVarianceNormalizer urvn = new UserVarianceNormalizer(0, null);
-		Assert.assertEquals(0.0, urvn.globalVariance, 0.0);
-		urvn = new UserVarianceNormalizer(3, rbc);
-		Assert.assertEquals(3.0, urvn.smoothing, 0.0);
-		Assert.assertEquals(2.0, urvn.globalVariance, MIN_DOUBLE_PRECISION);
+	    context.close();
+	    dao.close();
 	}
 
 	@Test
@@ -132,8 +124,12 @@ public class UserVarianceNormalizerTest {
 	
 	@Test
 	public void testSmoothing() {
-		UserVarianceNormalizer urvn;
-		urvn = new UserVarianceNormalizer(3, rbc);
+	    UserVarianceNormalizer.Builder builder = new UserVarianceNormalizer.Builder();
+	    builder.setRatingBuildContext(context);
+	    builder.setSmoothing(3.0);
+	    
+		UserVarianceNormalizer urvn = builder.build();
+
 		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		final double mean = 2.0;

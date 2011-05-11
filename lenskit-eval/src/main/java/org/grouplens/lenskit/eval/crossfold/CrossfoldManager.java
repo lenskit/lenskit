@@ -19,28 +19,20 @@
 package org.grouplens.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import java.util.AbstractCollection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.BasicUserRatingProfile;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
+import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
+import org.grouplens.lenskit.data.sql.JDBCUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
 
 /**
  * Implementation of a train/test ratings set. It takes care of partitioning the
@@ -53,41 +45,125 @@ import com.google.common.collect.Iterators;
  */
 public class CrossfoldManager {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
-    private Long2ObjectMap<SparseVector>[] querySets;
     private final int chunkCount;
-    private RatingDataAccessObject ratings;
+    private Connection connection;
 
     /**
      * Construct a new train/test ratings set.
      * @param nfolds The number of portions to divide the data set into.
      * @param ratings The ratings data to partition.
      */
-    @SuppressWarnings("unchecked")
-    public CrossfoldManager(int nfolds, RatingDataAccessObject ratings,
+    public CrossfoldManager(int nfolds, String database, String table,
             UserRatingProfileSplitter splitter) {
         logger.debug("Creating rating set with {} folds", nfolds);
-        querySets = new Long2ObjectMap[nfolds];
-        for (int i = 0; i < nfolds; i++) {
-            querySets[i] = new Long2ObjectOpenHashMap<SparseVector>();
+        
+        try {
+            connection = DriverManager.getConnection(database);
+            partitionUsers(connection, table, nfolds, splitter);
+        } catch (Exception e) {
+            /* close if we're failing */
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e2) {
+                    logger.error("Second error closing DB while handling error", e);
+                    throw new RuntimeException("Error closing DB while failing", e2);
+                }
+            }
+            throw new RuntimeException("Error setting up crossfold", e);
         }
         chunkCount = nfolds;
-        this.ratings = ratings;
-
+    }
+    
+    private static void partitionUsers(Connection cxn, String table, int nfolds,
+                                        UserRatingProfileSplitter splitter) throws SQLException {
         Random rnd = new Random();
         Cursor<UserRatingProfile> userCursor = null;
+        JDBCRatingDAO dao = null;
         try {
-            userCursor = ratings.getUserRatingProfiles();
+            BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
+            sfac.setTableName(table);
+            cxn.setAutoCommit(false);
+            
+            logger.debug("Creating crossfold table");
+            
+            JDBCUtils.execute(cxn, "CREATE TABLE crossfold_probe_set (" +
+                "user INTEGER, item INTEGER, segment INTEGER);");
+            
             int nusers = 0;
-            for (UserRatingProfile user: userCursor) {
-                int n = rnd.nextInt(nfolds);
-                SplitUserRatingProfile sp = splitter.splitProfile(user);
-                querySets[n].put(sp.getUserId(), sp.getProbeVector());
-                nusers++;
+            String iq = "INSERT INTO crossfold_probe_set (user, item, segment) VALUES (?, ?, ?);";
+            logger.debug("Preparing: {}", iq);
+            PreparedStatement insert = cxn.prepareStatement(iq);
+            logger.debug("Populating crossfold table");
+            try {
+                dao = new JDBCRatingDAO(null, sfac);
+                dao.openSession(cxn);
+                userCursor = dao.getUserRatingProfiles();
+                for (UserRatingProfile user: userCursor) {
+                    insert.setLong(1, user.getUser());
+                    int n = rnd.nextInt(nfolds);
+                    insert.setInt(3, n);
+                    SplitUserRatingProfile sp = splitter.splitProfile(user);
+                    for (Long2DoubleMap.Entry e: sp.getProbeVector()) {
+                        insert.setLong(2, e.getLongKey());
+                        insert.executeUpdate();
+                    }
+                    nusers++;
+                }
+            } finally {
+                insert.close();
             }
+            cxn.commit();
+            cxn.setAutoCommit(true);
+            logger.debug("Indexing crossfold table");
+            JDBCUtils.execute(cxn, "CREATE INDEX crossfold_user_idx ON crossfold_probe_set (user)");
+            JDBCUtils.execute(cxn, "CREATE INDEX crossfold_item_idx ON crossfold_probe_set (item)");
+            JDBCUtils.execute(cxn, "CREATE INDEX crossfold_segment_idx ON crossfold_probe_set (segment);");
+            JDBCUtils.execute(cxn, "ANALYZE;");
+            
+            logger.debug("Setting up views for indexing");
+            for (int i = 0; i < nfolds; i++) {
+                String q = "CREATE VIEW crossfold_train_" + i + " AS"
+                    + " SELECT r.user AS user, r.item AS item, r.rating AS rating, r.timestamp AS timestamp"
+                    + " FROM " + table + " r LEFT JOIN crossfold_probe_set p USING (user, item)"
+                    + " WHERE p.segment IS NULL OR p.segment <> " + i;
+                JDBCUtils.execute(cxn, q);
+                q = "CREATE VIEW crossfold_test_" + i + " AS"
+                    + " SELECT r.user, r.item, r.rating"
+                    + " FROM " + table + " r, crossfold_probe_set p"
+                    + " WHERE r.user = p.user AND r.item = p.item AND p.segment = " + i;
+                JDBCUtils.execute(cxn, q);
+            }
+            
             logger.info("Partitioned {} users into {} folds", nusers, nfolds);
+        } catch (SQLException e) {
+            if (!cxn.getAutoCommit())
+                cxn.rollback();
+            throw e;
+        } catch (RuntimeException e) {
+            if (!cxn.getAutoCommit())
+                cxn.rollback();
+            throw e;
         } finally {
             if (userCursor != null)
                 userCursor.close();
+            if (dao != null)
+                dao.closeSession();
+            cxn.setAutoCommit(true);
+        }    
+    }
+    
+    public Connection getConnection() {
+        return connection;
+    }
+    
+    public void close() {
+        try {
+            if (connection != null)
+                connection.close();
+            connection = null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -101,8 +177,8 @@ public class CrossfoldManager {
      * @param testIndex The index of the test set to use.
      * @return The union of all data partitions except testIndex.
      */
-    public RatingDataAccessObject trainingSet(final int testIndex) {
-        return new RatingFilteredDAO(ratings, querySets[testIndex]);
+    public String trainingSet(final int testIndex) {
+        return String.format("crossfold_train_%d", testIndex);
     }
 
     /**
@@ -113,26 +189,7 @@ public class CrossfoldManager {
      * @todo Fix this method to be more efficient - currently, we convert from
      * vectors to ratings to later be converted back to vectors. That's slow.
      */
-    public Collection<UserRatingProfile> testSet(final int testIndex) {
-        return new AbstractCollection<UserRatingProfile>() {
-            public int size() {
-                return querySets[testIndex].size();
-            }
-            
-            public Iterator<UserRatingProfile> iterator() {
-                return Iterators.transform(querySets[testIndex].long2ObjectEntrySet().iterator(),
-                                           new Function<Long2ObjectMap.Entry<SparseVector>, UserRatingProfile>() {
-                    public UserRatingProfile apply(Long2ObjectMap.Entry<SparseVector> entry) {
-                        long uid = entry.getLongKey();
-                        SparseVector v = entry.getValue();
-                        List<Rating> ratings = new ArrayList<Rating>(v.size());
-                        for (Long2DoubleMap.Entry e: v.fast()) {
-                            ratings.add(new SimpleRating(uid, e.getLongKey(), e.getDoubleValue()));
-                        }
-                        return new BasicUserRatingProfile(uid, ratings);
-                    }
-                });
-            }
-        };
+    public String testSet(final int testIndex) {
+        return String.format("crossfold_test_%d", testIndex);
     }
 }

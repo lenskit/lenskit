@@ -21,21 +21,30 @@ package org.grouplens.lenskit.eval.results;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.TaskTimer;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,26 +53,39 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MultiRunTableResultManager {
-    private static final Logger logger = LoggerFactory.getLogger(MultiRunTableResultManager.class);
+public class AlgorithmEvaluationRecipe {
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmEvaluationRecipe.class);
     
     private int colRun;
     private int colAlgorithm;
+    private Map<String,Integer> algoAttrCols;
     private int colBuildTime;
     private int colTestTime;
     
     private List<PredictionEvaluator> evaluators;
     private TableWriter writer;
     private TableWriter predictionWriter;
+    
+    private List<AlgorithmInstance> algorithms;
 
-    public MultiRunTableResultManager(List<AlgorithmInstance> algos,
+    public AlgorithmEvaluationRecipe(List<AlgorithmInstance> algos,
             List<PredictionEvaluator> evals,
             File outfile) {
         evaluators = evals;
+        algorithms = algos;
         
         TableWriterBuilder twb = new CSVWriterBuilder();
         colRun = twb.addColumn("Run");
         colAlgorithm = twb.addColumn("Algorithm");
+        
+        algoAttrCols = new HashMap<String, Integer>();
+        for (AlgorithmInstance algo: algos) {
+            for (String a: algo.getAttributes().keySet()) {
+                if (!algoAttrCols.containsKey(a))
+                    algoAttrCols.put(a, twb.addColumn(a));
+            }
+        }
+        
         colBuildTime = twb.addColumn("BuildTime");
         colTestTime = twb.addColumn("TestTime");
         for (PredictionEvaluator ev: evaluators) {
@@ -79,7 +101,12 @@ public class MultiRunTableResultManager {
         }
     }
     
+    public List<AlgorithmInstance> getAlgorithms() {
+        return algorithms;
+    }
+    
     public void setPredictionOutput(@Nullable File f) throws IOException {
+		// TODO Make prediction output work intelligently again
     	if (predictionWriter != null)
     		predictionWriter.finish();
     	predictionWriter = null;
@@ -96,13 +123,11 @@ public class MultiRunTableResultManager {
     	}
     }
     
-    public ResultAccumulator makeAccumulator(final int run) {
+    public ResultAccumulator makeAccumulator(final String run) {
         return new ResultAccumulator() {
             @Override
             public AlgorithmTestAccumulator makeAlgorithmAccumulator(
                     AlgorithmInstance algo) {
-                writer.setValue(colRun, run);
-                writer.setValue(colAlgorithm, algo.getName());
                 return new MRTAlgorithmTestAccumulator(run, algo);
             }
         };
@@ -122,10 +147,10 @@ public class MultiRunTableResultManager {
         private List<PredictionEvaluator.Accumulator> evalAccums;
         TaskTimer buildTimer;
         TaskTimer testTimer;
-        int run;
+        String run;
         AlgorithmInstance algo;
         
-        MRTAlgorithmTestAccumulator(int r, AlgorithmInstance a) {
+        MRTAlgorithmTestAccumulator(String r, AlgorithmInstance a) {
         	run = r;
         	algo = a;
             evalAccums = new ArrayList<PredictionEvaluator.Accumulator>(evaluators.size());
@@ -156,16 +181,33 @@ public class MultiRunTableResultManager {
             testTimer.stop();
             logger.info("Test of {} finished in {}", algo.getName(), testTimer.elapsedPretty());
             
-            writer.setValue(colBuildTime, buildTimer.elapsed());
-            writer.setValue(colTestTime, testTimer.elapsed());
-            
-            for (PredictionEvaluator.Accumulator ea: evalAccums) {
-                ea.finalize(writer);
+            writer.startRow();
+            try {
+                writer.setValue(colRun, run);
+                writer.setValue(colAlgorithm, algo.getName());
+                writer.setValue(colBuildTime, buildTimer.elapsed());
+                writer.setValue(colTestTime, testTimer.elapsed());
+                
+                Map<String,Object> attrs = algo.getAttributes();
+                for (Map.Entry<String, Integer> ae: algoAttrCols.entrySet()) {
+                    String k = ae.getKey();
+                    if (attrs.containsKey(k))
+                        writer.setValue(ae.getValue(),
+                                        attrs.get(k).toString());
+                }
+
+                for (PredictionEvaluator.Accumulator ea: evalAccums) {
+                    ea.finalize(writer);
+                }
+            } catch (RuntimeException e) {
+                writer.cancelRow();
+                throw e;
             }
+            
             try {
                 writer.finishRow();
             } catch (IOException e) {
-                logger.error("Error finishing row", e);
+                logger.error("Error finishing row: " + e.getMessage(), e);
                 throw new RuntimeException(e);
             }
         }
@@ -190,6 +232,92 @@ public class MultiRunTableResultManager {
             for (PredictionEvaluator.Accumulator ea: evalAccums) {
                 ea.evaluatePredictions(user, ratings, predictions);
             }
+        }
+    }
+    
+    public static AlgorithmEvaluationRecipe load(File sourceFile, File outputFile) throws InvalidRecommenderException {
+        logger.info("Loading recommender definition from {}", sourceFile);
+        URI uri = sourceFile.toURI();
+        Context cx = Context.enter();
+        try {
+            Scriptable scope = cx.initStandardObjects();
+            
+            ScriptedBuilder builder = new ScriptedBuilder();
+            Object wbld = Context.javaToJS(builder, scope);
+            ScriptableObject.putProperty(scope, "recipe", wbld);
+            Logger slog = LoggerFactory.getLogger(sourceFile.getPath());
+            ScriptableObject.putProperty(scope, "logger", Context.javaToJS(slog, scope));
+            
+            Reader r = new FileReader(sourceFile);
+            try {
+                cx.evaluateReader(scope, r, sourceFile.getPath(), 1, null);
+                return builder.build(outputFile);
+            } finally {
+                r.close();
+            }
+        } catch (IOException e) {
+            throw new InvalidRecommenderException(uri, e);
+        } finally {
+            Context.exit();
+        }
+    }
+    
+    /**
+     * Scriptable class for building evaluation recipes.
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     *
+     */
+    public static class ScriptedBuilder {
+        List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
+        List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
+        
+        /**
+         * Add an evaluation.
+         * @param eval The evaluator to add.
+         */
+        public void addEval(PredictionEvaluator eval) {
+            evaluators.add(eval);
+        }
+        
+        /**
+         * Add an evaluation by class.
+         * @param eval A class to instantiate to make an evaluator.
+         */
+        public void addEval(Class<? extends PredictionEvaluator> eval) {
+            try {
+                evaluators.add(eval.newInstance());
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        /**
+         * Add an evaluation by name.
+         * @param name The name of the evaluator. Looks for the class
+         * <tt>org.grouplens.lenskit.eval.predict.<i>name</i>Evaluator</tt>.
+         * @throws ClassNotFoundException if the evaluator cannot be found.
+         */
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        public void addEval(String name) throws ClassNotFoundException {
+            addEval((Class) Class.forName("org.grouplens.lenskit.eval.predict." + name + "Evaluator"));
+        }
+        
+        /**
+         * Create a new algorithm and add it to the algorithm list. The script
+         * should then fill in the algorithm's details.
+         * @return
+         */
+        public AlgorithmInstance addAlgorithm() {
+            AlgorithmInstance a = new AlgorithmInstance();
+            algorithms.add(a);
+            return a;
+        }
+        
+        AlgorithmEvaluationRecipe build(File file) {
+            logger.info("Loaded {} algorithms", algorithms.size());
+            return new AlgorithmEvaluationRecipe(algorithms, evaluators, file);
         }
     }
 }
