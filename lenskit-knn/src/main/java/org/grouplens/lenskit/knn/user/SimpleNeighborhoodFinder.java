@@ -170,6 +170,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
             normalizer.normalize(user, nurv);
             
             final double sim = similarity.similarity(nratings, nurv);
+            if (Double.isNaN(sim) || Double.isInfinite(sim))
+                continue;
             final Neighbor n = new Neighbor(user, urv.mutableCopy(), sim);
 
             LongIterator iit = urv.keySet().iterator();
