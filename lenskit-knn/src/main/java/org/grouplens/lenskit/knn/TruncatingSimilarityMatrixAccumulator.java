@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,9 @@ public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAc
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Factory implements SimilarityMatrixAccumulatorFactory {
-        private int maxNeighbors = 100;
+        private final int maxNeighbors;
         
-        public void setMaxNeighborhoodSize(int maxNeighbors) {
+        public Factory(@NeighborhoodSize int maxNeighbors) {
             this.maxNeighbors = maxNeighbors;
         }
 

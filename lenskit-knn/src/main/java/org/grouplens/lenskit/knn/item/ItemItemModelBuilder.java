@@ -34,122 +34,63 @@ import java.util.ListIterator;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.CosineSimilarity;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
-import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
+import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.Baseline;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * A Builder that can be used to create ItemItemRecommenders.
- * 
- * @author Michael Ludwig <mludwig@cs.umn.edu>
- */
-public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<ItemItemRecommenderEngine> {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngineBuilder.class);
+public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemModel> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private Similarity<? super SparseVector> itemSimilarity;
-    private double similarityThreshold;
     private SimilarityMatrixAccumulatorFactory matrixSimilarityFactory;
     
-    private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
-    private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
+    private BaselinePredictor baseline;
+    private NormalizedRatingSnapshot normalizedData;
     
-    public ItemItemRecommenderEngineBuilder() {
-        itemSimilarity = new CosineSimilarity(100);
-        similarityThreshold = 1e-3;
-        
-        matrixSimilarityFactory = new TruncatingSimilarityMatrixAccumulator.Factory();
-        
-        baselineBuilder = new UserMeanPredictor.Builder();
-        normalizerBuilder = new BaselineSubtractingNormalizer.Builder(baselineBuilder);
-    }
-    
-    public Similarity<? super SparseVector> getSimilarity() {
-        return itemSimilarity;
-    }
-    
+    @ItemSimilarity
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
         itemSimilarity = similarity;
-    }
-    
-    public double getSimilarityThreshold() {
-        return similarityThreshold;
-    }
-    
-    public void setSimilarityThreshold(double threshold) {
-        similarityThreshold = threshold;
-    }
-    
-    public SimilarityMatrixAccumulatorFactory getSimilarityMatrixAccumulatorFactory() {
-        return matrixSimilarityFactory;
     }
     
     public void setSimilarityMatrixAccumulatorFactory(SimilarityMatrixAccumulatorFactory factory) {
         matrixSimilarityFactory = factory;
     }
     
-    public @Nullable RecommenderComponentBuilder<? extends BaselinePredictor> getBaselinePredictor() {
-        return baselineBuilder;
-    }
-    
-    public void setBaselinePredictor(@Nullable RecommenderComponentBuilder<? extends BaselinePredictor> predictor) {
-        baselineBuilder = predictor;
-    }
-    
-    /**
-     * @return the normalizerBuilder
-     */
-    public RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> getNormalizer() {
-        return normalizerBuilder;
+    @Baseline
+    public void setBaselinePredictor(@Nullable BaselinePredictor predictor) {
+        baseline = predictor;
     }
 
-    /**
-     * @param normalizerBuilder the normalizerBuilder to set
-     */
-    public void setNormalizer(
-            RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder) {
-        this.normalizerBuilder = normalizerBuilder;
+    public void setNormalizedRatingSnapshot(NormalizedRatingSnapshot data) {
+        this.normalizedData = data;
     }
     
     @Override
-    protected ItemItemRecommenderEngine buildNew(RatingBuildContext context) {
-        UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
-        NormalizedRatingSnapshot data = context.ratingSnapshot().normalize(norm);
+    public ItemItemModel build() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
         
-        BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
+        BuildState state = new BuildState(normalizedData, similarityStrategy.needsUserItemSets());
 
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
-        BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
-        ItemItemRecommenderEngine rec =
-            new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
-                                    baseline, items, context.getDAO());
-        ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
-        
-        rec.setRatingPredictor(predictor);
-        rec.setRatingRecommender(new ItemItemRatingRecommender(predictor));
-        return rec;
+        return new ItemItemModel(state.itemIndex, matrix, normalizedData.getNormalizer(),
+                                 baseline, items);
     }
     
     @ParametersAreNonnullByDefault

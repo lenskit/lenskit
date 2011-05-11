@@ -35,8 +35,11 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.params.Neighborhood;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
+import org.grouplens.lenskit.params.Baseline;
+import org.grouplens.lenskit.params.Normalizer;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +56,9 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final UserRatingVectorNormalizer normalizer;
     protected final BaselinePredictor baseline;
     
-    UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf,
-        UserRatingVectorNormalizer norm, @Nullable BaselinePredictor baseline) {
+    public UserUserRatingPredictor(RatingDataAccessObject dao, @Neighborhood NeighborhoodFinder nbrf,
+                                   @Normalizer UserRatingVectorNormalizer norm, 
+                                   @Baseline @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
         normalizer = norm;

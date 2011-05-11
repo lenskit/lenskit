@@ -21,74 +21,57 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
-import org.grouplens.lenskit.BasketRecommender;
-import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
+import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.meta.DefaultBuilder;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
-/**
- * RecommenderEngine implementation that uses an item-item similarity matrix to create
- * predictions and recommendations. It is built with an
- * {@link ItemItemRecommenderEngineBuilder}.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Michael Ludwig <mludwig@cs.umn.edu
- */
-public class ItemItemRecommenderEngine implements RecommenderEngine {
-    private ItemItemRatingPredictor predictor;
-    private ItemItemRatingRecommender recommender;
-    
+@Built
+@DefaultBuilder(ItemItemModelBuilder.class)
+public class ItemItemModel {
     private final Index itemIndexer;
     private final SimilarityMatrix matrix;
     private final UserRatingVectorNormalizer normalizer;
     private final BaselinePredictor baseline;
     private final LongSortedSet itemUniverse;
-    private final RatingDataAccessObject dao;
     
-    ItemItemRecommenderEngine(Index indexer, SimilarityMatrix matrix, 
-                        UserRatingVectorNormalizer norm, BaselinePredictor baseline,
-                        LongSortedSet items, RatingDataAccessObject dao) {
+    public ItemItemModel(Index indexer, SimilarityMatrix matrix,
+                         UserRatingVectorNormalizer norm, BaselinePredictor baseline,
+                         LongSortedSet items) {
         this.itemIndexer = indexer;
         this.normalizer = norm;
         this.baseline = baseline;
         this.matrix = matrix;
         this.itemUniverse = items;
-        this.dao = dao;
     }
     
-    protected void setRatingPredictor(ItemItemRatingPredictor predictor) {
-        this.predictor = predictor;
+    public UserRatingVectorNormalizer getNormalizer() {
+        return normalizer;
     }
     
-    protected void setRatingRecommender(ItemItemRatingRecommender recommender) {
-        this.recommender = recommender;
+    public BaselinePredictor getBaselinePredictor() {
+        return baseline;
     }
     
-    @Override
-    public ItemItemRatingPredictor getRatingPredictor() {
-        return predictor;
+    public LongSortedSet getItemUniverse() {
+        return itemUniverse;
     }
     
-    @Override
-    public ItemItemRatingPredictor getDynamicRatingPredictor() {
-        return predictor;
+    public SimilarityMatrix getSimilarityMatrix() {
+        return matrix;
+    }
+    
+    public int getItemIndex(long id) {
+        return itemIndexer.getIndex(id);
     }
 
-    @Override
-    public ItemItemRatingRecommender getRatingRecommender() {
-        return recommender;
-    }
-
-    @Override
-    public BasketRecommender getBasketRecommender() {
-        // TODO not implemented
-        return null;
+    public long getItem(int idx) {
+        return itemIndexer.getId(idx);
     }
     
     public Iterable<IndexedItemScore> getNeighbors(long item) {
@@ -98,26 +81,6 @@ public class ItemItemRecommenderEngine implements RecommenderEngine {
         } else {
             return new ObjectCollections.EmptyCollection<IndexedItemScore>() {};
         }
-    }
-
-    public int getItemIndex(long id) {
-        return itemIndexer.getIndex(id);
-    }
-
-    public long getItem(int idx) {
-        return itemIndexer.getId(idx);
-    }
-    
-    public RatingDataAccessObject getDAO() {
-        return dao;
-    }
-
-    public LongSortedSet getItemUniverse() {
-        return itemUniverse;
-    }
-    
-    public BaselinePredictor getBaselinePredictor() {
-        return baseline;
     }
     
     public VectorTransformation normalizingTransformation(long uid, SparseVector ratings) {

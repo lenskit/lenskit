@@ -16,78 +16,70 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- * 
- */
-package org.grouplens.lenskit.svd;
+package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.util.DoubleFunction;
 
 /**
- * The SVD model used for recommendation and prediction.
+ * UserUserRecommender is a RecommenderEngine implementation that uses user-user
+ * collaborative filtering to compute predictions and recommendations. They are
+ * built using a {@link UserUserRecommenderEngineBuilder}.
  * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-public class FunkSVDRecommenderEngine implements RecommenderEngine {
-    public final RatingDataAccessObject dao;
-	public final int featureCount;
-	public final double itemFeatures[][];
-	public final double userFeatures[][];
-	public final double singularValues[];
-	public final DoubleFunction clampingFunction;
-	
-	public final Index itemIndex;
-	public final Index userIndex;
-	public final BaselinePredictor baseline;
-	
-	public FunkSVDRecommenderEngine(RatingDataAccessObject dao,
-	        int nfeatures, double[][] ifeats, double[][] ufeats, double[] svals,
-	        DoubleFunction clamp, Index iidx, Index uidx,
-	        BaselinePredictor baseline) {
-	    this.dao = dao;
-		featureCount = nfeatures;
-		itemFeatures = ifeats;
-		userFeatures = ufeats;
-		singularValues = svals;
-		clampingFunction = clamp;
-		itemIndex = iidx;
-		userIndex = uidx;
-		this.baseline = baseline;
-	}
-	
-	public double getItemFeatureValue(int item, int feature) {
-	    return itemFeatures[feature][item];
-	}
-	
-	public int getItemIndex(long item) {
-	    return itemIndex.getIndex(item);
-	}
-
+public class UserUserRecommender implements Recommender {
+    private final UserUserRatingPredictor pred;
+    private final UserUserRatingRecommender rec;
+    private final RatingDataAccessObject dao;
+    
+    public UserUserRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred, UserUserRatingRecommender rec) {
+        this.dao = dao;
+        this.pred = pred;
+        this.rec = rec;
+    }
+    
     @Override
     public RatingPredictor getRatingPredictor() {
-        return new SVDRatingPredictor(this);
+        return pred;
     }
     
     @Override
     public DynamicRatingPredictor getDynamicRatingPredictor() {
-        return null;
+        return pred;
     }
 
     @Override
     public RatingRecommender getRatingRecommender() {
-        return null;
+        return rec;
     }
 
     @Override
     public BasketRecommender getBasketRecommender() {
+        // TODO Implement?
         return null;
+    }
+
+    @Override
+    public void close() {
+        dao.close();
+    }
+
+    @Override
+    public RatingDataAccessObject getRatingDataAccessObject() {
+        return dao;
+    }
+    
+    public static RecommenderEngine make(DataAccessObjectManager<? extends RatingDataAccessObject> manager) {
+        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        factory.setRecommender(UserUserRecommender.class);
+        return factory.create(manager);
     }
 }

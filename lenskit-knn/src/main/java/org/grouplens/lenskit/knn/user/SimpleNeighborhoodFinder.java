@@ -34,13 +34,14 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.knn.params.CacheUserNeighborhood;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.meta.Built;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Built
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
     
@@ -70,28 +72,22 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
      */
     public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
         private boolean cacheUserRatingVectors = true;
-        /**
-         * Query whether user rating vectors are to be cached.
-         * @return <tt>true</tt> if user rating vectors are cached in-memory.
-         * @see #setCacheUserRatingVectors(boolean)
-         */
-        public boolean isCacheUserRatingVectors() {
-            return cacheUserRatingVectors;
-        }
+
         /**
          * Set whether to cache user rating vectors.  The default is <tt>true</tt>.
          * @param cacheUserRatingVectors <tt>true</tt> to cache rating vectors
          * in the resulting neighborhood finder.
          */
+        @CacheUserNeighborhood
         public void setCacheUserRatingVectors(boolean cacheUserRatingVectors) {
             this.cacheUserRatingVectors = cacheUserRatingVectors;
         }
         
         @Override
-        protected SimpleNeighborhoodFinder buildNew(RatingBuildContext context) {
+        public SimpleNeighborhoodFinder build() {
             return new SimpleNeighborhoodFinder(context.getDAO(),
                                                 neighborhoodSize, similarity,
-                                                normalizerBuilder.build(context),
+                                                normalizer,
                                                 cacheUserRatingVectors);
         }
     }

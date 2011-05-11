@@ -31,8 +31,10 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.params.SimilarityThreshold;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -42,16 +44,17 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
-    protected final ItemItemRecommenderEngine model;
+    protected final ItemItemModel model;
     private final double similarityThreshold;
     
-    public ItemItemRatingPredictor(ItemItemRecommenderEngine model, double simThresh) {
-        super(model.getDAO());
+    public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
+                                   @SimilarityThreshold double simThresh) {
+        super(dao);
         this.model = model;
         similarityThreshold = simThresh;
     }
     
-    public ItemItemRecommenderEngine getRecommender() {
+    public ItemItemModel getModel() {
         return model;
     }
     

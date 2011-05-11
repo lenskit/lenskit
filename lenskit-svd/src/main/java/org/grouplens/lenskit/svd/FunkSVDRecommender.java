@@ -16,48 +16,70 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
+/**
+ * 
+ */
+package org.grouplens.lenskit.svd;
 
 import org.grouplens.lenskit.BasketRecommender;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.svd.params.IterationCount;
 
 /**
- * UserUserRecommenderEngine is a RecommenderEngine implementation that uses user-user
- * collaborative filtering to compute predictions and recommendations. They are
- * built using a {@link UserUserRecommenderEngineBuilder}.
+ * The SVD model used for recommendation and prediction.
  * 
- * @author Michael Ludwig <mludwig@cs.umn.edu>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class UserUserRecommenderEngine implements RecommenderEngine {
-    private final UserUserRatingPredictor pred;
-    private final UserUserRatingRecommender rec;
-    
-    UserUserRecommenderEngine(UserUserRatingPredictor pred, UserUserRatingRecommender rec) {
-        this.pred = pred;
-        this.rec = rec;
-    }
-    
+public class FunkSVDRecommender implements Recommender {
+    public final RatingDataAccessObject dao;
+	public final SVDRatingPredictor predictor;
+	
+	public FunkSVDRecommender(RatingDataAccessObject dao, SVDRatingPredictor predictor) {
+	    this.dao = dao;
+	    this.predictor = predictor;
+	}
+	
     @Override
     public RatingPredictor getRatingPredictor() {
-        return pred;
+        return predictor;
     }
     
     @Override
     public DynamicRatingPredictor getDynamicRatingPredictor() {
-        return pred;
+        return null;
     }
 
     @Override
     public RatingRecommender getRatingRecommender() {
-        return rec;
+        return null;
     }
 
     @Override
     public BasketRecommender getBasketRecommender() {
-        // TODO Implement?
         return null;
+    }
+
+    @Override
+    public void close() {
+        dao.close();
+    }
+
+    @Override
+    public RatingDataAccessObject getRatingDataAccessObject() {
+        return dao;
+    }
+    
+    public static RecommenderEngine make(DataAccessObjectManager<? extends RatingDataAccessObject> manager, int iterCount) {
+        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        factory.setRecommender(FunkSVDRecommender.class);
+        factory.bind(IterationCount.class, iterCount);
+        return factory.create(manager);
     }
 }

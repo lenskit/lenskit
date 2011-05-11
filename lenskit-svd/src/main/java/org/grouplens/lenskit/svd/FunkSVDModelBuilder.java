@@ -20,15 +20,20 @@ package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.params.Baseline;
+import org.grouplens.lenskit.svd.params.ClampingFunction;
+import org.grouplens.lenskit.svd.params.FeatureCount;
+import org.grouplens.lenskit.svd.params.GradientDescentRegularization;
+import org.grouplens.lenskit.svd.params.IterationCount;
+import org.grouplens.lenskit.svd.params.LearningRate;
+import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -52,8 +57,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<FunkSVDRecommenderEngine> {
-    private static Logger logger = LoggerFactory.getLogger(FunkSVDRecommenderEngineBuilder.class);
+public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDModel> {
+    private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
@@ -69,79 +74,49 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
     private DoubleFunction clampingFunction;
     private int iterationCount;
     
-    private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
-
-    public FunkSVDRecommenderEngineBuilder() {
-        featureCount = 100;
-        learningRate = 0.001;
-        trainingThreshold = 1.0e-5;
-        trainingRegularization = 0.015;
-        clampingFunction = new DoubleFunction.Identity();
-        iterationCount = 0;
-        baselineBuilder = new ItemUserMeanPredictor.Builder();
-    }
+    private BaselinePredictor baseline;
     
-    public int getFeatureCount() {
-        return featureCount;
-    }
-    
+    @FeatureCount
     public void setFeatureCount(int count) {
         featureCount = count;
     }
     
-    public double getLearningRate() {
-        return learningRate;
-    }
-    
+    @LearningRate
     public void setLearningRate(double rate) {
         learningRate = rate;
     }
     
-    public double getTrainingThreshold() {
-        return trainingThreshold;
-    }
-    
+    @TrainingThreshold
     public void setTrainingThreshold(double threshold) {
         trainingThreshold = threshold;
     }
     
-    public double getGradientDescentRegularization() {
-        return trainingRegularization;
-    }
-    
+    @GradientDescentRegularization
     public void setGradientDescentRegularization(double regularization) {
         trainingRegularization = regularization;
     }
     
-    public DoubleFunction getClampingFunction() {
-        return clampingFunction;
-    }
-    
+    @ClampingFunction
     public void setClampingFunction(DoubleFunction function) {
         clampingFunction = function;
     }
     
-    public int getIterationCount() {
-        return iterationCount;
-    }
-    
+    @IterationCount
     public void setIterationCount(int count) {
         iterationCount = count;
     }
     
-    public RecommenderComponentBuilder<? extends BaselinePredictor> getBaseline() {
-        return baselineBuilder;
-    }
-    
-    public void setBaseline(RecommenderComponentBuilder<? extends BaselinePredictor> baseline) {
-        baselineBuilder = baseline;
+    @Baseline
+    public void setBaseline(BaselinePredictor baseline) {
+        this.baseline = baseline;
     }
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
      */
     @Override
-    protected FunkSVDRecommenderEngine buildNew(RatingBuildContext context) {
+    public FunkSVDModel build() {
+        System.err.println("BUILDING ___ _ _");
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -151,8 +126,6 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        BaselinePredictor baseline = baselineBuilder.build(context);
-        
         MutableSparseVector[] estimates = initializeEstimates(context, baseline);
         RatingSnapshot snapshot = context.ratingSnapshot();
         FastCollection<IndexedRating> ratings = snapshot.getRatings();
@@ -199,13 +172,13 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
             singularValues[feature] = unrm * inrm;
         }
         
-        return new FunkSVDRecommenderEngine(context.getDAO(),
-                featureCount, itemFeatures, userFeatures, singularValues,
-                clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
+        System.err.println("DONE BUILDING");
+        return new FunkSVDModel(featureCount, itemFeatures, userFeatures, singularValues,
+                                clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
     private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
-            BaselinePredictor baseline) {
+                                                      BaselinePredictor baseline) {
     	RatingSnapshot snapshot = context.ratingSnapshot();
         final int nusers = snapshot.userIndex().getObjectCount();
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
@@ -219,8 +192,8 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
     }
 
     private final void trainFeature(double[][] ufvs, double[][] ifvs,
-            MutableSparseVector[] estimates,
-            FastCollection<IndexedRating> ratings, int feature) {
+                                    MutableSparseVector[] estimates,
+                                    FastCollection<IndexedRating> ratings, int feature) {
         
         logger.trace("Training feature {}", feature);
 

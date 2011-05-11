@@ -31,12 +31,12 @@ import java.util.PriorityQueue;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.meta.Built;
 
 /**
  * User-user CF implementation that caches user data for faster computation.
@@ -50,6 +50,7 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  *
  */
+@Built
 public class CachingNeighborhoodFinder implements NeighborhoodFinder {
     /**
      * Builder for creating CachingNeighborhoodFinders.
@@ -58,7 +59,7 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
      */
     public static class Builder extends AbstractNeighborhoodFinderBuilder<CachingNeighborhoodFinder> {
         @Override
-        protected CachingNeighborhoodFinder buildNew(RatingBuildContext context) {
+        public CachingNeighborhoodFinder build() {
             int nusers = 0;
             Long2ObjectMap<Collection<UserRatingProfile>> cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
             RatingDataAccessObject data = context.getDAO();
@@ -88,10 +89,8 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
                 ((ArrayList<UserRatingProfile>) c).trimToSize();
             }
             
-            UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
-            
             return new CachingNeighborhoodFinder(similarity, neighborhoodSize,
-                    nusers, cache, norm);
+                                                 nusers, cache, normalizer);
         }
     }
     

@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params.meta;
+package org.grouplens.lenskit.svd.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -24,11 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.Builder;
+import org.grouplens.lenskit.params.meta.DefaultInt;
+import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
+@DefaultInt(0)
+@Parameter(Integer.class)
+@Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface DefaultBuilder {
-    Class<? extends Builder<?>> value();
-}
+public @interface IterationCount { }
