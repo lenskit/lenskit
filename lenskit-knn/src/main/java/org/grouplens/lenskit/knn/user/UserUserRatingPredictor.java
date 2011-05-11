@@ -59,6 +59,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         neighborhoodFinder = nbrf;
         normalizer = norm;
         this.baseline = baseline;
+        logger.debug("Built recommender with baseline {}", baseline);
     }
     
     /**

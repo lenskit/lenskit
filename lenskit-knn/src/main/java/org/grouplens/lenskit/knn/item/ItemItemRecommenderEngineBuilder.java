@@ -69,6 +69,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
     private Similarity<? super SparseVector> itemSimilarity;
     private double similarityThreshold;
     private SimilarityMatrixAccumulatorFactory matrixSimilarityFactory;
+    private int neighborhoodSize = 30;
     
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
     private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
@@ -105,6 +106,14 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
     
     public void setSimilarityMatrixAccumulatorFactory(SimilarityMatrixAccumulatorFactory factory) {
         matrixSimilarityFactory = factory;
+    }
+    
+    public int getNeighborhoodSize() {
+        return neighborhoodSize;
+    }
+    
+    public void setNeighborhoodSize(int sz) {
+        neighborhoodSize = sz;
     }
     
     public @Nullable RecommenderComponentBuilder<? extends BaselinePredictor> getBaselinePredictor() {
@@ -145,7 +154,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         ItemItemRecommenderEngine rec =
             new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
                                     baseline, items, context.getDAO());
-        ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold);
+        ItemItemRatingPredictor predictor = new ItemItemRatingPredictor(rec, similarityThreshold, neighborhoodSize);
         
         rec.setRatingPredictor(predictor);
         rec.setRatingRecommender(new ItemItemRatingRecommender(predictor));

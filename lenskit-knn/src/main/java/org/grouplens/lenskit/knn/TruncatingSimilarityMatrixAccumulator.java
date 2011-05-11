@@ -42,7 +42,11 @@ public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAc
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Factory implements SimilarityMatrixAccumulatorFactory {
-        private int maxNeighbors = 100;
+        private int maxNeighbors = 250;
+        
+        public int getMaxNeighborhoodSize() {
+            return maxNeighbors;
+        }
         
         public void setMaxNeighborhoodSize(int maxNeighbors) {
             this.maxNeighbors = maxNeighbors;

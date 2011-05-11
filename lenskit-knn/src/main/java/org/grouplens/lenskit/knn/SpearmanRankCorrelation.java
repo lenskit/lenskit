@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongArrays;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 import com.google.common.primitives.Doubles;
 
@@ -31,18 +32,15 @@ import com.google.common.primitives.Doubles;
  *
  */
 public class SpearmanRankCorrelation implements
-        OptimizableVectorSimilarity<SparseVector> {
-    private PearsonCorrelation pearson = new PearsonCorrelation();
+        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+    private OptimizableVectorSimilarity<SparseVector> pearson = new PearsonCorrelation();
     
-    public SpearmanRankCorrelation(int thresh) {
-        if (thresh > 0)
-            pearson = new SignificanceWeightedPearsonCorrelation(thresh);
-        else
-            pearson = new PearsonCorrelation();
+    public SpearmanRankCorrelation(double shrink) {
+        pearson = new PearsonCorrelation(shrink);
     }
     
     public SpearmanRankCorrelation() {
-        this(0);
+        this(0.0);
     }
     
     static SparseVector rank(final SparseVector vec) {
