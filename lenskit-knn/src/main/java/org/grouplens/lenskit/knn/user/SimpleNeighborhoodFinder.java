@@ -39,7 +39,7 @@ import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.CacheUserNeighborhood;
+import org.grouplens.lenskit.knn.user.params.CacheUserNeighborhood;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.slf4j.Logger;
@@ -166,6 +166,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
             normalizer.normalize(user, nurv);
             
             final double sim = similarity.similarity(nratings, nurv);
+            if (Double.isNaN(sim) || Double.isInfinite(sim))
+                continue;
             final Neighbor n = new Neighbor(user, urv.mutableCopy(), sim);
 
             LongIterator iit = urv.keySet().iterator();

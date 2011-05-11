@@ -116,7 +116,6 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
      */
     @Override
     public FunkSVDModel build() {
-        System.err.println("BUILDING ___ _ _");
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
@@ -172,7 +171,6 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             singularValues[feature] = unrm * inrm;
         }
         
-        System.err.println("DONE BUILDING");
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures, singularValues,
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }

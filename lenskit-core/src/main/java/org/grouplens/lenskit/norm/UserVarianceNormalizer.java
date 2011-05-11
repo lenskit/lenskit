@@ -20,14 +20,13 @@ package org.grouplens.lenskit.norm;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
-import java.util.Collection;
-
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.HofmannSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.util.FastCollection;
 
 /**
  * <p>
@@ -66,24 +65,25 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
         
         @Override
         public UserVarianceNormalizer build() {
-            // Don't bother wasting cycles if not smoothing
-            if (smoothing == 0)
-                return new UserVarianceNormalizer();
-            
-            double mean = 0;
             double variance = 0;
-            double sum = 0;
-            Collection<IndexedRating> fastRatings = context.ratingSnapshot().getRatings();
-            int numRatings = fastRatings.size();
-            for (IndexedRating rating : fastRatings) {
-                sum += rating.getRating();
+            
+            if (smoothing != 0) {
+                double mean = 0;
+                double sum = 0;
+                FastCollection<IndexedRating> ratings = context.ratingSnapshot().getRatings();
+                int numRatings = ratings.size();
+                for (IndexedRating rating : ratings.fast()) {
+                    sum += rating.getRating();
+                }
+                mean = sum / numRatings;
+                sum = 0;
+                for (IndexedRating rating : ratings.fast()) {
+                    double delta = mean - rating.getRating();
+                    sum += delta * delta;
+                }
+                variance = sum / numRatings;
             }
-            mean = sum / numRatings;
-            sum = 0;
-            for (IndexedRating rating : fastRatings) {
-                sum += Math.pow(mean - rating.getRating(), 2);
-            }
-            variance = sum / numRatings;
+            
             return new UserVarianceNormalizer(smoothing, variance);
         }
     }
@@ -106,6 +106,14 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 		this.smoothing = smoothing;
 		this.globalVariance = globalVariance;
 	}
+	
+	public double getSmoothing() {
+	    return smoothing;
+	}
+	
+	public double getGlobalVariance() {
+	    return globalVariance;
+	}
 
 	@Override
 	public VectorTransformation makeTransformation(long userId, final SparseVector ratings) {
@@ -116,7 +124,8 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 		 */
 		double sum = 0;
 		for (double rating : ratings.values()) {
-			sum += Math.pow(userMean - rating, 2);
+		    double diff = userMean - rating;
+			sum += diff * diff;
 		}
 		final double userStdDev = Math.sqrt((sum + smoothing * globalVariance) / (ratings.size() + smoothing));
 		

@@ -24,14 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.knn.user.NeighborhoodFinder;
-import org.grouplens.lenskit.knn.user.SimpleNeighborhoodFinder;
-import org.grouplens.lenskit.params.meta.DefaultClass;
+import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
-@DefaultClass(SimpleNeighborhoodFinder.class)
-@Parameter(NeighborhoodFinder.class)
+@DefaultInt(250)
+@Parameter(Integer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Neighborhood { }
+public @interface SimilarityNeighborhoodSize { }

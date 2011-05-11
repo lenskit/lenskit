@@ -42,9 +42,10 @@ import org.junit.Test;
  */
 public class UserVarianceNormalizerTest {
 	RatingDataAccessObject dao;
-	RatingBuildContext context;
+	RatingBuildContext rs;
 	SparseVector userRatings;
 	SparseVector uniformUserRatings;
+	UserVarianceNormalizer.Builder builder;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
 	
 	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
@@ -53,6 +54,8 @@ public class UserVarianceNormalizerTest {
 	
 	@Before
 	public void setUp() {
+	    builder = new UserVarianceNormalizer.Builder();
+	    
 		long[] keys = {0L, 1L, 2L};
 		double[] values = {0., 2., 4.};
 		userRatings = SparseVector.wrap(keys, values);
@@ -75,13 +78,28 @@ public class UserVarianceNormalizerTest {
 		addRating(ratings, 1, 6, 3);
 		dao = new RatingCollectionDAO.Manager(ratings).open();
 		PackedRatingSnapshot rs = new PackedRatingSnapshot.Builder(dao).build();
-		context = new PackedRatingBuildContext(dao, rs);
+		this.rs = new PackedRatingBuildContext(dao, rs);
+		builder.setRatingBuildContext(this.rs);
 	}
 	
 	@After
 	public void close() {
-	    context.close();
+	    rs.close();
 	    dao.close();
+	}
+
+	@Test
+	public void testBuilderNoSmoothing() {
+		UserVarianceNormalizer urvn = builder.build();
+		Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
+	}
+	
+	@Test
+	public void testBuilderSmoothing() {
+	    builder.setSmoothing(3);
+        UserVarianceNormalizer urvn = builder.build();
+        Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
+        Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
 	}
 
 	@Test
@@ -123,11 +141,8 @@ public class UserVarianceNormalizerTest {
 	}	
 	
 	@Test
-	public void testSmoothing() {
-	    UserVarianceNormalizer.Builder builder = new UserVarianceNormalizer.Builder();
-	    builder.setRatingBuildContext(context);
+	public void testSmoothingDetailed() {
 	    builder.setSmoothing(3.0);
-	    
 		UserVarianceNormalizer urvn = builder.build();
 
 		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);

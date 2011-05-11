@@ -48,7 +48,7 @@ public class TestFunkSVDRecommender {
     
     @Test
     public void testFunkSVDRecommenderEngineCreate() {
-        RecommenderEngine engine = FunkSVDRecommender.make(manager, 0);
+        RecommenderEngine engine = FunkSVDRecommender.make(manager, 10);
         Recommender rec = engine.open();
         
         try {

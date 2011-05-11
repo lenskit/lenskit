@@ -21,8 +21,8 @@ package org.grouplens.lenskit.knn.user;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
+import org.grouplens.lenskit.knn.params.SimilarityNeighborhoodSize;
+import org.grouplens.lenskit.knn.user.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.Normalizer;
 
@@ -37,7 +37,7 @@ public abstract class AbstractNeighborhoodFinderBuilder<T extends NeighborhoodFi
     protected Similarity<? super SparseVector> similarity;
     protected UserRatingVectorNormalizer normalizer;
 
-    @NeighborhoodSize
+    @SimilarityNeighborhoodSize
     public void setNeighborhoodSize(int neighborhood) {
         neighborhoodSize = neighborhood;
     }

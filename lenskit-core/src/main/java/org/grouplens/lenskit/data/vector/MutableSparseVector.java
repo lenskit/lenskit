@@ -19,8 +19,10 @@
 package org.grouplens.lenskit.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -223,6 +225,26 @@ public class MutableSparseVector extends SparseVector {
      */
     public final MutableSparseVector copy() {
         return mutableCopy();
+    }
+    
+    /**
+     * Copy the rating vector, optionally removing NaN values.
+     * @return A new rating vector which is a copy of this one.
+     */
+    public final MutableSparseVector copy(boolean removeNaN) {
+        if (removeNaN) {
+            boolean copy = false;
+            for (int i = 0; !copy && i < size; i++) {
+                if (Double.isNaN(values[i]))
+                    copy = true;
+            }
+            if (copy) {
+                long[] k2 = LongArrays.copy(keys, 0, size);
+                double[] v2 = DoubleArrays.copy(values, 0, size);
+                return wrap(k2, v2, true);
+            }
+        }
+        return copy();
     }
 
     /**

@@ -44,7 +44,7 @@ import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.params.ItemSimilarity;
+import org.grouplens.lenskit.knn.item.params.ItemSimilarity;
 import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
 import org.grouplens.lenskit.params.Baseline;
 import org.grouplens.lenskit.util.IntSortedArraySet;

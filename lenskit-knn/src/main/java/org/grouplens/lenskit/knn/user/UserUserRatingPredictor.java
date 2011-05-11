@@ -35,7 +35,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.params.Neighborhood;
+import org.grouplens.lenskit.knn.user.params.Neighborhood;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.Baseline;
@@ -63,6 +63,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         neighborhoodFinder = nbrf;
         normalizer = norm;
         this.baseline = baseline;
+        logger.debug("Built recommender with baseline {}", baseline);
     }
     
     /**

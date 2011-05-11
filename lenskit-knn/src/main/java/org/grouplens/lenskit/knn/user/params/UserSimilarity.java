@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.params;
+package org.grouplens.lenskit.knn.user.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -24,12 +24,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultBoolean;
+import org.grouplens.lenskit.knn.PearsonCorrelation;
+import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
-@DefaultBoolean(false)
-@Parameter(Boolean.class)
+@DefaultClass(PearsonCorrelation.class)
+@Parameter(Similarity.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CacheUserNeighborhood { }
+public @interface UserSimilarity { }
