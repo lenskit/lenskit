@@ -116,7 +116,7 @@ public class MutableSparseVector extends SparseVector {
      * @return The original value, or {@link Double#NaN} if there was no key
      * (or if the original value was {@link Double#NaN}).
      */
-    public double set(long key, double value) {
+    public final double set(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             double v = values[idx];
@@ -134,7 +134,7 @@ public class MutableSparseVector extends SparseVector {
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
-    public double add(long key, double value) {
+    public final double add(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -152,7 +152,7 @@ public class MutableSparseVector extends SparseVector {
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
-    public double addOrReplace(long key, double value) {
+    public final double addOrReplace(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -173,7 +173,7 @@ public class MutableSparseVector extends SparseVector {
      * with no corresponding element are unchanged.
      * @param other The vector to subtract.
      */
-    public void subtract(final SparseVector other) {
+    public final void subtract(final SparseVector other) {
         int i = 0;
         int j = 0;
         while (i < keys.length && j < other.keys.length) {
@@ -198,7 +198,7 @@ public class MutableSparseVector extends SparseVector {
      * with no corresponding element are unchanged.
      * @param other The vector to add.
      */
-    public void add(final SparseVector other) {
+    public final void add(final SparseVector other) {
         final int len = keys.length;
         final int olen = other.keys.length;
         int i = 0;
@@ -218,41 +218,10 @@ public class MutableSparseVector extends SparseVector {
     }
 
     /**
-     * Add another rating vector, clearing NaN values.
-     *
-     * <p>This is like {@link #add(SparseVector)} but, if a particular value in
-     * this array is NaN and occurs in the other array, the value is replaced
-     * rather than added.
-     * @param other The vector to add.
-     */
-    public void addClearNaN(final SparseVector other) {
-        final int len = keys.length;
-        final int olen = other.keys.length;
-        int i = 0;
-        int j = 0;
-        while (i < len && j < olen) {
-            if (keys[i] == other.keys[j]) {
-                final double v = values[i];
-                if (Double.isNaN(v))
-                    values[i] = other.values[j];
-                else
-                    values[i] = v + other.values[j];
-                i++;
-                j++;
-            } else if (keys[i] < other.keys[j]) {
-                i++;
-            } else {
-                j++;
-            }
-        }
-        clearCachedValues();
-    }
-
-    /**
      * Copy the rating vector.
      * @return A new rating vector which is a copy of this one.
      */
-    public MutableSparseVector copy() {
+    public final MutableSparseVector copy() {
         return mutableCopy();
     }
 

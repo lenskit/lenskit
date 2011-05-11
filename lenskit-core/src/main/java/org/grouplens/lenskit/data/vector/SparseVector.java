@@ -127,7 +127,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param key the key to look up
      * @return the key's value (or {@link Double.NaN} if no such value exists)
      */
-    public double get(long key) {
+    public final double get(long key) {
         return get(key, Double.NaN);
     }
 
@@ -137,7 +137,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param dft The value to return if the key is not in the vector
      * @return the value (or <var>dft</var> if no such key exists)
      */
-    public double get(long key, double dft) {
+    public final double get(long key, double dft) {
         int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0)
             return values[idx];
@@ -152,7 +152,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.
      */
-    public boolean containsKey(long key) {
+    public final boolean containsKey(long key) {
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
     
@@ -162,7 +162,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return
      */
     @Deprecated
-    public boolean containsId(long id) {
+    public final boolean containsId(long id) {
         return containsKey(id);
     }
 
@@ -200,12 +200,12 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         return DoubleCollections.unmodifiable(new DoubleArrayList(values, 0, size));
     }
 
-    public int size() {
+    public final int size() {
         return size;
     }
 
-    public boolean isEmpty() {
-        return size() == 0;
+    public final boolean isEmpty() {
+        return size == 0;
     }
 
     /**

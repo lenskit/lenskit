@@ -288,38 +288,45 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         // We'll need to keep track of our sum of squares
         double ssq = 0;
         for (IndexedRating r: ratings.fast()) {
-            final int uidx = r.getUserIndex();
-            final int iidx = r.getItemIndex();
-            final double value = r.getRating();
-            // Step 1: get the predicted value (based on preceding features
-            // and the current feature values)
-            final double estimate = estimates[uidx].get(r.getItemId());
-            double pred = estimate + ufv[uidx] * ifv[iidx];
-            pred = clampingFunction.apply(pred);
-
-            // Step 1b: add the estimate from remaining trailing values
-            // and clamp the result.
-            pred = clampingFunction.apply(pred + trailingValue);
-
-            // Step 2: compute the prediction error. We will follow this for
-            // the gradient descent.
-            final double err = value - pred;
-
-            // Step 3: update the feature values.  We'll save the old values first.
-            final double ouf = ufv[uidx];
-            final double oif = ifv[iidx];
-            // Then we'll update user feature preference
-            final double udelta = err * oif - trainingRegularization * ouf;
-            ufv[uidx] += udelta * learningRate;
-            // And the item feature relevance.
-            final double idelta = err * ouf - trainingRegularization * oif;
-            ifv[iidx] += idelta * learningRate;
-
-            // Finally, accumulate the squared error
-            ssq += err * err;
+            ssq += trainRating(ufv, ifv, estimates, trailingValue, r);
         }
         // We're done with this feature.  Compute the total error (RMSE)
         // and head off to the next iteration.
         return Math.sqrt(ssq / ratings.size());
+    }
+
+    private final double trainRating(double[] ufv, double[] ifv,
+                                 MutableSparseVector[] estimates,
+                                 double trailingValue,
+                                 IndexedRating r) {
+        final int uidx = r.getUserIndex();
+        final int iidx = r.getItemIndex();
+        final double value = r.getRating();
+        // Step 1: get the predicted value (based on preceding features
+        // and the current feature values)
+        final double estimate = estimates[uidx].get(r.getItemId());
+        double pred = estimate + ufv[uidx] * ifv[iidx];
+        pred = clampingFunction.apply(pred);
+
+        // Step 1b: add the estimate from remaining trailing values
+        // and clamp the result.
+        pred = clampingFunction.apply(pred + trailingValue);
+
+        // Step 2: compute the prediction error. We will follow this for
+        // the gradient descent.
+        final double err = value - pred;
+
+        // Step 3: update the feature values.  We'll save the old values first.
+        final double ouf = ufv[uidx];
+        final double oif = ifv[iidx];
+        // Then we'll update user feature preference
+        final double udelta = err * oif - trainingRegularization * ouf;
+        ufv[uidx] += udelta * learningRate;
+        // And the item feature relevance.
+        final double idelta = err * ouf - trainingRegularization * oif;
+        ifv[iidx] += idelta * learningRate;
+
+        // Finally, accumulate the squared error
+        return err * err;
     }
 }
