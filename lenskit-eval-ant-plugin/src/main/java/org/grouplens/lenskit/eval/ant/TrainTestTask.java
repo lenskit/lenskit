@@ -1,0 +1,182 @@
+/**
+ * 
+ */
+package org.grouplens.lenskit.eval.ant;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
+import org.codehaus.plexus.util.FileUtils;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.InvalidRecommenderException;
+import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
+import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
+import org.grouplens.lenskit.eval.results.ResultAccumulator;
+
+import com.google.common.primitives.Longs;
+
+/**
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+public class TrainTestTask extends Task {
+	private String databaseDriver = "org.sqlite.JDBC";
+	private FileSet databases;
+	private File outputDirectory;
+	private FileSet recommenderScripts;
+	private int threadCount = 1;
+	
+	public void setDatabaseDriver(String driver) {
+		databaseDriver = driver;
+	}
+	
+	public void setDir(File dir) {
+		outputDirectory = dir;
+	}
+	
+	public void setThreadCount(int n) {
+		threadCount = n;
+	}
+	
+	public void addConfiguredDatabases(FileSet dbs) {
+		databases = dbs;
+	}
+	
+	public void addConfiguredScripts(FileSet scripts) {
+		recommenderScripts = scripts;
+	}
+	
+	public void execute() throws BuildException {
+		if (databaseDriver != null) {
+			try {
+				Class.forName(databaseDriver);
+			} catch (ClassNotFoundException e) {
+				throw new BuildException("Database driver " + databaseDriver + " not found");
+			}
+		}
+		log("Running with thread count " + threadCount);
+		List<AlgorithmEvaluationRecipe> algorithms = new ArrayList<AlgorithmEvaluationRecipe>();
+		DirectoryScanner scriptScanner = recommenderScripts.getDirectoryScanner();
+		scriptScanner.scan();
+		String[] scriptNames = scriptScanner.getIncludedFiles();
+		File dir = scriptScanner.getBasedir();
+		try {
+			for (String name: scriptNames) {
+				File f = new File(dir, name);
+				log("Loading recommender from " + f.getPath());
+
+				String outfn = FileUtils.removeExtension(name) + ".csv";
+				File outf = new File(outputDirectory, outfn);
+				outf.getParentFile().mkdirs();
+				algorithms.add(AlgorithmEvaluationRecipe.load(f, outf));                    
+			}
+		} catch (InvalidRecommenderException e) {
+			throw new BuildException("Invalid recommender", e);
+		}
+
+		log(String.format("Evaluating recommenders in %d threads", threadCount));
+		ExecutorService svc = Executors.newFixedThreadPool(threadCount);
+		try {
+			List<Future<?>> results = new ArrayList<Future<?>>();
+			DirectoryScanner dbs = databases.getDirectoryScanner();
+			dbs.scan();
+			String[] dbNames = dbs.getIncludedFiles();
+			File[] dbFiles = new File[dbNames.length];
+			for (int i = 0; i < dbNames.length; i++) {
+				dbFiles[i] = new File(dbs.getBasedir(), dbNames[i]);
+			}
+			Arrays.sort(dbFiles, new Comparator<File>() {
+				public int compare(File f1, File f2) {
+					return Longs.compare(f1.length(), f2.length());
+				}
+			});
+			for (int i = 0; i < dbFiles.length; i++) {
+				File dbf = dbFiles[i];
+				for (AlgorithmEvaluationRecipe recipe: algorithms) {
+					String name = FileUtils.basename(dbf.getName(), ".db");
+					String dsn = "jdbc:sqlite:" + dbf.getPath();
+					Runnable task = new EvalTask(name, dsn, recipe.getAlgorithms(),
+							recipe.makeAccumulator(name));
+					results.add(svc.submit(task));
+				}
+			}
+
+			for (Future<?> f: results) {
+				boolean done = false;
+				while (!done) {
+					try {
+						f.get();
+						done = true;
+					} catch (InterruptedException e) {
+						/* no-op, try again */
+					} catch (ExecutionException e) {
+						Throwable base = e;
+						if (e.getCause() != null)
+							base = e;
+						throw new BuildException("Error testing recommender", base);
+					}
+				}
+			}
+		} finally {
+			svc.shutdown();
+		}       
+	}
+	
+	protected boolean showProgress() {
+		return false;
+	}
+	
+	class EvalTask implements Runnable {
+        private String name;
+        private String dsn;
+        private List<AlgorithmInstance> algorithms;
+        private ResultAccumulator accum;
+        
+        public EvalTask(String name, String dsn, List<AlgorithmInstance> algos, ResultAccumulator acc) {
+            this.name = name;
+            this.dsn = dsn;
+            algorithms = algos;
+            accum = acc;
+        }
+        public void run() {
+            log("Running evaluation on " + name);
+            log("Opening database " + dsn, Project.MSG_DEBUG);
+            Connection dbc;
+            try {
+                dbc = DriverManager.getConnection(dsn);
+            } catch (SQLException e) {
+                throw new RuntimeException("Error opening database", e);
+            } 
+            try {
+                log("Creating evaluator", Project.MSG_DEBUG);
+                TrainTestPredictEvaluator eval =
+                    new TrainTestPredictEvaluator(dbc, "train", "test");
+                if (showProgress())
+                    eval.setProgressStream(System.out);
+                log("Evaluating algorithms", Project.MSG_DEBUG);
+                eval.evaluateAlgorithms(algorithms, accum);
+            } finally {
+                try {
+                    dbc.close();
+                } catch (SQLException e) {
+                    handleErrorFlush("Error closing DB: " + e.getMessage());
+                }
+            }
+        }
+    }
+}
