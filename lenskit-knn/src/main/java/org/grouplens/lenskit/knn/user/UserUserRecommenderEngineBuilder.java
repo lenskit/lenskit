@@ -24,6 +24,8 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * UserUserRecommenderEngineBuilder is a RecommenderComponentBuilder that is used to
@@ -32,6 +34,7 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
  * @author Michael Ludwig
  */
 public class UserUserRecommenderEngineBuilder extends AbstractRecommenderComponentBuilder<UserUserRecommenderEngine> {
+    private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     private RecommenderComponentBuilder<? extends NeighborhoodFinder> neighborhoodBuilder;
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
     private RecommenderComponentBuilder<? extends UserRatingVectorNormalizer> normalizerBuilder;
@@ -85,6 +88,8 @@ public class UserUserRecommenderEngineBuilder extends AbstractRecommenderCompone
 
     @Override
     protected UserUserRecommenderEngine buildNew(RatingBuildContext context) {
+        logger.info("Building user-user recommender with {} users",
+            context.ratingSnapshot().getUserIds().size());
         NeighborhoodFinder n = neighborhoodBuilder.build(context);
         UserRatingVectorNormalizer norm = null;
         if (normalizerBuilder != null)
@@ -92,8 +97,10 @@ public class UserUserRecommenderEngineBuilder extends AbstractRecommenderCompone
         
         // Build the baseline predictor
         BaselinePredictor baseline = null;
-        if (baselineBuilder != null)
+        if (baselineBuilder != null) {
+            logger.debug("Using baseline {}", baselineBuilder);
             baseline = baselineBuilder.build(context);
+        }
         
         // Create the predictor and recommender
         UserUserRatingPredictor pred =
