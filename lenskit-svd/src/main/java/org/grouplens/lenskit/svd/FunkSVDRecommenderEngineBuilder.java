@@ -167,40 +167,9 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
         for (int i = 0; i < featureCount; i++) {
             trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
         }
-
-        logger.debug("Extracting singular values");
-        double[] singularValues = new double[featureCount];
-        for (int feature = 0; feature < featureCount; feature++) {
-            double[] ufv = userFeatures[feature];
-            double ussq = 0;
-            
-            for (int i = 0; i < numUsers; i++) {
-                double uf = ufv[i];
-                ussq += uf * uf;
-            }
-            double unrm = (double) Math.sqrt(ussq);
-            if (unrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numUsers; i++) {
-                    ufv[i] /= unrm;
-                }
-            }
-            double[] ifv = itemFeatures[feature];
-            double issq = 0;
-            for (int i = 0; i < numItems; i++) {
-                double fv = ifv[i];
-                issq += fv * fv;
-            }
-            double inrm = (double) Math.sqrt(issq);
-            if (inrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numItems; i++) {
-                    ifv[i] /= inrm;
-                }
-            }
-            singularValues[feature] = unrm * inrm;
-        }
         
         return new FunkSVDRecommenderEngine(context.getDAO(),
-                featureCount, itemFeatures, userFeatures, singularValues,
+                featureCount, itemFeatures, userFeatures,
                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 

@@ -76,7 +76,7 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
     protected double[] foldIn(long user, SparseVector ratings) {
     	final int nf = model.featureCount;
     	final double[][] ifeats = model.itemFeatures;
-    	final double[] svals = model.singularValues;
+    	final double[] svals = null; //model.singularValues;
         double featurePrefs[] = new double[nf];
         DoubleArrays.fill(featurePrefs, 0.0);
 
@@ -95,7 +95,6 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
     
     private MutableSparseVector predict(long user, double[] uprefs, SparseVector ratings, Collection<Long> items) {
         final int nf = model.featureCount;
-        final double[] svals = model.singularValues;
         final DoubleFunction clamp = model.clampingFunction;
         
         LongSortedSet iset;
@@ -103,7 +102,11 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
             iset = (LongSortedSet) items;
         else
             iset = new LongSortedArraySet(items);
-        MutableSparseVector preds = new MutableSparseVector(iset);
+        
+        if (ratings == null) {
+            ratings = Ratings.userRatingVector(getUserRatings(user));
+        }
+        MutableSparseVector preds = model.baseline.predict(user, ratings, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
@@ -111,18 +114,14 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
             if (idx < 0)
                 continue;
 
-            double score = 0;
+            double score = preds.get(item);
             for (int f = 0; f < nf; f++) {
-                score += uprefs[f] * svals[f] * model.getItemFeatureValue(idx, f);
+                score += uprefs[f] * model.getItemFeatureValue(idx, f);
                 score = clamp.apply(score);
             }
             preds.set(item, score);
         }
-        if (ratings == null) {
-            ratings = Ratings.userRatingVector(getUserRatings(user));
-        }
-        SparseVector bl = model.baseline.predict(user, ratings, items);
-        preds.add(bl);
+        
         return preds;
     }
     

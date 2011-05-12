@@ -41,7 +41,6 @@ public class FunkSVDRecommenderEngine implements RecommenderEngine {
 	public final int featureCount;
 	public final double itemFeatures[][];
 	public final double userFeatures[][];
-	public final double singularValues[];
 	public final DoubleFunction clampingFunction;
 	
 	public final Index itemIndex;
@@ -49,14 +48,13 @@ public class FunkSVDRecommenderEngine implements RecommenderEngine {
 	public final BaselinePredictor baseline;
 	
 	public FunkSVDRecommenderEngine(RatingDataAccessObject dao,
-	        int nfeatures, double[][] ifeats, double[][] ufeats, double[] svals,
+	        int nfeatures, double[][] ifeats, double[][] ufeats,
 	        DoubleFunction clamp, Index iidx, Index uidx,
 	        BaselinePredictor baseline) {
 	    this.dao = dao;
 		featureCount = nfeatures;
 		itemFeatures = ifeats;
 		userFeatures = ufeats;
-		singularValues = svals;
 		clampingFunction = clamp;
 		itemIndex = iidx;
 		userIndex = uidx;
