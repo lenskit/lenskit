@@ -19,33 +19,22 @@
 package org.grouplens.lenskit;
 
 import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
 /**
  * <p>
- * Builders are used to construct expensive objects that depend on a
- * {@link RatingBuildContext}. Once built the objects do not depend on the
- * context or {@link RatingDataAccessObject dao}. The expected behavior of a
- * RecommenderComponentBuilder is that it only ever builds an object once per context. This way, the
- * same builder can be used to share instances during a build.
- * </p>
- * <p>
- * An example of an object a RecommenderComponentBuilder would produce is an item-item similarity
- * matrix used in item-item recommenders.
+ * RecommenderComponentBuilders are used to construct usually-expensive objects
+ * that depend on a {@link RatingBuildContext}. An example of an object a
+ * RecommenderComponentBuilder would produce is an item-item similarity matrix
+ * used in item-item recommenders.
  * </p>
  * 
  * @author Michael Ludwig
  * @param <M>
  */
-public interface RecommenderComponentBuilder<M> {
-    /**
-     * Build the model object of type M within the given build context. If the
-     * it has already been built for the given context, the old instance should
-     * be returned, making the builder memoize the constructed objects. Hint:
-     * this can be easily done by extending {@link AbstractRecommenderComponentBuilder}.
-     * 
-     * @param context The context to build in
-     * @return An instance of type M built from the context
-     */
-    public M build(RatingBuildContext context);
+public abstract class RecommenderComponentBuilder<M> implements Builder<M> {
+    protected RatingBuildContext context;
+    
+    public void setRatingBuildContext(RatingBuildContext context) {
+        this.context = context;
+    }
 }

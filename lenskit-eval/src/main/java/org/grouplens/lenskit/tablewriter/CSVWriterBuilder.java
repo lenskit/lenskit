@@ -48,7 +48,7 @@ public class CSVWriterBuilder implements TableWriterBuilder {
      * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#makeWriter(java.io.Writer)
      */
     @Override
-    public CSVWriter makeWriter(Writer output) throws IOException {
+    public AbstractTableWriter makeWriter(Writer output) throws IOException {
         return new CSVWriter(output, columns.toArray(new String[columns.size()]));
     }
 

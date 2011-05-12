@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>lenskit</artifactId>
+    <groupId>org.grouplens.lenskit</groupId>
+    <version>0.0.3-SNAPSHOT</version>
+  </parent>
+  <groupId>org.grouplens.lenskit</groupId>
+  <artifactId>lenskit-eval-ant-plugin</artifactId>
+  <name>LensKit Eval Ant plugin</name>
+  <description>Plugin providing an Apache Ant task for evaluating LensKit recommenders.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.apache.ant</groupId>
+  		<artifactId>ant</artifactId>
+  		<version>1.8.2</version>
+  		<type>jar</type>
+  		<scope>provided</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.grouplens.lenskit</groupId>
+  		<artifactId>lenskit-eval</artifactId>
+  		<version>${project.version}</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>ch.qos.logback</groupId>
+  		<artifactId>logback-classic</artifactId>
+  		<type>jar</type>
+  		<scope>runtime</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.xerial</groupId>
+  		<artifactId>sqlite-jdbc</artifactId>
+  		<version>3.7.2</version>
+  		<type>jar</type>
+  		<scope>runtime</scope>
+  	</dependency>
+  </dependencies>
+</project>

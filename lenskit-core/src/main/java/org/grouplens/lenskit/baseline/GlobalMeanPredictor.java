@@ -20,9 +20,9 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Iterator;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.params.meta.Built;
 
 /**
  * Rating predictor that predicts the global mean rating for all items.
@@ -30,23 +30,32 @@ import org.grouplens.lenskit.data.context.RatingBuildContext;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
+@Built
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
-     * A builder used to create GlobalMeanPredictors.
+     * A default builder used to create GlobalMeanPredictors.
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<GlobalMeanPredictor> {
-
+    public static class Builder extends RecommenderComponentBuilder<GlobalMeanPredictor> {
         @Override
-        protected GlobalMeanPredictor buildNew(RatingBuildContext context) {
-            double avg = computeMeanRating(context.getRatings().fastIterator());
+        public GlobalMeanPredictor build() {
+            double avg = computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
             return new GlobalMeanPredictor(avg);
         }
     }
     
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Construct a new global mean predictor where it is assumed
+     * that the given value is the global mean.
+     * @param mean
+     */
+    public GlobalMeanPredictor(double mean) {
+        super(mean);
+    }
+    
     /**
      * Utility method to compute the mean or average of the rating values
      * contained in the given collection of ratings.
@@ -69,14 +78,5 @@ public class GlobalMeanPredictor extends ConstantPredictor {
             avg = total / count;
         
         return avg;
-    }
-
-    /**
-     * Construct a new global mean predictor where it is assumed
-     * that the given value is the global mean.
-     * @param mean
-     */
-    protected GlobalMeanPredictor(double mean) {
-        super(mean);
     }
 }

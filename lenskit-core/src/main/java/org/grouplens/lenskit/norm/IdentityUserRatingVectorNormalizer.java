@@ -18,8 +18,6 @@
  */
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -28,21 +26,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IdentityUserRatingVectorNormalizer extends
-        AbstractUserRatingVectorNormalizer {
-    /**
-     * Builder for the IdentityUserRatingVectorNormalizer.
-     * 
-     * @author Michael Ludwig
-     */
-    public static class Builder extends AbstractRecommenderComponentBuilder<IdentityUserRatingVectorNormalizer> {
-
-        @Override
-        protected IdentityUserRatingVectorNormalizer buildNew(RatingBuildContext context) {
-            return new IdentityUserRatingVectorNormalizer();
-        }
-    }
-    
+public class IdentityUserRatingVectorNormalizer extends AbstractUserRatingVectorNormalizer {
     private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
         
         @Override
@@ -64,5 +48,4 @@ public class IdentityUserRatingVectorNormalizer extends
             SparseVector ratings) {
         return IDENTITY_TRANSFORM;
     }
-
 }

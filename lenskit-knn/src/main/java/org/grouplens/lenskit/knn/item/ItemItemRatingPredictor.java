@@ -19,20 +19,27 @@
 package org.grouplens.lenskit.knn.item;
 
 import static java.lang.Math.abs;
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import static java.lang.Math.min;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.item.params.PredictorNeighborhoodSize;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -42,16 +49,17 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
-    protected final ItemItemRecommenderEngine model;
-    private final double similarityThreshold;
+    protected final ItemItemModel model;
+    private final int neighborhoodSize;
     
-    public ItemItemRatingPredictor(ItemItemRecommenderEngine model, double simThresh) {
-        super(model.getDAO());
+    public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
+                                   @PredictorNeighborhoodSize int nnbrs) {
+        super(dao);
         this.model = model;
-        similarityThreshold = simThresh;
+        neighborhoodSize = nnbrs;
     }
     
-    public ItemItemRecommenderEngine getRecommender() {
+    public ItemItemModel getModel() {
         return model;
     }
     
@@ -70,6 +78,12 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             return items;
         }
     }
+    
+    private static final Comparator<IndexedItemScore> itemComp = new Comparator<IndexedItemScore>() {
+        public int compare(IndexedItemScore s1, IndexedItemScore s2) {
+            return Double.compare(s2.getScore(), s1.getScore());
+        }
+    };
 
     @Override
     public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
@@ -82,59 +96,54 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             iset = (LongSortedSet) items;
         else
             iset = new LongSortedArraySet(items);
-
-        MutableSparseVector sums = new MutableSparseVector(iset);
-        MutableSparseVector weights = new MutableSparseVector(iset);
-        for (Long2DoubleMap.Entry rating: normed.fast()) {
-            final double r = rating.getDoubleValue();
-            for (IndexedItemScore score: model.getNeighbors(rating.getLongKey())) {
-                final double s = score.getScore();
-                final int idx = score.getIndex();
-                final long iid = model.getItem(idx);
-                weights.add(iid, abs(s));
-                sums.add(iid, s*r);
-            }
-        }
-
-        // create lists to accumulate the predictable items
-        LongArrayList predItems = new LongArrayList(sums.size());
-        DoubleArrayList predValues = new DoubleArrayList(sums.size());
-        LongArrayList unpredItems = new LongArrayList();
         
-        // Divide by weight into accumulators.
-        LongIterator iter = sums.keySet().iterator();
+        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
+        
+        // for each item, compute its prediction
+        LongIterator iter = iset.iterator();
+        List<IndexedItemScore> scores = new ArrayList<IndexedItemScore>();
+        LongList unpredItems = new LongArrayList();
         while (iter.hasNext()) {
-            final long iid = iter.next();
-            final double w = weights.get(iid);
-            if (w >= similarityThreshold) {
-                predItems.add(iid);
-                predValues.add(sums.get(iid) / w);
-            } else {
-                unpredItems.add(iid);
+            final long item = iter.nextLong();
+            
+            // find all potential neighbors
+            for (IndexedItemScore score: model.getNeighbors(item)) {
+                long oi = model.getItem(score.getIndex());
+                if (normed.containsKey(oi))
+                    scores.add(score);
             }
+            Collections.sort(scores, itemComp);
+            
+            // accumulate prediction
+            final int nnbrs = min(neighborhoodSize, scores.size());
+            double sum = 0;
+            double weight = 0;
+            for (IndexedItemScore s: scores.subList(0, nnbrs)) {
+                long oi = model.getItem(s.getIndex());
+                double sim = s.getScore();
+                weight += abs(sim);
+                sum += sim * normed.get(oi);
+            }
+            if (weight > 0)
+                preds.set(item, sum / weight);
+            else
+                unpredItems.add(item);
         }
-        
-        // Create a vector for the predictions and normalize it
-        MutableSparseVector preds = MutableSparseVector.wrap(predItems, predValues);
+
+        // denormalize the predictions
         norm.unapply(preds);
         
+        // apply the baseline if applicable
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null) {
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
-            // Re-use the sums vector to merge predictions with baseline
-            for (Long2DoubleMap.Entry e: preds.fast()) {
-                final long iid = e.getLongKey();
-                assert !basePreds.containsKey(iid);
-                sums.set(iid, e.getDoubleValue());
-            }
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
-                final long iid = e.getLongKey();
-                assert !preds.containsKey(iid);
-                sums.set(iid, e.getDoubleValue());
+                assert Double.isNaN(preds.get(e.getLongKey()));
+                preds.set(e.getLongKey(), e.getDoubleValue());
             }
-            return sums;
-        } else {
             return preds;
+        } else {
+            return preds.copy();
         }
     }
 

@@ -22,49 +22,74 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Write rows to a table.
  *
- * Instances of this class are used to actuall produce rows for a table.  There
+ * <p>Instances of this class are used to actually produce rows for a table.  There
  * are two interfaces provided: the {@link #writeRow(List)} and {@link #writeRow(Map)}
- * methods write an entire row at a time, while the {@link #setValue(int, String)}
- * and {@link #finishRow()} methods build up a row and then write it out.
+ * methods write an entire row at a time, while the {@link #startRow()}, 
+ * {@link #setValue(int, String)} and {@link #finishRow()} methods build up a
+ * row and then write it out.
  *
- * Once the table has finished, call {@link #finish()} to finish the table and
+ * <p>Once the table has finished, call {@link #finish()} to finish the table and
  * close the underlying output.
+ * 
+ * <p>TableWriter is thread safe, but only one thread can be building a row
+ * at a time.  {@link #writeRow(List)} and related methods write a row atomically,
+ * while {@link #startRow()} and {@link #finishRow()} manage a lock.
  *
  * @see TableWriterBuilder
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ThreadSafe
 public interface TableWriter {
     /**
      * Query the number of columns in the table.
      * @return
      */
     int getColumnCount();
+    
+    /**
+     * Start a row. Once the row is started, the current thread has a lock on
+     * the table writer until the row is finished or cancelled.
+     */
+    void startRow();
+    
+    /**
+     * Cancel a row, releasing the lock.
+     */
+    void cancelRow();
+    
+    /**
+     * Finish and output the current row. Releases the lock (even if the row
+     * writing fails!).
+     */
+    void finishRow() throws IOException;
 
     /**
-     * Write a row to the table.  If a row is already in progress, it is
-     * finished first.
+     * Write a row to the table. This method is thread-safe.
      * @param row A row of values.  If the table requires more columns, the
      * remaining columns are empty.
      * @raises RuntimeException if {@code row} has more items than the table has
      * columns.
      */
-    void writeRow(List<String> row) throws IOException;
+    void writeRow(String[] row) throws IOException;
 
     /**
      * Write a row to the table.  This extracts the row values from a key-value
      * map.
      * @param data A mapping from column names to values.  Columns not defined
      * are left empty.  The string representation of each entry is used.
+     * @see #writeRow(String[])
      */
     <V> void writeRow(Map<String,V> data) throws IOException;
 
     /**
      * Write a row to the table.
-     * @see #writeRow(List)
+     * @see #writeRow(String[])
      */
     void writeRow(Object... columns) throws IOException;
 
@@ -75,6 +100,7 @@ public interface TableWriter {
      * @throws IndexOutOfBoundsException if <var>col</var> is not a valid column.
      */
     void setValue(int col, long val);
+    
     /**
      * Set a column in the current row to an floating-point value.
      * @param col The column to set
@@ -82,6 +108,7 @@ public interface TableWriter {
      * @throws IndexOutOfBoundsException if <var>col</var> is not a valid column.
      */
     void setValue(int col, double val);
+    
     /**
      * Set a column in the current row to a string value.
      * @param col The column to set
@@ -89,14 +116,11 @@ public interface TableWriter {
      * @throws IndexOutOfBoundsException if <var>col</var> is not a valid column.
      */
     void setValue(int col, String val);
-    /**
-     * Finish and output the current row.
-     */
-    void finishRow() throws IOException;
+    
 
     /**
      * Finish the table.  Depending on how it was constructed, some underlying
-     * device may be closed.
+     * device may be closed.  All pending rows must be finished.
      */
     void finish() throws IOException;
 }

@@ -18,18 +18,10 @@
  */
 package org.grouplens.lenskit;
 
-import javax.annotation.Nullable;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
 public interface RecommenderEngine {
-    @Nullable
-    public RatingPredictor getRatingPredictor();
+    public Recommender open();
     
-    @Nullable
-    public DynamicRatingPredictor getDynamicRatingPredictor();
-    
-    @Nullable
-    public RatingRecommender getRatingRecommender();
-    
-    @Nullable
-    public BasketRecommender getBasketRecommender();
+    public Recommender open(RatingDataAccessObject dao, boolean shouldClose);
 }

@@ -18,16 +18,21 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import java.io.Closeable;
+
 import org.grouplens.lenskit.data.LongCursor;
 
-
 /**
- * DAO for user-item ID data.
+ * DAO for user-item ID data. Each DAO instance represents an open session to
+ * the data on the current thread, with similar semantics to a database session.
+ * DAO's are opened by using an implementation of the
+ * {@link DataAccessObjectManager}. The DAO's {@link #close()} must be called
+ * when the DAO is no longer in use. A DAO is not thread-safe and should only be
+ * used on the thread it was created on.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public interface UserItemDataAccessObject {
+public interface UserItemDataAccessObject extends Closeable {
     /**
      * Retrieve the users from the data source.
      * @return a cursor iterating the user IDs.
@@ -60,22 +65,9 @@ public interface UserItemDataAccessObject {
     int getItemCount();
     
     /**
-     * Open a DAO session for the current thread. All other methods are only
-     * valid inside a session.
-     * @throws IllegalStateException if a session is already open for the current
-     * thread.
+     * Close this DAO so that any underlying data session is closed. The DAO is
+     * no longer usable, and a new DAO must be re-opened from a
+     * DataAccessObjectManager.
      */
-    void openSession();
-    
-    /**
-     * Close the session on the current thread.
-     * @throws NoSessionException if no session is open on the current thread.
-     */
-    void closeSession();
-    
-    /**
-     * Query whether a session is open on this thread.
-     * @return <tt>true</tt> if the current thread has an open session.
-     */
-    boolean isSessionOpen();
+    public void close();
 }

@@ -26,10 +26,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.MeanDamping;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
@@ -52,32 +52,36 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractRecommenderComponentBuilder<ItemUserMeanPredictor> {
-        private double smoothing = 0;
+    public static class Builder extends RecommenderComponentBuilder<ItemUserMeanPredictor> {
+        private double damping = 0;
         
-        public double getSmoothing() {
-            return smoothing;
-        }
-        
-        public void setSmoothing(double s) {
-            smoothing = s;
+        @MeanDamping
+        public void setDamping(double d) {
+            damping = d;
         }
         
         @Override
-        protected ItemUserMeanPredictor buildNew(RatingBuildContext context) {
+        public ItemUserMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.getRatings().fastIterator(), smoothing, itemMeans);
+            double globalMean = computeItemAverages(context.ratingSnapshot().getRatings().fastIterator(), damping, itemMeans);
             
-            return new ItemUserMeanPredictor(itemMeans, globalMean, smoothing);
+            return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }
     }
     
     private static final long serialVersionUID = 1L;
-    protected final double smoothing;
+    protected final double damping;
 
-    protected ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double smooth) {
+    /**
+     * Create a new predictor, this assumes ownership of the given map.
+     * 
+     * @param itemMeans
+     * @param globalMean
+     * @param damping
+     */
+    public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
         super(itemMeans, globalMean);
-        this.smoothing = smooth;
+        this.damping = damping;
     }
 
     /**
@@ -98,7 +102,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
             long iid = rating.getLongKey();
             total += r - getItemMean(iid);
         }
-        return total / (values.size() + smoothing);
+        return total / (values.size() + damping);
     }
 
     /* (non-Javadoc)

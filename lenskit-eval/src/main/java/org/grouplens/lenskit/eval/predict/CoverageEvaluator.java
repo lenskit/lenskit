@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple evaluator that records user, rating and prediction counts and computes
@@ -32,6 +34,7 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
  *
  */
 public class CoverageEvaluator implements PredictionEvaluator {
+    private static final Logger logger = LoggerFactory.getLogger(CoverageEvaluator.class);
     private int colUsers;
     private int colAttempts;
     private int colGood;
@@ -74,6 +77,7 @@ public class CoverageEvaluator implements PredictionEvaluator {
             writer.setValue(colGood, ngood);
             
             double coverage = (double) ngood / npreds;
+            logger.info("Coverage: {}", coverage);
             writer.setValue(colCoverage, coverage);
         }
         

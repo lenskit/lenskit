@@ -18,8 +18,6 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
@@ -34,13 +32,9 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * can, of course, be reviewed. It may be that, after implementing build
  * contexts, we do not need the {@link UserItemDataAccessObject} any more.
  * 
- * <p>
- * <b>Note:</b> Rating DAOs must be thread-safe.
- * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-@ThreadSafe
 public interface RatingDataAccessObject extends UserItemDataAccessObject {
     /**
      * Get all ratings from the data set.

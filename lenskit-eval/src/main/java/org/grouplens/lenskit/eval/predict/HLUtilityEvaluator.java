@@ -49,7 +49,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 
 	@Override
 	public void setup(TableWriterBuilder builder) {
-		colHLU = builder.addColumn("HLU");
+		colHLU = builder.addColumn("HLUtility");
 	}
 
 	double computeHLU(LongList items, SparseVector values) {

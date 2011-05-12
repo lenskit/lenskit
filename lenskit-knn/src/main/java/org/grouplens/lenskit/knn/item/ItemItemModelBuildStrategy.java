@@ -44,5 +44,5 @@ interface ItemItemModelBuildStrategy {
      * @param state The build state containing data needed to build the matrix.
      * @return The completed similarity matrix
      */
-    SimilarityMatrix buildMatrix(ItemItemRecommenderEngineBuilder.BuildState state);
+    SimilarityMatrix buildMatrix(ItemItemModelBuilder.BuildState state);
 }

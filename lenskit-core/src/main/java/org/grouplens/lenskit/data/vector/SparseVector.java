@@ -23,7 +23,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleCollections;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
@@ -127,7 +126,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param key the key to look up
      * @return the key's value (or {@link Double.NaN} if no such value exists)
      */
-    public double get(long key) {
+    public final double get(long key) {
         return get(key, Double.NaN);
     }
 
@@ -137,7 +136,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param dft The value to return if the key is not in the vector
      * @return the value (or <var>dft</var> if no such key exists)
      */
-    public double get(long key, double dft) {
+    public final double get(long key, double dft) {
         int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0)
             return values[idx];
@@ -152,7 +151,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.
      */
-    public boolean containsKey(long key) {
+    public final boolean containsKey(long key) {
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
     
@@ -162,7 +161,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return
      */
     @Deprecated
-    public boolean containsId(long id) {
+    public final boolean containsId(long id) {
         return containsKey(id);
     }
 
@@ -200,12 +199,12 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         return DoubleCollections.unmodifiable(new DoubleArrayList(values, 0, size));
     }
 
-    public int size() {
+    public final int size() {
         return size;
     }
 
-    public boolean isEmpty() {
-        return size() == 0;
+    public final boolean isEmpty() {
+        return size == 0;
     }
 
     /**
@@ -271,6 +270,29 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             }
         }
         return dot;
+    }
+    
+    /**
+     * Count the common keys of two vectors.
+     * @param other The vector to count mutual keys with.
+     * @return The number of keys shared between this vector and <var>other</var>.
+     */
+    public int countCommonKeys(SparseVector other) {
+        int n = 0;
+        int i = 0;
+        int j = 0;
+        while (i < size && j < other.size) {
+            if (keys[i] == other.keys[j]) {
+                n++;
+                i++;
+                j++;
+            } else if (keys[i] < other.keys[j]) {
+                i++;
+            } else {
+                j++;
+            }
+        }
+        return n;
     }
 
     @Override
@@ -447,11 +469,15 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values) {
-        if (values.length < keys.length)
+        return new MutableSparseVector(keys, values, keys.length);
+    }
+    
+    public static MutableSparseVector wrap(long[] keys, double[] values, int length) {
+        if (values.length < length)
             throw new IllegalArgumentException("ratings shorter than items");
-        if (!isSorted(keys, keys.length))
-            throw new IllegalArgumentException("item array not sorted");
-        return new MutableSparseVector(keys, values);
+        if (!isSorted(keys, length))
+            throw new IllegalArgumentException("key array not sorted");
+        return new MutableSparseVector(keys, values, length);
     }
 
     /**
@@ -462,7 +488,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * code should not modify them (particularly the <var>items</var> array).
      *
      * <p>The arrays may be modified, particularly to remove NaN values.  The
-     * client should not depend on them exhibiting any particular behavior aftor
+     * client should not depend on them exhibiting any particular behavior after
      * calling this method.
      *
      * @param keys Array of entry keys. This array must be in sorted order and
@@ -474,26 +500,22 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
-        if (removeNaN) {
-            int pos = 0;
-            for (int i = 0; i < keys.length; i++) {
-                if (!Double.isNaN(values[i])) {
-                    if (i != pos) {
-                        keys[pos] = keys[i];
-                        values[pos] = values[i];
-                    }
-                    pos++;
-                }
-            }
-            if (pos < keys.length) {
-                keys = LongArrays.copy(keys, 0, pos);
-                values = DoubleArrays.copy(values, 0, pos);
-            }
-        }
         if (values.length < keys.length)
             throw new IllegalArgumentException("key/value length mismatch");
-        if (!isSorted(keys, keys.length))
-            throw new IllegalArgumentException("key array not sorted");
-        return wrap(keys, values);
+        
+        int length = keys.length;
+        if (removeNaN) {
+            length = 0;
+            for (int i = 0; i < keys.length; i++) {
+                if (!Double.isNaN(values[i])) {
+                    if (i != length) {
+                        keys[length] = keys[i];
+                        values[length] = values[i];
+                    }
+                    length++;
+                }
+            }
+        }
+        return wrap(keys, values, length);
     }
 }

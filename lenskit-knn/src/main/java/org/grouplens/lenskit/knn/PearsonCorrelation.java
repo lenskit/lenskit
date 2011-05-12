@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 /**
  * Similarity function using Pearson correlation.
@@ -40,7 +41,16 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector> {
+public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+    private final double shrinkage;
+    
+    public PearsonCorrelation() {
+        this(0);
+    }
+    
+    public PearsonCorrelation(double s) {
+        shrinkage = s;
+    }
 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
@@ -91,14 +101,10 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
                     e2 = it2.next();
             }
         } while (it1.hasNext() && it2.hasNext());
-
-        return computeFinalCorrelation(nCoratings, dot, var1, var2);
-    }
-
-    protected double computeFinalCorrelation(int nCoratings, double dot, double var1, double var2) {
+        
         if (nCoratings == 0)
             return 0;
         else
-            return dot / sqrt(var1 * var2);
+            return dot / (sqrt(var1 * var2) + shrinkage);
     }
 }

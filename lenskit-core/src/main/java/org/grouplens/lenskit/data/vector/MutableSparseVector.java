@@ -19,8 +19,10 @@
 package org.grouplens.lenskit.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -116,7 +118,7 @@ public class MutableSparseVector extends SparseVector {
      * @return The original value, or {@link Double#NaN} if there was no key
      * (or if the original value was {@link Double#NaN}).
      */
-    public double set(long key, double value) {
+    public final double set(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             double v = values[idx];
@@ -134,7 +136,7 @@ public class MutableSparseVector extends SparseVector {
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
-    public double add(long key, double value) {
+    public final double add(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -152,7 +154,7 @@ public class MutableSparseVector extends SparseVector {
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
-    public double addOrReplace(long key, double value) {
+    public final double addOrReplace(long key, double value) {
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -173,7 +175,7 @@ public class MutableSparseVector extends SparseVector {
      * with no corresponding element are unchanged.
      * @param other The vector to subtract.
      */
-    public void subtract(final SparseVector other) {
+    public final void subtract(final SparseVector other) {
         int i = 0;
         int j = 0;
         while (i < keys.length && j < other.keys.length) {
@@ -198,7 +200,7 @@ public class MutableSparseVector extends SparseVector {
      * with no corresponding element are unchanged.
      * @param other The vector to add.
      */
-    public void add(final SparseVector other) {
+    public final void add(final SparseVector other) {
         final int len = keys.length;
         final int olen = other.keys.length;
         int i = 0;
@@ -218,42 +220,31 @@ public class MutableSparseVector extends SparseVector {
     }
 
     /**
-     * Add another rating vector, clearing NaN values.
-     *
-     * <p>This is like {@link #add(SparseVector)} but, if a particular value in
-     * this array is NaN and occurs in the other array, the value is replaced
-     * rather than added.
-     * @param other The vector to add.
-     */
-    public void addClearNaN(final SparseVector other) {
-        final int len = keys.length;
-        final int olen = other.keys.length;
-        int i = 0;
-        int j = 0;
-        while (i < len && j < olen) {
-            if (keys[i] == other.keys[j]) {
-                final double v = values[i];
-                if (Double.isNaN(v))
-                    values[i] = other.values[j];
-                else
-                    values[i] = v + other.values[j];
-                i++;
-                j++;
-            } else if (keys[i] < other.keys[j]) {
-                i++;
-            } else {
-                j++;
-            }
-        }
-        clearCachedValues();
-    }
-
-    /**
      * Copy the rating vector.
      * @return A new rating vector which is a copy of this one.
      */
-    public MutableSparseVector copy() {
+    public final MutableSparseVector copy() {
         return mutableCopy();
+    }
+    
+    /**
+     * Copy the rating vector, optionally removing NaN values.
+     * @return A new rating vector which is a copy of this one.
+     */
+    public final MutableSparseVector copy(boolean removeNaN) {
+        if (removeNaN) {
+            boolean copy = false;
+            for (int i = 0; !copy && i < size; i++) {
+                if (Double.isNaN(values[i]))
+                    copy = true;
+            }
+            if (copy) {
+                long[] k2 = LongArrays.copy(keys, 0, size);
+                double[] v2 = DoubleArrays.copy(values, 0, size);
+                return wrap(k2, v2, true);
+            }
+        }
+        return copy();
     }
 
     /**

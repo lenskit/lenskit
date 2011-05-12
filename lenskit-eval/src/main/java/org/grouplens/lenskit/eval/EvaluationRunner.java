@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
-import org.grouplens.lenskit.eval.crossfold.CrossfoldEvaluator;
 import org.grouplens.lenskit.eval.predict.CoverageEvaluator;
 import org.grouplens.lenskit.eval.predict.MAEEvaluator;
 import org.grouplens.lenskit.eval.predict.NDCGEvaluator;
@@ -164,12 +163,12 @@ public final class EvaluationRunner {
             evals.add(new RMSEEvaluator());
             evals.add(new NDCGEvaluator());
 
-            try {
-                CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos);
-                benchmark.run(evals, options.getOutputFile());
-            } catch (Exception e) {
-                fail(3, "Error running benchmark", e);
-            }
+//            try {
+//                CrossfoldEvaluator benchmark = new CrossfoldEvaluator(data, options, algos);
+//                benchmark.run(evals, options.getOutputFile());
+//            } catch (Exception e) {
+//                fail(3, "Error running benchmark", e);
+//            }
         } catch (FileNotFoundException e) {
             fail(2, "Error loading input data", e);
             return; /* fail will not return */

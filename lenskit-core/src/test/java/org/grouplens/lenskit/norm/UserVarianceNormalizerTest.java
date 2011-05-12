@@ -24,6 +24,7 @@ import java.util.List;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -41,9 +42,10 @@ import org.junit.Test;
  */
 public class UserVarianceNormalizerTest {
 	RatingDataAccessObject dao;
-	RatingBuildContext rbc;
+	RatingBuildContext rs;
 	SparseVector userRatings;
 	SparseVector uniformUserRatings;
+	UserVarianceNormalizer.Builder builder;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
 	
 	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
@@ -52,6 +54,8 @@ public class UserVarianceNormalizerTest {
 	
 	@Before
 	public void setUp() {
+	    builder = new UserVarianceNormalizer.Builder();
+	    
 		long[] keys = {0L, 1L, 2L};
 		double[] values = {0., 2., 4.};
 		userRatings = SparseVector.wrap(keys, values);
@@ -72,24 +76,30 @@ public class UserVarianceNormalizerTest {
 		addRating(ratings, 1, 4, 3);
 		addRating(ratings, 1, 5, 3);
 		addRating(ratings, 1, 6, 3);
-		dao = new RatingCollectionDAO(ratings);
-		dao.openSession();
-		rbc = PackedRatingBuildContext.make(dao);
+		dao = new RatingCollectionDAO.Manager(ratings).open();
+		PackedRatingSnapshot rs = new PackedRatingSnapshot.Builder(dao).build();
+		this.rs = new PackedRatingBuildContext(dao, rs);
+		builder.setRatingBuildContext(this.rs);
 	}
 	
 	@After
 	public void close() {
-	    rbc.close();
-	    dao.closeSession();
+	    rs.close();
+	    dao.close();
 	}
 
 	@Test
-	public void testRatingBuildContextConstructor() {
-		UserVarianceNormalizer urvn = new UserVarianceNormalizer(0, null);
-		Assert.assertEquals(0.0, urvn.globalVariance, 0.0);
-		urvn = new UserVarianceNormalizer(3, rbc);
-		Assert.assertEquals(3.0, urvn.smoothing, 0.0);
-		Assert.assertEquals(2.0, urvn.globalVariance, MIN_DOUBLE_PRECISION);
+	public void testBuilderNoSmoothing() {
+		UserVarianceNormalizer urvn = builder.build();
+		Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
+	}
+	
+	@Test
+	public void testBuilderSmoothing() {
+	    builder.setSmoothing(3);
+        UserVarianceNormalizer urvn = builder.build();
+        Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
+        Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
 	}
 
 	@Test
@@ -131,9 +141,10 @@ public class UserVarianceNormalizerTest {
 	}	
 	
 	@Test
-	public void testSmoothing() {
-		UserVarianceNormalizer urvn;
-		urvn = new UserVarianceNormalizer(3, rbc);
+	public void testSmoothingDetailed() {
+	    builder.setSmoothing(3.0);
+		UserVarianceNormalizer urvn = builder.build();
+
 		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		final double mean = 2.0;

@@ -26,45 +26,41 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.ConstantValue;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
  * Rating predictor that predicts a constant rating for all items.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class ConstantPredictor implements BaselinePredictor {
-    /**
-     * A builder to create ConstantPredictors.
-     * 
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-    public static class Builder extends AbstractRecommenderComponentBuilder<ConstantPredictor> {
-        private double value = 0;
-        
-        public void setConstantValue(double value) {
-            this.value = value;
-        }
-        
-        @Override
-        protected ConstantPredictor buildNew(RatingBuildContext context) {
-            return new ConstantPredictor(value);
-        }
-    }
-    
     private static final long serialVersionUID = 1L;
     private final double value;
 
     /**
+     * Construct a new constant predictor.  This is exposed so other code
+     * can use it as a fallback.
+     * @param value
+     */
+    public ConstantPredictor(@ConstantValue double value) {
+        this.value = value;
+    }
+
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+        return constantPredictions(items, value);
+    }
+
+    /**
      * Construct a rating vector with the same rating for all items.
+     * 
      * @param items The items to include in the vector.
      * @param value The rating/prediction to give.
      * @return A rating vector mapping all items in <var>items</var> to
-     * <var>value</var>.
+     *         <var>value</var>.
      */
     public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
@@ -73,19 +69,5 @@ public class ConstantPredictor implements BaselinePredictor {
         double[] preds = new double[keys.length];
         Arrays.fill(preds, value);
         return MutableSparseVector.wrap(keys, preds);
-    }
-
-    /**
-     * Construct a new constant predictor.  This is exposed so other code
-     * can use it as a fallback.
-     * @param value
-     */
-    public ConstantPredictor(double value) {
-        this.value = value;
-    }
-
-    @Override
-    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        return constantPredictions(items, value);
     }
 }

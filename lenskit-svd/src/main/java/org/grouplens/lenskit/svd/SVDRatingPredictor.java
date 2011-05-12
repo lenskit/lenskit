@@ -27,6 +27,7 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Ratings;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -41,16 +42,16 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * user's ratings.
  *
  * @todo Look at using the user's feature preferences in some cases.
- * @todo Revise this class's relationship with {@link FunkSVDRecommenderEngine}.
+ * @todo Revise this class's relationship with {@link FunkSVDRecommender}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SVDRatingPredictor extends AbstractRatingPredictor {
-	protected final FunkSVDRecommenderEngine model;
+	protected final FunkSVDModel model;
 
-    protected SVDRatingPredictor(FunkSVDRecommenderEngine m) {
-        super(m.dao);
+    public SVDRatingPredictor(RatingDataAccessObject dao, FunkSVDModel m) {
+        super(dao);
         model = m;
     }
 

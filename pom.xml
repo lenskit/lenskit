@@ -73,6 +73,7 @@
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
+    <module>lenskit-eval-ant-plugin</module>
   </modules>
 
   <build>
