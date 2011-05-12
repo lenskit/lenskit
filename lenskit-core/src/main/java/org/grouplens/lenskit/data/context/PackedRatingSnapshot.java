@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A build context that is an in-memory snapshot in packed arrays.
+ * An in-memory snapshot of rating data stored in packed arrays.
  * 
  * <p>By default, this class is injected as a singleton.  Deployments may want
  * to override that in the Guice module to allow multiple build contexts to be
