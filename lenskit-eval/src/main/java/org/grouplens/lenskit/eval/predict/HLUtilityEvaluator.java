@@ -21,7 +21,6 @@ package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
@@ -44,7 +43,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 	}
 
 	@Override
-	public Accumulator makeAccumulator() {
+	public Accum makeAccumulator() {
 		return new Accum();
 	}
 
@@ -53,7 +52,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 		colHLU = builder.addColumn("HLU");
 	}
 
-	public double computeHLU(LongList items, SparseVector values) {
+	double computeHLU(LongList items, SparseVector values) {
 
 		double utility = 0;
 		int rank = 0;
@@ -70,8 +69,8 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 	public class Accum implements Accumulator {
 
 
-		private double totalUtil = 0;
-		private int nUsers = 0;
+		double total = 0;
+		int nusers = 0;
 
 		@Override
 		public void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions) {
@@ -79,19 +78,17 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 			LongList ideal = RankEvaluationUtils.sortKeys(ratings);
 			LongList actual = RankEvaluationUtils.sortKeys(predictions);
 			double idealUtility = computeHLU(ideal, ratings);
-			double actualUtility = computeHLU(actual, ratings);
-			totalUtil += actualUtility/idealUtility;
-			nUsers++;
+			double actualUtility = computeHLU(actual, predictions);
+			total += actualUtility/idealUtility;
+			nusers++;
 		}
 
 		@Override
 		public void finalize(TableWriter writer) {
 			
-			double v = totalUtil/nUsers;
+			double v = total/nusers;
 			logger.info("HLU: {}", v);
 			writer.setValue(colHLU, v);
 		}
-
 	}
-
 }

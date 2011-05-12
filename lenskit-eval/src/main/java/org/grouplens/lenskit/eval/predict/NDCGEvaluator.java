@@ -21,7 +21,6 @@ package org.grouplens.lenskit.eval.predict;
 import static java.lang.Math.log;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
@@ -50,7 +49,7 @@ public class NDCGEvaluator implements PredictionEvaluator {
     int colNDCG;
 
     @Override
-    public Accumulator makeAccumulator() {
+    public Accum makeAccumulator() {
         return new Accum();
     }
 
@@ -83,8 +82,8 @@ public class NDCGEvaluator implements PredictionEvaluator {
     }
     
     class Accum implements Accumulator {
-        private double total = 0;
-        private int nusers = 0;
+        double total = 0;
+        int nusers = 0;
         
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
@@ -92,7 +91,7 @@ public class NDCGEvaluator implements PredictionEvaluator {
             LongList ideal = RankEvaluationUtils.sortKeys(ratings);
             LongList actual = RankEvaluationUtils.sortKeys(predictions);
             double idealGain = computeDCG(ideal, ratings);
-            double gain = computeDCG(actual, ratings);
+            double gain = computeDCG(actual, predictions);
             total += gain / idealGain;
             nusers += 1;
         }
@@ -103,6 +102,5 @@ public class NDCGEvaluator implements PredictionEvaluator {
             logger.info("nDCG: {}", v);
             writer.setValue(colNDCG, v);
         }
-        
     }
 }
