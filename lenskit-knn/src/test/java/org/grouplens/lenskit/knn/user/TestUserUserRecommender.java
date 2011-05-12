@@ -23,8 +23,11 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
@@ -35,6 +38,7 @@ import org.junit.Test;
 
 public class TestUserUserRecommender {
     private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
+    private RecommenderEngine engine;
     
     @Before
     public void setup() {
@@ -43,17 +47,21 @@ public class TestUserUserRecommender {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
+        
         manager = new RatingCollectionDAO.Manager(rs);
+        
+        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        factory.bindDefault(RatingPredictor.class, UserUserRatingPredictor.class);
+        factory.bindDefault(RatingRecommender.class, UserUserRatingRecommender.class);
+        engine = factory.create(manager);
     }
     
     @Test
     public void testUserUserRecommenderEngineCreate() {
-        RecommenderEngine engine = UserUserRecommender.make(manager);
         Recommender rec = engine.open();
         
         try {
             // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec instanceof UserUserRecommender);
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof UserUserRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
             Assert.assertTrue(rec.getRatingRecommender() instanceof UserUserRatingRecommender);

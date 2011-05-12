@@ -57,7 +57,7 @@ public class UserMeanPredictor implements BaselinePredictor {
         @Override
         public UserMeanPredictor build() {
             logger.debug("Building new user mean predictor");
-            double mean = GlobalMeanPredictor.computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
+            double mean = GlobalMeanPredictor.computeMeanRating(snapshot.getRatings().fastIterator());
             return new UserMeanPredictor(mean, damping);
         }
     }

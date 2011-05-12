@@ -38,6 +38,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
@@ -45,8 +46,10 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.item.params.ItemSimilarity;
-import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.Baseline;
+import org.grouplens.lenskit.params.NormalizedSnapshot;
+import org.grouplens.lenskit.params.Normalizer;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
@@ -60,7 +63,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     private SimilarityMatrixAccumulatorFactory matrixSimilarityFactory;
     
     private BaselinePredictor baseline;
-    private NormalizedRatingSnapshot normalizedData;
+    private RatingSnapshot normalizedData;
+    private UserRatingVectorNormalizer normalizer;
     
     @ItemSimilarity
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
@@ -76,8 +80,14 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         baseline = predictor;
     }
 
-    public void setNormalizedRatingSnapshot(NormalizedRatingSnapshot data) {
+    @NormalizedSnapshot
+    public void setNormalizedRatingSnapshot(RatingSnapshot data) {
         this.normalizedData = data;
+    }
+    
+    @Normalizer
+    public void setNormalizer(UserRatingVectorNormalizer normalizer) {
+        this.normalizer = normalizer;
     }
     
     @Override
@@ -89,8 +99,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         SimilarityMatrix matrix = similarityStrategy.buildMatrix(state);
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
-        return new ItemItemModel(state.itemIndex, matrix, normalizedData.getNormalizer(),
-                                 baseline, items);
+        return new ItemItemModel(state.itemIndex, matrix, normalizer, baseline, items);
     }
     
     @ParametersAreNonnullByDefault
@@ -100,7 +109,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         public final @Nullable Long2ObjectMap<IntSortedSet> userItemSets;
         public final int itemCount;
 
-        public BuildState(NormalizedRatingSnapshot data, boolean trackItemSets) {
+        public BuildState(RatingSnapshot data, boolean trackItemSets) {
             itemIndex = data.itemIndex();
             itemCount = itemIndex.getObjectCount();
             itemRatings = new ArrayList<SparseVector>();
@@ -120,7 +129,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
          * @todo Fix this method to abstract item collection.
          * @todo Review and document this method.
          */
-        private void buildItemRatings(NormalizedRatingSnapshot data) {
+        private void buildItemRatings(RatingSnapshot data) {
             final boolean collectItems = userItemSets != null;
             final int nitems = itemCount;
 

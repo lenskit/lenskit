@@ -29,10 +29,8 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
-import org.grouplens.lenskit.data.context.AbstractRatingSnapshot;
-import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.Normalizer;
@@ -67,8 +65,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
-public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
+@Built(ephemeral=true)
+public class NormalizedRatingSnapshot implements RatingSnapshot {
     /**
      * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
      * with a specific {@link UserRatingVectorNormalizer}.
@@ -85,7 +83,7 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
         
         @Override
         public NormalizedRatingSnapshot build() {
-            return new NormalizedRatingSnapshot(context.ratingSnapshot(), normalizer);
+            return new NormalizedRatingSnapshot(snapshot, normalizer);
         }
     }
     

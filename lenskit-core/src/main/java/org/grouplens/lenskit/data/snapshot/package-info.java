@@ -16,33 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
-
-
 /**
- * Rating that also knows the indexes for its user and item.
- * 
- * <p>Implementations are not expected to consider index when comparing ratings
- * for equality.
- * 
- * @see RatingBuildContext
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * The build context interface and a simple implementation.
  */
-public interface IndexedRating extends Rating {
-	/**
-	 * Return the index for the user.  Indexes are 0-based and consecutive, so
-	 * they can be used for indexing into arrays.
-	 * @return The user index.
-	 */
-	int getUserIndex();
-	
-	/**
-	 * Return the index for the item.  Indexes are 0-based and consecutive, so
-	 * they can be used for indexing into arrays.
-	 * @return The item index.
-	 */
-	int getItemIndex();
-	
-	IndexedRating clone();
-}
+package org.grouplens.lenskit.data.snapshot;

@@ -34,10 +34,10 @@ import java.util.List;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -53,7 +53,7 @@ import org.junit.Test;
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
     private RatingDataAccessObject dao;
-    private RatingBuildContext ratingBuildContext;
+    private RatingSnapshot ratingSnapshot;
 
     @Before
     public void createRatingSource() {
@@ -64,12 +64,12 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(8, 5, 4));
         
         dao = new RatingCollectionDAO.Manager(rs).open();
-        ratingBuildContext = PackedRatingBuildContext.make(dao);
+        ratingSnapshot = new PackedRatingSnapshot.Builder(dao).build();
     }
     
     @After
     public void closeRatingSession() {
-        ratingBuildContext.close();
+        ratingSnapshot.close();
         dao.close();
     }
     
@@ -180,7 +180,7 @@ public class TestMeanPredictor {
     }
     
     private <T extends BaselinePredictor> T build(RecommenderComponentBuilder<T> builder) {
-        builder.setRatingBuildContext(ratingBuildContext);
+        builder.setRatingSnapshot(ratingSnapshot);
         return builder.build();
     }
 

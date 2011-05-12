@@ -16,13 +16,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.context;
+package org.grouplens.lenskit.data.snapshot;
+
+import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.io.Closeable;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.util.FastCollection;
 
 /**
  * Snapshot of the ratings data for building a recommender.
@@ -36,7 +41,7 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
  * 
  * <p>Implementers have a variety of options for implementing build contexts.
  * They can be in-memory snapshots, database transactions, database clones,
- * or even disk files.  RecommenderEngine build code does assume, however, that
+ * or even disk files.  Recommender build code does assume, however, that
  * multiple iterations is pretty fast.  Therefore, implementations should avoid
  * re-fetching the data over a network connection for each request.
  * 
@@ -49,74 +54,48 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
  * contexts.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @ThreadSafe
-public interface RatingBuildContext extends Closeable {
-    /**
-     * Key is a typed object that has instance identity semantics. It is used to
-     * store and retrieve cached values within a RatingBuildContext.
-     * 
-     * @author Michael Ludwig
-     * @param <T>
-     */
-    public static class Key<T> { }
+public interface RatingSnapshot extends Closeable {
+	/**
+	 * Get the set of user IDs in the snapshot.
+	 * @return A set of all known user IDs.
+	 */
+	LongCollection getUserIds();
 
-    /**
-     * Return the dao that is backing this RatingBuildContext.
-     * @return Return the value last associated with the given key.
-     * @param <T> The return type
-     * @param key The key instance used to store the value in this context
-     * @return The cached value or null if no value was cached
-     */
-	<T> T get(Key<T> key);
-
-    /**
-     * Store a value in this RatingBuildContext so that it can be retrieved
-     * later. A common use case for this method is providing memoization support
-     * for Builders. This will overwrite any previous value associated with the
-     * key.
-     * 
-     * @param <T> The type of the stored value
-     * @param key The key that the value is associated with
-     * @param value The new value
-     */
-	<T> void put(Key<T> key, T value);
+	/**
+	 * Get the set of item IDs in the snapshot.
+	 * @return A set of all known item IDs.
+	 */
+	LongCollection getItemIds();
 	
 	/**
-	 * Get the DAO for this build.
-	 * @review Do we still need this with dependency injection?
+	 * Get the user ID index.
+	 * @return The index mapping between user IDs and user indices.
 	 */
-	RatingDataAccessObject getDAO();
+	Index userIndex();
 	
 	/**
-	 * Get the full rating snapshot for building a recommender.
-	 * @return The RatingSnapshot containing all ratings at build time.
+	 * Get the item ID index.
+	 * @return The index mapping between user IDs and user indices.
 	 */
-	RatingSnapshot ratingSnapshot();
+	Index itemIndex();
 	
 	/**
-	 * Get a RatingSnapshot suitable for training a recommender.
-	 * Based on the build context parameters, this snapshot will contain
-	 * a portion of the data, with the rest held out in the tuningSnapshot
-	 * 
-	 * <p>This (and the companion method {@link #tuningSnapshot()}) are only
-	 * needed when a recommender's build process requires a train/test phase.
-	 * If the recommender is only to be built and does not need a train-test
-	 * split to optimize itself, use {@link #ratingSnapshot()}.
-	 * 
-	 * @return	a RatingSnapshot for viewing the training data
+	 * Get the collection of ratings in the snapshot.  The ratings are returned
+	 * in an undetermined order.  It is guaranteed that no duplicate ratings
+	 * appear - each <i>(user,item)</i> pair is rated at most once.
+	 * @return All ratings in the system.
 	 */
-	RatingSnapshot trainingSnapshot();
+	FastCollection<IndexedRating> getRatings();
 	
 	/**
-	 * Get a RatingSnapshot suitable for testing a recommender.
-	 * 
-	 * Based on the build context parameters, this this snapshot will contain
-	 * the portion of the data that was held out from the training data.
-	 * @return	a RatingSnapshot for viewing the testing data
+	 * Get the ratings for a particular user.  It is guaranteed that no duplicate
+	 * ratings appear - each <i>(user,item)</i> pair is rated at most once.
+	 * @param userId The user's ID.
+	 * @return The user's ratings, or an empty collection if the user is unknown.
 	 */
-	RatingSnapshot tuningSnapshot();
+	FastCollection<IndexedRating> getUserRatings(long userId);
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

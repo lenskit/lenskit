@@ -16,7 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- * The build context interface and a simple implementation.
- */
-package org.grouplens.lenskit.data.context;
+package org.grouplens.lenskit.params;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
+import org.grouplens.lenskit.params.meta.DefaultClass;
+import org.grouplens.lenskit.params.meta.Parameter;
+
+@Documented
+@DefaultClass(NormalizedRatingSnapshot.class)
+@Parameter(RatingSnapshot.class)
+@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NormalizedSnapshot { }

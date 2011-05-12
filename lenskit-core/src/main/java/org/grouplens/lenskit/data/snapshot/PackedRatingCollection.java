@@ -19,7 +19,7 @@
 /**
  * 
  */
-package org.grouplens.lenskit.data.context;
+package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;

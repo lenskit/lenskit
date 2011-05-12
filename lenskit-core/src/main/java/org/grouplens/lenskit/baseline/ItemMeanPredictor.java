@@ -74,7 +74,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
         public ItemMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             double globalMean = computeItemAverages(
-                context.ratingSnapshot().getRatings().fastIterator(), 
+                snapshot.getRatings().fastIterator(), 
                 damping, itemMeans);
             
             return new ItemMeanPredictor(itemMeans, globalMean);

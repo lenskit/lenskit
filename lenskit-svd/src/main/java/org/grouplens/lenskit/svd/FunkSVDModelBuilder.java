@@ -24,8 +24,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.params.Baseline;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
@@ -112,7 +111,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
+     * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.snapshot.RatingBuildContext)
      */
     @Override
     public FunkSVDModel build() {
@@ -125,8 +124,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        MutableSparseVector[] estimates = initializeEstimates(context, baseline);
-        RatingSnapshot snapshot = context.ratingSnapshot();
+        MutableSparseVector[] estimates = initializeEstimates(snapshot, baseline);
         FastCollection<IndexedRating> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
@@ -175,9 +173,8 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
+    private MutableSparseVector[] initializeEstimates(RatingSnapshot snapshot,
                                                       BaselinePredictor baseline) {
-    	RatingSnapshot snapshot = context.ratingSnapshot();
         final int nusers = snapshot.userIndex().getObjectCount();
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
         for (int i = 0; i < nusers; i++) {

@@ -34,12 +34,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.item.params.PredictorNeighborhoodSize;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -53,7 +56,8 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
-                                   @PredictorNeighborhoodSize int nnbrs) {
+                                   @PredictorNeighborhoodSize int nnbrs,
+                                   @Nullable UserRatingVectorNormalizer normalizer) {
         super(dao);
         this.model = model;
         neighborhoodSize = nnbrs;

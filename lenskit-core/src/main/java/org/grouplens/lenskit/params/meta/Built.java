@@ -29,4 +29,6 @@ import java.lang.annotation.Target;
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Built { }
+public @interface Built { 
+    boolean ephemeral() default false;
+}

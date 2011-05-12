@@ -23,11 +23,10 @@ import java.util.List;
 
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.After;
@@ -42,7 +41,7 @@ import org.junit.Test;
  */
 public class UserVarianceNormalizerTest {
 	RatingDataAccessObject dao;
-	RatingBuildContext rs;
+	RatingSnapshot rs;
 	SparseVector userRatings;
 	SparseVector uniformUserRatings;
 	UserVarianceNormalizer.Builder builder;
@@ -77,9 +76,8 @@ public class UserVarianceNormalizerTest {
 		addRating(ratings, 1, 5, 3);
 		addRating(ratings, 1, 6, 3);
 		dao = new RatingCollectionDAO.Manager(ratings).open();
-		PackedRatingSnapshot rs = new PackedRatingSnapshot.Builder(dao).build();
-		this.rs = new PackedRatingBuildContext(dao, rs);
-		builder.setRatingBuildContext(this.rs);
+		rs = new PackedRatingSnapshot.Builder(dao).build();
+		builder.setRatingSnapshot(rs);
 	}
 	
 	@After

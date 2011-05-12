@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.context;
+package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
-public class PackedRatingSnapshot extends AbstractRatingSnapshot {
+@Built(ephemeral=true)
+public class PackedRatingSnapshot implements RatingSnapshot {
     private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
     
 	private PackedRatingData data;
@@ -108,10 +108,9 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
 
 	@Override
 	public void close() {
-	    super.close();
 		data = null;
 	}
-
+	
     /**
      * A Factory that creates PackedRatingBuildSnapshots from an opened
      * RatingDataAccessObject.

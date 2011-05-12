@@ -34,9 +34,9 @@ import javax.script.ScriptException;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.snapshot.RatingBuildContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

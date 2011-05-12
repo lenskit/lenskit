@@ -39,9 +39,11 @@ import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.knn.params.SimilarityNeighborhoodSize;
 import org.grouplens.lenskit.knn.user.params.CacheUserNeighborhood;
+import org.grouplens.lenskit.knn.user.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Normalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,36 +63,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
-    
-    /**
-     * Builder for creating SimpleNeighborhoodFinders.
-     * 
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-    public static class Builder extends AbstractNeighborhoodFinderBuilder<SimpleNeighborhoodFinder> {
-        private boolean cacheUserRatingVectors = true;
-
-        /**
-         * Set whether to cache user rating vectors.  The default is <tt>true</tt>.
-         * @param cacheUserRatingVectors <tt>true</tt> to cache rating vectors
-         * in the resulting neighborhood finder.
-         */
-        @CacheUserNeighborhood
-        public void setCacheUserRatingVectors(boolean cacheUserRatingVectors) {
-            this.cacheUserRatingVectors = cacheUserRatingVectors;
-        }
-        
-        @Override
-        public SimpleNeighborhoodFinder build() {
-            return new SimpleNeighborhoodFinder(context.getDAO(),
-                                                neighborhoodSize, similarity,
-                                                normalizer,
-                                                cacheUserRatingVectors);
-        }
-    }
     
     static class CacheEntry {
         final long userId;
@@ -118,9 +92,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
      * @param nnbrs The number of neighbors to consider for each item.
      * @param sim The similarity function to use.
      */
-    protected SimpleNeighborhoodFinder(RatingDataAccessObject data, int nnbrs, 
-                                       Similarity<? super SparseVector> sim,
-                                       UserRatingVectorNormalizer norm, boolean cache) {
+    public SimpleNeighborhoodFinder(RatingDataAccessObject data,
+                                    @SimilarityNeighborhoodSize int nnbrs, 
+                                    @UserSimilarity Similarity<? super SparseVector> sim,
+                                    @Normalizer UserRatingVectorNormalizer norm,
+                                    @CacheUserNeighborhood boolean cache) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;

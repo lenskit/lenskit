@@ -28,15 +28,12 @@ import java.util.Set;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
+import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 import org.grouplens.lenskit.params.meta.Parameters;
@@ -44,6 +41,7 @@ import org.grouplens.lenskit.pico.BuilderAdapter;
 import org.grouplens.lenskit.pico.DependencyMonitor;
 import org.grouplens.lenskit.pico.JustInTimePicoContainer;
 import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
+import org.grouplens.lenskit.util.PrimitiveUtils;
 import org.picocontainer.BindKey;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.ComponentFactory;
@@ -61,40 +59,44 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 @ThreadSafe
 public class RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
-    private final Map<Class<?>, Class<?>> defaultBindings;
+    private final Map<Class<?>, Object> defaultBindings;
     
     public RecommenderEngineFactory() {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
-        defaultBindings = new HashMap<Class<?>, Class<?>>();
+        defaultBindings = new HashMap<Class<?>, Object>();
         
-        bindDefault(RatingBuildContext.class, PackedRatingBuildContext.class);
+        bindDefault(RatingSnapshot.class, PackedRatingSnapshot.class);
+        
+        // Technically this isn't needed since the default type is configured,
+        // but it's nice to show explicit bindings for these snapshots
+        bind(NormalizedSnapshot.class, NormalizedRatingSnapshot.class);
     }
     
-    public synchronized void setRecommender(Class<? extends Recommender> type) {
-        if (type == null)
-            throw new NullPointerException("Recommender type cannot be null");
-        
-        bindDefault(Recommender.class, type);
-    }
-    
-    public synchronized void bind(Class<? extends Annotation> param, Number constant) {
-        validateAnnotation(param);
-        if (constant != null) {
-            // Verify that the number is the proper primitive type
-            Class<?> paramType = Parameters.getParameterType(param);
-            
-            // For now we'll do exact type matching and not worry about
-            // float->double or int->long conversions
-            if (!paramType.isInstance(constant))
-                throw new IllegalArgumentException("Parameter " + param.getClass() + " expected a value of type " + paramType + ", not " + constant.getClass());
+    public synchronized void bind(Class<? extends Annotation> param, Object instance) {
+        // Special case for if instance is actually a class type
+        if (instance instanceof Class) {
+            bind(param, (Class<?>) instance);
+            return;
         }
-        updateBindings(annotationBindings, param, constant);
+        
+        // Proceed with normal instance binding
+        validateAnnotation(param);
+        if (instance != null) {
+            // Verify that the instance is the proper type
+            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
+            
+            // For now we'll do exact type matching
+            // (this parameters should use the boxed type)
+            if (!paramType.isInstance(instance))
+                throw new IllegalArgumentException("Parameter " + param.getClass() + " expected a value of type " + paramType + ", not " + instance.getClass());
+        }
+        updateBindings(annotationBindings, param, instance);
     }
     
     public synchronized void bind(Class<? extends Annotation> param, Class<?> instanceType) {
         validateAnnotation(param);
         // Verify that the instance type is of the appropriate type
-        Class<?> paramType = Parameters.getParameterType(param);
+        Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
         if (instanceType != null && !paramType.isAssignableFrom(instanceType))
             throw new IllegalArgumentException(instanceType + " is incompatible with the type expected by parameter " + param.getClass() 
                                                + ", expected " + paramType);
@@ -111,13 +113,29 @@ public class RecommenderEngineFactory {
         validateAnnotation(param);
         if (builderType != null) {
             // Verify that the builder generates the appropriate type
-            Class<?> paramType = Parameters.getParameterType(param);
+            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
             Class<?> builtType = getBuiltType(builderType);
             if (!paramType.isAssignableFrom(builtType))
                 throw new IllegalArgumentException(builderType + " creates instances incompatible with the type expected by parameter " + param.getClass()
                                                    + ", expected " + paramType + ", but was " + builtType);
         }
         updateBindings(annotationBindings, param, builderType);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public synchronized void bindBuilder(Class<? extends Annotation> param, Builder<?> builder) {
+        validateAnnotation(param);
+        if (builder != null) {
+            // Verify that the builder generates the appropriate type
+            Class<? extends Builder<?>> builderType = (Class<? extends Builder<?>>) builder.getClass();
+            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
+            Class<?> builtType = getBuiltType(builderType);
+            if (!paramType.isAssignableFrom(builtType))
+                throw new IllegalArgumentException(builderType + " creates instances incompatible with the type expected by parameter " + param.getClass()
+                                                   + ", expected " + paramType + ", but was " + builtType);
+
+        }
+        updateBindings(annotationBindings, param, builder);
     }
     
     public synchronized <M> void bindDefault(Class<M> superType, Class<? extends M> instanceType) {
@@ -136,6 +154,18 @@ public class RecommenderEngineFactory {
         }
     }
     
+    public synchronized <M> void bindDefault(Class<M> superType, M instance) {
+        if (superType == null)
+            throw new NullPointerException("Super-type cannot be null");
+        // Verify instance is actually a subtype
+        if (instance != null && !superType.isInstance(instance))
+            throw new IllegalArgumentException(instance + " is not a subclass of " + superType);
+        
+        // Since we have an instance, there is no distinction between if it
+        // uses a builder or not (it's already been built)
+        updateBindings(defaultBindings, superType, instance);
+    }
+    
     public synchronized <M> void bindDefaultBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
         if (superType == null)
             throw new NullPointerException("Super-type cannot be null");
@@ -149,12 +179,27 @@ public class RecommenderEngineFactory {
         updateBindings(defaultBindings, superType, builderType);
     }
     
+    @SuppressWarnings("unchecked")
+    public synchronized <M> void bindDefaultBuilder(Class<M> superType, Builder<? extends M> builder) {
+        if (superType == null)
+            throw new NullPointerException("Super-type cannot be null");
+        if (builder != null) {
+            // Verify that the builder generates the appropriate type
+            Class<? extends Builder<?>> builderType = (Class<? extends Builder<?>>) builder.getClass();
+            Class<?> builtType = getBuiltType(builderType);
+            if (!superType.isAssignableFrom(builtType))
+                throw new IllegalArgumentException(builderType + " creates instances of " + builtType 
+                                                   + ", which are not subclasses of " + superType);
+        }
+        updateBindings(defaultBindings, superType, builder);
+    }
+    
     private void validateAnnotation(Class<? extends Annotation> param) {
         if (param == null)
-            throw new NullPointerException("Annotation, param, cannot be null");
+            throw new NullPointerException("Annotation cannot be null");
         
         if (!Parameters.isParameter(param))
-            throw new IllegalArgumentException("Annotation, param, must be annotated with Parameter");
+            throw new IllegalArgumentException("Annotation must be annotated with Parameter");
     }
     
     private <K, V> void updateBindings(Map<K, ? super V> bindings, K key, V value) {
@@ -170,15 +215,14 @@ public class RecommenderEngineFactory {
         return create(manager, null);
     }
     
-    @SuppressWarnings("rawtypes")
     protected RecommenderEngine create(DataAccessObjectManager<? extends RatingDataAccessObject> manager, PicoContainer parent) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
-        Map<Class<?>, Class<?>> defaultBindings;
+        Map<Class<?>, Object> defaultBindings;
         
         synchronized(this) {
             // Clone configuration so that this build is thread safe
             annotationBindings = new HashMap<Class<? extends Annotation>, Object>(this.annotationBindings);
-            defaultBindings = new HashMap<Class<?>, Class<?>>(this.defaultBindings);
+            defaultBindings = new HashMap<Class<?>, Object>(this.defaultBindings);
         }
         
         DependencyMonitor daoMonitor = new DependencyMonitor(RatingDataAccessObject.class);
@@ -203,17 +247,17 @@ public class RecommenderEngineFactory {
         RatingDataAccessObject buildDao = manager.open();
         try {
             buildContainer.addComponent(buildDao);
-            RatingBuildContext context = buildContainer.getComponent(RatingBuildContext.class);
-            try {
-                // Construct all known objects to discover dependencies and to build things made by builders
-                buildContainer.getComponents();
-            } finally {
-                context.close();
-            }
+            // Construct all known objects to discover dependencies and to build things made by builders
+            buildContainer.getComponents();
+            
+            // Must make sure to close all RatingSnapshots
+            for (RatingSnapshot snapshot: buildContainer.getComponents(RatingSnapshot.class))
+                snapshot.close();
         } finally {
             // Close the opened dao
             buildDao.close();
         }
+
         Set<Object> daoDependentKeys = daoMonitor.getDependentKeys();
 
         // Create a new container that will be used by the RecommenderEngine.
@@ -224,16 +268,13 @@ public class RecommenderEngineFactory {
         Map<Object, Object> sessionBindings = new HashMap<Object, Object>();
         
         // Configure recommender container with all bindings that don't depend on a dao
+        // FIXME: we really ought to configure the JIT bound objects too in-case parameters/defaults
+        //   change what gets bound
         for (Entry<Object, Object> binding: keyBindings.entrySet()) {
-            Object key = binding.getKey();
-            Class keyType = (key instanceof Class ? (Class) key : ((BindKey) key).getType());
-            
-            if (RatingBuildContext.class.isAssignableFrom(keyType) || RatingDataAccessObject.class.isAssignableFrom(keyType)
-                || Builder.class.isAssignableFrom(keyType)) {
-                // Do not configure any builders, contexts or daos
+            if (!isBindingValidAfterBuild(binding.getValue()))
                 continue;
-            }
             
+            Object key = binding.getKey();
             if (daoDependentKeys.contains(key)) {
                 // This key (or some of its dependencies) depends on a dao session,
                 // so it can only be constructed at the session container level
@@ -246,7 +287,7 @@ public class RecommenderEngineFactory {
                 // configured at the recommender container level
                 if (binding.getValue() instanceof BuilderAdapter) {
                     // This was a built type, so bind to the built instance
-                    //  BuildAdapters memoize so this won't be expensive at all
+                    // The buildContainer caches instances so this is a cheap lookup
                     recommenderContainer.addComponent(key, buildContainer.getComponent(key));
                 } else {
                     // This wasn't meant to be built so configure binding again
@@ -257,9 +298,11 @@ public class RecommenderEngineFactory {
         
         // Add additional configuration for the built instances that were JIT bound
         for (Entry<Object, BuilderAdapter<?>> jitBinding: jitBuilderFactory.jitBuilderAdapters.entrySet()) {
+            if (!isBindingValidAfterBuild(jitBinding.getValue()))
+                continue;
+            
             if (daoDependentKeys.contains(jitBinding.getKey()))
                 throw new IllegalStateException("Binding relying on a Builder cannot depend on a DAO");
-
             // As above, the built instance should be memoized so this is very fast
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
@@ -271,52 +314,96 @@ public class RecommenderEngineFactory {
         return engine;
     }
     
+    private boolean isBindingValidAfterBuild(Object value) {
+        Class<?> implType = null;
+        if (value instanceof BuilderAdapter) { 
+            implType = ((BuilderAdapter<?>) value).getComponentImplementation();
+        } else if (value instanceof Class) {
+            implType = (Class<?>) value;
+        } else {
+            implType = value.getClass();
+        }
+        
+        // Do not configure any builders, snapshots or daos
+        if (RatingSnapshot.class.isAssignableFrom(implType) || RatingDataAccessObject.class.isAssignableFrom(implType)
+            || Builder.class.isAssignableFrom(implType)) {
+            return false;
+        }
+        
+        // Also check if it is a built type declared as ephemeral
+        Built built = implType.getAnnotation(Built.class);
+        if (built != null && built.ephemeral())
+            return false;
+
+        return true;
+    }
+    
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Map<Object, Object> generateBindings(Map<Class<? extends Annotation>, Object> annotationBindings,
-                                                 Map<Class<?>, Class<?>> defaultBindings) {
+                                                 Map<Class<?>, Object> defaultBindings) {
         Map<Object, Object> keyBindings = new HashMap<Object, Object>();
         
         // Configure annotation bound types
         for (Entry<Class<? extends Annotation>, Object> paramBinding: annotationBindings.entrySet()) {
             Object value = paramBinding.getValue();
             Class implType = null;
-            boolean usesBuilder = (paramBinding.getValue() instanceof Class &&
-                                   Builder.class.isAssignableFrom((Class) value));
+            boolean usesBuilder = false;
             
-            if (paramBinding.getValue() instanceof Number)
-                implType = paramBinding.getValue().getClass();
-            else if (usesBuilder)
-                implType = getBuiltType((Class) value);
-            else
-                implType = (Class<?>) paramBinding.getValue();
+            if (value instanceof Class) {
+                if (Builder.class.isAssignableFrom((Class) value)) {
+                    implType = getBuiltType((Class) value);
+                    usesBuilder = true;
+                } else {
+                    implType = (Class) value;
+                }
+            } else {
+                if (value instanceof Builder) {
+                    implType = getBuiltType((Class) value.getClass());
+                    usesBuilder = true;
+                } else {
+                    implType = value.getClass();
+                }
+            }
             
+            implType = PrimitiveUtils.box(implType);
             
             // Walk up the type tree, creating bindings for every intermediate type
             // to allow for more specific injection points
-            Class interfaceType = Parameters.getParameterType(paramBinding.getKey());
-            while(interfaceType.isAssignableFrom(implType)) {
+            // FIXME: I don't think that this loop is sufficient for tree hierarchies that
+            // involve subinterfaces (i.e. RatingPredictor and DynamicRatingPredictor)
+            Class interfaceType = PrimitiveUtils.box(Parameters.getParameterType(paramBinding.getKey()));
+            while(implType != null && interfaceType.isAssignableFrom(implType)) {
                 BindKey key = new BindKey(implType, paramBinding.getKey());
-                if (usesBuilder)
-                    keyBindings.put(key, new BuilderAdapter(key, (Class) value));
-                else
+                if (!usesBuilder) {
                     keyBindings.put(key, value);
-                
+                } else if (value instanceof Class) {
+                    keyBindings.put(key, new BuilderAdapter(key, (Class) value));
+                } else {
+                    keyBindings.put(key, new BuilderAdapter(key, (Builder) value));
+                }
+                    
                 implType = implType.getSuperclass();
+                if (implType != null && implType.equals(Object.class))
+                    implType = interfaceType;
             }
         }
         
         // Configure type-to-type bindings
-        for (Entry<Class<?>, Class<?>> dfltBinding: defaultBindings.entrySet()) {
-            boolean usesBuilder = (dfltBinding.getValue() instanceof Class &&
-                                   Builder.class.isAssignableFrom((Class) dfltBinding.getValue()));
+        for (Entry<Class<?>, Object> dfltBinding: defaultBindings.entrySet()) {
+            Object key = dfltBinding.getKey();
+            Object value = dfltBinding.getValue();
             
-            // We don't need to walk the type hierarchy in this case because PicoContainer
-            // is smart enough to do that when asking for a component of just a type
-            // (the first case was complicated since it used BindKeys)
-            if (usesBuilder)
-                keyBindings.put(dfltBinding.getKey(), new BuilderAdapter(dfltBinding.getKey(), (Class) dfltBinding.getValue()));
-            else
-                keyBindings.put(dfltBinding.getKey(), dfltBinding.getValue());
+            if (value instanceof Class) {
+                if (Builder.class.isAssignableFrom((Class) value))
+                    keyBindings.put(key, new BuilderAdapter(key, (Class) value));
+                else
+                    keyBindings.put(key, value);
+            } else {
+                if (value instanceof Builder)
+                    keyBindings.put(key, new BuilderAdapter(key, (Builder) value));
+                else
+                    keyBindings.put(key, value);
+            }
         }
         
         return keyBindings;
@@ -383,17 +470,17 @@ public class RecommenderEngineFactory {
 
         @Override
         public Recommender open() {
-            return open(manager.open());
+            return open(manager.open(), true);
         }
 
         @Override
         public Recommender open(RatingDataAccessObject dao, boolean shouldClose) {
             if (dao == null)
                 throw new NullPointerException("Dao cannot be null when this method is used");
-            return open(new CloseableDataAccessObjectWrapper(dao, shouldClose));
+            return new BasicRecommender(createSessionContainer(dao), dao, shouldClose);
         }
         
-        private Recommender open(RatingDataAccessObject dao) {
+        private PicoContainer createSessionContainer(RatingDataAccessObject dao) {
             ComponentFactory factory = new Caching().wrap(new ParameterAnnotationInjector.Factory());
             MutablePicoContainer sessionContainer = new JustInTimePicoContainer(factory, 
                                                                                 recommenderContainer);
@@ -404,81 +491,7 @@ public class RecommenderEngineFactory {
             
             // Add in the dao
             sessionContainer.addComponent(dao);
-            
-            // Ask for and return a Recommender. The Recommender should have a 
-            // session injected and it is responsible for closing it
-            return sessionContainer.getComponent(Recommender.class);
-        }
-    }
-    
-    private static class CloseableDataAccessObjectWrapper implements RatingDataAccessObject {
-        private final boolean shouldClose;
-        private final RatingDataAccessObject delegate;
-        
-        public CloseableDataAccessObjectWrapper(RatingDataAccessObject delegate, boolean shouldClose) {
-            this.delegate = delegate;
-            this.shouldClose = shouldClose;
-        }
-        
-        @Override
-        public void close() {
-            if (shouldClose)
-                delegate.close();
-        }
-
-        @Override
-        public LongCursor getUsers() {
-            return delegate.getUsers();
-        }
-
-        @Override
-        public int getUserCount() {
-            return delegate.getUserCount();
-        }
-
-        @Override
-        public LongCursor getItems() {
-            return delegate.getItems();
-        }
-
-        @Override
-        public int getItemCount() {
-            return delegate.getItemCount();
-        }
-
-        @Override
-        public Cursor<Rating> getRatings() {
-            return delegate.getRatings();
-        }
-
-        @Override
-        public Cursor<Rating> getRatings(SortOrder order) {
-            return delegate.getRatings(order);
-        }
-
-        @Override
-        public Cursor<UserRatingProfile> getUserRatingProfiles() {
-            return delegate.getUserRatingProfiles();
-        }
-
-        @Override
-        public Cursor<Rating> getUserRatings(long userId) {
-            return delegate.getUserRatings(userId);
-        }
-
-        @Override
-        public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
-            return delegate.getUserRatings(userId, order);
-        }
-
-        @Override
-        public Cursor<Rating> getItemRatings(long itemId) {
-            return delegate.getItemRatings(itemId);
-        }
-
-        @Override
-        public Cursor<Rating> getItemRatings(long itemId, SortOrder order) {
-            return delegate.getItemRatings(itemId, order);
+            return sessionContainer;
         }
     }
     

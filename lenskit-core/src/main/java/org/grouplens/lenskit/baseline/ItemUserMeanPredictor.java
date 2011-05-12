@@ -30,6 +30,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
@@ -46,6 +47,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Built
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
@@ -63,7 +65,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         @Override
         public ItemUserMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(context.ratingSnapshot().getRatings().fastIterator(), damping, itemMeans);
+            double globalMean = computeItemAverages(snapshot.getRatings().fastIterator(), damping, itemMeans);
             
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }

@@ -70,7 +70,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
             if (smoothing != 0) {
                 double mean = 0;
                 double sum = 0;
-                FastCollection<IndexedRating> ratings = context.ratingSnapshot().getRatings();
+                FastCollection<IndexedRating> ratings = snapshot.getRatings();
                 int numRatings = ratings.size();
                 for (IndexedRating rating : ratings.fast()) {
                     sum += rating.getRating();
