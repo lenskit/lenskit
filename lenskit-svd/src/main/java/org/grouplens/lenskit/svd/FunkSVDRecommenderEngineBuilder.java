@@ -279,7 +279,7 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
     	if (iterationCount > 0) {
     		return epoch >= iterationCount;
     	} else {
-    		return epoch >= MIN_EPOCHS && rmse < oldRmse - trainingThreshold;
+    		return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
     	}
     }
 
