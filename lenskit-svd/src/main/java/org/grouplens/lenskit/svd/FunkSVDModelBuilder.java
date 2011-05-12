@@ -63,8 +63,6 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
     // Minimum number of epochs to run to train a feature
     private static final double MIN_EPOCHS = 50;
-    // Internal epsilon to avoid division by 0
-    private static final double MIN_FEAT_NORM = 0.0000000001;
 
     private int featureCount;
     private double learningRate;
@@ -137,39 +135,8 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         for (int i = 0; i < featureCount; i++) {
             trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
         }
-
-        logger.debug("Extracting singular values");
-        double[] singularValues = new double[featureCount];
-        for (int feature = 0; feature < featureCount; feature++) {
-            double[] ufv = userFeatures[feature];
-            double ussq = 0;
-            
-            for (int i = 0; i < numUsers; i++) {
-                double uf = ufv[i];
-                ussq += uf * uf;
-            }
-            double unrm = (double) Math.sqrt(ussq);
-            if (unrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numUsers; i++) {
-                    ufv[i] /= unrm;
-                }
-            }
-            double[] ifv = itemFeatures[feature];
-            double issq = 0;
-            for (int i = 0; i < numItems; i++) {
-                double fv = ifv[i];
-                issq += fv * fv;
-            }
-            double inrm = (double) Math.sqrt(issq);
-            if (inrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numItems; i++) {
-                    ifv[i] /= inrm;
-                }
-            }
-            singularValues[feature] = unrm * inrm;
-        }
         
-        return new FunkSVDModel(featureCount, itemFeatures, userFeatures, singularValues,
+        return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
@@ -247,7 +214,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     	if (iterationCount > 0) {
     		return epoch >= iterationCount;
     	} else {
-    		return epoch >= MIN_EPOCHS && rmse < oldRmse - trainingThreshold;
+    		return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
     	}
     }
 

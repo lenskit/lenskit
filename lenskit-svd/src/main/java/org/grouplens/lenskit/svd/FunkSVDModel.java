@@ -30,20 +30,18 @@ public class FunkSVDModel {
     public final int featureCount;
     public final double itemFeatures[][];
     public final double userFeatures[][];
-    public final double singularValues[];
     public final DoubleFunction clampingFunction;
     
     public final Index itemIndex;
     public final Index userIndex;
     public final BaselinePredictor baseline;
     
-    public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats, double[] svals,
+    public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                                     DoubleFunction clamp, Index iidx, Index uidx,
                                     BaselinePredictor baseline) {
         featureCount = nfeatures;
         itemFeatures = ifeats;
         userFeatures = ufeats;
-        singularValues = svals;
         clampingFunction = clamp;
         itemIndex = iidx;
         userIndex = uidx;
