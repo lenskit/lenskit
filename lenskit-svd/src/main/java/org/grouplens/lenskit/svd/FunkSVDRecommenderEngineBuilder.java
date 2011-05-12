@@ -72,7 +72,7 @@ public class FunkSVDRecommenderEngineBuilder extends AbstractRecommenderComponen
     private RecommenderComponentBuilder<? extends BaselinePredictor> baselineBuilder;
 
     public FunkSVDRecommenderEngineBuilder() {
-        featureCount = 100;
+        featureCount = 40;
         learningRate = 0.001;
         trainingThreshold = 1.0e-5;
         trainingRegularization = 0.015;
