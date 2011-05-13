@@ -31,6 +31,8 @@ import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RecommenderEngine implementation that uses an item-item similarity matrix to create
@@ -41,6 +43,7 @@ import org.grouplens.lenskit.util.IndexedItemScore;
  * @author Michael Ludwig <mludwig@cs.umn.edu
  */
 public class ItemItemRecommenderEngine implements RecommenderEngine {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRecommenderEngine.class);
     private ItemItemRatingPredictor predictor;
     private ItemItemRatingRecommender recommender;
     

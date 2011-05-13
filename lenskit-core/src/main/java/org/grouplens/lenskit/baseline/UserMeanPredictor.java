@@ -58,7 +58,9 @@ public class UserMeanPredictor implements BaselinePredictor {
     	@Override
         protected UserMeanPredictor buildNew(RatingBuildContext context) {
             logger.debug("Building new user mean predictor");
-            double mean = GlobalMeanPredictor.computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
+            logger.debug("smoothing = {}", smoothing);
+            double mean = GlobalMeanPredictor.computeMeanRating(context.ratingSnapshot());
+            logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
         }
     }
@@ -78,7 +80,7 @@ public class UserMeanPredictor implements BaselinePredictor {
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
         if (ratings.isEmpty()) return globalMean;
-        return (ratings.sum() + smoothing*globalMean)/(ratings.size() + smoothing);
+        return (ratings.sum() + smoothing*globalMean) / (ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
@@ -87,7 +89,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings,
             Collection<Long> items) {
-        double mean = average(ratings, globalMean,smoothing);
+        double mean = average(ratings, globalMean, smoothing);
         return ConstantPredictor.constantPredictions(items, mean);
     }
 }

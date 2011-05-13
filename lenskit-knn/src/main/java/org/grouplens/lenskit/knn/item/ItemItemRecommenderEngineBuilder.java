@@ -144,6 +144,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
         NormalizedRatingSnapshot data = context.ratingSnapshot().normalize(norm);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
+        logger.debug("Using similarity strategy {}", similarityStrategy.getClass().getName());
         
         BuildState state = new BuildState(data, similarityStrategy.needsUserItemSets());
 

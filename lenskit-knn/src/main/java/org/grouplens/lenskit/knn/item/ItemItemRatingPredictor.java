@@ -41,12 +41,15 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemRecommenderEngine model;
     private final int neighborhoodSize;
     
@@ -54,6 +57,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         super(model.getDAO());
         this.model = model;
         neighborhoodSize = nnbrs;
+        logger.debug("Creating rating predictor with neighborhood size {}", neighborhoodSize);
     }
     
     public ItemItemRecommenderEngine getRecommender() {
