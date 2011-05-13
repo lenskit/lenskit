@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import static java.lang.Math.abs;
+
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRecommenderComponentBuilder;
@@ -90,7 +92,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     public MutableSparseVector predict(long user, SparseVector ratings,
             Collection<Long> items) {
         double mean = average(ratings, globalMean, smoothing);
-        assert smoothing != 0 || mean == ratings.mean();
+        assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         return ConstantPredictor.constantPredictions(items, mean);
     }
     
