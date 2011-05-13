@@ -129,6 +129,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds.set(item, sum / weight);
             else
                 unpredItems.add(item);
+            scores.clear();
         }
 
         // denormalize the predictions
