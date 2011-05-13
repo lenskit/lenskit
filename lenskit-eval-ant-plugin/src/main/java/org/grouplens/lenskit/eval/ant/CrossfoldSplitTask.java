@@ -246,7 +246,8 @@ public class CrossfoldSplitTask extends Task {
                 dbcs[i].setAutoCommit(true);
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX train_user_idx ON train (user);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX train_item_idx ON train (item);");
-                JDBCUtils.execute(dbcs[i], "CREATE INDEX train_timestamp_idx ON train (timestamp);");
+                if (useTimestamp)
+                    JDBCUtils.execute(dbcs[i], "CREATE INDEX train_timestamp_idx ON train (timestamp);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX test_user_idx ON test (user);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX test_item_idx ON test (item);");
                 JDBCUtils.execute(dbcs[i], "ANALYZE;");
