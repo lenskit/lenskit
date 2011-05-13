@@ -573,6 +573,15 @@
                           </tags>
                         </tagClass>
                         <tagClass>
+                          <displayName>Review items</displayName>
+                          <tags>
+                            <tag>
+                              <matchString>@review</matchString>
+                              <matchType>exact</matchType>
+                            </tag>
+                          </tags>
+                        </tagClass>
+                        <tagClass>
                           <displayName>FIXME items</displayName>
                           <tags>
                             <tag>
