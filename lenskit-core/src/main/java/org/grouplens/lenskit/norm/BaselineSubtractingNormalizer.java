@@ -114,4 +114,7 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
         
     }
 
+    public String toString() {
+    	return String.format("[BaselineNorm: %s]", baselinePredictor);
+    }
 }

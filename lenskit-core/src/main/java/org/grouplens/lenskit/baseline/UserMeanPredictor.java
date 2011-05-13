@@ -90,6 +90,11 @@ public class UserMeanPredictor implements BaselinePredictor {
     public MutableSparseVector predict(long user, SparseVector ratings,
             Collection<Long> items) {
         double mean = average(ratings, globalMean, smoothing);
+        assert smoothing != 0 || mean == ratings.mean();
         return ConstantPredictor.constantPredictions(items, mean);
+    }
+    
+    public String toString() {
+    	return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
     }
 }

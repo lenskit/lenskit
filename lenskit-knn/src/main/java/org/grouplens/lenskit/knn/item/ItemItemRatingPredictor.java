@@ -136,7 +136,8 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         
         // apply the baseline if applicable
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null) {
+        if (baseline != null && !unpredItems.isEmpty()) {
+        	logger.trace("Filling {} items from baseline", unpredItems.size());
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
                 assert Double.isNaN(preds.get(e.getLongKey()));
@@ -144,7 +145,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             }
             return preds;
         } else {
-            return preds.copy();
+            return preds.copy(true);
         }
     }
 

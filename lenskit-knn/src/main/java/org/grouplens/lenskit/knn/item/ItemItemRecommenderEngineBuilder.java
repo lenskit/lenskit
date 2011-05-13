@@ -142,6 +142,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
     @Override
     protected ItemItemRecommenderEngine buildNew(RatingBuildContext context) {
         UserRatingVectorNormalizer norm = normalizerBuilder.build(context);
+        logger.debug("Using normalizer {}", norm);
         NormalizedRatingSnapshot data = context.ratingSnapshot().normalize(norm);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(matrixSimilarityFactory, itemSimilarity);
         logger.debug("Using similarity strategy {}", similarityStrategy.getClass().getName());
@@ -152,6 +153,7 @@ public class ItemItemRecommenderEngineBuilder extends AbstractRecommenderCompone
         LongSortedArraySet items = new LongSortedArraySet(state.itemIndex.getIds());
         
         BaselinePredictor baseline = (baselineBuilder != null ? baselineBuilder.build(context) : null);
+        logger.debug("Using baseline {}", baseline);
         ItemItemRecommenderEngine rec =
             new ItemItemRecommenderEngine(state.itemIndex, matrix, data.getNormalizer(),
                                     baseline, items, context.getDAO());

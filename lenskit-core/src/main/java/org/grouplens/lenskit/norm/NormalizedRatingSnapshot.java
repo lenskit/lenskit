@@ -109,10 +109,11 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
     private synchronized void requireNormedData() {
         if (normedData == null) {
             logger.debug("Computing normalized build context");
+            logger.debug("Using normalizer {}", normalizer);
             LongCollection users = snapshot.getUserIds();
             normedData = new SparseVector[users.size()];
-            LongIterator uit = users.iterator();
             Index uidx = snapshot.userIndex();
+            LongIterator uit = users.iterator();
             int ndone = 0; // for debugging
             while (uit.hasNext()) {
                 final long uid = uit.nextLong();
