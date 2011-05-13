@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +61,7 @@ public class TrainTestTask extends Task {
 	private File script;
 	private int threadCount = 1;
 	private File predictionOutput;
+	private Properties properties = new Properties();
 	
 	public void setDatabaseDriver(String driver) {
 		databaseDriver = driver;
@@ -85,6 +87,10 @@ public class TrainTestTask extends Task {
 		databases = dbs;
 	}
 	
+	public void addConfiguredProperty(Property prop) {
+	    properties.put(prop.getName(), prop.getValue());
+	}
+	
 	public void execute() throws BuildException {
 		if (databaseDriver != null) {
 			try {
@@ -97,7 +103,7 @@ public class TrainTestTask extends Task {
 		AlgorithmEvaluationRecipe recipe;
 		try {
 		    log("Loading recommender from " + script.getPath());
-		    recipe = AlgorithmEvaluationRecipe.load(script, outFile);
+		    recipe = AlgorithmEvaluationRecipe.load(script, properties, outFile);
 		    if (predictionOutput != null) {
 		        try {
 		            recipe.setPredictionOutput(predictionOutput);
