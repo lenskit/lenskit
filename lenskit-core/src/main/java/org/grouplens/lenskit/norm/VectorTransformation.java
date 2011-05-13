@@ -29,12 +29,14 @@ public interface VectorTransformation {
     /**
      * Apply the vector transformation in-place to a vector.
      * @param vector The vector to transform.
+     * @return <var>vector</var> (for chaining).
      */
-    void apply(MutableSparseVector vector);
+    MutableSparseVector apply(MutableSparseVector vector);
     
     /**
      * Unapply the vector transformation in-place on a transformed vector.
      * @param vector The vector to transform.
+     * @return <var>vector</var> (for chaining).
      */
-    void unapply(MutableSparseVector vector);
+    MutableSparseVector unapply(MutableSparseVector vector);
 }

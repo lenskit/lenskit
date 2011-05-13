@@ -46,13 +46,13 @@ public class IdentityUserRatingVectorNormalizer extends
     private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
         
         @Override
-        public void unapply(MutableSparseVector vector) {
-            return;
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            return vector;
         }
         
         @Override
-        public void apply(MutableSparseVector vector) {
-            return;
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            return vector;
         }
     };
 
