@@ -30,8 +30,10 @@ import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
+import org.grouplens.lenskit.data.context.AbstractRatingBuildContext;
+import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.context.RatingSnapshot;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
@@ -75,6 +77,10 @@ public class TrainTestPredictEvaluator {
         JDBCRatingDAO dao = new JDBCRatingDAO(null, sfac);
         dao.openSession(connection);
         
+        RatingDataAccessObject preloaded = null;
+        logger.debug("Preloading rating snapshot data");
+        PackedRatingSnapshot snap = PackedRatingSnapshot.make(dao);
+        
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
@@ -87,17 +93,27 @@ public class TrainTestPredictEvaluator {
             for (AlgorithmInstance algo: algorithms) {
                 AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
                 RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
-                RatingDataAccessObject tdao = dao;
+                RatingDataAccessObject tdao;
                 if (algo.getPreload()) {
-                    logger.info("Preloading rating data for {}", algo.getName());
-                    List<Rating> ratings = Cursors.makeList(dao.getRatings());
-                    tdao = new RatingCollectionDAO(ratings);
-                    tdao.openSession();
+                	if (preloaded == null) {
+                		logger.info("Preloading rating data for {}", algo.getName());
+                		List<Rating> ratings = Cursors.makeList(dao.getRatings());
+                		preloaded = new RatingCollectionDAO(ratings);
+                		preloaded.openSession();
+                	}
+                	tdao = preloaded;
+                } else {
+                	tdao = dao;
                 }
                 logger.debug("Building {}", algo.getName());
                 acc.startBuildTimer();
-                RatingBuildContext rbc = PackedRatingBuildContext.make(tdao);
-                RecommenderEngine rec = builder.build(rbc);
+                RatingBuildContext rbc = new BuildContext(tdao, snap);
+                RecommenderEngine rec;
+                try {
+                	rec = builder.build(rbc);
+                } finally {
+                	rbc.close();
+                }
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
@@ -125,15 +141,34 @@ public class TrainTestPredictEvaluator {
                 }
 
                 acc.finish();
-                // cleanup, but no biggie if it doesn't happen since it's an
-                // in-memory data source
-                if (algo.getPreload())
-                    tdao.closeSession();
                 tdao = null;
             }
         } finally {
+        	if (preloaded != null)
+        		preloaded.closeSession();
             dao.closeSession();
             testDao.closeSession();
         }
+    }
+    
+    private static class BuildContext extends AbstractRatingBuildContext {
+    	private RatingSnapshot snapshot;
+		public BuildContext(RatingDataAccessObject dao, PackedRatingSnapshot snap) {
+			super(dao);
+			snapshot = snap;
+		}
+		@Override
+		public RatingSnapshot ratingSnapshot() {
+			return snapshot;
+		}
+		@Override
+		public RatingSnapshot trainingSnapshot() {
+			throw new UnsupportedOperationException();
+		}
+		@Override
+		public RatingSnapshot tuningSnapshot() {
+			throw new UnsupportedOperationException();
+		}
+    	
     }
 }

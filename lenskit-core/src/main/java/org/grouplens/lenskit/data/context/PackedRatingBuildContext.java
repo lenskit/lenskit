@@ -52,5 +52,4 @@ public class PackedRatingBuildContext extends AbstractRatingBuildContext {
     public static RatingBuildContext make(RatingDataAccessObject dao) {
         return new PackedRatingBuildContext(dao, PackedRatingSnapshot.make(dao));
     }
-
 }
