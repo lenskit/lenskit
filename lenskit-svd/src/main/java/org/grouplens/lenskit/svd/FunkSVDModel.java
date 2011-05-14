@@ -37,8 +37,8 @@ public class FunkSVDModel {
     public final BaselinePredictor baseline;
     
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                                    DoubleFunction clamp, Index iidx, Index uidx,
-                                    BaselinePredictor baseline) {
+                        DoubleFunction clamp, Index iidx, Index uidx,
+                        BaselinePredictor baseline) {
         featureCount = nfeatures;
         itemFeatures = ifeats;
         userFeatures = ufeats;

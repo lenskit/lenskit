@@ -26,7 +26,6 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.params.NormalizerBaseline;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.GradientDescentRegularization;
@@ -103,7 +102,6 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         iterationCount = count;
     }
     
-    @NormalizerBaseline
     public void setBaseline(BaselinePredictor baseline) {
         this.baseline = baseline;
     }

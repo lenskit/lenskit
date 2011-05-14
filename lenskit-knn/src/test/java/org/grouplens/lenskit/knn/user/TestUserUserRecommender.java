@@ -33,6 +33,8 @@ import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +55,8 @@ public class TestUserUserRecommender {
         RecommenderEngineFactory factory = new RecommenderEngineFactory();
         factory.bindDefault(RatingPredictor.class, UserUserRatingPredictor.class);
         factory.bindDefault(RatingRecommender.class, UserUserRatingRecommender.class);
+        factory.bindDefault(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
+        factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         engine = factory.create(manager);
     }
     

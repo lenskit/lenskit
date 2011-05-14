@@ -27,11 +27,15 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.svd.params.IterationCount;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +56,8 @@ public class TestFunkSVDRecommender {
         
         RecommenderEngineFactory factory = new RecommenderEngineFactory();
         factory.bindDefault(RatingPredictor.class, SVDRatingPredictor.class);
+        factory.bindDefault(BaselinePredictor.class, UserMeanPredictor.class);
+        factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         factory.bind(IterationCount.class, 10);
         
         engine = factory.create(manager);

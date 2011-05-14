@@ -88,7 +88,7 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
             if (idx < 0) continue;
             double r = rating.getValue();
             for (int f = 0; f < nf; f++) {
-                featurePrefs[f] += r * ifeats[f][idx] / svals[f];
+                featurePrefs[f] += r * ifeats[f][idx];// / svals[f];
             }
         }
 

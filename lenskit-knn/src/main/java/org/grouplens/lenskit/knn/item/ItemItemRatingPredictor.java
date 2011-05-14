@@ -54,12 +54,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
-<<<<<<< local
-    protected final ItemItemModel model;
-=======
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected final ItemItemRecommenderEngine model;
->>>>>>> other
+    protected final ItemItemModel model;
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
