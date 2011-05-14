@@ -46,13 +46,20 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
+<<<<<<< local
     protected final ItemItemModel model;
+=======
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
+    protected final ItemItemRecommenderEngine model;
+>>>>>>> other
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
@@ -61,6 +68,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         super(dao);
         this.model = model;
         neighborhoodSize = nnbrs;
+        logger.debug("Creating rating predictor with neighborhood size {}", neighborhoodSize);
     }
     
     public ItemItemModel getModel() {
@@ -132,6 +140,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds.set(item, sum / weight);
             else
                 unpredItems.add(item);
+            scores.clear();
         }
 
         // denormalize the predictions
@@ -139,7 +148,8 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         
         // apply the baseline if applicable
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null) {
+        if (baseline != null && !unpredItems.isEmpty()) {
+        	logger.trace("Filling {} items from baseline", unpredItems.size());
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
                 assert Double.isNaN(preds.get(e.getLongKey()));
@@ -147,7 +157,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             }
             return preds;
         } else {
-            return preds.copy();
+            return preds.copy(true);
         }
     }
 

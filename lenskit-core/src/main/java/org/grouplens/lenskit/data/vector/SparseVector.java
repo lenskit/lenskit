@@ -231,7 +231,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         if (sum == null) {
             double s = 0;
             for (int i = 0; i < size; i++) {
-                s += values[i];
+            	if (!Double.isNaN(values[i]))
+            		s += values[i];
             }
             sum = s;
         }

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -235,7 +236,7 @@ public class AlgorithmEvaluationRecipe {
         }
     }
     
-    public static AlgorithmEvaluationRecipe load(File sourceFile, File outputFile) throws InvalidRecommenderException {
+    public static AlgorithmEvaluationRecipe load(File sourceFile, Properties properties, File outputFile) throws InvalidRecommenderException {
         logger.info("Loading recommender definition from {}", sourceFile);
         URI uri = sourceFile.toURI();
         Context cx = Context.enter();
@@ -248,6 +249,8 @@ public class AlgorithmEvaluationRecipe {
             Logger slog = LoggerFactory.getLogger(sourceFile.getPath());
             ScriptableObject.putProperty(scope, "logger", Context.javaToJS(slog, scope));
 
+            ScriptableObject.putProperty(scope, "properties", Context.javaToJS(properties, scope));
+            
             Reader r = new FileReader(sourceFile);
             try {
                 cx.evaluateReader(scope, r, sourceFile.getPath(), 1, null);

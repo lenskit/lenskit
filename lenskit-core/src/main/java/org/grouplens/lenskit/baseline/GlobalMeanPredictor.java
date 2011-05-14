@@ -18,10 +18,9 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import java.util.Iterator;
-
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
 
 /**
@@ -40,7 +39,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     public static class Builder extends RecommenderComponentBuilder<GlobalMeanPredictor> {
         @Override
         public GlobalMeanPredictor build() {
-            double avg = computeMeanRating(snapshot.getRatings().fastIterator());
+            double avg = computeMeanRating(snapshot);
             return new GlobalMeanPredictor(avg);
         }
     }
@@ -63,12 +62,11 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * @param ratings
      * @return
      */
-    public static double computeMeanRating(Iterator<? extends Rating> ratings) {
+    public static double computeMeanRating(RatingSnapshot ratings) {
         double total = 0;
         long count = 0;
         
-        while(ratings.hasNext()) {
-            Rating r = ratings.next();
+        for (Rating r: ratings.getRatings().fast()) {
             total += r.getRating();
             count += 1;
         }

@@ -35,6 +35,7 @@ import javax.script.ScriptException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,11 +113,16 @@ public class AlgorithmInstance {
         this.factory = factory;
     }
 
-    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao) {
+    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao, RatingSnapshot sharedSnapshot) {
         if (factory == null)
             throw new IllegalStateException("no factory set");
         
-        return factory.create(new SharedDAO(dao));
+        factory.bindDefault(RatingSnapshot.class, sharedSnapshot);
+        try {
+            return factory.create(new SharedDAO(dao));
+        } finally {
+            factory.bindDefault(RatingSnapshot.class, null);
+        }
     }
     
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {

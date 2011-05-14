@@ -16,27 +16,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.eval.ant;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 
 /**
- * Reversible in-place vector transformations.
+ * List of name-value property pairs.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface VectorTransformation {
-    /**
-     * Apply the vector transformation in-place to a vector.
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector apply(MutableSparseVector vector);
-    
-    /**
-     * Unapply the vector transformation in-place on a transformed vector.
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector unapply(MutableSparseVector vector);
+public class Property {
+    private String name;
+    private String value;
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String n) {
+        name = n;
+    }
+
+    public String getValue() {
+        return value;
+    }
+    public void setValue(String v) {
+        value = v;
+    }
 }

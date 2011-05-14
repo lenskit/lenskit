@@ -69,15 +69,22 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
         }
 
         @Override
-        public void apply(MutableSparseVector vector) {
+        public MutableSparseVector apply(MutableSparseVector vector) {
             SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
             vector.subtract(base);
+            return vector;
         }
 
         @Override
-        public void unapply(MutableSparseVector vector) {
+        public MutableSparseVector unapply(MutableSparseVector vector) {
             SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
             vector.add(base);
+            return vector;
         }
+    }
+
+    @Override
+    public String toString() {
+    	return String.format("[BaselineNorm: %s]", baselinePredictor);
     }
 }

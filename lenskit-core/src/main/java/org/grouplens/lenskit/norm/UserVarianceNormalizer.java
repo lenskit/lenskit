@@ -132,21 +132,23 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 		
 		return new VectorTransformation() {
 			@Override
-			public void apply(MutableSparseVector vector) {
+			public MutableSparseVector apply(MutableSparseVector vector) {
 				for (Entry rating : vector.fast()) {
 					vector.set(rating.getLongKey(), /* r' = (r - u) / s */
 							userStdDev == 0? 0 : // edge case
 								(rating.getDoubleValue() - userMean) / userStdDev);
 				}
+				return vector;
 			}
 
 			@Override
-			public void unapply(MutableSparseVector vector) {
+			public MutableSparseVector unapply(MutableSparseVector vector) {
 				for (Entry rating : vector.fast()) {
 					vector.set(rating.getLongKey(), /* r = r' * s + u */
 							userStdDev == 0? userMean : // edge case
 							(rating.getDoubleValue() * userStdDev) + userMean);
 				}
+				return vector;
 			}
 		};
 	}

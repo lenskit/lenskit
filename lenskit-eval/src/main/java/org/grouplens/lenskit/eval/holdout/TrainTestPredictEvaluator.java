@@ -31,6 +31,7 @@ import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -71,6 +72,10 @@ public class TrainTestPredictEvaluator {
         sfac.setTableName(trainingTable);
         JDBCRatingDAO dao = new JDBCRatingDAO.Manager(null, sfac).open(connection);
         
+        RatingDataAccessObject preloaded = null;
+        logger.debug("Preloading rating snapshot data");
+        PackedRatingSnapshot snap = new PackedRatingSnapshot.Builder(dao).build();
+        
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
@@ -81,16 +86,22 @@ public class TrainTestPredictEvaluator {
             
             for (AlgorithmInstance algo: algorithms) {
                 AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-                RatingDataAccessObject tdao = dao;
+                RatingDataAccessObject tdao;
+
                 if (algo.getPreload()) {
-                    logger.info("Preloading rating data for {}", algo.getName());
-                    List<Rating> ratings = Cursors.makeList(dao.getRatings());
-                    tdao = new RatingCollectionDAO.Manager(ratings).open();
+                	if (preloaded == null) {
+                		logger.info("Preloading rating data for {}", algo.getName());
+                		List<Rating> ratings = Cursors.makeList(dao.getRatings());
+                		preloaded = new RatingCollectionDAO.Manager(ratings).open();
+                	}
+                	tdao = preloaded;
+                } else {
+                	tdao = dao;
                 }
                 
                 logger.debug("Building {}", algo.getName());
                 acc.startBuildTimer();
-                Recommender rec = algo.buildRecommender(tdao).open();
+                Recommender rec = algo.buildRecommender(tdao, snap).open();
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
@@ -118,13 +129,11 @@ public class TrainTestPredictEvaluator {
                 }
 
                 acc.finish();
-                // cleanup, but no biggie if it doesn't happen since it's an
-                // in-memory data source
-                if (algo.getPreload())
-                    tdao.close();
                 tdao = null;
             }
         } finally {
+        	if (preloaded != null)
+        		preloaded.close();
             dao.close();
             testDao.close();
         }

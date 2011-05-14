@@ -2,4 +2,5 @@
 <antlib>
   <taskdef name="traintest" classname="org.grouplens.lenskit.eval.ant.TrainTestTask" />
   <taskdef name="split" classname="org.grouplens.lenskit.eval.ant.CrossfoldSplitTask" />
+  <taskdef name="import" classname="org.grouplens.lenskit.eval.ant.ImportTask" />
 </antlib>
