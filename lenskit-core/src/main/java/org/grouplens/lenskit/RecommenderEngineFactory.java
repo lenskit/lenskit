@@ -81,9 +81,12 @@ public class RecommenderEngineFactory {
         
         // Proceed with normal instance binding
         validateAnnotation(param);
+        
         if (instance != null) {
             // Verify that the instance is the proper type
             Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
+            if (Number.class.isAssignableFrom(paramType) && instance instanceof Number)
+                instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, (Number) instance);
             
             // For now we'll do exact type matching
             // (this parameters should use the boxed type)
@@ -145,7 +148,7 @@ public class RecommenderEngineFactory {
         if (instanceType != null && !superType.isAssignableFrom(instanceType))
             throw new IllegalArgumentException(instanceType + " is not a subclass of " + superType);
         
-        if (instanceType.getAnnotation(Built.class) != null) {
+        if (instanceType != null && instanceType.getAnnotation(Built.class) != null) {
             // Bind a builder instead
             bindDefaultBuilder(superType, findBuilder(instanceType));
         } else {
@@ -406,6 +409,15 @@ public class RecommenderEngineFactory {
             }
         }
         
+//        for (Entry<Object, Object> b: keyBindings.entrySet()) {
+//            Class annot = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getAnnotation() : null);
+//            Class type = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getType() : (Class) b.getKey());
+//            if (type.isInterface() || type.getSuperclass().equals(Object.class)) {
+//                String key = (annot == null ? type.getSimpleName() : annot.getSimpleName() + ":" + type.getSimpleName());
+//                String value = (b.getValue() instanceof Class ? ((Class) b.getValue()).getSimpleName() : b.getValue().toString());
+//                System.out.println("Bind " + key + " -> " + value);
+//            }
+//        }
         return keyBindings;
     }
     

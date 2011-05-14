@@ -44,6 +44,7 @@ import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
@@ -241,7 +242,7 @@ public class AlgorithmEvaluationRecipe {
         URI uri = sourceFile.toURI();
         Context cx = Context.enter();
         try {
-            Scriptable scope = cx.initStandardObjects();
+            Scriptable scope = new ImporterTopLevel(cx);
             
             ScriptedBuilder builder = new ScriptedBuilder();
             Object wbld = Context.javaToJS(builder, scope);

@@ -39,7 +39,6 @@ import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.CacheUserNeighborhood;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
@@ -95,16 +94,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public SimpleNeighborhoodFinder(RatingDataAccessObject data,
                                     @NeighborhoodSize int nnbrs, 
                                     @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @PredictNormalizer UserRatingVectorNormalizer norm,
-                                    @CacheUserNeighborhood boolean cache) {
+                                    @PredictNormalizer UserRatingVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
-        if (cache)
-            userVectorCache = new Long2ObjectOpenHashMap<CacheEntry>(500);
-        else
-            userVectorCache = null;
+        userVectorCache = new Long2ObjectOpenHashMap<CacheEntry>(500);
     }
 
     /**

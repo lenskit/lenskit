@@ -36,6 +36,7 @@ import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ public class TrainTestPredictEvaluator {
         
         RatingDataAccessObject preloaded = null;
         logger.debug("Preloading rating snapshot data");
-        PackedRatingSnapshot snap = new PackedRatingSnapshot.Builder(dao).build();
+        SharedRatingSnapshot snap = new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
         
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);

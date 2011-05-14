@@ -113,7 +113,7 @@ public class AlgorithmInstance {
         this.factory = factory;
     }
 
-    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao, RatingSnapshot sharedSnapshot) {
+    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao, SharedRatingSnapshot sharedSnapshot) {
         if (factory == null)
             throw new IllegalStateException("no factory set");
         

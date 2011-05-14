@@ -152,6 +152,7 @@ public class TrainTestTask extends Task {
 						Throwable base = e;
 						if (e.getCause() != null)
 							base = e;
+						base.printStackTrace();
 						throw new BuildException("Error testing recommender", base);
 					}
 				}

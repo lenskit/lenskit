@@ -69,4 +69,21 @@ public class PrimitiveUtils {
         else
             return type;
     }
+    
+    public static Number cast(Class<? extends Number> newType, Number value) {
+        if (Integer.class.equals(newType))
+            return value.intValue();
+        else if (Short.class.equals(newType))
+            return value.shortValue();
+        else if (Long.class.equals(newType))
+            return value.longValue();
+        else if (Double.class.equals(newType))
+            return value.doubleValue();
+        else if (Float.class.equals(newType))
+            return value.floatValue();
+        else if (Byte.class.equals(newType))
+            return value.byteValue();
+        else
+            throw new UnsupportedOperationException("Unknown number type: " + newType);
+    }
 }
