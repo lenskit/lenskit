@@ -29,7 +29,7 @@ import java.util.Iterator;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 
@@ -42,7 +42,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  * 
- * <p>It supports mean smoothing (see {@link MeanDamping}).
+ * <p>It supports mean smoothing (see {@link MeanSmoothing}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -57,7 +57,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     public static class Builder extends RecommenderComponentBuilder<ItemUserMeanPredictor> {
         private double damping = 0;
         
-        @MeanDamping
+        @MeanSmoothing
         public void setDamping(double d) {
             damping = d;
         }

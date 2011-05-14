@@ -170,17 +170,7 @@ public class RatingFilteredDAO implements RatingDataAccessObject {
     }
 
     @Override
-    public void openSession() {
-        /* no-op - sessions are managed by base DAO. */
-    }
-
-    @Override
-    public void closeSession() {
-        /* no-op - sessions are managed by base DAO. */
-    }
-    
-    @Override
-    public boolean isSessionOpen() {
-        return base.isSessionOpen();
+    public void close() {
+        base.close();
     }
 }

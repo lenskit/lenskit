@@ -36,7 +36,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
     public static class Builder extends RecommenderComponentBuilder<ItemMeanPredictor> {
         private double damping = 0;
         
-        @MeanDamping
+        @MeanSmoothing
         public void setDamping(double damping) {
             this.damping = damping;
         }
@@ -109,7 +109,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * item means in a single pass through the data source.
      * 
      * @param ratings The collection of ratings the averages are based on
-     * @param smoothing The mean smoothing factor (see {@link MeanDamping} for
+     * @param smoothing The mean smoothing factor (see {@link MeanSmoothing} for
      *            how this is used).
      * @param itemMeansResult A map in which the means should be stored.
      * @return The global mean rating. The item means are stored in

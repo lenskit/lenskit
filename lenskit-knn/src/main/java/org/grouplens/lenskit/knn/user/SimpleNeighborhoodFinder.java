@@ -39,11 +39,11 @@ import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.SimilarityNeighborhoodSize;
-import org.grouplens.lenskit.knn.user.params.CacheUserNeighborhood;
-import org.grouplens.lenskit.knn.user.params.UserSimilarity;
+import org.grouplens.lenskit.knn.params.CacheUserNeighborhood;
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.params.Normalizer;
+import org.grouplens.lenskit.params.PredictNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,9 +93,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
      * @param sim The similarity function to use.
      */
     public SimpleNeighborhoodFinder(RatingDataAccessObject data,
-                                    @SimilarityNeighborhoodSize int nnbrs, 
+                                    @NeighborhoodSize int nnbrs, 
                                     @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @Normalizer UserRatingVectorNormalizer norm,
+                                    @PredictNormalizer UserRatingVectorNormalizer norm,
                                     @CacheUserNeighborhood boolean cache) {
         dataSource = data;
         neighborhoodSize = nnbrs;

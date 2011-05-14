@@ -64,20 +64,29 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            return new JDBCRatingDAO(new JDBCDataSession(dbc, factory));
+            return new JDBCRatingDAO(new JDBCDataSession(dbc, factory), true);
+        }
+        
+        public JDBCRatingDAO open(Connection existingConnection) {
+            return new JDBCRatingDAO(new JDBCDataSession(existingConnection, factory), false);
         }
     }
     
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	protected final JDBCDataSession session;
+	protected final boolean ownsSession;
 	
-	public JDBCRatingDAO(JDBCDataSession session) {
+	public JDBCRatingDAO(JDBCDataSession session, boolean ownsSession) {
 	    this.session = session;
+	    this.ownsSession = ownsSession;
 	}
     
     @Override
     public void close() {
+        if (!ownsSession)
+            return;
+        
         try {
             session.close();
         } catch (IOException e) {

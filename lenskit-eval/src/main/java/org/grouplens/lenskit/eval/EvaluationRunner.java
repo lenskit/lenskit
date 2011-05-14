@@ -145,16 +145,14 @@ public final class EvaluationRunner {
 
         RatingDataAccessObject data = null;
         try {
-            data = new SimpleFileDAO(options.getInputFile(), options.getDelimiter());
-            data.openSession();
+            data = new SimpleFileDAO.Manager(options.getInputFile(), options.getDelimiter()).open();
             if (options.preloadData()) {
             	RatingDataAccessObject source = data;
 
             	ArrayList<Rating> rlist = Cursors.makeList(source.getRatings());
             	rlist.trimToSize();
-            	data = new RatingCollectionDAO(rlist);
-            	source.closeSession();
-            	data.openSession();
+            	source.close();
+                data = new RatingCollectionDAO.Manager(rlist).open();
             }
             
             List<PredictionEvaluator> evals = new ArrayList<PredictionEvaluator>();
@@ -174,7 +172,7 @@ public final class EvaluationRunner {
             return; /* fail will not return */
         } finally {
             if (data != null)
-                data.closeSession();
+                data.close();
         }
     }
 

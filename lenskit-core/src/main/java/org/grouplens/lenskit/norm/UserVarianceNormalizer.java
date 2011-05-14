@@ -24,7 +24,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.HofmannSmoothing;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -57,8 +57,9 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
      */
     public static class Builder extends RecommenderComponentBuilder<UserVarianceNormalizer> {
         private double smoothing;
-        
-        @HofmannSmoothing
+
+        // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
+        @MeanSmoothing
         public void setSmoothing(double smoothing) {
             this.smoothing = smoothing;
         }

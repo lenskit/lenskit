@@ -21,6 +21,8 @@ package org.grouplens.lenskit.knn;
 import static java.lang.Math.max;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.params.WeightThreshold;
+import org.grouplens.lenskit.knn.params.WeightedSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 /**
@@ -33,7 +35,8 @@ public class SignificanceWeight implements
     private final int threshold;
     private final Similarity<? super SparseVector> similarity;
 
-    public SignificanceWeight(int thresh, Similarity<? super SparseVector> sim) {
+    public SignificanceWeight(@WeightThreshold int thresh, 
+                              @WeightedSimilarity Similarity<? super SparseVector> sim) {
         if (!(sim instanceof SymmetricBinaryFunction))
             throw new IllegalArgumentException();
         threshold = thresh;

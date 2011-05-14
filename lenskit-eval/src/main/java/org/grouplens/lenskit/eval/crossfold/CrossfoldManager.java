@@ -96,8 +96,7 @@ public class CrossfoldManager {
             PreparedStatement insert = cxn.prepareStatement(iq);
             logger.debug("Populating crossfold table");
             try {
-                dao = new JDBCRatingDAO(null, sfac);
-                dao.openSession(cxn);
+                dao = new JDBCRatingDAO.Manager(null, sfac).open(cxn);
                 userCursor = dao.getUserRatingProfiles();
                 for (UserRatingProfile user: userCursor) {
                     insert.setLong(1, user.getUser());
@@ -148,7 +147,7 @@ public class CrossfoldManager {
             if (userCursor != null)
                 userCursor.close();
             if (dao != null)
-                dao.closeSession();
+                dao.close();
             cxn.setAutoCommit(true);
         }    
     }

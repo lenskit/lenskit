@@ -24,14 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.UserMeanPredictor;
-import org.grouplens.lenskit.params.meta.DefaultClass;
+import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
-@DefaultClass(UserMeanPredictor.class)
-@Parameter(BaselinePredictor.class)
+@DefaultDouble(0.0)
+@Parameter(Double.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Baseline { }
+public @interface MeanSmoothing { }

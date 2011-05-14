@@ -23,7 +23,7 @@ import java.util.Collection;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
         private double damping = 0;
         
-        @MeanDamping
+        @MeanSmoothing
         public void setSmoothing(double damping) {
         	this.damping = damping;
         }

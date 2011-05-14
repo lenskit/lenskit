@@ -166,17 +166,7 @@ public class UserFilteredDAO implements RatingDataAccessObject {
     }
 
     @Override
-    public void openSession() {
-        /* no-op - sessions managed by underlying DAO. */
-    }
-
-    @Override
-    public void closeSession() {
-        /* no-op - sessions maanged by underlying DAO. */
-    }
-    
-    @Override
-    public boolean isSessionOpen() {
-        return base.isSessionOpen();
+    public void close() {
+       base.close();
     }
 }

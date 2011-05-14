@@ -41,7 +41,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.item.params.PredictorNeighborhoodSize;
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
@@ -56,7 +56,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
-                                   @PredictorNeighborhoodSize int nnbrs,
+                                   @NeighborhoodSize int nnbrs,
                                    @Nullable UserRatingVectorNormalizer normalizer) {
         super(dao);
         this.model = model;

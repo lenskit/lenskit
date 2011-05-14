@@ -25,15 +25,12 @@ import java.util.List;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.snapshot.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.snapshot.RatingBuildContext;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -72,32 +69,28 @@ public class TrainTestPredictEvaluator {
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
         BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
         sfac.setTableName(trainingTable);
-        JDBCRatingDAO dao = new JDBCRatingDAO(null, sfac);
-        dao.openSession(connection);
+        JDBCRatingDAO dao = new JDBCRatingDAO.Manager(null, sfac).open(connection);
         
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
-        JDBCRatingDAO testDao = new JDBCRatingDAO(null, testfac);
-        testDao.openSession(connection);
+        JDBCRatingDAO testDao = new JDBCRatingDAO.Manager(null, testfac).open(connection);
         try {
             int nusers = testDao.getUserCount();
             logger.debug("Evaluating algorithms with {} users", nusers);
             
             for (AlgorithmInstance algo: algorithms) {
                 AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-                RecommenderComponentBuilder<RecommenderEngine> builder = algo.getBuilder();
                 RatingDataAccessObject tdao = dao;
                 if (algo.getPreload()) {
                     logger.info("Preloading rating data for {}", algo.getName());
                     List<Rating> ratings = Cursors.makeList(dao.getRatings());
-                    tdao = new RatingCollectionDAO(ratings);
-                    tdao.openSession();
+                    tdao = new RatingCollectionDAO.Manager(ratings).open();
                 }
+                
                 logger.debug("Building {}", algo.getName());
                 acc.startBuildTimer();
-                RatingBuildContext rbc = PackedRatingBuildContext.make(tdao);
-                RecommenderEngine rec = builder.build(rbc);
+                Recommender rec = algo.buildRecommender(tdao).open();
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
@@ -128,12 +121,12 @@ public class TrainTestPredictEvaluator {
                 // cleanup, but no biggie if it doesn't happen since it's an
                 // in-memory data source
                 if (algo.getPreload())
-                    tdao.closeSession();
+                    tdao.close();
                 tdao = null;
             }
         } finally {
-            dao.closeSession();
-            testDao.closeSession();
+            dao.close();
+            testDao.close();
         }
     }
 }

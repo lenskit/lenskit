@@ -36,10 +36,10 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.SimilarityNeighborhoodSize;
-import org.grouplens.lenskit.knn.user.params.UserSimilarity;
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.params.Normalizer;
+import org.grouplens.lenskit.params.PredictNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 
 /**
@@ -69,8 +69,8 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
         
         public Builder(RatingDataAccessObject dao,
                        @UserSimilarity Similarity<? super SparseVector> similarity,
-                       @SimilarityNeighborhoodSize int neighborhoodSize,
-                       @Normalizer UserRatingVectorNormalizer normalizer) {
+                       @NeighborhoodSize int neighborhoodSize,
+                       @PredictNormalizer UserRatingVectorNormalizer normalizer) {
             this.neighborhoodSize = neighborhoodSize;
             this.similarity = similarity;
             this.dao = dao;

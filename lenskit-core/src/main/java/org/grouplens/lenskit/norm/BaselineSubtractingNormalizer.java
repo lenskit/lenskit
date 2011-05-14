@@ -22,7 +22,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.Baseline;
+import org.grouplens.lenskit.params.NormalizerBaseline;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -36,7 +36,7 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
      * 
      * @param baseline
      */
-    public BaselineSubtractingNormalizer(@Baseline BaselinePredictor baseline) {
+    public BaselineSubtractingNormalizer(@NormalizerBaseline BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 

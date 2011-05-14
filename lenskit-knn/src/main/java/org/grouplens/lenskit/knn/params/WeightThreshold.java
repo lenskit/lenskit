@@ -28,8 +28,8 @@ import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
-@DefaultInt(250)
+@DefaultInt(0)
 @Parameter(Integer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SimilarityNeighborhoodSize { }
+public @interface WeightThreshold { }

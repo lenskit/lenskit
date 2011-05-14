@@ -247,7 +247,7 @@ public class AlgorithmEvaluationRecipe {
             ScriptableObject.putProperty(scope, "recipe", wbld);
             Logger slog = LoggerFactory.getLogger(sourceFile.getPath());
             ScriptableObject.putProperty(scope, "logger", Context.javaToJS(slog, scope));
-            
+
             Reader r = new FileReader(sourceFile);
             try {
                 cx.evaluateReader(scope, r, sourceFile.getPath(), 1, null);

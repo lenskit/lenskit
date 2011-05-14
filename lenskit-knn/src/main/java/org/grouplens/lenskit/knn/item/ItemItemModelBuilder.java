@@ -45,11 +45,9 @@ import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.item.params.ItemSimilarity;
+import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.params.Baseline;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
-import org.grouplens.lenskit.params.Normalizer;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
@@ -75,7 +73,6 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         matrixSimilarityFactory = factory;
     }
     
-    @Baseline
     public void setBaselinePredictor(@Nullable BaselinePredictor predictor) {
         baseline = predictor;
     }
@@ -85,7 +82,6 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         this.normalizedData = data;
     }
     
-    @Normalizer
     public void setNormalizer(UserRatingVectorNormalizer normalizer) {
         this.normalizer = normalizer;
     }

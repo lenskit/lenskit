@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.Normalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -76,7 +75,6 @@ public class NormalizedRatingSnapshot implements RatingSnapshot {
     public static class Builder extends RecommenderComponentBuilder<NormalizedRatingSnapshot> {
         private UserRatingVectorNormalizer normalizer;
         
-        @Normalizer
         public void setNormalizer(UserRatingVectorNormalizer normalizer) {
             this.normalizer = normalizer;
         }
