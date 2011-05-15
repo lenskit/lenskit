@@ -93,8 +93,8 @@ public class ImportTask extends Task {
         Connection dbc = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getPath());
         try {
             // create tables
-            JDBCUtils.execute(dbc, "DROP TABLE IF EXISTS train;");
-            JDBCUtils.execute(dbc, "DROP TABLE IF EXISTS test;");
+            JDBCUtils.execute(dbc,
+                              String.format("DROP TABLE IF EXISTS %s;", tableName));
             String qmake = "CREATE TABLE %s (user INTEGER, item INTEGER, rating REAL";
             if (useTimestamp)
                 qmake += ", timestamp INTEGER";
