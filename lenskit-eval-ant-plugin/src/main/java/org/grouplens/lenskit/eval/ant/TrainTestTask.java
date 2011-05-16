@@ -61,6 +61,7 @@ public class TrainTestTask extends Task {
 	private File script;
 	private int threadCount = 1;
 	private File predictionOutput;
+	private boolean useTimestamp = true;
 	private Properties properties = new Properties();
 	
 	public void setDatabaseDriver(String driver) {
@@ -81,6 +82,10 @@ public class TrainTestTask extends Task {
 	
 	public void setPredictions(File f) {
 		predictionOutput = f;
+	}
+	
+	public void setTimestamp(boolean ts) {
+		useTimestamp = ts;
 	}
 	
 	public void addConfiguredDatabases(FileSet dbs) {
@@ -191,6 +196,7 @@ public class TrainTestTask extends Task {
                 log("Creating evaluator", Project.MSG_DEBUG);
                 TrainTestPredictEvaluator eval =
                     new TrainTestPredictEvaluator(dbc, "train", "test");
+                eval.setTimestampEnabled(useTimestamp);
                 if (showProgress())
                     eval.setProgressStream(System.out);
                 log("Evaluating algorithms", Project.MSG_DEBUG);

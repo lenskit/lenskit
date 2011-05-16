@@ -52,12 +52,21 @@ public class TrainTestPredictEvaluator {
     private Connection connection;
     private String trainingTable;
     private String testTable;
+    private boolean timestamp = true;
     private PrintStream progressStream;
 
     public TrainTestPredictEvaluator(Connection dbc, String train, String test) {
         connection = dbc;
         trainingTable = train;
         testTable = test;
+    }
+    
+    public boolean isTimestampEnabled() {
+    	return timestamp;
+    }
+    
+    public void setTimestampEnabled(boolean ts) {
+    	timestamp = ts;
     }
     
     /**
@@ -71,6 +80,8 @@ public class TrainTestPredictEvaluator {
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
         BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
         sfac.setTableName(trainingTable);
+        if (!timestamp)
+            sfac.setTimestampColumn(null);
         JDBCRatingDAO dao = new JDBCRatingDAO.Manager(null, sfac).open(connection);
         
         RatingDataAccessObject preloaded = null;
