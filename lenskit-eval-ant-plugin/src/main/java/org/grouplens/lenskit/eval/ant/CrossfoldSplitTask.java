@@ -45,6 +45,7 @@ import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
@@ -59,6 +60,7 @@ public class CrossfoldSplitTask extends Task {
 	private String delimiter = "\t";
 	private int numFolds = 5;
 	private boolean useTimestamp = true;
+	private boolean timeSplit = false;
 	private int holdoutCount = 10;
 	
 	public void setDataFile(String dataFile) {
@@ -78,6 +80,15 @@ public class CrossfoldSplitTask extends Task {
 	}
 	public void setHoldoutCount(int holdoutCount) {
 		this.holdoutCount = holdoutCount;
+	}
+	
+	public void setMode(String mode) {
+	    if (mode.toLowerCase().equals("time"))
+	        timeSplit = true;
+	    else if (mode.toLowerCase().equals("random"))
+	        timeSplit = false;
+	    else
+	        throw new IllegalArgumentException("Invalid mode " + mode);
 	}
 	
 	@Override
@@ -198,7 +209,10 @@ public class CrossfoldSplitTask extends Task {
                 sTrain.setLong(1, uid);
                 sTest.setLong(1, uid);
                 List<Rating> urs = e.getValue();
-                Collections.shuffle(urs);
+                if (timeSplit)
+                    Collections.sort(urs, Ratings.TIMESTAMP_COMPARATOR);
+                else
+                    Collections.shuffle(urs);
                 int midpt = urs.size() - holdoutCount;
                 
                 // Insert training data
