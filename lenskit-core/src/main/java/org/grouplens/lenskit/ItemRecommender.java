@@ -27,33 +27,29 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Rating recommender recommending items from ratings-based user profiles.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface RatingRecommender {
+public interface ItemRecommender {
     /**
      * Recommend all possible items for a user. The
-     * exclude set is the set of keys in <var>ratings</var> (so items the user
-     * has rated are not recommended).
+     * exclude set is the set of items the user has rated.
      * @param user The user ID.
-     * @param ratings The user's rating vector.
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings);
+    List<ScoredId> recommend(long user);
     
     /**
      * Recommend up to <var>n</var> items for a user. The
      * exclude set is the set of keys in <var>ratings</var> (so items the user
      * has rated are not recommended).
      * @param user The user ID.
-     * @param ratings The user's rating vector.
      * @param n The number of recommendations to return.
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n);
+    List<ScoredId> recommend(long user, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates.  The
@@ -66,8 +62,7 @@ public interface RatingRecommender {
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings,
-            @Nullable Set<Long> candidates);
+    List<ScoredId> recommend(long user, @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user.
@@ -83,6 +78,6 @@ public interface RatingRecommender {
      * @return a list of scored recommendations, sorted in nondecreasing order
      * of score.
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n,
-            @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
+    List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates,
+        @Nullable Set<Long> exclude);
 }

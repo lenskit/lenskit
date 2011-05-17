@@ -27,7 +27,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
@@ -39,7 +41,33 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingRecommender implements RatingRecommender {
+public abstract class AbstractRatingRecommender implements ItemRecommender, RatingRecommender {
+    protected final RatingDataAccessObject dao;
+    
+    public AbstractRatingRecommender(RatingDataAccessObject dao) {
+        this.dao = dao;
+    }
+    
+    protected SparseVector getRatings(long user) {
+        return Ratings.userRatingVector(dao.getUserRatings(user));
+    }
+    
+    public List<ScoredId> recommend(long user) {
+        return recommend(user, getRatings(user));
+    }
+    
+    public List<ScoredId> recommend(long user, int n) {
+        return recommend(user, getRatings(user), n);
+    }
+    
+    public List<ScoredId> recommend(long user, @Nullable Set<Long> candidates) {
+        return recommend(user, getRatings(user), candidates);
+    }
+    
+    public List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates,
+        @Nullable Set<Long> exclude) {
+        return recommend(user, getRatings(user), n, candidates, exclude);
+    }
     
     /**
      * Implementation method for recommender services.
