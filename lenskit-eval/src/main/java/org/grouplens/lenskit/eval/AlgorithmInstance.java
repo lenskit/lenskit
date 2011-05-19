@@ -121,7 +121,7 @@ public class AlgorithmInstance {
         try {
             return factory.create(new SharedDAO(dao));
         } finally {
-            factory.bindDefault(RatingSnapshot.class, null);
+            factory.bindDefault(RatingSnapshot.class, (RatingSnapshot) null);
         }
     }
     

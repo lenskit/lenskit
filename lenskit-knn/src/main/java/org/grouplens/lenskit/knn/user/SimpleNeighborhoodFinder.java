@@ -42,7 +42,6 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
-import org.grouplens.lenskit.params.PredictNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +93,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
     public SimpleNeighborhoodFinder(RatingDataAccessObject data,
                                     @NeighborhoodSize int nnbrs, 
                                     @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @PredictNormalizer UserRatingVectorNormalizer norm) {
+                                    UserRatingVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;
