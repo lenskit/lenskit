@@ -322,7 +322,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>r08</version>
+        <version>r09</version>
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
