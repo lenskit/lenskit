@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.results;
+package org.grouplens.lenskit.eval.traintest;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
@@ -40,6 +40,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.TaskTimer;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
+import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
@@ -55,8 +57,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class AlgorithmEvaluationRecipe {
-    private static final Logger logger = LoggerFactory.getLogger(AlgorithmEvaluationRecipe.class);
+public class EvaluationRecipe {
+    private static final Logger logger = LoggerFactory.getLogger(EvaluationRecipe.class);
     
     private int colRun;
     private int colAlgorithm;
@@ -70,7 +72,7 @@ public class AlgorithmEvaluationRecipe {
     
     private List<AlgorithmInstance> algorithms;
 
-    public AlgorithmEvaluationRecipe(List<AlgorithmInstance> algos,
+    public EvaluationRecipe(List<AlgorithmInstance> algos,
             List<PredictionEvaluator> evals,
             File outfile) {
         evaluators = evals;
@@ -237,14 +239,14 @@ public class AlgorithmEvaluationRecipe {
         }
     }
     
-    public static AlgorithmEvaluationRecipe load(File sourceFile, Properties properties, File outputFile) throws InvalidRecommenderException {
+    public static EvaluationRecipe load(File sourceFile, Properties properties, File outputFile) throws InvalidRecommenderException {
         logger.info("Loading recommender definition from {}", sourceFile);
         URI uri = sourceFile.toURI();
         Context cx = Context.enter();
         try {
             Scriptable scope = new ImporterTopLevel(cx);
             
-            ScriptedBuilder builder = new ScriptedBuilder();
+            ScriptedRecipeBuilder builder = new ScriptedRecipeBuilder(scope);
             Object wbld = Context.javaToJS(builder, scope);
             ScriptableObject.putProperty(scope, "recipe", wbld);
             Logger slog = LoggerFactory.getLogger(sourceFile.getPath());
@@ -263,65 +265,6 @@ public class AlgorithmEvaluationRecipe {
             throw new InvalidRecommenderException(uri, e);
         } finally {
             Context.exit();
-        }
-    }
-    
-    /**
-     * Scriptable class for building evaluation recipes.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    public static class ScriptedBuilder {
-        List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
-        List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
-        
-        /**
-         * Add an evaluation.
-         * @param eval The evaluator to add.
-         */
-        public void addEval(PredictionEvaluator eval) {
-            evaluators.add(eval);
-        }
-        
-        /**
-         * Add an evaluation by class.
-         * @param eval A class to instantiate to make an evaluator.
-         */
-        public void addEval(Class<? extends PredictionEvaluator> eval) {
-            try {
-                evaluators.add(eval.newInstance());
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
-        /**
-         * Add an evaluation by name.
-         * @param name The name of the evaluator. Looks for the class
-         * <tt>org.grouplens.lenskit.eval.predict.<i>name</i>Evaluator</tt>.
-         * @throws ClassNotFoundException if the evaluator cannot be found.
-         */
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        public void addEval(String name) throws ClassNotFoundException {
-            addEval((Class) Class.forName("org.grouplens.lenskit.eval.predict." + name + "Evaluator"));
-        }
-        
-        /**
-         * Create a new algorithm and add it to the algorithm list. The script
-         * should then fill in the algorithm's details.
-         * @return
-         */
-        public AlgorithmInstance addAlgorithm() {
-            AlgorithmInstance a = new AlgorithmInstance();
-            algorithms.add(a);
-            return a;
-        }
-        
-        AlgorithmEvaluationRecipe build(File file) {
-            logger.info("Loaded {} algorithms", algorithms.size());
-            return new AlgorithmEvaluationRecipe(algorithms, evaluators, file);
         }
     }
 }

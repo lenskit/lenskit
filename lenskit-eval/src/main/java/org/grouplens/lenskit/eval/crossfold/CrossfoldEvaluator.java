@@ -26,10 +26,10 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CrossfoldOptions;
-import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
-import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
+import org.grouplens.lenskit.eval.traintest.EvaluationRecipe;
+import org.grouplens.lenskit.eval.traintest.TrainTestPredictEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +68,7 @@ public class CrossfoldEvaluator {
     }
 
     public void run(List<PredictionEvaluator> evaluators, File output) {
-        AlgorithmEvaluationRecipe mgr = new AlgorithmEvaluationRecipe(algorithms, evaluators, output);
+        EvaluationRecipe mgr = new EvaluationRecipe(algorithms, evaluators, output);
         try {
 			mgr.setPredictionOutput(predictionFile);
 		} catch (IOException e) {

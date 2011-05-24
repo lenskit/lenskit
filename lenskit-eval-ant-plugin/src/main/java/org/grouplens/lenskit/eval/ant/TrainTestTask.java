@@ -44,9 +44,9 @@ import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
-import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
-import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
+import org.grouplens.lenskit.eval.traintest.EvaluationRecipe;
+import org.grouplens.lenskit.eval.traintest.TrainTestPredictEvaluator;
 
 import com.google.common.primitives.Longs;
 
@@ -105,10 +105,10 @@ public class TrainTestTask extends Task {
 			}
 		}
 		log("Running with thread count " + threadCount);
-		AlgorithmEvaluationRecipe recipe;
+		EvaluationRecipe recipe;
 		try {
 		    log("Loading recommender from " + script.getPath());
-		    recipe = AlgorithmEvaluationRecipe.load(script, properties, outFile);
+		    recipe = EvaluationRecipe.load(script, properties, outFile);
 		    if (predictionOutput != null) {
 		        try {
 		            recipe.setPredictionOutput(predictionOutput);
