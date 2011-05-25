@@ -35,13 +35,13 @@ import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
  * Base class for rating recommenders.  It implements all methods required by
- * {@link RatingRecommender} by delegating them to a single method with a
+ * {@link DynamicRatingItemRecommender} by delegating them to a single method with a
  * Fastutil-based interface.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingRecommender implements ItemRecommender, RatingRecommender {
+public abstract class AbstractRatingRecommender implements ItemRecommender, DynamicRatingItemRecommender {
     protected final RatingDataAccessObject dao;
     
     public AbstractRatingRecommender(RatingDataAccessObject dao) {
@@ -79,7 +79,7 @@ public abstract class AbstractRatingRecommender implements ItemRecommender, Rati
      * @param exclude The set of excluded items (the public methods convert
      * null sets to the empty set, so this parameter is always non-null).
      * @return
-     * @see RatingRecommender#recommend(long, SparseVector, int, Set, Set)
+     * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
      */
     protected abstract List<ScoredId> recommend(long user, SparseVector ratings, int n,
             @Nullable LongSet candidates, @Nonnull LongSet exclude);

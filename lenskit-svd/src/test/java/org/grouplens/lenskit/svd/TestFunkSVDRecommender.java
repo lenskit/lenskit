@@ -71,7 +71,7 @@ public class TestFunkSVDRecommender {
             // These assert instanceof's are also assertNotNull's
             Assert.assertTrue(rec.getRatingPredictor() instanceof SVDRatingPredictor);
 
-            Assert.assertNull(rec.getRatingRecommender());
+            Assert.assertNull(rec.getDynamicRatingItemRecommender());
             Assert.assertNull(rec.getDynamicRatingPredictor());
             Assert.assertNull(rec.getBasketRecommender());
         } finally {

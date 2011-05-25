@@ -47,8 +47,8 @@ public class BasicRecommender implements Recommender {
     }
 
     @Override
-    public RatingRecommender getRatingRecommender() {
-        return container.getComponent(RatingRecommender.class);
+    public DynamicRatingItemRecommender getDynamicRatingItemRecommender() {
+        return container.getComponent(DynamicRatingItemRecommender.class);
     }
 
     @Override

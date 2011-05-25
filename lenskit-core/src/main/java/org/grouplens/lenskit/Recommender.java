@@ -30,7 +30,7 @@ public interface Recommender {
     public DynamicRatingPredictor getDynamicRatingPredictor();
     
     @Nullable
-    public RatingRecommender getRatingRecommender();
+    public DynamicRatingItemRecommender getDynamicRatingItemRecommender();
     
     @Nullable
     public BasketRecommender getBasketRecommender();
