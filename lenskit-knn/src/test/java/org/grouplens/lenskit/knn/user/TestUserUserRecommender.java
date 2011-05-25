@@ -28,7 +28,6 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
