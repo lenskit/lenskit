@@ -23,10 +23,10 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
@@ -54,13 +54,13 @@ public class TestFunkSVDRecommender {
         
         manager = new RatingCollectionDAO.Manager(rs);
         
-        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bindDefault(RatingPredictor.class, SVDRatingPredictor.class);
         factory.bindDefault(BaselinePredictor.class, UserMeanPredictor.class);
         factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         factory.bind(IterationCount.class, 10);
         
-        engine = factory.create(manager);
+        engine = factory.create();
     }
     
     @Test

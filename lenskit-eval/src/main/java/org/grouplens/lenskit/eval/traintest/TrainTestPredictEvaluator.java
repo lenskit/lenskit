@@ -113,7 +113,7 @@ public class TrainTestPredictEvaluator {
                 
                 logger.debug("Building {}", algo.getName());
                 acc.startBuildTimer();
-                Recommender rec = algo.buildRecommender(tdao, snap).open();
+                Recommender rec = algo.buildRecommender(tdao, snap);
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 

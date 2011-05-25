@@ -23,11 +23,11 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
@@ -54,12 +54,12 @@ public class TestItemItemRecommender {
         
         manager = new RatingCollectionDAO.Manager(rs);
         
-        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bindDefault(RatingPredictor.class, ItemItemRatingPredictor.class);
         factory.bindDefault(RatingRecommender.class, ItemItemRatingRecommender.class);
         factory.bindDefault(SimilarityMatrixAccumulatorFactory.class, TruncatingSimilarityMatrixAccumulator.Factory.class);
         factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
-        engine = factory.create(manager);
+        engine = factory.create();
     }
     
     @Test

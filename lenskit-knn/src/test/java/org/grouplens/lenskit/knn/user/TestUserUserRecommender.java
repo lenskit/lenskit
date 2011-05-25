@@ -23,6 +23,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
@@ -52,12 +53,12 @@ public class TestUserUserRecommender {
         
         manager = new RatingCollectionDAO.Manager(rs);
         
-        RecommenderEngineFactory factory = new RecommenderEngineFactory();
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bindDefault(RatingPredictor.class, UserUserRatingPredictor.class);
         factory.bindDefault(RatingRecommender.class, UserUserRatingRecommender.class);
         factory.bindDefault(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
         factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
-        engine = factory.create(manager);
+        engine = factory.create();
     }
     
     @Test

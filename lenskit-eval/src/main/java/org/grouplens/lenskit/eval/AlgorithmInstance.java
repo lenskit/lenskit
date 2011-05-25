@@ -32,6 +32,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -47,13 +49,13 @@ import org.slf4j.LoggerFactory;
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private @Nonnull String algoName;
-    private @Nullable RecommenderEngineFactory factory;
+    private @Nullable LenskitRecommenderEngineFactory factory;
     private @Nonnull Map<String,Object> attributes;
     private boolean preload = false;
 
     public AlgorithmInstance() {
         attributes = new HashMap<String,Object>();
-        factory = new RecommenderEngineFactory();
+        factory = new LenskitRecommenderEngineFactory();
     }
 
     /**
@@ -109,20 +111,25 @@ public class AlgorithmInstance {
         return factory;
     }
     
-    public void setFactory(RecommenderEngineFactory factory) {
+    public void setFactory(LenskitRecommenderEngineFactory factory) {
         this.factory = factory;
     }
 
-    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao, SharedRatingSnapshot sharedSnapshot) {
+    public Recommender buildRecommender(RatingDataAccessObject dao, SharedRatingSnapshot sharedSnapshot) {
         if (factory == null)
             throw new IllegalStateException("no factory set");
         
-        factory.bindDefault(RatingSnapshot.class, sharedSnapshot);
-        try {
-            return factory.create(new SharedDAO(dao));
-        } finally {
-            factory.bindDefault(RatingSnapshot.class, (RatingSnapshot) null);
+        RecommenderEngine engine;
+        synchronized (factory) {
+            factory.bindDefault(RatingSnapshot.class, sharedSnapshot);
+            try {
+                engine = factory.create(dao);
+            } finally {
+                factory.bindDefault(RatingSnapshot.class, (RatingSnapshot) null);
+            }
         }
+        
+        return engine.open(dao, false);
     }
     
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
