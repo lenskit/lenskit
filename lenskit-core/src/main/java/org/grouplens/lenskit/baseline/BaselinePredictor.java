@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.grouplens.lenskit.DynamicRatingPredictor;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Serializer;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -33,7 +34,13 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * so that they can be easily written to or read from a file with a
  * {@link Serializer}.
  * 
+ * <p>Note that this class does not implement the {@link RatingPredictor} or
+ * {@link DynamicRatingPredictor} interfaces - this is to allow it to operate free
+ * of the DAO. If you want to use a baseline predictor as a {@link RatingPredictor},
+ * see {@link BaselineRatingPredictor}.
+ * 
  * @author Michael Ludwig
+ * @see BaselineRatingPredictor
  */
 public interface BaselinePredictor extends Serializable {
     /**

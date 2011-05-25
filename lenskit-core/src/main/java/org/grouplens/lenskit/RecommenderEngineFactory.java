@@ -69,7 +69,8 @@ public class RecommenderEngineFactory {
         
         // Technically this isn't needed since the default type is configured,
         // but it's nice to show explicit bindings for these snapshots
-        bind(NormalizedSnapshot.class, NormalizedRatingSnapshot.class);
+        // Disabled 2011-05-25 by MDE to avoid pulling in normalizers unnecessarily
+        // bind(NormalizedSnapshot.class, NormalizedRatingSnapshot.class);
     }
     
     public synchronized void bind(Class<? extends Annotation> param, Object instance) {
