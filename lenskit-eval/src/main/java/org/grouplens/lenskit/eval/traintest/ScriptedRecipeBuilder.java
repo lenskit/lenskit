@@ -37,6 +37,7 @@ public class ScriptedRecipeBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ScriptedRecipeBuilder.class);
     private List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>();
     private List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
+    @SuppressWarnings("unused")
     private Scriptable scope;
     
     public ScriptedRecipeBuilder(Scriptable scope) {

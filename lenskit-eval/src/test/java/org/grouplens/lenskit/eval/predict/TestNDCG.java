@@ -18,9 +18,9 @@
  */
 package org.grouplens.lenskit.eval.predict;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator.Accumulator;
 import org.junit.Test;
 
 
