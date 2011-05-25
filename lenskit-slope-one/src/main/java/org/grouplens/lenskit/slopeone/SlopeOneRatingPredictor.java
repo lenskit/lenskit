@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
+
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -11,11 +12,14 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public class WeightedSlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
+/**
+ * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
+ */
+public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 
-	private final SlopeOneModel model;
+	private SlopeOneModel model;
 
-	public WeightedSlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
+	public SlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
 		super(dao);
 		this.model = model;
 	}
@@ -33,19 +37,22 @@ public class WeightedSlopeOneRatingPredictor extends AbstractDynamicRatingPredic
 		for (long predicteeItem : items) {
 			if (!ratings.containsKey(predicteeItem)) {
 				double total = 0;
-				int nusers = 0;
+				int nitems = 0;
 				for (long currentItem : ratings.keySet()) {
-					double currentDev = model.getDeviationMatrix().get(predicteeItem, currentItem);	
-					if (!Double.isNaN(currentDev)) {
-						int weight = model.getCoratingMatrix().get(predicteeItem, currentItem);
-						total += (currentDev +ratings.get(currentItem))* weight;
-						nusers += weight;
+					int nusers = model.getCoratingMatrix().get(predicteeItem, currentItem);
+					if (nusers != 0) {
+						double currentDev = model.getDeviationMatrix().get(predicteeItem, currentItem);
+						total += currentDev + ratings.get(currentItem);
+						nitems++;
 					}
 				}
-				if (nusers == 0) unpreds.add(predicteeItem);
-				else preds.set(predicteeItem, total/nusers);
+				if (nitems == 0) unpreds.add(predicteeItem);
+				else {
+					preds.set(predicteeItem, total/nitems);
+				}
 			}
 		}
+		//Use Baseline Predictor if necessary
 		final BaselinePredictor baseline = model.getBaselinePredictor();
 		if (baseline != null && !unpreds.isEmpty()) {
 			SparseVector basePreds = baseline.predict(user, ratings, unpreds);

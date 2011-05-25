@@ -11,11 +11,14 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
+/**
+ * A Rating Predictor that implements a weighted Slope One algorithm.
+ */
+public class WeightedSlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 
-	protected final SlopeOneModel model;
+	private final SlopeOneModel model;
 
-	public SlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
+	public WeightedSlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
 		super(dao);
 		this.model = model;
 	}
@@ -33,29 +36,28 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 		for (long predicteeItem : items) {
 			if (!ratings.containsKey(predicteeItem)) {
 				double total = 0;
-				int nitems = 0;
+				int nusers = 0;
 				for (long currentItem : ratings.keySet()) {
 					double currentDev = model.getDeviationMatrix().get(predicteeItem, currentItem);	
 					if (!Double.isNaN(currentDev)) {
-						total += currentDev + ratings.get(currentItem);
-						nitems++;
+						int weight = model.getCoratingMatrix().get(predicteeItem, currentItem);
+						total += (currentDev +ratings.get(currentItem))* weight;
+						nusers += weight;
 					}
 				}
-				if (nitems == 0) unpreds.add(predicteeItem);
-				else {
-					preds.set(predicteeItem, total/nitems);
-				}
+				if (nusers == 0) unpreds.add(predicteeItem);
+				else preds.set(predicteeItem, total/nusers);
 			}
 		}
 		final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && !unpreds.isEmpty()) {
-        	SparseVector basePreds = baseline.predict(user, ratings, unpreds);
-            for (Long2DoubleMap.Entry e: basePreds.fast()) {
-                assert Double.isNaN(preds.get(e.getLongKey()));
-                preds.set(e.getLongKey(), e.getDoubleValue());
-            }
-            return preds;
-        }
-        else return preds.copy(true);
+		if (baseline != null && !unpreds.isEmpty()) {
+			SparseVector basePreds = baseline.predict(user, ratings, unpreds);
+			for (Long2DoubleMap.Entry e: basePreds.fast()) {
+				assert Double.isNaN(preds.get(e.getLongKey()));
+				preds.set(e.getLongKey(), e.getDoubleValue());
+			}
+			return preds;
+		}
+		else return preds.copy(true);
 	}
 }

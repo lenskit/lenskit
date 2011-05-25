@@ -12,7 +12,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
 @DefaultDouble(0)
-@Parameter(Integer.class)
+@Parameter(Double.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DeviationDamping { }

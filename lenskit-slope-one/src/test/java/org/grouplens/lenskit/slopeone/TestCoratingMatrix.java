@@ -22,9 +22,8 @@ public class TestCoratingMatrix {
 		rs.add(new SimpleRating(1, 3, 5));
 		rs.add(new SimpleRating(2, 3, 4));
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
-		PackedRatingSnapshot snapshot = snapBuilder.build();
-		CoratingMatrix data = new CoratingMatrix(snapshot);
+		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.open());
+		CoratingMatrix data = new CoratingMatrix(builder.build());
 		data.put(5, 3, 2);
 		assertEquals(2, data.get(5, 3));
 		assertEquals(2, data.get(3, 5));	
@@ -45,9 +44,8 @@ public class TestCoratingMatrix {
 		rs.add(new SimpleRating(2, 6, 5));
 		rs.add(new SimpleRating(3, 6, 3));
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
-		PackedRatingSnapshot snapshot = snapBuilder.build();
-		CoratingMatrix data = new CoratingMatrix(snapshot);
+		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.open());
+		CoratingMatrix data = new CoratingMatrix(builder.build());
 		data.put(4, 5, 3);
 		data.put(4, 6, 3);
 		data.put(5, 6, 3);
@@ -77,9 +75,8 @@ public class TestCoratingMatrix {
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 3));
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
-		PackedRatingSnapshot snapshot = snapBuilder.build();
-		CoratingMatrix data = new CoratingMatrix(snapshot);
+		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.open());
+		CoratingMatrix data = new CoratingMatrix(builder.build());
 		data.put(6, 7, 2);
 		data.put(6, 8, 2);
 		data.put(6, 9, 1);
@@ -111,9 +108,8 @@ public class TestCoratingMatrix {
 		rs.add(new SimpleRating(2, 7, 4));
 		rs.add(new SimpleRating(3, 7, 1.5));
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
-		PackedRatingSnapshot snap = snapBuilder.build();
-		CoratingMatrix data = new CoratingMatrix(snap);
+		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.open());
+		CoratingMatrix data = new CoratingMatrix(builder.build());
 		data.put(4, 5, 0);
 		data.put(4, 6, 1);
 		data.put(4, 7, 2);
