@@ -7,77 +7,82 @@ Using the Evaluator
   LensKit provides an offline evaluation framework for testing
   recommenders.  It is in the <<<lenskit-eval>>> subpackage.  The
   resulting jar, however, does not include the core or any
-  recommenders.  We have created a {{{./lenskit-eval-maven-plugin/}Maven
+  recommenders.  We have created a {{{./lenskit-eval-ant-plugin/}Ant
   plugin}} that takes care of running the recommender as a Maven task.
   For now, that is the only supported means of running recommender
-  evaluations; we hope to add non-Maven-based evaluation methods later
-  (command line and possibly Ant-based).
+  evaluations.
 
 Configuring Recommenders
 
-  Recommenders are configured using JavaScript (or any other scripting
-  language supported by <<<javax.script>>>).  The script is
-  responsible for setting up the recommender module and configuring
-  its parameters.  We will be adding support for generating multiple
-  configurations from a single script, but this is not yet
-  implemented.
+  Recommenders are configured using JavaScript.  The script is
+  responsible for setting up the recommender and configuring its
+  parameters.  Multiple configurations can be generated from a single
+  script.
 
   Here's a simple script that demonstrates configuring user-user CF:
 
-+-------------------------------------------+
- rec.name = "UserUser"
- rec.module = org.grouplens.lenskit.knn.user.UserRecommenderModule
- rec.module.knn.similarityDamping = 50
- rec.module.core.baseline = org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-+-------------------------------------------+
-
-  Scripts are passed as command line arguments to the evaluator after
-  the options.
+%{snippet|file=../../../lenskit-knn/etc/useruser.js
 
 Running the Evaluator
 
-  Since the evaluator is a Maven plugin, you configure it in your
-  Maven POM.  You can do this in your recommender's project or in a
-  separate POM that depends on your chosen recommender implementation.
-  The following XML configures the evaluator to run with the MovieLens
-  100K data set against a recommender script in <<<etc/itemitem.js>>>.
+  Since the evaluator is a Maven plugin, you configure it from a
+  build.xml.  The following XML configures the evaluator to run with
+  the MovieLens 100K data set against a recommender script in
+  <<<etc/itemitem.js>>>.
 
 +--------------------------------------------+
- <project>
- ...
-   <build>
-   ...
-     <plugins>
-     ...
-       <plugin>
-         <groupId>org.grouplens.lenskit</groupId>
-         <artifactId>lenskit-eval-maven-plugin</artifactId>
-         <version>${version}</version>
-         <executions>
-           <execution>
-             <id>rec-eval</id>
-             <goals>
-               <goal>crossfold-eval</goal>
-             </goals>
-             <phase>integration-test</phase>
-           </execution>
-         </executions>
-         <configuration>
-           <dataFile>/export/scratch/ekstrand/movie-data/ml-100k/u.data</dataFile>
-           <recommenderScript>etc/itemitem.js</recommenderScript>
-         </configuration>
-       </plugin>
-     ...
-     </plugins>
-   ...
-   </build>
- ...
-  </project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="LensKit Evaluation Suite" basedir="."
+         xmlns:lk="antlib:org.grouplens.lenskit.eval.ant"
+         xmlns:ac="antlib:net.sf.antcontrib">
+  <property name="build.dir" location="${basedir}/target" />
+  <property name="csv.dir" location="${build.dir}"/>
+  <property name="scripts.dir" location="${basedir}/etc"/>
+  <property name="data.dir" location="${basedir}/data" />
+
+  <target name="init">
+    <condition property="datasets.100k.uptodate">
+      <uptodate srcfile="${basedir}/data/ml-100k/u.data"
+                targetfile="${build.dir}/ml-100k.stamp"/>
+    </condition>
+  </target>
+
+  <target name="import-100k" depends="init"
+          unless="datasets.100k.uptodate">
+    <mkdir dir="${build.dir}/datasets"/>
+    <delete failonerror="false" verbose="true">
+      <fileset dir="${build.dir}/datasets" includes="ml-100k.*.db"/>
+    </delete>
+    <lk:split dataFile="${data.dir}/ml-100k/u.data"
+              dbFile="${build.dir}/datasets/ml-100k.%d.db"/>
+    <touch file="${build.dir}/ml-100k.stamp"/>
+  </target>
+
+  <macrodef name="eval">
+    <attribute name="data" default="ml-100k"/>
+    <attribute name="name"/>
+    <sequential>
+    </sequential>
+  </macrodef>
+  
+  <target name="useruser" depends="import-100k">
+    <lk:traintest script="${scripts.dir}/useruser.js"
+                  output="${csv.dir}/useruser.ml-100k.csv">
+      <databases dir="${build.dir}/datasets">
+        <include name="ml-100k.*.db"/>
+      </databases>
+    </lk:traintest>
+  </target>
+</project>
 +--------------------------------------------+
 
-  See the
-  {{{./lenskit-eval-maven-plugin/crossfold-eval-mojo.html}crossfold-eval
-  mojo documentation}} for defails on configuring the plugin.
+  LensKit must be available on the classpath.  An easy way to do this
+  is to run the <<<package>>> target in the LensKit source tree and
+  copy all the JARs from <<<lenskit-package/target/jars>>> directory
+  to your Ant lib directory.  Alternatively, you can run Ant from
+  Maven with the
+  {{{http://maven.apache.org/plugins/maven-antrun-plugin/}AntRun
+  plugin}}} to pull in LensKit.
 
 Processing Output
 
