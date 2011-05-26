@@ -121,11 +121,11 @@ public class AlgorithmInstance {
         
         RecommenderEngine engine;
         synchronized (factory) {
-            factory.bindDefault(RatingSnapshot.class, sharedSnapshot);
+            factory.setComponent(RatingSnapshot.class, sharedSnapshot);
             try {
                 engine = factory.create(dao);
             } finally {
-                factory.bindDefault(RatingSnapshot.class, (RatingSnapshot) null);
+                factory.setComponent(RatingSnapshot.class, (RatingSnapshot) null);
             }
         }
         

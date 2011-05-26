@@ -55,10 +55,10 @@ public class TestFunkSVDRecommender {
         manager = new RatingCollectionDAO.Manager(rs);
         
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bindDefault(RatingPredictor.class, SVDRatingPredictor.class);
-        factory.bindDefault(BaselinePredictor.class, UserMeanPredictor.class);
-        factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
-        factory.bind(IterationCount.class, 10);
+        factory.setComponent(RatingPredictor.class, SVDRatingPredictor.class);
+        factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
+        factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
+        factory.set(IterationCount.class, 10);
         
         engine = factory.create();
     }

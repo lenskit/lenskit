@@ -55,10 +55,10 @@ public class TestItemItemRecommender {
         manager = new RatingCollectionDAO.Manager(rs);
         
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bindDefault(RatingPredictor.class, ItemItemRatingPredictor.class);
-        factory.bindDefault(DynamicRatingItemRecommender.class, ItemItemRatingRecommender.class);
-        factory.bindDefault(SimilarityMatrixAccumulatorFactory.class, TruncatingSimilarityMatrixAccumulator.Factory.class);
-        factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
+        factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
+        factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRatingRecommender.class);
+        factory.setComponent(SimilarityMatrixAccumulatorFactory.class, TruncatingSimilarityMatrixAccumulator.Factory.class);
+        factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         engine = factory.create();
     }
     

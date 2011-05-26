@@ -91,7 +91,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         defaultBindings = new HashMap<Class<?>, Object>();
         daoManager = daom;
         
-        bindDefault(RatingSnapshot.class, PackedRatingSnapshot.class);
+        setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
         
         // Technically this isn't needed since the default type is configured,
         // but it's nice to show explicit bindings for these snapshots
@@ -115,47 +115,61 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         daoManager = daom;
     }
     
-    public synchronized void bind(Class<? extends Annotation> param, Object instance) {
-        // Special case for if instance is actually a class type
-        if (instance instanceof Class) {
-            bind(param, (Class<?>) instance);
-            return;
-        }
-        
-        // Proceed with normal instance binding
-        validateAnnotation(param);
-        
-        if (instance != null) {
-            // Verify that the instance is the proper type
-            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-            if (Number.class.isAssignableFrom(paramType) && instance instanceof Number)
-                instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, (Number) instance);
-            
-            // For now we'll do exact type matching
-            // (this parameters should use the boxed type)
-            if (!paramType.isInstance(instance))
-                throw new IllegalArgumentException("Parameter " + param.getClass() + " expected a value of type " + paramType + ", not " + instance.getClass());
-        }
-        updateBindings(annotationBindings, param, instance);
+    @SuppressWarnings("unchecked")
+    public synchronized void set(Class<? extends Annotation> param, Number instance) {
+        Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
+        if (Number.class.isAssignableFrom(paramType) && instance instanceof Number)
+            instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, (Number) instance);
     }
     
-    public synchronized void bind(Class<? extends Annotation> param, Class<?> instanceType) {
+    /**
+     * Set the instnace to be used for a particular component.
+     * 
+     * <p><b>Note:</b> LensKit does not currently support multiple component
+     * types with the same annotation.</p>
+     * @param <T>
+     * @param annot The annotation for the component.
+     * @param type The component's type.
+     * @param instance The component instance.
+     */
+    public synchronized <T> void setComponent(Class<? extends Annotation> annot, Class<T> type, T instance) {
+        // Proceed with normal instance binding
+        validateAnnotation(annot);
+        
+        if (instance != null) {
+            // TODO Review to deal with types specified on parameter annotations
+        }
+        // TODO Actually use the class type in bindings
+        updateBindings(annotationBindings, annot, instance);
+    }
+    
+    /**
+     * Set the implementation to be used for a particular component.
+     * 
+     * <p><b>Note:</b> LensKit does not currently support multiple component
+     * types with the same annotation.</p>
+     * 
+     * @param param The component annotation.
+     * @param instanceType The type to use for this component.
+     */
+    public synchronized <T> void setComponent(Class<? extends Annotation> param, Class<T> type, Class<? extends T> instanceType) {
+        // FIXME: Actually use the type
         validateAnnotation(param);
-        // Verify that the instance type is of the appropriate type
+        // Verify that the types match
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-        if (instanceType != null && !paramType.isAssignableFrom(instanceType))
+        if (instanceType != null && !paramType.isAssignableFrom(type))
             throw new IllegalArgumentException(instanceType + " is incompatible with the type expected by parameter " + param.getClass() 
                                                + ", expected " + paramType);
         
         if (instanceType.getAnnotation(Built.class) != null) {
-            bindBuilder(param, findBuilder(instanceType));
+            setBuilder(param, type, findBuilder(instanceType));
         } else {
             // This class can be created on its own
             updateBindings(annotationBindings, param, instanceType);
         }
     }
     
-    public synchronized void bindBuilder(Class<? extends Annotation> param, Class<? extends Builder<?>> builderType) {
+    public synchronized <T> void setBuilder(Class<? extends Annotation> param, Class<T> type, Class<? extends Builder<? extends T>> builderType) {
         validateAnnotation(param);
         if (builderType != null) {
             // Verify that the builder generates the appropriate type
@@ -168,51 +182,35 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         updateBindings(annotationBindings, param, builderType);
     }
     
-    @SuppressWarnings("unchecked")
-    public synchronized void bindBuilder(Class<? extends Annotation> param, Builder<?> builder) {
-        validateAnnotation(param);
-        if (builder != null) {
-            // Verify that the builder generates the appropriate type
-            Class<? extends Builder<?>> builderType = (Class<? extends Builder<?>>) builder.getClass();
-            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-            Class<?> builtType = getBuiltType(builderType);
-            if (!paramType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builderType + " creates instances incompatible with the type expected by parameter " + param.getClass()
-                                                   + ", expected " + paramType + ", but was " + builtType);
-
-        }
-        updateBindings(annotationBindings, param, builder);
-    }
-    
-    public synchronized <M> void bindDefault(Class<M> superType, Class<? extends M> instanceType) {
-        if (superType == null)
+    public synchronized <M> void setComponent(Class<M> type, Class<? extends M> instanceType) {
+        if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify that the instanceType is actually a subtype
-        if (instanceType != null && !superType.isAssignableFrom(instanceType))
-            throw new IllegalArgumentException(instanceType + " is not a subclass of " + superType);
+        if (instanceType != null && !type.isAssignableFrom(instanceType))
+            throw new IllegalArgumentException(instanceType + " is not a subclass of " + type);
         
         if (instanceType != null && instanceType.getAnnotation(Built.class) != null) {
             // Bind a builder instead
-            bindDefaultBuilder(superType, findBuilder(instanceType));
+            setBuilder(type, findBuilder(instanceType));
         } else {
             // Type can be created on its own
-            updateBindings(defaultBindings, superType, instanceType);
+            updateBindings(defaultBindings, type, instanceType);
         }
     }
     
-    public synchronized <M> void bindDefault(Class<M> superType, M instance) {
-        if (superType == null)
+    public synchronized <M> void setComponent(Class<M> type, M instance) {
+        if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify instance is actually a subtype
-        if (instance != null && !superType.isInstance(instance))
-            throw new IllegalArgumentException(instance + " is not a subclass of " + superType);
+        if (instance != null && !type.isInstance(instance))
+            throw new IllegalArgumentException(instance + " is not a subclass of " + type);
         
         // Since we have an instance, there is no distinction between if it
         // uses a builder or not (it's already been built)
-        updateBindings(defaultBindings, superType, instance);
+        updateBindings(defaultBindings, type, instance);
     }
     
-    public synchronized <M> void bindDefaultBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
+    public synchronized <M> void setBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
         if (superType == null)
             throw new NullPointerException("Super-type cannot be null");
         if (builderType != null) {
@@ -223,21 +221,6 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                                                    + ", which are not subclasses of " + superType);
         }
         updateBindings(defaultBindings, superType, builderType);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public synchronized <M> void bindDefaultBuilder(Class<M> superType, Builder<? extends M> builder) {
-        if (superType == null)
-            throw new NullPointerException("Super-type cannot be null");
-        if (builder != null) {
-            // Verify that the builder generates the appropriate type
-            Class<? extends Builder<?>> builderType = (Class<? extends Builder<?>>) builder.getClass();
-            Class<?> builtType = getBuiltType(builderType);
-            if (!superType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builderType + " creates instances of " + builtType 
-                                                   + ", which are not subclasses of " + superType);
-        }
-        updateBindings(defaultBindings, superType, builder);
     }
     
     private void validateAnnotation(Class<? extends Annotation> param) {
