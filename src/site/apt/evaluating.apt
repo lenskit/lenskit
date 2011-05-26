@@ -21,7 +21,7 @@ Configuring Recommenders
 
   Here's a simple script that demonstrates configuring user-user CF:
 
-%{snippet|file=../../../lenskit-knn/etc/useruser.js
+%{snippet|file=lenskit-knn/etc/useruser.js}
 
 Running the Evaluator
 
