@@ -30,7 +30,6 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 @Documented
-@DefaultClass(UserMeanPredictor.class)
 @Parameter(BaselinePredictor.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
