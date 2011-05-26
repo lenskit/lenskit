@@ -6,6 +6,12 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+Release ${project.version}
+
+  The Mercurial changelog and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=${project.version}}list
+  of closed tickets}} provide more information on what has happened.
+
 Release 0.0.3
 
   This release contains many large changes, including significant
