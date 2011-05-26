@@ -8,20 +8,29 @@
 
 Release ${project.version}
 
+  The Mercurial changelog and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.0.3}list
+  of closed tickets}} provide more information on what has happened.
+
+Release 0.0.3
+
   This release contains many large changes, including significant
   architectural and API changes to make it easier to take LensKit
   forward.  See the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
   changelog}} for complete change listings.  Highlights include:
 
   * Dropped our use of Guice for dependency injection and
-    configuration.  Recommenders are now configured directly with the
-    <<<RecommenderComponentBuilder>>> interface and subclasses.
+    configuration.  Recommenders are now configured with the
+    <<<LenskitRecommenderComponentFactory>>> class.  PicoContainer
+    provides the underlying infrastructure, but this will be changing
+    in the future.
 
   * Renamed and refactored classes in the recommender implementations
     to improve clarity and consistency.
     
-  * Upgraded to Maven 3 (#issue(38)); Maven 2 should still work for
-    building everything except the web site.
+  * Upgraded to Maven 3 (#issue(38)); Maven 2 is currently unsupported
+    for building LensKit.  LensKit can, of course, be used by Maven 2
+    projects without problem.
 
   * Lots of documentation improvements.
 
@@ -34,8 +43,15 @@ Release ${project.version}
 
   * Add a session concept to data access objects to make it easier to
     deal with database handle scoping and related issues.
+
+  * Use Ant to manage evaluations.  This allows for more flexible
+    evaluation processing setups.
     
   []
+
+  The Mercurial changelog and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.0.3}list
+  of closed tickets}} provide more information on what has happened.
 
 Release 0.0.2 (March 28, 2011)
 
