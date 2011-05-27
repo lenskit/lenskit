@@ -12,6 +12,7 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import org.junit.Test;
 public class TestPackedRatingSnapshot {
 	
 	private PackedRatingSnapshot snap;
+	private static final double EPSILON = 1.0e-6;
 	
 	@Before
 	public void setup() {
@@ -189,5 +191,49 @@ public class TestPackedRatingSnapshot {
 		assertTrue(ratings.contains(new SimpleRating(7, 8, 2, 1)));
 		assertTrue(ratings.contains(new SimpleRating(7, 9, 3, 2)));
 		assertTrue(ratings.contains(new SimpleRating(7, 10, 4, 1)));
+	}
+	
+	@Test
+	public void testUserRatingVector() {
+		SparseVector ratings = snap.userRatingVector(1);
+		assertEquals(4, ratings.size());
+		assertEquals(4, ratings.get(7), EPSILON);
+		assertEquals(5, ratings.get(8), EPSILON);
+		assertEquals(3, ratings.get(9), EPSILON);
+		assertEquals(5, ratings.get(11), EPSILON);
+		
+		ratings = snap.userRatingVector(2);
+		assertEquals(0, ratings.size());
+		
+		ratings = snap.userRatingVector(3);
+		assertEquals(4, ratings.size());
+		assertEquals(3, ratings.get(7), EPSILON);
+		assertEquals(3, ratings.get(8), EPSILON);
+		assertEquals(4, ratings.get(9), EPSILON);
+		assertEquals(5, ratings.get(11), EPSILON);
+				
+		ratings = snap.userRatingVector(4);
+		assertEquals(5, ratings.size());
+		assertEquals(4, ratings.get(7), EPSILON);
+		assertEquals(2, ratings.get(8), EPSILON);
+		assertEquals(5, ratings.get(9), EPSILON);
+		assertEquals(4, ratings.get(10), EPSILON);
+		assertEquals(5, ratings.get(11), EPSILON);
+		
+		ratings = snap.userRatingVector(5);
+		assertEquals(2, ratings.size());
+		assertEquals(3, ratings.get(7), EPSILON);
+		assertEquals(5, ratings.get(8), EPSILON);
+		
+		ratings = snap.userRatingVector(6);
+		assertEquals(2, ratings.size());
+		assertEquals(5, ratings.get(7), EPSILON);
+		assertEquals(5, ratings.get(8), EPSILON);
+		
+		ratings = snap.userRatingVector(7);
+		assertEquals(3, ratings.size());
+		assertEquals(2, ratings.get(8), EPSILON);
+		assertEquals(3, ratings.get(9), EPSILON);
+		assertEquals(4, ratings.get(10), EPSILON);
 	}
 }

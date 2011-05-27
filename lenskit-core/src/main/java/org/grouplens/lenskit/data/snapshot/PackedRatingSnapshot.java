@@ -33,6 +33,7 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.VectorCache;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
@@ -51,15 +52,17 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Built(ephemeral=true)
-public class PackedRatingSnapshot implements RatingSnapshot {
-    private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
+public class PackedRatingSnapshot extends AbstractRatingSnapshot {
     
-	private PackedRatingData data;
+	private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
+    private PackedRatingData data;
 	private List<IntList> userIndices;
 	
 	protected PackedRatingSnapshot(PackedRatingData data, List<IntList> userIndices) {
-	    this.data = data;
+	    super();
+		this.data = data;
 	    this.userIndices = userIndices;
+	    cache = new VectorCache();
 	}
 	
 	private void requireValid() {
@@ -145,7 +148,7 @@ public class PackedRatingSnapshot implements RatingSnapshot {
                 // default to something nice and large
                 if (size < 0) size = 10000;
                 
-                // initialize arrays. we only trawck timestamps when we find them.
+                // initialize arrays. we only track timestamps when we find them.
                 users = new IntArrayList(size);
                 items = new IntArrayList(size);
                 values = new DoubleArrayList(size);
