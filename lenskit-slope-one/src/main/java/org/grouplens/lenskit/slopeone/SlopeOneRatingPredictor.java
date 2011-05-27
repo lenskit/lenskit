@@ -38,7 +38,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 
-	private SlopeOneModel model;
+	protected SlopeOneModel model;
 
 	public SlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
 		super(dao);

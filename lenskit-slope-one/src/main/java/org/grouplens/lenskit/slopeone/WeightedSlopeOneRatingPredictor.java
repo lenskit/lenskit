@@ -20,12 +20,8 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
@@ -35,13 +31,10 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.
  */
-public class WeightedSlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
-
-	private final SlopeOneModel model;
+public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 
 	public WeightedSlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
-		super(dao);
-		this.model = model;
+		super(dao, model);
 	}
 
 	@Override
@@ -80,21 +73,5 @@ public class WeightedSlopeOneRatingPredictor extends AbstractDynamicRatingPredic
 			return preds;
 		}
 		else return preds.copy(true);
-	}
-	
-	public LongSet getPredictableItems(long user, SparseVector ratings) {
-		if (model.getBaselinePredictor() != null) return model.getItemUniverse();
-		else {
-			LongSet predictable = new LongOpenHashSet();
-			for (long id1 : model.getItemUniverse()) {
-				LongIterator iter = ratings.keySet().iterator();
-				int nusers = 0;
-				while (iter.hasNext() && nusers == 0) {
-					nusers += model.getCoratingMatrix().get(id1, iter.next());
-				}
-				if (nusers > 0) predictable.add(id1);
-			}
-			return predictable;
-		}		
 	}
 }
