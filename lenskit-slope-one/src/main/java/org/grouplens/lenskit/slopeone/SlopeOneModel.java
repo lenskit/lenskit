@@ -27,7 +27,8 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
 /**
  * A model for <tt>SlopeOneRatingPredictor</tt> objects. Stores a
  * <tt>DeviationMatrix</tt>, <tt>CoratingMatrix</tt>, and
- * <tt>BaselinePredictor</tt> for use by the rating predictor.
+ * <tt>BaselinePredictor</tt> for use by the rating predictor
+ * as well as minimum and maximum rating values.
  *
  */
 @Built
@@ -38,12 +39,18 @@ public class SlopeOneModel {
 	private final DeviationMatrix devMatrix;
 	private final BaselinePredictor baseline;
 	private final LongSortedSet itemUniverse;
+	private final double minRating;
+	private final double maxRating;
 	
-	public SlopeOneModel(CoratingMatrix coData, DeviationMatrix devData, BaselinePredictor predictor, LongSortedSet universe) {
+	public SlopeOneModel(CoratingMatrix coData, DeviationMatrix devData, BaselinePredictor predictor,
+			LongSortedSet universe, double min, double max) {
+		
 		coMatrix = coData;
 		devMatrix = devData;
 		baseline = predictor;
 		itemUniverse = universe;
+		minRating = min;
+		maxRating = max;
 	}
 	
 	public CoratingMatrix getCoratingMatrix() {
@@ -61,5 +68,12 @@ public class SlopeOneModel {
 	public LongSortedSet getItemUniverse() {
 		return itemUniverse;
 	}
-
+	
+	public double getMinRating() {
+		return minRating;
+	}
+	
+	public double getMaxRating() {
+		return maxRating;
+	}
 }

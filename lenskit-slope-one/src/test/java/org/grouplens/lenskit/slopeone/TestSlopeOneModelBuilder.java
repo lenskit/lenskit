@@ -33,6 +33,8 @@ import org.junit.Test;
 
 public class TestSlopeOneModelBuilder {
 
+	public static final double EPSILON = 1.0e-6;
+	
 	@Test
 	public void testBuild1() {
 
@@ -50,8 +52,8 @@ public class TestSlopeOneModelBuilder {
 		SlopeOneModel model1 = builder1.build();
 		assertEquals(2, model1.getCoratingMatrix().get(5, 3));
 		assertEquals(2, model1.getCoratingMatrix().get(3, 5));
-		assertEquals(-1.5000, model1.getDeviationMatrix().get(5, 3),0.0001);
-		assertEquals(1.5000, model1.getDeviationMatrix().get(3,5), 0.0001);
+		assertEquals(-1.5, model1.getDeviationMatrix().get(5, 3),EPSILON);
+		assertEquals(1.5, model1.getDeviationMatrix().get(3,5), EPSILON);
 	}
 
 	@Test
@@ -80,12 +82,12 @@ public class TestSlopeOneModelBuilder {
 		assertEquals(3, model2.getCoratingMatrix().get(6, 4));
 		assertEquals(3, model2.getCoratingMatrix().get(5, 6));
 		assertEquals(3, model2.getCoratingMatrix().get(6, 5));
-		assertEquals(1.3333, model2.getDeviationMatrix().get(4, 6), 0.0001);
-		assertEquals(-1.3333, model2.getDeviationMatrix().get(6, 4), 0.0001);
-		assertEquals(1.3333, model2.getDeviationMatrix().get(4, 5), 0.0001);
-		assertEquals(-1.3333, model2.getDeviationMatrix().get(5, 4), 0.0001);
-		assertEquals(0, model2.getDeviationMatrix().get(5, 6), 0.0001);
-		assertEquals(0, model2.getDeviationMatrix().get(6, 5), 0.0001);
+		assertEquals(4/3.0, model2.getDeviationMatrix().get(4, 6), EPSILON);
+		assertEquals(-4/3.0, model2.getDeviationMatrix().get(6, 4), EPSILON);
+		assertEquals(4/3.0, model2.getDeviationMatrix().get(4, 5), EPSILON);
+		assertEquals(-4/3.0, model2.getDeviationMatrix().get(5, 4), EPSILON);
+		assertEquals(0, model2.getDeviationMatrix().get(5, 6), EPSILON);
+		assertEquals(0, model2.getDeviationMatrix().get(6, 5), EPSILON);
 	}
 
 	@Test
@@ -125,18 +127,18 @@ public class TestSlopeOneModelBuilder {
 		assertEquals(2, model3.getCoratingMatrix().get(9, 7));
 		assertEquals(2, model3.getCoratingMatrix().get(8, 9));
 		assertEquals(2, model3.getCoratingMatrix().get(9, 8));
-		assertEquals(0.5000, model3.getDeviationMatrix().get(6, 7), 0.0001);
-		assertEquals(-0.5000, model3.getDeviationMatrix().get(7, 6), 0.0001);
-		assertEquals(-0.5000, model3.getDeviationMatrix().get(6, 8), 0.0001);
-		assertEquals(0.5000, model3.getDeviationMatrix().get(8, 6), 0.0001);
-		assertEquals(1.0000, model3.getDeviationMatrix().get(6, 9), 0.0001);
-		assertEquals(-1.0000, model3.getDeviationMatrix().get(9, 6), 0.0001);
-		assertEquals(0, model3.getDeviationMatrix().get(7, 8), 0.0001);
-		assertEquals(0, model3.getDeviationMatrix().get(8, 7), 0.0001);
-		assertEquals(0.5000, model3.getDeviationMatrix().get(7, 9), 0.0001);
-		assertEquals(-0.5000, model3.getDeviationMatrix().get(9, 7), 0.0001);
-		assertEquals(-0.5000, model3.getDeviationMatrix().get(8, 9), 0.0001);
-		assertEquals(0.5000, model3.getDeviationMatrix().get(9, 8), 0.0001);
+		assertEquals(0.5, model3.getDeviationMatrix().get(6, 7), EPSILON);
+		assertEquals(-0.5, model3.getDeviationMatrix().get(7, 6), EPSILON);
+		assertEquals(-0.5, model3.getDeviationMatrix().get(6, 8), EPSILON);
+		assertEquals(0.5, model3.getDeviationMatrix().get(8, 6), EPSILON);
+		assertEquals(1, model3.getDeviationMatrix().get(6, 9), EPSILON);
+		assertEquals(-1, model3.getDeviationMatrix().get(9, 6), EPSILON);
+		assertEquals(0, model3.getDeviationMatrix().get(7, 8), EPSILON);
+		assertEquals(0, model3.getDeviationMatrix().get(8, 7), EPSILON);
+		assertEquals(0.5, model3.getDeviationMatrix().get(7, 9), EPSILON);
+		assertEquals(-0.5, model3.getDeviationMatrix().get(9, 7), EPSILON);
+		assertEquals(-0.5, model3.getDeviationMatrix().get(8, 9), EPSILON);
+		assertEquals(0.5, model3.getDeviationMatrix().get(9, 8), EPSILON);
 	}
 	
 	@Test
@@ -170,16 +172,16 @@ public class TestSlopeOneModelBuilder {
 		assertEquals(1, model.getCoratingMatrix().get(7, 6));
 		assertEquals(Double.NaN, model.getDeviationMatrix().get(4, 5), 0);
 		assertEquals(Double.NaN, model.getDeviationMatrix().get(5, 4), 0);
-		assertEquals(2.0000, model.getDeviationMatrix().get(4, 6), 0.0001);
-		assertEquals(-2.0000, model.getDeviationMatrix().get(6, 4), 0.0001);
-		assertEquals(0.2500, model.getDeviationMatrix().get(4, 7), 0.0001);
-		assertEquals(-0.2500, model.getDeviationMatrix().get(7, 4), 0.0001);
+		assertEquals(2, model.getDeviationMatrix().get(4, 6), EPSILON);
+		assertEquals(-2, model.getDeviationMatrix().get(6, 4), EPSILON);
+		assertEquals(0.25, model.getDeviationMatrix().get(4, 7), EPSILON);
+		assertEquals(-0.25, model.getDeviationMatrix().get(7, 4), EPSILON);
 		assertEquals(Double.NaN, model.getDeviationMatrix().get(5, 6), 0);
 		assertEquals(Double.NaN, model.getDeviationMatrix().get(6, 5), 0);
-		assertEquals(2.7500, model.getDeviationMatrix().get(5, 7), 0.0001);
-		assertEquals(-2.7500, model.getDeviationMatrix().get(7, 5), 0.0001);
-		assertEquals(-1.000, model.getDeviationMatrix().get(6, 7), 0.0001);
-		assertEquals(1.000, model.getDeviationMatrix().get(7, 6), 0.0001);
+		assertEquals(2.75, model.getDeviationMatrix().get(5, 7), EPSILON);
+		assertEquals(-2.75, model.getDeviationMatrix().get(7, 5), EPSILON);
+		assertEquals(-1, model.getDeviationMatrix().get(6, 7), EPSILON);
+		assertEquals(1, model.getDeviationMatrix().get(7, 6), EPSILON);
 	}
 
 }

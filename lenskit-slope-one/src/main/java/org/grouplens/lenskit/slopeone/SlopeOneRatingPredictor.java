@@ -69,7 +69,10 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 				}
 				if (nitems == 0) unpreds.add(predicteeItem);
 				else {
-					preds.set(predicteeItem, total/nitems);
+					double predValue = total/nitems;
+					if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
+					else if (predValue < model.getMinRating()) predValue = model.getMinRating();
+					preds.set(predicteeItem, predValue);
 				}
 			}
 		}

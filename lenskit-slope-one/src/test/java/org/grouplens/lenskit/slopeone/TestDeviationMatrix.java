@@ -31,6 +31,8 @@ import org.junit.Test;
 
 public class TestDeviationMatrix {
 	
+	public static final double EPSILON = 1.0e-6;
+	
 	@Test
 	public void testPutGet1() {
 		List<Rating> rs = new ArrayList<Rating>();
@@ -43,8 +45,8 @@ public class TestDeviationMatrix {
 		PackedRatingSnapshot snapshot = snapBuilder.build();
 		DeviationMatrix data = new DeviationMatrix(snapshot);
 		data.put(5, 3, -1.5);
-		assertEquals(-1.5000, data.get(5, 3), 0.0001);
-		assertEquals(1.5000, data.get(3, 5), 0.0001);		
+		assertEquals(-1.5000, data.get(5, 3), EPSILON);
+		assertEquals(1.5000, data.get(3, 5), EPSILON);		
 	}
 	
 	@Test
@@ -66,12 +68,12 @@ public class TestDeviationMatrix {
 		data.put(4, 6, 1.3333);
 		data.put(4, 5, 1.3333);
 		data.put(5, 6, 0);
-		assertEquals(1.3333, data.get(4, 6), 0.0001);
-		assertEquals(-1.3333, data.get(6, 4), 0.0001);
-		assertEquals(1.3333, data.get(4, 5), 0.0001);
-		assertEquals(-1.3333, data.get(5, 4), 0.0001);
-		assertEquals(0, data.get(5, 6), 0.0001);
-		assertEquals(0, data.get(6, 5), 0.0001);		
+		assertEquals(1.3333, data.get(4, 6), EPSILON);
+		assertEquals(-1.3333, data.get(6, 4), EPSILON);
+		assertEquals(1.3333, data.get(4, 5), EPSILON);
+		assertEquals(-1.3333, data.get(5, 4), EPSILON);
+		assertEquals(0, data.get(5, 6), EPSILON);
+		assertEquals(0, data.get(6, 5), EPSILON);		
 	}
 	
 	@Test
@@ -101,18 +103,18 @@ public class TestDeviationMatrix {
 		data.put(7, 8, 0);
 		data.put(7, 9, 0.5);
 		data.put(8, 9, -0.5);
-		assertEquals(0.5000, data.get(6, 7), 0.0001);
-		assertEquals(-0.5000, data.get(7, 6), 0.0001);
-		assertEquals(-0.5000, data.get(6, 8), 0.0001);
-		assertEquals(0.5000, data.get(8, 6), 0.0001);
-		assertEquals(1.0000, data.get(6, 9), 0.0001);
-		assertEquals(-1.0000, data.get(9, 6), 0.0001);
-		assertEquals(0, data.get(7, 8), 0.0001);
-		assertEquals(0, data.get(8, 7), 0.0001);
-		assertEquals(0.5000, data.get(7, 9), 0.0001);
-		assertEquals(-0.5000, data.get(9, 7), 0.0001);
-		assertEquals(-0.5000, data.get(8, 9), 0.0001);
-		assertEquals(0.5000, data.get(9, 8), 0.0001);
+		assertEquals(0.5, data.get(6, 7), EPSILON);
+		assertEquals(-0.5, data.get(7, 6), EPSILON);
+		assertEquals(-0.5, data.get(6, 8), EPSILON);
+		assertEquals(0.5, data.get(8, 6), EPSILON);
+		assertEquals(1., data.get(6, 9), EPSILON);
+		assertEquals(-1., data.get(9, 6), EPSILON);
+		assertEquals(0, data.get(7, 8), EPSILON);
+		assertEquals(0, data.get(8, 7), EPSILON);
+		assertEquals(0.5, data.get(7, 9), EPSILON);
+		assertEquals(-0.5, data.get(9, 7), EPSILON);
+		assertEquals(-0.5, data.get(8, 9), EPSILON);
+		assertEquals(0.5, data.get(9, 8), EPSILON);
 	}
 	
 	@Test
@@ -137,15 +139,15 @@ public class TestDeviationMatrix {
 		data.put(6, 7, -1);
 		assertEquals(Double.NaN, data.get(4, 5), 0);
 		assertEquals(Double.NaN, data.get(5, 4), 0);
-		assertEquals(2.0000, data.get(4, 6), 0.0001);
-		assertEquals(-2.0000, data.get(6, 4), 0.0001);
-		assertEquals(0.2500, data.get(4, 7), 0.0001);
-		assertEquals(-0.2500, data.get(7, 4), 0.0001);
+		assertEquals(2, data.get(4, 6), EPSILON);
+		assertEquals(-2, data.get(6, 4), EPSILON);
+		assertEquals(0.25, data.get(4, 7), EPSILON);
+		assertEquals(-0.25, data.get(7, 4), EPSILON);
 		assertEquals(Double.NaN, data.get(5, 6), 0);
 		assertEquals(Double.NaN, data.get(6, 5), 0);
-		assertEquals(2.7500, data.get(5, 7), 0.0001);
-		assertEquals(-2.7500, data.get(7, 5), 0.0001);
-		assertEquals(-1.000, data.get(6, 7), 0.0001);
-		assertEquals(1.000, data.get(7, 6), 0.0001);
+		assertEquals(2.75, data.get(5, 7), EPSILON);
+		assertEquals(-2.75, data.get(7, 5), EPSILON);
+		assertEquals(-1, data.get(6, 7), EPSILON);
+		assertEquals(1, data.get(7, 6), EPSILON);
 	}
 }

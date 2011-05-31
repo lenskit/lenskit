@@ -24,6 +24,8 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.slopeone.params.MaxRating;
+import org.grouplens.lenskit.slopeone.params.MinRating;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
@@ -38,6 +40,8 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 	private DeviationMatrix deviations;
 	private BaselinePredictor baseline;
 	private DeviationComputer devComp;
+	private double minRating;
+	private double maxRating;
 
 	/**
 	 * Constructs a <tt>SlopeOneModel</tt> and the necessary matrices from
@@ -66,7 +70,7 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 		}
 		deviations.compute(devComp, commonUsers);
 		LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
-		return new SlopeOneModel(commonUsers, deviations, baseline, items);
+		return new SlopeOneModel(commonUsers, deviations, baseline, items, minRating, maxRating);
 	}
 
 	/**
@@ -82,5 +86,19 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 	 */
 	public void setDeviationComputer(DeviationComputer comp) {
 		devComp = comp;
+	}
+	
+	/**
+	 * @param min The lowest valid rating in a system.
+	 */
+	public void setMinRating(@MinRating double min) {
+		minRating = min;
+	}
+	
+	/**
+	 * @param max The highest valid rating in a system.
+	 */
+	public void setMaxRating(@MaxRating double max) {
+		maxRating = max;
 	}
 }

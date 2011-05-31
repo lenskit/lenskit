@@ -34,6 +34,8 @@ import org.junit.Test;
 
 public class TestWeightedSlopeOneRatingPredictor {
 	
+	private static final double EPSILON = 1.0e-6;
+	
 	@Test
 	public void testPredict1() {
 
@@ -56,21 +58,23 @@ public class TestWeightedSlopeOneRatingPredictor {
 		RatingCollectionDAO dao = manager.open();
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
-		SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
-		builder1.setRatingSnapshot(snapshot);
-		builder1.setDeviationComputer(new DeviationComputer(0));
-		SlopeOneModel model = builder1.build();
+		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
+		builder.setRatingSnapshot(snapshot);
+		builder.setDeviationComputer(new DeviationComputer(0));
+		builder.setMinRating(1);
+		builder.setMaxRating(5);
+		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(2.6000, predictor.predict(2, 9).getScore(), 0.0001);
-		assertEquals(4.2000, predictor.predict(3, 6).getScore(), 0.0001);
-		assertEquals(2.0000, predictor.predict(4, 6).getScore(), 0.0001);
-		assertEquals(2.0000, predictor.predict(4, 9).getScore(), 0.0001);
-		assertEquals(2.5000, predictor.predict(5, 6).getScore(), 0.0001);
-		assertEquals(3.0000, predictor.predict(5, 7).getScore(), 0.0001);
-		assertEquals(3.5000, predictor.predict(5, 9).getScore(), 0.0001);
-		assertEquals(1.5000, predictor.predict(6, 6).getScore(), 0.0001);
-		assertEquals(2.0000, predictor.predict(6, 7).getScore(), 0.0001);
-		assertEquals(2.5000, predictor.predict(6, 9).getScore(), 0.0001);
+		assertEquals(2.6, predictor.predict(2, 9).getScore(), EPSILON);
+		assertEquals(4.2, predictor.predict(3, 6).getScore(), EPSILON);
+		assertEquals(2, predictor.predict(4, 6).getScore(), EPSILON);
+		assertEquals(2, predictor.predict(4, 9).getScore(), EPSILON);
+		assertEquals(2.5, predictor.predict(5, 6).getScore(), EPSILON);
+		assertEquals(3, predictor.predict(5, 7).getScore(), EPSILON);
+		assertEquals(3.5, predictor.predict(5, 9).getScore(), EPSILON);
+		assertEquals(1.5, predictor.predict(6, 6).getScore(), EPSILON);
+		assertEquals(2, predictor.predict(6, 7).getScore(), EPSILON);
+		assertEquals(2.5, predictor.predict(6, 9).getScore(), EPSILON);
 	}
 	
 	@Test
@@ -90,12 +94,14 @@ public class TestWeightedSlopeOneRatingPredictor {
 		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
 		builder.setRatingSnapshot(snap);
 		builder.setDeviationComputer(new DeviationComputer(0));
+		builder.setMinRating(1);
+		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(6.7500, predictor.predict(1, 5).getScore(), 0.0001);
-		assertEquals(2.2500, predictor.predict(1, 6).getScore(), 0.0001);
-		assertEquals(6.7500, predictor.predict(2, 5).getScore(), 0.0001);
-		assertEquals(1.7500, predictor.predict(3, 4).getScore(), 0.0001);
-		assertEquals(0.5000, predictor.predict(3, 6).getScore(), 0.0001);
+		assertEquals(5, predictor.predict(1, 5).getScore(), EPSILON);
+		assertEquals(2.25, predictor.predict(1, 6).getScore(), EPSILON);
+		assertEquals(5, predictor.predict(2, 5).getScore(), EPSILON);
+		assertEquals(1.75, predictor.predict(3, 4).getScore(), EPSILON);
+		assertEquals(1, predictor.predict(3, 6).getScore(), EPSILON);
 	}
 }
