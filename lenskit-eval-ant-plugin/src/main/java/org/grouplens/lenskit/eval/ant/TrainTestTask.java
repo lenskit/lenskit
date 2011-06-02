@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,9 +44,9 @@ import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
-import org.grouplens.lenskit.eval.holdout.TrainTestPredictEvaluator;
-import org.grouplens.lenskit.eval.results.AlgorithmEvaluationRecipe;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
+import org.grouplens.lenskit.eval.traintest.EvaluationRecipe;
+import org.grouplens.lenskit.eval.traintest.TrainTestPredictEvaluator;
 
 import com.google.common.primitives.Longs;
 
@@ -60,6 +61,8 @@ public class TrainTestTask extends Task {
 	private File script;
 	private int threadCount = 1;
 	private File predictionOutput;
+	private boolean useTimestamp = true;
+	private Properties properties = new Properties();
 	
 	public void setDatabaseDriver(String driver) {
 		databaseDriver = driver;
@@ -81,8 +84,16 @@ public class TrainTestTask extends Task {
 		predictionOutput = f;
 	}
 	
+	public void setTimestamp(boolean ts) {
+		useTimestamp = ts;
+	}
+	
 	public void addConfiguredDatabases(FileSet dbs) {
 		databases = dbs;
+	}
+	
+	public void addConfiguredProperty(Property prop) {
+	    properties.put(prop.getName(), prop.getValue());
 	}
 	
 	public void execute() throws BuildException {
@@ -94,10 +105,10 @@ public class TrainTestTask extends Task {
 			}
 		}
 		log("Running with thread count " + threadCount);
-		AlgorithmEvaluationRecipe recipe;
+		EvaluationRecipe recipe;
 		try {
 		    log("Loading recommender from " + script.getPath());
-		    recipe = AlgorithmEvaluationRecipe.load(script, outFile);
+		    recipe = EvaluationRecipe.load(script, properties, outFile);
 		    if (predictionOutput != null) {
 		        try {
 		            recipe.setPredictionOutput(predictionOutput);
@@ -146,6 +157,7 @@ public class TrainTestTask extends Task {
 						Throwable base = e;
 						if (e.getCause() != null)
 							base = e;
+						base.printStackTrace();
 						throw new BuildException("Error testing recommender", base);
 					}
 				}
@@ -184,6 +196,7 @@ public class TrainTestTask extends Task {
                 log("Creating evaluator", Project.MSG_DEBUG);
                 TrainTestPredictEvaluator eval =
                     new TrainTestPredictEvaluator(dbc, "train", "test");
+                eval.setTimestampEnabled(useTimestamp);
                 if (showProgress())
                     eval.setProgressStream(System.out);
                 log("Evaluating algorithms", Project.MSG_DEBUG);

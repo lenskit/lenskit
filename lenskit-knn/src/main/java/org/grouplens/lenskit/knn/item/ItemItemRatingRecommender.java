@@ -27,6 +27,7 @@ import java.util.PriorityQueue;
 
 import org.grouplens.lenskit.AbstractRatingRecommender;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
@@ -41,7 +42,8 @@ public class ItemItemRatingRecommender extends AbstractRatingRecommender {
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public ItemItemRatingRecommender(ItemItemRatingPredictor predictor) {
+    public ItemItemRatingRecommender(RatingDataAccessObject dao, ItemItemRatingPredictor predictor) {
+        super(dao);
         this.predictor = predictor;
     }
     

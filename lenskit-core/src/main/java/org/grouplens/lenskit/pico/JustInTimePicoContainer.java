@@ -21,10 +21,13 @@ package org.grouplens.lenskit.pico;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.grouplens.lenskit.util.PrimitiveUtils;
 import org.picocontainer.BindKey;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.ComponentFactory;
@@ -102,8 +105,9 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
             impl = ((BindKey<?>) key).getType();
 
         if (impl == null || Modifier.isAbstract(impl.getModifiers()) || Modifier.isInterface(impl.getModifiers())
-            || impl.isPrimitive())
+            || PrimitiveUtils.isBoxedTypePrimitive(impl))
             return false;
+        System.out.println(">>>> JIT Binding for " + key + " -> " + impl);
         try {
             ComponentAdapter<?> adapter = componentFactory.createComponentAdapter(componentMonitor, lifecycleStrategy, new Properties(), 
                                                                                   key, impl, (Parameter[]) null);
@@ -154,5 +158,28 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
             return getComponent(componentType);
         else
             return (T) getComponent(new BindKey<T>(componentType, binding));
+    }
+    
+    @Override
+    public List<Object> getComponents() {
+        List<Object> all = super.getComponents();
+        List<Object> withJIT = new ArrayList<Object>(all);
+        
+        for (ComponentAdapter<?> adapter: jitAdapters.values())
+            withJIT.add(adapter.getComponentInstance(this, null));
+        return withJIT;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getComponents(Class<T> type) {
+        List<T> all = super.getComponents(type);
+        List<T> withJIT = new ArrayList<T>(all);
+        
+        for (ComponentAdapter<?> adapter: jitAdapters.values()) {
+            if (type.isAssignableFrom(adapter.getComponentImplementation()))
+                withJIT.add((T) adapter.getComponentInstance(this, null));
+        }
+        return withJIT;
     }
 }

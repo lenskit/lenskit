@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.data;
 
-import org.grouplens.lenskit.data.context.RatingBuildContext;
 
 /**
  * Rating that also knows the indexes for its user and item.

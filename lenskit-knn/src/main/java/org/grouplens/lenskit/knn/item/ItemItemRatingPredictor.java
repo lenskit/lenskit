@@ -34,29 +34,37 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.knn.item.params.PredictorNeighborhoodSize;
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
-                                   @PredictorNeighborhoodSize int nnbrs) {
+                                   @NeighborhoodSize int nnbrs,
+                                   @Nullable UserRatingVectorNormalizer normalizer) {
         super(dao);
         this.model = model;
         neighborhoodSize = nnbrs;
+        logger.debug("Creating rating predictor with neighborhood size {}", neighborhoodSize);
     }
     
     public ItemItemModel getModel() {
@@ -128,6 +136,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds.set(item, sum / weight);
             else
                 unpredItems.add(item);
+            scores.clear();
         }
 
         // denormalize the predictions
@@ -135,7 +144,8 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         
         // apply the baseline if applicable
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null) {
+        if (baseline != null && !unpredItems.isEmpty()) {
+        	logger.trace("Filling {} items from baseline", unpredItems.size());
             SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
                 assert Double.isNaN(preds.get(e.getLongKey()));
@@ -143,7 +153,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             }
             return preds;
         } else {
-            return preds.copy();
+            return preds.copy(true);
         }
     }
 

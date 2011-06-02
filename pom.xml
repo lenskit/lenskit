@@ -7,7 +7,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -70,10 +70,10 @@
   <modules>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
-    <module>lenskit-eval-maven-plugin</module>
+    <module>lenskit-eval-ant-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
-    <module>lenskit-eval-ant-plugin</module>
+    <module>lenskit-package</module>
   </modules>
 
   <build>
@@ -323,7 +323,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>r08</version>
+        <version>r09</version>
         <type>jar</type>
         <scope>compile</scope>
       </dependency>
@@ -342,7 +342,7 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-core</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -570,6 +570,15 @@
                             <tag>
                               <matchString>@?todo</matchString>
                               <matchType>regEx</matchType>
+                            </tag>
+                          </tags>
+                        </tagClass>
+                        <tagClass>
+                          <displayName>Review items</displayName>
+                          <tags>
+                            <tag>
+                              <matchString>@review</matchString>
+                              <matchType>exact</matchType>
                             </tag>
                           </tags>
                         </tagClass>

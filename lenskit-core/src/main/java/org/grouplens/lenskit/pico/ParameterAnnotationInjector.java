@@ -28,10 +28,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.params.meta.DefaultBoolean;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.DefaultInt;
+import org.grouplens.lenskit.util.PrimitiveUtils;
 import org.picocontainer.BindKey;
 import org.picocontainer.ComponentAdapter;
 import org.picocontainer.ComponentMonitor;
@@ -64,11 +67,11 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
     private transient ThreadLocal<Boolean> cycleGuard;
     
     private transient Constructor<T> constructor;
-    private transient Object[] constructorParameterKeys;
+    private transient InjectionParameter[] constructorParameterKeys;
     private transient boolean constructorFound;
     
     private transient Method[] methods;
-    private transient Object[] methodKeys;
+    private transient InjectionParameter[] methodKeys;
     
     public ParameterAnnotationInjector(Object componentKey, Class<?> componentImplementation,
                                        Parameter[] parameters, ComponentMonitor monitor) {
@@ -98,13 +101,14 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected Object[] getConstructorParameterKeys(Constructor<T> constructor) {
+    protected InjectionParameter[] getConstructorParameterKeys(Constructor<T> constructor) {
         Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
         Class<?>[] parameterTypes = constructor.getParameterTypes();
         
-        Object[] keys = new Object[parameterTypes.length];
+        InjectionParameter[] keys = new InjectionParameter[parameterTypes.length];
         for (int i = 0; i < keys.length; i++) {
-            Type type = parameterTypes[i];//box(parameterTypes[i]);
+            Class<?> type = PrimitiveUtils.box(parameterTypes[i]);
+            
             Annotation binding = null;
             for (Annotation annot: parameterAnnotations[i]) {
                 if (annot.annotationType().getAnnotation(org.grouplens.lenskit.params.meta.Parameter.class) != null) {
@@ -113,13 +117,22 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 }
             }
             
+            boolean optional = isOptional(parameterAnnotations[i]);
             if (binding == null)
-                keys[i] = type;
+                keys[i] = new InjectionParameter(type, optional);
             else
-                keys[i] = new BindKey((Class<?>) type, binding.annotationType());
+                keys[i] = new InjectionParameter(new BindKey((Class<?>) type, binding.annotationType()), optional);
         }
         
         return keys;
+    }
+    
+    protected boolean isOptional(Annotation[] parameterAnnots) {
+        for (Annotation a: parameterAnnots) {
+            if (a.annotationType().equals(Nullable.class) || a.annotationType().equals(org.picocontainer.annotations.Nullable.class))
+                return true;
+        }
+        return false;
     }
     
     protected Annotation getMethodBinding(Method method) {
@@ -166,29 +179,29 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected Object[] getInjectedMethodKeys(Method[] methods) {
-        Object[] keys = new Object[methods.length];
+    protected InjectionParameter[] getInjectedMethodKeys(Method[] methods) {
+        InjectionParameter[] keys = new InjectionParameter[methods.length];
         for (int i = 0; i < methods.length; i++) {
-            Type type = methods[i].getParameterTypes()[0];//box(methods[i].getParameterTypes()[0]);
+            Class<?> type = PrimitiveUtils.box(methods[i].getParameterTypes()[0]);
             Annotation binding = getMethodBinding(methods[i]);
             
-            keys[i] = (binding == null ? type : new BindKey((Class<?>) type, binding.annotationType()));
+            Object key = (binding == null ? type : new BindKey(type, binding.annotationType()));
+            boolean optional = isOptional(methods[i].getAnnotations()) || isOptional(methods[i].getParameterAnnotations()[0]);
+            keys[i] = new InjectionParameter(key, optional);
         }
         
         return keys;
     }
     
-    private T getInstance(PicoContainer container, Constructor<T> constructor, Object[] constructorKeys) {
+    private T getInstance(PicoContainer container, Constructor<T> constructor, InjectionParameter[] constructorKeys) {
         long start = System.currentTimeMillis();
         
         // Build required objects for the constructor
         Object[] constructorArgs = new Object[constructorKeys.length];
         for (int i = 0; i < constructorArgs.length; i++) {
             Object arg = getInstance(container, constructorKeys[i]);
-            if (arg == null) {
-                // FIXME: add nullable support here
+            if (arg == null && !constructorKeys[i].optional)
                 throw new PicoCompositionException("Unable to resolve dependency for " + constructorKeys[i]);
-            }
             constructorArgs[i] = arg;
         }
         
@@ -209,55 +222,81 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
         }
     }
     
-    private Object getInstance(PicoContainer container, Object key) {
+    private Object getInstance(PicoContainer container, InjectionParameter param) {
+        Object key = param.containerKey;
+        
         RuntimeException failure = null;
         Object result = null;
         try {
-            // First try to resolve everything with 
+            // First try to resolve everything with the regular key
+            // If the parameter is optional, lookup the adapter first to avoid JIT 
+            //   finding an instance (in that case it should pass in null) 
+            // TODO discuss this policy with MICHAEL
+            if (param.optional && container.getComponentAdapter(key) == null)
+                return null;
+            
             result = container.getComponent(key);
         } catch(RuntimeException re) {
             failure = re;
         }
         
-        if (result == null && key instanceof BindKey) {
-            // Look to see if we can look up a default type based on the parameter annotation
-            BindKey<?> bindKey = (BindKey<?>) key;
-            DefaultClass dfltClass = bindKey.getAnnotation().getAnnotation(DefaultClass.class);
-            DefaultInt dfltInt = bindKey.getAnnotation().getAnnotation(DefaultInt.class);
-            DefaultDouble dfltDouble = bindKey.getAnnotation().getAnnotation(DefaultDouble.class);
-            DefaultBoolean dfltBoolean = bindKey.getAnnotation().getAnnotation(DefaultBoolean.class);
-            
-            // We can't modify the container, though, because it may not be mutable and if it was
-            // we could get ConcurrentModificationExceptions when getComponents() is called on it
-            if (dfltClass != null) {
-                try {
-                    result = container.getComponent(dfltClass.value());
-                } catch(RuntimeException re) {
-                    if (failure == null)
-                        failure = re;
-                }
-            } else if (dfltInt != null)
-                result = dfltInt.value();
-            else if (dfltDouble != null)
-                result = dfltDouble.value();
-            else if (dfltBoolean != null)
-                result = dfltBoolean.value();
+        // Only fall back on defaults if the parameter is not optional
+        if (result == null && !param.optional) {
+            if (key instanceof BindKey) {
+                // Look to see if we can look up a default type based on the parameter annotation
+                BindKey<?> bindKey = (BindKey<?>) key;
+                DefaultClass dfltClass = bindKey.getAnnotation().getAnnotation(DefaultClass.class);
+                DefaultInt dfltInt = bindKey.getAnnotation().getAnnotation(DefaultInt.class);
+                DefaultDouble dfltDouble = bindKey.getAnnotation().getAnnotation(DefaultDouble.class);
+                DefaultBoolean dfltBoolean = bindKey.getAnnotation().getAnnotation(DefaultBoolean.class);
 
-            // If the BindKey's annotation didn't give us a default type, see if can 
-            // use the BindKey's type
-            if (result == null) {
-                try {
-                    result = container.getComponent(bindKey.getType());
-                } catch(RuntimeException re) {
-                    if (failure == null)
-                        failure = re;
+                // FIXME: improve these fallback rules so that if there was a default provided,
+                // that is used (and if that fails then this fails), or if no default is provided,
+                //  just look at the type
+                
+                // We can't modify the container, though, because it may not be mutable and if it was
+                // we could get ConcurrentModificationExceptions when getComponents() is called on it
+                if (dfltClass != null) {
+                    try {
+                        result = container.getComponent(dfltClass.value());
+                    } catch(RuntimeException re) {
+                        if (failure == null)
+                            failure = re;
+                    }
+                } else if (dfltInt != null)
+                    result = dfltInt.value();
+                else if (dfltDouble != null)
+                    result = dfltDouble.value();
+                else if (dfltBoolean != null)
+                    result = dfltBoolean.value();
+
+                // If the BindKey's annotation didn't give us a default type, see if can 
+                // use the BindKey's type
+                if (result == null) {
+                    try {
+                        result = container.getComponent(bindKey.getType());
+                    } catch(RuntimeException re) {
+                        if (failure == null)
+                            failure = re;
+                    }
+                }
+            } else {
+                // See if the type has been annotated with a default type
+                DefaultClass dfltClass = ((Class<?>) key).getAnnotation(DefaultClass.class);
+                if (dfltClass != null) {
+                    try {
+                        result = container.getComponent(dfltClass.value());
+                    } catch(RuntimeException re) {
+                        if (failure == null)
+                            failure = re;
+                    }
                 }
             }
         }
         
         if (result != null)
             return result;
-        else if (failure != null)
+        else if (failure != null && !param.optional)
             throw failure;
         else
             return null;
@@ -291,7 +330,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 for (int i = 0; i < allConstructors.length; i++) {
                     try {
                         c = (Constructor<T>) allConstructors[i];
-                        Object[] keys = getConstructorParameterKeys(c);
+                        InjectionParameter[] keys = getConstructorParameterKeys(c);
                         
                         // check for cycles now and skip any constructor that depends on this type
                         boolean simpleCycleFound = false;
@@ -350,8 +389,8 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             for (int i = 0; i < methods.length; i++) {
                 long start = System.currentTimeMillis();
                 Object arg = getInstance(container, methodKeys[i]);
-                if (arg == null) {
-                    // FIXME: add nullable support here
+                
+                if (arg == null && !methodKeys[i].optional) {
                     throw new PicoCompositionException("Unable to resolve dependency for " + methodKeys[i]);
                 } else {
                     try {
@@ -368,6 +407,29 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             return instance;
         } finally {
             cycleGuard.set(Boolean.FALSE);
+        }
+    }
+    
+    protected static class InjectionParameter {
+        private final Object containerKey;
+        private final boolean optional;
+        
+        public InjectionParameter(Object key, boolean optional) {
+            containerKey = key;
+            this.optional = optional;
+        }
+        
+        public Object getKey() {
+            return containerKey;
+        }
+        
+        public boolean isOptional() {
+            return optional;
+        }
+        
+        @Override
+        public String toString() {
+            return containerKey + "(optional=" + optional +")";
         }
     }
 }

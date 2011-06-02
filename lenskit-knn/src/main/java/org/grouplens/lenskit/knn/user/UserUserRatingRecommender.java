@@ -27,6 +27,7 @@ import java.util.PriorityQueue;
 
 import org.grouplens.lenskit.AbstractRatingRecommender;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
@@ -38,7 +39,8 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 public class UserUserRatingRecommender extends AbstractRatingRecommender {
     protected final UserUserRatingPredictor predictor;
 
-    public UserUserRatingRecommender(UserUserRatingPredictor pred) {
+    public UserUserRatingRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
+        super(dao);
         predictor = pred;
     }
 

@@ -16,12 +16,14 @@ Overview
         with Eclipse and Maven}} for more information on using Maven
         in Eclipse.
 
-  [[2]] Configure a recommender builder.
+  [[2]] Configure a recommender engine factory.
 
   [[3]] Configure the data source for recommendation.
 
-  [[4]] Use the builder and a <<<RatingBuildContext>>> derived from
-        the data source to build a recommender.
+  [[4]] Use the engine factory to build a <<<RecommenderEngine>>>.
+
+  [[5]] Open a <<<Recommender>>> from the <<<RecommenderEngine>>> and
+        get recommendations.
 
 Creating a Project
 
@@ -38,12 +40,20 @@ Creating a Project
 
   Edit the POM to add <<<LensKit-core>>> as a dependency (Eclipse will
   make this easy, allowing you to search through the Maven Central
-  repository for LensKit once it is published there).  The XML to do this is:
+  repository for LensKit once it is published there), and also add
+  dependencies for the recommender algorithms you want.  The XML to do
+  this is:
 
 +---------------------------------------+
   <dependency>
     <groupId>org.grouplens.lenskit</groupId>
     <artifactId>lenskit-core</artifactId>
+    <version>${project.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>org.grouplens.lenskit</groupId>
+    <!-- replace with the appropriate algorithm module -->
+    <artifactId>lenskit-knn</artifactId>
     <version>${project.version}</version>
   </dependency>
 +---------------------------------------+
@@ -71,38 +81,45 @@ Configuring and Creating the Recommender
 
   The recommender implementations in LensKit are highly modular to
   allow their behavior to be customized and to allow individual pieces
-  to be individually replaced.  LensKit builder classes provide
-  properties to configure recommender behavior and allow subcomponents
-  to be specified via their respective builders.  Further, builders
-  memoize their results, so expensive object construction is not
-  repeated unnecessarily so long as builder instances are shared where
-  appropriate.
+  to be individually replaced.  The LensKit recommender engine factory
+  allows the various components of the desired recommender to be
+  configured.  The core configuration point is to bind default
+  implementations of the necessary <<<RatingPredictor>>> and/or
+  <<<ItemRecommender>>> interfaces.  Other parameters and components
+  can be reconfigured via the factory as well.
 
   After configuring a builder, you also need to configure your data
   source.  The recommendation framework depends on having access to
   data sources via the <<<RatingDataAccessObject>>> interface.
 
-  Once you have a builder and a data access object, create a new
-  rating build context (<<<PackedRatingBuildContext>>>) from the DAO
-  and provide it to the builder:
++-----------------------------------------------------------------+
+  LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory();
+  factory.setDAOManager(new SimpleFileDAO.Manager(fileName));
+  factory.bindDefault(RatingPredictor, ItemItemRatingPredictor.class);
 
-+-----------------------------------------------------------------+
-  RecommenderComponentBuilder<Recommender> builder = new ItemItemRecommenderBuilder();
-  RatingDataAccessObject dao = new SimpleFileDAO(fileName);
-  RatingBuildContext context = null;
-  dao.openSession();
+  /* configure a normalizer and baseline predictor */
+  factory.bindDefault(UserRatingVectorNormalizer.class, BaselineSubtractingNormalizer.class);
+  factory.bindDefault(BaselinePredictor.class, ItemUserMeanPredictor.class);
+
+  /* an additional binding is needed for now - we're working
+     on making them defaults. */
+  factory.bindDefault(SimilarityMatrixAccumulatorFactory.class,
+          TruncatingSimilarityMatrixAccumulator.Factory.class);
+
+  RecommenderEngine engine = factory.create();
+
+  /* get the and use the recommender */
+  Recommender rec = engine.open();
   try {
-      context = PackedRatingBuildContext.make(dao);
-      Recommender rec;
-      rec = builder.build(context);
+      /* get ratings, predictions */
   } finally {
-      if (context != null)
-          context.close();
-      dao.closeSession();
+      rec.close();
   }
-  RatingRecommender recommender = rec.getRatingRecommender();
-  /* open a session, use the recommender, close the session. */
 +-----------------------------------------------------------------+
+
+Once the recommender engine is created, it can be shared across
+threads, each of which is free to open its own recommender and
+interact with the system.
 
 Further Topics
 

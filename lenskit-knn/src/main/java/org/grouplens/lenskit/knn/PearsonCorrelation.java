@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 /**
@@ -48,7 +49,7 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
         this(0);
     }
     
-    public PearsonCorrelation(double s) {
+    public PearsonCorrelation(@SimilarityDamping double s) {
         shrinkage = s;
     }
 

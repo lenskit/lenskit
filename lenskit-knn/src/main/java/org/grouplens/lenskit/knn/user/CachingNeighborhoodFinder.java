@@ -29,13 +29,17 @@ import java.util.Collection;
 import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.PredictNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 
 /**
@@ -57,14 +61,27 @@ public class CachingNeighborhoodFinder implements NeighborhoodFinder {
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends AbstractNeighborhoodFinderBuilder<CachingNeighborhoodFinder> {
+    public static class Builder extends RecommenderComponentBuilder<CachingNeighborhoodFinder> {
+        private final int neighborhoodSize;
+        private final Similarity<? super SparseVector> similarity;
+        private final UserRatingVectorNormalizer normalizer;
+        private final RatingDataAccessObject dao;
+        
+        public Builder(RatingDataAccessObject dao,
+                       @UserSimilarity Similarity<? super SparseVector> similarity,
+                       @NeighborhoodSize int neighborhoodSize,
+                       @PredictNormalizer UserRatingVectorNormalizer normalizer) {
+            this.neighborhoodSize = neighborhoodSize;
+            this.similarity = similarity;
+            this.dao = dao;
+            this.normalizer = normalizer;
+        }
+        
         @Override
         public CachingNeighborhoodFinder build() {
             int nusers = 0;
             Long2ObjectMap<Collection<UserRatingProfile>> cache = new Long2ObjectOpenHashMap<Collection<UserRatingProfile>>();
-            RatingDataAccessObject data = context.getDAO();
-            
-            Cursor<UserRatingProfile> users = data.getUserRatingProfiles();
+            Cursor<UserRatingProfile> users = dao.getUserRatingProfiles();
             try {
                 LongSet visitedItems = new LongOpenHashSet();
                 for(UserRatingProfile user: users) {

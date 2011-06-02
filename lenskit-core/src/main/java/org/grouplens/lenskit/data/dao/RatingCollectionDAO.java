@@ -74,7 +74,7 @@ public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
      * Construct a new data source from a collection of ratings.
      * @param ratings The ratings to use.
      */
-    public RatingCollectionDAO(Collection<Rating> ratings) {
+    protected RatingCollectionDAO(Collection<Rating> ratings) {
         this.ratings = ratings;
     }
 

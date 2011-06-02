@@ -18,12 +18,14 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import static java.lang.Math.abs;
+
 import java.util.Collection;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.MeanDamping;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,24 +49,27 @@ public class UserMeanPredictor implements BaselinePredictor {
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
-        private double damping = 0;
+        private double smoothing = 0;
         
-        @MeanDamping
+        @MeanSmoothing
         public void setSmoothing(double damping) {
-        	this.damping = damping;
+        	this.smoothing = damping;
         }
     	
         @Override
         public UserMeanPredictor build() {
             logger.debug("Building new user mean predictor");
-            double mean = GlobalMeanPredictor.computeMeanRating(context.ratingSnapshot().getRatings().fastIterator());
-            return new UserMeanPredictor(mean, damping);
+
+            logger.debug("smoothing = {}", smoothing);
+            double mean = GlobalMeanPredictor.computeMeanRating(snapshot);
+            logger.debug("Computed global mean {}", mean);
+            return new UserMeanPredictor(mean, smoothing);
         }
     }
     
     private static final long serialVersionUID = 1L;
     private final double globalMean;
-    private final double damping;
+    private final double smoothing;
 
     /**
      * Construct a predictor that computes user means offset by the global mean.
@@ -73,12 +78,12 @@ public class UserMeanPredictor implements BaselinePredictor {
      */
     public UserMeanPredictor(double globalMean, double damping) {
         this.globalMean = globalMean;
-        this.damping = damping;
+        this.smoothing = damping;
     }
 
-    static double average(SparseVector ratings, double globalMean, double damping) {
+    static double average(SparseVector ratings, double globalMean, double smoothing) {
         if (ratings.isEmpty()) return globalMean;
-        return (ratings.sum() + damping*globalMean)/(ratings.size() + damping);
+        return (ratings.sum() + smoothing*globalMean) / (ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
@@ -87,7 +92,12 @@ public class UserMeanPredictor implements BaselinePredictor {
     @Override
     public MutableSparseVector predict(long user, SparseVector ratings,
                                        Collection<Long> items) {
-        double mean = average(ratings, globalMean,damping);
+        double mean = average(ratings, globalMean, smoothing);
+        assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         return ConstantPredictor.constantPredictions(items, mean);
+    }
+    
+    public String toString() {
+    	return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
     }
 }

@@ -32,11 +32,12 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.data.context.PackedRatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +49,13 @@ import org.slf4j.LoggerFactory;
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private @Nonnull String algoName;
-    private @Nullable RecommenderComponentBuilder<RecommenderEngine> builder;
+    private @Nullable LenskitRecommenderEngineFactory factory;
     private @Nonnull Map<String,Object> attributes;
     private boolean preload = false;
 
     public AlgorithmInstance() {
         attributes = new HashMap<String,Object>();
+        factory = new LenskitRecommenderEngineFactory();
     }
 
     /**
@@ -105,29 +107,29 @@ public class AlgorithmInstance {
         return attributes;
     }
 
-    public RecommenderComponentBuilder<RecommenderEngine> getBuilder() {
-        return builder;
+    public RecommenderEngineFactory getFactory() {
+        return factory;
+    }
+    
+    public void setFactory(LenskitRecommenderEngineFactory factory) {
+        this.factory = factory;
     }
 
-    public void setBuilder(RecommenderComponentBuilder<RecommenderEngine> b) {
-        builder = b;
-    }
-
-    public void setBuilder(Class<? extends RecommenderComponentBuilder<RecommenderEngine>> mod) throws InstantiationException, IllegalAccessException {
-        setBuilder(mod.newInstance());
-    }
-
-    public RecommenderEngine buildRecommender(final RatingDataAccessObject dao) {
-        if (builder == null)
-            throw new IllegalStateException("no builder set");
-        RatingBuildContext ctx = null;
-        try {
-            ctx = PackedRatingBuildContext.make(dao);
-            return builder.build(ctx);
-        } finally {
-            if (ctx != null)
-                ctx.close();
+    public Recommender buildRecommender(RatingDataAccessObject dao, SharedRatingSnapshot sharedSnapshot) {
+        if (factory == null)
+            throw new IllegalStateException("no factory set");
+        
+        RecommenderEngine engine;
+        synchronized (factory) {
+            factory.setComponent(RatingSnapshot.class, sharedSnapshot);
+            try {
+                engine = factory.create(dao);
+            } finally {
+                factory.setComponent(RatingSnapshot.class, (RatingSnapshot) null);
+            }
         }
+        
+        return engine.open(dao, false);
     }
     
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
@@ -144,6 +146,7 @@ public class AlgorithmInstance {
         ScriptEngine engine = mgr.getEngineByExtension(xtn);
         if (engine == null)
             throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
+        
         ScriptEngineFactory factory = engine.getFactory();
         logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
         AlgorithmInstance algo = new AlgorithmInstance();
@@ -152,10 +155,12 @@ public class AlgorithmInstance {
             Reader r = new FileReader(f);
             try {
                 engine.eval(r);
-                if (algo.getBuilder() != null)
+                // FIXME: The factory is always instantiated, we don't know if the build fails
+                // until later when create() is called
+                if (algo.getFactory() != null)
                     return algo;
                 else
-                    throw new InvalidRecommenderException(f.toURI(), "No recommender configured");
+                    throw new InvalidRecommenderException(f.toURI(), "No recommender factory configured");
             } finally {
                 r.close();
             }

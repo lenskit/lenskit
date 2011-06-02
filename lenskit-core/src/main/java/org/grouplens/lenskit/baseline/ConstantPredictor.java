@@ -21,6 +21,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class ConstantPredictor implements BaselinePredictor {
         if (!(items instanceof LongSortedSet))
             Arrays.sort(keys);
         double[] preds = new double[keys.length];
-        Arrays.fill(preds, value);
+        DoubleArrays.fill(preds, value);
         return MutableSparseVector.wrap(keys, preds);
     }
 }

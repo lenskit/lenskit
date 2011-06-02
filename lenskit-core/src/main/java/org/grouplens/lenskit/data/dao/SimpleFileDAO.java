@@ -43,19 +43,40 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
     public static class Manager implements DataAccessObjectManager<SimpleFileDAO> {
         private final File file;
         private final String delimiter;
+        private final URL url;
         
-        public Manager(File file, String delimiter) {
+        public Manager(File file, String delimiter) throws FileNotFoundException {
             this.file = file;
+            if (!file.exists())
+                throw new FileNotFoundException(file.toString());
+            try {
+                url = file.toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+            this.delimiter = delimiter;
+        }
+        
+        public Manager(File file) throws FileNotFoundException {
+            this(file, System.getProperty("lenskit.delimiter", "\t"));
+        }
+
+        public Manager(URL url) {
+            this(url, System.getProperty("lenskit.delimiter", "\t"));
+        }
+
+        public Manager(URL url, String delimiter) {
+            this.url = url;
+            if (url.getProtocol().equals("file"))
+                file = new File(url.getPath());
+            else
+                file = null;
             this.delimiter = delimiter;
         }
         
         @Override
         public SimpleFileDAO open() {
-            try {
-                return new SimpleFileDAO(file, delimiter);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            return new SimpleFileDAO(file, url, delimiter);
         }
     }
     
@@ -65,32 +86,9 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
     private final URL url;
     private final String delimiter;
 
-    public SimpleFileDAO(File file, String delimiter) throws FileNotFoundException {
+    protected SimpleFileDAO(File file, URL url, String delimiter) {
         this.file = file;
-        if (!file.exists())
-            throw new FileNotFoundException(file.toString());
-        try {
-            url = file.toURI().toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        this.delimiter = delimiter;
-    }
-
-    public SimpleFileDAO(File file) throws FileNotFoundException {
-        this(file, System.getProperty("lenskit.delimiter", "\t"));
-    }
-
-    public SimpleFileDAO(URL url) {
-        this(url, System.getProperty("lenskit.delimiter", "\t"));
-    }
-
-    public SimpleFileDAO(URL url, String delimiter) {
         this.url = url;
-        if (url.getProtocol().equals("file"))
-            file = new File(url.getPath());
-        else
-            file = null;
         this.delimiter = delimiter;
     }
 

@@ -18,12 +18,12 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.context.RatingBuildContext;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 
 /**
  * <p>
  * RecommenderComponentBuilders are used to construct usually-expensive objects
- * that depend on a {@link RatingBuildContext}. An example of an object a
+ * that depend on a {@link RatingSnapshots}. An example of an object a
  * RecommenderComponentBuilder would produce is an item-item similarity matrix
  * used in item-item recommenders.
  * </p>
@@ -32,9 +32,16 @@ import org.grouplens.lenskit.data.context.RatingBuildContext;
  * @param <M>
  */
 public abstract class RecommenderComponentBuilder<M> implements Builder<M> {
-    protected RatingBuildContext context;
-    
-    public void setRatingBuildContext(RatingBuildContext context) {
-        this.context = context;
+    protected RatingSnapshot snapshot;
+
+    /**
+     * Set (or inject) the default RatingSnapshot. This is the base snapshot
+     * that has not been modified in any way (such as the normalized or training
+     * snapshots).
+     * 
+     * @param snapshot
+     */
+    public void setRatingSnapshot(RatingSnapshot snapshot) {
+        this.snapshot = snapshot;
     }
 }

@@ -24,10 +24,8 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.params.Baseline;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.GradientDescentRegularization;
@@ -64,8 +62,6 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
     // Minimum number of epochs to run to train a feature
     private static final double MIN_EPOCHS = 50;
-    // Internal epsilon to avoid division by 0
-    private static final double MIN_FEAT_NORM = 0.0000000001;
 
     private int featureCount;
     private double learningRate;
@@ -106,13 +102,12 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         iterationCount = count;
     }
     
-    @Baseline
     public void setBaseline(BaselinePredictor baseline) {
         this.baseline = baseline;
     }
 
     /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.context.RatingBuildContext)
+     * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.snapshot.RatingBuildContext)
      */
     @Override
     public FunkSVDModel build() {
@@ -125,8 +120,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        MutableSparseVector[] estimates = initializeEstimates(context, baseline);
-        RatingSnapshot snapshot = context.ratingSnapshot();
+        MutableSparseVector[] estimates = initializeEstimates(snapshot, baseline);
         FastCollection<IndexedRating> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
@@ -139,45 +133,13 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         for (int i = 0; i < featureCount; i++) {
             trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
         }
-
-        logger.debug("Extracting singular values");
-        double[] singularValues = new double[featureCount];
-        for (int feature = 0; feature < featureCount; feature++) {
-            double[] ufv = userFeatures[feature];
-            double ussq = 0;
-            
-            for (int i = 0; i < numUsers; i++) {
-                double uf = ufv[i];
-                ussq += uf * uf;
-            }
-            double unrm = (double) Math.sqrt(ussq);
-            if (unrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numUsers; i++) {
-                    ufv[i] /= unrm;
-                }
-            }
-            double[] ifv = itemFeatures[feature];
-            double issq = 0;
-            for (int i = 0; i < numItems; i++) {
-                double fv = ifv[i];
-                issq += fv * fv;
-            }
-            double inrm = (double) Math.sqrt(issq);
-            if (inrm > MIN_FEAT_NORM) {
-                for (int i = 0; i < numItems; i++) {
-                    ifv[i] /= inrm;
-                }
-            }
-            singularValues[feature] = unrm * inrm;
-        }
         
-        return new FunkSVDModel(featureCount, itemFeatures, userFeatures, singularValues,
+        return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private MutableSparseVector[] initializeEstimates(RatingBuildContext context,
+    private MutableSparseVector[] initializeEstimates(RatingSnapshot snapshot,
                                                       BaselinePredictor baseline) {
-    	RatingSnapshot snapshot = context.ratingSnapshot();
         final int nusers = snapshot.userIndex().getObjectCount();
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
         for (int i = 0; i < nusers; i++) {
@@ -250,7 +212,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     	if (iterationCount > 0) {
     		return epoch >= iterationCount;
     	} else {
-    		return epoch >= MIN_EPOCHS && rmse < oldRmse - trainingThreshold;
+    		return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
     	}
     }
 

@@ -22,7 +22,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.Baseline;
+import org.grouplens.lenskit.params.NormalizerBaseline;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -36,7 +36,7 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
      * 
      * @param baseline
      */
-    public BaselineSubtractingNormalizer(@Baseline BaselinePredictor baseline) {
+    public BaselineSubtractingNormalizer(@NormalizerBaseline BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 
@@ -69,15 +69,22 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
         }
 
         @Override
-        public void apply(MutableSparseVector vector) {
+        public MutableSparseVector apply(MutableSparseVector vector) {
             SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
             vector.subtract(base);
+            return vector;
         }
 
         @Override
-        public void unapply(MutableSparseVector vector) {
+        public MutableSparseVector unapply(MutableSparseVector vector) {
             SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
             vector.add(base);
+            return vector;
         }
+    }
+
+    @Override
+    public String toString() {
+    	return String.format("[BaselineNorm: %s]", baselinePredictor);
     }
 }

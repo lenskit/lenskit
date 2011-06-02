@@ -45,6 +45,7 @@ import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
@@ -59,6 +60,7 @@ public class CrossfoldSplitTask extends Task {
 	private String delimiter = "\t";
 	private int numFolds = 5;
 	private boolean useTimestamp = true;
+	private boolean timeSplit = false;
 	private int holdoutCount = 10;
 	
 	public void setDataFile(String dataFile) {
@@ -80,6 +82,15 @@ public class CrossfoldSplitTask extends Task {
 		this.holdoutCount = holdoutCount;
 	}
 	
+	public void setMode(String mode) {
+	    if (mode.toLowerCase().equals("time"))
+	        timeSplit = true;
+	    else if (mode.toLowerCase().equals("random"))
+	        timeSplit = false;
+	    else
+	        throw new IllegalArgumentException("Invalid mode " + mode);
+	}
+	
 	@Override
 	public void execute() throws BuildException {
         try {
@@ -88,21 +99,22 @@ public class CrossfoldSplitTask extends Task {
             throw new BuildException("Could not find SQLite JDBC driver", e);
         }
         // TODO Support importing data from the classpath
-        RatingDataAccessObject dao;
+        SimpleFileDAO.Manager daoManager;
         try {
             log("Reading ratings from " + dataFile);
-            dao = new SimpleFileDAO(new File(dataFile), delimiter);
+            daoManager = new SimpleFileDAO.Manager(new File(dataFile), delimiter);
         } catch (FileNotFoundException e) {
             throw new BuildException("Cannot open data file", e);
         }
-        dao.openSession();
+        
+        RatingDataAccessObject dao = daoManager.open();
         try {
             Long2IntMap userSegments = splitUsers(dao);
             writeRatings(dao, userSegments);
         } catch (SQLException e) {
             throw new BuildException("Error splitting ratings", e);
         } finally {
-            dao.closeSession();
+            dao.close();
         }
     }
     
@@ -197,7 +209,10 @@ public class CrossfoldSplitTask extends Task {
                 sTrain.setLong(1, uid);
                 sTest.setLong(1, uid);
                 List<Rating> urs = e.getValue();
-                Collections.shuffle(urs);
+                if (timeSplit)
+                    Collections.sort(urs, Ratings.TIMESTAMP_COMPARATOR);
+                else
+                    Collections.shuffle(urs);
                 int midpt = urs.size() - holdoutCount;
                 
                 // Insert training data
@@ -246,7 +261,8 @@ public class CrossfoldSplitTask extends Task {
                 dbcs[i].setAutoCommit(true);
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX train_user_idx ON train (user);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX train_item_idx ON train (item);");
-                JDBCUtils.execute(dbcs[i], "CREATE INDEX train_timestamp_idx ON train (timestamp);");
+                if (useTimestamp)
+                    JDBCUtils.execute(dbcs[i], "CREATE INDEX train_timestamp_idx ON train (timestamp);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX test_user_idx ON test (user);");
                 JDBCUtils.execute(dbcs[i], "CREATE INDEX test_item_idx ON test (item);");
                 JDBCUtils.execute(dbcs[i], "ANALYZE;");

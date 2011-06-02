@@ -29,13 +29,10 @@ import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
-import org.grouplens.lenskit.data.context.AbstractRatingSnapshot;
-import org.grouplens.lenskit.data.context.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.context.RatingBuildContext;
-import org.grouplens.lenskit.data.context.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.Normalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -67,8 +64,8 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
-public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
+@Built(ephemeral=true)
+public class NormalizedRatingSnapshot implements RatingSnapshot {
     /**
      * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
      * with a specific {@link UserRatingVectorNormalizer}.
@@ -78,14 +75,13 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
     public static class Builder extends RecommenderComponentBuilder<NormalizedRatingSnapshot> {
         private UserRatingVectorNormalizer normalizer;
         
-        @Normalizer
         public void setNormalizer(UserRatingVectorNormalizer normalizer) {
             this.normalizer = normalizer;
         }
         
         @Override
         public NormalizedRatingSnapshot build() {
-            return new NormalizedRatingSnapshot(context.ratingSnapshot(), normalizer);
+            return new NormalizedRatingSnapshot(snapshot, normalizer);
         }
     }
     
@@ -102,10 +98,11 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
     private synchronized void requireNormedData() {
         if (normedData == null) {
             logger.debug("Computing normalized build context");
+            logger.debug("Using normalizer {}", normalizer);
             LongCollection users = snapshot.getUserIds();
             normedData = new SparseVector[users.size()];
-            LongIterator uit = users.iterator();
             Index uidx = snapshot.userIndex();
+            LongIterator uit = users.iterator();
             int ndone = 0; // for debugging
             while (uit.hasNext()) {
                 final long uid = uit.nextLong();

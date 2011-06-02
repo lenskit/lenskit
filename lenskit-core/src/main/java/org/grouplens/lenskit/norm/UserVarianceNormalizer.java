@@ -24,7 +24,7 @@ import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.HofmannSmoothing;
+import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -57,8 +57,9 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
      */
     public static class Builder extends RecommenderComponentBuilder<UserVarianceNormalizer> {
         private double smoothing;
-        
-        @HofmannSmoothing
+
+        // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
+        @MeanSmoothing
         public void setSmoothing(double smoothing) {
             this.smoothing = smoothing;
         }
@@ -70,7 +71,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
             if (smoothing != 0) {
                 double mean = 0;
                 double sum = 0;
-                FastCollection<IndexedRating> ratings = context.ratingSnapshot().getRatings();
+                FastCollection<IndexedRating> ratings = snapshot.getRatings();
                 int numRatings = ratings.size();
                 for (IndexedRating rating : ratings.fast()) {
                     sum += rating.getRating();
@@ -131,21 +132,23 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 		
 		return new VectorTransformation() {
 			@Override
-			public void apply(MutableSparseVector vector) {
+			public MutableSparseVector apply(MutableSparseVector vector) {
 				for (Entry rating : vector.fast()) {
 					vector.set(rating.getLongKey(), /* r' = (r - u) / s */
 							userStdDev == 0? 0 : // edge case
 								(rating.getDoubleValue() - userMean) / userStdDev);
 				}
+				return vector;
 			}
 
 			@Override
-			public void unapply(MutableSparseVector vector) {
+			public MutableSparseVector unapply(MutableSparseVector vector) {
 				for (Entry rating : vector.fast()) {
 					vector.set(rating.getLongKey(), /* r = r' * s + u */
 							userStdDev == 0? userMean : // edge case
 							(rating.getDoubleValue() * userStdDev) + userMean);
 				}
+				return vector;
 			}
 		};
 	}

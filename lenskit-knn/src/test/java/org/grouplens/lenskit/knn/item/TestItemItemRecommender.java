@@ -23,6 +23,9 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.DynamicRatingItemRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Rating;
@@ -30,12 +33,17 @@ import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
+import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestItemItemRecommender {
     private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
-
+    private RecommenderEngine engine;
+    
     @Before
     public void setup() {
         List<Rating> rs = new ArrayList<Rating>();
@@ -43,20 +51,26 @@ public class TestItemItemRecommender {
         rs.add(new SimpleRating(1, 7, 4));
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
+        
         manager = new RatingCollectionDAO.Manager(rs);
+        
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
+        factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRatingRecommender.class);
+        factory.setComponent(SimilarityMatrixAccumulatorFactory.class, TruncatingSimilarityMatrixAccumulator.Factory.class);
+        factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
+        engine = factory.create();
     }
     
     @Test
     public void testItemItemRecommenderEngineCreate() {
-        RecommenderEngine engine = ItemItemRecommender.make(manager);
         Recommender rec = engine.open();
         
         try {
             // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec instanceof ItemItemRecommender);
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof ItemItemRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-            Assert.assertTrue(rec.getRatingRecommender() instanceof ItemItemRatingRecommender);
+            Assert.assertTrue(rec.getDynamicRatingItemRecommender() instanceof ItemItemRatingRecommender);
 
             Assert.assertNull(rec.getBasketRecommender());
         } finally {

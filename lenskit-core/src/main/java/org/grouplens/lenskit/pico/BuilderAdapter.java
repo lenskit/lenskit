@@ -30,10 +30,8 @@ public class BuilderAdapter<T> extends AbstractAdapter<T> {
     private static final long serialVersionUID = 1L;
 
     private Class<? extends Builder<? extends T>> builderType;
-    
     private Builder<? extends T> builder;
     
-    private transient T builtInstance;
     private transient ThreadLocal<Boolean> cycleGuard;
     
     public BuilderAdapter(Object key, Class<? extends Builder<? extends T>> builderType) {
@@ -71,15 +69,9 @@ public class BuilderAdapter<T> extends AbstractAdapter<T> {
 
         cycleGuard.set(Boolean.TRUE);
         try {
-            if (builtInstance == null) {
-                if (builder == null)
-                    builder = container.getComponent(builderType);
-                
-                if (builder != null)
-                    builtInstance = builder.build();
-            }
-            
-            return builtInstance;
+            if (builder == null)
+                builder = container.getComponent(builderType);
+            return (builder == null ? null : builder.build());
         } finally {
             cycleGuard.set(Boolean.FALSE);
         }

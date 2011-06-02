@@ -18,6 +18,11 @@
     <pubdate>March 29, 2011</pubdate>
   </articleinfo>
 
+  <note>
+    <para>This document is out-of-date. Its contents will eventually be
+    refactored into multiple design and usage guides.</para>
+  </note>
+
   <section id="sec-design-goals">
     <title>Design Goals</title>
 
@@ -258,196 +263,50 @@
       <para>The recommendation API in LensKit is broken into separate pieces
       to allow different types of access and reflect the fact that not all
       recommendation methods support all types of recommendation. The <literal
-      role="class">RecommenderEngine</literal> interface is the primary entry
-      point for using a recommender. It provides access to different
-      recommender operations are supported by the following interfaces:</para>
+      role="class">Recommender</literal> interface is the primary entry point
+      for using a recommender. It provides access to different recommender
+      operations are supported by the following interfaces:</para>
 
       <itemizedlist>
         <listitem>
           <para><literal role="class">RatingPredictor</literal> supports the
           <emphasis>predict</emphasis> task, allowing client code to query for
-          the predicted value of a user's rating:</para>
-
-          <programlisting language="java">/**
- * Interface for rating prediction.
- * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
- *
- */
-@ParametersAreNonnullByDefault
-public interface RatingPredictor {
-    /**
-     * Generate a prediction for a single item.
-     * @param user the user ID
-     * @param ratings the user's rating history
-     * @param item the item for which a prediction is required
-     * @return the prediction, or &lt;tt&gt;null&lt;/tt&gt; if no prediction is possible
-     */
-    @Nullable @CheckForNull
-    public ScoredItem predict(long user, Collection&lt;Rating&gt; ratings, long item);
-
-    /**
-     * Generate predictions for a collection of items.
-     * @param user the user ID
-     * @param ratings the user's ratings
-     * @param items the items for which predictions are desired
-     * @return A mapping from item IDs to predicted preference.  This mapping
-     * may not contain all requested items.
-     */
-    @Nonnull
-    public SparseVector predict(long user, Collection&lt;Rating&gt; ratings, Collection&lt;Long&gt; items);
-
-    /**
-     * Generate predictions for a collection of items, given a user's rating vector.
-     * @param user the user ID
-     * @param ratings the user's rating vector
-     * @param items the items for which predictions are desired.
-     * @return A mapping from item IDs to predicted preference. This mapping may
-     * not contain all requested items.
-     * @see #predict(long,Collection,Collection)
-     */
-    @Nonnull
-    public SparseVector predict(long user, SparseVector ratings, Collection&lt;Long&gt; items);
-}</programlisting>
+          the predicted value of a user's rating.</para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">RatingRecommender</literal> supports the
+          <para><literal role="class">DynamicRatingPredictor</literal>
+          supports the predict task for users whose ratings are provided at
+          call time rather than retrieved from the backing data store.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal role="class">ItemRecommender</literal> supports the
           <emphasis>recommend</emphasis> task where users have expressed
           ratings, allowing client code to query for recommendations based on
-          a user's ID and rating profile.</para>
-
-          <programlisting language="java">/**
- * Recommender recommending items from ratings-based user profiles.
- * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
- *
- */
-public interface RatingRecommender {
-    /**
-     * Recommend all possible items for a user. The
-     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
-     * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
-     */
-    @Nonnull
-    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings);
-    
-    /**
-     * Recommend up to &lt;var&gt;n&lt;/var&gt; items for a user. The
-     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
-     * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @param n The number of recommendations to return.
-     * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
-     */
-    @Nonnull
-    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings, int n);
-
-    /**
-     * Recommend all possible items for a user from a set of candidates.  The
-     * exclude set is the set of keys in &lt;var&gt;ratings&lt;/var&gt; (so items the user
-     * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @param candidates The candidate set (can be null to represent the
-     * universe).
-     * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
-     */
-    @Nonnull
-    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings,
-            @Nullable Set&lt;Long&gt; candidates);
-
-    /**
-     * Produce a set of recommendations for the user.
-     * @param user The user's ID
-     * @param ratings The user's ratings
-     * @param n The number of ratings to return.  If negative, recommend all
-     * possible items.
-     * @param candidates A set of candidate items which can be recommended.  If
-     * &lt;tt&gt;null&lt;/tt&gt;, the candidate set is considered to contain the universe.
-     * @param exclude A set of items to be excluded.  If &lt;tt&gt;null&lt;/tt&gt;, it is
-     * considered the empty set.  Exclusions are applied to the candidate set,
-     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus
-     * &lt;var&gt;exclude&lt;/var&gt;.
-     * @return a list of scored recommendations, sorted in nondecreasing order
-     * of score.
-     */
-    @Nonnull
-    public List&lt;ScoredItem&gt; recommend(long user, Collection&lt;Rating&gt; ratings, int n,
-            @Nullable Set&lt;Long&gt; candidates, @Nullable Set&lt;Long&gt; exclude);
-
-    /**
-     * Produce a set of recommendations for the user given their rating vector.
-     * @param user The user's ID
-     * @param ratings The user's rating vector
-     * @param n The number of ratings to return.  If negative, recommend all
-     * possible items.
-     * @param candidates A set of candidate items which can be recommended.  If
-     * &lt;tt&gt;null&lt;/tt&gt;, the candidate set is considered to contain the universe.
-     * @param exclude A set of items to be excluded.  If &lt;tt&gt;null&lt;/tt&gt;, it is
-     * considered the empty set.  Exclusions are applied to the candidate set,
-     * so the final candidate set is &lt;var&gt;candidates&lt;/var&gt; minus
-     * &lt;var&gt;exclude&lt;/var&gt;.
-     * @return a list of scored recommendations, sorted in nondecreasing order
-     * of score.
-     */
-    @Nonnull
-    public List&lt;ScoredItem&gt; recommend(long user, SparseVector ratings, int n,
-            @Nullable Set&lt;Long&gt; candidates, @Nullable Set&lt;Long&gt; exclude);
-}</programlisting>
+          a user's ID.</para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">BasketRecommender</literal> supports the
-          <emphasis>recommend</emphasis> task where user profiles are unary,
-          such as purchase history or shopping carts, allowing client code to
-          query for recommendations based on a user's ID and shopping basket.
-          The basket recommender API has not yet been implemented or used, so
-          it may chage as we gain experience with it.</para>
-
-          <programlisting language="java">/**
- * Recommender that provides basket-based recommendations (unary user profiles)
- * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
- *
- */
-public interface BasketRecommender {
-    /**
-     * Recommend items for a user with a unary history.
-     * @param user the user ID
-     * @param basket the items in the user's purchase/visit history
-     * @return a list of scored recommendations, sorted in nonincreasing order
-     * of score.
-     */
-    @Nonnull
-    List&lt;ScoredItem&gt; recommend(long user, Set&lt;Long&gt; basket);
-}</programlisting>
+          <para><literal role="class">DynamicItemRecommender</literal>
+          supports the recommend task with user IDs provided at recommendation
+          time.</para>
         </listitem>
       </itemizedlist>
 
-      <para>Recommender operations are lightweight objects that wrap an
-      implementation-specific recommender model, which in turn contains all
+      <para>Recommender operations are typically lightweight objects that wrap
+      an implementation-specific recommender model, which in turn contains all
       the configuration and persistent data for the recommender.</para>
-
-      <para>At present, we require client code to obtain the user's profile
-      before calling the recommendation API. This may change in the future,
-      allowing fo recommendation queries given only a user ID.</para>
-
-      <para>It would also be interesting to consider adding an <literal
-      role="class">ItemSimilarity</literal> interface for the find similar
-      items task, allowing it to be supported independently of basket-based
-      recommendation.</para>
     </section>
 
     <section>
-      <title>Building Recommender Models</title>
+      <title>Building Recommenders</title>
 
-      <para>Before recommendation or prediction can be done, the program needs
-      a recommender service. Recommender services are built using <literal
+      <para><literal role="class">Recommender</literal>s are obtained by
+      "opening" them from recommender engines (the <literal
+      role="class">RecommenderEngine</literal> interface). Before
+      recommendation or prediction can be done, the program needs a
+      recommender engine. Recommender services are built using <literal
       role="class">RecommenderServiceBuilder</literal> instances. Each
       recommender implementation will provide a recommender service builder
       that knows how to build it from its constituent components. Service
