@@ -161,7 +161,8 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
      */
     @Override
     public synchronized void close() {
-        normedData = null;
+        super.close();
+    	normedData = null;
     }
     
     private static class NormalizingCollection extends AbstractCollection<IndexedRating> 

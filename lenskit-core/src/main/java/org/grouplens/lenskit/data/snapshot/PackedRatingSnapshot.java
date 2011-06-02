@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.VectorCache;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
 import org.grouplens.lenskit.util.FastCollection;
@@ -62,7 +61,6 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
 	    super();
 		this.data = data;
 	    this.userIndices = userIndices;
-	    cache = new VectorCache();
 	}
 	
 	private void requireValid() {
@@ -111,6 +109,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
 
 	@Override
 	public void close() {
+		super.close();
 		data = null;
 	}
 	
