@@ -35,6 +35,11 @@ public class BasicRecommender implements Recommender {
         this.dao = dao;
         this.shouldCloseDao = shouldCloseDao;
     }
+    
+    @Override
+    public <T> T getComponent(Class<T> cls) {
+        return container.getComponent(cls);
+    }
 
     @Override
     public RatingPredictor getRatingPredictor() {

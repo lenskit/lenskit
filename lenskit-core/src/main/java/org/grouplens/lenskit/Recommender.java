@@ -22,20 +22,46 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
+/**
+ * Main entry point for accessing recommender components.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public interface Recommender {
-    @Nullable
-    public RatingPredictor getRatingPredictor();
+    /**
+     * Get a particular component from the recommender session.  Generally
+     * you want to use one of the type-specific getters; this method only exists
+     * for specialized applications which need deep access to the recommender
+     * components.
+     * @param <T>
+     * @param cls
+     * @return
+     */
+    <T> T getComponent(Class<T> cls);
     
     @Nullable
-    public DynamicRatingPredictor getDynamicRatingPredictor();
+    RatingPredictor getRatingPredictor();
     
     @Nullable
-    public DynamicRatingItemRecommender getDynamicRatingItemRecommender();
+    DynamicRatingPredictor getDynamicRatingPredictor();
     
     @Nullable
-    public BasketRecommender getBasketRecommender();
+    DynamicRatingItemRecommender getDynamicRatingItemRecommender();
     
+    @Nullable
+    BasketRecommender getBasketRecommender();
+    
+    /**
+     * Get the rating DAO for this recommender session.
+     * @return
+     */
+    public RatingDataAccessObject getRatingDataAccessObject();
+    
+    /**
+     * Close the recommender session.  Underlying data connections are released
+     * as appropriate.
+     */
     public void close();
     
-    public RatingDataAccessObject getRatingDataAccessObject();
+    
 }
