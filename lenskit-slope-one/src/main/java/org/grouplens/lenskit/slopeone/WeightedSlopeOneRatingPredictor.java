@@ -52,9 +52,9 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 				double total = 0;
 				int nusers = 0;
 				for (long currentItem : ratings.keySet()) {
-					double currentDev = model.getDeviationMatrix().get(predicteeItem, currentItem);	
+					double currentDev = model.getDeviation(predicteeItem, currentItem);	
 					if (!Double.isNaN(currentDev)) {
-						int weight = model.getCoratingMatrix().get(predicteeItem, currentItem);
+						int weight = model.getCoratings(predicteeItem, currentItem);
 						total += (currentDev +ratings.get(currentItem))* weight;
 						nusers += weight;
 					}

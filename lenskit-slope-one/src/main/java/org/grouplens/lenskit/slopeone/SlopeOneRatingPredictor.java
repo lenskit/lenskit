@@ -60,9 +60,9 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 				double total = 0;
 				int nitems = 0;
 				for (long currentItem : ratings.keySet()) {
-					int nusers = model.getCoratingMatrix().get(predicteeItem, currentItem);
+					int nusers = model.getCoratings(predicteeItem, currentItem);
 					if (nusers != 0) {
-						double currentDev = model.getDeviationMatrix().get(predicteeItem, currentItem);
+						double currentDev = model.getDeviation(predicteeItem, currentItem);
 						total += currentDev + ratings.get(currentItem);
 						nitems++;
 					}
@@ -97,7 +97,7 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 				LongIterator iter = ratings.keySet().iterator();
 				int nusers = 0;
 				while (iter.hasNext() && nusers == 0) {
-					nusers += model.getCoratingMatrix().get(id1, iter.next());
+					nusers += model.getCoratings(id1, iter.next());
 				}
 				if (nusers > 0) predictable.add(id1);
 			}

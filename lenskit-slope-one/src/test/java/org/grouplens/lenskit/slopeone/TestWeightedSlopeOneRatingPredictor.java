@@ -26,7 +26,6 @@ import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.slopeone.DeviationComputer;
 import org.grouplens.lenskit.slopeone.SlopeOneModel;
 import org.grouplens.lenskit.slopeone.SlopeOneModelBuilder;
 import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor;
@@ -60,7 +59,7 @@ public class TestWeightedSlopeOneRatingPredictor {
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
 		builder.setRatingSnapshot(snapshot);
-		builder.setDeviationComputer(new DeviationComputer(0));
+		builder.setDamping(0);
 		builder.setMinRating(1);
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
@@ -93,7 +92,7 @@ public class TestWeightedSlopeOneRatingPredictor {
 		PackedRatingSnapshot snap = snapBuilder.build();
 		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
 		builder.setRatingSnapshot(snap);
-		builder.setDeviationComputer(new DeviationComputer(0));
+		builder.setDamping(0);
 		builder.setMinRating(1);
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();

@@ -23,9 +23,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Ratings;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.slopeone.params.MaxRating;
-import org.grouplens.lenskit.slopeone.params.MinRating;
+import org.grouplens.lenskit.params.MaxRating;
+import org.grouplens.lenskit.params.MinRating;
+import org.grouplens.lenskit.params.NormalizedSnapshot;
+import org.grouplens.lenskit.slopeone.params.DeviationDamping;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
@@ -36,12 +39,12 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneModel> {
 
-	private CoratingMatrix commonUsers;
-	private DeviationMatrix deviations;
+	private SlopeOneModelDataAccumulator accumulator;
 	private BaselinePredictor baseline;
-	private DeviationComputer devComp;
 	private double minRating;
 	private double maxRating;
+	private double damping;
+	private RatingSnapshot normalizedData;
 
 	/**
 	 * Constructs a <tt>SlopeOneModel</tt> and the necessary matrices from
@@ -49,10 +52,11 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 	 */
 	@Override
 	public SlopeOneModel build() {
-		commonUsers = new CoratingMatrix(snapshot);
-		deviations = new DeviationMatrix(snapshot);
-		for (long currentUser : snapshot.getUserIds()) {
-			SparseVector ratings = Ratings.userRatingVector(snapshot.getUserRatings(currentUser));
+		RatingSnapshot snap = snapshot;
+		if (normalizedData != null) snap = normalizedData;
+		accumulator = new SlopeOneModelDataAccumulator(damping, snap);
+		for (long currentUser : snap.getUserIds()) {
+			SparseVector ratings = Ratings.userRatingVector(snap.getUserRatings(currentUser));
 			LongIterator iter = ratings.keySet().iterator();
 			while (iter.hasNext()) {
 				long item1 = iter.next();
@@ -60,17 +64,12 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 				if (iter2.hasNext()) iter2.next();
 				while (iter2.hasNext()) {
 					long item2 = iter2.next();
-					commonUsers.put(item1, item2, commonUsers.get(item1, item2)+1);
-					if (Double.isNaN(deviations.get(item1, item2)))
-							deviations.put(item1, item2, ratings.get(item1)-ratings.get(item2));
-					else
-						deviations.put(item1, item2, deviations.get(item1, item2)+ratings.get(item1)-ratings.get(item2));
+					accumulator.putRatingPair(item1, ratings.get(item1), item2, ratings.get(item2));
 				}
 			}
 		}
-		deviations.compute(devComp, commonUsers);
-		LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
-		return new SlopeOneModel(commonUsers, deviations, baseline, items, minRating, maxRating);
+		LongSortedArraySet items = new LongSortedArraySet(snap.getItemIds());
+		return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), baseline, items, minRating, maxRating);
 	}
 
 	/**
@@ -81,24 +80,31 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 	}
 
 	/**
-	 * @param comp The <tt>DeviationComputer</tt> object used to fill
-	 * the </tt>DeviationMatrix</tt> constructed by the builder.
-	 */
-	public void setDeviationComputer(DeviationComputer comp) {
-		devComp = comp;
-	}
-	
-	/**
 	 * @param min The lowest valid rating in a system.
 	 */
 	public void setMinRating(@MinRating double min) {
 		minRating = min;
 	}
-	
+
 	/**
 	 * @param max The highest valid rating in a system.
 	 */
 	public void setMaxRating(@MaxRating double max) {
 		maxRating = max;
+	}
+
+	/**
+	 * @param damping A damping turn to use for deviation calculations.
+	 */
+	public void setDamping(@DeviationDamping double damping) {
+		this.damping = damping;
+	}
+	
+	/**
+	 * @param data A <tt>RatingSnapshot</tt> containing normalized data.
+	 */
+	@NormalizedSnapshot
+	public void setNormalizedData(RatingSnapshot data) {
+		normalizedData = data;
 	}
 }

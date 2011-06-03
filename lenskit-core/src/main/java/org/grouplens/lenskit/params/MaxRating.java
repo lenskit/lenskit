@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.slopeone.params;
+package org.grouplens.lenskit.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

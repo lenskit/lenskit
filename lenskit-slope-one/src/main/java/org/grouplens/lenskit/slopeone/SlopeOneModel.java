@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.slopeone;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -25,26 +28,26 @@ import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 
 /**
- * A model for <tt>SlopeOneRatingPredictor</tt> objects. Stores a
- * <tt>DeviationMatrix</tt>, <tt>CoratingMatrix</tt>, and
- * <tt>BaselinePredictor</tt> for use by the rating predictor
- * as well as minimum and maximum rating values.
- *
+ * A model for a <tt>SlopeOneRatingPredictor</tt> or <tt>WeightedSlopeOneRatingPredictor</tt>.
+ * Stores calculated deviation values and number of co-rating users for each item pair.
+ * Also contains a <tt>BaselinePredictor</tt> and the minimum and maximum rating values
+ * for use by a predictor.
  */
 @Built
 @DefaultBuilder (SlopeOneModelBuilder.class)
 public class SlopeOneModel {
-	
-	private final CoratingMatrix coMatrix;
-	private final DeviationMatrix devMatrix;
+
+	private final Long2ObjectOpenHashMap<Long2IntOpenHashMap> coMatrix;
+	private final Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devMatrix;
 	private final BaselinePredictor baseline;
 	private final LongSortedSet itemUniverse;
 	private final double minRating;
 	private final double maxRating;
-	
-	public SlopeOneModel(CoratingMatrix coData, DeviationMatrix devData, BaselinePredictor predictor,
+
+	public SlopeOneModel(Long2ObjectOpenHashMap<Long2IntOpenHashMap> coData,
+			Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devData, BaselinePredictor predictor,
 			LongSortedSet universe, double min, double max) {
-		
+
 		coMatrix = coData;
 		devMatrix = devData;
 		baseline = predictor;
@@ -52,27 +55,47 @@ public class SlopeOneModel {
 		minRating = min;
 		maxRating = max;
 	}
-	
-	public CoratingMatrix getCoratingMatrix() {
-		return coMatrix;
+
+	public double getDeviation(long item1, long item2) {
+		if (item1 == item2) return 0;
+		else if (item1 < item2) {
+			Long2DoubleOpenHashMap map = devMatrix.get(item1);
+			if (map == null) return Double.NaN;
+			else return map.get(item2);
+		}
+		else {
+			Long2DoubleOpenHashMap map = devMatrix.get(item2);
+			if (map == null) return Double.NaN;
+			else return -map.get(item1);
+		}
 	}
 	
-	public DeviationMatrix getDeviationMatrix() {
-		return devMatrix;
+	public int getCoratings(long item1, long item2) {
+		if (item1 == item2) return 0;
+		else if (item1 < item2) {
+			Long2IntOpenHashMap map = coMatrix.get(item1);
+			if (map == null) return 0;
+			else return map.get(item2);
+		}
+		else {
+			Long2IntOpenHashMap map = coMatrix.get(item2);
+			if (map == null) return 0;
+			else return map.get(item1);
+		}
 	}
 	
 	public BaselinePredictor getBaselinePredictor() {
 		return baseline;
 	}
-	
+
 	public LongSortedSet getItemUniverse() {
 		return itemUniverse;
 	}
-	
+
 	public double getMinRating() {
 		return minRating;
 	}
-	
+
 	public double getMaxRating() {
 		return maxRating;
 	}
