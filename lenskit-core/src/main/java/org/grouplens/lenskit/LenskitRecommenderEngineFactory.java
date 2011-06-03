@@ -120,6 +120,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
         if (Number.class.isAssignableFrom(paramType) && instance instanceof Number)
             instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, (Number) instance);
+        updateBindings(annotationBindings, param, instance);
     }
     
     /**
