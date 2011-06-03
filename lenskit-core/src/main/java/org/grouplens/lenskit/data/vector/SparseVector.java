@@ -124,7 +124,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     /**
      * Get the rating for <var>key</var>.
      * @param key the key to look up
-     * @return the key's value (or {@link Double.NaN} if no such value exists)
+     * @return the key's value (or {@link Double#NaN} if no such value exists)
      */
     public final double get(long key) {
         return get(key, Double.NaN);
@@ -158,7 +158,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     /**
      * Deprecated alias for {@link #containsKey(long)}.
      * @param id
-     * @return
+     * @return true if the key <var>id</var> exists.
      */
     @Deprecated
     public final boolean containsId(long id) {
@@ -176,7 +176,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     /**
      * Fast iterator over all entries (it can reuse entry objects).
-     * @see Long2DoubleMap.FastEntrySet#fastIterator()
+     * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
+     * 		Long2DoubleMap.FastEntrySet.fastIterator()
      * @return a fast iterator over all key/value pairs
      */
     public Iterator<Long2DoubleMap.Entry> fastIterator() {
@@ -495,7 +496,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param keys Array of entry keys. This array must be in sorted order and
      * be duplicate-free.
      * @param values The values for the vector.
-     * @param values If true, remove NaN values from the arrays.
+     * @param removeNaN If true, remove NaN values from the arrays.
      * @return A sparse vector backed by the provided arrays.
      * @throws IllegalArgumentException if there is a problem with the provided
      * arrays (length mismatch, <var>keys</var> not sorted, etc.).

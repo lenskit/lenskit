@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rating build context wrapper that provides normalized ratings. They are built
- * with a {@link NormalizedRatingBuildContext#Builder}.
+ * with a {@link NormalizedRatingSnapshot.Builder}.
  * 
  * <p>This class wraps the rating build context to provide pre-normalized ratings.
  * It should share the same scope as the rating build context, so if you re-scope
@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * PRODUCTION scope.
  * 
  * <p><strong>Warning:</strong> Do not bind this class as the implementation of
- * {@link RatingBuildContext} in any Guice configuration, as that will implement
+ * {@link RatingSnapshot} in any Guice configuration, as that will implement
  * circular loops and general brokenness. Classes which want a normalized rating
  * build context should depend on it directly.
  * 

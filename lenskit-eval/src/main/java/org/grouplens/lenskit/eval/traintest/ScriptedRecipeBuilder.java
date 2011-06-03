@@ -80,7 +80,7 @@ public class ScriptedRecipeBuilder {
     /**
      * Create a new algorithm and add it to the algorithm list. The script
      * should then fill in the algorithm's details.
-     * @return
+     * @return An <tt>AlgorithmInstance</tt> object for the new algorithm.
      */
     public AlgorithmInstance addAlgorithm() {
         AlgorithmInstance a = new AlgorithmInstance();

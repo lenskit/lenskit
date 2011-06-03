@@ -78,8 +78,7 @@ public class TestSparseVector {
 
 
     /**
-     * Construct a singleton rating vector mapping 5 to PI.
-     * @return
+     * @return A singleton rating vector mapping 5 to PI.
      */
     protected MutableSparseVector singleton() {
         return MutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
@@ -349,7 +348,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#subtract(org.grouplens.lenskit.data.vector.MutableSparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#subtract(org.grouplens.lenskit.data.vector.SparseVector)}.
      */
     @Test
     public void testSubtract() {
@@ -381,7 +380,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#add(org.grouplens.lenskit.data.vector.MutableSparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#add(org.grouplens.lenskit.data.vector.SparseVector)}.
      */
     @Test
     public void testAdd() {
@@ -413,7 +412,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#dot(org.grouplens.lenskit.data.vector.MutableSparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#dot(org.grouplens.lenskit.data.vector.SparseVector)}.
      */
     @Test
     public void testDot() {
@@ -425,7 +424,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.Rating#userRatingVector(java.util.Collection)}.
+     * Test method for {@link org.grouplens.lenskit.data.Ratings#userRatingVector(java.util.Collection)}.
      */
     @Test
     public void testUserRatingVector() {
@@ -440,7 +439,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.Rating#itemRatingVector(java.util.Collection)}.
+     * Test method for {@link org.grouplens.lenskit.data.Ratings#itemRatingVector(java.util.Collection)}.
      */
     @Test
     public void testItemRatingVector() {

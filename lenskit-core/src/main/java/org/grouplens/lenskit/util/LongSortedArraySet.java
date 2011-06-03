@@ -143,7 +143,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
      * Find the index for a key.
      * @see Arrays#binarySearch(long[], int, int, long)
      * @param key
-     * @return
+     * @return The index at which <var>key</var> is stored.
      */
     private int findIndex(long key) {
         return Arrays.binarySearch(data, start, end, key);

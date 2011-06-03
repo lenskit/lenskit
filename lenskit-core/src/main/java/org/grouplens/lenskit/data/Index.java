@@ -42,9 +42,10 @@ public interface Index extends Serializable {
     /**
      * Get the key for an index.
      * @param idx
-     * @return
+     * @return The ID for the given <var>idx</var>
      */
     long getId(int idx);
+    
     int getObjectCount();
     /**
      * Get the list of IDs.

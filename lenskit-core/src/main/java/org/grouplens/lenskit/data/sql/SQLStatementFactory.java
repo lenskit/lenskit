@@ -47,7 +47,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link RatingDataAccessObject#getUsers()}.
      * Querying the statement should return one column per row containing the
      * numeric user ID.
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing user ID data.
      */
     PreparedStatement prepareUsers(Connection dbc) throws SQLException;
     
@@ -55,7 +55,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link RatingDataAccessObject#getUserCount()}.
      * The result set should contain a single row whose first column contains
      * the number of users.
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing the total number of users.
      */
     PreparedStatement prepareUserCount(Connection dbc) throws SQLException;
     
@@ -63,7 +63,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link RatingDataAccessObject#getItems()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing item ID data.
      */
     PreparedStatement prepareItems(Connection dbc) throws SQLException;
     
@@ -71,12 +71,12 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link RatingDataAccessObject#getItemCount()}.
      * The result set should contain a single row whose first column contains
      * the number of items.
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing the total number of items.
      */
     PreparedStatement prepareItemCount(Connection dbc) throws SQLException;
     
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getRatings(order)}.
+     * Prepare a statement to satisfy {@link RatingDataAccessObject#getRatings(SortOrder)}.
      * Each row should contain three or four columns: the user ID, the item ID,
      * the rating, and (optionally) the timestamp. The timestamp column is allowed
      * to contain NULL values or to be omitted entirely. User, item, and rating
@@ -93,7 +93,7 @@ public interface SQLStatementFactory {
      * and the prepared statement should take a single parameter for the user ID.
      * @param dbc
      * @param order
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing user rating data.
      */
     PreparedStatement prepareUserRatings(Connection dbc, SortOrder order) throws SQLException;
     
@@ -103,7 +103,7 @@ public interface SQLStatementFactory {
      * and the prepared statement should take a single parameter for the item ID.
      * @param dbc
      * @param order
-     * @return
+     * @return A <tt>PreparedStatement</tt> containing item rating data.
      */
     PreparedStatement prepareItemRatings(Connection dbc, SortOrder order) throws SQLException;
 }

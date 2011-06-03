@@ -31,8 +31,9 @@
  * where the vector is guaranteed to be unchanging and can be safely stored or
  * shared across threads without concern about the caller mutating it later.
  * 
- * <p>The {@link SparseVector} class also provides utility methods for manipulating
- * sparse vectors (e.g. the {@link SparseVector#immutable(SparseVector)} method
- * for getting an immutable sparse vector).
+ * <p>The {@link org.grouplens.lenskit.data.vector.SparseVector SparseVector} class also
+ *  provides utility methods for manipulating sparse vectors (e.g. the 
+ *  {@link org.grouplens.lenskit.data.vector.SparseVector#immutable() SparseVector.immutable()}
+ *   method for getting an immutable sparse vector).
  */
 package org.grouplens.lenskit.data.vector;

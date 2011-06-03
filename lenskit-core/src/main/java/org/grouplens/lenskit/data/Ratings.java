@@ -107,7 +107,7 @@ public final class Ratings {
      * Real implementation of {@link #userRatingVector(Collection)}, using a list
      * we are free to sort.
      * @param ratings
-     * @return
+     * @return A vector containing the ratings of the list.
      */
     private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
     	Rating rp = null;
@@ -152,7 +152,7 @@ public final class Ratings {
     /**
      * Extract a user rating vector from a rating cursor.
      * @param ratings The rating cursor.
-     * @return
+     * @return The user rating vector.
      * @see #userRatingVector(Collection)
      */
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {

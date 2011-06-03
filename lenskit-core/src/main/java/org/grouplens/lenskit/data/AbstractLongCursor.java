@@ -23,8 +23,6 @@ package org.grouplens.lenskit.data;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
-import java.awt.Cursor;
-
 import org.grouplens.common.cursors.AbstractCursor;
 
 /**
@@ -35,7 +33,8 @@ public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
         LongCursor {
 
     /**
-     * Implement {@link Cursor#next()} by delegating to {@link #nextLong()}.
+     * Implement {@link org.grouplens.common.cursors.Cursor#next() Cursor.next()} 
+     * by delegating to {@link #nextLong()}.
      */
     @Override
     public Long next() {

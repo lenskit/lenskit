@@ -66,7 +66,7 @@ public class MutableSparseVector extends SparseVector {
 
     /**
      * Construct a new zero vector with specified keys.
-     * @param keys The keys to include in the vector.
+     * @param keySet The keys to include in the vector.
      */
     public MutableSparseVector(LongSet keySet) {
         this(keySet, 0);
@@ -75,7 +75,7 @@ public class MutableSparseVector extends SparseVector {
     /**
      * Construct a new vector with specified keys, setting all values to a constant
      * value.
-     * @param keys The keys to include in the vector.
+     * @param keySet The keys to include in the vector.
      * @param value The value to assign for all keys.
      */
     public MutableSparseVector(LongSet keySet, double value) {

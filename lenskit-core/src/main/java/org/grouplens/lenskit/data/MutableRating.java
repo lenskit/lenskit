@@ -20,7 +20,8 @@ package org.grouplens.lenskit.data;
 
 
 /**
- * Rating implementation for mutation by {@link ScannerRatingCursor}.
+ * Rating implementation for mutation by 
+ * {@link org.grouplens.lenskit.data.dao.ScannerRatingCursor ScannerRatingCursor}.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

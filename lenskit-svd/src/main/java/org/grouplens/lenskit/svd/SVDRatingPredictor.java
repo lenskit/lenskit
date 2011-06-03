@@ -69,7 +69,6 @@ public class SVDRatingPredictor extends AbstractRatingPredictor {
      * rating vector prior to folding in.
      * @param user The user ID.
      * @param ratings The user's rating vector.
-     * @param base The user's baseline vector (e.g. baseline predictions).
      * @return An array of feature preference values.  The length of this array
      * will be the number of features.
      * @see #getFeatureCount()

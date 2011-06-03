@@ -33,9 +33,7 @@ import org.grouplens.lenskit.util.IndexedItemScore;
  */
 public interface SimilarityMatrix {
     /**
-     * The number of entities for which this matrix has similarities.
-     *
-     * @return
+     * @return The number of entities for which this matrix has similarities
      */
     public int size();
 
@@ -45,7 +43,7 @@ public interface SimilarityMatrix {
      * @param i
      *            All neighbors for item <tt>i</tt>. This is all similarity
      *            scores for which <tt>i</tt> was passed as the first argument
-     *            to {@link #put(int, int, double)}.
+     *            to {@link SimilarityMatrixAccumulator#put(int, int, double)}.
      * @return A map of neighbors to similarity scores.
      * @throws IndexOutOfBoundsException
      *             if the index is invalid.

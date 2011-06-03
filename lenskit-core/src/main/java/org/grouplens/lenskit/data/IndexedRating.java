@@ -25,7 +25,7 @@ package org.grouplens.lenskit.data;
  * <p>Implementations are not expected to consider index when comparing ratings
  * for equality.
  * 
- * @see RatingBuildContext
+ * @see org.grouplens.lenskit.data.snapshot.RatingSnapshot RatingSnapshot
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
