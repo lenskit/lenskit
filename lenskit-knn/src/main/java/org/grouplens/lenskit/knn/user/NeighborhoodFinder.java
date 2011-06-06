@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.meta.DefaultClass;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
@@ -34,6 +35,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultClass(SimpleNeighborhoodFinder.class)
 public interface NeighborhoodFinder {
     /**
      * Find neighboring users for particular items. <var>ratings</var> and the

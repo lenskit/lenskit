@@ -18,10 +18,13 @@
  */
 package org.grouplens.lenskit.knn;
 
+import org.grouplens.lenskit.params.meta.DefaultClass;
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultClass(TruncatingSimilarityMatrixAccumulator.Factory.class)
 public interface SimilarityMatrixAccumulatorFactory {
     public SimilarityMatrixAccumulator create(int nrows);
 }
