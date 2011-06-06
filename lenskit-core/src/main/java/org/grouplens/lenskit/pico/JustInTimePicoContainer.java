@@ -36,9 +36,12 @@ import org.picocontainer.DefaultPicoContainer;
 import org.picocontainer.LifecycleStrategy;
 import org.picocontainer.Parameter;
 import org.picocontainer.PicoContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JustInTimePicoContainer extends DefaultPicoContainer {
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(JustInTimePicoContainer.class);
     
     private transient Map<Object, ComponentAdapter<?>> jitAdapters;
 
@@ -107,7 +110,7 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
         if (impl == null || Modifier.isAbstract(impl.getModifiers()) || Modifier.isInterface(impl.getModifiers())
             || PrimitiveUtils.isBoxedTypePrimitive(impl))
             return false;
-        System.out.println(">>>> JIT Binding for " + key + " -> " + impl);
+        logger.debug("Attempting JIT binding for {} -> {}", key, impl);
         try {
             ComponentAdapter<?> adapter = componentFactory.createComponentAdapter(componentMonitor, lifecycleStrategy, new Properties(), 
                                                                                   key, impl, (Parameter[]) null);
