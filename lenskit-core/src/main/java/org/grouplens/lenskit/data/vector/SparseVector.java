@@ -333,6 +333,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
                 hash ^= Longs.hashCode(keys[i]);
                 hash ^= Doubles.hashCode(values[i]);
             }
+            hashCode = hash;
         }
         return hashCode;
     }
