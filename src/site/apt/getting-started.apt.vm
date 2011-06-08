@@ -83,10 +83,11 @@ Configuring and Creating the Recommender
   allow their behavior to be customized and to allow individual pieces
   to be individually replaced.  The LensKit recommender engine factory
   allows the various components of the desired recommender to be
-  configured.  The core configuration point is to bind default
-  implementations of the necessary <<<RatingPredictor>>> and/or
-  <<<ItemRecommender>>> interfaces.  Other parameters and components
-  can be reconfigured via the factory as well.
+  configured.  The core configuration point is to specify
+  implementations implementations of the necessary
+  <<<RatingPredictor>>> and/or <<<ItemRecommender>>> interfaces.
+  Other parameters and components can be reconfigured via the factory
+  as well.
 
   After configuring a builder, you also need to configure your data
   source.  The recommendation framework depends on having access to
@@ -95,16 +96,11 @@ Configuring and Creating the Recommender
 +-----------------------------------------------------------------+
   LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory();
   factory.setDAOManager(new SimpleFileDAO.Manager(fileName));
-  factory.bindDefault(RatingPredictor, ItemItemRatingPredictor.class);
+  factory.setComponent(RatingPredictor, ItemItemRatingPredictor.class);
 
   /* configure a normalizer and baseline predictor */
-  factory.bindDefault(UserRatingVectorNormalizer.class, BaselineSubtractingNormalizer.class);
-  factory.bindDefault(BaselinePredictor.class, ItemUserMeanPredictor.class);
-
-  /* an additional binding is needed for now - we're working
-     on making them defaults. */
-  factory.bindDefault(SimilarityMatrixAccumulatorFactory.class,
-          TruncatingSimilarityMatrixAccumulator.Factory.class);
+  factory.setComponent(UserRatingVectorNormalizer.class, BaselineSubtractingNormalizer.class);
+  factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
 
   RecommenderEngine engine = factory.create();
 
