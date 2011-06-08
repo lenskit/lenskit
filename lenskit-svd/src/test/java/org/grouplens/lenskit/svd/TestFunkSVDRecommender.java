@@ -55,7 +55,7 @@ public class TestFunkSVDRecommender {
         manager = new RatingCollectionDAO.Manager(rs);
         
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingPredictor.class, SVDRatingPredictor.class);
+        factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
         factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
         factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         factory.set(IterationCount.class, 10);
@@ -69,7 +69,7 @@ public class TestFunkSVDRecommender {
         
         try {
             // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getRatingPredictor() instanceof SVDRatingPredictor);
+            Assert.assertTrue(rec.getRatingPredictor() instanceof FunkSVDRatingPredictor);
 
             Assert.assertNull(rec.getDynamicRatingItemRecommender());
             Assert.assertNull(rec.getDynamicRatingPredictor());
