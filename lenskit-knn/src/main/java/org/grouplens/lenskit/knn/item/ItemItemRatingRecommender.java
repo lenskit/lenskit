@@ -21,7 +21,8 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -43,19 +44,20 @@ public class ItemItemRatingRecommender extends AbstractRatingRecommender {
      * @param predictor The predictor to use.
      */
     public ItemItemRatingRecommender(RatingDataAccessObject dao, ItemItemRatingPredictor predictor) {
-        super(dao);
+        super(dao, predictor);
         this.predictor = predictor;
     }
     
     @Override
     protected List<ScoredId> recommend(long user, SparseVector ratings, int n,
             LongSet candidates, LongSet exclude) {
-        if (candidates == null)
-            candidates = predictor.getPredictableItems(user, ratings);
+    	if (candidates == null)
+            candidates = getPredictableItems(user, ratings);
         if (!exclude.isEmpty())
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
-        
         SparseVector predictions = predictor.predict(user, ratings, candidates);
+        assert(SparseVector.isComplete(predictions));
+        if (predictions.isEmpty()) return Collections.emptyList();
         PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
         for (Long2DoubleMap.Entry pred: predictions.fast()) {
             final double v = pred.getDoubleValue();
@@ -64,13 +66,21 @@ public class ItemItemRatingRecommender extends AbstractRatingRecommender {
             }
         }
 
-        ArrayList<ScoredId> finalPredictions =
-            new ArrayList<ScoredId>(n >= 0 ? n : queue.size());
-        for (int i = 0; !queue.isEmpty() && (n < 0 || i < n); i++) {
-            finalPredictions.add(queue.poll());
+        ScoredId[] finalPredictions;
+        if (n < 0 || n > queue.size()) {
+        	finalPredictions = new ScoredId[queue.size()];
+        } else {
+        	finalPredictions = new ScoredId[n];
+        	for (int i = queue.size() - n; i > 0; i--) queue.poll();
         }
-
-        return finalPredictions;
+        for (int i = finalPredictions.length - 1; i >= 0; i--) {
+            finalPredictions[i] = queue.poll();
+        }
+        return Arrays.asList(finalPredictions);
     }
-
+    
+    @Override
+    protected LongSet getPredictableItems(long user, SparseVector ratings) {
+    	return predictor.getModel().getItemUniverse();
+    }
 }

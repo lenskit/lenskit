@@ -24,8 +24,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.ArrayList;
@@ -69,22 +67,6 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     
     public ItemItemModel getModel() {
         return model;
-    }
-    
-    public LongSet getPredictableItems(long user, SparseVector ratings) {
-        if (model.getBaselinePredictor() != null) {
-            return model.getItemUniverse();
-        } else {
-            LongSet items = new LongOpenHashSet();
-            LongIterator iter = ratings.keySet().iterator();
-            while (iter.hasNext()) {
-                final long item = iter.nextLong();
-                for (IndexedItemScore n: model.getNeighbors(item)) {
-                    items.add(model.getItem(n.getIndex()));
-                }
-            }
-            return items;
-        }
     }
     
     private static final Comparator<IndexedItemScore> itemComp = new Comparator<IndexedItemScore>() {
@@ -153,7 +135,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             }
             return preds;
         } else {
-            return preds.copy(true);
+        	return preds.copy(true);
         }
     }
 

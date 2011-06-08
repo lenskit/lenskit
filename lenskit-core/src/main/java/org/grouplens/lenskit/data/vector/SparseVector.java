@@ -519,4 +519,11 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         }
         return wrap(keys, values, length);
     }
+    
+    public static boolean isComplete(SparseVector v) {
+    	for (double val : v.values()) {
+    		if (Double.isNaN(val)) return false;
+    	}
+    	return true;
+    }
 }

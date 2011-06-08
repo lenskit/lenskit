@@ -18,10 +18,15 @@
  */
 package org.grouplens.lenskit;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -32,6 +37,7 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
+import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
  * Base class for rating recommenders.  It implements all methods required by
@@ -42,73 +48,111 @@ import org.grouplens.lenskit.util.CollectionUtils;
  *
  */
 public abstract class AbstractRatingRecommender implements ItemRecommender, DynamicRatingItemRecommender {
-    protected final RatingDataAccessObject dao;
-    
-    public AbstractRatingRecommender(RatingDataAccessObject dao) {
-        this.dao = dao;
-    }
-    
-    protected SparseVector getRatings(long user) {
-        return Ratings.userRatingVector(dao.getUserRatings(user));
-    }
-    
-    public List<ScoredId> recommend(long user) {
-        return recommend(user, getRatings(user));
-    }
-    
-    public List<ScoredId> recommend(long user, int n) {
-        return recommend(user, getRatings(user), n);
-    }
-    
-    public List<ScoredId> recommend(long user, @Nullable Set<Long> candidates) {
-        return recommend(user, getRatings(user), candidates);
-    }
-    
-    public List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates,
-        @Nullable Set<Long> exclude) {
-        return recommend(user, getRatings(user), n, candidates, exclude);
-    }
-    
-    /**
-     * Implementation method for recommender services.
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @param n The number of items to return, or negative to return all possible
-     * items.
-     * @param candidates The candidate set.
-     * @param exclude The set of excluded items (the public methods convert
-     * null sets to the empty set, so this parameter is always non-null).
-     * @return
-     * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
-     */
-    protected abstract List<ScoredId> recommend(long user, SparseVector ratings, int n,
-            @Nullable LongSet candidates, @Nonnull LongSet exclude);
+	protected final RatingDataAccessObject dao;
+	protected final RatingPredictor predictor;
 
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings) {
-        return recommend(user, ratings, -1, null, ratings.keySet());
-    }
+	public AbstractRatingRecommender(RatingDataAccessObject dao, RatingPredictor predictor) {
+		this.dao = dao;
+		this.predictor = predictor;
+	}
 
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n) {
-        return recommend(user, ratings, n, null, ratings.keySet());
-    }
+	protected SparseVector getRatings(long user) {
+		return Ratings.userRatingVector(dao.getUserRatings(user));
+	}
 
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings,
-            Set<Long> candidates) {
-        return recommend(user, ratings, -1,
-                CollectionUtils.fastSet(candidates), ratings.keySet());
-    }
+	public List<ScoredId> recommend(long user) {
+		return recommend(user, getRatings(user));
+	}
 
-    @Override
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n,
-            Set<Long> candidates, Set<Long> exclude) {
-        LongSet cs = CollectionUtils.fastSet(candidates);
-        LongSet es = CollectionUtils.fastSet(exclude);
-        if (es == null)
-            es = LongSets.EMPTY_SET;
-        return recommend(user, ratings, n, cs, es);
-    }
+	public List<ScoredId> recommend(long user, int n) {
+		return recommend(user, getRatings(user), n);
+	}
 
+	public List<ScoredId> recommend(long user, @Nullable Set<Long> candidates) {
+		return recommend(user, getRatings(user), candidates);
+	}
+
+	public List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates,
+			@Nullable Set<Long> exclude) {
+		return recommend(user, getRatings(user), n, candidates, exclude);
+	}
+
+	/**
+	 * Implementation method for recommender services.
+	 * @param user The user ID.
+	 * @param ratings The user's rating vector.
+	 * @param n The number of items to return, or negative to return all possible
+	 * items.
+	 * @param candidates The candidate set.
+	 * @param exclude The set of excluded items (the public methods convert
+	 * null sets to the empty set, so this parameter is always non-null).
+	 * @return
+	 * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
+	 */
+	protected List<ScoredId> recommend(long user, SparseVector ratings, int n,
+			@Nullable LongSet candidates, @Nonnull LongSet exclude) {
+		if (candidates == null)
+			candidates = getPredictableItems(user, ratings);
+		if (!exclude.isEmpty())
+			candidates = LongSortedArraySet.setDifference(candidates, exclude);
+
+		SparseVector predictions = predictor.predict(user, candidates);
+		assert(SparseVector.isComplete(predictions));
+		if (predictions.isEmpty()) return Collections.emptyList();
+		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
+		for (Long2DoubleMap.Entry pred: predictions.fast()) {
+			final double v = pred.getDoubleValue();
+			if (!Double.isNaN(v)) {
+				queue.add(new ScoredId(pred.getLongKey(), v));
+			}
+		}
+
+		ScoredId[] finalPredictions;
+		if (n < 0 || n > queue.size()) {
+			finalPredictions = new ScoredId[queue.size()];
+		} else {
+			finalPredictions = new ScoredId[n];
+			for (int i = queue.size() - n; i > 0; i--) queue.poll();
+		}
+		for (int i = finalPredictions.length-1; i >= 0; i--) {
+			finalPredictions[i] = queue.poll();
+		}
+
+		return Arrays.asList(finalPredictions);
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings) {
+		return recommend(user, ratings, -1, null, ratings.keySet());
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings, int n) {
+		return recommend(user, ratings, n, null, ratings.keySet());
+	}
+ 
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings,
+			Set<Long> candidates) {
+		return recommend(user, ratings, -1,
+				CollectionUtils.fastSet(candidates), ratings.keySet());
+	}
+
+	@Override
+	public List<ScoredId> recommend(long user, SparseVector ratings, int n,
+			Set<Long> candidates, Set<Long> exclude) {
+		LongSet cs = CollectionUtils.fastSet(candidates);
+		LongSet es = CollectionUtils.fastSet(exclude);
+		if (es == null)
+			es = LongSets.EMPTY_SET;
+		return recommend(user, ratings, n, cs, es);
+	}
+
+	protected LongSet getPredictableItems(long user, SparseVector ratings) {
+		LongOpenHashSet predictable = new LongOpenHashSet();
+		for (long item : dao.getItems()) {
+			predictable.add(item);
+		}
+		return predictable;
+	}
 }
