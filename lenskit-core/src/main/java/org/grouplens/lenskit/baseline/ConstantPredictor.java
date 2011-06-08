@@ -24,12 +24,18 @@ package org.grouplens.lenskit.baseline;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.params.ConstantValue;
+import org.grouplens.lenskit.params.meta.DefaultDouble;
+import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
@@ -42,11 +48,22 @@ public class ConstantPredictor implements BaselinePredictor {
     private final double value;
 
     /**
+     * Parameter: the value used by the constant predictor.
+     */
+    @Documented
+    @DefaultDouble(0.0)
+    @Parameter(Double.class)
+    @Target({ ElementType.METHOD, ElementType.PARAMETER })
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Value { }
+
+
+    /**
      * Construct a new constant predictor.  This is exposed so other code
      * can use it as a fallback.
      * @param value
      */
-    public ConstantPredictor(@ConstantValue double value) {
+    public ConstantPredictor(@Value double value) {
         this.value = value;
     }
 
