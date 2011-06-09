@@ -27,8 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.DynamicRatingItemRecommender;
@@ -82,17 +80,8 @@ public class TestUserUserRecommender {
 		dao = manager.open();
 	}
 
-	@Test
-	public void testUserUserRecommenderEngineCreate() {        
-		// These assert instanceof's are also assertNotNull's
-		Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof UserUserRatingPredictor);
-		Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-		Assert.assertTrue(rec.getDynamicRatingItemRecommender() instanceof UserUserRatingRecommender);
-		Assert.assertNull(rec.getBasketRecommender());
-	}
-
 	/**
-	 * Tests recommend(long, SparseVector).
+	 * Tests <tt>recommend(long, SparseVector)</tt>.
 	 */
 	@Test
 	public void testUserUserRecommender1() {
@@ -123,7 +112,7 @@ public class TestUserUserRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, int).
+	 * Tests <tt>recommend(long, SparseVector, int)</tt>.
 	 */
 	@Test
 	public void testUserUserRecommender2() {
@@ -175,7 +164,7 @@ public class TestUserUserRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, LongSet)
+	 * Tests <tt>recommend(long, SparseVector, Set)</tt>.
 	 */
 	@Test
 	public void testUserUserRecommender3() {
@@ -249,7 +238,7 @@ public class TestUserUserRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, int, LongSet, LongSet).
+	 * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
 	 */
 	@Test
 	public void testUserUserRecommender4() {

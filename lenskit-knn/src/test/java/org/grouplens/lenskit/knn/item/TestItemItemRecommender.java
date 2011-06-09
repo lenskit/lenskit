@@ -26,8 +26,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.DynamicRatingItemRecommender;
@@ -50,7 +48,8 @@ import org.junit.Test;
 
 public class TestItemItemRecommender {
 
-	private static Recommender rec;
+	private static Recommender itemItemRecommender;
+	private static DynamicRatingItemRecommender recommender;
 	private static RatingDataAccessObject dao;
 
 	@BeforeClass
@@ -78,26 +77,18 @@ public class TestItemItemRecommender {
 				TruncatingSimilarityMatrixAccumulator.Factory.class);
 		factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
 		RecommenderEngine engine = factory.create();
-		rec = engine.open();
+		itemItemRecommender = engine.open();
+		recommender = itemItemRecommender.getDynamicRatingItemRecommender();
 		dao = manager.open();
 	}
 
 
-	@Test
-	public void testItemItemRecommenderEngineCreate() {
-		// These assert instanceof's are also assertNotNull's
-		Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof ItemItemRatingPredictor);
-		Assert.assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-		Assert.assertTrue(rec.getDynamicRatingItemRecommender() instanceof ItemItemRatingRecommender);
-		Assert.assertNull(rec.getBasketRecommender());
-	}
 
 	/**
-	 * Tests recommend(long, SparseVector).
+	 * Tests <tt>recommend(long, SparseVector)</tt>.
 	 */
 	@Test
 	public void testItemItemRecommender1() {
-		DynamicRatingItemRecommender recommender = rec.getDynamicRatingItemRecommender();
 		LongList recs = extractIds(recommender.recommend(1, getRatingVector(1)));
 		assertTrue(recs.isEmpty());
 		
@@ -128,11 +119,10 @@ public class TestItemItemRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, int).
+	 * Tests <tt>recommend(long, SparseVector, int)</tt>.
 	 */
 	@Test
 	public void testItemItemRecommender2() {
-		DynamicRatingItemRecommender recommender = rec.getDynamicRatingItemRecommender();
 		LongList recs = extractIds(recommender.recommend(2, getRatingVector(2), 1));
 		assertEquals(1, recs.size());
 		assertTrue(recs.contains(9));
@@ -148,11 +138,10 @@ public class TestItemItemRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, LongSet).
+	 * Tests <tt>recommend(long, SparseVector, Set)</tt>.
 	 */
 	@Test
 	public void testItemItemRecommender3() {
-		DynamicRatingItemRecommender recommender = rec.getDynamicRatingItemRecommender();
 		LongList recs = extractIds(recommender.recommend(1, getRatingVector(1), null));
 		assertTrue(recs.isEmpty());
 		
@@ -206,12 +195,10 @@ public class TestItemItemRecommender {
 	}
 
 	/**
-	 * Tests recommend(long, SparseVector, int, LongSet, LongSet).
+	 * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
 	 */
 	@Test
 	public void testItemItemRecommender4() {
-
-		DynamicRatingItemRecommender recommender = rec.getDynamicRatingItemRecommender();
 		LongList recs = extractIds(recommender.recommend(5, getRatingVector(5), -1, null, null));
 		assertEquals(3, recs.size());
 		assertTrue(recs.contains(6));
@@ -301,7 +288,7 @@ public class TestItemItemRecommender {
 	
 	@AfterClass
 	public static void cleanUp() {
-		rec.close();
+		itemItemRecommender.close();
 		dao.close();
 	}
 }
