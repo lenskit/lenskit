@@ -241,6 +241,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
         }
         
         // Only fall back on defaults if the parameter is not optional
+        // FIXME: Should fallback even for non-optional parameters.
         if (result == null && !param.optional) {
             if (key instanceof BindKey) {
                 // Look to see if we can look up a default type based on the parameter annotation
@@ -263,12 +264,13 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                         if (failure == null)
                             failure = re;
                     }
-                } else if (dfltInt != null)
+                } else if (dfltInt != null) {
                     result = dfltInt.value();
-                else if (dfltDouble != null)
+                } else if (dfltDouble != null) {
                     result = dfltDouble.value();
-                else if (dfltBoolean != null)
+                } else if (dfltBoolean != null) {
                     result = dfltBoolean.value();
+                }
 
                 // If the BindKey's annotation didn't give us a default type, see if can 
                 // use the BindKey's type
