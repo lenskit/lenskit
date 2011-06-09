@@ -250,20 +250,15 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 DefaultInt dfltInt = bindKey.getAnnotation().getAnnotation(DefaultInt.class);
                 DefaultDouble dfltDouble = bindKey.getAnnotation().getAnnotation(DefaultDouble.class);
                 DefaultBoolean dfltBoolean = bindKey.getAnnotation().getAnnotation(DefaultBoolean.class);
-
-                // FIXME: improve these fallback rules so that if there was a default provided,
-                // that is used (and if that fails then this fails), or if no default is provided,
-                //  just look at the type
-                
+           
                 // We can't modify the container, though, because it may not be mutable and if it was
                 // we could get ConcurrentModificationExceptions when getComponents() is called on it
                 if (dfltClass != null) {
-                    try {
-                        result = container.getComponent(dfltClass.value());
-                    } catch(RuntimeException re) {
-                        if (failure == null)
-                            failure = re;
-                    }
+                    // if default fails, let it propagate.
+                    result = container.getComponent(dfltClass.value());
+                    if (result == null)
+                        throw new InstantiationError(
+                            "Cannot instantiate default class "+ dfltClass.value().getName());
                 } else if (dfltInt != null) {
                     result = dfltInt.value();
                 } else if (dfltDouble != null) {
