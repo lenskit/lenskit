@@ -16,7 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
+
+package org.grouplens.lenskit;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -26,33 +27,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractDynamicPredictItemRecommender;
-import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
- * A recommender and predictor using user-user collaborative filtering.
- * Neighbor ratings are aggregated using weighted averaging. 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * Base class for item recommenders that use a dynamic rating predictor to generate recommendations.
+ * Implements all methods required by {@link AbstractDynamicItemRecommender}.
  */
-public class UserUserRatingRecommender extends AbstractDynamicPredictItemRecommender {
-	protected final UserUserRatingPredictor predictor;
-
-	public UserUserRatingRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
-		super(dao, pred);
-		predictor = pred;
+public abstract class AbstractDynamicPredictItemRecommender extends AbstractDynamicItemRecommender {
+	
+	protected final DynamicRatingPredictor predictor;
+	
+	protected AbstractDynamicPredictItemRecommender(RatingDataAccessObject dao,
+			DynamicRatingPredictor predictor) {
+		super(dao);
+		this.predictor = predictor;
 	}
 
-	@Override
-	public List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
+	protected List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
 		if (candidates == null)
 			candidates = getPredictableItems(user, ratings);
 		if (!exclude.isEmpty())
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
+
 		SparseVector predictions = predictor.predict(user, ratings, candidates);
 		assert(SparseVector.isComplete(predictions));
 		if (predictions.isEmpty()) return Collections.emptyList();
@@ -71,14 +70,18 @@ public class UserUserRatingRecommender extends AbstractDynamicPredictItemRecomme
 			finalPredictions = new ScoredId[n];
 			for (int i = queue.size() - n; i > 0; i--) queue.poll();
 		}
-		for (int i = finalPredictions.length - 1; i >= 0; i--) {
+		for (int i = finalPredictions.length-1; i >= 0; i--) {
 			finalPredictions[i] = queue.poll();
 		}
+
 		return Arrays.asList(finalPredictions);
 	}
-
-	@Override
-	protected LongSet getPredictableItems(long user, SparseVector ratings) {
-		return Cursors2.makeSet(dao.getItems());
-	}
+	
+	/**
+	 * Determine the items for which predictions can be made for a certain user.
+	 * @param user The user's ID.
+	 * @param ratings The user's rating vector.
+	 * @return All items for which predictions can be made for the user.
+	 */
+	protected abstract LongSet getPredictableItems(long user, SparseVector ratings);
 }

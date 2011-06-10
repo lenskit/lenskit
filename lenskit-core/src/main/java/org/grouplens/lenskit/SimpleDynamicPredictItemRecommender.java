@@ -16,29 +16,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 package org.grouplens.lenskit;
 
-import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
+import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.SparseVector;
 
-public interface Recommender {
-    @Nullable
-    public RatingPredictor getRatingPredictor();
-    
-    @Nullable
-    public DynamicRatingPredictor getDynamicRatingPredictor();
-    
-    @Nullable
-    public DynamicItemRecommender getDynamicItemRecommender();
-    
-    @Nullable
-    public BasketRecommender getBasketRecommender();
-    
-    @Nullable
-    public ItemRecommender getItemRecommender();
-    
-    public void close();
-    
-    public RatingDataAccessObject getRatingDataAccessObject();
+/**
+ * A basic implementation of an {@link AbstractDynamicPredictItemRecommender}.
+ * Uses a simple, but inefficient, implementation of 
+ * {@link AbstractDynamicPredictItemRecommender#getPredictableItems(long, SparseVector)}.
+ */
+public class SimpleDynamicPredictItemRecommender extends AbstractDynamicPredictItemRecommender {
+
+	public SimpleDynamicPredictItemRecommender(RatingDataAccessObject dao, DynamicRatingPredictor predictor) {
+		super(dao, predictor);
+	}
+
+	@Override
+	protected LongSet getPredictableItems(long user, SparseVector ratings) {
+		return Cursors2.makeSet(dao.getItems());
+	}
 }

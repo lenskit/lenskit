@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.DynamicRatingItemRecommender;
+import org.grouplens.lenskit.DynamicItemRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Rating;
@@ -49,7 +49,7 @@ import org.junit.Test;
 public class TestItemItemRecommender {
 
 	private static Recommender itemItemRecommender;
-	private static DynamicRatingItemRecommender recommender;
+	private static DynamicItemRecommender recommender;
 	private static RatingDataAccessObject dao;
 
 	@BeforeClass
@@ -72,13 +72,13 @@ public class TestItemItemRecommender {
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
-		factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRatingRecommender.class);
+		factory.setComponent(DynamicItemRecommender.class, ItemItemRatingRecommender.class);
 		factory.setComponent(SimilarityMatrixAccumulatorFactory.class, 
 				TruncatingSimilarityMatrixAccumulator.Factory.class);
 		factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
 		RecommenderEngine engine = factory.create();
 		itemItemRecommender = engine.open();
-		recommender = itemItemRecommender.getDynamicRatingItemRecommender();
+		recommender = itemItemRecommender.getDynamicItemRecommender();
 		dao = manager.open();
 	}
 
