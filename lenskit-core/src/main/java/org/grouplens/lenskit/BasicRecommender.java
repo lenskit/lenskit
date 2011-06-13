@@ -52,8 +52,8 @@ public class BasicRecommender implements Recommender {
     }
 
     @Override
-    public DynamicItemRecommender getDynamicItemRecommender() {
-        return container.getComponent(DynamicItemRecommender.class);
+    public DynamicRatingItemRecommender getDynamicItemRecommender() {
+        return container.getComponent(DynamicRatingItemRecommender.class);
     }
 
     @Override

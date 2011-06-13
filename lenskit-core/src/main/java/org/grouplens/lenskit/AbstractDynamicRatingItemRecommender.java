@@ -34,15 +34,15 @@ import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
  * Base class for dynamic item recommenders.  It implements all methods required by
- * {@link DynamicItemRecommender} by delegating them to a single method with a
+ * {@link DynamicRatingItemRecommender} by delegating them to a single method with a
  * Fastutil-based interface.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractDynamicItemRecommender extends AbstractItemRecommender implements DynamicItemRecommender {
+public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemRecommender implements DynamicRatingItemRecommender {
 
-	protected AbstractDynamicItemRecommender(RatingDataAccessObject dao) {
+	protected AbstractDynamicRatingItemRecommender(RatingDataAccessObject dao) {
 		super(dao);
 	}
 
@@ -85,7 +85,7 @@ public abstract class AbstractDynamicItemRecommender extends AbstractItemRecomme
 	 * @param exclude The set of excluded items (the public methods convert
 	 * null sets to the empty set, so this parameter is always non-null).
 	 * @return
-	 * @see DynamicItemRecommender#recommend(long, SparseVector, int, Set, Set)
+	 * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
 	 */
 	protected abstract List<ScoredId> recommend(long user, SparseVector ratings, int n,
 			@Nullable LongSet candidates, @Nonnull LongSet exclude);

@@ -46,7 +46,7 @@ public interface Recommender {
     DynamicRatingPredictor getDynamicRatingPredictor();
     
     @Nullable
-    DynamicItemRecommender getDynamicItemRecommender();
+    DynamicRatingItemRecommender getDynamicItemRecommender();
     
     @Nullable
     BasketRecommender getBasketRecommender();

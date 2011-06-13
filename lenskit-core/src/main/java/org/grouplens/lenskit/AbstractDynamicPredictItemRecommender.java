@@ -34,9 +34,9 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
  * Base class for item recommenders that use a dynamic rating predictor to generate recommendations.
- * Implements all methods required by {@link AbstractDynamicItemRecommender}.
+ * Implements all methods required by {@link AbstractDynamicRatingItemRecommender}.
  */
-public abstract class AbstractDynamicPredictItemRecommender extends AbstractDynamicItemRecommender {
+public abstract class AbstractDynamicPredictItemRecommender extends AbstractDynamicRatingItemRecommender {
 	
 	protected final DynamicRatingPredictor predictor;
 	

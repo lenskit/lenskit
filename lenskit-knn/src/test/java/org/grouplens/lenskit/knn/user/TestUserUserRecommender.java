@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.DynamicItemRecommender;
+import org.grouplens.lenskit.DynamicRatingItemRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Rating;
@@ -72,7 +72,7 @@ public class TestUserUserRecommender {
 		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
-		factory.setComponent(DynamicItemRecommender.class, UserUserRatingRecommender.class);
+		factory.setComponent(DynamicRatingItemRecommender.class, UserUserRatingRecommender.class);
 		factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
 		factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
 		RecommenderEngine engine = factory.create();
@@ -85,7 +85,7 @@ public class TestUserUserRecommender {
 	 */
 	@Test
 	public void testUserUserRecommender1() {
-		DynamicItemRecommender recommender = rec.getDynamicItemRecommender();
+		DynamicRatingItemRecommender recommender = rec.getDynamicItemRecommender();
 		LongList recs = extractIds(recommender.recommend(1, getRatingVector(1)));
 		assertTrue(recs.isEmpty());
 
@@ -116,7 +116,7 @@ public class TestUserUserRecommender {
 	 */
 	@Test
 	public void testUserUserRecommender2() {
-		DynamicItemRecommender recommender = rec.getDynamicItemRecommender();
+		DynamicRatingItemRecommender recommender = rec.getDynamicItemRecommender();
 		LongList recs = extractIds(recommender.recommend(1, getRatingVector(1), -1));
 		assertTrue(recs.isEmpty());
 
@@ -168,7 +168,7 @@ public class TestUserUserRecommender {
 	 */
 	@Test
 	public void testUserUserRecommender3() {
-		DynamicItemRecommender recommender = rec.getDynamicItemRecommender();
+		DynamicRatingItemRecommender recommender = rec.getDynamicItemRecommender();
 		
 		LongOpenHashSet candidates = new LongOpenHashSet();
 		candidates.add(6);
@@ -242,7 +242,7 @@ public class TestUserUserRecommender {
 	 */
 	@Test
 	public void testUserUserRecommender4() {
-		DynamicItemRecommender recommender = rec.getDynamicItemRecommender();
+		DynamicRatingItemRecommender recommender = rec.getDynamicItemRecommender();
 		
 		LongOpenHashSet candidates = new LongOpenHashSet();
 		candidates.add(9);

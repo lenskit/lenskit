@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface DynamicItemRecommender {
+public interface DynamicRatingItemRecommender {
     /**
      * Recommend all possible items for a user. The
      * exclude set is the set of keys in <var>ratings</var> (so items the user
