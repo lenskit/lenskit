@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 public class HLUtilityEvaluator implements PredictionEvaluator {
 
-	private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
+	private static final Logger logger = LoggerFactory.getLogger(HLUtilityEvaluator.class);
 	private int colHLU;
 	private double alpha;
 
