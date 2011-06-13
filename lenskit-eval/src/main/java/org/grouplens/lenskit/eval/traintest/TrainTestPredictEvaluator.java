@@ -18,9 +18,12 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.io.PrintStream;
-import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -29,9 +32,11 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -49,14 +54,14 @@ import org.slf4j.LoggerFactory;
  */
 public class TrainTestPredictEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestPredictEvaluator.class);
-    private Connection connection;
+    private String databaseUrl;
     private String trainingTable;
     private String testTable;
     private boolean timestamp = true;
-    private PrintStream progressStream;
-
-    public TrainTestPredictEvaluator(Connection dbc, String train, String test) {
-        connection = dbc;
+    private int threadCount = 0;
+    
+    public TrainTestPredictEvaluator(String dbUrl, String train, String test) {
+        databaseUrl = dbUrl;
         trainingTable = train;
         testTable = test;
     }
@@ -69,85 +74,170 @@ public class TrainTestPredictEvaluator {
     	timestamp = ts;
     }
     
-    /**
-     * Set print stream for outputting progress within evaluations.
-     * @param s
-     */
-    public void setProgressStream(PrintStream s) {
-        progressStream = s;
+    public void setThreadCount(int nthreads) {
+        threadCount = nthreads;
     }
     
-    public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
+    public int getThreadCount() {
+        if (threadCount > 0) {
+            return threadCount;
+        } else {
+            int tc = Integer.parseInt(System.getProperty("lenskit.eval.thread.count", "0"));
+            if (tc > 0)
+                return tc;
+            else
+                return Runtime.getRuntime().availableProcessors();
+        }
+    }
+    
+    protected JDBCRatingDAO.Manager trainingDAOManager() {
         BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
         sfac.setTableName(trainingTable);
         if (!timestamp)
             sfac.setTimestampColumn(null);
-        JDBCRatingDAO dao = new JDBCRatingDAO.Manager(null, sfac).open(connection);
-        
-        RatingDataAccessObject preloaded = null;
-        logger.debug("Preloading rating snapshot data");
-        SharedRatingSnapshot snap = new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
-        
+        return new JDBCRatingDAO.Manager(databaseUrl, sfac);
+    }
+    
+    protected JDBCRatingDAO.Manager testDAOManager() {
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
-        JDBCRatingDAO testDao = new JDBCRatingDAO.Manager(null, testfac).open(connection);
+        return new JDBCRatingDAO.Manager(databaseUrl, testfac);
+    }
+    
+    public synchronized void evaluateAlgorithms(List<AlgorithmInstance> algorithms, ResultAccumulator results) {
+        logger.debug("Preloading rating snapshot data");
+        DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
+        DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
+        SharedRatingSnapshot snap = loadSnapshot(daoMgr);
+        PreloadCache cache = new PreloadCache();
+        
+        List<Future<?>> tasks = new ArrayList<Future<?>>(algorithms.size());
+        ExecutorService svc = Executors.newFixedThreadPool(getThreadCount());
         try {
-            int nusers = testDao.getUserCount();
-            logger.debug("Evaluating algorithms with {} users", nusers);
-            
             for (AlgorithmInstance algo: algorithms) {
-                AlgorithmTestAccumulator acc = results.makeAlgorithmAccumulator(algo);
-                RatingDataAccessObject tdao;
-
-                if (algo.getPreload()) {
-                	if (preloaded == null) {
-                		logger.info("Preloading rating data for {}", algo.getName());
-                		List<Rating> ratings = Cursors.makeList(dao.getRatings());
-                		preloaded = new RatingCollectionDAO.Manager(ratings).open();
-                	}
-                	tdao = preloaded;
-                } else {
-                	tdao = dao;
+                Runnable task = new EvalTask(daoMgr, testDaoMgr, results, algo, cache, snap);
+                tasks.add(svc.submit(task));
+            }
+            for (Future<?> f: tasks) {
+                boolean done = false;
+                while (!done) {
+                    try {
+                        f.get();
+                        done = true;
+                    } catch (InterruptedException e) {
+                        /* no-op, try again */
+                    } catch (ExecutionException e) {
+                        Throwable base = e;
+                        if (e.getCause() != null)
+                            base = e;
+                        base.printStackTrace();
+                        throw new RuntimeException("Error testing recommender", base);
+                    }
                 }
-                
-                logger.debug("Building {}", algo.getName());
+            }
+        } finally {
+            svc.shutdown();
+        }
+    }
+
+    private SharedRatingSnapshot loadSnapshot(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr) {
+        RatingDataAccessObject dao;
+        dao = daoMgr.open();
+        try {
+            return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
+        } finally {
+            dao.close();
+        }
+    }
+    
+    protected static class PreloadCache {
+        private volatile List<Rating> cachedRatings;
+        
+        public synchronized List<Rating> getRatings(RatingDataAccessObject dao) {
+            if (cachedRatings == null) {
+                logger.info("Preloading rating data");
+                cachedRatings = Cursors.makeList(dao.getRatings());
+            }
+            return cachedRatings;
+        }
+    }
+    
+    protected class EvalTask implements Runnable {
+        private AlgorithmInstance algorithm;
+        private ResultAccumulator resultAccumulator;
+        private DataAccessObjectManager<? extends RatingDataAccessObject> daoManager;
+        private DataAccessObjectManager<? extends RatingDataAccessObject> testDaoManager;
+        private PreloadCache ratingCache;
+        private RatingSnapshot ratingSnapshot;
+        
+        public EvalTask(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr,
+                DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr,
+                ResultAccumulator results, AlgorithmInstance algo, PreloadCache cache,
+                RatingSnapshot snap) {
+            daoManager = daoMgr;
+            testDaoManager = testDaoMgr;
+            resultAccumulator = results;
+            algorithm = algo;
+            ratingCache = cache;
+            ratingSnapshot = snap;
+        }
+
+        @Override
+        public void run() {
+            AlgorithmTestAccumulator acc = resultAccumulator.makeAlgorithmAccumulator(algorithm);
+            RatingDataAccessObject dao = daoManager.open();
+            RatingDataAccessObject tdao;
+
+            // Preload ratings if appropriate. Make sure DAO is closed if ratigns
+            // are preloaded.
+            try {
+                if (algorithm.getPreload()) {
+                    List<Rating> ratings = ratingCache.getRatings(dao);
+                    dao.close();
+                    dao = null;
+                    tdao = new RatingCollectionDAO(ratings);
+                } else {
+                    tdao = dao;
+                    dao = null;
+                }
+            } finally {
+                if (dao != null)
+                    dao.close();
+            }
+
+            try {
+                logger.debug("Building {}", algorithm.getName());
                 acc.startBuildTimer();
-                Recommender rec = algo.buildRecommender(tdao, snap);
+                Recommender rec = algorithm.buildRecommender(tdao, ratingSnapshot);
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
-                logger.info("Testing {}", algo.getName());
+                logger.info("Testing {}", algorithm.getName());
                 acc.startTestTimer();
 
-                Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
+                RatingDataAccessObject testDao = testDaoManager.open();
                 try {
-                    int n = 0;
-                    for (UserRatingProfile p: userProfiles) {
-                        if (progressStream != null) {
-                            progressStream.format("users: %d / %d\r", n, nusers);
+                    Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
+                    try {
+                        for (UserRatingProfile p: userProfiles) {
+                            SparseVector ratings = Ratings.userRatingVector(p.getRatings());
+                            SparseVector predictions =
+                                pred.predict(p.getUser(), ratings.keySet());
+                            acc.evaluatePrediction(p.getUser(), ratings, predictions);
                         }
-                        
-                        SparseVector ratings = Ratings.userRatingVector(p.getRatings());
-                        SparseVector predictions =
-                            pred.predict(p.getUser(), ratings.keySet());
-                        acc.evaluatePrediction(p.getUser(), ratings, predictions);
-                        n++;
+                    } finally {
+                        userProfiles.close();
                     }
-                    if (progressStream != null)
-                        progressStream.format("tested users: %d / %d\n", n, nusers);
                 } finally {
-                    userProfiles.close();
+                    testDao.close();
                 }
 
                 acc.finish();
-                tdao = null;
+            } finally {
+                tdao.close();
             }
-        } finally {
-        	if (preloaded != null)
-        		preloaded.close();
-            dao.close();
-            testDao.close();
         }
+
     }
 }
