@@ -36,6 +36,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
 public class SlopeOneItemRecommender extends AbstractDynamicRatingItemRecommender {
+    // FIXME Use AbstractDynamicPredictItemRecommender for this
 
 	private SlopeOneRatingPredictor predictor; 
 	

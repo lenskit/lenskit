@@ -47,6 +47,7 @@ public abstract class AbstractDynamicPredictItemRecommender extends AbstractDyna
 	}
 
 	protected List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
+	    // TODO Share code with corresponding method in AbstractPredictItemRecommender.
 		if (candidates == null)
 			candidates = getPredictableItems(user, ratings);
 		if (!exclude.isEmpty())
