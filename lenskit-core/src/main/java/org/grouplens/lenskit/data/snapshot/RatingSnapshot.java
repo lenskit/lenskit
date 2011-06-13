@@ -27,6 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 /**
@@ -96,6 +97,15 @@ public interface RatingSnapshot extends Closeable {
 	 * @return The user's ratings, or an empty collection if the user is unknown.
 	 */
 	FastCollection<IndexedRating> getUserRatings(long userId);
+	
+	/**
+	 * Get the ratings for a particular user in SparseVector form. It is guaranteed
+	 * that no duplicate ratings appear - each <i>(user,item)</i> pair is rated at
+	 * most once.
+	 * @param userId The user's ID.
+	 * @return The user's ratings, or an empty collection if the user is unknown.
+	 */
+	SparseVector userRatingVector(long userId);
 	
 	/**
 	 * Close the build context.  This overrides {@link Closeable#close()} to

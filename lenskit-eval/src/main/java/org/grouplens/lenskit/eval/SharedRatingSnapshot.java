@@ -23,13 +23,15 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 public class SharedRatingSnapshot implements RatingSnapshot {
     private final RatingSnapshot snapshot;
     
     public SharedRatingSnapshot(RatingSnapshot snapshot) {
-        this.snapshot = snapshot;
+        super();
+    	this.snapshot = snapshot;
     }
     
     @Override
@@ -66,4 +68,9 @@ public class SharedRatingSnapshot implements RatingSnapshot {
     public void close() {
         // don't close
     }
+
+	@Override
+	public SparseVector userRatingVector(long userId) {
+		return snapshot.userRatingVector(userId);
+	}
 }

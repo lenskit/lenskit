@@ -51,14 +51,15 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Built(ephemeral=true)
-public class PackedRatingSnapshot implements RatingSnapshot {
-    private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
+public class PackedRatingSnapshot extends AbstractRatingSnapshot {
     
-	private PackedRatingData data;
+	private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
+    private PackedRatingData data;
 	private List<IntList> userIndices;
 	
 	protected PackedRatingSnapshot(PackedRatingData data, List<IntList> userIndices) {
-	    this.data = data;
+	    super();
+		this.data = data;
 	    this.userIndices = userIndices;
 	}
 	
@@ -108,6 +109,7 @@ public class PackedRatingSnapshot implements RatingSnapshot {
 
 	@Override
 	public void close() {
+		super.close();
 		data = null;
 	}
 	
@@ -145,7 +147,7 @@ public class PackedRatingSnapshot implements RatingSnapshot {
                 // default to something nice and large
                 if (size < 0) size = 10000;
                 
-                // initialize arrays. we only trawck timestamps when we find them.
+                // initialize arrays. we only track timestamps when we find them.
                 users = new IntArrayList(size);
                 items = new IntArrayList(size);
                 values = new DoubleArrayList(size);
