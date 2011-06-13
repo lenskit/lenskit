@@ -83,7 +83,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
      * Get predictions for a set of items.  Unlike the interface method, this
      * method can take a null <var>items</var> set, in which case it returns all
      * possible predictions.
-     * @see RatingPredictor#predict(long, SparseVector, Collection)
+     * @see RatingPredictor#predict(long, Collection)
      */
     @Override
     public SparseVector predict(long user, SparseVector ratings, @Nullable Collection<Long> items) {

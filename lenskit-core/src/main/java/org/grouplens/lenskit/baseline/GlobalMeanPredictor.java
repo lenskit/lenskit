@@ -60,7 +60,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * contained in the given collection of ratings.
      * 
      * @param ratings
-     * @return
+     * @return The average of the rating values stored in <var>ratings</var>.
      */
     public static double computeMeanRating(RatingSnapshot ratings) {
         double total = 0;

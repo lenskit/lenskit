@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.tablewriter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -28,16 +27,16 @@ import javax.annotation.concurrent.ThreadSafe;
  * Write rows to a table.
  *
  * <p>Instances of this class are used to actually produce rows for a table.  There
- * are two interfaces provided: the {@link #writeRow(List)} and {@link #writeRow(Map)}
- * methods write an entire row at a time, while the {@link #startRow()}, 
- * {@link #setValue(int, String)} and {@link #finishRow()} methods build up a
- * row and then write it out.
+ * are two interfaces provided: the {@link #writeRow(String[])}, {@link #writeRow(Map)}, 
+ * and {@link #writeRow(Object...)} methods write an entire row at a time, while 
+ * the {@link #startRow()}, {@link #setValue(int, String)} and {@link #finishRow()}
+ *  methods build up a row and then write it out.
  *
  * <p>Once the table has finished, call {@link #finish()} to finish the table and
  * close the underlying output.
  * 
  * <p>TableWriter is thread safe, but only one thread can be building a row
- * at a time.  {@link #writeRow(List)} and related methods write a row atomically,
+ * at a time.  {@link #writeRow(String[])} and related methods write a row atomically,
  * while {@link #startRow()} and {@link #finishRow()} manage a lock.
  *
  * @see TableWriterBuilder
@@ -47,8 +46,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface TableWriter {
     /**
-     * Query the number of columns in the table.
-     * @return
+     * @return The number of columns in the table.
      */
     int getColumnCount();
     
@@ -73,7 +71,7 @@ public interface TableWriter {
      * Write a row to the table. This method is thread-safe.
      * @param row A row of values.  If the table requires more columns, the
      * remaining columns are empty.
-     * @raises RuntimeException if {@code row} has more items than the table has
+     * @throws RuntimeException if {@code row} has more items than the table has
      * columns.
      */
     void writeRow(String[] row) throws IOException;

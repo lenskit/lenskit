@@ -33,11 +33,12 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 public interface UserRatingProfile {
     public long getUser();
     /**
-     * Get the rating profile's collection of ratings.
-     * @return
+     * @return The rating profile's collection of ratings
      */
     public Collection<Rating> getRatings();
+    
     public SparseVector getRatingVector();
+    
     @Deprecated
     public double getRating(long item);
 }

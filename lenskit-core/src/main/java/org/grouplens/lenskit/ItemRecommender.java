@@ -24,7 +24,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -36,7 +35,7 @@ public interface ItemRecommender {
      * exclude set is the set of items the user has rated.
      * @param user The user ID.
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(long, int, Set, Set)
      */
     List<ScoredId> recommend(long user);
     
@@ -47,7 +46,7 @@ public interface ItemRecommender {
      * @param user The user ID.
      * @param n The number of recommendations to return.
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(long, int, Set, Set)
      */
     List<ScoredId> recommend(long user, int n);
 
@@ -56,18 +55,16 @@ public interface ItemRecommender {
      * exclude set is the set of keys in <var>ratings</var> (so items the user
      * has rated are not recommended).
      * @param user The user ID.
-     * @param ratings The user's rating vector.
      * @param candidates The candidate set (can be null to represent the
      * universe).
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(long, int, Set, Set)
      */
     List<ScoredId> recommend(long user, @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user.
      * @param user The user's ID
-     * @param ratings The user's ratings
      * @param n The number of ratings to return.  If negative, recommend all
      * possible items.
      * @param candidates A set of candidate items which can be recommended.  If

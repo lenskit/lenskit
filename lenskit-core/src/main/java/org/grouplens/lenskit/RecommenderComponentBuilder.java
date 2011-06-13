@@ -23,7 +23,7 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 /**
  * <p>
  * RecommenderComponentBuilders are used to construct usually-expensive objects
- * that depend on a {@link RatingSnapshots}. An example of an object a
+ * that depend on a {@link RatingSnapshot}. An example of an object a
  * RecommenderComponentBuilder would produce is an item-item similarity matrix
  * used in item-item recommenders.
  * </p>

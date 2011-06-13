@@ -50,15 +50,14 @@ public class ScoredId implements Comparable<ScoredId> {
 
     /**
      * Get the scored object.
-     * @return
+     * @return the object's ID.
      */
     public long getId() {
         return id;
     }
 
     /**
-     * Get the object's score.
-     * @return
+     * @return The object's score.
      */
     public double getScore() {
         return score;
@@ -66,7 +65,6 @@ public class ScoredId implements Comparable<ScoredId> {
 
     /**
      * Convert map entries to scored objects en masse.
-     * @param <T> The type of keys.
      * @param entries A collection of map entries.
      * @return A collection representing the map entries as scored objects.
      */
@@ -94,7 +92,6 @@ public class ScoredId implements Comparable<ScoredId> {
      * Convert map entries to scored objects en masse.  Iterators on the resulting
      * collection are <i>fast</i> - that is, they mutate and return the same
      * ScoredObject instance.
-     * @param <T> The type of keys.
      * @param entries A collection of map entries.
      * @return A collection representing the map entries as scored objects.
      */

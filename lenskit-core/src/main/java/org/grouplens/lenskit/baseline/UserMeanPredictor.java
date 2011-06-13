@@ -73,8 +73,8 @@ public class UserMeanPredictor implements BaselinePredictor {
 
     /**
      * Construct a predictor that computes user means offset by the global mean.
-     * 
-     * @param ratings
+   	 * @param globalMean The mean rating value for all items.
+   	 * @param damping A damping term for the calculations.
      */
     public UserMeanPredictor(double globalMean, double damping) {
         this.globalMean = globalMean;

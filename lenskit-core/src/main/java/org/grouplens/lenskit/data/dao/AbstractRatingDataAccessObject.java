@@ -46,12 +46,9 @@ import com.google.common.base.Predicate;
 
 /**
  * Abstract implementation of {@link RatingDataAccessObject}, delegating
- * to a few core methods.  It also handles thread-local session management,
- * requiring subclasses only to provide the {@link #openNewSession()} method.
+ * to a few core methods.  It also handles thread-local session management.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- * @param <S> The type of session objects.
- */
+ * */
 public abstract class AbstractRatingDataAccessObject implements RatingDataAccessObject {
     protected final Logger logger;
     

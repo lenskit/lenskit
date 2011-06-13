@@ -27,9 +27,6 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
  * Interface for prediction accuracy evalutors.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * @param <R> The results type. All public fields and getters on this
- * type will be used as fields in the final evaluation.
- * 
  * @todo Add safety to the relationship between setup, accumulators, and the
  * builder.
  */

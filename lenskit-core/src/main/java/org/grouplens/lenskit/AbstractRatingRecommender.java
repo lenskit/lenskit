@@ -78,7 +78,7 @@ public abstract class AbstractRatingRecommender implements ItemRecommender, Dyna
      * @param candidates The candidate set.
      * @param exclude The set of excluded items (the public methods convert
      * null sets to the empty set, so this parameter is always non-null).
-     * @return
+     * @return A list of <tt>ScoredId</tt> objects representing recommended items.
      * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
      */
     protected abstract List<ScoredId> recommend(long user, SparseVector ratings, int n,

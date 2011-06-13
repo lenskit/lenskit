@@ -25,18 +25,10 @@
  * of changes.  The DAO should generally be a singleton, therefore, to support change
  * notification and registration throughout the system.
  * 
- * <p>DAOs use <emph>sessions</emph> to provide actual data access.  The session
- * is managed internally by the DAO and is not directly exposed, except for the
- * {@link UserItemDataAccessObject#openSession()} and
- * {@link UserItemDataAccessObject#closeSession()} methods. These methods open
- * and close a session on the current thread; all other DAO access except for
- * registering listeners must happen within a context.  Therefore, client code
- * must open a session before it can use the recommender, and close that session
- * when it is done.
- * 
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to
- * provide mutation.  The recommender building process uses a {@link RatingBuildContext}
+ * provide mutation.  The recommender building process uses a 
+ * {@link org.grouplens.lenskit.data.snapshot.RatingSnapshot RatingSnapshot}
  * so that it can make multiple passes over a snapshot of the data.
  * 
  */

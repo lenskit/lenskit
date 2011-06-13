@@ -90,9 +90,8 @@ public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * Construct a new predictor. This assumes ownership of the provided map.
      * 
-     * @param ratings The rating data.
-     * @param smoothing The smoothing factor, see
-     *            {@link #computeItemAverages(RatingDataSource, double, Long2DoubleMap)}
+     * @param itemMeans A map of item IDs to their mean ratings.
+     * @param globalMean The mean rating value for all items.
      */
     public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
         this.itemMeans = itemMeans;
@@ -109,8 +108,6 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * item means in a single pass through the data source.
      * 
      * @param ratings The collection of ratings the averages are based on
-     * @param smoothing The mean smoothing factor (see {@link MeanSmoothing} for
-     *            how this is used).
      * @param itemMeansResult A map in which the means should be stored.
      * @return The global mean rating. The item means are stored in
      *         <var>itemMeans</var>.
