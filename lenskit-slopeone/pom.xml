@@ -6,15 +6,15 @@
     <version>0.0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
-  <artifactId>lenskit-slope-one</artifactId>
+  <artifactId>lenskit-slopeone</artifactId>
   <version>0.0.3-SNAPSHOT</version>
   <dependencies>
   	<dependency>
-  		<groupId>org.grouplens.lenskit</groupId>
-  		<artifactId>lenskit-core</artifactId>
-  		<version>0.0.3-SNAPSHOT</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
+          <groupId>org.grouplens.lenskit</groupId>
+          <artifactId>lenskit-core</artifactId>
+          <version>${project.version}</version>
+          <type>jar</type>
+          <scope>compile</scope>
   	</dependency>
   </dependencies>
 </project>
