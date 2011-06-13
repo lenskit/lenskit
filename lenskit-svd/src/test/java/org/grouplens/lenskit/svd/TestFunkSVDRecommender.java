@@ -18,11 +18,15 @@
  */
 package org.grouplens.lenskit.svd;
 
+import static org.junit.Assert.*;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -30,52 +34,218 @@ import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.svd.params.IterationCount;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestFunkSVDRecommender {
-    private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
-    private RecommenderEngine engine;
-    
-    @Before
-    public void setup() {
-        List<Rating> rs = new ArrayList<Rating>();
-        rs.add(new SimpleRating(1, 5, 2));
-        rs.add(new SimpleRating(1, 7, 4));
-        rs.add(new SimpleRating(8, 4, 5));
-        rs.add(new SimpleRating(8, 5, 4));
-        
-        manager = new RatingCollectionDAO.Manager(rs);
-        
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingPredictor.class, SVDRatingPredictor.class);
-        factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
-        factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
-        factory.set(IterationCount.class, 10);
-        
-        engine = factory.create();
-    }
-    
-    @Test
-    public void testFunkSVDRecommenderEngineCreate() {
-        Recommender rec = engine.open();
-        
-        try {
-            // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getRatingPredictor() instanceof SVDRatingPredictor);
+	
+	private static Recommender svdRecommender;
+	private static ItemRecommender recommender;
+	private static RatingDataAccessObject dao;
+	
+	@BeforeClass
+	public static void setup() {
+		List<Rating> rs = new ArrayList<Rating>();
+		rs.add(new SimpleRating(1, 6, 4));
+		rs.add(new SimpleRating(2, 6, 2));
+		rs.add(new SimpleRating(1, 7, 3));
+		rs.add(new SimpleRating(2, 7, 2));
+		rs.add(new SimpleRating(3, 7, 5));
+		rs.add(new SimpleRating(4, 7, 2));
+		rs.add(new SimpleRating(1, 8, 3));
+		rs.add(new SimpleRating(2, 8, 4));
+		rs.add(new SimpleRating(3, 8, 3));
+		rs.add(new SimpleRating(4, 8, 2));
+		rs.add(new SimpleRating(5, 8, 3));
+		rs.add(new SimpleRating(6, 8, 2));
+		rs.add(new SimpleRating(1, 9, 3));
+		rs.add(new SimpleRating(3, 9, 4));
 
-            Assert.assertNull(rec.getDynamicRatingItemRecommender());
-            Assert.assertNull(rec.getDynamicRatingPredictor());
-            Assert.assertNull(rec.getBasketRecommender());
-        } finally {
-            rec.close();
-        }
-    }
+		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
+		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
+		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
+		factory.setComponent(ItemRecommender.class, FunkSVDItemRecommender.class);
+		factory.set(IterationCount.class, 10);
+		RecommenderEngine engine = factory.create();
+		svdRecommender = engine.open();
+		recommender = svdRecommender.getItemRecommender();
+		dao = manager.open();
+	}
+	
+	
+	/**
+	 * Tests <tt>recommend(long)</tt>.
+	 */
+	@Test
+	public void testRecommend1() {
+		
+		LongList recs = extractIds(recommender.recommend(1));
+		assertTrue(recs.isEmpty());
+		
+		recs = extractIds(recommender.recommend(2));
+		assertEquals(1, recs.size());
+		assertTrue(recs.contains(9));
+		
+		recs = extractIds(recommender.recommend(3));
+		assertEquals(1, recs.size());
+		assertTrue(recs.contains(6));
+		
+		recs = extractIds(recommender.recommend(4));
+		assertEquals(2, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(9, recs.getLong(1));
+		
+		recs = extractIds(recommender.recommend(5));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		recs = extractIds(recommender.recommend(6));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+	}
+	
+	/**
+	 * Tests <tt>recommend(long, int)</tt>.
+	 */
+	@Test
+	public void testRecommend2() {
+		
+		LongList recs = extractIds(recommender.recommend(6, 4));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		recs = extractIds(recommender.recommend(6, 3));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		recs = extractIds(recommender.recommend(6, 2));
+		assertEquals(2, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		
+		recs = extractIds(recommender.recommend(6, 1));
+		assertEquals(1, recs.size());
+		assertTrue(recs.contains(6));
+		
+		recs = extractIds(recommender.recommend(6, 0));
+		assertTrue(recs.isEmpty());
+		
+		recs = extractIds(recommender.recommend(6, -1));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+	}
+	
+	/**
+	 * Tests <tt>recommend(long, Set)</tt>.
+	 */
+	@Test
+	public void testRecommend3() {
+		
+		LongList recs = extractIds(recommender.recommend(5, null));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		LongOpenHashSet candidates = new LongOpenHashSet();
+		candidates.add(6);
+		candidates.add(7);
+		candidates.add(8);
+		candidates.add(9);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		candidates.remove(8);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		
+		candidates.remove(7);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertEquals(2, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(9, recs.getLong(1));
+		
+		candidates.remove(6);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertEquals(1, recs.size());
+		assertEquals(9, recs.getLong(0));
+		
+		candidates.remove(9);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertTrue(recs.isEmpty());
+		
+		candidates.add(8);
+		recs = extractIds(recommender.recommend(5, candidates));
+		assertTrue(recs.isEmpty());
+	}
+	
+	/**
+	 * Tests <tt>recommend(long, int, Set, Set)</tt>.
+	 */
+	@Test
+	public void testRecommend4() {
+		LongList recs = extractIds(recommender.recommend(6, -1, null, null));
+		assertEquals(4, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(9, recs.getLong(2));
+		assertEquals(8, recs.getLong(3));
+		
+		LongOpenHashSet exclude = new LongOpenHashSet();
+		exclude.add(9);
+		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		assertEquals(3, recs.size());
+		assertEquals(6, recs.getLong(0));
+		assertEquals(7, recs.getLong(1));
+		assertEquals(8, recs.getLong(2));
+		
+		exclude.add(6);
+		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		assertEquals(2, recs.size());
+		assertEquals(7, recs.getLong(0));
+		assertEquals(8, recs.getLong(1));
+		
+		exclude.add(8);
+		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		assertEquals(1, recs.size());
+		assertTrue(recs.contains(7));
+	}
+	
+	@AfterClass
+	public static void cleanUp() {
+		svdRecommender.close();
+		dao.close();
+	}
+	
+	//Helper method to generate a list of item id's from a list of ScoredId's.
+	private static LongList extractIds(List<ScoredId> recommendations) {
+		LongList items = new LongArrayList(recommendations.size());
+		for (ScoredId rec : recommendations) {
+			items.add(rec.getId());
+		}
+		return items;
+	}
 }

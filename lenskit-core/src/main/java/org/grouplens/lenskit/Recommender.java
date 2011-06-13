@@ -46,7 +46,7 @@ public interface Recommender {
     DynamicRatingPredictor getDynamicRatingPredictor();
     
     @Nullable
-    DynamicRatingItemRecommender getDynamicRatingItemRecommender();
+    DynamicItemRecommender getDynamicItemRecommender();
     
     @Nullable
     BasketRecommender getBasketRecommender();
@@ -55,13 +55,16 @@ public interface Recommender {
      * Get the rating DAO for this recommender session.
      * @return
      */
-    public RatingDataAccessObject getRatingDataAccessObject();
+    RatingDataAccessObject getRatingDataAccessObject();
+    
+    @Nullable
+    ItemRecommender getItemRecommender();
     
     /**
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
      */
-    public void close();
+    void close();
     
     
 }

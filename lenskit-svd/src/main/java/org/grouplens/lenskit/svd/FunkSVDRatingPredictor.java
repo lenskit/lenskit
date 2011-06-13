@@ -47,10 +47,10 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SVDRatingPredictor extends AbstractRatingPredictor {
+public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
 	protected final FunkSVDModel model;
 
-    public SVDRatingPredictor(RatingDataAccessObject dao, FunkSVDModel m) {
+    public FunkSVDRatingPredictor(RatingDataAccessObject dao, FunkSVDModel m) {
         super(dao);
         model = m;
     }

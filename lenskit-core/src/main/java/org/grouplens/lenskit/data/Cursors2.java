@@ -29,6 +29,8 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
@@ -62,6 +64,26 @@ public class Cursors2 {
         }
         list.trim();
         return list;
+    }
+    
+    public static LongSet makeSet(LongCursor cursor) {
+        LongOpenHashSet set = null;
+        try {
+            int n = cursor.getRowCount();
+            if (n < 0) n = 10;
+            set = new LongOpenHashSet(n);
+            while (cursor.hasNext()) {
+                set.add(cursor.nextLong());
+            }
+        } catch (OutOfMemoryError e) {
+            logger.error("Ran out of memory with {} users",
+                    set == null ? -1 : set.size());
+            throw e;
+        } finally {
+            cursor.close();
+        }
+        set.trim();
+        return set;
     }
 
     public static LongCursor wrap(LongIterator iter) {
