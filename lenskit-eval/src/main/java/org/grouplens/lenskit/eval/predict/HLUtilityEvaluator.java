@@ -78,7 +78,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 			LongList ideal = RankEvaluationUtils.sortKeys(ratings);
 			LongList actual = RankEvaluationUtils.sortKeys(predictions);
 			double idealUtility = computeHLU(ideal, ratings);
-			double actualUtility = computeHLU(actual, predictions);
+			double actualUtility = computeHLU(actual, ratings);
 			total += actualUtility/idealUtility;
 			nusers++;
 		}

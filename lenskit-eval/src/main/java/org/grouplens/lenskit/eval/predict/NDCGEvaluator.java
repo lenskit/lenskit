@@ -91,7 +91,7 @@ public class NDCGEvaluator implements PredictionEvaluator {
             LongList ideal = RankEvaluationUtils.sortKeys(ratings);
             LongList actual = RankEvaluationUtils.sortKeys(predictions);
             double idealGain = computeDCG(ideal, ratings);
-            double gain = computeDCG(actual, predictions);
+            double gain = computeDCG(actual, ratings);
             total += gain / idealGain;
             nusers += 1;
         }
