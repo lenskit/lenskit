@@ -26,15 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractRatingRecommender;
+import org.grouplens.lenskit.AbstractDynamicRatingItemRecommender;
 import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
-public class SlopeOneRatingRecommender extends AbstractRatingRecommender{
+public class SlopeOneItemRecommender extends AbstractDynamicRatingItemRecommender {
 
 	private SlopeOneRatingPredictor predictor; 
 	
@@ -42,7 +43,8 @@ public class SlopeOneRatingRecommender extends AbstractRatingRecommender{
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public SlopeOneRatingRecommender(SlopeOneRatingPredictor predictor) {
+    public SlopeOneItemRecommender(RatingDataAccessObject dao, SlopeOneRatingPredictor predictor) {
+        super(dao);
         this.predictor = predictor;
     }
 	

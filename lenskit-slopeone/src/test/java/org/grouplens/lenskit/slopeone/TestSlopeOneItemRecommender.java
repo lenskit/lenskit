@@ -23,11 +23,11 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RatingRecommender;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
@@ -40,7 +40,7 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestSlopeOneRatingRecommender {
+public class TestSlopeOneItemRecommender {
     private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
     private RecommenderEngine engine;
     
@@ -54,12 +54,12 @@ public class TestSlopeOneRatingRecommender {
         
         manager = new RatingCollectionDAO.Manager(rs);
         
-        RecommenderEngineFactory factory = new RecommenderEngineFactory();
-        factory.bindDefault(RatingPredictor.class, SlopeOneRatingPredictor.class);
-        factory.bindDefault(RatingRecommender.class, SlopeOneRatingRecommender.class);
-        factory.bindDefault(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
-        factory.bindDefault(BaselinePredictor.class, ItemUserMeanPredictor.class);
-        engine = factory.create(manager);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
+        factory.setComponent(ItemRecommender.class, SlopeOneItemRecommender.class);
+        factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
+        factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
+        engine = factory.create();
     }
     
     @Test
@@ -70,7 +70,7 @@ public class TestSlopeOneRatingRecommender {
             // These assert instanceof's are also assertNotNull's
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getRatingRecommender() instanceof SlopeOneRatingRecommender);
+            Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneItemRecommender);
 
             Assert.assertNull(rec.getBasketRecommender());
         } finally {

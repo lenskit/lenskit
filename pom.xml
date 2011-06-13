@@ -73,6 +73,7 @@
     <module>lenskit-eval-ant-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
+    <module>lenskit-slopeone</module>
     <module>lenskit-package</module>
   </modules>
 
