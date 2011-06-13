@@ -8,6 +8,7 @@
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-slopeone</artifactId>
   <version>0.0.3-SNAPSHOT</version>
+  <name>LensKit SlopeOne Recommender</name>
   <dependencies>
   	<dependency>
           <groupId>org.grouplens.lenskit</groupId>
