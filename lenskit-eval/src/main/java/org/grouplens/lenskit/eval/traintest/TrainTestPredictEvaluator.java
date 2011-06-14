@@ -207,7 +207,7 @@ public class TrainTestPredictEvaluator {
             }
 
             try {
-                logger.debug("Building {}", algorithm.getName());
+                logger.info("Building {}", algorithm.getName());
                 acc.startBuildTimer();
                 Recommender rec = algorithm.buildRecommender(tdao, ratingSnapshot);
                 RatingPredictor pred = rec.getRatingPredictor();
