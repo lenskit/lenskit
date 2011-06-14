@@ -52,7 +52,7 @@ public abstract class AbstractPredictItemRecommender extends AbstractItemRecomme
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
 
 		SparseVector predictions = predictor.predict(user, candidates);
-		assert(SparseVector.isComplete(predictions));
+		assert(predictions.isComplete());
 		if (predictions.isEmpty()) return Collections.emptyList();
 		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
 		for (Long2DoubleMap.Entry pred: predictions.fast()) {

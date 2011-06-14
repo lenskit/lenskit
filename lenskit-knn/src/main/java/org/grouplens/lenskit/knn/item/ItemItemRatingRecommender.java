@@ -19,6 +19,8 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Arrays;
@@ -30,6 +32,7 @@ import org.grouplens.lenskit.AbstractDynamicPredictItemRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
@@ -56,7 +59,7 @@ public class ItemItemRatingRecommender extends AbstractDynamicPredictItemRecomme
         if (!exclude.isEmpty())
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
         SparseVector predictions = predictor.predict(user, ratings, candidates);
-        assert(SparseVector.isComplete(predictions));
+        assert(predictions.isComplete());
         if (predictions.isEmpty()) return Collections.emptyList();
         PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
         for (Long2DoubleMap.Entry pred: predictions.fast()) {
@@ -80,7 +83,20 @@ public class ItemItemRatingRecommender extends AbstractDynamicPredictItemRecomme
     }
     
     @Override
-    protected LongSet getPredictableItems(long user, SparseVector ratings) {
-    	return predictor.getModel().getItemUniverse();
+    public LongSet getPredictableItems(long user, SparseVector ratings) {
+        ItemItemModel model = predictor.getModel();
+    	if (model.getBaselinePredictor() != null) {
+            return model.getItemUniverse();
+        } else {
+            LongSet items = new LongOpenHashSet();
+            LongIterator iter = ratings.keySet().iterator();
+            while (iter.hasNext()) {
+                final long item = iter.nextLong();
+                for (IndexedItemScore n: model.getNeighbors(item)) {
+                    items.add(model.getItem(n.getIndex()));
+                }
+            }
+            return items;
+        }
     }
 }

@@ -20,9 +20,6 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 
@@ -89,19 +86,7 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 		else return preds.copy(true);
 	}
 	
-	public LongSet getPredictableItems(long user, SparseVector ratings) {
-		if (model.getBaselinePredictor() != null) return model.getItemUniverse();
-		else {
-			LongSet predictable = new LongOpenHashSet();
-			for (long id1 : model.getItemUniverse()) {
-				LongIterator iter = ratings.keySet().iterator();
-				int nusers = 0;
-				while (iter.hasNext() && nusers == 0) {
-					nusers += model.getCoratings(id1, iter.next());
-				}
-				if (nusers > 0) predictable.add(id1);
-			}
-			return predictable;
-		}		
+	public SlopeOneModel getModel() {
+		return model;
 	}
 }

@@ -215,7 +215,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The sorted list of keys of this vector.
      */
     public LongArrayList keysByValue(boolean decreasing) {
-        if (!isComplete(this))
+        if (!isComplete())
             throw new IllegalStateException();
         long[] skeys = Arrays.copyOf(keys, size);
         
@@ -418,6 +418,13 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             v.values = DoubleArrays.copy(v.values);
         return v;
     }
+    
+    public boolean isComplete() {
+        for (int i = 0; i < size; i++) {
+    		if (Double.isNaN(values[i])) return false;
+    	}
+    	return true;
+    }
 
     final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
         int pos = 0;
@@ -572,12 +579,5 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             }
         }
         return wrap(keys, values, length);
-    }
-    
-    public static boolean isComplete(SparseVector v) {
-    	for (double val : v.values()) {
-    		if (Double.isNaN(val)) return false;
-    	}
-    	return true;
     }
 }

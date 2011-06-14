@@ -54,7 +54,7 @@ public class UserUserRatingRecommender extends AbstractDynamicPredictItemRecomme
 		if (!exclude.isEmpty())
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
 		SparseVector predictions = predictor.predict(user, ratings, candidates);
-		assert(SparseVector.isComplete(predictions));
+		assert(predictions.isComplete());
 		if (predictions.isEmpty()) return Collections.emptyList();
 		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
 		for (Long2DoubleMap.Entry pred: predictions.fast()) {
