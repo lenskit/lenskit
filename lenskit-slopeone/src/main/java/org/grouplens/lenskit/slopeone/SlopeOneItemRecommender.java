@@ -20,13 +20,16 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractDynamicRatingItemRecommender;
+import org.grouplens.lenskit.AbstractDynamicPredictItemRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -35,7 +38,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
-public class SlopeOneItemRecommender extends AbstractDynamicRatingItemRecommender {
+public class SlopeOneItemRecommender extends AbstractDynamicPredictItemRecommender {
 
 	private SlopeOneRatingPredictor predictor; 
 	
@@ -44,19 +47,20 @@ public class SlopeOneItemRecommender extends AbstractDynamicRatingItemRecommende
      * @param predictor The predictor to use.
      */
     public SlopeOneItemRecommender(RatingDataAccessObject dao, SlopeOneRatingPredictor predictor) {
-        super(dao);
+        super(dao, predictor);
         this.predictor = predictor;
     }
 	
 	@Override
     protected List<ScoredId> recommend(long user, SparseVector ratings, int n,
             LongSet candidates, LongSet exclude) {
-        if (candidates == null)
-            candidates = predictor.getPredictableItems(user, ratings);
+		if (candidates == null)
+            candidates = getPredictableItems(user, ratings);
         if (!exclude.isEmpty())
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
-        
         SparseVector predictions = predictor.predict(user, ratings, candidates);
+        assert(predictions.isComplete());
+        if (predictions.isEmpty()) return Collections.emptyList();
         PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
         for (Long2DoubleMap.Entry pred: predictions.fast()) {
             final double v = pred.getDoubleValue();
@@ -65,11 +69,33 @@ public class SlopeOneItemRecommender extends AbstractDynamicRatingItemRecommende
             }
         }
 
-        ArrayList<ScoredId> finalPredictions =
-            new ArrayList<ScoredId>(n >= 0 ? n : queue.size());
-        for (int i = 0; !queue.isEmpty() && (n < 0 || i < n); i++) {
-            finalPredictions.add(queue.poll());
+        ScoredId[] finalPredictions;
+        if (n < 0 || n > queue.size()) {
+        	finalPredictions = new ScoredId[queue.size()];
+        } else {
+        	finalPredictions = new ScoredId[n];
+        	for (int i = queue.size() - n; i > 0; i--) queue.poll();
         }
-        return finalPredictions;
+        for (int i = finalPredictions.length - 1; i >= 0; i--) {
+            finalPredictions[i] = queue.poll();
+        }
+        return Arrays.asList(finalPredictions);
+    }
+	
+	@Override
+	protected LongSet getPredictableItems(long user, SparseVector ratings) {
+		if (predictor.getModel().getBaselinePredictor() != null) return predictor.getModel().getItemUniverse();
+		else {
+			LongSet predictable = new LongOpenHashSet();
+			for (long id1 : predictor.getModel().getItemUniverse()) {
+				LongIterator iter = ratings.keySet().iterator();
+				int nusers = 0;
+				while (iter.hasNext() && nusers == 0) {
+					nusers += predictor.getModel().getCoratings(id1, iter.next());
+				}
+				if (nusers > 0) predictable.add(id1);
+			}
+			return predictable;
+		}		
 	}
 }
