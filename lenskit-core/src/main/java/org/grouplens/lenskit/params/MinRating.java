@@ -27,7 +27,9 @@ import java.lang.annotation.Target;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
 
-
+/**
+ * The smallest permitted rating value.
+ */
 @Documented
 @DefaultDouble(1)
 @Parameter(Double.class)

@@ -16,24 +16,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
-
 
 /**
- * The largest permitted rating value.
+ * Baseline predictors.
+ * 
+ * <p>Baseline predictors are like rating predictors, but they provide an unboxed
+ * {@link org.grouplens.lenskit.data.vector.SparseVector}-based interface and are
+ * guaranteed to be able to predict for all users and items.  They are used for
+ * things like normalizations and starting points for iterative methods.</p>
  */
-@Documented
-@DefaultDouble(5)
-@Parameter(Double.class)
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface MaxRating { }
+package org.grouplens.lenskit.baseline;

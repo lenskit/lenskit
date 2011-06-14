@@ -65,6 +65,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
+    <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
   </properties>
 
   <modules>
@@ -108,6 +109,9 @@
                 <head>Review:</head>
               </tag>
             </tags>
+            <footer><![CDATA[
+              <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
+            ]]></footer>
           </configuration>
         </plugin>
         <plugin>

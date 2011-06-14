@@ -25,8 +25,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Baseline predictor used by the normalizer.  The {@link BaselineSubtractingNormalizer}
+ * uses this annotation on its baseline predictor so that the normalization
+ * baseline can be set to a different baseline from the other baselines.
+ */
 @Documented
 @Parameter(BaselinePredictor.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })

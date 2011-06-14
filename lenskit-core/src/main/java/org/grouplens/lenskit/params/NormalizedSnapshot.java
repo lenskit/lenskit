@@ -29,6 +29,11 @@ import org.grouplens.lenskit.norm.NormalizedRatingSnapshot;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Normalized version of the rating snapshot.  This annotation is applied to
+ * {@link RatingSnapshot} parameters to request the normalized version instead
+ * of the raw version.  By default, that is supplied by {@link NormalizedRatingSnapshot}.
+ */
 @Documented
 @DefaultClass(NormalizedRatingSnapshot.class)
 @Parameter(RatingSnapshot.class)

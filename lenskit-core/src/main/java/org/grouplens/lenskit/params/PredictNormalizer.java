@@ -29,6 +29,11 @@ import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Normalizers to be used in the predict phase (as opposed to the build phase).
+ * Some recommenders support different recommenders for building and predicting;
+ * in that case, the predict normalizer will be requested with this annotation.
+ */
 @Documented
 @DefaultClass(IdentityUserRatingVectorNormalizer.class)
 @Parameter(UserRatingVectorNormalizer.class)
