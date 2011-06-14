@@ -22,7 +22,11 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleCollections;
+import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
@@ -194,6 +198,54 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     public LongSortedSet keySet() {
         return new LongSortedArraySet(keys, 0, size);
+    }
+    
+    /**
+     * Return the keys of this vector sorted by value.
+     * @return A list of keys in nondecreasing order of value.
+     * @see #keysByValue(boolean)
+     */
+    public LongArrayList keysByValue() {
+        return keysByValue(false);
+    }
+    
+    /**
+     * Get the keys of this vector sorted by value.
+     * @param decreasing If <var>true</var>, sort in decreasing order.
+     * @return The sorted list of keys of this vector.
+     */
+    public LongArrayList keysByValue(boolean decreasing) {
+        if (!isComplete(this))
+            throw new IllegalStateException();
+        long[] skeys = Arrays.copyOf(keys, size);
+        
+        LongComparator cmp;
+        // Set up the comparator. We use the key as a secondary comparison to get
+        // a reproducible sort irrespective of sorting algorithm.
+        if (decreasing) {
+            cmp = new AbstractLongComparator() {
+                public int compare(long k1, long k2) {
+                    int c = Double.compare(get(k2), get(k1));
+                    if (c != 0)
+                        return c;
+                    else
+                        return Longs.compare(k1, k2);
+                }
+            };
+        } else {
+            cmp = new AbstractLongComparator() {
+                public int compare(long k1, long k2) {
+                    int c = Double.compare(get(k1), get(k2));
+                    if (c != 0)
+                        return c;
+                    else
+                        return Longs.compare(k1, k2);
+                }
+            };
+        }
+        
+        LongArrays.quickSort(skeys, cmp);
+        return LongArrayList.wrap(skeys);
     }
 
     public DoubleCollection values() {

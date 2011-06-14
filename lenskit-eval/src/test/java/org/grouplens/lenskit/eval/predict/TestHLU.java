@@ -20,55 +20,58 @@ package org.grouplens.lenskit.eval.predict;
 
 import static org.junit.Assert.assertEquals;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.junit.Ignore;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Test;
 
 public class TestHLU {
+    long[] items = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    
+    double[] ratings1 = {5, 4, 4, 3, 5, 3, 4, 3, 2, 5};
+    double[] ratings2 = {5, 5, 4, 4, 4, 3, 2, 2, 3, 4};
+    double[] ratings3 = {4, 5, 4, 2, 3, 1, 3, 4, 5, 2};
+    
+    double[] predictions1 = {5, 5, 4, 4, 4, 3, 2, 2, 3, 4};
+    double[] predictions2 = {4, 4, 5, 2, 3, 2, 3, 4, 4, 3};
+    double[] predictions3 = {4, 4, 5, 3, 3, 4, 5, 4, 4, 4};
+    
+    SparseVector rv1 = SparseVector.wrap(items, ratings1);
+    SparseVector rv2 = SparseVector.wrap(items, ratings2);
+    SparseVector rv3 = SparseVector.wrap(items, ratings3);
+    
+    SparseVector pv1 = SparseVector.wrap(items, predictions1);
+    SparseVector pv2 = SparseVector.wrap(items, predictions2);
+    SparseVector pv3 = SparseVector.wrap(items, predictions3);
 	
 	@Test
 	public void testComputeHLU() {
-
 		HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
-		long[] items = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10};
-		double[] ratings1 = {5, 4, 4, 3, 5, 3, 4, 3, 2, 5};
-		double[] ratings2 = {5, 5, 4, 4, 4, 3, 2, 2, 3, 4};
-		double[] ratings3 = {4, 5, 4, 2, 3, 1, 3, 4, 5, 2};
-		MutableSparseVector v1 = MutableSparseVector.wrap(items,ratings1);
-		MutableSparseVector v2 = MutableSparseVector.wrap(items, ratings2);
-		MutableSparseVector v3 = MutableSparseVector.wrap(items, ratings3);
-		assertEquals(eval.computeHLU(RankEvaluationUtils.sortKeys(v1), v1), 21.9232, 0.0001);
-		assertEquals(eval.computeHLU(RankEvaluationUtils.sortKeys(v2),v2), 20.9661, 0.0001);
-		assertEquals(eval.computeHLU(RankEvaluationUtils.sortKeys(v3),v3), 20.0381, 0.0001);
+		
+		// evaluate rating scores
+		assertEquals(21.9232, eval.computeHLU(rv1.keysByValue(true), rv1), 0.0001);
+		assertEquals(20.9661, eval.computeHLU(rv2.keysByValue(true), rv2), 0.0001);
+		assertEquals(20.0381, eval.computeHLU(rv3.keysByValue(true), rv3), 0.0001);
+		
+		// evaluate prediction scores
+		assertEquals(20.8640, eval.computeHLU(pv1.keysByValue(true), rv1), 0.0001);
+        assertEquals(19.6380, eval.computeHLU(pv2.keysByValue(true), rv2), 0.0001);
+        assertEquals(17.9990, eval.computeHLU(pv3.keysByValue(true), rv3), 0.0001);
 	}
 	
-	@Test @Ignore("values out of date")
+	@Test
 	public void testAccumulator() {
-	    // FIXME: Update for corrected computation
-		
-		HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
-		long[] items = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10};
-		double[] ratings1 = {5, 4, 4, 3, 5, 3, 4, 3, 2, 5};
-		double[] predictions1 = {5, 5, 4, 4, 4, 3, 2, 2, 3, 4};
-		double[] ratings2 = {4, 5, 4, 2, 3, 1, 3, 4, 5, 2};
-		double[] predictions2 = {4, 4, 5, 2, 3, 2, 3, 4, 4, 3};
-		double[] ratings3 = {5, 4, 5, 3, 2, 3, 4, 5, 3, 5};
-		double[] predictions3 = {4, 4, 5, 3, 3, 4, 5, 4, 4, 4};
-		MutableSparseVector rate1 = MutableSparseVector.wrap(items,ratings1);
-		MutableSparseVector predict1 = MutableSparseVector.wrap(items, predictions1);
-		MutableSparseVector rate2 = MutableSparseVector.wrap(items, ratings2);
-		MutableSparseVector predict2 = MutableSparseVector.wrap(items, predictions2);
-		MutableSparseVector rate3 = MutableSparseVector.wrap(items, ratings3);
-		MutableSparseVector predict3 = MutableSparseVector.wrap(items, predictions3);
+	    HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
 		HLUtilityEvaluator.Accum acc = eval.makeAccumulator();
-		acc.evaluatePredictions(1, rate1, predict1);
-		assertEquals(acc.nusers, 1);
-		assertEquals(acc.total, 0.9563, 0.0001);
-		acc.evaluatePredictions(2, rate2, predict2);
-		assertEquals(acc.nusers, 2);
-		assertEquals(acc.total, 1.9397, 0.0001);
-		acc.evaluatePredictions(3, rate3, predict3);
-		assertEquals(acc.nusers, 3);
-		assertEquals(acc.total, 2.9201, 0.0001);
+		
+		acc.evaluatePredictions(1, rv1, pv1);
+		assertEquals(1, acc.nusers);
+		assertEquals(0.9517, acc.total, 0.0001);
+		
+		acc.evaluatePredictions(2, rv2, pv2);
+		assertEquals(2, acc.nusers);
+		assertEquals(1.8883, acc.total, 0.0001);
+		
+		acc.evaluatePredictions(3, rv3, pv3);
+		assertEquals(3, acc.nusers);
+		assertEquals(2.7866, acc.total, 0.0001);
 	}
 }

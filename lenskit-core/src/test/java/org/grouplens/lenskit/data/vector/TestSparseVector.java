@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.data.vector;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -456,6 +457,7 @@ public class TestSparseVector {
     /**
      * Test the set constructor.
      */
+    @Test
     public void testSetConstructor() {
         long[] keys = {2, 5};
         MutableSparseVector v = new MutableSparseVector(new LongSortedArraySet(keys));
@@ -467,6 +469,7 @@ public class TestSparseVector {
     /**
      * Test the set(long, double) method.
      */
+    @Test
     public void testSet() {
         assertIsNaN(emptyVector().set(5, 5));
         MutableSparseVector v = simpleVector();
@@ -477,11 +480,19 @@ public class TestSparseVector {
     /**
      * Test the add(long, double) method.
      */
+    @Test
     public void testAddToItem() {
         assertIsNaN(emptyVector().add(5, 5));
         MutableSparseVector v = simpleVector();
         assertEquals(5.5, v.add(7, 2), EPSILON);
         assertEquals(5.5, v.get(7), EPSILON);
         assertEquals(1.5, v.get(3), EPSILON);
+    }
+    
+    @Test
+    public void testSortedKeys() {
+        assertArrayEquals(new long[]{3,8,7}, simpleVector().keysByValue().toLongArray());
+        assertArrayEquals(new long[]{7,8,3}, simpleVector().keysByValue(true).toLongArray());
+        assertArrayEquals(new long[]{5,3,8}, simpleVector2().keysByValue(true).toLongArray());
     }
 }

@@ -88,8 +88,8 @@ public class NDCGEvaluator implements PredictionEvaluator {
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-            LongList ideal = RankEvaluationUtils.sortKeys(ratings);
-            LongList actual = RankEvaluationUtils.sortKeys(predictions);
+            LongList ideal = ratings.keysByValue(true);
+            LongList actual = predictions.keysByValue(true);
             double idealGain = computeDCG(ideal, ratings);
             double gain = computeDCG(actual, ratings);
             total += gain / idealGain;
