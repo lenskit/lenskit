@@ -18,7 +18,8 @@
  */
 package org.grouplens.lenskit.svd;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -38,13 +39,10 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.svd.params.IterationCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Predictor output has changed")
 public class TestFunkSVDRecommender {
 	
 	private static Recommender svdRecommender;
@@ -74,7 +72,6 @@ public class TestFunkSVDRecommender {
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
 		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
 		factory.setComponent(ItemRecommender.class, FunkSVDItemRecommender.class);
-		factory.set(IterationCount.class, 10);
 		RecommenderEngine engine = factory.create();
 		svdRecommender = engine.open();
 		recommender = svdRecommender.getItemRecommender();
