@@ -18,17 +18,19 @@
  */
 package org.grouplens.lenskit.svd;
 
+import org.grouplens.lenskit.params.MaxRating;
+import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.util.DoubleFunction;
 
 public final class RatingRangeClamp implements DoubleFunction {
 
-    private double minRating, maxRating;
+    private final double minRating, maxRating;
     
     public RatingRangeClamp() {
         this(1, 5);
     }
 
-    public RatingRangeClamp(double min, double max) {
+    public RatingRangeClamp(@MinRating double min, @MaxRating double max) {
         minRating = min;
         maxRating = max;
     }
@@ -39,14 +41,7 @@ public final class RatingRangeClamp implements DoubleFunction {
     public double getMinRating() {
         return minRating;
     }
-
-    /**
-     * @param minRating the minRating to set
-     */
-    public void setMinRating(double minRating) {
-        this.minRating = minRating;
-    }
-
+    
     /**
      * @return the maxRating
      */
@@ -54,14 +49,7 @@ public final class RatingRangeClamp implements DoubleFunction {
         return maxRating;
     }
 
-    /**
-     * @param maxRating the maxRating to set
-     */
-    public void setMaxRating(double maxRating) {
-        this.maxRating = maxRating;
-    }
-
-    @Override
+        @Override
     public double apply(double v) {
         if (v < minRating) return minRating;
         else if (v > maxRating) return maxRating;
