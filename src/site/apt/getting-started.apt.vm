@@ -113,9 +113,9 @@ Configuring and Creating the Recommender
   }
 +-----------------------------------------------------------------+
 
-Once the recommender engine is created, it can be shared across
-threads, each of which is free to open its own recommender and
-interact with the system.
+  Once the recommender engine is created, it can be shared across
+  threads, each of which is free to open its own recommender and
+  interact with the system.
 
 Further Topics
 
@@ -123,6 +123,11 @@ Further Topics
   LensKit was designed and why.  Also, the {{{./apidocs/}API
   documentation}} and the {{{./xref/}sources}} provide more
   information about how LensKit works and how to use it.
+
+  There are many parameters provided by the various LensKit
+  recommenders.  Consult their JavaDoc for information on their
+  configurable components, and parameters are typically documented in
+  <<<.params>>> packages.
 
 Getting LensKit from Mercurial
 
