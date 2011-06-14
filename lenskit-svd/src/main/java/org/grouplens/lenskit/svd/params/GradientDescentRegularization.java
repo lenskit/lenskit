@@ -26,7 +26,15 @@ import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
+import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 
+/**
+ * The regularization factor applied in the gradient descent update for learning
+ * features in FunkSVD.  For a regularization term \(\lambda\) and current value,
+ * \(x\), the update for each step is decreased by \(\lambda x\).
+ * 
+ *  @see FunkSVDModelBuilder
+ */
 @Documented
 @DefaultDouble(0.015)
 @Parameter(Double.class)

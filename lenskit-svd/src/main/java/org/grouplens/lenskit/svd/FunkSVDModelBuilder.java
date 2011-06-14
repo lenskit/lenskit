@@ -47,11 +47,6 @@ import org.slf4j.LoggerFactory;
  * This at Home</a>. This implementation is based in part on
  * <a href="http://www.timelydevelopment.com/demos/NetflixPrize.aspx">Timely
  * Development's sample code</a>.
- * 
- * <p>The builder users a 
- * {@link org.grouplens.lenskit.norm.NormalizedRatingSnapshot NormalizedRatingSnapshot},
- *  so normalization is handled separately from the SVD build. This has the downside
- *  that we cannot easily use Funk's clamping functions to further optimize the recommender.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

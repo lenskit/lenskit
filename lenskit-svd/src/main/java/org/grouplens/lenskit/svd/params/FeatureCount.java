@@ -27,8 +27,11 @@ import java.lang.annotation.Target;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * The number of latent features to use in an SVD-based recommender.
+ */
 @Documented
-@DefaultInt(100)
+@DefaultInt(40)
 @Parameter(Integer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

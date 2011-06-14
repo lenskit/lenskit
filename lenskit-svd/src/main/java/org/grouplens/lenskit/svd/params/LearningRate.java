@@ -26,7 +26,13 @@ import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
+import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 
+/**
+ * The learning rate for gradient descent.
+ * 
+ * @see FunkSVDModelBuilder
+ */
 @Documented
 @DefaultDouble(1e-3)
 @Parameter(Double.class)

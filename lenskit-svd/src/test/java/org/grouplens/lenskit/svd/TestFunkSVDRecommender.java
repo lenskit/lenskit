@@ -39,6 +39,7 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,6 +73,8 @@ public class TestFunkSVDRecommender {
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
 		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
 		factory.setComponent(ItemRecommender.class, FunkSVDItemRecommender.class);
+		// FIXME: Don't use 100 features.
+		factory.set(FeatureCount.class, 100);
 		RecommenderEngine engine = factory.create();
 		svdRecommender = engine.open();
 		recommender = svdRecommender.getItemRecommender();

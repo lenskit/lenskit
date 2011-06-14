@@ -16,28 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd.params;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
-import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 
 /**
- * Threshold for convergence to stop training a feature.  If no {@link IterationCount}
- * is specified, then each feature is trained until the difference in RMSE between
- * two subsequent iterations is less than this value.
- * 
- * @see FunkSVDModelBuilder
+ * Parameters for SVD-based recommenders.
  */
-@Documented
-@DefaultDouble(1e-3)
-@Parameter(Double.class)
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface TrainingThreshold { }
+package org.grouplens.lenskit.svd.params;

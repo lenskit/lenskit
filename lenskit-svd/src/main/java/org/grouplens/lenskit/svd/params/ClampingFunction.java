@@ -28,6 +28,11 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.util.DoubleFunction;
 
+/**
+ * Clamping function used in the FunkSVD recommender.  After each feature's
+ * value is added to accumulate a prediction, this function is applied to the
+ * result.
+ */
 @Documented
 @DefaultClass(DoubleFunction.Identity.class)
 @Parameter(DoubleFunction.class)

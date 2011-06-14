@@ -26,7 +26,14 @@ import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
+import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 
+/**
+ * The number of iterations to use per feature.  If 0, then each feature is
+ * trained to convergence (defined by {@link TrainingThreshold}).
+ * 
+ * @see FunkSVDModelBuilder
+ */
 @Documented
 @DefaultInt(0)
 @Parameter(Integer.class)
