@@ -24,9 +24,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.lenskit.knn.SignificanceWeight;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * The inner similarity function to be used when using {@link SignificanceWeight}
+ * to weight similarities.  Bind {@link SignificanceWeight} to either {@link ItemSimilarity}
+ * or {@link UserSimilarity}, then bind the internal similarity function to this
+ * parameter.
+ * 
+ *  @see SignificanceWeight
+ *  @see WeightThreshold
+ */
 @Documented
 @Parameter(Similarity.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })

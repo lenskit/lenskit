@@ -27,6 +27,10 @@ import java.lang.annotation.Target;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Number of neighbors to consider when building a prediction.  Used by both
+ * user-user and item-item CF.
+ */
 @Documented
 @DefaultInt(30)
 @Parameter(Integer.class)

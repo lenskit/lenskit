@@ -24,9 +24,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.lenskit.knn.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
+ * similar neighbors are retained for each item in the default {@link SimilarityMatrixAccumulator}.
+ */
 @Documented
 @DefaultInt(250)
 @Parameter(Integer.class)

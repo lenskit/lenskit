@@ -29,6 +29,9 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Similarity function for users in user-user CF.
+ */
 @Documented
 @DefaultClass(PearsonCorrelation.class)
 @Parameter(Similarity.class)

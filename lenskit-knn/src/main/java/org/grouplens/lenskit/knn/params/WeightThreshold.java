@@ -24,9 +24,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.lenskit.knn.SignificanceWeight;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * The weight threshold for significance weighting.  If the vectors in question
+ * have fewer than <i>n</i> keys in common, then the similarity is decreased.
+ * 
+ * @see SignificanceWeight
+ * @see WeightedSimilarity
+ */
 @Documented
 @DefaultInt(0)
 @Parameter(Integer.class)

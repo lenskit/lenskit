@@ -27,6 +27,13 @@ import java.lang.annotation.Target;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
 
+/**
+ * Shrinkage constant for similarity functions.  This constant is added to the
+ * denominator of functions that support it, shrinking them towards 0 when there
+ * are few items or users in common between the two entities being compared.
+ * 
+ * @todo Add citation to relevant literature.
+ */
 @Documented
 @DefaultDouble(0.0)
 @Parameter(Double.class)
