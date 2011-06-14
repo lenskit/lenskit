@@ -8,7 +8,7 @@ About LensKit
   with an emphasis on collaborative filtering.  It is developed by
   {{{http://www.grouplens.org}GroupLens Research}}.
 
-  LensKit is currently alpha softare (see
+  LensKit is currently beta softare (see
   {{{./versioning.html}Versioning}} for more information).  Please
   download it, try it out, and provide us with feedback on how it
   works for you, but be advised that it is still very much a
