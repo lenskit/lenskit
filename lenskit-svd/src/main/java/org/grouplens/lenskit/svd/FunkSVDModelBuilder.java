@@ -28,7 +28,7 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
-import org.grouplens.lenskit.svd.params.GradientDescentRegularization;
+import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
@@ -83,7 +83,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         trainingThreshold = threshold;
     }
     
-    @GradientDescentRegularization
+    @RegularizationTerm
     public void setGradientDescentRegularization(double regularization) {
         trainingRegularization = regularization;
     }

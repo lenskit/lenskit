@@ -40,4 +40,4 @@ import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 @Parameter(Double.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface GradientDescentRegularization { }
+public @interface RegularizationTerm { }
