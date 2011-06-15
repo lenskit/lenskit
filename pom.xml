@@ -173,7 +173,7 @@
                   <footer><![CDATA[
                     <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
                   ]]></footer>
-                  <excludePackages>org.grouplens.lenskit.pico</excludePackages>
+                  <excludePackageNames>org.grouplens.lenskit.pico</excludePackageNames>
                   <detectJavaApiLink>false</detectJavaApiLink>
                   <links>
                     <link>http://download.oracle.com/javase/6/docs/api/</link>
