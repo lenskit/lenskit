@@ -76,12 +76,7 @@ public class LenskitRecommender implements Recommender {
     public DynamicRatingItemRecommender getDynamicItemRecommender() {
         return container.getComponent(DynamicRatingItemRecommender.class);
     }
-
-    @Override
-    public BasketRecommender getBasketRecommender() {
-        return container.getComponent(BasketRecommender.class);
-    }
-
+    
     @Override
     public void close() {
         if (shouldCloseDao)

@@ -27,33 +27,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
- * Base class for item recommenders that use a dynamic rating predictor to generate recommendations.
- * Implements all methods required by {@link AbstractDynamicRatingItemRecommender}.
+ * Base class for item recommenders that use a rating predictor to generate
+ * recommendations. Implements all methods required by
+ * {@link AbstractItemRecommender}.
  */
-public abstract class AbstractDynamicPredictItemRecommender extends AbstractDynamicRatingItemRecommender {
+public class PredictorBasedItemRecommender extends AbstractItemRecommender {
 	
-	protected final DynamicRatingPredictor predictor;
+	protected final RatingPredictor predictor;
 	
-	protected AbstractDynamicPredictItemRecommender(RatingDataAccessObject dao,
-			DynamicRatingPredictor predictor) {
+	protected PredictorBasedItemRecommender(RatingDataAccessObject dao, RatingPredictor predictor) {
 		super(dao);
 		this.predictor = predictor;
 	}
-
-	protected List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
-	    // TODO Share code with corresponding method in AbstractPredictItemRecommender.
+	
+	protected List<ScoredId> recommend(long user, int n, LongSet candidates, LongSet exclude) {
 		if (candidates == null)
-			candidates = getPredictableItems(user, ratings);
+			candidates = getPredictableItems(user);
 		if (!exclude.isEmpty())
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
 
-		SparseVector predictions = predictor.predict(user, ratings, candidates);
+		SparseVector predictions = predictor.predict(user, candidates);
 		assert(predictions.isComplete());
 		if (predictions.isEmpty()) return Collections.emptyList();
 		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
@@ -80,9 +80,13 @@ public abstract class AbstractDynamicPredictItemRecommender extends AbstractDyna
 	
 	/**
 	 * Determine the items for which predictions can be made for a certain user.
+	 * This implementation is naive and asks the DAO for all items; subclasses
+	 * should override it with something more efficient if practical.
 	 * @param user The user's ID.
-	 * @param ratings The user's rating vector.
-	 * @return All items for which predictions can be made for the user.
+	 * @return All items for which predictions can be generated for the user.
 	 */
-	protected abstract LongSet getPredictableItems(long user, SparseVector ratings);
+	protected LongSet getPredictableItems(long user) {
+	    return Cursors2.makeSet(dao.getItems());
+	}
+
 }

@@ -27,10 +27,11 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Base class implementing {@link RatingPredictor} in terms of 
- * {@link DynamicRatingPredictor}.
+ * Base class for dynamic rating predictors.  Implementers only need to write
+ * a {@link #predict(long, SparseVector, Collection)} method to have both a
+ * {@link RatingPredictor} and a {@link DynamicRatingPredictor}.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public abstract class AbstractDynamicRatingPredictor extends AbstractRatingPredictor implements DynamicRatingPredictor {
     protected AbstractDynamicRatingPredictor(RatingDataAccessObject dao) {

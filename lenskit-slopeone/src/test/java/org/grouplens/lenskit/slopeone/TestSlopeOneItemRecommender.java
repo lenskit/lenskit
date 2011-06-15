@@ -71,8 +71,6 @@ public class TestSlopeOneItemRecommender {
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneItemRecommender);
-
-            Assert.assertNull(rec.getBasketRecommender());
         } finally {
             rec.close();
         }

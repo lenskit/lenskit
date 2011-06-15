@@ -71,7 +71,6 @@ public class TestFunkSVDRecommenderBuild {
 			assertTrue(rec.getRatingPredictor() instanceof FunkSVDRatingPredictor);
 			assertTrue(rec.getItemRecommender() instanceof FunkSVDItemRecommender);
 
-			assertNull(rec.getBasketRecommender());
 			assertNull(rec.getDynamicItemRecommender());
 			assertNull(rec.getDynamicRatingPredictor());
 

@@ -72,6 +72,5 @@ public class TestItemItemRecommenderBuild {
 		assertTrue(rec.getDynamicRatingPredictor() instanceof ItemItemRatingPredictor);
 		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
 		assertTrue(rec.getDynamicItemRecommender() instanceof ItemItemRatingRecommender);
-		assertNull(rec.getBasketRecommender());
 	}
 }

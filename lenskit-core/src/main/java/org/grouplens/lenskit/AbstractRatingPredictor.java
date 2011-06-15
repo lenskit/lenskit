@@ -29,6 +29,15 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
+/**
+ * Base class to make rating predictors easier to implement.  Delegates 
+ * {@link #predict(long, long)} to {@link #predict(long, Collection)} and handles
+ * providing access to the DAO.  Also provides {@link #getUserRatings(long)} to
+ * make rating access easy.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
 public abstract class AbstractRatingPredictor implements RatingPredictor {
 
     private RatingDataAccessObject dao;

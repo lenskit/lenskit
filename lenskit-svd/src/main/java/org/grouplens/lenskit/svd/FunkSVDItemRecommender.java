@@ -26,14 +26,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractPredictItemRecommender;
-import org.grouplens.lenskit.data.Cursors2;
+import org.grouplens.lenskit.PredictorBasedItemRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public class FunkSVDItemRecommender extends AbstractPredictItemRecommender {
+public class FunkSVDItemRecommender extends PredictorBasedItemRecommender {
 	
 	private final FunkSVDRatingPredictor predictor;
 	
@@ -71,10 +70,5 @@ public class FunkSVDItemRecommender extends AbstractPredictItemRecommender {
 			finalPredictions[i] = queue.poll();
 		}
 		return Arrays.asList(finalPredictions);
-	}
-	
-	@Override
-	protected LongSet getPredictableItems(long user) {
-		return Cursors2.makeSet(dao.getItems());
 	}
 }

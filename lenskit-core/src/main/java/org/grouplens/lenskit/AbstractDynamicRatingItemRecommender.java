@@ -33,12 +33,12 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
- * Base class for dynamic item recommenders.  It implements all methods required by
- * {@link DynamicRatingItemRecommender} by delegating them to a single method with a
- * Fastutil-based interface.
+ * Base class for rating-based dynamic item recommenders. It implements all
+ * methods required by {@link DynamicRatingItemRecommender} by delegating them
+ * to a single method with a Fastutil-based interface.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemRecommender implements DynamicRatingItemRecommender {
 

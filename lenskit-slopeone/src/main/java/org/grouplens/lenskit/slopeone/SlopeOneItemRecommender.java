@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractDynamicPredictItemRecommender;
+import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -38,9 +38,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
-public class SlopeOneItemRecommender extends AbstractDynamicPredictItemRecommender {
-    // FIXME Use AbstractDynamicPredictItemRecommender for this
-
+public class SlopeOneItemRecommender extends PredictorBasedDRItemRecommender {
 	private SlopeOneRatingPredictor predictor; 
 	
 	/**

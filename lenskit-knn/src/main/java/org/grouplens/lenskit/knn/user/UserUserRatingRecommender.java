@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.lenskit.AbstractDynamicPredictItemRecommender;
+import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -39,7 +39,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRatingRecommender extends AbstractDynamicPredictItemRecommender {
+public class UserUserRatingRecommender extends PredictorBasedDRItemRecommender {
 	protected final UserUserRatingPredictor predictor;
 
 	public UserUserRatingRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
@@ -75,10 +75,5 @@ public class UserUserRatingRecommender extends AbstractDynamicPredictItemRecomme
 			finalPredictions[i] = queue.poll();
 		}
 		return Arrays.asList(finalPredictions);
-	}
-
-	@Override
-	protected LongSet getPredictableItems(long user, SparseVector ratings) {
-		return Cursors2.makeSet(dao.getItems());
 	}
 }

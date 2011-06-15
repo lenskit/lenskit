@@ -32,6 +32,15 @@ import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.behaviors.Caching;
 
+/**
+ * LensKit implementation of a recommender engine.  It uses containers set up by
+ * the {@link LenskitRecommenderEngineFactory} to set up recommender sessions.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @see LenskitRecommenderEngineFactory
+ * @see LenskitRecommender
+ */
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final PicoContainer recommenderContainer;
     private final Map<Object, Object> sessionBindings;

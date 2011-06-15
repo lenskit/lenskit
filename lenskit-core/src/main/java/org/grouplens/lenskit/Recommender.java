@@ -82,9 +82,6 @@ public interface Recommender {
     @Nullable
     DynamicRatingItemRecommender getDynamicItemRecommender();
     
-    @Nullable
-    BasketRecommender getBasketRecommender();
-    
     /**
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
