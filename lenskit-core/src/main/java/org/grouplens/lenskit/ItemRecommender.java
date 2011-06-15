@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.data.ScoredId;
 
 /**
+ * Interface for recommending items.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

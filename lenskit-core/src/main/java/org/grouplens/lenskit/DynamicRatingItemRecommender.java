@@ -27,7 +27,10 @@ import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Rating recommender recommending items from ratings-based user profiles.
+ * Rating recommender recommending items from ratings-based user profiles.  This
+ * class is like {@link ItemRecommender}, but it takes a user's rating profile
+ * as input.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

@@ -22,7 +22,15 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.picocontainer.PicoContainer;
 
 /**
- * Recommender implementation built on LensKit containers.
+ * Recommender implementation built on LensKit containers.  Recommenders built
+ * with {@link LenskitRecommenderEngineFactory} will produce this type of
+ * recommender.
+ * 
+ * <p>The {@link Recommender} interface will meet most needs, so most users can
+ * ignore this class.  However, if you need to inspect internal components of a
+ * recommender (e.g. extract the item-item similarity matrix), this class and its
+ * {@link #getComponent(Class)} method can be useful.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
