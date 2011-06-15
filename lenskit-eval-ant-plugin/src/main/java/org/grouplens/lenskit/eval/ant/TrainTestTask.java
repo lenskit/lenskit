@@ -23,9 +23,16 @@ package org.grouplens.lenskit.eval.ant;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -35,6 +42,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.traintest.EvaluationRecipe;
 import org.grouplens.lenskit.eval.traintest.TrainTestPredictEvaluator;
+import org.grouplens.lenskit.util.parallel.ExecHelpers;
 
 import com.google.common.primitives.Longs;
 
@@ -47,7 +55,7 @@ public class TrainTestTask extends Task {
 	private FileSet databases;
 	private File outFile;
 	private File script;
-	private int threadCount = 0;
+	private int threadCount = Runtime.getRuntime().availableProcessors();
 	private File predictionOutput;
 	private boolean useTimestamp = true;
 	private Properties properties = new Properties();
@@ -65,7 +73,10 @@ public class TrainTestTask extends Task {
 	}
 	
 	public void setThreadCount(int n) {
-		threadCount = n;
+	    if (n > 0)
+	        threadCount = n;
+	    else
+	        threadCount = Runtime.getRuntime().availableProcessors();
 	}
 	
 	public void setPredictions(File f) {
@@ -119,15 +130,29 @@ public class TrainTestTask extends Task {
                 return Longs.compare(f1.length(), f2.length());
             }
         });
-        for (int i = 0; i < dbFiles.length; i++) {
-            File dbf = dbFiles[i];
-            String name = FileUtils.basename(dbf.getName(), ".db");
-            String dsn = "jdbc:sqlite:" + dbf.getPath();
-            TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(dsn, "train", "test");
-            eval.setTimestampEnabled(useTimestamp);
-            eval.setThreadCount(threadCount);
-            log(String.format("Running against %s with %d threads", name, eval.getThreadCount()));
-            eval.evaluateAlgorithms(recipe.getAlgorithms(), recipe.makeAccumulator(name));
+        
+        ExecutorService svc = Executors.newFixedThreadPool(threadCount);
+        try {
+            List<Future<?>> results = new ArrayList<Future<?>>();
+            for (int i = 0; i < dbFiles.length; i++) {
+                File dbf = dbFiles[i];
+                String name = FileUtils.basename(dbf.getName(), ".db");
+                String dsn = "jdbc:sqlite:" + dbf.getPath();
+                TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(dsn, "train", "test");
+                eval.setTimestampEnabled(useTimestamp);
+                Collection<Runnable> tasks = eval.makeEvalTasks(recipe.getAlgorithms(), recipe.makeAccumulator(name));
+                for (Runnable task: tasks) {
+                    results.add(svc.submit(task));
+                }
+            }
+
+            try {
+                ExecHelpers.waitAll(results);
+            } catch (ExecutionException e) {
+                throw new BuildException(e);
+            }
+        } finally {
+            svc.shutdown();
         }
 	}
 }

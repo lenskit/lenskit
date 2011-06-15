@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,6 +43,7 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
+import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.parallel.ExecHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,21 +134,38 @@ public class TrainTestPredictEvaluator {
      */
     public List<Runnable> makeEvalTasks(List<AlgorithmInstance> algorithms,
         final ResultAccumulator results) {
+        
         final DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
         final DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
-        final SharedRatingSnapshot snap = loadSnapshot(daoMgr);
-        final PreloadCache cache = new PreloadCache();
+        
+        final LazyValue<SharedRatingSnapshot> snap =
+            new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
+                public SharedRatingSnapshot call() {
+                    return loadSnapshot(daoMgr);
+                }
+            });
+        final LazyValue<List<Rating>> preload =
+            new LazyValue<List<Rating>>(new Callable<List<Rating>>() {
+                public List<Rating> call() {
+                    RatingDataAccessObject dao = daoMgr.open();
+                    try {
+                        return Cursors.makeList(dao.getRatings());
+                    } finally {
+                        dao.close();
+                    }
+                }
+            });
         
         List<Runnable> tasks = Lists.transform(algorithms, new Function<AlgorithmInstance, Runnable>() {
             public Runnable apply(AlgorithmInstance algo) {
-                return new EvalTask(daoMgr, testDaoMgr, results, algo, cache, snap);
+                return new EvalTask(daoMgr, testDaoMgr, results, algo, preload, snap);
             }
         });
         return tasks;
     }
 
     private SharedRatingSnapshot loadSnapshot(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr) {
-        logger.debug("Preloading rating snapshot data");
+        logger.info("Loading rating snapshot data from {}", databaseUrl);
         
         RatingDataAccessObject dao = daoMgr.open();
         try {
@@ -156,30 +175,19 @@ public class TrainTestPredictEvaluator {
         }
     }
     
-    protected static class PreloadCache {
-        private volatile List<Rating> cachedRatings;
-        
-        public synchronized List<Rating> getRatings(RatingDataAccessObject dao) {
-            if (cachedRatings == null) {
-                logger.info("Preloading rating data");
-                cachedRatings = Cursors.makeList(dao.getRatings());
-            }
-            return cachedRatings;
-        }
-    }
-    
     protected class EvalTask implements Runnable {
         private AlgorithmInstance algorithm;
         private ResultAccumulator resultAccumulator;
         private DataAccessObjectManager<? extends RatingDataAccessObject> daoManager;
         private DataAccessObjectManager<? extends RatingDataAccessObject> testDaoManager;
-        private PreloadCache ratingCache;
-        private RatingSnapshot ratingSnapshot;
+        private LazyValue<List<Rating>> ratingCache;
+        private LazyValue<? extends RatingSnapshot> ratingSnapshot;
         
         public EvalTask(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr,
                 DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr,
-                ResultAccumulator results, AlgorithmInstance algo, PreloadCache cache,
-                RatingSnapshot snap) {
+                ResultAccumulator results, AlgorithmInstance algo,
+                LazyValue<List<Rating>> cache,
+                LazyValue<? extends RatingSnapshot> snap) {
             daoManager = daoMgr;
             testDaoManager = testDaoMgr;
             resultAccumulator = results;
@@ -191,30 +199,19 @@ public class TrainTestPredictEvaluator {
         @Override
         public void run() {
             AlgorithmTestAccumulator acc = resultAccumulator.makeAlgorithmAccumulator(algorithm);
-            RatingDataAccessObject dao = daoManager.open();
-            RatingDataAccessObject tdao;
+            RatingDataAccessObject dao;
 
-            // Preload ratings if appropriate. Make sure DAO is closed if ratigns
-            // are preloaded.
-            try {
-                if (algorithm.getPreload()) {
-                    List<Rating> ratings = ratingCache.getRatings(dao);
-                    dao.close();
-                    dao = null;
-                    tdao = new RatingCollectionDAO(ratings);
-                } else {
-                    tdao = dao;
-                    dao = null;
-                }
-            } finally {
-                if (dao != null)
-                    dao.close();
+            // Preload ratings if appropriate.
+            if (algorithm.getPreload()) {
+                dao = new RatingCollectionDAO(ratingCache.get());
+            } else {
+                dao = daoManager.open();
             }
 
             try {
                 logger.info("Building {}", algorithm.getName());
                 acc.startBuildTimer();
-                Recommender rec = algorithm.buildRecommender(tdao, ratingSnapshot);
+                Recommender rec = algorithm.buildRecommender(dao, ratingSnapshot.get());
                 RatingPredictor pred = rec.getRatingPredictor();
                 acc.finishBuild();
 
@@ -240,7 +237,7 @@ public class TrainTestPredictEvaluator {
 
                 acc.finish();
             } finally {
-                tdao.close();
+                dao.close();
             }
         }
 
