@@ -29,7 +29,9 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  * <p>
  * This interface extends {@link UserItemDataAccessObject} because it doesn't
  * make much sense to have rating data without user/item data. This decision
- * can, of course, be reviewed. It may be that, after implementing build
+ * can, of course, be reviewed.<p>
+ * 
+ * @review It may be that, after implementing build
  * contexts, we do not need the {@link UserItemDataAccessObject} any more.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

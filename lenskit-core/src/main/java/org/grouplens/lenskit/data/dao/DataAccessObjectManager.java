@@ -18,7 +18,14 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+/**
+ * Provider of data access objects.  DAO managers are used as a persistent way
+ * to create new DAOs as needed.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @param <T> The type of DAO this manager returns.
+ */
 public interface DataAccessObjectManager<T extends UserItemDataAccessObject> {
-
-    public T open();
+    T open();
 }
