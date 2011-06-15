@@ -42,8 +42,8 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(2, 5, 4));
 		rs.add(new SimpleRating(1, 3, 5));
 		rs.add(new SimpleRating(2, 3, 4));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
 		builder1.setRatingSnapshot(snapshot);
@@ -68,8 +68,8 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(1, 6, 1));
 		rs.add(new SimpleRating(2, 6, 5));
 		rs.add(new SimpleRating(3, 6, 3));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
+		RatingCollectionDAO.Factory factory = new RatingCollectionDAO.Factory(rs);
+		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
 		builder2.setRatingSnapshot(snapshot);
@@ -107,8 +107,8 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(6, 8, 2));
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 4));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
 		builder3.setRatingSnapshot(snapshot);
@@ -150,8 +150,8 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(1, 7, 4));
 		rs.add(new SimpleRating(2, 7, 4));
 		rs.add(new SimpleRating(3, 7, 1.5));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.open());
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snap = snapBuilder.build();
 		SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();
 		builder4.setRatingSnapshot(snap);

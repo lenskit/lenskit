@@ -21,9 +21,10 @@
  * 
  * <p>LensKit uses <a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data Access Objects</a>
  * to obtain access to rating data.  These objects allow LensKit to query for
- * users, items, ratings, etc.  Some DAOs also support registering for notification
- * of changes.  The DAO should generally be a singleton, therefore, to support change
- * notification and registration throughout the system.
+ * users, items, ratings, etc.  DAOs correspond generally to database connections
+ * or their equivalent, so they should only be used in a single thread.  When
+ * threads need to be able to create DAOs, {@link DAOFactory} objects
+ * should be used.
  * 
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to

@@ -70,7 +70,7 @@ public class TestFunkSVDRecommender {
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 4));
 
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
 		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
@@ -80,7 +80,7 @@ public class TestFunkSVDRecommender {
 		RecommenderEngine engine = factory.create();
 		svdRecommender = engine.open();
 		recommender = svdRecommender.getItemRecommender();
-		dao = manager.open();
+		dao = manager.create();
 	}
 	
 	

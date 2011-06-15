@@ -69,7 +69,7 @@ public class TestItemItemRecommender {
 		rs.add(new SimpleRating(6, 8, 2));
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 4));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
 		factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRatingRecommender.class);
@@ -79,7 +79,7 @@ public class TestItemItemRecommender {
 		RecommenderEngine engine = factory.create();
 		itemItemRecommender = engine.open();
 		recommender = itemItemRecommender.getDynamicItemRecommender();
-		dao = manager.open();
+		dao = manager.create();
 	}
 
 

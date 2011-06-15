@@ -46,16 +46,16 @@ import org.grouplens.lenskit.data.UserRatingProfile;
  *
  */
 public class RatingCollectionDAO extends AbstractRatingDataAccessObject {
-    public static class Manager implements DataAccessObjectManager<RatingCollectionDAO> {
+    public static class Factory implements DAOFactory<RatingCollectionDAO> {
         private final Collection<Rating> ratings;
         private transient RatingCollectionDAO singleton;
         
-        public Manager(Collection<Rating> ratings) {
+        public Factory(Collection<Rating> ratings) {
             this.ratings = ratings;
         }
         
         @Override
-        public RatingCollectionDAO open() {
+        public RatingCollectionDAO create() {
             if (singleton == null) {
                 singleton = new RatingCollectionDAO(ratings);
                 singleton.requireItemCache();

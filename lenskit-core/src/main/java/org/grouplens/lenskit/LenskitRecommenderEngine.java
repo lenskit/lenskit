@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.pico.JustInTimePicoContainer;
 import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
@@ -44,9 +44,9 @@ import org.picocontainer.behaviors.Caching;
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final PicoContainer recommenderContainer;
     private final Map<Object, Object> sessionBindings;
-    private final DataAccessObjectManager<? extends RatingDataAccessObject> manager;
+    private final DAOFactory<? extends RatingDataAccessObject> manager;
     
-    public LenskitRecommenderEngine(DataAccessObjectManager<? extends RatingDataAccessObject> manager,
+    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> manager,
                                  PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
         this.manager = manager;
         this.recommenderContainer = recommenderContainer;
@@ -56,9 +56,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     @Override
     public LenskitRecommender open() {
         if (manager == null)
-            throw new IllegalStateException("No DAO manager supplied");
-        // FIXME Unsafe if open() throws without closing the DAO
-        return open(manager.open(), true);
+            throw new IllegalStateException("No DAO creator supplied");
+        // FIXME Unsafe if create() throws without closing the DAO
+        return open(manager.create(), true);
     }
 
     @Override

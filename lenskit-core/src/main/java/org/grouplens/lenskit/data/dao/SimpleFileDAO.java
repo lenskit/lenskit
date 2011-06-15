@@ -40,12 +40,12 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SimpleFileDAO extends AbstractRatingDataAccessObject {
-    public static class Manager implements DataAccessObjectManager<SimpleFileDAO> {
+    public static class Factory implements DAOFactory<SimpleFileDAO> {
         private final File file;
         private final String delimiter;
         private final URL url;
         
-        public Manager(File file, String delimiter) throws FileNotFoundException {
+        public Factory(File file, String delimiter) throws FileNotFoundException {
             this.file = file;
             if (!file.exists())
                 throw new FileNotFoundException(file.toString());
@@ -57,15 +57,15 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
             this.delimiter = delimiter;
         }
         
-        public Manager(File file) throws FileNotFoundException {
+        public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
         }
 
-        public Manager(URL url) {
+        public Factory(URL url) {
             this(url, System.getProperty("lenskit.delimiter", "\t"));
         }
 
-        public Manager(URL url, String delimiter) {
+        public Factory(URL url, String delimiter) {
             this.url = url;
             if (url.getProtocol().equals("file"))
                 file = new File(url.getPath());
@@ -75,7 +75,7 @@ public class SimpleFileDAO extends AbstractRatingDataAccessObject {
         }
         
         @Override
-        public SimpleFileDAO open() {
+        public SimpleFileDAO create() {
             return new SimpleFileDAO(file, url, delimiter);
         }
     }

@@ -99,15 +99,15 @@ public class CrossfoldSplitTask extends Task {
             throw new BuildException("Could not find SQLite JDBC driver", e);
         }
         // TODO Support importing data from the classpath
-        SimpleFileDAO.Manager daoManager;
+        SimpleFileDAO.Factory daoManager;
         try {
             log("Reading ratings from " + dataFile);
-            daoManager = new SimpleFileDAO.Manager(new File(dataFile), delimiter);
+            daoManager = new SimpleFileDAO.Factory(new File(dataFile), delimiter);
         } catch (FileNotFoundException e) {
             throw new BuildException("Cannot open data file", e);
         }
         
-        RatingDataAccessObject dao = daoManager.open();
+        RatingDataAccessObject dao = daoManager.create();
         try {
             Long2IntMap userSegments = splitUsers(dao);
             writeRatings(dao, userSegments);

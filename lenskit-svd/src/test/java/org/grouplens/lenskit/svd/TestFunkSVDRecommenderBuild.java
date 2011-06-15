@@ -18,7 +18,8 @@
  */
 package org.grouplens.lenskit.svd;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.svd.params.IterationCount;
@@ -40,7 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestFunkSVDRecommenderBuild {
-	private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
+	private DAOFactory<? extends RatingDataAccessObject> manager;
 	private RecommenderEngine engine;
 
 	@Before
@@ -51,7 +52,7 @@ public class TestFunkSVDRecommenderBuild {
 		rs.add(new SimpleRating(8, 4, 5));
 		rs.add(new SimpleRating(8, 5, 4));
 
-		manager = new RatingCollectionDAO.Manager(rs);
+		manager = new RatingCollectionDAO.Factory(rs);
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);

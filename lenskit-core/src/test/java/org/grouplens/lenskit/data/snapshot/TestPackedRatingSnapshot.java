@@ -67,8 +67,8 @@ public class TestPackedRatingSnapshot {
 		rs.add(new SimpleRating(1, 11, 5, 1));
 		rs.add(new SimpleRating(3, 11, 5, 2));
 		rs.add(new SimpleRating(4, 11, 5, 1));
-		RatingCollectionDAO.Manager manager = new RatingCollectionDAO.Manager(rs);
-		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.open());
+		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.create());
 		snap = builder.build();
 	}
 

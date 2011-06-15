@@ -39,11 +39,11 @@ public interface RecommenderEngine {
     /**
      * Open a recommender.  The client code must close the recommender when it is
      * finished with it.  The recommender is connected to the DAO using whatever
-     * access manager was configured for its factory.
+     * provider was configured for its factory.
      * 
      * @return A recommender ready for use.
      * @throws IllegalStateException if the recommender requires a DAO and no
-     * DAO manager is available.
+     * DAO provider is available.
      */
     public Recommender open();
 

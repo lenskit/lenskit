@@ -75,7 +75,7 @@ public class UserVarianceNormalizerTest {
 		addRating(ratings, 1, 4, 3);
 		addRating(ratings, 1, 5, 3);
 		addRating(ratings, 1, 6, 3);
-		dao = new RatingCollectionDAO.Manager(ratings).open();
+		dao = new RatingCollectionDAO.Factory(ratings).create();
 		rs = new PackedRatingSnapshot.Builder(dao).build();
 		builder.setRatingSnapshot(rs);
 	}

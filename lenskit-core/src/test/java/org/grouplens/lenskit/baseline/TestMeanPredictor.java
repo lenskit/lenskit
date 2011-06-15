@@ -63,7 +63,7 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(8, 4, 5));
         rs.add(new SimpleRating(8, 5, 4));
         
-        dao = new RatingCollectionDAO.Manager(rs).open();
+        dao = new RatingCollectionDAO.Factory(rs).create();
         ratingSnapshot = new PackedRatingSnapshot.Builder(dao).build();
     }
     

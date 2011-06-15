@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
@@ -42,7 +42,7 @@ import org.junit.Test;
 
 public class TestItemItemRecommenderBuild {
 
-	private DataAccessObjectManager<? extends RatingDataAccessObject> manager;
+	private DAOFactory<? extends RatingDataAccessObject> manager;
 	private RecommenderEngine engine;
 
 	@Before
@@ -52,7 +52,7 @@ public class TestItemItemRecommenderBuild {
 		rs.add(new SimpleRating(1, 7, 4));
 		rs.add(new SimpleRating(8, 4, 5));
 		rs.add(new SimpleRating(8, 5, 4));
-		manager = new RatingCollectionDAO.Manager(rs);
+		manager = new RatingCollectionDAO.Factory(rs);
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);

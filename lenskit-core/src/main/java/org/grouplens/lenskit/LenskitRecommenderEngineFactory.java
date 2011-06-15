@@ -28,7 +28,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -61,7 +61,7 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
     private final Map<Class<?>, Object> defaultBindings;
-    private DataAccessObjectManager<? extends RatingDataAccessObject> daoManager;
+    private DAOFactory<? extends RatingDataAccessObject> daoManager;
     
     /**
      * Create a new engine factory with no DAO manager.
@@ -84,7 +84,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * DAO manager.
      * @param daom The DAO manager for obtaining data access.
      */
-    public LenskitRecommenderEngineFactory(@Nullable DataAccessObjectManager<? extends RatingDataAccessObject> daom) {
+    public LenskitRecommenderEngineFactory(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Object>();
         daoManager = daom;
@@ -101,7 +101,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Get the DAO manager configured for this factory.
      * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
      */
-    public @Nullable DataAccessObjectManager<? extends RatingDataAccessObject> getDAOManager() {
+    public @Nullable DAOFactory<? extends RatingDataAccessObject> getDAOManager() {
         return daoManager;
     }
     
@@ -109,7 +109,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Set the DAO manager.
      * @param daom
      */
-    public void setDAOManager(@Nullable DataAccessObjectManager<? extends RatingDataAccessObject> daom) {
+    public void setDAOManager(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
         daoManager = daom;
     }
     
@@ -242,8 +242,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     @Override
     public RecommenderEngine create() {
         if (daoManager == null)
-            throw new IllegalStateException("create() called with no DAO manager");
-        RatingDataAccessObject dao = daoManager.open();
+            throw new IllegalStateException("create() called with no DAO factory");
+        RatingDataAccessObject dao = daoManager.create();
         try {
             return create(dao, null, true);
         } finally {
@@ -255,8 +255,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Create a new recommender engine from a particular DAO. The factory's DAO
      * manager, if set, is still used by the resulting engine to open sessions.
      * 
-     * @review If the user provides a DAO and has set a DAO Manager, do we use
-     *         or ignore the DAO Manager?
+     * @review If the user provides a DAO and has set a DAO Factory, do we use
+     *         or ignore the DAO Factory?
      * @param dao The DAO to user for building the recommender.
      * @return A new recommender engine. The engine does <b>not</b> depend on
      *         the DAO, but will use DAOs obtained when recommenders are opened.
@@ -351,7 +351,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
 
-        DataAccessObjectManager<? extends RatingDataAccessObject> manager =
+        DAOFactory<? extends RatingDataAccessObject> manager =
             useManager ? daoManager : null;       
         RecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
         Recommender testOpen;

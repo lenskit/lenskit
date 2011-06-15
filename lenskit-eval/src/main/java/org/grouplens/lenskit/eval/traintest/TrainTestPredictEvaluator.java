@@ -31,7 +31,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -94,19 +94,19 @@ public class TrainTestPredictEvaluator {
         }
     }
     
-    protected JDBCRatingDAO.Manager trainingDAOManager() {
+    protected JDBCRatingDAO.Factory trainingDAOManager() {
         BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
         sfac.setTableName(trainingTable);
         if (!timestamp)
             sfac.setTimestampColumn(null);
-        return new JDBCRatingDAO.Manager(databaseUrl, sfac);
+        return new JDBCRatingDAO.Factory(databaseUrl, sfac);
     }
     
-    protected JDBCRatingDAO.Manager testDAOManager() {
+    protected JDBCRatingDAO.Factory testDAOManager() {
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
-        return new JDBCRatingDAO.Manager(databaseUrl, testfac);
+        return new JDBCRatingDAO.Factory(databaseUrl, testfac);
     }
     
     public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, 
@@ -135,8 +135,8 @@ public class TrainTestPredictEvaluator {
     public List<Runnable> makeEvalTasks(List<AlgorithmInstance> algorithms,
         final ResultAccumulator results) {
         
-        final DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
-        final DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
+        final DAOFactory<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
+        final DAOFactory<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
         
         final LazyValue<SharedRatingSnapshot> snap =
             new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
@@ -147,7 +147,7 @@ public class TrainTestPredictEvaluator {
         final LazyValue<List<Rating>> preload =
             new LazyValue<List<Rating>>(new Callable<List<Rating>>() {
                 public List<Rating> call() {
-                    RatingDataAccessObject dao = daoMgr.open();
+                    RatingDataAccessObject dao = daoMgr.create();
                     try {
                         return Cursors.makeList(dao.getRatings());
                     } finally {
@@ -164,10 +164,10 @@ public class TrainTestPredictEvaluator {
         return tasks;
     }
 
-    private SharedRatingSnapshot loadSnapshot(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr) {
+    private SharedRatingSnapshot loadSnapshot(DAOFactory<? extends RatingDataAccessObject> daoMgr) {
         logger.info("Loading rating snapshot data from {}", databaseUrl);
         
-        RatingDataAccessObject dao = daoMgr.open();
+        RatingDataAccessObject dao = daoMgr.create();
         try {
             return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
         } finally {
@@ -178,13 +178,13 @@ public class TrainTestPredictEvaluator {
     protected class EvalTask implements Runnable {
         private AlgorithmInstance algorithm;
         private ResultAccumulator resultAccumulator;
-        private DataAccessObjectManager<? extends RatingDataAccessObject> daoManager;
-        private DataAccessObjectManager<? extends RatingDataAccessObject> testDaoManager;
+        private DAOFactory<? extends RatingDataAccessObject> daoManager;
+        private DAOFactory<? extends RatingDataAccessObject> testDaoManager;
         private LazyValue<List<Rating>> ratingCache;
         private LazyValue<? extends RatingSnapshot> ratingSnapshot;
         
-        public EvalTask(DataAccessObjectManager<? extends RatingDataAccessObject> daoMgr,
-                DataAccessObjectManager<? extends RatingDataAccessObject> testDaoMgr,
+        public EvalTask(DAOFactory<? extends RatingDataAccessObject> daoMgr,
+                DAOFactory<? extends RatingDataAccessObject> testDaoMgr,
                 ResultAccumulator results, AlgorithmInstance algo,
                 LazyValue<List<Rating>> cache,
                 LazyValue<? extends RatingSnapshot> snap) {
@@ -205,7 +205,7 @@ public class TrainTestPredictEvaluator {
             if (algorithm.getPreload()) {
                 dao = new RatingCollectionDAO(ratingCache.get());
             } else {
-                dao = daoManager.open();
+                dao = daoManager.create();
             }
 
             try {
@@ -218,7 +218,7 @@ public class TrainTestPredictEvaluator {
                 logger.info("Testing {}", algorithm.getName());
                 acc.startTestTimer();
 
-                RatingDataAccessObject testDao = testDaoManager.open();
+                RatingDataAccessObject testDao = testDaoManager.create();
                 try {
                     Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
                     try {

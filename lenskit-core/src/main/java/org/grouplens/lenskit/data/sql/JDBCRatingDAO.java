@@ -34,7 +34,7 @@ import org.grouplens.lenskit.data.MutableRating;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +44,17 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
-    public static class Manager implements DataAccessObjectManager<JDBCRatingDAO> {
+    public static class Factory implements DAOFactory<JDBCRatingDAO> {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
         
-        public Manager(String url, SQLStatementFactory config) {
+        public Factory(String url, SQLStatementFactory config) {
             cxnUrl = url;
             factory = config;
         }
         
         @Override
-        public JDBCRatingDAO open() {
+        public JDBCRatingDAO create() {
             if (cxnUrl == null)
                 throw new UnsupportedOperationException("Cannot open session w/o URL");
             
