@@ -139,8 +139,7 @@
             </dependency>
           </dependencies>
           <configuration>
-            <reportPlugins combine.children="append">
-              
+            <reportPlugins>
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -174,6 +173,7 @@
                   <footer><![CDATA[
                     <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
                   ]]></footer>
+                  <excludePackages>org.grouplens.lenskit.pico</excludePackages>
                   <detectJavaApiLink>false</detectJavaApiLink>
                   <links>
                     <link>http://download.oracle.com/javase/6/docs/api/</link>
@@ -476,7 +476,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-site-plugin</artifactId>
             <configuration>
-              <reportPlugins combine.children="append">
+              <reportPlugins>
                 <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-pmd-plugin</artifactId>
@@ -498,7 +498,7 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-site-plugin</artifactId>
               <configuration>
-                <reportPlugins combine.children="append">
+                <reportPlugins>
                   <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>findbugs-maven-plugin</artifactId>
