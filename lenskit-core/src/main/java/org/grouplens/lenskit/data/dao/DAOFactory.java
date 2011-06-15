@@ -10,7 +10,7 @@ package org.grouplens.lenskit.data.dao;
 public interface DAOFactory<T> {
     /**
      * Create a new DAO.
-     * @return A new DAO.  The caller is responsible to close it.
+     * @return A new DAO.  The caller is responsible for closing it.
      */
     T create();
 }
