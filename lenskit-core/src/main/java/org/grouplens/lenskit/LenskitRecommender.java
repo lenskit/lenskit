@@ -55,8 +55,8 @@ public class LenskitRecommender implements Recommender {
      * for specialized applications which need deep access to the recommender
      * components.
      * @param <T>
-     * @param cls
-     * @return
+     * @param cls The component class to get.
+     * @return The instance of the specified component.
      */
     public <T> T getComponent(Class<T> cls) {
         return container.getComponent(cls);

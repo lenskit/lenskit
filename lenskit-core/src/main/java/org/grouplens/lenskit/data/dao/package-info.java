@@ -23,7 +23,7 @@
  * to obtain access to rating data.  These objects allow LensKit to query for
  * users, items, ratings, etc.  DAOs correspond generally to database connections
  * or their equivalent, so they should only be used in a single thread.  When
- * threads need to be able to create DAOs, {@link DAOFactory} objects
+ * threads need to be able to create DAOs, {@link org.grouplens.lenskit.data.dao.DAOFactory} objects
  * should be used.
  * 
  * <p>The data access object makes no transactional or immutability guarantees,

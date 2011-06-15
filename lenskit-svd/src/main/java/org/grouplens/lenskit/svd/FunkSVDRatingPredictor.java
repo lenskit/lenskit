@@ -41,9 +41,6 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * <a href="http://www.grouplens.org/node/212">Sarwar et al., 2002</a> with the
  * user's ratings.
  *
- * @todo Look at using the user's feature preferences in some cases.
- * @todo Revise this class's relationship with {@link FunkSVDRecommender}.
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

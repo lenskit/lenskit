@@ -64,11 +64,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     private DAOFactory<? extends RatingDataAccessObject> daoManager;
     
     /**
-     * Create a new engine factory with no DAO manager.
+     * Create a new engine factory with no DAO factory.
      * 
      * <p>
      * Unless a DAO manager is provided by
-     * {@link #setDAOManager(DataAccessObjectManager)}, the factory and all
+     * {@link #setDAOFactory(DAOFactory)}, the factory and all
      * resulting engines cannot open DAOs themselves, so the {@link #create()}
      * and {@link RecommenderEngine#open()} methods will not work. In that case,
      * the {@link #create(RatingDataAccessObject)} and
@@ -81,8 +81,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     
     /**
      * Construct a new engine factory that will get DAOs from the specified
-     * DAO manager.
-     * @param daom The DAO manager for obtaining data access.
+     * DAO factory.
+     * @param daom The DAO factory for obtaining data access.
      */
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
@@ -101,7 +101,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Get the DAO manager configured for this factory.
      * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
      */
-    public @Nullable DAOFactory<? extends RatingDataAccessObject> getDAOManager() {
+    public @Nullable DAOFactory<? extends RatingDataAccessObject> getDAOFactory() {
         return daoManager;
     }
     
@@ -109,7 +109,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Set the DAO manager.
      * @param daom
      */
-    public void setDAOManager(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
+    public void setDAOFactory(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
         daoManager = daom;
     }
     

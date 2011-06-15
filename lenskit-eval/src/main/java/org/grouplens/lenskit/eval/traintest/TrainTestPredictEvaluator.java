@@ -128,9 +128,9 @@ public class TrainTestPredictEvaluator {
     /**
      * Make a list of tasks for the evaluation against this set of algorithms
      * and accumulator.  These can then run in a thread pool if desired.
-     * @param algorithms
-     * @param results
-     * @return
+     * @param algorithms A list of algorithm configurations to evaluate.
+     * @param results Accumulator for evaluation results.
+     * @return The tasks to run to perform a train-test evaluation on the algorithms.
      */
     public List<Runnable> makeEvalTasks(List<AlgorithmInstance> algorithms,
         final ResultAccumulator results) {
