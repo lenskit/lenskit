@@ -21,22 +21,35 @@ package org.grouplens.lenskit;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.picocontainer.PicoContainer;
 
-public class BasicRecommender implements Recommender {
+/**
+ * Recommender implementation built on LensKit containers.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ */
+public class LenskitRecommender implements Recommender {
     private final PicoContainer container;
     private final RatingDataAccessObject dao;
     private final boolean shouldCloseDao;
     
-    // An alternate to this BasicRecommender where it asks for the components as needed
+    // An alternate to this LenskitRecommender where it asks for the components as needed
     // is to see if there is an actual Recommender that can be built from the container
     // and then delegate to that.  The wrapper recommender would still handle the closing
     // logic, this would give us a single configuration point if people chose to use it.
-    public BasicRecommender(PicoContainer container, RatingDataAccessObject dao, boolean shouldCloseDao) {
+    public LenskitRecommender(PicoContainer container, RatingDataAccessObject dao, boolean shouldCloseDao) {
         this.container = container;
         this.dao = dao;
         this.shouldCloseDao = shouldCloseDao;
     }
     
-    @Override
+    /**
+     * Get a particular component from the recommender session.  Generally
+     * you want to use one of the type-specific getters; this method only exists
+     * for specialized applications which need deep access to the recommender
+     * components.
+     * @param <T>
+     * @param cls
+     * @return
+     */
     public <T> T getComponent(Class<T> cls) {
         return container.getComponent(cls);
     }

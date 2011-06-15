@@ -28,17 +28,6 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
  *
  */
 public interface Recommender {
-    /**
-     * Get a particular component from the recommender session.  Generally
-     * you want to use one of the type-specific getters; this method only exists
-     * for specialized applications which need deep access to the recommender
-     * components.
-     * @param <T>
-     * @param cls
-     * @return
-     */
-    <T> T getComponent(Class<T> cls);
-    
     @Nullable
     RatingPredictor getRatingPredictor();
     

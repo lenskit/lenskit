@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.DataAccessObjectManager;
@@ -43,7 +42,6 @@ import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
 import org.grouplens.lenskit.util.PrimitiveUtils;
 import org.picocontainer.BindKey;
 import org.picocontainer.ComponentAdapter;
-import org.picocontainer.ComponentFactory;
 import org.picocontainer.ComponentMonitor;
 import org.picocontainer.InjectionFactory;
 import org.picocontainer.LifecycleStrategy;
@@ -355,7 +353,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 
         DataAccessObjectManager<? extends RatingDataAccessObject> manager =
             useManager ? daoManager : null;       
-        RecommenderEngine engine = new RecommenderEngineImpl(manager, recommenderContainer, sessionBindings);
+        RecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
         Recommender testOpen;
         if (useManager)
             testOpen = engine.open();
@@ -514,48 +512,6 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         } catch (Exception e) {
             // This shouldn't happen
             throw new RuntimeException(e);
-        }
-    }
-    
-    private static class RecommenderEngineImpl implements RecommenderEngine {
-        private final PicoContainer recommenderContainer;
-        private final Map<Object, Object> sessionBindings;
-        private final DataAccessObjectManager<? extends RatingDataAccessObject> manager;
-        
-        public RecommenderEngineImpl(DataAccessObjectManager<? extends RatingDataAccessObject> manager,
-                                     PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
-            this.manager = manager;
-            this.recommenderContainer = recommenderContainer;
-            this.sessionBindings = sessionBindings;
-        }
-
-        @Override
-        public Recommender open() {
-            if (manager == null)
-                throw new IllegalStateException("No DAO manager supplied");
-            // FIXME Unsafe if open() throws without closing the DAO
-            return open(manager.open(), true);
-        }
-
-        @Override
-        public Recommender open(@Nonnull RatingDataAccessObject dao, boolean shouldClose) {
-            if (dao == null)
-                throw new NullPointerException("Dao cannot be null when this method is used");
-            return new BasicRecommender(createSessionContainer(dao), dao, shouldClose);
-        }
-        
-        private PicoContainer createSessionContainer(RatingDataAccessObject dao) {
-            ComponentFactory factory = new Caching().wrap(new ParameterAnnotationInjector.Factory());
-            MutablePicoContainer sessionContainer = new JustInTimePicoContainer(factory, 
-                                                                                recommenderContainer);
-            // Configure session container
-            for (Entry<Object, Object> binding: sessionBindings.entrySet()) {
-                sessionContainer.addComponent(binding.getKey(), binding.getValue());
-            }
-            
-            // Add in the dao
-            sessionContainer.addComponent(dao);
-            return sessionContainer;
         }
     }
     
