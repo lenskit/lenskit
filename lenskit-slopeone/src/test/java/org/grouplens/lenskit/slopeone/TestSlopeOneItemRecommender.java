@@ -56,7 +56,7 @@ public class TestSlopeOneItemRecommender {
         
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, SlopeOneItemRecommender.class);
+        factory.setComponent(ItemRecommender.class, SlopeOneRecommender.class);
         factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
         factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
         engine = factory.create();
@@ -70,7 +70,7 @@ public class TestSlopeOneItemRecommender {
             // These assert instanceof's are also assertNotNull's
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneItemRecommender);
+            Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneRecommender);
         } finally {
             rec.close();
         }

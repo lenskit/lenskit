@@ -74,7 +74,7 @@ public class TestFunkSVDRecommender {
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
 		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
-		factory.setComponent(ItemRecommender.class, FunkSVDItemRecommender.class);
+		factory.setComponent(ItemRecommender.class, FunkSVDRecommender.class);
 		// FIXME: Don't use 100 features.
 		factory.set(FeatureCount.class, 100);
 		RecommenderEngine engine = factory.create();

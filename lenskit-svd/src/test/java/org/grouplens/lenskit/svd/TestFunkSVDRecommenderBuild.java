@@ -56,7 +56,7 @@ public class TestFunkSVDRecommenderBuild {
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
-		factory.setComponent(ItemRecommender.class, FunkSVDItemRecommender.class);
+		factory.setComponent(ItemRecommender.class, FunkSVDRecommender.class);
 		factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
 		factory.set(IterationCount.class, 10);
 
@@ -70,7 +70,7 @@ public class TestFunkSVDRecommenderBuild {
 		try {
 			// These assert instanceof's are also assertNotNull's
 			assertTrue(rec.getRatingPredictor() instanceof FunkSVDRatingPredictor);
-			assertTrue(rec.getItemRecommender() instanceof FunkSVDItemRecommender);
+			assertTrue(rec.getItemRecommender() instanceof FunkSVDRecommender);
 
 			assertNull(rec.getDynamicItemRecommender());
 			assertNull(rec.getDynamicRatingPredictor());

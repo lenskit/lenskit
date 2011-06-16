@@ -31,7 +31,7 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
- * {@link UserUserRatingRecommender} to find neighbors for recommendation.
+ * {@link UserUserRecommender} to find neighbors for recommendation.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

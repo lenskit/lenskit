@@ -39,14 +39,14 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRatingRecommender extends PredictorBasedDRItemRecommender {
+public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
     protected final ItemItemRatingPredictor predictor;
     
     /**
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public ItemItemRatingRecommender(RatingDataAccessObject dao, ItemItemRatingPredictor predictor) {
+    public ItemItemRecommender(RatingDataAccessObject dao, ItemItemRatingPredictor predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

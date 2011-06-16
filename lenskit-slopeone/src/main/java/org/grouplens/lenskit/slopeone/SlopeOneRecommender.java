@@ -38,14 +38,14 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
-public class SlopeOneItemRecommender extends PredictorBasedDRItemRecommender {
+public class SlopeOneRecommender extends PredictorBasedDRItemRecommender {
 	private SlopeOneRatingPredictor predictor; 
 	
 	/**
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public SlopeOneItemRecommender(RatingDataAccessObject dao, SlopeOneRatingPredictor predictor) {
+    public SlopeOneRecommender(RatingDataAccessObject dao, SlopeOneRatingPredictor predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

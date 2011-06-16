@@ -32,11 +32,15 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
-public class FunkSVDItemRecommender extends PredictorBasedItemRecommender {
+/**
+ * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
+ * recommendation is not supported.
+ */
+public class FunkSVDRecommender extends PredictorBasedItemRecommender {
 	
 	private final FunkSVDRatingPredictor predictor;
 	
-	public FunkSVDItemRecommender(RatingDataAccessObject dao, FunkSVDRatingPredictor predictor) {
+	public FunkSVDRecommender(RatingDataAccessObject dao, FunkSVDRatingPredictor predictor) {
 		super(dao, predictor);
 		this.predictor = predictor;
 	}

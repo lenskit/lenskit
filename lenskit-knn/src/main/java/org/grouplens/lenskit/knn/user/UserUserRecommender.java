@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
-import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -39,10 +38,10 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRatingRecommender extends PredictorBasedDRItemRecommender {
+public class UserUserRecommender extends PredictorBasedDRItemRecommender {
 	protected final UserUserRatingPredictor predictor;
 
-	public UserUserRatingRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
+	public UserUserRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
 		super(dao, pred);
 		predictor = pred;
 	}
