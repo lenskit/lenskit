@@ -21,6 +21,7 @@ package org.grouplens.lenskit;
 
 import java.util.Collection;
 
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -34,13 +35,24 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractDynamicRatingPredictor extends AbstractRatingPredictor implements DynamicRatingPredictor {
+    private RatingDataAccessObject dao;
+
     protected AbstractDynamicRatingPredictor(RatingDataAccessObject dao) {
-        super(dao);
+        this.dao = dao;
+    }
+    
+    protected RatingDataAccessObject getDAO() {
+        return dao;
+    }
+    
+    protected Collection<Rating> getUserRatings(long user) {
+        return Cursors.makeList(dao.getUserRatings(user));
     }
     
     /**
      * Delegate to {@link #predict(long, java.util.Collection, java.util.Collection)}
      */
+    @Override
     public SparseVector predict(long user, Collection<Long> items) {
         Collection<Rating> ratings = getUserRatings(user);
         return predict(user, ratings, items);
@@ -49,6 +61,7 @@ public abstract class AbstractDynamicRatingPredictor extends AbstractRatingPredi
     /**
      * Delegate to {@link #predict(long, SparseVector, Collection)}.
      */
+    @Override
     public SparseVector predict(long user, Collection<Rating> ratings, Collection<Long> items) {
         return predict(user, Ratings.userRatingVector(ratings), items);
     }

@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -46,9 +47,10 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
 	protected final FunkSVDModel model;
+    private RatingDataAccessObject dao;
 
     public FunkSVDRatingPredictor(RatingDataAccessObject dao, FunkSVDModel m) {
-        super(dao);
+        this.dao = dao;
         model = m;
     }
 
@@ -70,10 +72,10 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
      * will be the number of features.
      * @see #getFeatureCount()
      */
-    protected double[] foldIn(long user, SparseVector ratings) {
+    /*protected double[] foldIn(long user, SparseVector ratings) {
     	final int nf = model.featureCount;
     	final double[][] ifeats = model.itemFeatures;
-// FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON    	
+        // FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON    	
     	final double[] svals = null; //model.singularValues;
         double featurePrefs[] = new double[nf];
         DoubleArrays.fill(featurePrefs, 0.0);
@@ -89,7 +91,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
         }
 
         return featurePrefs;
-    }
+    }*/
     
     private MutableSparseVector predict(long user, double[] uprefs, SparseVector ratings, Collection<Long> items) {
         final int nf = model.featureCount;
@@ -102,7 +104,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
             iset = new LongSortedArraySet(items);
         
         if (ratings == null) {
-            ratings = Ratings.userRatingVector(getUserRatings(user));
+            ratings = Ratings.userRatingVector(Cursors.makeList(dao.getUserRatings(user)));
         }
         MutableSparseVector preds = model.baseline.predict(user, ratings, items);
         LongIterator iter = iset.iterator();
