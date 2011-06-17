@@ -74,9 +74,7 @@ Project Goals
 
   In particular, distributed recommender implementations are
   out-of-scope for LensKit — we are focusing on building high-quality
-  single-process (but potentially multi-threaded) implementations.  If
-  you want distributed recommendation engines, see
-  {{{http://mahout.apache.org}Apache Mahout}}.
+  single-process (but potentially multi-threaded) implementations.
 
 Getting LensKit
 
