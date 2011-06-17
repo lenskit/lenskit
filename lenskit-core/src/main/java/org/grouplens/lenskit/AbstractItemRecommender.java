@@ -34,6 +34,9 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * Base class for item recommenders.  It implements all methods required by
  * {@link ItemRecommender} by delegating them to a single method with a
  * Fastutil-based interface.
+ * 
+ * @fixme This should not use the rating DAO. That will change in a future
+ * LensKit release.
  */
 public abstract class AbstractItemRecommender implements ItemRecommender {
 
