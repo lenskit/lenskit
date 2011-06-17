@@ -23,13 +23,13 @@ Project Goals
 
   To support education, we place an emphasis on clean, readable code
   that demonstrates what is necessary to take algorithms from
-  mathematical descriptions to actual implementation. RefLens is
-  currently in an early alpha state, so the code does not yet live up
-  to this standard.  As development progresses, we will be auditing
-  the code for readability and documenting it more carefully.  The
-  goal is to have the implementation be ready for use in courses on
-  adaptive web and recommender technologies or for self-study on
-  recommender implementation.
+  mathematical descriptions to actual implementation. LensKit is
+  currently in a beta state, so the code does not yet live up to this
+  standard.  As development progresses, we will be auditing the code
+  for readability and documenting it more carefully.  The goal is to
+  have the implementation be ready for use in courses on adaptive web
+  and recommender technologies or for self-study on recommender
+  implementation.
 
   We also intend LensKit to be a good platform for experimenting with
   new algorithms and evaluation metrics.  There are several specific
