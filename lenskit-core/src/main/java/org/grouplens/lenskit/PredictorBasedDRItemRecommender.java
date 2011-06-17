@@ -22,16 +22,13 @@ package org.grouplens.lenskit;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.PriorityQueue;
-
 import org.grouplens.lenskit.data.Cursors2;
-import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.ScoredLongArrayList;
+import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
 
 /**
  * Base class for dynamic rating-based item recommenders that use a rating
@@ -48,7 +45,8 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 		this.predictor = predictor;
 	}
 
-	protected List<ScoredId> recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
+	@Override
+    protected ScoredLongList recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
 	    // TODO Share code with corresponding method in PredictorBasedItemRecommender.
 		if (candidates == null)
 			candidates = getPredictableItems(user, ratings);
@@ -57,27 +55,18 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 
 		SparseVector predictions = predictor.predict(user, ratings, candidates);
 		assert(predictions.isComplete());
-		if (predictions.isEmpty()) return Collections.emptyList();
-		PriorityQueue<ScoredId> queue = new PriorityQueue<ScoredId>(predictions.size());
+		if (predictions.isEmpty()) return new ScoredLongArrayList();
+		
+		if (n < 0) n = predictions.size();
+		ScoredItemAccumulator accum = new ScoredItemAccumulator(n);
 		for (Long2DoubleMap.Entry pred: predictions.fast()) {
 			final double v = pred.getDoubleValue();
 			if (!Double.isNaN(v)) {
-				queue.add(new ScoredId(pred.getLongKey(), v));
+			    accum.put(pred.getLongKey(), v);
 			}
 		}
-
-		ScoredId[] finalPredictions;
-		if (n < 0 || n > queue.size()) {
-			finalPredictions = new ScoredId[queue.size()];
-		} else {
-			finalPredictions = new ScoredId[n];
-			for (int i = queue.size() - n; i > 0; i--) queue.poll();
-		}
-		for (int i = finalPredictions.length-1; i >= 0; i--) {
-			finalPredictions[i] = queue.poll();
-		}
-
-		return Arrays.asList(finalPredictions);
+		
+		return accum.finish();
 	}
 	
 	/**

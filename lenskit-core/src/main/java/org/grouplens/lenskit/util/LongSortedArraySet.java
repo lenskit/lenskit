@@ -296,6 +296,15 @@ public final class LongSortedArraySet extends AbstractLongSortedSet {
         throw new UnsupportedOperationException();
     }
     
+    @Override
+    public long[] toLongArray(long[] a) {
+        final int sz = size();
+        if (a == null || a.length < sz)
+            a = new long[sz];
+        System.arraycopy(data, start, a, 0, sz);
+        return a;
+    }
+    
     /**
      * Compute the set difference of two sets.
      */

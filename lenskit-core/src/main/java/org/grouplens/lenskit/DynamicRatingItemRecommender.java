@@ -18,12 +18,11 @@
  */
 package org.grouplens.lenskit;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
@@ -44,7 +43,7 @@ public interface DynamicRatingItemRecommender {
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings);
+    public ScoredLongList recommend(long user, SparseVector ratings);
     
     /**
      * Recommend up to <var>n</var> items for a user. The
@@ -56,7 +55,7 @@ public interface DynamicRatingItemRecommender {
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n);
+    public ScoredLongList recommend(long user, SparseVector ratings, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates.  The
@@ -69,7 +68,7 @@ public interface DynamicRatingItemRecommender {
      * @return The sorted list of scored items.
      * @see #recommend(long, SparseVector, int, Set, Set)
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings,
+    public ScoredLongList recommend(long user, SparseVector ratings,
             @Nullable Set<Long> candidates);
 
     /**
@@ -86,6 +85,6 @@ public interface DynamicRatingItemRecommender {
      * @return a list of scored recommendations, sorted in nondecreasing order
      * of score.
      */
-    public List<ScoredId> recommend(long user, SparseVector ratings, int n,
+    public ScoredLongList recommend(long user, SparseVector ratings, int n,
             @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
 }

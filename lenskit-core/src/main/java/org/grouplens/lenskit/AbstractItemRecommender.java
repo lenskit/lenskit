@@ -21,11 +21,10 @@ package org.grouplens.lenskit;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 
-import java.util.List;
 import java.util.Set;
 
 import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.ScoredId;
+import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -49,22 +48,22 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 	}
 	
 	@Override
-	public List<ScoredId> recommend(long user) {
+	public ScoredLongList recommend(long user) {
 		return recommend(user, -1, null, getRatings(user).keySet());
 	}
 
 	@Override
-	public List<ScoredId> recommend(long user, int n) {
+	public ScoredLongList recommend(long user, int n) {
 		return recommend(user, n, null, getRatings(user).keySet());
 	}
 
 	@Override
-	public List<ScoredId> recommend(long user, Set<Long> candidates) {
+	public ScoredLongList recommend(long user, Set<Long> candidates) {
 		return recommend(user, -1, candidates, getRatings(user).keySet());
 	}
 
 	@Override
-	public List<ScoredId> recommend(long user, int n, Set<Long> candidates,
+	public ScoredLongList recommend(long user, int n, Set<Long> candidates,
 			Set<Long> exclude) {
 		LongSet cs = CollectionUtils.fastSet(candidates);
 		LongSet es = CollectionUtils.fastSet(exclude);
@@ -72,7 +71,6 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 			es = LongSets.EMPTY_SET;
 		return recommend(user, n, cs, es);
 	}
-	
 	
 	/**
 	 * Implementation method for recommender services.
@@ -85,5 +83,5 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * @return A list of <tt>ScoredId</tt> objects representing recommended items.
 	 * @see ItemRecommender#recommend(long, int, Set, Set)
 	 */
-	protected abstract List<ScoredId> recommend(long user, int n, LongSet candidates, LongSet exclude);
+	protected abstract ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude);
 }

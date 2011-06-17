@@ -20,7 +20,6 @@ package org.grouplens.lenskit.svd;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -35,7 +34,6 @@ import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.ScoredId;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
@@ -90,29 +88,29 @@ public class TestFunkSVDRecommender {
 	@Test
 	public void testRecommend1() {
 		
-		LongList recs = extractIds(recommender.recommend(1));
+		LongList recs = recommender.recommend(1);
 		assertTrue(recs.isEmpty());
 		
-		recs = extractIds(recommender.recommend(2));
+		recs = recommender.recommend(2);
 		assertEquals(1, recs.size());
 		assertTrue(recs.contains(9));
 		
-		recs = extractIds(recommender.recommend(3));
+		recs = recommender.recommend(3);
 		assertEquals(1, recs.size());
 		assertTrue(recs.contains(6));
 		
-		recs = extractIds(recommender.recommend(4));
+		recs = recommender.recommend(4);
 		assertEquals(2, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(9, recs.getLong(1));
 		
-		recs = extractIds(recommender.recommend(5));
+		recs = recommender.recommend(5);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(9, recs.getLong(2));
 		
-		recs = extractIds(recommender.recommend(6));
+		recs = recommender.recommend(6);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
@@ -125,31 +123,31 @@ public class TestFunkSVDRecommender {
 	@Test
 	public void testRecommend2() {
 		
-		LongList recs = extractIds(recommender.recommend(6, 4));
+		LongList recs = recommender.recommend(6, 4);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(9, recs.getLong(2));
 		
-		recs = extractIds(recommender.recommend(6, 3));
+		recs = recommender.recommend(6, 3);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(9, recs.getLong(2));
 		
-		recs = extractIds(recommender.recommend(6, 2));
+		recs = recommender.recommend(6, 2);
 		assertEquals(2, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		
-		recs = extractIds(recommender.recommend(6, 1));
+		recs = recommender.recommend(6, 1);
 		assertEquals(1, recs.size());
 		assertTrue(recs.contains(6));
 		
-		recs = extractIds(recommender.recommend(6, 0));
+		recs = recommender.recommend(6, 0);
 		assertTrue(recs.isEmpty());
 		
-		recs = extractIds(recommender.recommend(6, -1));
+		recs = recommender.recommend(6, -1);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
@@ -162,7 +160,7 @@ public class TestFunkSVDRecommender {
 	@Test
 	public void testRecommend3() {
 		
-		LongList recs = extractIds(recommender.recommend(5, null));
+		LongList recs = recommender.recommend(5, null);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
@@ -173,36 +171,36 @@ public class TestFunkSVDRecommender {
 		candidates.add(7);
 		candidates.add(8);
 		candidates.add(9);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(9, recs.getLong(2));
 		
 		candidates.remove(8);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(9, recs.getLong(2));
 		
 		candidates.remove(7);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertEquals(2, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(9, recs.getLong(1));
 		
 		candidates.remove(6);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertEquals(1, recs.size());
 		assertEquals(9, recs.getLong(0));
 		
 		candidates.remove(9);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertTrue(recs.isEmpty());
 		
 		candidates.add(8);
-		recs = extractIds(recommender.recommend(5, candidates));
+		recs = recommender.recommend(5, candidates);
 		assertTrue(recs.isEmpty());
 	}
 	
@@ -211,7 +209,7 @@ public class TestFunkSVDRecommender {
 	 */
 	@Test
 	public void testRecommend4() {
-		LongList recs = extractIds(recommender.recommend(6, -1, null, null));
+		LongList recs = recommender.recommend(6, -1, null, null);
 		assertEquals(4, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
@@ -220,20 +218,20 @@ public class TestFunkSVDRecommender {
 		
 		LongOpenHashSet exclude = new LongOpenHashSet();
 		exclude.add(9);
-		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		recs = recommender.recommend(6, -1, null, exclude);
 		assertEquals(3, recs.size());
 		assertEquals(6, recs.getLong(0));
 		assertEquals(7, recs.getLong(1));
 		assertEquals(8, recs.getLong(2));
 		
 		exclude.add(6);
-		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		recs = recommender.recommend(6, -1, null, exclude);
 		assertEquals(2, recs.size());
 		assertEquals(7, recs.getLong(0));
 		assertEquals(8, recs.getLong(1));
 		
 		exclude.add(8);
-		recs = extractIds(recommender.recommend(6, -1, null, exclude));
+		recs = recommender.recommend(6, -1, null, exclude);
 		assertEquals(1, recs.size());
 		assertTrue(recs.contains(7));
 	}
@@ -242,14 +240,5 @@ public class TestFunkSVDRecommender {
 	public static void cleanUp() {
 		svdRecommender.close();
 		dao.close();
-	}
-	
-	//Helper method to generate a list of item id's from a list of ScoredId's.
-	private static LongList extractIds(List<ScoredId> recommendations) {
-		LongList items = new LongArrayList(recommendations.size());
-		for (ScoredId rec : recommendations) {
-			items.add(rec.getId());
-		}
-		return items;
 	}
 }
