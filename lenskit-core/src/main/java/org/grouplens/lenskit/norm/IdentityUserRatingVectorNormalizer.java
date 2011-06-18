@@ -27,6 +27,8 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  *
  */
 public class IdentityUserRatingVectorNormalizer extends AbstractUserRatingVectorNormalizer {
+    private static final long serialVersionUID = -6708410675383598691L;
+    
     private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
         
         @Override

@@ -23,7 +23,6 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Serializer;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -31,8 +30,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * Rating predictor that operates on sparse vectors and guarantees 100% coverage
  * of items. Because BaselinePredictors are often part of a "model" used by a
  * recommender algorithm, all BaselinePredictors are required to be Serializable
- * so that they can be easily written to or read from a file with a
- * {@link Serializer}.
+ * so that they can be easily written to or read from a file.
  * 
  * <p>Note that this class does not implement the {@link RatingPredictor} or
  * {@link DynamicRatingPredictor} interfaces - this is to allow it to operate free

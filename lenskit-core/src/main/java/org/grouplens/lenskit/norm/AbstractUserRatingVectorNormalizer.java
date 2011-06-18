@@ -28,6 +28,8 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 public abstract class AbstractUserRatingVectorNormalizer implements
         UserRatingVectorNormalizer {
 
+    private static final long serialVersionUID = -2959210414910084854L;
+
     /**
      * Implementation that delegates to {@link #makeTransformation(long, SparseVector)}
      * and the resulting {@link VectorTransformation}.

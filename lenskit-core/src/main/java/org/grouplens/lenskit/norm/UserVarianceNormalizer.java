@@ -49,6 +49,8 @@ import org.grouplens.lenskit.util.FastCollection;
  */
 @Built
 public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
+    private static final long serialVersionUID = -7890335060797112954L;
+
     /**
      * A Builder for UserVarianceNormalizers that computes the variance from a
      * RatingBuildContext.

@@ -48,6 +48,8 @@ import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 public class SignificanceWeight implements
         OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
     
+    private static final long serialVersionUID = 5748342121367821678L;
+    
     private final int threshold;
     private final Similarity<? super SparseVector> similarity;
 

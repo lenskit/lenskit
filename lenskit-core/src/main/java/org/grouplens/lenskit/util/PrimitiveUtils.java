@@ -27,6 +27,23 @@ public class PrimitiveUtils {
                Character.class.isAssignableFrom(type);
     }
     
+    public static Number parse(Class<? extends Number> type, String value) {
+        if (type.equals(Integer.class))
+            return Integer.parseInt(value);
+        else if (type.equals(Long.class))
+            return Long.parseLong(value);
+        else if (type.equals(Float.class))
+            return Float.parseFloat(value);
+        else if (type.equals(Double.class))
+            return Double.parseDouble(value);
+        else if (type.equals(Byte.class))
+            return Byte.parseByte(value);
+        else if (type.equals(Short.class))
+            return Short.parseShort(value);
+        else
+            throw new IllegalArgumentException("Unsupported Number type: " + type);
+    }
+    
     public static Class<?> box(Class<?> type) {
         if (type.isPrimitive()) {
             if (type.equals(int.class))

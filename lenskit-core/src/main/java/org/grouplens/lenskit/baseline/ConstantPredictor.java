@@ -44,9 +44,6 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class ConstantPredictor implements BaselinePredictor {
-    private static final long serialVersionUID = 1L;
-    private final double value;
-
     /**
      * Parameter: the value used by the constant predictor.
      */
@@ -56,7 +53,10 @@ public class ConstantPredictor implements BaselinePredictor {
     @Target({ ElementType.METHOD, ElementType.PARAMETER })
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value { }
-
+    
+    private static final long serialVersionUID = 1L;
+    
+    private final double value;
 
     /**
      * Construct a new constant predictor.  This is exposed so other code

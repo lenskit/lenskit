@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import java.io.Serializable;
+
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollections;
 
@@ -33,7 +35,9 @@ import org.grouplens.lenskit.util.IndexedItemScore;
 
 @Built
 @DefaultBuilder(ItemItemModelBuilder.class)
-public class ItemItemModel {
+public class ItemItemModel implements Serializable {
+    private static final long serialVersionUID = -5986236982760043379L;
+    
     private final Index itemIndexer;
     private final SimilarityMatrix matrix;
     private final UserRatingVectorNormalizer normalizer;

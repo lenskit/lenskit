@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -94,7 +95,10 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @param globalMean The mean rating value for all items.
      */
     public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
-        this.itemMeans = itemMeans;
+        if (itemMeans instanceof Serializable)
+            this.itemMeans = itemMeans;
+        else
+            this.itemMeans = new Long2DoubleOpenHashMap(itemMeans);
         this.globalMean = globalMean;
     }
 

@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.norm;
 
+import java.io.Serializable;
+
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
@@ -26,7 +28,13 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface UserRatingVectorNormalizer {
+// FIXME: discuss if this is the appropriate level for normalizer serialization
+// In some ways it feels like BaselinePredictor (which extends Serializable directly),
+// but it might be that some normalizers want to depend on the Dao directly,
+// in which case being Serializable doesn't make sense
+// FIXME: Similarity also extends Serializable for convenience reasons, too
+//   SimilarityMatrix does not, because there's a chance that it would want to be Externalizable
+public interface UserRatingVectorNormalizer extends Serializable {
     /**
      * Normalize a rating vector in-place.
      * @param userId The user's ID.

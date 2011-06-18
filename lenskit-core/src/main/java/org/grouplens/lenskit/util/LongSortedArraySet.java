@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -44,7 +45,9 @@ import java.util.NoSuchElementException;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class LongSortedArraySet extends AbstractLongSortedSet {
+public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
+    private static final long serialVersionUID = 885774794586510968L;
+    
     private final long[] data;
     private final int start, end;
 

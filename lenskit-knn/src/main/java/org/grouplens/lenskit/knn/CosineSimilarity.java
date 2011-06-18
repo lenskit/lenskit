@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
  */
 public class CosineSimilarity
     implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+
+    private static final long serialVersionUID = 8458039416860530219L;
     private static final Logger logger = LoggerFactory.getLogger(CosineSimilarity.class);
 
     private final double dampingFactor;

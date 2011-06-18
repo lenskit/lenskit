@@ -22,14 +22,18 @@ import it.unimi.dsi.fastutil.ints.AbstractIntList;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 
+import java.io.Serializable;
+
 /**
  * Efficient representation of intervals as an integer list.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IntIntervalList extends AbstractIntList {
-	private final int start;
+public class IntIntervalList extends AbstractIntList implements Serializable {
+    private static final long serialVersionUID = -914440213158448384L;
+
+    private final int start;
 	private final int end;
 	
 	/**

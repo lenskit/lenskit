@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PriorityQueue;
@@ -55,7 +56,9 @@ import org.grouplens.lenskit.params.meta.Built;
  *
  */
 @Built
-public class CachingNeighborhoodFinder implements NeighborhoodFinder {
+public class CachingNeighborhoodFinder implements NeighborhoodFinder, Serializable {
+    private static final long serialVersionUID = -8727999670477227802L;
+
     /**
      * Builder for creating CachingNeighborhoodFinders.
      * 

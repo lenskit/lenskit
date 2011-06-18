@@ -68,6 +68,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     }
     
     private static final long serialVersionUID = 1L;
+    
     private final double globalMean;
     private final double smoothing;
 

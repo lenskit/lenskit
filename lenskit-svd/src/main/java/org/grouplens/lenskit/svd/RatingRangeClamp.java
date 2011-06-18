@@ -18,12 +18,15 @@
  */
 package org.grouplens.lenskit.svd;
 
+import java.io.Serializable;
+
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.util.DoubleFunction;
 
-public final class RatingRangeClamp implements DoubleFunction {
+public final class RatingRangeClamp implements DoubleFunction, Serializable {
 
+    private static final long serialVersionUID = 1012447846494918355L;
     private final double minRating, maxRating;
     
     public RatingRangeClamp() {

@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -40,7 +41,9 @@ import java.util.NoSuchElementException;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class IntSortedArraySet extends AbstractIntSortedSet {
+public final class IntSortedArraySet extends AbstractIntSortedSet implements Serializable {
+    private static final long serialVersionUID = 8855635312935829479L;
+    
     private final int[] data;
     private final int start, end;
 

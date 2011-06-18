@@ -18,7 +18,19 @@
  */
 package org.grouplens.lenskit;
 
+import org.grouplens.lenskit.params.meta.Built;
 
+/**
+ * Builder provides a flexible mechanism for RecommenderEngineFactories to
+ * create instances of components that can be built once for the
+ * RecommenderEngine and shared by all the Recommender instances.
+ * <p>
+ * In the LenskitRecommenderEngineFactory, Builders can be configured directly,
+ * or types can be annotated with the {@link Built} annotation.
+ * 
+ * @author Michael Ludwig
+ * @param <M>
+ */
 public interface Builder<M> {
     /**
      * Build the model object of type M using the Builder's current

@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.pico;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -33,7 +34,15 @@ import org.picocontainer.Injector;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.PicoContainer;
 
-public class DependencyMonitor implements ComponentMonitor {
+/**
+ * DependencyMonitor is a ComponentMonitor that will report all types that
+ * depending on a configured type.
+ * 
+ * @author Michael Ludwig
+ */
+public class DependencyMonitor implements ComponentMonitor, Serializable {
+    private static final long serialVersionUID = 3122853872642985784L;
+
     private Class<?> monitorType;
     
     private transient Set<Object> keysDependingOnMonitor;

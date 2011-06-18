@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -61,8 +62,9 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimpleNeighborhoodFinder implements NeighborhoodFinder {
-	private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
+public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
+    private static final long serialVersionUID = -6324767320394518347L;
+    private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
     
     static class CacheEntry {
         final long userId;

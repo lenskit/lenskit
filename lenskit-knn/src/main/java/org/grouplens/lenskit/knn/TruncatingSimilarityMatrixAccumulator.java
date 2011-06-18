@@ -30,8 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * TruncatingSimilarityMatrixAccumulator creates SimilarityMatrices where rows
+ * are truncated to a specific size, so only the top N similar items are stored
+ * in each row. The created matrices are Serializable.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
     private static final Logger logger = LoggerFactory.getLogger(TruncatingSimilarityMatrixAccumulator.class);

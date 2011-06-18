@@ -18,6 +18,13 @@
  */
 package org.grouplens.lenskit;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -44,21 +51,67 @@ import org.picocontainer.behaviors.Caching;
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final PicoContainer recommenderContainer;
     private final Map<Object, Object> sessionBindings;
-    private final DAOFactory<? extends RatingDataAccessObject> manager;
+    private final DAOFactory<? extends RatingDataAccessObject> factory;
     
-    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> manager,
-                                 PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
-        this.manager = manager;
+    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> factory,
+                                    PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
+        this.factory = factory;
         this.recommenderContainer = recommenderContainer;
-        this.sessionBindings = sessionBindings;
+        
+        // clone session binding into a HashMap so that we know its Serializable
+        this.sessionBindings = new HashMap<Object, Object>(sessionBindings);
+    }
+
+    /**
+     * Create a new LenskitRecommenderEngine by reading a previously serialized
+     * engine from the given file. The new engine will be identical to the old
+     * except it will use the new DAOFactory. It is assumed that the file was
+     * created by using {@link #write(File)}.
+     * 
+     * @param factory
+     * @param file
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    @SuppressWarnings("unchecked")
+    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> factory,
+                                    File file) throws IOException, ClassNotFoundException {
+        this.factory = factory;
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+        try {
+            recommenderContainer = (PicoContainer) in.readObject();
+            sessionBindings = (Map<Object, Object>) in.readObject();
+        } finally {
+            in.close();
+        }
+    }
+
+    /**
+     * Write the state of this LenskitRecommenderEngine to the given file so
+     * that it can be recreated later using another DAOFactory. This uses
+     * default object serialization so if the factory has a PicoContainer or
+     * session bindings containing non-serializable types, this will fail.
+     * 
+     * @see #LenskitRecommenderEngine(DAOFactory, File)
+     * @param file
+     * @throws IOException
+     */
+    public void write(@Nonnull File file) throws IOException {
+        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+        try {
+            out.writeObject(recommenderContainer);
+            out.writeObject(sessionBindings);
+        } finally {
+            out.close();
+        }
     }
 
     @Override
     public LenskitRecommender open() {
-        if (manager == null)
+        if (factory == null)
             throw new IllegalStateException("No DAO creator supplied");
         // FIXME Unsafe if create() throws without closing the DAO
-        return open(manager.create(), true);
+        return open(factory.create(), true);
     }
 
     @Override

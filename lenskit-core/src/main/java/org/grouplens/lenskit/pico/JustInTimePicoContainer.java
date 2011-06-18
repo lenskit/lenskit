@@ -39,6 +39,15 @@ import org.picocontainer.PicoContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JustInTimePicoContainer is an extension of the DefaultPicoContainer to add
+ * just-in-time binding capabilities, similar to Guice. You can request
+ * components that have not been bound, and JIT will bind them if they are
+ * concrete types that can be instantiated by the container (possibly requiring
+ * more JIT bindings for dependencies).
+ * 
+ * @author Michael Ludwig
+ */
 public class JustInTimePicoContainer extends DefaultPicoContainer {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(JustInTimePicoContainer.class);

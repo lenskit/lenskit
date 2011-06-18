@@ -73,8 +73,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
     protected double[] foldIn(long user, SparseVector ratings) {
     	final int nf = model.featureCount;
     	final double[][] ifeats = model.itemFeatures;
-// FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON    	
-    	final double[] svals = null; //model.singularValues;
+//    	final double[] svals = null; //model.singularValues;
         double featurePrefs[] = new double[nf];
         DoubleArrays.fill(featurePrefs, 0.0);
 

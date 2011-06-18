@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
@@ -34,6 +35,7 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -42,28 +44,27 @@ import org.slf4j.LoggerFactory;
 /**
  * Rating build context wrapper that provides normalized ratings. They are built
  * with a {@link NormalizedRatingSnapshot.Builder}.
- * 
- * <p>This class wraps the rating build context to provide pre-normalized ratings.
- * It should share the same scope as the rating build context, so if you re-scope
- * {@link PackedRatingSnapshot} (or some other rating build context implementation)
- * in your Guice configuration, you must re-scope this class as well.
- * 
- * <p>This class
- * also breaks the rule that rating build contexts shouldn't be retained, but
- * since its scope is intended to be identical to the rating build context itself,
- * that is OK.
- * 
- * <p>This class also computes the normed data lazily, so the computation cost
- * isn't incurred unless necessary even when injected as a singleton in the Guice
- * PRODUCTION scope.
- * 
- * <p><strong>Warning:</strong> Do not bind this class as the implementation of
- * {@link RatingSnapshot} in any Guice configuration, as that will implement
- * circular loops and general brokenness. Classes which want a normalized rating
- * build context should depend on it directly.
+ * <p>
+ * This class wraps the rating build context to provide pre-normalized ratings.
+ * It should share the same scope as the rating build context, so if you
+ * re-scope {@link PackedRatingSnapshot} (or some other rating build context
+ * implementation) in your Guice configuration, you must re-scope this class as
+ * well.
+ * <p>
+ * This class also breaks the rule that rating build contexts shouldn't be
+ * retained, but since its scope is intended to be identical to the rating build
+ * context itself, that is OK.
+ * <p>
+ * This class also computes the normed data lazily, so the computation cost
+ * isn't incurred unless necessary.
+ * <p>
+ * <strong>Warning:</strong> Do not configure this component in the
+ * {@link LenskitRecommenderEngineFactory} as a plain RatingSnapshot. If this is
+ * done, reference cycles will exist as NormalizedRatingSnapshot depends on
+ * another RatingSnapshot for its data.It can be configured if combined with an
+ * annotation, such as {@link NormalizedSnapshot}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Built(ephemeral=true)
 public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {

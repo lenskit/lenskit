@@ -26,12 +26,22 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.adapters.AbstractAdapter;
 import org.picocontainer.injectors.AbstractInjector.CyclicDependencyException;
 
+/**
+ * BuilderAdapter is a ComponentAdapter that can use {@link Builder} classes or
+ * instances to build instances of specific types. If a Builder class is
+ * provided (e.g. <code>Class&lt? extends Builder&lt? extends T&gt&gt</code>), a
+ * new instance of the builder is created using injection with PicoContainer. If
+ * a Builder instance is provided, the Builder is used directly
+ * 
+ * @author Michael Ludwig
+ * @param <T>
+ */
 public class BuilderAdapter<T> extends AbstractAdapter<T> {
     private static final long serialVersionUID = 1L;
 
-    private Class<? extends Builder<? extends T>> builderType;
-    private Builder<? extends T> builder;
-    
+    private final Class<? extends Builder<? extends T>> builderType;
+
+    private transient Builder<? extends T> builder;
     private transient ThreadLocal<Boolean> cycleGuard;
     
     public BuilderAdapter(Object key, Class<? extends Builder<? extends T>> builderType) {

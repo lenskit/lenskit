@@ -20,16 +20,18 @@ package org.grouplens.lenskit.knn;
 
 import org.grouplens.lenskit.util.IndexedItemScore;
 
-
 /**
+ * <p>
  * Interface for similarity matrices for collaborative filtering.
- *
+ * <p>
  * This interface uses numeric indexes for everything. The indexes are expected
  * to be contiguous starting with 0. Similarity matrices will usually have a
  * fixed size that cannot be exceeded.
- *
+ * <p>
+ * It is strongly recommended that SimilarityMatrix implementations also
+ * implement Serializable or Externalizable.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public interface SimilarityMatrix {
     /**

@@ -41,14 +41,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
- * 
- * <p>By default, this class is injected as a singleton.  Deployments may want
- * to override that in the Guice module to allow multiple build contexts to be
- * built (e.g. every day).  Applications using LensKit will often want to use
- * explicit providers for build contexts. @TODO No longer relevant
+ * <p>
+ * Note that PackedRatingSnapshot is annotated with @Built but is declared as
+ * ephemeral. Because of this, the snapshot will not be included in built
+ * RecommenderEngines, so it is not Serializable.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Built(ephemeral=true)
 public class PackedRatingSnapshot extends AbstractRatingSnapshot {

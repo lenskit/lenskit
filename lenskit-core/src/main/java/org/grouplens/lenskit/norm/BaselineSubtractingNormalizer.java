@@ -29,6 +29,8 @@ import org.grouplens.lenskit.params.NormalizerBaseline;
  *
  */
 public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNormalizer {
+    private static final long serialVersionUID = 1449043456567302903L;
+    
     protected final BaselinePredictor baselinePredictor;
 
     /**

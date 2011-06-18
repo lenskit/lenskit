@@ -23,14 +23,16 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMaps;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SparseMatrix {
-    private List<Int2DoubleMap> data;
+public class SparseMatrix implements Serializable {
+    private static final long serialVersionUID = -2396174756253967431L;
+    private final List<Int2DoubleMap> data;
 
     public SparseMatrix() {
         data = new ObjectArrayList<Int2DoubleMap>();

@@ -153,6 +153,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      */
     public synchronized <T> void setComponent(Class<? extends Annotation> param, Class<T> type, Class<? extends T> instanceType) {
         // FIXME: Actually use the type
+        // FIXME: validate type hierarchy, people can break it with raw types
         validateAnnotation(param);
         // Verify that the types match
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
@@ -240,7 +241,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     @Override
-    public RecommenderEngine create() {
+    public LenskitRecommenderEngine create() {
         if (daoManager == null)
             throw new IllegalStateException("create() called with no DAO factory");
         RatingDataAccessObject dao = daoManager.create();
@@ -261,11 +262,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @return A new recommender engine. The engine does <b>not</b> depend on
      *         the DAO, but will use DAOs obtained when recommenders are opened.
      */
-    public RecommenderEngine create(RatingDataAccessObject dao) {
+    public LenskitRecommenderEngine create(RatingDataAccessObject dao) {
         return create(dao, null, false);
     }
     
-    protected RecommenderEngine create(RatingDataAccessObject dao, PicoContainer parent, boolean useManager) {
+    protected LenskitRecommenderEngine create(RatingDataAccessObject dao, PicoContainer parent, boolean useManager) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
         Map<Class<?>, Object> defaultBindings;
         
@@ -353,7 +354,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 
         DAOFactory<? extends RatingDataAccessObject> manager =
             useManager ? daoManager : null;       
-        RecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
+        LenskitRecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
         Recommender testOpen;
         if (useManager)
             testOpen = engine.open();
@@ -456,6 +457,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             }
         }
         
+// FIXME: log configured bindings (maybe super-type tree at a finer level)
+// FIXME: log warnings if bound types aren't serializable
 //        for (Entry<Object, Object> b: keyBindings.entrySet()) {
 //            Class annot = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getAnnotation() : null);
 //            Class type = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getType() : (Class) b.getKey());

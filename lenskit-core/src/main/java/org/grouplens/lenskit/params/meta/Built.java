@@ -25,10 +25,40 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.lenskit.Builder;
+import org.grouplens.lenskit.LenskitRecommenderEngine;
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+
+/**
+ * A component type annotated with @Built will be automatically built by a
+ * {@link Builder} when being instantiated by a
+ * {@link LenskitRecommenderEngineFactory}. It will be created during the
+ * "build" phase and the instance will be used to resolve all dependencies when
+ * creating Recommenders from the built RecommenderEngine.
+ * <p>
+ * The factory will automatically identify the type of Builder if a Builder was
+ * not manually configured for the component type. It first checks if the type
+ * has been annotated with @DefaultBuilder; then it looks for a static inner
+ * class implementing {@link Builder}; finally it looks for a Builder
+ * implementation in the same package named <i>ComponentName</i>Builder
+ * <p>
+ * Because {@link LenskitRecommenderEngine} uses default object serialization to
+ * store its state on disk, it is strongly recommended that types annotated with @Built
+ * implement Serializable or Externalizable.
+ * 
+ * @author Michael Ludwig
+ */
 @Documented
 @Inherited
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Built { 
+public @interface Built {
+    /**
+     * Return true if the built instance should not be stored in the
+     * RecommenderEngine, and is only needed for resolving dependencies during
+     * the build phase.
+     * 
+     * @return
+     */
     boolean ephemeral() default false;
 }

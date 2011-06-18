@@ -18,13 +18,15 @@
  */
 package org.grouplens.lenskit.knn;
 
+import java.io.Serializable;
+
 /**
  * Compute the similarity between two objects (typically rating vectors).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface Similarity<V> {
+public interface Similarity<V> extends Serializable {
     /**
      * Compute the similarity between two vectors.
      * @param vec1

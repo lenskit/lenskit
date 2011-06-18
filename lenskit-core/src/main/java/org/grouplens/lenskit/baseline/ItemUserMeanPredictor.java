@@ -72,6 +72,8 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     }
     
     private static final long serialVersionUID = 1L;
+    
+    // "final" but for Serializable
     protected final double damping;
 
     /**

@@ -34,7 +34,9 @@ import com.google.common.primitives.Doubles;
  */
 public class SpearmanRankCorrelation implements
         OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
-    private OptimizableVectorSimilarity<SparseVector> pearson = new PearsonCorrelation();
+    private static final long serialVersionUID = 3023239202579332883L;
+    
+    private final PearsonCorrelation pearson;
     
     public SpearmanRankCorrelation(@SimilarityDamping double shrink) {
         pearson = new PearsonCorrelation(shrink);
