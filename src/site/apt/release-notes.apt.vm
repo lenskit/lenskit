@@ -8,9 +8,50 @@
 
 Release ${project.version}
 
-  The Mercurial changelog and the
+  The first beta release!  What this means for the future is that our
+  core APIs (such as the recommenders and predictors) are pretty
+  stable, and future changes to them will be documented and called out
+  in the release notes.  In general, future release notes will be more
+  detailed, as we're working on adding more features and stabilizing
+  LensKit to a 1.0 release.
+
+  This release contains many changes.  Highlights include:
+
+  * Restructuring of recommendation and prediction interfaces to keep
+    rating-based recommendation cleanly separated from more generic
+    interfaces and facilitate reuse of predictor-based recommendation
+    logic.
+
+  * Removed <<<ScoredId>>> in favor of <<<ScoredLongList>>> for the
+    recommendation API.
+
+  * Added Slope-One recommenders.
+
+  * Lots of bugfixes.
+
+  * Increased parallelism in the evaluators (evaluators are now
+    parallized per-configuration rather than per-dataset, decreasing
+    memory requirements for parallel evaluation, and evaluation tasks
+    are aggregated from all data sets into a single work queue and
+    thread pool to keep your CPU cores pegged).
+
+  * Allow arbitrary recommender components to be extracted with
+    <<<LenskitRecommender>>>'s new <<<getComponent>>> method.  This
+    allows client code to examine things like the item-item similarity
+    matrix.
+
+  * More test cases and lots more API documentation.
+
+  []
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
   {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=${project.version}}list
-  of closed tickets}} provide more information on what has happened.
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  Keep watching LensKit for further developments and lots of exciting
+  new work this summer.
 
 Release 0.0.3
 

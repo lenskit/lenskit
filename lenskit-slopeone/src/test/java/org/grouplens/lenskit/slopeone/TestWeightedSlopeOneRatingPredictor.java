@@ -22,13 +22,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.slopeone.SlopeOneModel;
-import org.grouplens.lenskit.slopeone.SlopeOneModelBuilder;
-import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor;
 import org.junit.Test;
 
 public class TestWeightedSlopeOneRatingPredictor {
@@ -64,16 +62,16 @@ public class TestWeightedSlopeOneRatingPredictor {
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(2.6, predictor.predict(2, 9).getScore(), EPSILON);
-		assertEquals(4.2, predictor.predict(3, 6).getScore(), EPSILON);
-		assertEquals(2, predictor.predict(4, 6).getScore(), EPSILON);
-		assertEquals(2, predictor.predict(4, 9).getScore(), EPSILON);
-		assertEquals(2.5, predictor.predict(5, 6).getScore(), EPSILON);
-		assertEquals(3, predictor.predict(5, 7).getScore(), EPSILON);
-		assertEquals(3.5, predictor.predict(5, 9).getScore(), EPSILON);
-		assertEquals(1.5, predictor.predict(6, 6).getScore(), EPSILON);
-		assertEquals(2, predictor.predict(6, 7).getScore(), EPSILON);
-		assertEquals(2.5, predictor.predict(6, 9).getScore(), EPSILON);
+		assertEquals(2.6, predictor.predict(2, 9), EPSILON);
+		assertEquals(4.2, predictor.predict(3, 6), EPSILON);
+		assertEquals(2, predictor.predict(4, 6), EPSILON);
+		assertEquals(2, predictor.predict(4, 9), EPSILON);
+		assertEquals(2.5, predictor.predict(5, 6), EPSILON);
+		assertEquals(3, predictor.predict(5, 7), EPSILON);
+		assertEquals(3.5, predictor.predict(5, 9), EPSILON);
+		assertEquals(1.5, predictor.predict(6, 6), EPSILON);
+		assertEquals(2, predictor.predict(6, 7), EPSILON);
+		assertEquals(2.5, predictor.predict(6, 9), EPSILON);
 	}
 	
 	@Test
@@ -97,10 +95,10 @@ public class TestWeightedSlopeOneRatingPredictor {
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(5, predictor.predict(1, 5).getScore(), EPSILON);
-		assertEquals(2.25, predictor.predict(1, 6).getScore(), EPSILON);
-		assertEquals(5, predictor.predict(2, 5).getScore(), EPSILON);
-		assertEquals(1.75, predictor.predict(3, 4).getScore(), EPSILON);
-		assertEquals(1, predictor.predict(3, 6).getScore(), EPSILON);
+		assertEquals(5, predictor.predict(1, 5), EPSILON);
+		assertEquals(2.25, predictor.predict(1, 6), EPSILON);
+		assertEquals(5, predictor.predict(2, 5), EPSILON);
+		assertEquals(1.75, predictor.predict(3, 4), EPSILON);
+		assertEquals(1, predictor.predict(3, 6), EPSILON);
 	}
 }

@@ -67,10 +67,12 @@ public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAc
             score = s;
         }
 
+        @Override
         public int getIndex() {
             return index;
         }
 
+        @Override
         public double getScore() {
             return score;
         }

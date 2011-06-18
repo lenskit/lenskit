@@ -16,17 +16,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd;
+package org.grouplens.lenskit.data;
 
-import org.grouplens.lenskit.PredictorBasedItemRecommender;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import it.unimi.dsi.fastutil.longs.LongListIterator;
 
 /**
- * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
- * recommendation is not supported.
+ * Iterator for {@link ScoredLongList}s.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class FunkSVDRecommender extends PredictorBasedItemRecommender {
-	public FunkSVDRecommender(RatingDataAccessObject dao, FunkSVDRatingPredictor predictor) {
-		super(dao, predictor);
-	}
+public interface ScoredLongListIterator extends LongListIterator {
+    /**
+     * Get the score of the last item returned by a call to {@link #previous()}
+     * or {@link #next()}.
+     * @return The item's score.
+     */
+    double getScore();
+
+    /**
+     * Set the score of the last item returned by a call to {@link #previous()}
+     * or {@link #next()} (optional operation).
+     * 
+     * @param s The new score.
+     * @throws UnsupportedOperationException if the set/setScore operation is
+     *             not supported.
+     * @see #set(Long)
+     */
+    void setScore(double s);
 }

@@ -18,53 +18,30 @@
  */
 package org.grouplens.lenskit;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.util.Collection;
 
-import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.ScoredId;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
  * Base class to make rating predictors easier to implement.  Delegates 
- * {@link #predict(long, long)} to {@link #predict(long, Collection)} and handles
- * providing access to the DAO.  Also provides {@link #getUserRatings(long)} to
- * make rating access easy.
+ * {@link #predict(long, long)} to {@link #predict(long, Collection)}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public abstract class AbstractRatingPredictor implements RatingPredictor {
 
-    private RatingDataAccessObject dao;
-
-    public AbstractRatingPredictor(RatingDataAccessObject dao) {
-        this.dao = dao;
-    }
-
-    protected RatingDataAccessObject getDAO() {
-        return dao;
-    }
-    
-    protected Collection<Rating> getUserRatings(long user) {
-        return Cursors.makeList(dao.getUserRatings(user));
-    }
-
     /**
-     * Delegate to {@link #predict(long, java.util.Collection)}.
+     * Delegate to {@link #predict(long, Collection)}.
      */
-    public ScoredId predict(long user, long item) {
-        LongSet items = new LongSortedArraySet(new long[]{item});
-        SparseVector p = predict(user, items);
-        double pred = p.get(item);
-        if (Double.isNaN(pred))
-            return null;
-        else
-            return new ScoredId(item, pred);
+    @Override
+    public double predict(long user, long item) {
+        LongList l = new LongArrayList(1);
+        l.add(item);
+        SparseVector v = predict(user, l);
+        return v.get(item);
     }
-
 }
