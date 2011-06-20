@@ -32,15 +32,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -48,8 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Generate predictions with item-item collaborative filtering.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @see ItemItemModelBuilder
  */
 public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
@@ -57,8 +55,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     private final int neighborhoodSize;
     
     public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
-                                   @NeighborhoodSize int nnbrs,
-                                   @Nullable UserRatingVectorNormalizer normalizer) {
+                                   @NeighborhoodSize int nnbrs) {
         super(dao);
         this.model = model;
         neighborhoodSize = nnbrs;

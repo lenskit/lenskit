@@ -18,8 +18,8 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import java.util.ArrayList;
@@ -98,7 +98,6 @@ public class TestPackedRatingSnapshot {
 	@Test
 	public void testUserIndex() {
 		Index ind = snap.userIndex();
-		assertTrue(ind instanceof Index);
 		assertEquals(6, ind.getObjectCount());
 		assertTrue(ind.getIds().contains(1));
 		assertTrue(ind.getIds().contains(3));
@@ -123,7 +122,6 @@ public class TestPackedRatingSnapshot {
 	@Test
 	public void testItemIndex() {
 		Index ind = snap.itemIndex();
-		assertTrue(ind instanceof Index);
 		assertEquals(5, ind.getObjectCount());
 		assertTrue(ind.getIds().contains(7));
 		assertTrue(ind.getIds().contains(8));

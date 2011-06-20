@@ -121,7 +121,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             if (binding == null)
                 keys[i] = new InjectionParameter(type, optional);
             else
-                keys[i] = new InjectionParameter(new BindKey((Class<?>) type, binding.annotationType()), optional);
+                keys[i] = new InjectionParameter(new BindKey(type, binding.annotationType()), optional);
         }
         
         return keys;

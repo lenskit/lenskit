@@ -154,7 +154,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                     assert idx >= 0 && idx < nitems;
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(idx);
-                    ivect.put(user, (double) rating.getRating());
+                    ivect.put(user, rating.getRating());
                     if (userItems != null)
                         userItems.add(idx);
                 }

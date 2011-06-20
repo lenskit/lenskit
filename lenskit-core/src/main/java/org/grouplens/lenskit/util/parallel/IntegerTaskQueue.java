@@ -58,7 +58,7 @@ public class IntegerTaskQueue {
             t.start();
         }
         while (!threads.isEmpty()) {
-            Thread t = (Thread)threads.element();
+            Thread t = threads.element();
             try {
                 t.join(100);
                 if (!t.isAlive())
