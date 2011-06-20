@@ -227,30 +227,37 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
         private class NormedRating implements IndexedRating {
             IndexedRating brating = null;
 
+            @Override
             public long getUserId() {
                 return brating.getUserId();
             }
 
+            @Override
             public int getUserIndex() {
                 return brating.getUserIndex();
             }
 
+            @Override
             public long getItemId() {
                 return brating.getItemId();
             }
 
+            @Override
             public double getRating() {
                 return normedData[getUserIndex()].get(getItemId());
             }
 
+            @Override
             public int getItemIndex() {
                 return brating.getItemIndex();
             }
 
+            @Override
             public long getTimestamp() {
                 return brating.getTimestamp();
             }
             
+            @Override
             public IndexedRating clone() {
                 try {
                     return (IndexedRating) super.clone();

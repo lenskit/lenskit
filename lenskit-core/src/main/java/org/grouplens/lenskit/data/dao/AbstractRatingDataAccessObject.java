@@ -69,6 +69,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
             return getRatings();
         case TIMESTAMP:
             comp = new Comparator<Rating>() {
+                @Override
                 public int compare(Rating r1, Rating r2) {
                     long ts1 = r1.getTimestamp();
                     long ts2 = r2.getTimestamp();
@@ -83,6 +84,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
             break;
         case USER:
             comp = new Comparator<Rating>() {
+                @Override
                 public int compare(Rating r1, Rating r2) {
                     long u1 = r1.getUserId();
                     long u2 = r2.getUserId();
@@ -97,6 +99,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
             break;
         case ITEM:
             comp = new Comparator<Rating>() {
+                @Override
                 public int compare(Rating r1, Rating r2) {
                     long i1 = r1.getItemId();
                     long i2 = r2.getItemId();
@@ -144,6 +147,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     public Cursor<Rating> getUserRatings(final long userId, SortOrder order) {
         Cursor<Rating> base = getRatings(order);
         return Cursors.filter(base, new Predicate<Rating>() {
+            @Override
             public boolean apply(Rating r) {
                 return r.getUserId() == userId;
             }
@@ -166,6 +170,7 @@ public abstract class AbstractRatingDataAccessObject implements RatingDataAccess
     @Override
     public Cursor<Rating> getItemRatings(final long itemId, SortOrder order) {
         return Cursors.filter(getRatings(order), new Predicate<Rating>() {
+            @Override
             public boolean apply(Rating r) {
                 return r.getItemId() == itemId;
             }

@@ -47,6 +47,7 @@ public abstract class AbstractTableWriter implements TableWriter {
         return lock.isHeldByCurrentThread();
     }
     
+    @Override
     public void startRow() {
         if (isRowActive())
             throw new IllegalStateException("Row already in progress");
@@ -62,6 +63,7 @@ public abstract class AbstractTableWriter implements TableWriter {
         }
     }
     
+    @Override
     public void finishRow() throws IOException {
         if (!isRowActive())
             throw new IllegalStateException("No row in progress");
@@ -72,6 +74,7 @@ public abstract class AbstractTableWriter implements TableWriter {
         }
     }
     
+    @Override
     public void cancelRow() {
         if (!isRowActive())
             throw new IllegalStateException("No row in progress");

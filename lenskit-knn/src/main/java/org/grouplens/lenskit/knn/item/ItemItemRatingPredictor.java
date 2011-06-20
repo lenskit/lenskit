@@ -70,6 +70,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     }
     
     private static final Comparator<IndexedItemScore> itemComp = new Comparator<IndexedItemScore>() {
+        @Override
         public int compare(IndexedItemScore s1, IndexedItemScore s2) {
             return Double.compare(s2.getScore(), s1.getScore());
         }

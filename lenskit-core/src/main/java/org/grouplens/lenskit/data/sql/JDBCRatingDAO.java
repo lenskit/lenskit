@@ -194,7 +194,8 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
     		rset = stmt.executeQuery();
     	}
     	
-    	public boolean hasNext() {
+    	@Override
+        public boolean hasNext() {
     		if (!advanced) {
     			try {
 					valid = rset.next();
@@ -206,7 +207,8 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
     		return valid;
     	}
     	
-    	public long nextLong() {
+    	@Override
+        public long nextLong() {
     		if (!hasNext())
     			throw new NoSuchElementException();
     		advanced = false;
@@ -217,7 +219,8 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
 			}
     	}
     	
-    	public void close() {
+    	@Override
+        public void close() {
     		try {
     			rset.close();
     		} catch (SQLException e) {
@@ -278,7 +281,8 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
     		return rating;
     	}
     	
-    	public void close() {
+    	@Override
+        public void close() {
     		try {
 				resultSet.close();
 			} catch (SQLException e) {

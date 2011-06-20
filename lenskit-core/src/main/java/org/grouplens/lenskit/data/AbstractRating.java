@@ -48,6 +48,7 @@ public abstract class AbstractRating implements Rating {
             ^ Long.valueOf(getTimestamp()).hashCode();
     }
     
+    @Override
     public Rating clone() {
         try {
             return (Rating) super.clone();

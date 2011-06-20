@@ -44,5 +44,6 @@ public interface IndexedRating extends Rating {
 	 */
 	int getItemIndex();
 	
-	IndexedRating clone();
+	@Override
+    IndexedRating clone();
 }

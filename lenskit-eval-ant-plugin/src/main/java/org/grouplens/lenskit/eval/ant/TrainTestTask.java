@@ -95,7 +95,8 @@ public class TrainTestTask extends Task {
 	    properties.put(prop.getName(), prop.getValue());
 	}
 	
-	public void execute() throws BuildException {
+	@Override
+    public void execute() throws BuildException {
 		if (databaseDriver != null) {
 			try {
 				Class.forName(databaseDriver);
@@ -126,6 +127,7 @@ public class TrainTestTask extends Task {
             dbFiles[i] = new File(dbs.getBasedir(), dbNames[i]);
         }
         Arrays.sort(dbFiles, new Comparator<File>() {
+            @Override
             public int compare(File f1, File f2) {
                 return Longs.compare(f1.length(), f2.length());
             }

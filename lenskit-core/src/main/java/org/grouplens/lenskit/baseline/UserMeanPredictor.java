@@ -98,6 +98,7 @@ public class UserMeanPredictor implements BaselinePredictor {
         return ConstantPredictor.constantPredictions(items, mean);
     }
     
+    @Override
     public String toString() {
     	return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
     }

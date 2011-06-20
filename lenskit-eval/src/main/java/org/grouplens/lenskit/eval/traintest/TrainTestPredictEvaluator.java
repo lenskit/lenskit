@@ -140,12 +140,14 @@ public class TrainTestPredictEvaluator {
         
         final LazyValue<SharedRatingSnapshot> snap =
             new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
+                @Override
                 public SharedRatingSnapshot call() {
                     return loadSnapshot(daoMgr);
                 }
             });
         final LazyValue<List<Rating>> preload =
             new LazyValue<List<Rating>>(new Callable<List<Rating>>() {
+                @Override
                 public List<Rating> call() {
                     RatingDataAccessObject dao = daoMgr.create();
                     try {
@@ -157,6 +159,7 @@ public class TrainTestPredictEvaluator {
             });
         
         List<Runnable> tasks = Lists.transform(algorithms, new Function<AlgorithmInstance, Runnable>() {
+            @Override
             public Runnable apply(AlgorithmInstance algo) {
                 return new EvalTask(daoMgr, testDaoMgr, results, algo, preload, snap);
             }

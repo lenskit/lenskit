@@ -59,18 +59,22 @@ public class SimpleRating extends AbstractRating {
         timestamp = ts;
     }
 
+    @Override
     final public long getUserId() {
         return userId;
     }
 
+    @Override
     final public long getItemId() {
         return itemId;
     }
 
+    @Override
     final public double getRating() {
         return rating;
     }
 
+    @Override
     final public long getTimestamp() {
         return timestamp;
     }

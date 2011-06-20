@@ -48,7 +48,8 @@ public abstract class AbstractRatingSnapshot implements RatingSnapshot {
 		}
 	}
 	
-	@OverridingMethodsMustInvokeSuper
+	@Override
+    @OverridingMethodsMustInvokeSuper
 	public void close() {
 		cache = null;
 	}

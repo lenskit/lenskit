@@ -99,24 +99,31 @@ public class Cursors2 {
             return (LongCursor) cursor;
 
         return new LongCursor() {
+            @Override
             public boolean hasNext() {
                 return cursor.hasNext();
             }
+            @Override
             public Long next() {
                 return cursor.next();
             }
+            @Override
             public Long fastNext() {
                 return cursor.fastNext();
             }
+            @Override
             public LongIterable fast() {
                 return this;
             }
+            @Override
             public long nextLong() {
                 return next();
             }
+            @Override
             public void close() {
                 cursor.close();
             }
+            @Override
             public int getRowCount() {
                 return cursor.getRowCount();
             }

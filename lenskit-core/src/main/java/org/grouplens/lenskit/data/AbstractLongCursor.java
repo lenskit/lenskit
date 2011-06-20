@@ -41,6 +41,7 @@ public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
         return nextLong();
     }
 
+    @Override
     public LongIterator iterator() {
         return new LongCursorIterator(this);
     }

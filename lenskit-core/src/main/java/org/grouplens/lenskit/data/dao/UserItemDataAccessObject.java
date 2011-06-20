@@ -69,5 +69,6 @@ public interface UserItemDataAccessObject extends Closeable {
      * no longer usable, and a new DAO must be re-opened from a
      * DataAccessObjectManager.
      */
+    @Override
     public void close();
 }

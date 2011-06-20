@@ -50,7 +50,8 @@ public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
 		return userIndex;
 	}
 	
-	public IndexedRating clone() {
+	@Override
+    public IndexedRating clone() {
 	    return (IndexedRating) super.clone();
 	}
 }

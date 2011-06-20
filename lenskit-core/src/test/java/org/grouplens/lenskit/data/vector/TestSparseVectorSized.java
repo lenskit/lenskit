@@ -29,6 +29,7 @@ public class TestSparseVectorSized extends TestSparseVector {
      * Construct a simple rating vector with three ratings.
      * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
      */
+    @Override
     protected MutableSparseVector simpleVector() {
         long[] keys = {3, 7, 8, 2};
         double[] values = {1.5, 3.5, 2, 5};

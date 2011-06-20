@@ -31,6 +31,7 @@ public class MutableRating implements Rating {
     private double value;
     private long timestamp;
     
+    @Override
     public long getUserId() {
         return uid;
     }
@@ -38,6 +39,7 @@ public class MutableRating implements Rating {
     	this.uid = uid;
     }
     
+    @Override
     public long getItemId() {
         return iid;
     }
@@ -45,6 +47,7 @@ public class MutableRating implements Rating {
     	this.iid = iid;
     }
     
+    @Override
     public double getRating() {
         return value;
     }
@@ -52,6 +55,7 @@ public class MutableRating implements Rating {
     	value = v;
     }
     
+    @Override
     public long getTimestamp() {
         return timestamp;
     }
@@ -59,6 +63,7 @@ public class MutableRating implements Rating {
     	timestamp = ts;
     }
     
+    @Override
     public Rating clone() {
         return new SimpleRating(uid, iid, value, timestamp);
     }

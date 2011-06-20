@@ -222,6 +222,7 @@ public class TestSparseVector {
         Long[] keys = Iterators.toArray(
                 Iterators.transform(simpleVector().fastIterator(),
                         new Function<Long2DoubleMap.Entry,Long>() {
+                    @Override
                     public Long apply(Long2DoubleMap.Entry e) {
                         return e.getKey();
                     }

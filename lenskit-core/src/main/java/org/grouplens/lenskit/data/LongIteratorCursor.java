@@ -37,6 +37,7 @@ public class LongIteratorCursor extends AbstractLongCursor {
         return iterator.next();
     }
 
+    @Override
     public long nextLong() {
         return iterator.nextLong();
     }

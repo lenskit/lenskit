@@ -190,6 +190,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     public Iterable<Long2DoubleMap.Entry> fast() {
         return new Iterable<Long2DoubleMap.Entry>() {
+            @Override
             public Iterator<Long2DoubleMap.Entry> iterator() {
                 return fastIterator();
             }
@@ -224,6 +225,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         // a reproducible sort irrespective of sorting algorithm.
         if (decreasing) {
             cmp = new AbstractLongComparator() {
+                @Override
                 public int compare(long k1, long k2) {
                     int c = Double.compare(get(k2), get(k1));
                     if (c != 0)
@@ -234,6 +236,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             };
         } else {
             cmp = new AbstractLongComparator() {
+                @Override
                 public int compare(long k1, long k2) {
                     int c = Double.compare(get(k1), get(k2));
                     if (c != 0)

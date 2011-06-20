@@ -115,5 +115,6 @@ public interface RatingSnapshot extends Closeable {
 	 * to fail.  Objects returned from those methods, however, should continue
 	 * to be valid.
 	 */
-	void close();
+	@Override
+    void close();
 }

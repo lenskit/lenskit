@@ -58,6 +58,7 @@ public class ScannerRatingCursor extends AbstractRatingCursor<Rating> {
         rating = null;
     }
     
+    @Override
     protected Rating poll() {
         if (scanner == null) return null;
         

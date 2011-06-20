@@ -83,11 +83,13 @@ class PackedRatingCollection extends AbstractCollection<IndexedRating>
 			iter = indices.iterator();
 		}
 		
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return iter.hasNext();
 		}
 		
-		public IndexedRating next() {
+		@Override
+        public IndexedRating next() {
 			final int index = iter.next();
 			return data.makeRating(index);
 		}
@@ -106,11 +108,13 @@ class PackedRatingCollection extends AbstractCollection<IndexedRating>
 			iter = indices.iterator();
 		}
 		
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return iter.hasNext();
 		}
 		
-		public IndexedRating next() {
+		@Override
+        public IndexedRating next() {
 			final int index = iter.next();
 			if (rating == null)
 				rating = data.makeIndirectRating(index);

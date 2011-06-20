@@ -22,6 +22,7 @@ public interface DoubleFunction {
     double apply(double v);
 
     public static final class Identity implements DoubleFunction {
+        @Override
         public double apply(double v) {
             return v;
         }
