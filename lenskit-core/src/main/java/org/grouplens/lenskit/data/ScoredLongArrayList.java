@@ -221,7 +221,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public boolean addAll(int index, LongCollection c) {
         items.addAll(index, c);
         if (scores != null) {
-            // FIXME Unsafe in presence of array allocation failure
+            // FIXME Don't allocate a new array
             scores.addElements(index, makeNaNArray(c.size()));
             assert items.size() == scores.size();
         }

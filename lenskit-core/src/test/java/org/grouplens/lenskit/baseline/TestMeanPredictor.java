@@ -99,29 +99,6 @@ public class TestMeanPredictor {
         assertEquals(4.33333, pv.get(7), 0.001);
     }
 
-    @Test
-    public void testUserMeanBaselineNoFastutil() {
-        // FIXME: is this method still necessary?
-        BaselinePredictor pred = build(new UserMeanPredictor.Builder());
-        long[] items = {5, 7, 10};
-        double[] ratings = {3, 6, 4};
-        SparseVector map = MutableSparseVector.wrap(items, ratings);
-        // unseen item
-        SparseVector pv = pred.predict(10l, map, itemSet(2));
-        assertEquals(4.33333, pv.get(2), 0.001);
-        // seen item - should be same avg
-        pv = pred.predict(10l, map, itemSet(7));
-        assertEquals(4.33333, pv.get(7), 0.001);
-
-        // try twice
-        LongCollection items2 = new LongArrayList();
-        items2.add(7);
-        items2.add(2);
-        SparseVector preds = pred.predict(10l, map, items2);
-        assertEquals(4.33333, preds.get(2l), 0.001);
-        assertEquals(4.33333, preds.get(7l), 0.001);
-    }
-
     /**
      * Test falling back to an empty user.
      */

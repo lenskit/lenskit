@@ -47,7 +47,6 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 
 	@Override
     protected ScoredLongList recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
-	    // TODO Share code with corresponding method in PredictorBasedItemRecommender.
 		if (candidates == null)
 			candidates = getPredictableItems(user, ratings);
 		if (!exclude.isEmpty())

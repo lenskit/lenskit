@@ -110,8 +110,13 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public LenskitRecommender open() {
         if (factory == null)
             throw new IllegalStateException("No DAO creator supplied");
-        // FIXME Unsafe if create() throws without closing the DAO
-        return open(factory.create(), true);
+        RatingDataAccessObject dao = factory.create();
+        try {
+            return open(factory.create(), true);
+        } catch (RuntimeException e) {
+            dao.close();
+            throw e;
+        }
     }
 
     @Override

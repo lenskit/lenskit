@@ -26,9 +26,6 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 /**
  * Interface for prediction accuracy evalutors.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- * @todo Add safety to the relationship between setup, accumulators, and the
- * builder.
  */
 public interface PredictionEvaluator {
     /**
