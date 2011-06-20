@@ -116,8 +116,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     @SuppressWarnings("unchecked")
     public synchronized void set(Class<? extends Annotation> param, Number instance) {
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-        if (Number.class.isAssignableFrom(paramType) && instance instanceof Number)
-            instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, (Number) instance);
+        if (Number.class.isAssignableFrom(paramType))
+            instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, instance);
+        else
+            throw new IllegalArgumentException("Parameter type not Number-compatible");
         updateBindings(annotationBindings, param, instance);
     }
     
@@ -169,6 +171,12 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
+    /**
+     * Set the builder to use for a particular component.
+     * @param param The annotation class specifying the role for the parameter
+     * (must be annotated with {@link Parameter}).
+     * @param type The type of component to be built.
+     */
     public synchronized <T> void setBuilder(Class<? extends Annotation> param, Class<T> type, Class<? extends Builder<? extends T>> builderType) {
         validateAnnotation(param);
         if (builderType != null) {
