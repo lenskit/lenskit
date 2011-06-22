@@ -56,6 +56,7 @@ public class TrainTestTask extends Task {
 	private File outFile;
 	private File script;
 	private int threadCount = Runtime.getRuntime().availableProcessors();
+	private boolean isolateDatasets = false;
 	private File predictionOutput;
 	private boolean useTimestamp = true;
 	private Properties properties = new Properties();
@@ -77,6 +78,10 @@ public class TrainTestTask extends Task {
 	        threadCount = n;
 	    else
 	        threadCount = Runtime.getRuntime().availableProcessors();
+	}
+	
+	public void setIsolate(boolean isolate) {
+	    isolateDatasets = isolate;
 	}
 	
 	public void setPredictions(File f) {
@@ -133,28 +138,41 @@ public class TrainTestTask extends Task {
             }
         });
         
-        ExecutorService svc = Executors.newFixedThreadPool(threadCount);
-        try {
-            List<Future<?>> results = new ArrayList<Future<?>>();
-            for (int i = 0; i < dbFiles.length; i++) {
-                File dbf = dbFiles[i];
-                String name = FileUtils.basename(dbf.getName(), ".db");
-                String dsn = "jdbc:sqlite:" + dbf.getPath();
-                TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(dsn, "train", "test");
-                eval.setTimestampEnabled(useTimestamp);
-                Collection<Runnable> tasks = eval.makeEvalTasks(recipe.getAlgorithms(), recipe.makeAccumulator(name));
-                for (Runnable task: tasks) {
-                    results.add(svc.submit(task));
-                }
+        List<TrainTestPredictEvaluator> evaluators =
+            new ArrayList<TrainTestPredictEvaluator>(dbFiles.length);
+        for (int i = 0; i < dbFiles.length; i++) {
+            File dbf = dbFiles[i];
+            String name = FileUtils.basename(dbf.getName(), ".db");
+            String dsn = "jdbc:sqlite:" + dbf.getPath();
+            TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(dsn, "train", "test");
+            eval.setName(name);
+            eval.setTimestampEnabled(useTimestamp);
+            evaluators.add(eval);
+        }
+        
+        if (isolateDatasets) {
+            for (TrainTestPredictEvaluator eval: evaluators) {
+                eval.runEvaluation(recipe);
             }
-
+        } else {
+            ExecutorService svc = Executors.newFixedThreadPool(threadCount);
             try {
-                ExecHelpers.waitAll(results);
-            } catch (ExecutionException e) {
-                throw new BuildException(e);
+                List<Future<?>> results = new ArrayList<Future<?>>();
+                for (TrainTestPredictEvaluator eval: evaluators) {
+                    Collection<Runnable> tasks = eval.makeEvalTasks(recipe);
+                    for (Runnable task: tasks) {
+                        results.add(svc.submit(task));
+                    }
+                }
+
+                try {
+                    ExecHelpers.waitAll(results);
+                } catch (ExecutionException e) {
+                    throw new BuildException(e);
+                }
+            } finally {
+                svc.shutdown();
             }
-        } finally {
-            svc.shutdown();
         }
 	}
 }

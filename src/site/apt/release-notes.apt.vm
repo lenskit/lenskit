@@ -8,6 +8,23 @@
 
 Release ${project.version}
 
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=${project.version}}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+* Evaluator changes
+
+  * Add boolean <<<isolate>>> option to the train-test Ant task to
+    process datasets one at a time rather than parallelizing
+    evaluations across this one.  Useful for reducing memory
+    consumption evaluations on large data sets.
+
+  []
+
+Release 0.1
+
   The first beta release!  What this means for the future is that our
   core APIs (such as the recommenders and predictors) are pretty
   stable, and future changes to them will be documented and called out
@@ -46,7 +63,7 @@ Release ${project.version}
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=${project.version}}list
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.1}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 

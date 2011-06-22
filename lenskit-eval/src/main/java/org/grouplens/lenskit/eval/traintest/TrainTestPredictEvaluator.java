@@ -63,9 +63,11 @@ public class TrainTestPredictEvaluator {
     private String testTable;
     private boolean timestamp = true;
     private int threadCount = 0;
+    private String name;
     
     public TrainTestPredictEvaluator(String dbUrl, String train, String test) {
         databaseUrl = dbUrl;
+        name = dbUrl;
         trainingTable = train;
         testTable = test;
     }
@@ -80,6 +82,23 @@ public class TrainTestPredictEvaluator {
     
     public void setThreadCount(int nthreads) {
         threadCount = nthreads;
+    }
+    
+    /**
+     * Get the identifying name of this evaluator. The default name is the database
+     * URL.
+     * @return The name provided by {@link #setName(String)} or the database URL.
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * Provide a meaningful name for this evaluator.
+     * @param n The evaluator's name.
+     */
+    public void setName(String n) {
+        name = n;
     }
     
     public int getThreadCount() {
@@ -109,10 +128,24 @@ public class TrainTestPredictEvaluator {
         return new JDBCRatingDAO.Factory(databaseUrl, testfac);
     }
     
-    public void evaluateAlgorithms(List<AlgorithmInstance> algorithms, 
-        final ResultAccumulator results) {
+    /**
+     * Evaluate a set of algorithms.
+     * @param recipe The evaluation recipe.
+     * @deprecated Use {@link #runEvaluation(EvaluationRecipe)} instead.  This
+     * method will be removed in a future version of LensKit.
+     */
+    @Deprecated
+    public void evaluateAlgorithms(EvaluationRecipe recipe) {
+        runEvaluation(recipe);
+    }
+    
+    /**
+     * Run a train-test evaluation with an evaluation recipe.
+     * @param recipe The evaluation recipe to execute.
+     */
+    public void runEvaluation(EvaluationRecipe recipe) {
         
-        List<Runnable> tasks = makeEvalTasks(algorithms, results);
+        List<Runnable> tasks = makeEvalTasks(recipe);
         
         ExecutorService svc = Executors.newFixedThreadPool(getThreadCount());
         try {
@@ -126,22 +159,22 @@ public class TrainTestPredictEvaluator {
     }
 
     /**
-     * Make a list of tasks for the evaluation against this set of algorithms
-     * and accumulator.  These can then run in a thread pool if desired.
-     * @param algorithms A list of algorithm configurations to evaluate.
-     * @param results Accumulator for evaluation results.
+     * Make a list of tasks for running this evaluation recipe.
+     * @param An evaluation recipe to run.
      * @return The tasks to run to perform a train-test evaluation on the algorithms.
      */
-    public List<Runnable> makeEvalTasks(List<AlgorithmInstance> algorithms,
-        final ResultAccumulator results) {
+    public List<Runnable> makeEvalTasks(EvaluationRecipe recipe) {
         
         final DAOFactory<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
         final DAOFactory<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
+        
+        final ResultAccumulator accum = recipe.makeAccumulator(getName());
         
         final LazyValue<SharedRatingSnapshot> snap =
             new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
                 @Override
                 public SharedRatingSnapshot call() {
+                    logger.info("Loading snapshot for {}", name);
                     return loadSnapshot(daoMgr);
                 }
             });
@@ -149,6 +182,7 @@ public class TrainTestPredictEvaluator {
             new LazyValue<List<Rating>>(new Callable<List<Rating>>() {
                 @Override
                 public List<Rating> call() {
+                    logger.info("Preloading ratings for {}", name);
                     RatingDataAccessObject dao = daoMgr.create();
                     try {
                         return Cursors.makeList(dao.getRatings());
@@ -158,18 +192,17 @@ public class TrainTestPredictEvaluator {
                 }
             });
         
-        List<Runnable> tasks = Lists.transform(algorithms, new Function<AlgorithmInstance, Runnable>() {
+        List<Runnable> tasks = Lists.transform(recipe.getAlgorithms(),
+                                               new Function<AlgorithmInstance, Runnable>() {
             @Override
             public Runnable apply(AlgorithmInstance algo) {
-                return new EvalTask(daoMgr, testDaoMgr, results, algo, preload, snap);
+                return new EvalTask(daoMgr, testDaoMgr, accum, algo, preload, snap);
             }
         });
         return tasks;
     }
 
     private SharedRatingSnapshot loadSnapshot(DAOFactory<? extends RatingDataAccessObject> daoMgr) {
-        logger.info("Loading rating snapshot data from {}", databaseUrl);
-        
         RatingDataAccessObject dao = daoMgr.create();
         try {
             return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
