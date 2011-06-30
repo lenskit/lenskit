@@ -119,6 +119,7 @@ public class MutableSparseVector extends SparseVector {
      * (or if the original value was {@link Double#NaN}).
      */
     public final double set(long key, double value) {
+        checkValid();
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             double v = values[idx];
@@ -137,6 +138,7 @@ public class MutableSparseVector extends SparseVector {
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
     public final double add(long key, double value) {
+        checkValid();
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -155,6 +157,7 @@ public class MutableSparseVector extends SparseVector {
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
     public final double addOrReplace(long key, double value) {
+        checkValid();
         final int idx = Arrays.binarySearch(keys, key);
         if (idx >= 0) {
             clearCachedValues();
@@ -176,6 +179,8 @@ public class MutableSparseVector extends SparseVector {
      * @param other The vector to subtract.
      */
     public final void subtract(final SparseVector other) {
+        checkValid();
+        other.checkValid();
         int i = 0;
         int j = 0;
         while (i < keys.length && j < other.keys.length) {
@@ -201,6 +206,8 @@ public class MutableSparseVector extends SparseVector {
      * @param other The vector to add.
      */
     public final void add(final SparseVector other) {
+        checkValid();
+        other.checkValid();
         final int len = keys.length;
         final int olen = other.keys.length;
         int i = 0;
@@ -224,6 +231,7 @@ public class MutableSparseVector extends SparseVector {
      * @return A new rating vector which is a copy of this one.
      */
     public final MutableSparseVector copy() {
+        checkValid();
         return mutableCopy();
     }
     
@@ -232,6 +240,7 @@ public class MutableSparseVector extends SparseVector {
      * @return A new rating vector which is a copy of this one.
      */
     public final MutableSparseVector copy(boolean removeNaN) {
+        checkValid();
         if (removeNaN) {
             boolean copy = false;
             for (int i = 0; !copy && i < size; i++) {
@@ -272,6 +281,7 @@ public class MutableSparseVector extends SparseVector {
      * @return An immutable vector built from this vector's data.
      */
     public ImmutableSparseVector freeze() {
+        checkValid();
     	ImmutableSparseVector isv = new ImmutableSparseVector(keys, values, size);
         invalidate();
         return isv;

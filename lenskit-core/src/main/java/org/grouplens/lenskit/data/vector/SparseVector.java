@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -128,18 +129,32 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     /**
      * Invalidate the sparse vector. Any subsequent operation throws
      * {@link IllegalStateException}.
-     * @see #checkValid()
+     * @see #isValid()
      */
     protected void invalidate() {
         values = null;
     }
     
     /**
+     * Query whether this vector is valid.
+     * 
+     * <p>
+     * Vectors are marked invalid by the {@link #invalidate()} method, which
+     * operates by clearing the {@link #values} vector. This method is final so
+     * it can be inlined aggressively.
+     * 
+     * @return <tt>true</tt> iff the vector is valid.
+     */
+    public final boolean isValid() {
+        return values != null;
+    }
+
+    /**
      * Check that this vector is valid, throwing {@link IllegalStateException}
      * if it is not.
      */
     protected final void checkValid() {
-        if (values == null)
+        if (!isValid())
             throw new IllegalStateException("Invalid vector");
     }
 
@@ -159,6 +174,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the value (or <var>dft</var> if no such key exists)
      */
     public final double get(long key, double dft) {
+        checkValid();
+        
         int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0)
             return values[idx];
@@ -167,20 +184,20 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     /**
-     * Query whether the vector contains an entry for the key in question.  If
-     * the vector contains an entry whose value is {@link Double#NaN}, <tt>true</tt>
-     * is still returned.  This can change if it is not useful. 
+     * Query whether the vector contains an entry for the key in question. If
+     * the vector contains an entry whose value is {@link Double#NaN},
+     * <tt>true</tt> is still returned.
+     * 
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.
      */
     public final boolean containsKey(long key) {
+        checkValid();
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
     
     /**
      * Deprecated alias for {@link #containsKey(long)}.
-     * @param id
-     * @return true if the key <var>id</var> exists.
      */
     @Deprecated
     public final boolean containsId(long id) {
@@ -203,6 +220,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return a fast iterator over all key/value pairs
      */
     public Iterator<Long2DoubleMap.Entry> fastIterator() {
+        checkValid();
         return new FastIterImpl();
     }
 
@@ -216,6 +234,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     public LongSortedSet keySet() {
+        checkValid();
         return new LongSortedArraySet(keys, 0, size);
     }
     
@@ -234,6 +253,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The sorted list of keys of this vector.
      */
     public LongArrayList keysByValue(boolean decreasing) {
+        checkValid();
         if (!isComplete())
             throw new IllegalStateException();
         long[] skeys = Arrays.copyOf(keys, size);
@@ -270,14 +290,17 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     public DoubleCollection values() {
+        checkValid();
         return DoubleCollections.unmodifiable(new DoubleArrayList(values, 0, size));
     }
 
     public final int size() {
+        checkValid();
         return size;
     }
 
     public final boolean isEmpty() {
+        checkValid();
         return size == 0;
     }
 
@@ -286,6 +309,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The L2 norm of the vector
      */
     public double norm() {
+        checkValid();
         if (norm == null) {
             double ssq = 0;
             for (int i = 0; i < size; i++) {
@@ -302,6 +326,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the sum of the vector's values
      */
     public double sum() {
+        checkValid();
         if (sum == null) {
             double s = 0;
             for (int i = 0; i < size; i++) {
@@ -318,6 +343,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the mean of the vector
      */
     public double mean() {
+        checkValid();
         if (mean == null) {
             mean = size > 0 ? sum() / size : 0;
         }
@@ -330,10 +356,14 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The dot product of this vector and <var>other</var>.
      */
     public double dot(SparseVector other) {
+        checkValid();
+        other.checkValid();
         double dot = 0;
         int i = 0;
         int j = 0;
-        while (i < size && j < other.size) {
+        final int sz1 = size;
+        final int sz2 = other.size;
+        while (i < sz1 && j < sz2) {
             if (keys[i] == other.keys[j]) {
                 dot += values[i] * other.values[j];
                 i++;
@@ -353,10 +383,14 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The number of keys shared between this vector and <var>other</var>.
      */
     public int countCommonKeys(SparseVector other) {
+        checkValid();
+        other.checkValid();
         int n = 0;
         int i = 0;
         int j = 0;
-        while (i < size && j < other.size) {
+        final int sz1 = size;
+        final int sz2 = other.size;
+        while (i < sz1 && j < sz2) {
             if (keys[i] == other.keys[j]) {
                 n++;
                 i++;
@@ -376,6 +410,9 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             return true;
         } else if (o instanceof SparseVector) {
             SparseVector vo = (SparseVector) o;
+            if (!isValid()) return false;
+            if (!vo.isValid()) return false;
+            
             int sz = size();
             int osz = vo.size();
             if (sz != osz) {
@@ -400,6 +437,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     @Override
     public int hashCode() {
+        if (!isValid()) return 0;
         if (hashCode == null) {
             int hash = 0;
             final int sz = size();
@@ -429,6 +467,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return A clone of this sparse vector.
      */
     protected SparseVector clone(boolean copyValues) {
+        checkValid();
         SparseVector v;
         try {
             v = (SparseVector) super.clone();
@@ -441,6 +480,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
     
     public boolean isComplete() {
+        if (!isValid()) return false;
         for (int i = 0; i < size; i++) {
     		if (Double.isNaN(values[i])) return false;
     	}
@@ -455,6 +495,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         }
         @Override
         public Entry next() {
+            if (!isValid()) throw new ConcurrentModificationException();
             if (hasNext())
                 return new Entry(pos++);
             else
@@ -474,6 +515,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         }
         @Override
         public Entry next() {
+            if (!isValid()) throw new ConcurrentModificationException();
             if (hasNext()) {
                 entry.pos += 1;
                 return entry;
@@ -525,6 +567,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * identical.
      */
     public ImmutableSparseVector immutable() {
+        checkValid();
         return new ImmutableSparseVector(keys, values);
     }
     
@@ -534,6 +577,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * this vector.
      */
     public MutableSparseVector mutableCopy() {
+        checkValid();
         return new MutableSparseVector(keys, Arrays.copyOf(values, values.length));
     }
 
