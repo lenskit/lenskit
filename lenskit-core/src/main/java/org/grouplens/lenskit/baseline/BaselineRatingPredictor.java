@@ -24,6 +24,7 @@ import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * {@link DynamicRatingPredictor} that delegates to the baseline predictor.  This
@@ -46,9 +47,9 @@ public class BaselineRatingPredictor extends AbstractDynamicRatingPredictor {
     }
 
     @Override
-    public SparseVector predict(long user, SparseVector ratings,
+    public SparseVector predict(UserRatingVector ratings,
         Collection<Long> items) {
-        return predictor.predict(user, ratings, items);
+        return predictor.predict(ratings, items);
     }
 
 }

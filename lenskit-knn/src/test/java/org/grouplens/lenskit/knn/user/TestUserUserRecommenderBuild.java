@@ -33,8 +33,6 @@ import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +55,6 @@ public class TestUserUserRecommenderBuild {
 		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
 		factory.setComponent(DynamicRatingItemRecommender.class, UserUserRecommender.class);
 		factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
-		factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
 
 		engine = factory.create();
 	}

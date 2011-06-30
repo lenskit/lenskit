@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
@@ -43,12 +43,12 @@ public class SlopeOneRecommender extends PredictorBasedDRItemRecommender {
     }
 	
 	@Override
-	protected LongSet getPredictableItems(long user, SparseVector ratings) {
+	protected LongSet getPredictableItems(UserRatingVector user) {
 		if (predictor.getModel().getBaselinePredictor() != null) return predictor.getModel().getItemUniverse();
 		else {
 			LongSet predictable = new LongOpenHashSet();
 			for (long id1 : predictor.getModel().getItemUniverse()) {
-				LongIterator iter = ratings.keySet().iterator();
+				LongIterator iter = user.keySet().iterator();
 				int nusers = 0;
 				while (iter.hasNext() && nusers == 0) {
 					nusers += predictor.getModel().getCoratings(id1, iter.next());

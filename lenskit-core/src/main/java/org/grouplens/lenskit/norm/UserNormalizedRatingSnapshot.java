@@ -28,14 +28,14 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
+import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rating build context wrapper that provides normalized ratings. They are built
- * with a {@link NormalizedRatingSnapshot.Builder}.
+ * with a {@link UserNormalizedRatingSnapshot.Builder}.
  * <p>
  * This class wraps the rating build context to provide pre-normalized ratings.
  * It should share the same scope as the rating build context, so if you
@@ -60,39 +60,45 @@ import org.slf4j.LoggerFactory;
  * <p>
  * <strong>Warning:</strong> Do not configure this component in the
  * {@link LenskitRecommenderEngineFactory} as a plain RatingSnapshot. If this is
- * done, reference cycles will exist as NormalizedRatingSnapshot depends on
+ * done, reference cycles will exist as UserNormalizedRatingSnapshot depends on
  * another RatingSnapshot for its data.It can be configured if combined with an
  * annotation, such as {@link NormalizedSnapshot}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Built(ephemeral=true)
-public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
+public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     /**
      * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
-     * with a specific {@link UserRatingVectorNormalizer}.
+     * with a specific {@link VectorNormalizer} applied to the user ratings.
      * 
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<NormalizedRatingSnapshot> {
-        private UserRatingVectorNormalizer normalizer;
+    public static class Builder extends RecommenderComponentBuilder<UserNormalizedRatingSnapshot> {
+        private VectorNormalizer<? super UserRatingVector>normalizer;
         
-        public void setNormalizer(UserRatingVectorNormalizer normalizer) {
+        /**
+         * Set the normalizer to use.
+         * @param normalizer
+         */
+        @UserRatingVectorNormalizer
+        public void setNormalizer(VectorNormalizer<? super UserRatingVector> normalizer) {
             this.normalizer = normalizer;
         }
         
         @Override
-        public NormalizedRatingSnapshot build() {
-            return new NormalizedRatingSnapshot(snapshot, normalizer);
+        public UserNormalizedRatingSnapshot build() {
+            return new UserNormalizedRatingSnapshot(snapshot, normalizer);
         }
     }
     
-    private static final Logger logger = LoggerFactory.getLogger(NormalizedRatingSnapshot.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
     private final RatingSnapshot snapshot;
-    private final UserRatingVectorNormalizer normalizer;
+    private final VectorNormalizer<? super UserRatingVector> normalizer;
     private SparseVector[] normedData;
     
-    public NormalizedRatingSnapshot(RatingSnapshot snapshot, UserRatingVectorNormalizer norm) {
+    public UserNormalizedRatingSnapshot(RatingSnapshot snapshot, 
+                                        VectorNormalizer<? super UserRatingVector> norm) {
         super();
     	this.snapshot = snapshot;
         normalizer = norm;
@@ -111,16 +117,15 @@ public class NormalizedRatingSnapshot extends AbstractRatingSnapshot {
                 final long uid = uit.nextLong();
                 final int i = uidx.getIndex(uid);
                 assert normedData[i] == null;
-                MutableSparseVector rv = Ratings.userRatingVector(snapshot.getUserRatings(uid));
-                normalizer.normalize(uid, rv);
-                normedData[i] = rv;
+                UserRatingVector rv = UserRatingVector.fromRatings(uid, snapshot.getUserRatings(uid));
+                normedData[i] = normalizer.normalize(rv, null);
                 ndone++;
             }
             assert ndone == normedData.length;
         }
     }
     
-    public UserRatingVectorNormalizer getNormalizer() {
+    public VectorNormalizer<? super UserRatingVector> getNormalizer() {
     	return normalizer;
     }
 

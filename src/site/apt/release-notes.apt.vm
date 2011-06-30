@@ -14,6 +14,66 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+* Core changes
+
+  * Introduce user- and item-associated sparse vectors, including
+    rating-specific variants of them, to allow types to express what
+    kind of data is being operated on and to allow normalizers to be
+    generalized.
+
+    This results in changes to several interfaces, and to much code
+    where item or user IDs are tracked and associated with vectors.
+    This change likely introduces additional vector copying, but in
+    the future we will be measuring ways to reduce this.
+
+  * Abstract <<<UserRatingVectorNormalizer>>> into
+    <<<VectorNormalizer>>> to apply to different vectors associated
+    with entities such as users or items.
+
+    With this change, several normalization-related classes have been
+    renamed to better-reflect their nature.  Also, the normalization
+    interface has been changed to only take reference and target
+    vectors; normalization implementations that require user or item
+    IDs should require the relevant type of sparse vector.
+
+    Annotations and generic type arguments are used to indicate what
+    the vector normalizer is normalizing.
+
+  * Add the <<<freeze()>>> method to <<<MutableSparseVector>>>,
+    returning an immutable vector from its data and rendering it
+    invalid.
+
+  []
+
+** Compatibility notes
+
+  Backwards-incompatible core changes:
+
+  * Renamed <<<UserVarianceNormalizer>>> to
+    <<<MeanVarianceNormalizer>>>.
+
+  * Renamed <<<NormalizedRatingSnapshot>>> to
+    <<<UserNormalizedRatingSnapshot>>>.
+
+  * Renamed <<<AbstractUserRatingVectorNormlizer>>> to
+    <<<AbstractVectorNormalizer>>>.
+
+  * Renamed <<<IdentityUserRatingVectorNormlizer>>> to
+    <<<IdentityVectorNormalizer>>>.
+
+  * Many operations that took a user or item ID and a
+    <<<SparseVector>>> now use a <<<UserVector>>>, <<<ItemVector>>>,
+    or a rating-specific subtype.  This affects the
+    <<<DynamicRatingPredictor>>> and
+    <<<DynamicRatingItemRecommender>>> interfaces and all their
+    subclasses.
+
+  * <<<UserRatingVectorNormalizer>>> has been replaced with
+    <<<VectorNormalizer<? super UserRatingVector>>>> and its interface
+    has been changed.
+
+  []
+
 * Evaluator changes
 
   * Add boolean <<<isolate>>> option to the train-test Ant task to

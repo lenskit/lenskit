@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * Interface for predicting ratings from user rating histories.  This interface
@@ -46,12 +47,11 @@ public interface DynamicRatingPredictor {
     
     /**
      * Generate predictions for a collection of items.
-     * @param user the user ID
-     * @param ratings The user's rating vector
+     * @param ratings The user rating vector
      * @param items the items for which predictions are desired
      * @return A mapping from item IDs to predicted preference.  This mapping
      * may not contain all requested items.
      */
     @Nonnull
-    public SparseVector predict(long user, SparseVector ratings, Collection<Long> items);
+    public SparseVector predict(UserRatingVector ratings, Collection<Long> items);
 }

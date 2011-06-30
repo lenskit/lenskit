@@ -46,7 +46,7 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.SimilarityMatrix;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.util.IntSortedArraySet;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -62,7 +62,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     
     private BaselinePredictor baseline;
     private RatingSnapshot normalizedData;
-    private UserRatingVectorNormalizer normalizer;
+    private VectorNormalizer normalizer;
     
     @ItemSimilarity
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
@@ -82,7 +82,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         this.normalizedData = data;
     }
     
-    public void setNormalizer(UserRatingVectorNormalizer normalizer) {
+    public void setNormalizer(VectorNormalizer normalizer) {
         this.normalizer = normalizer;
     }
     
@@ -115,12 +115,12 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
             else
                 userItemSets = null;
 
-            logger.debug("Pre-processing ratings");
+            logger.debug("Pre-processing user");
             buildItemRatings(data);
         }
 
         /**
-         * Transpose the ratings matrix so we have a list of item
+         * Transpose the user matrix so we have a list of item
          * rating vectors.
          * @todo Fix this method to abstract item collection.
          * @todo Review and document this method.
@@ -129,7 +129,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
             final boolean collectItems = userItemSets != null;
             final int nitems = itemCount;
 
-            // Create and initialize the transposed array to collect ratings
+            // Create and initialize the transposed array to collect user
             ArrayList<Long2DoubleMap> workMatrix = new ArrayList<Long2DoubleMap>(nitems);
             for (int i = 0; i < nitems; i++) {
                 workMatrix.add(new Long2DoubleOpenHashMap(20));

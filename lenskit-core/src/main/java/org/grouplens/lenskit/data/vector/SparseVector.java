@@ -126,6 +126,24 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     /**
+     * Invalidate the sparse vector. Any subsequent operation throws
+     * {@link IllegalStateException}.
+     * @see #checkValid()
+     */
+    protected void invalidate() {
+        values = null;
+    }
+    
+    /**
+     * Check that this vector is valid, throwing {@link IllegalStateException}
+     * if it is not.
+     */
+    protected final void checkValid() {
+        if (values == null)
+            throw new IllegalStateException("Invalid vector");
+    }
+
+    /**
      * Get the rating for <var>key</var>.
      * @param key the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
@@ -520,67 +538,26 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     /**
-     * Wrap key and value arrays in a sparse vector.
-     *
-     * <p>This method allows a new vector to be constructed from
-     * pre-created arrays.  After wrapping arrays in a rating vector, client
-     * code should not modify them (particularly the <var>items</var> array).
-     *
-     * @param keys Array of entry keys. This array must be in sorted order and
-     * be duplicate-free.
-     * @param values The values for the vector.
-     * @return A sparse vector backed by the provided arrays.
-     * @throws IllegalArgumentException if there is a problem with the provided
-     * arrays (length mismatch, <var>keys</var> not sorted, etc.).
+     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
      */
+    @Deprecated
     public static MutableSparseVector wrap(long[] keys, double[] values) {
-        return new MutableSparseVector(keys, values, keys.length);
+        return MutableSparseVector.wrap(keys, values);
     }
     
+    /**
+     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
+     */
+    @Deprecated
     public static MutableSparseVector wrap(long[] keys, double[] values, int length) {
-        if (values.length < length)
-            throw new IllegalArgumentException("ratings shorter than items");
-        if (!isSorted(keys, length))
-            throw new IllegalArgumentException("key array not sorted");
-        return new MutableSparseVector(keys, values, length);
+        return MutableSparseVector.wrap(keys, values, length);
     }
 
     /**
-     * Wrap key and value arrays in a sparse vector.
-     *
-     * <p>This method allows a new vector to be constructed from
-     * pre-created arrays.  After wrapping arrays in a rating vector, client
-     * code should not modify them (particularly the <var>items</var> array).
-     *
-     * <p>The arrays may be modified, particularly to remove NaN values.  The
-     * client should not depend on them exhibiting any particular behavior after
-     * calling this method.
-     *
-     * @param keys Array of entry keys. This array must be in sorted order and
-     * be duplicate-free.
-     * @param values The values for the vector.
-     * @param removeNaN If true, remove NaN values from the arrays.
-     * @return A sparse vector backed by the provided arrays.
-     * @throws IllegalArgumentException if there is a problem with the provided
-     * arrays (length mismatch, <var>keys</var> not sorted, etc.).
+     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[], boolean)}
      */
+    @Deprecated
     public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
-        if (values.length < keys.length)
-            throw new IllegalArgumentException("key/value length mismatch");
-        
-        int length = keys.length;
-        if (removeNaN) {
-            length = 0;
-            for (int i = 0; i < keys.length; i++) {
-                if (!Double.isNaN(values[i])) {
-                    if (i != length) {
-                        keys[length] = keys[i];
-                        values[length] = values[i];
-                    }
-                    length++;
-                }
-            }
-        }
-        return wrap(keys, values, length);
+        return MutableSparseVector.wrap(keys, values, removeNaN);
     }
 }

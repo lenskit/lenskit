@@ -94,7 +94,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         // Technically this isn't needed since the default type is configured,
         // but it's nice to show explicit bindings for these snapshots
         // Disabled 2011-05-25 by MDE to avoid pulling in normalizers unnecessarily
-        // bind(NormalizedSnapshot.class, NormalizedRatingSnapshot.class);
+        // bind(NormalizedSnapshot.class, UserNormalizedRatingSnapshot.class);
     }
 
     /**

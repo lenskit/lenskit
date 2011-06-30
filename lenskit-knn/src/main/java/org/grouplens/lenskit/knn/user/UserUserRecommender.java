@@ -23,7 +23,7 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 
 /**
  * A recommender and predictor using user-user collaborative filtering.
- * Neighbor ratings are aggregated using weighted averaging. 
+ * Neighbor user are aggregated using weighted averaging. 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

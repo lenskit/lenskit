@@ -27,8 +27,8 @@ import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,12 +39,12 @@ import org.junit.Test;
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  *
  */
-public class UserVarianceNormalizerTest {
+public class MeanVarianceNormalizerTest {
 	RatingDataAccessObject dao;
 	RatingSnapshot rs;
-	SparseVector userRatings;
-	SparseVector uniformUserRatings;
-	UserVarianceNormalizer.Builder builder;
+	ImmutableSparseVector userRatings;
+	ImmutableSparseVector uniformUserRatings;
+	MeanVarianceNormalizer.Builder builder;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
 	
 	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
@@ -53,13 +53,13 @@ public class UserVarianceNormalizerTest {
 	
 	@Before
 	public void setUp() {
-	    builder = new UserVarianceNormalizer.Builder();
+	    builder = new MeanVarianceNormalizer.Builder();
 	    
 		long[] keys = {0L, 1L, 2L};
 		double[] values = {0., 2., 4.};
-		userRatings = SparseVector.wrap(keys, values);
+		userRatings = MutableSparseVector.wrap(keys, values).freeze();
 		double[] uniformValues = {2., 2., 2.};
-		uniformUserRatings = SparseVector.wrap(keys, uniformValues);
+		uniformUserRatings = MutableSparseVector.wrap(keys, uniformValues).freeze();
 		List<Rating> ratings = new ArrayList<Rating>();
 		addRating(ratings, 0, 0, 0);
 		addRating(ratings, 0, 1, 1);
@@ -88,23 +88,23 @@ public class UserVarianceNormalizerTest {
 
 	@Test
 	public void testBuilderNoSmoothing() {
-		UserVarianceNormalizer urvn = builder.build();
+		MeanVarianceNormalizer urvn = builder.build();
 		Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
 	}
 	
 	@Test
 	public void testBuilderSmoothing() {
 	    builder.setSmoothing(3);
-        UserVarianceNormalizer urvn = builder.build();
+        MeanVarianceNormalizer urvn = builder.build();
         Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
         Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
 	}
 
 	@Test
 	public void testMakeTransformation() {
-		UserVarianceNormalizer urvn;
-		urvn = new UserVarianceNormalizer();
-		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);
+		MeanVarianceNormalizer urvn;
+		urvn = new MeanVarianceNormalizer();
+		VectorTransformation trans = urvn.makeTransformation(userRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		final double mean = 2.0;
 		final double stdev = Math.sqrt(8.0 / 3.0);
@@ -122,9 +122,9 @@ public class UserVarianceNormalizerTest {
 
 	@Test
 	public void testUniformRatings() {
-		UserVarianceNormalizer urvn;
-		urvn = new UserVarianceNormalizer();
-		VectorTransformation trans = urvn.makeTransformation(9001, uniformUserRatings);
+		MeanVarianceNormalizer urvn;
+		urvn = new MeanVarianceNormalizer();
+		VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		trans.apply(nUR);
 		//Test apply
@@ -141,9 +141,9 @@ public class UserVarianceNormalizerTest {
 	@Test
 	public void testSmoothingDetailed() {
 	    builder.setSmoothing(3.0);
-		UserVarianceNormalizer urvn = builder.build();
+		MeanVarianceNormalizer urvn = builder.build();
 
-		VectorTransformation trans = urvn.makeTransformation(9001, userRatings);
+		VectorTransformation trans = urvn.makeTransformation(userRatings);
 		MutableSparseVector nUR = userRatings.mutableCopy();
 		final double mean = 2.0;
 		final double stdev = Math.sqrt(7.0/3.0);

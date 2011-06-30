@@ -26,6 +26,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
 /**
@@ -38,7 +39,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 	}
 
 	@Override
-	public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+	public SparseVector predict(UserRatingVector user, Collection<Long> items) {
 
 		LongSortedSet iset;
 		if (items instanceof LongSortedSet)
@@ -48,14 +49,14 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 		MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
 		LongArrayList unpreds = new LongArrayList();
 		for (long predicteeItem : items) {
-			if (!ratings.containsKey(predicteeItem)) {
+			if (!user.containsKey(predicteeItem)) {
 				double total = 0;
 				int nusers = 0;
-				for (long currentItem : ratings.keySet()) {
+				for (long currentItem : user.keySet()) {
 					double currentDev = model.getDeviation(predicteeItem, currentItem);	
 					if (!Double.isNaN(currentDev)) {
 						int weight = model.getCoratings(predicteeItem, currentItem);
-						total += (currentDev +ratings.get(currentItem))* weight;
+						total += (currentDev +user.get(currentItem))* weight;
 						nusers += weight;
 					}
 				}
@@ -70,7 +71,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 		}
 		final BaselinePredictor baseline = model.getBaselinePredictor();
 		if (baseline != null && !unpreds.isEmpty()) {
-			SparseVector basePreds = baseline.predict(user, ratings, unpreds);
+			SparseVector basePreds = baseline.predict(user, unpreds);
 			for (Long2DoubleMap.Entry e: basePreds.fast()) {
 				assert Double.isNaN(preds.get(e.getLongKey()));
 				preds.set(e.getLongKey(), e.getDoubleValue());

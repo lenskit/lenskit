@@ -16,38 +16,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
+package org.grouplens.lenskit.data.vector;
 
-import java.util.Comparator;
-
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 /**
- * Representation of a single neighboring user.
+ * Vector of data for a user (a {@link SparseVector} that is associated with
+ * a particular user).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class Neighbor {
-    public final UserRatingVector user;
-    public final double similarity;
-    
-    /**
-     * Construct a new neighbor.
-     * @param u The neighbor's rating vector.
-     * @param sim The neighbor's similarity to the query user.
+public class UserVector extends ImmutableSparseVector {
+	private static final long serialVersionUID = 6027858130934920280L;
+	
+	private final long userId;
+
+	public UserVector(long user, Long2DoubleMap ratings) {
+		super(ratings);
+		userId = user;
+	}
+	
+	/**
+     * @param user
+     * @param items
+     * @param values
+     * @param size
      */
-    public Neighbor(UserRatingVector u, double sim) {
-        user = u;
-        similarity = sim;
+    public UserVector(long user, long[] items, double[] values, int size) {
+        super(items, values, size);
+        userId = user;
     }
-    
-    /**
-     * Comparator to order neighbors by similarity.
-     */
-    public static final Comparator<Neighbor> SIMILARITY_COMPARATOR = new Comparator<Neighbor>() {
-        @Override
-        public int compare(Neighbor n1, Neighbor n2) {
-            return Double.compare(n1.similarity, n2.similarity);
-        }
-    };
+
+    public long getUserId() {
+		return userId;
+	}
+
 }

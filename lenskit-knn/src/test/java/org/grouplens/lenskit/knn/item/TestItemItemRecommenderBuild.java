@@ -35,8 +35,6 @@ import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
-import org.grouplens.lenskit.norm.IdentityUserRatingVectorNormalizer;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,7 +57,9 @@ public class TestItemItemRecommenderBuild {
 		factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRecommender.class);
 		factory.setComponent(SimilarityMatrixAccumulatorFactory.class, 
 				TruncatingSimilarityMatrixAccumulator.Factory.class);
-		factory.setComponent(UserRatingVectorNormalizer.class, IdentityUserRatingVectorNormalizer.class);
+		// this is the default
+//		factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
+//		                     IdentityVectorNormalizer.class);
 
 		engine = factory.create();
 	}

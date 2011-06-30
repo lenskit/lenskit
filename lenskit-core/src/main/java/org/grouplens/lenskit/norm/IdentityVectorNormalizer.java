@@ -18,34 +18,32 @@
  */
 package org.grouplens.lenskit.norm;
 
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
+ * Identity normalization (makes no change).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractUserRatingVectorNormalizer implements
-        UserRatingVectorNormalizer {
+public class IdentityVectorNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> {
+    private static final long serialVersionUID = -6708410675383598691L;
+    
+    private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
+        
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            return vector;
+        }
+        
+        @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            return vector;
+        }
+    };
 
-    private static final long serialVersionUID = -2959210414910084854L;
-
-    /**
-     * Implementation that delegates to {@link #makeTransformation(long, SparseVector)}
-     * and the resulting {@link VectorTransformation}.
-     */
     @Override
-    public void normalize(long userId, SparseVector ratings,
-            MutableSparseVector vector) {
-        VectorTransformation tform = makeTransformation(userId, ratings);
-        tform.apply(vector);
-    }
-
-    /**
-     * Implementation that delegates to {@link #normalize(long, SparseVector, MutableSparseVector)}.
-     */
-    @Override
-    public void normalize(long userId, MutableSparseVector ratings) {
-        normalize(userId, ratings, ratings);
+    public VectorTransformation makeTransformation(ImmutableSparseVector ratings) {
+        return IDENTITY_TRANSFORM;
     }
 }

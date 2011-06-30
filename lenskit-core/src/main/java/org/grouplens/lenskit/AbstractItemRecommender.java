@@ -23,10 +23,9 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 
 import java.util.Set;
 
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 
@@ -46,8 +45,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 		this.dao = dao;
 	}
 	
-	protected SparseVector getRatings(long user) {
-		return Ratings.userRatingVector(dao.getUserRatings(user));
+	protected UserRatingVector getRatings(long user) {
+		return UserRatingVector.fromRatings(user, dao.getUserRatings(user));
 	}
 	
 	@Override

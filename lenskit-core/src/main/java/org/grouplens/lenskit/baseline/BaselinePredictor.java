@@ -24,7 +24,7 @@ import java.util.Collection;
 import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * Rating predictor that operates on sparse vectors and guarantees 100% coverage
@@ -43,7 +43,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 public interface BaselinePredictor extends Serializable {
     /**
      * Predict method that returns mutable sparse vectors.
-     * @see DynamicRatingPredictor#predict(long, SparseVector, Collection)
+     * @see DynamicRatingPredictor#predict(UserRatingVector, Collection)
      */
-    MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
+    MutableSparseVector predict(UserRatingVector ratings, Collection<Long> items);
 }

@@ -18,12 +18,15 @@
  */
 package org.grouplens.lenskit.norm;
 
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
+
+import java.io.Serializable;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
@@ -33,10 +36,10 @@ import org.grouplens.lenskit.util.FastCollection;
  * Normalizes against the variance of the vector with optional smoothing as
  * described in Hofmann '04.
  * <p>
- * The normalization assumes that a user's mean rating and variance are
- * independent of actual preferences, and attempts to describe the preference of
- * a rating by the distance of the rating from the mean, relative to the user's
- * normal rating variance.
+ * For user rating vectors, this normalization assumes that a user's mean rating
+ * and variance are independent of actual preferences, and attempts to describe
+ * the preference of a rating by the distance of the rating from the mean,
+ * relative to the user's normal rating variance.
  * <p>
  * The smoothing factor helps to smooth out results for users with fewer ratings
  * by re-weighting the user's rating variance. The 'smoothing number' is a
@@ -48,7 +51,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @Built
-public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
+public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
 
     /**
@@ -57,7 +60,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
      * 
      * @author Michael Ludwig
      */
-    public static class Builder extends RecommenderComponentBuilder<UserVarianceNormalizer> {
+    public static class Builder extends RecommenderComponentBuilder<MeanVarianceNormalizer> {
         private double smoothing;
 
         // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
@@ -67,7 +70,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
         }
         
         @Override
-        public UserVarianceNormalizer build() {
+        public MeanVarianceNormalizer build() {
             double variance = 0;
             
             if (smoothing != 0) {
@@ -87,7 +90,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
                 variance = sum / numRatings;
             }
             
-            return new UserVarianceNormalizer(smoothing, variance);
+            return new MeanVarianceNormalizer(smoothing, variance);
         }
     }
     
@@ -97,7 +100,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 	/**
 	 * Initializes basic normalizer with no smoothing.
 	 */
-	public UserVarianceNormalizer() {
+	public MeanVarianceNormalizer() {
 		this(0, 0);
 	}
 
@@ -105,7 +108,7 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 	 * @param smoothing			smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
 	 * @param globalVariance	global variance to use in the smoothing calculations.
 	 */
-	public UserVarianceNormalizer(double smoothing, double globalVariance) {
+	public MeanVarianceNormalizer(double smoothing, double globalVariance) {
 		this.smoothing = smoothing;
 		this.globalVariance = globalVariance;
 	}
@@ -119,39 +122,49 @@ public class UserVarianceNormalizer extends AbstractUserRatingVectorNormalizer {
 	}
 
 	@Override
-	public VectorTransformation makeTransformation(long userId, final SparseVector ratings) {
-		final double userMean = ratings.mean();
+	public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
+	    return new Transform(reference);
+	}
+	
+	class Transform implements VectorTransformation {
+	    private final double mean;
+        private final double stdDev;
+        
+	    public Transform(ImmutableSparseVector reference) {
+	        final double m = mean = reference.mean();
+	        
+	        double var = 0;
+	        DoubleIterator iter = reference.values().iterator();
+	        while (iter.hasNext()) {
+	            final double v = iter.nextDouble();
+	            final double diff = v - m;
+	            var += diff * diff;
+	        }
+	    
+	        /* smoothing calculation as described in Hofmann '04 
+	         * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
+	         */
+	        stdDev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
+	    }
+	    
+	    @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            for (Entry rating : vector.fast()) {
+                vector.set(rating.getLongKey(), /* r' = (r - u) / s */
+                        stdDev == 0? 0 : // edge case
+                            (rating.getDoubleValue() - mean) / stdDev);
+            }
+            return vector;
+        }
 
-		/* smoothing calculation as described in Hofmann '04 
-		 * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
-		 */
-		double sum = 0;
-		for (double rating : ratings.values()) {
-		    double diff = userMean - rating;
-			sum += diff * diff;
-		}
-		final double userStdDev = Math.sqrt((sum + smoothing * globalVariance) / (ratings.size() + smoothing));
-		
-		return new VectorTransformation() {
-			@Override
-			public MutableSparseVector apply(MutableSparseVector vector) {
-				for (Entry rating : vector.fast()) {
-					vector.set(rating.getLongKey(), /* r' = (r - u) / s */
-							userStdDev == 0? 0 : // edge case
-								(rating.getDoubleValue() - userMean) / userStdDev);
-				}
-				return vector;
-			}
-
-			@Override
-			public MutableSparseVector unapply(MutableSparseVector vector) {
-				for (Entry rating : vector.fast()) {
-					vector.set(rating.getLongKey(), /* r = r' * s + u */
-							userStdDev == 0? userMean : // edge case
-							(rating.getDoubleValue() * userStdDev) + userMean);
-				}
-				return vector;
-			}
-		};
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            for (Entry rating : vector.fast()) {
+                vector.set(rating.getLongKey(), /* r = r' * s + u */
+                        stdDev == 0? mean : // edge case
+                        (rating.getDoubleValue() * stdDev) + mean);
+            }
+            return vector;
+        }
 	}
 }

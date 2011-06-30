@@ -262,27 +262,60 @@ public class MutableSparseVector extends SparseVector {
     public MutableSparseVector clone() {
         return (MutableSparseVector) super.clone();
     }
+    
+    /**
+     * Construct an immutable sparse vector from this vector's data,
+     * invalidating this vector in the process. Any subsequent use of this
+     * vector is invalid; all access must be through the returned immutable
+     * vector.
+     * 
+     * @return An immutable vector built from this vector's data.
+     */
+    public ImmutableSparseVector freeze() {
+    	ImmutableSparseVector isv = new ImmutableSparseVector(keys, values, size);
+        invalidate();
+        return isv;
+    }
 
     /**
-     * Wrap key and value arrays in a mutable sparse vector.
-     * @see SparseVector#wrap(long[], double[])
+     * Wrap key and value arrays in a sparse vector.
+     *
+     * <p>This method allows a new vector to be constructed from
+     * pre-created arrays.  After wrapping arrays in a rating vector, client
+     * code should not modify them (particularly the <var>items</var> array).
+     *
+     * @param keys Array of entry keys. This array must be in sorted order and
+     * be duplicate-free.
+     * @param values The values for the vector.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     * arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values) {
-        if (values.length < keys.length)
-            throw new IllegalArgumentException("ratings shorter than items");
-        if (!isSorted(keys, keys.length))
-            throw new IllegalArgumentException("item array not sorted");
-        return new MutableSparseVector(keys, values);
+        return wrap(keys, values, keys.length);
     }
     
     /**
-     * Wrap key and value arrays in a mutable sparse vector.
-     * @see SparseVector#wrap(long[], double[])
+     * Wrap key and value arrays in a sparse vector.
+     * 
+     * <p>
+     * This method allows a new vector to be constructed from pre-created
+     * arrays. After wrapping arrays in a rating vector, client code should not
+     * modify them (particularly the <var>items</var> array).
+     * 
+     * @param keys Array of entry keys. This array must be in sorted order and
+     *            be duplicate-free.
+     * @param values The values for the vector.
+     * @param size The size of the vector; only the first <var>size</var>
+     *            entries from each array are actually used.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     *             arrays (length mismatch, <var>keys</var> not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values, int size) {
-        if (values.length < keys.length)
-            throw new IllegalArgumentException("ratings shorter than items");
-        if (!isSorted(keys, keys.length))
+        if (values.length < size)
+            throw new IllegalArgumentException("value array too short");
+        if (!isSorted(keys, size))
             throw new IllegalArgumentException("item array not sorted");
         return new MutableSparseVector(keys, values, size);
     }
@@ -290,7 +323,6 @@ public class MutableSparseVector extends SparseVector {
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
      * the original lists once this has been called!
-     * @see SparseVector#wrap(long[], double[])
      */
     public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
         if (valueList.size() < keyList.size())
@@ -303,5 +335,47 @@ public class MutableSparseVector extends SparseVector {
             throw new IllegalArgumentException("key array not sorted");
         
         return new MutableSparseVector(keys, values, keyList.size());
+    }
+
+    /**
+     * Wrap key and value arrays in a sparse vector.
+     * 
+     * <p>
+     * This method allows a new vector to be constructed from pre-created
+     * arrays. After wrapping arrays in a rating vector, client code should not
+     * modify them (particularly the <var>items</var> array).
+     * 
+     * <p>
+     * The arrays may be modified, particularly to remove NaN values. The client
+     * should not depend on them exhibiting any particular behavior after
+     * calling this method.
+     * 
+     * @param keys Array of entry keys. This array must be in sorted order and
+     *            be duplicate-free.
+     * @param values The values for the vector.
+     * @param removeNaN If true, remove NaN values from the arrays.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     *             arrays (length mismatch, <var>keys</var> not sorted, etc.).
+     * @see #wrap(long[], double[])
+     */
+    public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
+        if (values.length < keys.length)
+            throw new IllegalArgumentException("key/value length mismatch");
+        
+        int length = keys.length;
+        if (removeNaN) {
+            length = 0;
+            for (int i = 0; i < keys.length; i++) {
+                if (!Double.isNaN(values[i])) {
+                    if (i != length) {
+                        keys[length] = keys[i];
+                        values[length] = values[i];
+                    }
+                    length++;
+                }
+            }
+        }
+        return wrap(keys, values, length);
     }
 }

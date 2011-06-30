@@ -36,7 +36,7 @@ import java.util.Iterator;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -159,8 +159,8 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings,
-            Collection<Long> items) {
+    public MutableSparseVector predict(UserRatingVector ratings,
+                                       Collection<Long> items) {
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
         if (!(items instanceof LongSortedSet))
             Arrays.sort(keys);

@@ -37,6 +37,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.util.IndexedItemScore;
@@ -74,9 +75,9 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     };
 
     @Override
-    public SparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        VectorTransformation norm = model.normalizingTransformation(user, ratings);
-        MutableSparseVector normed = ratings.mutableCopy();
+    public SparseVector predict(UserRatingVector user, Collection<Long> items) {
+        VectorTransformation norm = model.normalizingTransformation(user);
+        MutableSparseVector normed = user.mutableCopy();
         norm.apply(normed);
 
         LongSortedSet iset;
@@ -126,7 +127,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpredItems.isEmpty()) {
         	logger.trace("Filling {} items from baseline", unpredItems.size());
-            SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
+            SparseVector basePreds = baseline.predict(user, unpredItems);
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
                 assert Double.isNaN(preds.get(e.getLongKey()));
                 preds.set(e.getLongKey(), e.getDoubleValue());

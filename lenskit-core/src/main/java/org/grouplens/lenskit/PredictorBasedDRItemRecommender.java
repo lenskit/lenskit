@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 
@@ -46,13 +47,13 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 	}
 
 	@Override
-    protected ScoredLongList recommend(long user, SparseVector ratings, int n, LongSet candidates, LongSet exclude) {
+    protected ScoredLongList recommend(UserRatingVector user, int n, LongSet candidates, LongSet exclude) {
 		if (candidates == null)
-			candidates = getPredictableItems(user, ratings);
+			candidates = getPredictableItems(user);
 		if (!exclude.isEmpty())
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
 
-		SparseVector predictions = predictor.predict(user, ratings, candidates);
+		SparseVector predictions = predictor.predict(user, candidates);
 		assert(predictions.isComplete());
 		if (predictions.isEmpty()) return new ScoredLongArrayList();
 		
@@ -76,7 +77,7 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 	 * @param ratings The user's rating vector.
 	 * @return All items for which predictions can be made for the user.
 	 */
-	protected LongSet getPredictableItems(long user, SparseVector ratings) {
+	protected LongSet getPredictableItems(UserRatingVector ratings) {
         return Cursors2.makeSet(dao.getItems());
     }
 }

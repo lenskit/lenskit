@@ -33,8 +33,10 @@ import javax.annotation.WillClose;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.vector.ItemRatingVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 import com.google.common.primitives.Longs;
 
@@ -87,7 +89,9 @@ public final class Ratings {
      *
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
+     * @deprecated Use {@link ItemRatingVector#fromRatings(long, Collection)}.
      */
+    @Deprecated
     public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
         Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
@@ -135,26 +139,33 @@ public final class Ratings {
     }
 
     /**
-     * Construct a rating vector that contains the ratings provided for each item.
-     * If all ratings in <var>ratings</var> are by the same user, then this will
-     * be a valid user rating vector.  If multiple ratings are provided for the
-     * same item, the one with the greatest timestamp is retained.  Ties are
-     * broken by preferring ratings which come later when iterating through the
-     * collection.
-     *
+     * Construct a rating vector that contains the ratings provided for each
+     * item. If all ratings in <var>ratings</var> are by the same user, then
+     * this will be a valid user rating vector. If multiple ratings are provided
+     * for the same item, the one with the greatest timestamp is retained. Ties
+     * are broken by preferring ratings which come later when iterating through
+     * the collection.
+     * 
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
+     * @deprecated Use {@link UserRatingVector#fromRatings(long, Collection)}
+     *             instead.
      */
+    @Deprecated
     public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
     	return userRatingVector(new ArrayList<Rating>(ratings));
     }
     
     /**
      * Extract a user rating vector from a rating cursor.
+     * 
      * @param ratings The rating cursor.
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
+     * @deprecated Use {@link UserRatingVector#fromRatings(long, Cursor)}
+     *             instead.
      */
+    @Deprecated
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
     	return userRatingVector(Cursors.makeList(ratings));
     }

@@ -23,14 +23,14 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
-import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
+import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.FastCollection;
@@ -140,8 +140,9 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         MutableSparseVector[] estimates = new MutableSparseVector[nusers];
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
-            MutableSparseVector urv = Ratings.userRatingVector(snapshot.getUserRatings(uid));
-            MutableSparseVector blpreds = baseline.predict(uid, urv, urv.keySet());
+            // FIXME Use the snapshot's user rating vector support
+            UserRatingVector user = UserRatingVector.fromRatings(uid, snapshot.getUserRatings(uid));
+            MutableSparseVector blpreds = baseline.predict(user, user.keySet());
             estimates[i] = blpreds;
         }
         return estimates;

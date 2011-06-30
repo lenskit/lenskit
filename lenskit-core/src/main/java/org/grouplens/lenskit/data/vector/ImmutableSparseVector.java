@@ -20,6 +20,8 @@ package org.grouplens.lenskit.data.vector;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
+import java.util.Arrays;
+
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -38,6 +40,13 @@ public class ImmutableSparseVector extends SparseVector {
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
     }
+    
+    protected ImmutableSparseVector(SparseVector v) {
+    	super(v.keys,
+    	      (v instanceof ImmutableSparseVector ? 
+    	    		  v.values : Arrays.copyOf(v.values, v.size)),
+    	      v.size);
+    }
 
     /**
      * @param keys
@@ -46,6 +55,25 @@ public class ImmutableSparseVector extends SparseVector {
      */
     protected ImmutableSparseVector(long[] keys, double[] values) {
         super(keys, values);
+    }
+    
+    /**
+     * @param keys
+     * @param values
+     * @param size The number of entries to use for each array.
+     * @see SparseVector#SparseVector(long[], double[])
+     */
+    protected ImmutableSparseVector(long[] keys, double[] values, int size) {
+        super(keys, values, size);
+    }
+    
+    /**
+     * Override {@link SparseVector#invalidate()} to prohibit immutable sparse
+     * vectors from being invalidated.
+     */
+    @Override
+    protected final void invalidate() {
+        throw new UnsupportedOperationException("Immutable vectors cannot be invalidated");
     }
     
     @Override

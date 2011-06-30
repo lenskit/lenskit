@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
 /**
@@ -44,13 +44,13 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
     }
     
     @Override
-    public LongSet getPredictableItems(long user, SparseVector ratings) {
+    public LongSet getPredictableItems(UserRatingVector user) {
         ItemItemModel model = predictor.getModel();
     	if (model.getBaselinePredictor() != null) {
             return model.getItemUniverse();
         } else {
             LongSet items = new LongOpenHashSet();
-            LongIterator iter = ratings.keySet().iterator();
+            LongIterator iter = user.keySet().iterator();
             while (iter.hasNext()) {
                 final long item = iter.nextLong();
                 for (IndexedItemScore n: model.getNeighbors(item)) {

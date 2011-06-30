@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * Rating recommender recommending items from ratings-based user profiles.  This
@@ -38,43 +38,39 @@ public interface DynamicRatingItemRecommender {
      * Recommend all possible items for a user. The
      * exclude set is the set of keys in <var>ratings</var> (so items the user
      * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
+     * @param ratings The user rating vector.
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(UserRatingVector, int, Set, Set)
      */
-    public ScoredLongList recommend(long user, SparseVector ratings);
+    public ScoredLongList recommend(UserRatingVector ratings);
     
     /**
      * Recommend up to <var>n</var> items for a user. The
      * exclude set is the set of keys in <var>ratings</var> (so items the user
      * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
+     * @param ratings The user rating vector.
      * @param n The number of recommendations to return.
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(UserRatingVector, int, Set, Set)
      */
-    public ScoredLongList recommend(long user, SparseVector ratings, int n);
+    public ScoredLongList recommend(UserRatingVector ratings, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates.  The
      * exclude set is the set of keys in <var>ratings</var> (so items the user
      * has rated are not recommended).
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
+     * @param ratings The user rating vector.
      * @param candidates The candidate set (can be null to represent the
      * universe).
      * @return The sorted list of scored items.
-     * @see #recommend(long, SparseVector, int, Set, Set)
+     * @see #recommend(UserRatingVector, int, Set, Set)
      */
-    public ScoredLongList recommend(long user, SparseVector ratings,
+    public ScoredLongList recommend(UserRatingVector ratings,
             @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user.
-     * @param user The user's ID
-     * @param ratings The user's ratings
+     * @param ratings The user rating vector.
      * @param n The number of ratings to return.  If negative, recommend all
      * possible items.
      * @param candidates A set of candidate items which can be recommended.  If
@@ -85,6 +81,6 @@ public interface DynamicRatingItemRecommender {
      * @return a list of scored recommendations, sorted in nondecreasing order
      * of score.
      */
-    public ScoredLongList recommend(long user, SparseVector ratings, int n,
+    public ScoredLongList recommend(UserRatingVector ratings, int n,
             @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
 }

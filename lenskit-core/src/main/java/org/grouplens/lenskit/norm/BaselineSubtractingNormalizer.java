@@ -18,17 +18,19 @@
  */
 package org.grouplens.lenskit.norm;
 
+import java.io.Serializable;
+
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.params.NormalizerBaseline;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNormalizer {
+public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<UserRatingVector> implements Serializable {
     private static final long serialVersionUID = 1449043456567302903L;
     
     protected final BaselinePredictor baselinePredictor;
@@ -42,44 +44,28 @@ public class BaselineSubtractingNormalizer extends AbstractUserRatingVectorNorma
         baselinePredictor = baseline;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.norm.UserRatingVectorNormalizer#normalize(long, org.grouplens.lenskit.data.vector.SparseVector, org.grouplens.lenskit.data.vector.MutableSparseVector)
-     */
     @Override
-    public void normalize(long userId, SparseVector ratings,
-            MutableSparseVector vector) {
-        SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
-        vector.subtract(base);
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.norm.UserRatingVectorNormalizer#makeTransformation(long, org.grouplens.lenskit.data.vector.SparseVector)
-     */
-    @Override
-    public VectorTransformation makeTransformation(long userId,
-            SparseVector ratings) {
-        return new Transformation(userId, ratings.immutable());
+    public VectorTransformation makeTransformation(UserRatingVector ratings) {
+        return new Transformation(ratings);
     }
     
     protected class Transformation implements VectorTransformation {
-        private final long userId;
-        private final ImmutableSparseVector ratings;
+        private final UserRatingVector user;
         
-        public Transformation(long uid, ImmutableSparseVector r) {
-            userId = uid;
-            ratings = r;
+        public Transformation(UserRatingVector r) {
+            user = r;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
+            SparseVector base = baselinePredictor.predict(user, vector.keySet());
             vector.subtract(base);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(userId, ratings, vector.keySet());
+            SparseVector base = baselinePredictor.predict(user, vector.keySet());
             vector.add(base);
             return vector;
         }

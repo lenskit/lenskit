@@ -23,12 +23,10 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.AbstractRatingPredictor;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
@@ -91,7 +89,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
         return featurePrefs;
     }*/
     
-    private MutableSparseVector predict(long user, double[] uprefs, SparseVector ratings, Collection<Long> items) {
+    private MutableSparseVector predict(UserRatingVector user, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
         final DoubleFunction clamp = model.clampingFunction;
         
@@ -101,10 +99,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
         else
             iset = new LongSortedArraySet(items);
         
-        if (ratings == null) {
-            ratings = Ratings.userRatingVector(Cursors.makeList(dao.getUserRatings(user)));
-        }
-        MutableSparseVector preds = model.baseline.predict(user, ratings, items);
+        MutableSparseVector preds = model.baseline.predict(user, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
@@ -123,6 +118,11 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
         return preds;
     }
     
+    private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
+    	return predict(UserRatingVector.fromRatings(user, dao.getUserRatings(user)),
+    	               uprefs, items);
+    }
+    
     @Override
     public MutableSparseVector predict(long user, Collection<Long> items) {
         int uidx = model.userIndex.getIndex(user);
@@ -130,6 +130,6 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
         for (int i = 0; i < uprefs.length; i++) {
             uprefs[i] = model.userFeatures[i][uidx];
         }
-        return predict(user, uprefs, null, items);
+        return predict(user, uprefs, items);
     }
 }

@@ -25,8 +25,8 @@ import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.junit.Test;
 
 /**
@@ -38,8 +38,8 @@ public class TestConstantPredictor {
     @Test
     public void testConstantPredict() {
         BaselinePredictor pred = new ConstantPredictor(5);
-        SparseVector map = new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-        SparseVector pv = pred.predict(10l, map, new LongArrayList(new long[]{2l}));
+        UserRatingVector map = new UserRatingVector(10l, Long2DoubleMaps.EMPTY_MAP);
+        SparseVector pv = pred.predict(map, new LongArrayList(new long[]{2l}));
         assertEquals(5, pv.get(2l), 0.00001);
     }
 }

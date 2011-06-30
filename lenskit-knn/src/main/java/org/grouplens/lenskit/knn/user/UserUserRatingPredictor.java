@@ -22,8 +22,8 @@ import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.Collection;
 
@@ -35,7 +35,8 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.norm.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.PredictNormalizer;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -51,11 +52,11 @@ import com.google.common.collect.Iterables;
 public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
-    protected final UserRatingVectorNormalizer normalizer;
+    protected final VectorNormalizer<? super UserRatingVector> normalizer;
     protected final BaselinePredictor baseline;
     
     public UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf,
-                                   @PredictNormalizer UserRatingVectorNormalizer norm, 
+                                   @PredictNormalizer VectorNormalizer<? super UserRatingVector> norm, 
                                    @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
@@ -67,16 +68,21 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     /**
      * Normalize all neighbor rating vectors, taking care to normalize each one
      * only once.
+     * 
+     * FIXME: MDE does not like this method.
+     * 
      * @param neighborhoods
+     * 
      */
-    protected void normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
-        ReferenceSet<SparseVector> seen = new ReferenceOpenHashSet<SparseVector>();
+    protected Reference2ObjectMap<UserRatingVector, SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
+        Reference2ObjectMap<UserRatingVector, SparseVector> normedVectors =
+            new Reference2ObjectOpenHashMap<UserRatingVector, SparseVector>();
         for (Neighbor n: Iterables.concat(neighborhoods)) {
-            if (seen.contains(n.ratings)) continue;
-            
-            normalizer.normalize(n.userId, n.ratings);
-            seen.add(n.ratings);
+            if (!normedVectors.containsKey(n.user)) {
+                normedVectors.put(n.user, normalizer.normalize(n.user, null));
+            }
         }
+        return normedVectors;
     }
     
     /**
@@ -86,8 +92,8 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
      * @see RatingPredictor#predict(long, Collection)
      */
     @Override
-    public SparseVector predict(long user, SparseVector ratings, @Nullable Collection<Long> items) {
-        logger.trace("Predicting for user {} with {} ratings", user, ratings.size());
+    public SparseVector predict(UserRatingVector user, @Nullable Collection<Long> items) {
+        logger.trace("Predicting for user {} with {} user", user.getUserId(), user.size());
         LongSortedSet iset;
         if (items == null)
             iset = null;
@@ -96,8 +102,9 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         else
             iset = new LongSortedArraySet(items);
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            neighborhoodFinder.findNeighbors(user, ratings, iset);
-        normalizeNeighborRatings(neighborhoods.values());
+            neighborhoodFinder.findNeighbors(user, iset);
+        Reference2ObjectMap<UserRatingVector, SparseVector> normedUsers =
+            normalizeNeighborRatings(neighborhoods.values());
         long[] keys = iset.toLongArray();
         double[] preds = new double[keys.length];
         LongArrayList missing = new LongArrayList();
@@ -109,7 +116,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
             if (nbrs != null && !nbrs.isEmpty()) {
                 for (final Neighbor n: neighborhoods.get(item)) {
                     weight += abs(n.similarity);
-                    sum += n.similarity * n.ratings.get(item);
+                    sum += n.similarity * normedUsers.get(n.user).get(item);
                 }
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
                 preds[i] = sum / weight;
@@ -121,9 +128,9 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
-            logger.trace("Filling in {} missing ratings with baseline", missing.size());
+            logger.trace("Filling in {} missing user with baseline", missing.size());
             LongSortedSet mset = LongSortedArraySet.ofList(missing);
-            MutableSparseVector blpreds = baseline.predict(user, ratings, mset);
+            MutableSparseVector blpreds = baseline.predict(user, mset);
             for (int i = 0; i < keys.length; i++) {
                 // TODO make this a parallel walk to avoid excess log factor
                 if (Double.isNaN(preds[i])) {
@@ -133,8 +140,8 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         }
         
         // Denormalize and return the results
-        VectorTransformation vo = normalizer.makeTransformation(user, ratings);
-        MutableSparseVector v = SparseVector.wrap(keys, preds, true);
+        VectorTransformation vo = normalizer.makeTransformation(user);
+        MutableSparseVector v = MutableSparseVector.wrap(keys, preds, true);
         logger.trace("Returning {} predictions (wanted {})", v.size(), items.size());
         vo.unapply(v);
         return v;

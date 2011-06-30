@@ -26,14 +26,14 @@ import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
- * Normalizers to be used in the predict phase (as opposed to the build phase).
- * Some recommenders support different recommenders for building and predicting;
- * in that case, the predict normalizer will be requested with this annotation.
+ * Normalizer applied to user rating vectors prior to processing rating data.
+ * This is typically used via {@link UserNormalizedRatingSnapshot}.
  * 
  * <p>This normalizer is applied to {@link UserRatingVector}s.
  */
@@ -42,4 +42,4 @@ import org.grouplens.lenskit.params.meta.Parameter;
 @Parameter(VectorNormalizer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PredictNormalizer { }
+public @interface UserRatingVectorNormalizer { }

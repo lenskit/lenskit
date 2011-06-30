@@ -18,36 +18,27 @@
  */
 package org.grouplens.lenskit.norm;
 
+import javax.annotation.Nullable;
+
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Identity normalization (makes no change).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IdentityUserRatingVectorNormalizer extends AbstractUserRatingVectorNormalizer {
-    private static final long serialVersionUID = -6708410675383598691L;
-    
-    private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
-        
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            return vector;
-        }
-        
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            return vector;
-        }
-    };
+public abstract class AbstractVectorNormalizer<V extends ImmutableSparseVector> implements VectorNormalizer<V> {
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.norm.UserRatingVectorNormalizer#makeTransformation(long, org.grouplens.lenskit.data.vector.SparseVector)
+    /**
+     * Implementation that delegates to {@link #makeTransformation(ImmutableSparseVector)}
+     * and the resulting {@link VectorTransformation}.
      */
     @Override
-    public VectorTransformation makeTransformation(long userId,
-            SparseVector ratings) {
-        return IDENTITY_TRANSFORM;
+    public MutableSparseVector normalize(V reference, @Nullable MutableSparseVector target) {
+        if (target == null)
+            target = reference.mutableCopy();
+        
+        VectorTransformation tform = makeTransformation(reference);
+        return tform.apply(target);
     }
 }

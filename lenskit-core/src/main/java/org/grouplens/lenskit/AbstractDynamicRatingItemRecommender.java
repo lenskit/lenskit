@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
@@ -46,33 +47,33 @@ public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemR
 	}
 
 	@Override
-	public ScoredLongList recommend(long user, SparseVector ratings) {
-		return recommend(user, ratings, -1, null, ratings.keySet());
+	public ScoredLongList recommend(UserRatingVector ratings) {
+		return recommend(ratings, -1, null, ratings.keySet());
 	}
 
 	@Override
-	public ScoredLongList recommend(long user, SparseVector ratings, int n) {
-		return recommend(user, ratings, n, null, ratings.keySet());
+	public ScoredLongList recommend(UserRatingVector ratings, int n) {
+		return recommend(ratings, n, null, ratings.keySet());
 	}
 
 	@Override
-	public ScoredLongList recommend(long user, SparseVector ratings, Set<Long> candidates) {
-		return recommend(user, ratings, -1, CollectionUtils.fastSet(candidates), ratings.keySet());
+	public ScoredLongList recommend(UserRatingVector ratings, Set<Long> candidates) {
+		return recommend(ratings, -1, CollectionUtils.fastSet(candidates), ratings.keySet());
 	}
 
 	@Override
-	public ScoredLongList recommend(long user, SparseVector ratings, int n,
+	public ScoredLongList recommend(UserRatingVector ratings, int n,
 			Set<Long> candidates, Set<Long> exclude) {
 		LongSet cs = CollectionUtils.fastSet(candidates);
 		LongSet es = CollectionUtils.fastSet(exclude);
 		if (es == null)
 			es = LongSets.EMPTY_SET;
-		return recommend(user, ratings, n, cs, es);
+		return recommend(ratings, n, cs, es);
 	}
 
 	@Override
 	public ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
-		return recommend(user, getRatings(user), n, candidates, exclude);
+		return recommend(getRatings(user), n, candidates, exclude);
 	}
 	
 	/**
@@ -87,6 +88,6 @@ public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemR
 	 * @return The recommendations with associated scores.
 	 * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
 	 */
-	protected abstract ScoredLongList recommend(long user, SparseVector ratings, int n,
+	protected abstract ScoredLongList recommend(UserRatingVector ratings, int n,
 			@Nullable LongSet candidates, @Nonnull LongSet exclude);
 }
