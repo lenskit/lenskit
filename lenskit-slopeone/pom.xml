@@ -3,11 +3,11 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-slopeone</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
   <name>LensKit SlopeOne Recommender</name>
   <dependencies>
   	<dependency>
