@@ -428,6 +428,7 @@ public class TestSparseVector {
     /**
      * Test method for {@link org.grouplens.lenskit.data.Ratings#userRatingVector(java.util.Collection)}.
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testUserRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();
@@ -443,6 +444,7 @@ public class TestSparseVector {
     /**
      * Test method for {@link org.grouplens.lenskit.data.Ratings#itemRatingVector(java.util.Collection)}.
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testItemRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();

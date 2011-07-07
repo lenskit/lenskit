@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.predict;
 
 import static org.junit.Assert.assertEquals;
 
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Test;
 
@@ -34,13 +35,13 @@ public class TestHLU {
     double[] predictions2 = {4, 4, 5, 2, 3, 2, 3, 4, 4, 3};
     double[] predictions3 = {4, 4, 5, 3, 3, 4, 5, 4, 4, 4};
     
-    SparseVector rv1 = SparseVector.wrap(items, ratings1);
-    SparseVector rv2 = SparseVector.wrap(items, ratings2);
-    SparseVector rv3 = SparseVector.wrap(items, ratings3);
+    SparseVector rv1 = ImmutableSparseVector.wrap(items, ratings1);
+    SparseVector rv2 = ImmutableSparseVector.wrap(items, ratings2);
+    SparseVector rv3 = ImmutableSparseVector.wrap(items, ratings3);
     
-    SparseVector pv1 = SparseVector.wrap(items, predictions1);
-    SparseVector pv2 = SparseVector.wrap(items, predictions2);
-    SparseVector pv3 = SparseVector.wrap(items, predictions3);
+    SparseVector pv1 = ImmutableSparseVector.wrap(items, predictions1);
+    SparseVector pv2 = ImmutableSparseVector.wrap(items, predictions2);
+    SparseVector pv3 = ImmutableSparseVector.wrap(items, predictions3);
 	
 	@Test
 	public void testComputeHLU() {

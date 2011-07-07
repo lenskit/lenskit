@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.MaxRating;
@@ -56,7 +55,7 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 		if (normalizedData != null) snap = normalizedData;
 		accumulator = new SlopeOneModelDataAccumulator(damping, snap);
 		for (long currentUser : snap.getUserIds()) {
-			SparseVector ratings = Ratings.userRatingVector(snap.getUserRatings(currentUser));
+		    SparseVector ratings = snap.userRatingVector(currentUser);
 			LongIterator iter = ratings.keySet().iterator();
 			while (iter.hasNext()) {
 				long item1 = iter.next();

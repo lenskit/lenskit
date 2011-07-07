@@ -73,8 +73,7 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 	 * Determine the items for which predictions can be made for a certain user.
 	 * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
-	 * @param user The user's ID.
-	 * @param ratings The user's rating vector.
+	 * @param ratings The user rating vector.
 	 * @return All items for which predictions can be made for the user.
 	 */
 	protected LongSet getPredictableItems(UserRatingVector ratings) {

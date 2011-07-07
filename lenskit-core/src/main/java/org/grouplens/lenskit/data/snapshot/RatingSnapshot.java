@@ -104,6 +104,7 @@ public interface RatingSnapshot extends Closeable {
 	 * most once.
 	 * @param userId The user's ID.
 	 * @return The user's ratings, or an empty collection if the user is unknown.
+	 * @todo Make this track user rating vectors.
 	 */
 	SparseVector userRatingVector(long userId);
 	

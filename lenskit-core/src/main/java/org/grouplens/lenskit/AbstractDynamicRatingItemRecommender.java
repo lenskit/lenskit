@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
@@ -78,15 +77,14 @@ public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemR
 	
 	/**
 	 * Implementation method for recommender services.
-	 * @param user The user ID.
-	 * @param ratings The user's rating vector.
+	 * @param ratings The user rating vector.
 	 * @param n The number of items to return, or negative to return all possible
 	 * items.
 	 * @param candidates The candidate set.
 	 * @param exclude The set of excluded items (the public methods convert
 	 * null sets to the empty set, so this parameter is always non-null).
 	 * @return The recommendations with associated scores.
-	 * @see DynamicRatingItemRecommender#recommend(long, SparseVector, int, Set, Set)
+	 * @see DynamicRatingItemRecommender#recommend(UserRatingVector, int, Set, Set)
 	 */
 	protected abstract ScoredLongList recommend(UserRatingVector ratings, int n,
 			@Nullable LongSet candidates, @Nonnull LongSet exclude);

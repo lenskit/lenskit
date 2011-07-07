@@ -60,6 +60,7 @@ public class BasicUserRatingProfile implements UserRatingProfile {
         return getRatingVector().get(item);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public SparseVector getRatingVector() {
         if (vector == null) {

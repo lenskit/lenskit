@@ -85,4 +85,18 @@ public class ImmutableSparseVector extends SparseVector {
     public ImmutableSparseVector immutable() {
         return this;
     }
+    
+    /**
+     * @see MutableSparseVector#wrap(long[], double[])
+     */
+    public static ImmutableSparseVector wrap(long[] keys, double[] values) {
+        return MutableSparseVector.wrap(keys, values).freeze();
+    }
+    
+    /**
+     * @see MutableSparseVector#wrap(long[], double[], int)
+     */
+    public static ImmutableSparseVector wrap(long[] keys, double[] values, int size) {
+        return MutableSparseVector.wrap(keys, values, size).freeze();
+    }
 }

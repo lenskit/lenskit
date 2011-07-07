@@ -585,7 +585,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
      */
     @Deprecated
-    public static MutableSparseVector wrap(long[] keys, double[] values) {
+    public static SparseVector wrap(long[] keys, double[] values) {
         return MutableSparseVector.wrap(keys, values);
     }
     
@@ -593,7 +593,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
      */
     @Deprecated
-    public static MutableSparseVector wrap(long[] keys, double[] values, int length) {
+    public static SparseVector wrap(long[] keys, double[] values, int length) {
         return MutableSparseVector.wrap(keys, values, length);
     }
 
@@ -601,7 +601,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @deprecated Use {@link MutableSparseVector#wrap(long[], double[], boolean)}
      */
     @Deprecated
-    public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
+    public static SparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
         return MutableSparseVector.wrap(keys, values, removeNaN);
     }
 }

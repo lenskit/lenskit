@@ -35,7 +35,8 @@ public abstract class AbstractRatingSnapshot implements RatingSnapshot {
 		cache = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<SparseVector>());
 	}
 	
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public SparseVector userRatingVector(long userId) {
 		SparseVector data = cache.get(userId);
 		if (data != null) {

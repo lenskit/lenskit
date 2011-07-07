@@ -23,6 +23,7 @@ import static org.grouplens.lenskit.knn.SpearmanRankCorrelation.rank;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class SpearmanRankCorrelationTest {
     
     @Test
     public void testRankSingle() {
-        SparseVector v = SparseVector.wrap(new long[]{1}, new double[]{5});
+        SparseVector v = MutableSparseVector.wrap(new long[]{1}, new double[]{5});
         SparseVector r = rank(v);
         assertEquals(1, r.size());
         assertEquals(1, r.get(1), 1.0e-6);
@@ -50,7 +51,7 @@ public class SpearmanRankCorrelationTest {
     public void testRankSeveral() {
         long[] keys = { 1, 2, 3, 4, 5 };
         double[] values = { 7, 2, 3, 1, 5};
-        SparseVector v = SparseVector.wrap(keys, values);
+        SparseVector v = ImmutableSparseVector.wrap(keys, values);
         SparseVector r = rank(v);
         assertEquals(5, r.size());
         assertEquals(1, r.get(1), 1.0e-6);
@@ -64,7 +65,7 @@ public class SpearmanRankCorrelationTest {
     public void testRankTie() {
         long[] keys = { 1, 2, 3, 4, 5 };
         double[] values = { 7, 2, 3, 1, 3};
-        SparseVector v = SparseVector.wrap(keys, values);
+        SparseVector v = ImmutableSparseVector.wrap(keys, values);
         SparseVector r = rank(v);
         assertEquals(5, r.size());
         assertEquals(1, r.get(1), 1.0e-6);

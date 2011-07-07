@@ -14,6 +14,20 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * The deprecated <<<SparseVector.wrap>>> methods now return
+    <<<SparseVector>>> rather than <<<MutableSparseVector>>>, so that
+    they can be overridden in <<<ImmutableSparseVector>>>.
+
+  []
+
+Release 0.2
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.2}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
 * Core changes
 
   * Introduce user- and item-associated sparse vectors, including

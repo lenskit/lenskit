@@ -54,11 +54,14 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Built {
     /**
-     * Return true if the built instance should not be stored in the
+     * Return <tt>true</tt> if the built instance should not be stored in the
      * RecommenderEngine, and is only needed for resolving dependencies during
-     * the build phase.
+     * the build phase. If <tt>true</tt>, built instances will not be retained
+     * directly in the recommender container (although they may be referenced by
+     * objects which are retained).
      * 
-     * @return
+     * @return <tt>true</tt> if the built instance is used only in the build
+     *         process.
      */
     boolean ephemeral() default false;
 }

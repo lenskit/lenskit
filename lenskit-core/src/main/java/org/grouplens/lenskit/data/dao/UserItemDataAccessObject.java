@@ -25,10 +25,9 @@ import org.grouplens.lenskit.data.LongCursor;
 /**
  * DAO for user-item ID data. Each DAO instance represents an open session to
  * the data on the current thread, with similar semantics to a database session.
- * DAO's are opened by using an implementation of the
- * {@link DataAccessObjectManager}. The DAO's {@link #close()} must be called
- * when the DAO is no longer in use. A DAO is not thread-safe and should only be
- * used on the thread it was created on.
+ * DAO's are opened by using a {@link DAOFactory}. The DAO's {@link #close()}
+ * method must be called when the DAO is no longer in use. A DAO is not
+ * thread-safe and should only be used on the thread it was created on.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */

@@ -29,7 +29,6 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.UserRatingProfile;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
@@ -160,7 +159,7 @@ public class TrainTestPredictEvaluator {
 
     /**
      * Make a list of tasks for running this evaluation recipe.
-     * @param An evaluation recipe to run.
+     * @param recipe An evaluation recipe to run.
      * @return The tasks to run to perform a train-test evaluation on the algorithms.
      */
     public List<Runnable> makeEvalTasks(EvaluationRecipe recipe) {
@@ -259,7 +258,7 @@ public class TrainTestPredictEvaluator {
                     Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
                     try {
                         for (UserRatingProfile p: userProfiles) {
-                            SparseVector ratings = Ratings.userRatingVector(p.getRatings());
+                            SparseVector ratings = p.getRatingVector();
                             SparseVector predictions =
                                 pred.predict(p.getUser(), ratings.keySet());
                             acc.evaluatePrediction(p.getUser(), ratings, predictions);
