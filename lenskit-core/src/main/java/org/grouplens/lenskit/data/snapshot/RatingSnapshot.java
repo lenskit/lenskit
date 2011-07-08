@@ -33,26 +33,25 @@ import org.grouplens.lenskit.util.FastCollection;
 /**
  * Snapshot of the ratings data for building a recommender.
  * 
- * <p>The recommender build process often needs to take multiple passes over
- * the rating data.  In a live system, the data provided by a
- * {@link RatingDataAccessObject} may change between iterations.  Therefore,
- * we introduce <emph>build contexts</emph> &mdash; snapshots of the rating data
- * at a particular point in time that can be iterated as many times as necessary
- * to build the recommender.
+ * <p>
+ * The recommender build process often needs to take multiple passes over the
+ * rating data. In a live system, the data provided by a
+ * {@link RatingDataAccessObject} may change between iterations. Therefore, we
+ * introduce <emph>build contexts</emph> &mdash; snapshots of the rating data at
+ * a particular point in time that can be iterated as many times as necessary to
+ * build the recommender.
  * 
- * <p>Implementers have a variety of options for implementing build contexts.
- * They can be in-memory snapshots, database transactions, database clones,
- * or even disk files.  Recommender build code does assume, however, that
- * multiple iterations is pretty fast.  Therefore, implementations should avoid
+ * <p>
+ * Implementers have a variety of options for implementing build contexts. They
+ * can be in-memory snapshots, database transactions, database clones, or even
+ * disk files. Recommender build code does assume, however, that multiple
+ * iterations is pretty fast. Therefore, implementations should avoid
  * re-fetching the data over a network connection for each request.
  * 
- * <p>An additional feature provided by build contexts is that of mapping the
- * item and user IDs to consecutive, 0-based indices.  The indices <strong>may 
+ * <p>
+ * An additional feature provided by build contexts is that of mapping the item
+ * and user IDs to consecutive, 0-based indices. The indices <strong>may
  * differ</strong> from one build context to another.
- * 
- * <p>The build context will usually be a singleton in a dedicated
- * recommender-building process or an appropriately scoped object in other
- * contexts.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -82,40 +81,46 @@ public interface RatingSnapshot extends Closeable {
 	 */
 	Index itemIndex();
 	
-	/**
-	 * Get the collection of ratings in the snapshot.  The ratings are returned
-	 * in an undetermined order.  It is guaranteed that no duplicate ratings
-	 * appear - each <i>(user,item)</i> pair is rated at most once.
-	 * @return All ratings in the system.
-	 */
+    /**
+     * Get the collection of ratings in the snapshot. The ratings are returned
+     * in an undetermined order. It is guaranteed that no duplicate ratings
+     * appear - each <i>(user,item)</i> pair is rated at most once.
+     * 
+     * @return All ratings in the system.
+     */
 	FastCollection<IndexedRating> getRatings();
 	
-	/**
-	 * Get the ratings for a particular user.  It is guaranteed that no duplicate
-	 * ratings appear - each <i>(user,item)</i> pair is rated at most once.
-	 * @param userId The user's ID.
-	 * @return The user's ratings, or an empty collection if the user is unknown.
-	 */
+    /**
+     * Get the ratings for a particular user. It is guaranteed that no duplicate
+     * ratings appear - each <i>(user,item)</i> pair is rated at most once.
+     * 
+     * @param userId The user's ID.
+     * @return The user's ratings, or an empty collection if the user is
+     *         unknown.
+     */
 	FastCollection<IndexedRating> getUserRatings(long userId);
 	
-	/**
-	 * Get the ratings for a particular user in SparseVector form. It is guaranteed
-	 * that no duplicate ratings appear - each <i>(user,item)</i> pair is rated at
-	 * most once.
-	 * @param userId The user's ID.
-	 * @return The user's ratings, or an empty collection if the user is unknown.
-	 * @todo Make this track user rating vectors.
-	 */
+    /**
+     * Get the ratings for a particular user in SparseVector form. It is
+     * guaranteed that no duplicate ratings appear - each <i>(user,item)</i>
+     * pair is rated at most once.
+     * 
+     * @param userId The user's ID.
+     * @return The user's ratings, or an empty collection if the user is
+     *         unknown.
+     * @todo Make this track user rating vectors.
+     */
 	SparseVector userRatingVector(long userId);
-	
-	/**
-	 * Close the build context.  This overrides {@link Closeable#close()} to
-	 * drop the exception that can be thrown.
-	 * 
-	 * <p>After the build context has been closed, all methods are allowed
-	 * to fail.  Objects returned from those methods, however, should continue
-	 * to be valid.
-	 */
+
+    /**
+     * Close the build context. This overrides {@link Closeable#close()} to drop
+     * the exception that can be thrown.
+     * 
+     * <p>
+     * After the build context has been closed, all methods are allowed to fail.
+     * Objects returned from those methods, however, should continue to be
+     * valid.
+     */
 	@Override
     void close();
 }
