@@ -37,9 +37,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
-import org.grouplens.lenskit.data.SimpleRating;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.junit.Test;
 
@@ -426,7 +426,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.Ratings#userRatingVector(java.util.Collection)}.
+     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#userRatingVector(java.util.Collection)}.
      */
     @SuppressWarnings("deprecation")
     @Test
@@ -442,7 +442,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.Ratings#itemRatingVector(java.util.Collection)}.
+     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#itemRatingVector(java.util.Collection)}.
      */
     @SuppressWarnings("deprecation")
     @Test

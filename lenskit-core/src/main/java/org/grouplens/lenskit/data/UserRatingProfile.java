@@ -20,6 +20,7 @@ package org.grouplens.lenskit.data;
 
 import java.util.Collection;
 
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**

@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.event;
 
 import javax.annotation.concurrent.ThreadSafe;
 

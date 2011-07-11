@@ -18,10 +18,10 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
-import org.grouplens.lenskit.data.AbstractRating;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.IndexedRating;
 import org.grouplens.lenskit.data.SimpleIndexedRating;
+import org.grouplens.lenskit.data.event.AbstractRating;
 
 /**
  * Data storage for packed build contexts.

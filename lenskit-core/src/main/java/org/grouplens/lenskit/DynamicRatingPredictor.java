@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 

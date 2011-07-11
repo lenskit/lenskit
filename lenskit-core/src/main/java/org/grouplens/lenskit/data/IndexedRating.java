@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.data;
 
+import org.grouplens.lenskit.data.event.Rating;
+
 
 /**
  * Rating that also knows the indexes for its user and item.

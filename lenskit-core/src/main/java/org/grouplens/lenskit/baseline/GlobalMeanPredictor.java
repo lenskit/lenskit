@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
 

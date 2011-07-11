@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**

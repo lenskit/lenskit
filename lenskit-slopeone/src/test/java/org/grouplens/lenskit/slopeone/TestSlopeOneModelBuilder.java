@@ -22,9 +22,9 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.slopeone.SlopeOneModel;
 import org.grouplens.lenskit.slopeone.SlopeOneModelBuilder;

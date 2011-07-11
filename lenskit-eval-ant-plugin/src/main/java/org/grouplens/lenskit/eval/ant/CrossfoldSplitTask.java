@@ -44,10 +44,10 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileDAO;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
 
 /**

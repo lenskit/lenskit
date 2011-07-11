@@ -28,11 +28,11 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.SimpleRating;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.SimpleRating;
 import org.junit.Before;
 import org.junit.Test;
 

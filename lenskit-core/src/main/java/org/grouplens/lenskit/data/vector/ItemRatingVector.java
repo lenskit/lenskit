@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * Vector containing ratings for an item.

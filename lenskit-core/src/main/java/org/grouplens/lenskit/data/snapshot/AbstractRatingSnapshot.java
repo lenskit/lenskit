@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import org.grouplens.lenskit.data.Ratings;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 public abstract class AbstractRatingSnapshot implements RatingSnapshot {

@@ -33,8 +33,8 @@ import java.util.Scanner;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.ScannerRatingCursor;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
 
 /**

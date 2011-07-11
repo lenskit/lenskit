@@ -23,9 +23,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.WillCloseWhenClosed;
 
-import org.grouplens.lenskit.data.AbstractRatingCursor;
-import org.grouplens.lenskit.data.MutableRating;
-import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.event.AbstractRatingCursor;
+import org.grouplens.lenskit.data.event.MutableRating;
+import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

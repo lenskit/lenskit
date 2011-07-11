@@ -26,8 +26,8 @@ import java.util.Collections;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.Rating;
-import org.grouplens.lenskit.data.Ratings;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 
 /**
  * Vector containing a user's ratings.

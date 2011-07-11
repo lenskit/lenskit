@@ -21,6 +21,8 @@
  */
 package org.grouplens.lenskit.data;
 
+import org.grouplens.lenskit.data.event.SimpleRating;
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

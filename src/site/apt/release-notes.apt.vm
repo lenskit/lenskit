@@ -18,6 +18,8 @@ Release ${project.version}
     <<<SparseVector>>> rather than <<<MutableSparseVector>>>, so that
     they can be overridden in <<<ImmutableSparseVector>>>.
 
+  * 
+
   []
 
 Release 0.2

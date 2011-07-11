@@ -22,8 +22,8 @@ package org.grouplens.lenskit;
 import java.util.Collection;
 
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 

@@ -30,7 +30,7 @@ import java.net.URL;
 import java.util.Scanner;
 
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.Rating;
+import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

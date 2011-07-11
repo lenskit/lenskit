@@ -28,13 +28,13 @@ import java.util.NoSuchElementException;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.AbstractLongCursor;
-import org.grouplens.lenskit.data.AbstractRatingCursor;
 import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.MutableRating;
-import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.event.AbstractRatingCursor;
+import org.grouplens.lenskit.data.event.MutableRating;
+import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

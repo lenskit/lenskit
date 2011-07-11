@@ -36,9 +36,9 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.BasicUserRatingProfile;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.Rating;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
