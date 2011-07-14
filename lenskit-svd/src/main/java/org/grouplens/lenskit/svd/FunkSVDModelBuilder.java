@@ -141,7 +141,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
             // FIXME Use the snapshot's user rating vector support
-            UserRatingVector user = UserRatingVector.fromRatings(uid, snapshot.getUserRatings(uid));
+            UserRatingVector user = UserRatingVector.fromPreferences(uid, snapshot.getUserRatings(uid));
             MutableSparseVector blpreds = baseline.predict(user, user.keySet());
             estimates[i] = blpreds;
         }
@@ -231,7 +231,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
                                  IndexedPreference r) {
         final int uidx = r.getUserIndex();
         final int iidx = r.getItemIndex();
-        final double value = r.getRating();
+        final double value = r.getValue();
         // Step 1: get the predicted value (based on preceding features
         // and the current feature values)
         final double estimate = estimates[uidx].get(r.getItemId());

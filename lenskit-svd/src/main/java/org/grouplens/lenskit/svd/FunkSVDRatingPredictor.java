@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -119,7 +120,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
     }
     
     private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
-    	return predict(UserRatingVector.fromRatings(user, dao.getUserRatings(user)),
+    	return predict(UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
     	               uprefs, items);
     }
     

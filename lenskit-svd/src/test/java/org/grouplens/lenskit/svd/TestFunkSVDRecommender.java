@@ -33,10 +33,10 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,20 +53,20 @@ public class TestFunkSVDRecommender {
 	@BeforeClass
 	public static void setup() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 6, 4));
-		rs.add(new SimpleRating(2, 6, 2));
-		rs.add(new SimpleRating(1, 7, 3));
-		rs.add(new SimpleRating(2, 7, 2));
-		rs.add(new SimpleRating(3, 7, 5));
-		rs.add(new SimpleRating(4, 7, 2));
-		rs.add(new SimpleRating(1, 8, 3));
-		rs.add(new SimpleRating(2, 8, 4));
-		rs.add(new SimpleRating(3, 8, 3));
-		rs.add(new SimpleRating(4, 8, 2));
-		rs.add(new SimpleRating(5, 8, 3));
-		rs.add(new SimpleRating(6, 8, 2));
-		rs.add(new SimpleRating(1, 9, 3));
-		rs.add(new SimpleRating(3, 9, 4));
+		rs.add(Ratings.make(1, 6, 4));
+		rs.add(Ratings.make(2, 6, 2));
+		rs.add(Ratings.make(1, 7, 3));
+		rs.add(Ratings.make(2, 7, 2));
+		rs.add(Ratings.make(3, 7, 5));
+		rs.add(Ratings.make(4, 7, 2));
+		rs.add(Ratings.make(1, 8, 3));
+		rs.add(Ratings.make(2, 8, 4));
+		rs.add(Ratings.make(3, 8, 3));
+		rs.add(Ratings.make(4, 8, 2));
+		rs.add(Ratings.make(5, 8, 3));
+		rs.add(Ratings.make(6, 8, 2));
+		rs.add(Ratings.make(1, 9, 3));
+		rs.add(Ratings.make(3, 9, 4));
 
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
