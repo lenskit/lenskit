@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.junit.Test;
 
@@ -37,20 +37,20 @@ public class TestWeightedSlopeOneRatingPredictor {
 	public void testPredict1() {
 
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 6, 4));
-		rs.add(new SimpleRating(2, 6, 2));
-		rs.add(new SimpleRating(1, 7, 3));
-		rs.add(new SimpleRating(2, 7, 2));
-		rs.add(new SimpleRating(3, 7, 5));
-		rs.add(new SimpleRating(4, 7, 2));
-		rs.add(new SimpleRating(1, 8, 3));
-		rs.add(new SimpleRating(2, 8, 4));
-		rs.add(new SimpleRating(3, 8, 3));
-		rs.add(new SimpleRating(4, 8, 2));
-		rs.add(new SimpleRating(5, 8, 3));
-		rs.add(new SimpleRating(6, 8, 2));
-		rs.add(new SimpleRating(1, 9, 3));
-		rs.add(new SimpleRating(3, 9, 4));
+		rs.add(Ratings.make(1, 6, 4));
+		rs.add(Ratings.make(2, 6, 2));
+		rs.add(Ratings.make(1, 7, 3));
+		rs.add(Ratings.make(2, 7, 2));
+		rs.add(Ratings.make(3, 7, 5));
+		rs.add(Ratings.make(4, 7, 2));
+		rs.add(Ratings.make(1, 8, 3));
+		rs.add(Ratings.make(2, 8, 4));
+		rs.add(Ratings.make(3, 8, 3));
+		rs.add(Ratings.make(4, 8, 2));
+		rs.add(Ratings.make(5, 8, 3));
+		rs.add(Ratings.make(6, 8, 2));
+		rs.add(Ratings.make(1, 9, 3));
+		rs.add(Ratings.make(3, 9, 4));
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		EventCollectionDAO dao = manager.create();
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
@@ -77,13 +77,13 @@ public class TestWeightedSlopeOneRatingPredictor {
 	@Test
 	public void testPredict2() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 4, 3.5));
-		rs.add(new SimpleRating(2, 4, 5));
-		rs.add(new SimpleRating(3, 5, 4.25));
-		rs.add(new SimpleRating(2, 6, 3));
-		rs.add(new SimpleRating(1, 7, 4));
-		rs.add(new SimpleRating(2, 7, 4));
-		rs.add(new SimpleRating(3, 7, 1.5));
+		rs.add(Ratings.make(1, 4, 3.5));
+		rs.add(Ratings.make(2, 4, 5));
+		rs.add(Ratings.make(3, 5, 4.25));
+		rs.add(Ratings.make(2, 6, 3));
+		rs.add(Ratings.make(1, 7, 4));
+		rs.add(Ratings.make(2, 7, 4));
+		rs.add(Ratings.make(3, 7, 1.5));
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		EventCollectionDAO dao = manager.create();
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
