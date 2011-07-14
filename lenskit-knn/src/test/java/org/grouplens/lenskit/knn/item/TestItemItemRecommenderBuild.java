@@ -29,10 +29,10 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
 import org.junit.Before;
@@ -46,10 +46,10 @@ public class TestItemItemRecommenderBuild {
 	@Before
 	public void setup() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 5, 2));
-		rs.add(new SimpleRating(1, 7, 4));
-		rs.add(new SimpleRating(8, 4, 5));
-		rs.add(new SimpleRating(8, 5, 4));
+		rs.add(Ratings.make(1, 5, 2));
+		rs.add(Ratings.make(1, 7, 4));
+		rs.add(Ratings.make(8, 4, 5));
+		rs.add(Ratings.make(8, 5, 4));
 		manager = new EventCollectionDAO.Factory(rs);
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);

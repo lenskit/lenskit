@@ -33,37 +33,37 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestUserUserRecommender {
-	private static Recommender rec;
-	private static EventCollectionDAO dao;
+	private Recommender rec;
+	private EventCollectionDAO dao;
 
-	@BeforeClass
-	public static void setup() {
+	@Before
+	public void setup() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 6, 4));
-		rs.add(new SimpleRating(2, 6, 2));
-		rs.add(new SimpleRating(4, 6, 3));
-		rs.add(new SimpleRating(5, 6, 4));
-		rs.add(new SimpleRating(1, 7, 3));
-		rs.add(new SimpleRating(2, 7, 2));
-		rs.add(new SimpleRating(3, 7, 5));
-		rs.add(new SimpleRating(4, 7, 2));
-		rs.add(new SimpleRating(1, 8, 3));
-		rs.add(new SimpleRating(2, 8, 4));
-		rs.add(new SimpleRating(3, 8, 3));
-		rs.add(new SimpleRating(4, 8, 2));
-		rs.add(new SimpleRating(5, 8, 3));
-		rs.add(new SimpleRating(6, 8, 2));
-		rs.add(new SimpleRating(1, 9, 3));
-		rs.add(new SimpleRating(3, 9, 4));
-		rs.add(new SimpleRating(6, 9, 4));
-		rs.add(new SimpleRating(5, 9, 4));
+		rs.add(Ratings.make(1, 6, 4));
+		rs.add(Ratings.make(2, 6, 2));
+		rs.add(Ratings.make(4, 6, 3));
+		rs.add(Ratings.make(5, 6, 4));
+		rs.add(Ratings.make(1, 7, 3));
+		rs.add(Ratings.make(2, 7, 2));
+		rs.add(Ratings.make(3, 7, 5));
+		rs.add(Ratings.make(4, 7, 2));
+		rs.add(Ratings.make(1, 8, 3));
+		rs.add(Ratings.make(2, 8, 4));
+		rs.add(Ratings.make(3, 8, 3));
+		rs.add(Ratings.make(4, 8, 2));
+		rs.add(Ratings.make(5, 8, 3));
+		rs.add(Ratings.make(6, 8, 2));
+		rs.add(Ratings.make(1, 9, 3));
+		rs.add(Ratings.make(3, 9, 4));
+		rs.add(Ratings.make(6, 9, 4));
+		rs.add(Ratings.make(5, 9, 4));
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
@@ -335,12 +335,12 @@ public class TestUserUserRecommender {
 	}
 
 	//Helper method to retrieve user's user and create SparseVector
-	private static UserRatingVector getRatingVector(long user) {
-		return UserRatingVector.fromRatings(user, dao.getUserRatings(user));
+	private UserRatingVector getRatingVector(long user) {
+		return UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
 	}
 
-	@AfterClass
-	public static void cleanUp() {
+	@After
+	public void cleanUp() {
 		rec.close();
 		dao.close();
 	}

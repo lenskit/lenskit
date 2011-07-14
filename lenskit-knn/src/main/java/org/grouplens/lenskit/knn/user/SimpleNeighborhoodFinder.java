@@ -34,7 +34,6 @@ import java.util.PriorityQueue;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.ItemEvent;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -172,9 +171,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         LongIterator items = itemSet.iterator();
         while (items.hasNext()) {
             final long item = items.nextLong();
-            Cursor<Rating> ratings = dataSource.getItemRatings(item);
+            Cursor<Rating> ratings = dataSource.getItemEvents(item, Rating.class);
             try {
-                for (ItemEvent r: ratings) {
+                for (Rating r: ratings) {
                     long uid = r.getUserId();
                     if (uid == user) continue;
                     users.add(uid);
@@ -193,7 +192,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @return The user's rating vector.
      */
     private synchronized UserRatingVector getUserRatingVector(long user) {
-        List<Rating> ratings = Cursors.makeList(dataSource.getUserRatings(user));
+        List<Rating> ratings = Cursors.makeList(dataSource.getUserEvents(user, Rating.class));
         CacheEntry e = userVectorCache.get(user);
         
         // check rating count
@@ -203,7 +202,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         // check max timestamp
         long ts = -1;
         if (e != null) {
-            for (ItemEvent r: ratings) {
+            for (Rating r: ratings) {
                 ts = max(ts, r.getTimestamp());
             }
             if (ts != e.lastRatingTimestamp)
