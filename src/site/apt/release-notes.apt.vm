@@ -16,15 +16,16 @@ Release ${project.version}
 
 * Event Infrastructure
 
-  LensKit 0.3 introduces a new <<<Event>>> infrastructure for
-  representing user data.  Users have sequences of events, represented
-  by the <<<Event>>> interface.  Each event has an ID and an optional
-  timestamp.  Events may be associated with items (subclasses of the
-  <<<ItemEvent>>> interface).  Ratings are now <<rating events>>; they
-  store a <<<Preference>>>, which represents the preference expressed
-  by the user.  All of these interfaces and classes have been moved to
-  the package <<<org.grouplens.lenskit.data.event>>> (with the
-  preferences in <<<o.g.l.d.pref>>>).
+  For flexibility going forward, LensKit 0.3 introduces a new
+  <<<Event>>> infrastructure (#issue(48)) for representing user data.
+  Users have sequences of events, represented by the <<<Event>>>
+  interface.  Each event has an ID and an optional timestamp.  Events
+  may be associated with items (subclasses of the <<<ItemEvent>>>
+  interface).  Ratings are now <<rating events>>; they store a
+  <<<Preference>>>, which represents the preference expressed by the
+  user.  All of these interfaces and classes have been moved to the
+  package <<<org.grouplens.lenskit.data.event>>> (with the preferences
+  in <<<o.g.l.d.pref>>>).
 
   As a result of this, all ratings must now have globally-unique
   rating IDs (which are synthesized when they are not present in the
@@ -81,6 +82,14 @@ Release ${project.version}
 
   * Updated to GL Common 0.3.  This introduces the requirement that
     all elements in cursors be non-null.
+
+  * Made <<<IdentityVectorNormalizer>>> serializable (#issue(106)).
+
+  * Fixed bug where the recommender engine opened multiple DAOs for
+    each session (#issue(108)).
+
+  * Made POMs runnable with Maven 2, so Maven 2 can be used to compile
+    LensKit (although it cannot generate the site) (#issue(72)).
 
   []
 
