@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -147,15 +146,15 @@ public class CrossfoldSplitTask extends Task {
                 dbcs[i] = DriverManager.getConnection("jdbc:sqlite:" + fn);
                 JDBCUtils.execute(dbcs[i], "DROP TABLE IF EXISTS train;");
                 JDBCUtils.execute(dbcs[i], "DROP TABLE IF EXISTS test;");
-                String qmake = "CREATE TABLE %s (user INTEGER, item INTEGER, rating REAL";
+                String qmake = "CREATE TABLE %s (id INTEGER, user INTEGER, item INTEGER, rating REAL";
                 if (useTimestamp)
                     qmake += ", timestamp INTEGER";
                 qmake += ");";
                 JDBCUtils.execute(dbcs[i], String.format(qmake, "train"));
                 JDBCUtils.execute(dbcs[i], String.format(qmake, "test"));
-                qmake = "INSERT INTO %s (user, item, rating";
+                qmake = "INSERT INTO %s (id, user, item, rating";
                 if (useTimestamp) qmake += ", timestamp";
-                qmake += ") VALUES (?, ?, ?";
+                qmake += ") VALUES (?, ?, ?, ?";
                 if (useTimestamp) qmake += ", ?";
                 qmake += ");";
                 insert[i] = dbcs[i].prepareStatement(String.format(qmake, "train"));
@@ -172,24 +171,15 @@ public class CrossfoldSplitTask extends Task {
             // take pass through ratings, collecting by user and adding to
             // training sets
             log("Processing ratings");
-            Cursor<Rating> ratings = dao.getRatings();
+            Cursor<Rating> ratings = dao.getEvents(Rating.class);
             try {
                 for (Rating r: ratings) {
                     long uid = r.getUserId();
                     int s = userSegments.get(uid);
                     userRatings.get(uid).add(r);
-                    long ts = r.getTimestamp();
                     for (int i = 0; i < numFolds; i++) {
                         if (i != s) {
-                            insert[i].setLong(1, uid);
-                            insert[i].setLong(2, r.getItemId());
-                            insert[i].setDouble(3, r.getRating());
-                            if (useTimestamp) {
-                                if (ts >= 0)
-                                    insert[i].setLong(4, ts);
-                                else
-                                    insert[i].setNull(4, Types.INTEGER);
-                            }
+                            ImportTask.bindRating(insert[i], r, useTimestamp);
                             insert[i].executeUpdate();
                         }
                     }
@@ -206,8 +196,6 @@ public class CrossfoldSplitTask extends Task {
                 int seg = userSegments.get(uid);
                 PreparedStatement sTrain = insert[seg];
                 PreparedStatement sTest = test[seg];
-                sTrain.setLong(1, uid);
-                sTest.setLong(1, uid);
                 List<Rating> urs = e.getValue();
                 if (timeSplit)
                     Collections.sort(urs, Ratings.TIMESTAMP_COMPARATOR);
@@ -217,33 +205,13 @@ public class CrossfoldSplitTask extends Task {
                 
                 // Insert training data
                 for (Rating r: urs.subList(0, midpt)) {
-                    long iid = r.getItemId();
-                    double v = r.getRating();
-                    long ts = r.getTimestamp();
-                    sTrain.setLong(2, iid);
-                    sTrain.setDouble(3, v);
-                    if (useTimestamp) {
-                        if (ts >= 0)
-                            sTrain.setLong(4, ts);
-                        else
-                            sTrain.setNull(4, Types.INTEGER);
-                    }
+                    ImportTask.bindRating(sTrain, r, useTimestamp);
                     sTrain.executeUpdate();
                 }
                 
                 // Insert test data
                 for (Rating r: urs.subList(midpt, urs.size())) {
-                    long iid = r.getItemId();
-                    double v = r.getRating();
-                    long ts = r.getTimestamp();
-                    sTest.setLong(2, iid);
-                    sTest.setDouble(3, v);
-                    if (useTimestamp) {
-                        if (ts >= 0)
-                            sTest.setLong(4, ts);
-                        else
-                            sTest.setNull(4, Types.INTEGER);
-                    }
+                    ImportTask.bindRating(sTest, r, useTimestamp);
                     sTest.executeUpdate();
                 }
                 

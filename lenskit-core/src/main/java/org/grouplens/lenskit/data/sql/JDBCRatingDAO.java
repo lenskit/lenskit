@@ -48,6 +48,12 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class JDBCRatingDAO extends AbstractDataAccessObject {
+    public static final int COL_EVENT_ID = 1;
+    public static final int COL_USER_ID = 2;
+    public static final int COL_ITEM_ID = 3;
+    public static final int COL_RATING = 4;
+    public static final int COL_TIMESTAMP = 5;
+    
     public static class Factory implements DAOFactory<JDBCRatingDAO> {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
@@ -289,21 +295,21 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 			}
     		
     		try {
-    		    rating.setId(resultSet.getLong(1));
+    		    rating.setId(resultSet.getLong(COL_EVENT_ID));
     		    if (resultSet.wasNull())
     		        throw new RuntimeException("Unexpected null event ID");
-				rating.setUserId(resultSet.getLong(2));
+				rating.setUserId(resultSet.getLong(COL_USER_ID));
 				if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null user ID");
-				rating.setItemId(resultSet.getLong(3));
+				rating.setItemId(resultSet.getLong(COL_ITEM_ID));
 				if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null item ID");
-	    		rating.setRating(resultSet.getDouble(4));
+	    		rating.setRating(resultSet.getDouble(COL_RATING));
 	    		if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null rating");
 	    		long ts = -1;
 	    		if (hasTimestampColumn) {
-	    			ts = resultSet.getLong(5);
+	    			ts = resultSet.getLong(COL_TIMESTAMP);
 	    			if (resultSet.wasNull())
 	    				ts = -1;
 	    		}

@@ -30,14 +30,16 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -177,14 +179,14 @@ public class TrainTestPredictEvaluator {
                     return loadSnapshot(daoMgr);
                 }
             });
-        final LazyValue<List<Rating>> preload =
-            new LazyValue<List<Rating>>(new Callable<List<Rating>>() {
+        final LazyValue<List<Event>> preload =
+            new LazyValue<List<Event>>(new Callable<List<Event>>() {
                 @Override
-                public List<Rating> call() {
+                public List<Event> call() {
                     logger.info("Preloading ratings for {}", name);
                     DataAccessObject dao = daoMgr.create();
                     try {
-                        return Cursors.makeList(dao.getRatings());
+                        return Cursors.makeList(dao.getEvents());
                     } finally {
                         dao.close();
                     }
@@ -215,13 +217,13 @@ public class TrainTestPredictEvaluator {
         private ResultAccumulator resultAccumulator;
         private DAOFactory<? extends DataAccessObject> daoManager;
         private DAOFactory<? extends DataAccessObject> testDaoManager;
-        private LazyValue<List<Rating>> ratingCache;
+        private LazyValue<List<Event>> ratingCache;
         private LazyValue<? extends RatingSnapshot> ratingSnapshot;
         
         public EvalTask(DAOFactory<? extends DataAccessObject> daoMgr,
                 DAOFactory<? extends DataAccessObject> testDaoMgr,
                 ResultAccumulator results, AlgorithmInstance algo,
-                LazyValue<List<Rating>> cache,
+                LazyValue<List<Event>> cache,
                 LazyValue<? extends RatingSnapshot> snap) {
             daoManager = daoMgr;
             testDaoManager = testDaoMgr;
@@ -255,10 +257,10 @@ public class TrainTestPredictEvaluator {
 
                 DataAccessObject testDao = testDaoManager.create();
                 try {
-                    Cursor<UserHistory> userProfiles = testDao.getUserHistories();
+                    Cursor<UserHistory<Rating>> userProfiles = testDao.getUserHistories(Rating.class);
                     try {
-                        for (UserHistory p: userProfiles) {
-                            SparseVector ratings = p.getRatingVector();
+                        for (UserHistory<Rating> p: userProfiles) {
+                            SparseVector ratings = UserRatingVector.fromRatings(p);
                             SparseVector predictions =
                                 pred.predict(p.getUserId(), ratings.keySet());
                             acc.evaluatePrediction(p.getUserId(), ratings, predictions);

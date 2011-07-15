@@ -21,6 +21,12 @@
  */
 package org.grouplens.lenskit.eval.ant;
 
+import static org.grouplens.lenskit.data.sql.JDBCRatingDAO.COL_EVENT_ID;
+import static org.grouplens.lenskit.data.sql.JDBCRatingDAO.COL_ITEM_ID;
+import static org.grouplens.lenskit.data.sql.JDBCRatingDAO.COL_RATING;
+import static org.grouplens.lenskit.data.sql.JDBCRatingDAO.COL_TIMESTAMP;
+import static org.grouplens.lenskit.data.sql.JDBCRatingDAO.COL_USER_ID;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
@@ -35,6 +41,8 @@ import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ScannerRatingCursor;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
 
 /**
@@ -95,16 +103,16 @@ public class ImportTask extends Task {
             // create tables
             JDBCUtils.execute(dbc,
                               String.format("DROP TABLE IF EXISTS %s;", tableName));
-            String qmake = "CREATE TABLE %s (user INTEGER, item INTEGER, rating REAL";
+            String qmake = "CREATE TABLE %s (id INTEGER, user INTEGER, item INTEGER, rating REAL";
             if (useTimestamp)
                 qmake += ", timestamp INTEGER";
             qmake += ");";
             JDBCUtils.execute(dbc, String.format(qmake, tableName));
             dbc.setAutoCommit(false);
             
-            qmake = "INSERT INTO %s (user, item, rating";
+            qmake = "INSERT INTO %s (id, user, item, rating";
             if (useTimestamp) qmake += ", timestamp";
-            qmake += ") VALUES (?, ?, ?";
+            qmake += ") VALUES (?, ?, ?, ?";
             if (useTimestamp) qmake += ", ?";
             qmake += ");";
             PreparedStatement insert = dbc.prepareStatement(String.format(qmake, tableName));
@@ -112,17 +120,7 @@ public class ImportTask extends Task {
             try {
                 log("Writng ratings to " + dbFile.getPath());
                 for (Rating r: ratings) {
-                    long uid = r.getUserId();
-                    insert.setLong(1, uid);
-                    insert.setLong(2, r.getItemId());
-                    insert.setDouble(3, r.getRating());
-                    if (useTimestamp) {
-                        long ts = r.getTimestamp();
-                        if (ts >= 0)
-                            insert.setLong(4, ts);
-                        else
-                            insert.setNull(4, Types.INTEGER);
-                    }
+                    bindRating(insert, r, useTimestamp);
                     insert.executeUpdate();
                 }
             } finally {
@@ -148,4 +146,36 @@ public class ImportTask extends Task {
             dbc.close();
         }
 	}
+    /**
+     * Fill in the values in a prepared statement from a rating object. Expects
+     * the statement to have 4 or 5 parameters:
+     * (id,user,item,rating,timestamp?). Uses the column definitions in
+     * {@link JDBCRatingDAO}.
+     * 
+     * @param stmt The prepared statement.
+     * @param r The rating value.
+     * @param useTimestamp If <tt>true</tt>, insert the timestamp as the 5th
+     *            parameter.
+     * @throws SQLException
+     */
+    static void bindRating(PreparedStatement stmt, Rating r, boolean useTimestamp) throws SQLException {
+        stmt.setLong(COL_EVENT_ID, r.getId());
+        stmt.setLong(COL_USER_ID, r.getUserId());
+        stmt.setLong(COL_ITEM_ID, r.getItemId());
+        
+        Preference p = r.getPreference();
+        if (p != null) {
+            stmt.setDouble(COL_RATING, p.getValue());
+        } else {
+            stmt.setNull(COL_RATING, Types.DOUBLE);
+        }
+        
+        if (useTimestamp) {
+            long ts = r.getTimestamp();
+            if (ts >= 0)
+                stmt.setLong(COL_TIMESTAMP, ts);
+            else
+                stmt.setNull(COL_TIMESTAMP, Types.INTEGER);
+        }
+    }
 }

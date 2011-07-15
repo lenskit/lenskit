@@ -28,6 +28,7 @@ import java.util.Iterator;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -104,6 +105,10 @@ public class UserRatingVector extends UserVector {
      */
     public static UserRatingVector fromRatings(long userId, Collection<? extends Rating> ratings) {
         return userRatingVector(userId, new ArrayList<Rating>(ratings));
+    }
+    
+    public static UserRatingVector fromRatings(UserHistory<? extends Rating> history) {
+        return fromRatings(history.getUserId(), history);
     }
     
     /**
