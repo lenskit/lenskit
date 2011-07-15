@@ -112,7 +112,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             throw new IllegalStateException("No DAO creator supplied");
         DataAccessObject dao = factory.create();
         try {
-            return open(factory.create(), true);
+            return open(dao, true);
         } catch (RuntimeException e) {
             dao.close();
             throw e;
@@ -122,7 +122,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     @Override
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         if (dao == null)
-            throw new NullPointerException("Dao cannot be null when this method is used");
+            throw new IllegalArgumentException("Cannot open with null DAO");
         return new LenskitRecommender(createSessionContainer(dao), dao, shouldClose);
     }
     
