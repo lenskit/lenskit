@@ -27,105 +27,124 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.util.FastCollection;
 import org.grouplens.lenskit.util.IntIntervalList;
 
 /**
- * Collection for packed rating data.
+ * Preference collection implemented as a view on top of
+ * {@link PackedRatingData}. This is used to provide the collection
+ * implementations for {@link PackedRatingSnapshot}. It supports subsetting the
+ * packed data set to only a particular list of indices.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-class PackedRatingCollection extends AbstractCollection<IndexedRating>
-		implements FastCollection<IndexedRating> {
-	final private PackedRatingData data;
-	final private IntList indices;
-	
-	PackedRatingCollection(PackedRatingData data) {
-	    this.data = data;
-	    this.indices = new IntIntervalList(data.values.length);
-	}
-	
-	PackedRatingCollection(PackedRatingData data, IntList indices) {
-		this.data = data;
-		this.indices = indices;
-	}
+class PackedRatingCollection extends AbstractCollection<IndexedPreference>
+        implements FastCollection<IndexedPreference> {
+    final private PackedRatingData data;
+    final private IntList indices;
 
-	@Override
-	public Iterator<IndexedRating> iterator() {
-		return new IteratorImpl();
-	}
+    /**
+     * Construct a preference collection view of the entire packed data set.
+     * 
+     * @param data A packed rating data set.
+     */
+    PackedRatingCollection(PackedRatingData data) {
+        this.data = data;
+        this.indices = new IntIntervalList(data.values.length);
+    }
 
-	@Override
-	public int size() {
-		return indices.size();
-	}
+    /**
+     * Construct a collection view of a subset of the rating data.
+     * 
+     * @param data The rating data.
+     * @param indices A list of indices in the packed data arrays to include in
+     *            the collection.
+     */
+    PackedRatingCollection(PackedRatingData data, IntList indices) {
+        this.data = data;
+        this.indices = indices;
+    }
 
-	@Override
-	public Iterable<IndexedRating> fast() {
-		return new Iterable<IndexedRating>() {
-			@Override
-			public Iterator<IndexedRating> iterator() {
-				return fastIterator();
-			}
-		};
-	}
+    @Override
+    public Iterator<IndexedPreference> iterator() {
+        return new IteratorImpl();
+    }
 
-	@Override
-	public Iterator<IndexedRating> fastIterator() {
-		return new FastIteratorImpl();
-	}
+    @Override
+    public int size() {
+        return indices.size();
+    }
 
-	private final class IteratorImpl implements Iterator<IndexedRating> {
-		private final IntIterator iter;
-		
-		IteratorImpl() {
-			iter = indices.iterator();
-		}
-		
-		@Override
+    @Override
+    public Iterable<IndexedPreference> fast() {
+        return new Iterable<IndexedPreference>() {
+            @Override
+            public Iterator<IndexedPreference> iterator() {
+                return fastIterator();
+            }
+        };
+    }
+
+    @Override
+    public Iterator<IndexedPreference> fastIterator() {
+        return new FastIteratorImpl();
+    }
+
+    private final class IteratorImpl implements Iterator<IndexedPreference> {
+        private final IntIterator iter;
+
+        IteratorImpl() {
+            iter = indices.iterator();
+        }
+
+        @Override
         public boolean hasNext() {
-			return iter.hasNext();
-		}
-		
-		@Override
-        public IndexedRating next() {
-			final int index = iter.next();
-			return data.makeRating(index);
-		}
+            return iter.hasNext();
+        }
 
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	private final class FastIteratorImpl implements Iterator<IndexedRating> {
-		private final IntIterator iter;
-		private PackedRatingData.IndirectRating rating;
-		
-		FastIteratorImpl() {
-			iter = indices.iterator();
-		}
-		
-		@Override
+        @Override
+        public IndexedPreference next() {
+            final int index = iter.next();
+            return data.makeRating(index);
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private final class FastIteratorImpl implements Iterator<IndexedPreference> {
+        private final IntIterator iter;
+        private IndexedPreference preference = new IndexedPreference();
+
+        FastIteratorImpl() {
+            iter = indices.iterator();
+        }
+
+        @Override
         public boolean hasNext() {
-			return iter.hasNext();
-		}
-		
-		@Override
-        public IndexedRating next() {
-			final int index = iter.next();
-			if (rating == null)
-				rating = data.makeIndirectRating(index);
-			else
-				rating.index = index;
-			return rating;
-		}
+            return iter.hasNext();
+        }
 
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
+        @Override
+        public IndexedPreference next() {
+            final int index = iter.next();
+            final int uidx = data.users[index];
+            final int iidx = data.items[index];
+            preference.setUserIndex(uidx);
+            preference.setItemIndex(iidx);
+            preference.setUserId(data.userIndex.getId(uidx));
+            preference.setItemId(data.itemIndex.getId(iidx));
+            preference.setValue(data.values[index]);
+            return preference;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -34,7 +34,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 
-	public WeightedSlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
+	public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
 		super(dao, model);
 	}
 

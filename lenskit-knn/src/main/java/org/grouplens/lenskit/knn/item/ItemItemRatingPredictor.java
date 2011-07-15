@@ -34,7 +34,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -55,7 +55,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final ItemItemModel model;
     private final int neighborhoodSize;
     
-    public ItemItemRatingPredictor(RatingDataAccessObject dao, ItemItemModel model, 
+    public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model, 
                                    @NeighborhoodSize int nnbrs) {
         super(dao);
         this.model = model;

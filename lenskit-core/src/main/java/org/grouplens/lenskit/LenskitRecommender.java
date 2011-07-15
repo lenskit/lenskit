@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.picocontainer.PicoContainer;
 
 /**
@@ -36,14 +36,14 @@ import org.picocontainer.PicoContainer;
  */
 public class LenskitRecommender implements Recommender {
     private final PicoContainer container;
-    private final RatingDataAccessObject dao;
+    private final DataAccessObject dao;
     private final boolean shouldCloseDao;
     
     // An alternate to this LenskitRecommender where it asks for the components as needed
     // is to see if there is an actual Recommender that can be built from the container
     // and then delegate to that.  The wrapper recommender would still handle the closing
     // logic, this would give us a single configuration point if people chose to use it.
-    public LenskitRecommender(PicoContainer container, RatingDataAccessObject dao, boolean shouldCloseDao) {
+    public LenskitRecommender(PicoContainer container, DataAccessObject dao, boolean shouldCloseDao) {
         this.container = container;
         this.dao = dao;
         this.shouldCloseDao = shouldCloseDao;
@@ -84,7 +84,7 @@ public class LenskitRecommender implements Recommender {
     }
 
     @Override
-    public RatingDataAccessObject getRatingDataAccessObject() {
+    public DataAccessObject getRatingDataAccessObject() {
         return dao;
     }
 

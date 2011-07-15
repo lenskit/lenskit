@@ -26,7 +26,7 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -39,7 +39,7 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 
 	protected SlopeOneModel model;
 
-	public SlopeOneRatingPredictor(RatingDataAccessObject dao, SlopeOneModel model) {
+	public SlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
 		super(dao);
 		this.model = model;
 	}

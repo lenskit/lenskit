@@ -31,7 +31,7 @@ import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.pico.JustInTimePicoContainer;
 import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
 import org.picocontainer.ComponentFactory;
@@ -51,9 +51,9 @@ import org.picocontainer.behaviors.Caching;
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final PicoContainer recommenderContainer;
     private final Map<Object, Object> sessionBindings;
-    private final DAOFactory<? extends RatingDataAccessObject> factory;
+    private final DAOFactory<? extends DataAccessObject> factory;
     
-    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> factory,
+    public LenskitRecommenderEngine(DAOFactory<? extends DataAccessObject> factory,
                                     PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
         this.factory = factory;
         this.recommenderContainer = recommenderContainer;
@@ -74,7 +74,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("unchecked")
-    public LenskitRecommenderEngine(DAOFactory<? extends RatingDataAccessObject> factory,
+    public LenskitRecommenderEngine(DAOFactory<? extends DataAccessObject> factory,
                                     File file) throws IOException, ClassNotFoundException {
         this.factory = factory;
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
@@ -110,7 +110,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public LenskitRecommender open() {
         if (factory == null)
             throw new IllegalStateException("No DAO creator supplied");
-        RatingDataAccessObject dao = factory.create();
+        DataAccessObject dao = factory.create();
         try {
             return open(factory.create(), true);
         } catch (RuntimeException e) {
@@ -120,13 +120,13 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     @Override
-    public LenskitRecommender open(@Nonnull RatingDataAccessObject dao, boolean shouldClose) {
+    public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         if (dao == null)
             throw new NullPointerException("Dao cannot be null when this method is used");
         return new LenskitRecommender(createSessionContainer(dao), dao, shouldClose);
     }
     
-    private PicoContainer createSessionContainer(RatingDataAccessObject dao) {
+    private PicoContainer createSessionContainer(DataAccessObject dao) {
         ComponentFactory factory = new Caching().wrap(new ParameterAnnotationInjector.Factory());
         MutablePicoContainer sessionContainer = new JustInTimePicoContainer(factory, 
                                                                             recommenderContainer);

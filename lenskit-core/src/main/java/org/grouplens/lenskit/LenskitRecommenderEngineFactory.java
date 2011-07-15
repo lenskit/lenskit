@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
@@ -61,7 +61,7 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
     private final Map<Class<?>, Object> defaultBindings;
-    private DAOFactory<? extends RatingDataAccessObject> daoManager;
+    private DAOFactory<? extends DataAccessObject> daoManager;
     
     /**
      * Create a new engine factory with no DAO factory.
@@ -71,8 +71,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * {@link #setDAOFactory(DAOFactory)}, the factory and all
      * resulting engines cannot open DAOs themselves, so the {@link #create()}
      * and {@link RecommenderEngine#open()} methods will not work. In that case,
-     * the {@link #create(RatingDataAccessObject)} and
-     * {@link RecommenderEngine#open(RatingDataAccessObject, boolean)} methods
+     * the {@link #create(DataAccessObject)} and
+     * {@link RecommenderEngine#open(DataAccessObject, boolean)} methods
      * must be used instead.
      */
     public LenskitRecommenderEngineFactory() {
@@ -84,7 +84,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * DAO factory.
      * @param daom The DAO factory for obtaining data access.
      */
-    public LenskitRecommenderEngineFactory(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
+    public LenskitRecommenderEngineFactory(@Nullable DAOFactory<? extends DataAccessObject> daom) {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Object>();
         daoManager = daom;
@@ -101,7 +101,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Get the DAO manager configured for this factory.
      * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
      */
-    public @Nullable DAOFactory<? extends RatingDataAccessObject> getDAOFactory() {
+    public @Nullable DAOFactory<? extends DataAccessObject> getDAOFactory() {
         return daoManager;
     }
     
@@ -109,7 +109,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Set the DAO manager.
      * @param daom
      */
-    public void setDAOFactory(@Nullable DAOFactory<? extends RatingDataAccessObject> daom) {
+    public void setDAOFactory(@Nullable DAOFactory<? extends DataAccessObject> daom) {
         daoManager = daom;
     }
     
@@ -252,7 +252,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public LenskitRecommenderEngine create() {
         if (daoManager == null)
             throw new IllegalStateException("create() called with no DAO factory");
-        RatingDataAccessObject dao = daoManager.create();
+        DataAccessObject dao = daoManager.create();
         try {
             return create(dao, null, true);
         } finally {
@@ -270,11 +270,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @return A new recommender engine. The engine does <b>not</b> depend on
      *         the DAO, but will use DAOs obtained when recommenders are opened.
      */
-    public LenskitRecommenderEngine create(RatingDataAccessObject dao) {
+    public LenskitRecommenderEngine create(DataAccessObject dao) {
         return create(dao, null, false);
     }
     
-    protected LenskitRecommenderEngine create(RatingDataAccessObject dao, PicoContainer parent, boolean useManager) {
+    protected LenskitRecommenderEngine create(DataAccessObject dao, PicoContainer parent, boolean useManager) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
         Map<Class<?>, Object> defaultBindings;
         
@@ -284,7 +284,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             defaultBindings = new HashMap<Class<?>, Object>(this.defaultBindings);
         }
         
-        DependencyMonitor daoMonitor = new DependencyMonitor(RatingDataAccessObject.class);
+        DependencyMonitor daoMonitor = new DependencyMonitor(DataAccessObject.class);
         BuilderTrackingAdapterFactory jitBuilderFactory = new BuilderTrackingAdapterFactory(new ParameterAnnotationInjector.Factory());
         MutablePicoContainer buildContainer = new JustInTimePicoContainer(new Caching().wrap(jitBuilderFactory), 
                                                                           new StartableLifecycleStrategy(daoMonitor),
@@ -360,7 +360,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
 
-        DAOFactory<? extends RatingDataAccessObject> manager =
+        DAOFactory<? extends DataAccessObject> manager =
             useManager ? daoManager : null;       
         LenskitRecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
         Recommender testOpen;
@@ -384,7 +384,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
         
         // Do not configure any builders, snapshots or daos
-        if (RatingSnapshot.class.isAssignableFrom(implType) || RatingDataAccessObject.class.isAssignableFrom(implType)
+        if (RatingSnapshot.class.isAssignableFrom(implType) || DataAccessObject.class.isAssignableFrom(implType)
             || Builder.class.isAssignableFrom(implType)) {
             return false;
         }

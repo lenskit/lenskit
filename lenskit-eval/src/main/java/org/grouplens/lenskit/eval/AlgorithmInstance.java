@@ -36,7 +36,7 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +115,7 @@ public class AlgorithmInstance {
         this.factory = factory;
     }
 
-    public Recommender buildRecommender(RatingDataAccessObject dao, RatingSnapshot sharedSnapshot) {
+    public Recommender buildRecommender(DataAccessObject dao, RatingSnapshot sharedSnapshot) {
         if (factory == null)
             throw new IllegalStateException("no factory set");
         

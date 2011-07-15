@@ -20,7 +20,7 @@ package org.grouplens.lenskit;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Main entry point for accessing recommender components.  A recommender object
@@ -45,7 +45,7 @@ public interface Recommender {
      * to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
      * from other frameworks that are adapted to the LensKit API may not be.
      */
-    RatingDataAccessObject getRatingDataAccessObject();
+    DataAccessObject getRatingDataAccessObject();
     
     /**
      * Get the recommender's rating predictor.
@@ -86,7 +86,7 @@ public interface Recommender {
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
      * 
-     * @see RecommenderEngine#open(RatingDataAccessObject, boolean)
+     * @see RecommenderEngine#open(DataAccessObject, boolean)
      */
     void close();
     

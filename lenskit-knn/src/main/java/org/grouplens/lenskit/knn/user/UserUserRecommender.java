@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * A recommender and predictor using user-user collaborative filtering.
@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
 public class UserUserRecommender extends PredictorBasedDRItemRecommender {
 	protected final UserUserRatingPredictor predictor;
 
-	public UserUserRecommender(RatingDataAccessObject dao, UserUserRatingPredictor pred) {
+	public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
 		super(dao, pred);
 		predictor = pred;
 	}	

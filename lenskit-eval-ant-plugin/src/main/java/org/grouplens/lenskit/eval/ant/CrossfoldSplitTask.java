@@ -44,8 +44,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
-import org.grouplens.lenskit.data.dao.SimpleFileDAO;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
@@ -99,15 +99,15 @@ public class CrossfoldSplitTask extends Task {
             throw new BuildException("Could not find SQLite JDBC driver", e);
         }
         // TODO Support importing data from the classpath
-        SimpleFileDAO.Factory daoManager;
+        SimpleFileRatingDAO.Factory daoManager;
         try {
             log("Reading ratings from " + dataFile);
-            daoManager = new SimpleFileDAO.Factory(new File(dataFile), delimiter);
+            daoManager = new SimpleFileRatingDAO.Factory(new File(dataFile), delimiter);
         } catch (FileNotFoundException e) {
             throw new BuildException("Cannot open data file", e);
         }
         
-        RatingDataAccessObject dao = daoManager.create();
+        DataAccessObject dao = daoManager.create();
         try {
             Long2IntMap userSegments = splitUsers(dao);
             writeRatings(dao, userSegments);
@@ -118,7 +118,7 @@ public class CrossfoldSplitTask extends Task {
         }
     }
     
-    protected Long2IntMap splitUsers(RatingDataAccessObject dao) {
+    protected Long2IntMap splitUsers(DataAccessObject dao) {
         Random r = new Random();
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongCursor users = dao.getUsers();
@@ -135,7 +135,7 @@ public class CrossfoldSplitTask extends Task {
         return userMap;
     }
     
-    protected void writeRatings(RatingDataAccessObject dao, Long2IntMap userSegments) throws BuildException, SQLException {
+    protected void writeRatings(DataAccessObject dao, Long2IntMap userSegments) throws BuildException, SQLException {
         Connection[] dbcs = new Connection[numFolds];
         PreparedStatement[] insert = new PreparedStatement[numFolds];
         PreparedStatement[] test = new PreparedStatement[numFolds];

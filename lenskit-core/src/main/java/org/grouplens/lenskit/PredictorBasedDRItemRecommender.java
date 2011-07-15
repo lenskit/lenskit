@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -40,7 +40,7 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 	
 	protected final DynamicRatingPredictor predictor;
 	
-	protected PredictorBasedDRItemRecommender(RatingDataAccessObject dao,
+	protected PredictorBasedDRItemRecommender(DataAccessObject dao,
 			DynamicRatingPredictor predictor) {
 		super(dao);
 		this.predictor = predictor;

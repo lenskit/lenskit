@@ -37,7 +37,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -141,7 +141,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
             LongIterator userIter = data.getUserIds().iterator();
             while (userIter.hasNext()) {
                 final long user = userIter.nextLong();
-                Collection<IndexedRating> ratings = data.getUserRatings(user);
+                Collection<IndexedPreference> ratings = data.getUserRatings(user);
                 
                 final int nratings = ratings.size();
                 // allocate the array ourselves to avoid an array copy
@@ -152,7 +152,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                     userItems = IntArrayList.wrap(userItemArr, 0);
                 }
                 
-                for (IndexedRating rating: ratings) {
+                for (IndexedPreference rating: ratings) {
                     final int idx = rating.getItemIndex();
                     assert idx >= 0 && idx < nitems;
                     // get the item's rating vector

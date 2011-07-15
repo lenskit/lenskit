@@ -31,7 +31,7 @@ import java.util.List;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.junit.Before;
@@ -51,27 +51,27 @@ public class TestUserProfileCursor {
     @Before
     public void setUp() throws Exception {
         ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(2, 5, 3.0));
-        ratings.add(new SimpleRating(2, 3, 3.0));
-        ratings.add(new SimpleRating(2, 39, 2.5));
-        ratings.add(new SimpleRating(5, 7, 2.5));
-        ratings.add(new SimpleRating(5, 39, 7.2));
+        ratings.add(new SimpleRating(1, 2, 5, 3.0));
+        ratings.add(new SimpleRating(2, 2, 3, 3.0));
+        ratings.add(new SimpleRating(3, 2, 39, 2.5));
+        ratings.add(new SimpleRating(4, 5, 7, 2.5));
+        ratings.add(new SimpleRating(5, 5, 39, 7.2));
         ratingCursor = Cursors.wrap(ratings);
     }
 
     @Test
     public void testCursor() {
-        Cursor<UserRatingProfile> cursor =
-            new AbstractRatingDataAccessObject.UserProfileCursor(ratingCursor);
+        Cursor<UserHistory<Rating>> cursor =
+            new AbstractDataAccessObject.UserHistoryCursor<Rating>(ratingCursor);
         assertTrue(cursor.hasNext());
-        UserRatingProfile profile = cursor.next();
+        UserHistory<Rating> profile = cursor.next();
         assertTrue(cursor.hasNext());
-        assertEquals(2, profile.getUser());
-        assertEquals(3, profile.getRatings().size());
+        assertEquals(2, profile.getUserId());
+        assertEquals(3, profile.size());
         profile = cursor.next();
         assertFalse(cursor.hasNext());
-        assertEquals(5, profile.getUser());
-        assertEquals(2, profile.getRatings().size());
+        assertEquals(5, profile.getUserId());
+        assertEquals(2, profile.size());
     }
 
 }

@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Service providing access to a recommender.  In LensKit, you build a recommender
@@ -56,5 +56,5 @@ public interface RecommenderEngine {
      * DAO when it is closed.
      * @return A recommender ready for use and backed by <var>dao</var>.
      */
-    public Recommender open(RatingDataAccessObject dao, boolean shouldClose);
+    public Recommender open(DataAccessObject dao, boolean shouldClose);
 }

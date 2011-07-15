@@ -45,12 +45,10 @@ public class JDBCDataSession implements Closeable {
     private PreparedStatement userCountStatement;
     private PreparedStatement itemStatement;
     private PreparedStatement itemCountStatement;
-    private PreparedStatement ratingStatements[] =
+    private PreparedStatement eventStatements[] =
     	new PreparedStatement[SortOrder.values().length];
-    private PreparedStatement userRatingStatements[] =
-    	new PreparedStatement[SortOrder.values().length];
-    private PreparedStatement itemRatingStatements[] =
-    	new PreparedStatement[SortOrder.values().length];
+    private PreparedStatement userEventStatement;
+    private PreparedStatement itemEventStatement;
     
     public JDBCDataSession(Connection dbc, SQLStatementFactory sfac) {
         this(dbc, sfac, true);
@@ -86,25 +84,23 @@ public class JDBCDataSession implements Closeable {
     	return itemCountStatement;
     }
     
-    public PreparedStatement ratingStatement(SortOrder order) throws SQLException {
+    public PreparedStatement eventStatement(SortOrder order) throws SQLException {
     	int o = order.ordinal();
-    	if (ratingStatements[o] == null)
-    		ratingStatements[o] = statementFactory.prepareRatings(connection, order);
-    	return ratingStatements[o];
+    	if (eventStatements[o] == null)
+    		eventStatements[o] = statementFactory.prepareEvents(connection, order);
+    	return eventStatements[o];
     }
     
-    public PreparedStatement userRatingStatement(SortOrder order) throws SQLException {
-    	int o = order.ordinal();
-    	if (userRatingStatements[o] == null)
-    		userRatingStatements[o] = statementFactory.prepareUserRatings(connection, order);
-    	return userRatingStatements[o];
+    public PreparedStatement userEventStatement() throws SQLException {
+    	if (userEventStatement == null)
+    		userEventStatement = statementFactory.prepareUserEvents(connection);
+    	return userEventStatement;
     }
     
-    public PreparedStatement itemRatingStatement(SortOrder order) throws SQLException {
-    	int o = order.ordinal();
-    	if (itemRatingStatements[o] == null)
-    		itemRatingStatements[o] = statementFactory.prepareItemRatings(connection, order);
-    	return itemRatingStatements[o];
+    public PreparedStatement itemEventStatement() throws SQLException {
+    	if (itemEventStatement == null)
+    		itemEventStatement = statementFactory.prepareItemEvents(connection);
+    	return itemEventStatement;
     }
     
     private boolean closeStatement(Statement s) {
@@ -129,12 +125,10 @@ public class JDBCDataSession implements Closeable {
             failed = failed || !closeStatement(userCountStatement);
             failed = failed || !closeStatement(itemStatement);
             failed = failed || !closeStatement(itemCountStatement);
-            for (PreparedStatement s: ratingStatements)
+            for (PreparedStatement s: eventStatements)
                 failed = failed || !closeStatement(s);
-            for (PreparedStatement s: userRatingStatements)
-                failed = failed || !closeStatement(s);
-            for (PreparedStatement s: itemRatingStatements)
-                failed = failed || !closeStatement(s);
+            failed = failed || !closeStatement(userEventStatement);
+            failed = failed || !closeStatement(itemEventStatement);
             if (closeConnection)
                 connection.close();
         } catch (SQLException e) {

@@ -22,7 +22,7 @@ package org.grouplens.lenskit;
 import java.util.Collection;
 
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -35,18 +35,18 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractDynamicRatingPredictor extends AbstractRatingPredictor implements DynamicRatingPredictor {
-    private RatingDataAccessObject dao;
+    private DataAccessObject dao;
 
-    protected AbstractDynamicRatingPredictor(RatingDataAccessObject dao) {
+    protected AbstractDynamicRatingPredictor(DataAccessObject dao) {
         this.dao = dao;
     }
     
-    protected RatingDataAccessObject getDAO() {
+    protected DataAccessObject getDAO() {
         return dao;
     }
     
     protected Collection<Rating> getUserRatings(long user) {
-        return Cursors.makeList(dao.getUserRatings(user));
+        return Cursors.makeList(dao.getUserEvents(user, Rating.class));
     }
     
     /**

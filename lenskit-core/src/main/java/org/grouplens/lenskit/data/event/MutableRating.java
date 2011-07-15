@@ -18,18 +18,51 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.grouplens.lenskit.data.dao.ScannerRatingCursor;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
- * Rating implementation for mutation by 
- * {@link org.grouplens.lenskit.data.dao.ScannerRatingCursor ScannerRatingCursor}.
+ * Rating implementation for mutation by fast iterators. It is used in
+ * {@link ScannerRatingCursor} and similar places.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 public class MutableRating implements Rating {
+    private long eid;
     private long uid;
     private long iid;
     private double value;
     private long timestamp;
+    
+    // preference object mirroring this value.
+    private final Preference preference = new Preference() {
+        @Override
+        public long getUserId() {
+            return uid;
+        }
+        @Override
+        public long getItemId() {
+            return iid;
+        }
+        @Override
+        public double getValue() {
+            return value;
+        }
+        @Override
+        public Preference clone() {
+            return new SimplePreference(uid, iid, value);
+        }
+    };
+    
+    @Override
+    public long getId() {
+        return eid;
+    }
+    public void setId(long eid) {
+        this.eid = eid;
+    }
     
     @Override
     public long getUserId() {
@@ -47,10 +80,25 @@ public class MutableRating implements Rating {
     	this.iid = iid;
     }
     
-    @Override
+    @Override @Deprecated
     public double getRating() {
         return value;
     }
+    
+    @Override
+    public Preference getPreference() {
+        if (Double.isNaN(value))
+            return null;
+        else
+            return preference;
+    }
+
+    /**
+     * Set the rating value. A value of {@link Double#NaN} indicates an unrate
+     * event.
+     * 
+     * @param v The rating value.
+     */
     public void setRating(double v) {
     	value = v;
     }
@@ -65,6 +113,6 @@ public class MutableRating implements Rating {
     
     @Override
     public Rating clone() {
-        return new SimpleRating(uid, iid, value, timestamp);
+        return new SimpleRating(eid, uid, iid, value, timestamp);
     }
 }

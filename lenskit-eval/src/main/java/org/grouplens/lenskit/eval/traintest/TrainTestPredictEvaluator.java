@@ -28,10 +28,10 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.UserRatingProfile;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -164,8 +164,8 @@ public class TrainTestPredictEvaluator {
      */
     public List<Runnable> makeEvalTasks(EvaluationRecipe recipe) {
         
-        final DAOFactory<? extends RatingDataAccessObject> daoMgr = trainingDAOManager();
-        final DAOFactory<? extends RatingDataAccessObject> testDaoMgr = testDAOManager();
+        final DAOFactory<? extends DataAccessObject> daoMgr = trainingDAOManager();
+        final DAOFactory<? extends DataAccessObject> testDaoMgr = testDAOManager();
         
         final ResultAccumulator accum = recipe.makeAccumulator(getName());
         
@@ -182,7 +182,7 @@ public class TrainTestPredictEvaluator {
                 @Override
                 public List<Rating> call() {
                     logger.info("Preloading ratings for {}", name);
-                    RatingDataAccessObject dao = daoMgr.create();
+                    DataAccessObject dao = daoMgr.create();
                     try {
                         return Cursors.makeList(dao.getRatings());
                     } finally {
@@ -201,8 +201,8 @@ public class TrainTestPredictEvaluator {
         return tasks;
     }
 
-    private SharedRatingSnapshot loadSnapshot(DAOFactory<? extends RatingDataAccessObject> daoMgr) {
-        RatingDataAccessObject dao = daoMgr.create();
+    private SharedRatingSnapshot loadSnapshot(DAOFactory<? extends DataAccessObject> daoMgr) {
+        DataAccessObject dao = daoMgr.create();
         try {
             return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
         } finally {
@@ -213,13 +213,13 @@ public class TrainTestPredictEvaluator {
     protected class EvalTask implements Runnable {
         private AlgorithmInstance algorithm;
         private ResultAccumulator resultAccumulator;
-        private DAOFactory<? extends RatingDataAccessObject> daoManager;
-        private DAOFactory<? extends RatingDataAccessObject> testDaoManager;
+        private DAOFactory<? extends DataAccessObject> daoManager;
+        private DAOFactory<? extends DataAccessObject> testDaoManager;
         private LazyValue<List<Rating>> ratingCache;
         private LazyValue<? extends RatingSnapshot> ratingSnapshot;
         
-        public EvalTask(DAOFactory<? extends RatingDataAccessObject> daoMgr,
-                DAOFactory<? extends RatingDataAccessObject> testDaoMgr,
+        public EvalTask(DAOFactory<? extends DataAccessObject> daoMgr,
+                DAOFactory<? extends DataAccessObject> testDaoMgr,
                 ResultAccumulator results, AlgorithmInstance algo,
                 LazyValue<List<Rating>> cache,
                 LazyValue<? extends RatingSnapshot> snap) {
@@ -234,11 +234,11 @@ public class TrainTestPredictEvaluator {
         @Override
         public void run() {
             AlgorithmTestAccumulator acc = resultAccumulator.makeAlgorithmAccumulator(algorithm);
-            RatingDataAccessObject dao;
+            DataAccessObject dao;
 
             // Preload ratings if appropriate.
             if (algorithm.getPreload()) {
-                dao = new RatingCollectionDAO(ratingCache.get());
+                dao = new EventCollectionDAO(ratingCache.get());
             } else {
                 dao = daoManager.create();
             }
@@ -253,15 +253,15 @@ public class TrainTestPredictEvaluator {
                 logger.info("Testing {}", algorithm.getName());
                 acc.startTestTimer();
 
-                RatingDataAccessObject testDao = testDaoManager.create();
+                DataAccessObject testDao = testDaoManager.create();
                 try {
-                    Cursor<UserRatingProfile> userProfiles = testDao.getUserRatingProfiles();
+                    Cursor<UserHistory> userProfiles = testDao.getUserHistories();
                     try {
-                        for (UserRatingProfile p: userProfiles) {
+                        for (UserHistory p: userProfiles) {
                             SparseVector ratings = p.getRatingVector();
                             SparseVector predictions =
-                                pred.predict(p.getUser(), ratings.keySet());
-                            acc.evaluatePrediction(p.getUser(), ratings, predictions);
+                                pred.predict(p.getUserId(), ratings.keySet());
+                            acc.evaluatePrediction(p.getUserId(), ratings, predictions);
                         }
                     } finally {
                         userProfiles.close();

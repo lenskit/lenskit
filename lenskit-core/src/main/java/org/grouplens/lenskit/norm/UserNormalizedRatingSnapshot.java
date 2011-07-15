@@ -27,10 +27,8 @@ import java.util.Iterator;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.SimpleIndexedRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -42,21 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rating build context wrapper that provides normalized ratings. They are built
+ * Rating snapshot that provides normalized ratings. They are built
  * with a {@link UserNormalizedRatingSnapshot.Builder}.
- * <p>
- * This class wraps the rating build context to provide pre-normalized ratings.
- * It should share the same scope as the rating build context, so if you
- * re-scope {@link PackedRatingSnapshot} (or some other rating build context
- * implementation) in your Guice configuration, you must re-scope this class as
- * well.
- * <p>
- * This class also breaks the rule that rating build contexts shouldn't be
- * retained, but since its scope is intended to be identical to the rating build
- * context itself, that is OK.
+ * 
  * <p>
  * This class also computes the normed data lazily, so the computation cost
  * isn't incurred unless necessary.
+ * 
  * <p>
  * <strong>Warning:</strong> Do not configure this component in the
  * {@link LenskitRecommenderEngineFactory} as a plain RatingSnapshot. If this is
@@ -117,7 +107,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                 final long uid = uit.nextLong();
                 final int i = uidx.getIndex(uid);
                 assert normedData[i] == null;
-                UserRatingVector rv = UserRatingVector.fromRatings(uid, snapshot.getUserRatings(uid));
+                UserRatingVector rv = UserRatingVector.fromPreferences(uid, snapshot.getUserRatings(uid));
                 normedData[i] = normalizer.normalize(rv, null);
                 ndone++;
             }
@@ -150,13 +140,13 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     }
 
     @Override
-    public FastCollection<IndexedRating> getRatings() {
+    public FastCollection<IndexedPreference> getRatings() {
         requireNormedData();
         return new NormalizingCollection(normedData, snapshot.getRatings());
     }
 
     @Override
-    public FastCollection<IndexedRating> getUserRatings(long userId) {
+    public FastCollection<IndexedPreference> getUserRatings(long userId) {
         requireNormedData();
         return new NormalizingCollection(normedData, snapshot.getUserRatings(userId));
     }
@@ -171,107 +161,74 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     	normedData = null;
     }
     
-    private static class NormalizingCollection extends AbstractCollection<IndexedRating> 
-            implements FastCollection<IndexedRating> {
-        private FastCollection<IndexedRating> base;
+    private static class NormalizingCollection extends AbstractCollection<IndexedPreference> 
+            implements FastCollection<IndexedPreference> {
+        private FastCollection<IndexedPreference> base;
         private SparseVector[] normedData;
-        public NormalizingCollection(SparseVector[] nd, FastCollection<IndexedRating> base) {
+        
+        public NormalizingCollection(SparseVector[] nd, FastCollection<IndexedPreference> base) {
             this.base = base;
             normedData = nd;
         }
+        
         @Override
-        public Iterator<IndexedRating> fastIterator() {
-            return new Iterator<IndexedRating>() {
-                private Iterator<IndexedRating> biter = base.fastIterator();
-                NormedRating rating = new NormedRating();
+        public Iterator<IndexedPreference> fastIterator() {
+            return new Iterator<IndexedPreference>() {
+                private Iterator<IndexedPreference> biter = base.fastIterator();
+                IndexedPreference preference = new IndexedPreference();
                 @Override public void remove() {
                     throw new UnsupportedOperationException();
                 }
                 @Override public boolean hasNext() {
                     return biter.hasNext();
                 }
-                @Override public IndexedRating next() {
-                    rating.brating = biter.next();
-                    return rating;
+                @Override public IndexedPreference next() {
+                    IndexedPreference bp = biter.next();
+                    final int uidx = bp.getUserIndex();
+                    final long iid = bp.getItemId();
+                    preference.setUserId(bp.getUserId());
+                    preference.setItemId(iid);
+                    preference.setUserIndex(uidx);
+                    preference.setItemIndex(bp.getItemIndex());
+                    preference.setValue(normedData[uidx].get(iid));
+                    return preference;
                 }
             };
         }
+        
         @Override
-        public Iterable<IndexedRating> fast() {
-            return new Iterable<IndexedRating>() {
-                @Override public Iterator<IndexedRating> iterator() {
+        public Iterable<IndexedPreference> fast() {
+            return new Iterable<IndexedPreference>() {
+                @Override public Iterator<IndexedPreference> iterator() {
                     return fastIterator();
                 }
             };
         }
+        
         @Override
-        public Iterator<IndexedRating> iterator() {
-            return new Iterator<IndexedRating>() {
-                Iterator<IndexedRating> biter = base.fastIterator();
+        public Iterator<IndexedPreference> iterator() {
+            return new Iterator<IndexedPreference>() {
+                Iterator<IndexedPreference> biter = base.fastIterator();
                 @Override public void remove() {
                     throw new UnsupportedOperationException();
                 }
                 @Override public boolean hasNext() {
                     return biter.hasNext();
                 }
-                @Override public IndexedRating next() {
-                    IndexedRating r = biter.next();
+                @Override public IndexedPreference next() {
+                    IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
-                    return new SimpleIndexedRating(r.getUserId(), iid, 
+                    return new IndexedPreference(r.getUserId(), iid, 
                             normedData[uidx].get(iid), 
-                            r.getTimestamp(), uidx, r.getItemIndex());
+                            uidx, r.getItemIndex());
                 }
             };
         }
+        
         @Override
         public int size() {
             return base.size();
         }
-        
-        private class NormedRating implements IndexedRating {
-            IndexedRating brating = null;
-
-            @Override
-            public long getUserId() {
-                return brating.getUserId();
-            }
-
-            @Override
-            public int getUserIndex() {
-                return brating.getUserIndex();
-            }
-
-            @Override
-            public long getItemId() {
-                return brating.getItemId();
-            }
-
-            @Override
-            public double getRating() {
-                return normedData[getUserIndex()].get(getItemId());
-            }
-
-            @Override
-            public int getItemIndex() {
-                return brating.getItemIndex();
-            }
-
-            @Override
-            public long getTimestamp() {
-                return brating.getTimestamp();
-            }
-            
-            @Override
-            public IndexedRating clone() {
-                try {
-                    return (IndexedRating) super.clone();
-                } catch (CloneNotSupportedException e) {
-                    throw new AssertionError("rating not cloneable");
-                }
-            }
-            
-        }
     }
-
 }

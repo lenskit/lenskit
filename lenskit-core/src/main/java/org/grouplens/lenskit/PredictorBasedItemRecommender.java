@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -39,7 +39,7 @@ public class PredictorBasedItemRecommender extends AbstractItemRecommender {
 	
 	protected final RatingPredictor predictor;
 	
-	protected PredictorBasedItemRecommender(RatingDataAccessObject dao, RatingPredictor predictor) {
+	protected PredictorBasedItemRecommender(DataAccessObject dao, RatingPredictor predictor) {
 		super(dao);
 		this.predictor = predictor;
 	}

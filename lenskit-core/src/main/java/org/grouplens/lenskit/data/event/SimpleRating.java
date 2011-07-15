@@ -18,64 +18,117 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import javax.annotation.concurrent.ThreadSafe;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
+
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
  * This class is not intended to be derived, so its key methods are
  * <code>final</code>.
  * 
+ * <p>This implementation only supports set ratings; for null ratings (unrate
+ * events), use {@link SimpleNullRating}.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-@ThreadSafe
-public class SimpleRating extends AbstractRating {
-    final long userId;
-    final long itemId;
-    final double rating;
+@Immutable
+public class SimpleRating extends AbstractEvent implements Rating {
+    final long eventId;
     final long timestamp;
+    final @Nonnull Preference preference;
 
     /**
      * Construct a rating without a timestamp.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param r The rating value.
+     * @param eid The event ID.
+     * @param pref The preference.
      */
-    public SimpleRating(long uid, long iid, double r) {
-        this(uid, iid, r, -1);
+    public SimpleRating(long eid, @Nonnull Preference pref) {
+        this(eid, -1L, pref);
     }
 
     /**
      * Construct a rating with a timestamp.
+     * @param eid The event ID.
+     * @param ts The event timestamp.
+     * @param pref The preference.
+     */
+    public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
+        eventId = eid;
+        timestamp = ts;
+        preference = pref;
+    }
+    
+    /**
+     * Construct a rating with a value directly.
+     * 
+     * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param r The rating value.
-     * @param ts The rating timestamp.
+     * @param v The rating value.
      */
-    public SimpleRating(long uid, long iid, double r, long ts) {
-        userId = uid;
-        itemId = iid;
-        rating = r;
+   public SimpleRating(long eid, long uid, long iid, double v) {
+       this(eid, uid, iid, v, -1L);
+   }
+    
+    /**
+     * Construct a rating with a timestamp and value.
+     * @param eid The event ID.
+     * @param uid The user ID.
+     * @param iid The item ID.
+     * @param v The rating value.
+     * @param ts The event timestamp.
+     */
+    public SimpleRating(long eid, long uid, long iid, double v, long ts) {
+        eventId = eid;
         timestamp = ts;
+        preference = new SimplePreference(uid, iid, v);
+    }
+    
+    @Override
+    public long getId() {
+        return eventId;
     }
 
     @Override
     final public long getUserId() {
-        return userId;
+        return preference.getUserId();
     }
 
     @Override
     final public long getItemId() {
-        return itemId;
-    }
-
+        return preference.getItemId();
+    }    
+    
     @Override
-    final public double getRating() {
-        return rating;
+    final public Preference getPreference() {
+        return preference;
     }
 
     @Override
     final public long getTimestamp() {
         return timestamp;
+    }
+
+    /**
+     * Implement {@link Rating#getRating()} by delegating to
+     * {@link #getPreference()}.
+     */
+    @Override
+    @Deprecated
+    public double getRating() {
+        Preference p = getPreference();
+        if (p != null)
+            return p.getValue();
+        else
+            return Double.NaN;
+    }
+    
+    @Override
+    public Rating clone() {
+        return (Rating) super.clone();
     }
 }

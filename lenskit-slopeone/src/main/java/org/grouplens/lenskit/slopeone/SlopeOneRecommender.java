@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
@@ -37,7 +37,7 @@ public class SlopeOneRecommender extends PredictorBasedDRItemRecommender {
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public SlopeOneRecommender(RatingDataAccessObject dao, SlopeOneRatingPredictor predictor) {
+    public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

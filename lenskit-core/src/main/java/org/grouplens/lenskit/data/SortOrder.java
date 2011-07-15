@@ -21,10 +21,26 @@
  */
 package org.grouplens.lenskit.data;
 
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public enum SortOrder {
-    ANY, TIMESTAMP, USER, ITEM
+    /**
+     * Any order is acceptable.
+     */
+    ANY,
+    /**
+     * Sort by timestamp.
+     */
+    TIMESTAMP, 
+    /**
+     * Sort by user, then by timestamp.
+     */
+    USER, 
+    /**
+     * Sort by item, then by timestamp.
+     */
+    ITEM
 }

@@ -16,49 +16,44 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
 package org.grouplens.lenskit.data.event;
 
-import javax.annotation.concurrent.ThreadSafe;
+import javax.annotation.Nullable;
 
-
+import org.grouplens.lenskit.data.pref.Preference;
 
 /**
- * Interface representing ratings in the system.
- *
- * <p>Implementations of this interface must be thread-safe.
- *
+ * A rating is an expression of preference for an item by a user.
+ * 
+ * <p>Like all events, ratings must be effectively immutable.  In the contexts
+ * where a rating is allowed to be mutable, the preference object returned by
+ * {@link #getPreference()} may be tied to the particular rating object and
+ * mutate along with it.  Use {@link Preference#clone()} or {@link #clone()} to
+ * obtain isolated references.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-@ThreadSafe
-public interface Rating extends Cloneable {
+public interface Rating extends Event {
     /**
-     * Get the user ID.
-     * @return The user ID of the rating.
+     * Get the expressed preference. If this is an "unrate" event, the
+     * preference will be <tt>null</tt>.
+     * 
+     * @return The expressed preference.
      */
-    long getUserId();
+    @Nullable Preference getPreference();
+
     /**
-     * Get the item ID.
-     * @return The item ID of the rating.
+     * Get the rating's preference value.
+     * 
+     * @return The value of the expressed preference (or {@link Double#NaN} if
+     *         the preference is unset).
+     * @deprecated Use {@link Preference#getValue()} on the output of
+     *             {@link #getPreference()} instead.
      */
-    long getItemId();
-    /**
-     * Get the rating value.
-     * @return The value of the rating.
-     */
+    @Deprecated
     double getRating();
-    /**
-     * Get the rating timestamp.
-     * @return The timestamp of the rating (or -1 if the rating has no
-     * timestamp).
-     */
-    long getTimestamp();
-    
-    /**
-     * Clone the rating.
-     */
+
+    @Override
     Rating clone();
 }

@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.SimplePreference;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 import org.junit.Before;
@@ -40,34 +42,44 @@ public class TestPackedRatingSnapshot {
 	private PackedRatingSnapshot snap;
 	private static final double EPSILON = 1.0e-6;
 	
+	private static int eid;
+	
+	private static Rating rating(long uid, long iid, double value, long ts) {
+	    return new SimpleRating(eid++, uid, iid, value, ts);
+	}
+	
+	private static Preference preference(long uid, long iid, double value) {
+	    return new SimplePreference(uid, iid, value);
+	}
+	
 	@Before
 	public void setup() {
 		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(new SimpleRating(1, 7, 4, 1));
-		rs.add(new SimpleRating(3, 7, 3, 1));
-		rs.add(new SimpleRating(4, 7, 5, 1));
-		rs.add(new SimpleRating(4, 7, 4, 2));
-		rs.add(new SimpleRating(5, 7, 3, 1));
-		rs.add(new SimpleRating(6, 7, 5, 1));
-		rs.add(new SimpleRating(1, 8, 4, 1));
-		rs.add(new SimpleRating(1, 8, 5, 2));
-		rs.add(new SimpleRating(3, 8, 3, 1));
-		rs.add(new SimpleRating(4, 8, 2, 1));
-		rs.add(new SimpleRating(5, 8, 3, 1));
-		rs.add(new SimpleRating(5, 8, 5, 2));
-		rs.add(new SimpleRating(6, 8, 5, 1));
-		rs.add(new SimpleRating(7, 8, 2, 1));
-		rs.add(new SimpleRating(1, 9, 3, 1));
-		rs.add(new SimpleRating(3, 9, 4, 1));
-		rs.add(new SimpleRating(4, 9, 5, 1));
-		rs.add(new SimpleRating(7, 9, 2, 1));
-		rs.add(new SimpleRating(7, 9, 3, 2));
-		rs.add(new SimpleRating(4, 10, 4, 1));
-		rs.add(new SimpleRating(7, 10, 4, 1));
-		rs.add(new SimpleRating(1, 11, 5, 1));
-		rs.add(new SimpleRating(3, 11, 5, 2));
-		rs.add(new SimpleRating(4, 11, 5, 1));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		rs.add(rating(1, 7, 4, 1));
+		rs.add(rating(3, 7, 3, 1));
+		rs.add(rating(4, 7, 5, 1));
+		rs.add(rating(4, 7, 4, 2));
+		rs.add(rating(5, 7, 3, 1));
+		rs.add(rating(6, 7, 5, 1));
+		rs.add(rating(1, 8, 4, 1));
+		rs.add(rating(1, 8, 5, 2));
+		rs.add(rating(3, 8, 3, 1));
+		rs.add(rating(4, 8, 2, 1));
+		rs.add(rating(5, 8, 3, 1));
+		rs.add(rating(5, 8, 5, 2));
+		rs.add(rating(6, 8, 5, 1));
+		rs.add(rating(7, 8, 2, 1));
+		rs.add(rating(1, 9, 3, 1));
+		rs.add(rating(3, 9, 4, 1));
+		rs.add(rating(4, 9, 5, 1));
+		rs.add(rating(7, 9, 2, 1));
+		rs.add(rating(7, 9, 3, 2));
+		rs.add(rating(4, 10, 4, 1));
+		rs.add(rating(7, 10, 4, 1));
+		rs.add(rating(1, 11, 5, 1));
+		rs.add(rating(3, 11, 5, 2));
+		rs.add(rating(4, 11, 5, 1));
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.create());
 		snap = builder.build();
 	}
@@ -142,71 +154,72 @@ public class TestPackedRatingSnapshot {
 	
 	@Test
 	public void testGetRatings() {
-		FastCollection<IndexedRating> ratings = snap.getRatings();
+		FastCollection<IndexedPreference> ratings = snap.getRatings();
 		assertEquals(20, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(1, 7, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 7, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 7, 4, 2)));
-		assertTrue(ratings.contains(new SimpleRating(5, 7, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(6, 7, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(1, 8, 5, 2)));
-		assertTrue(ratings.contains(new SimpleRating(3, 8, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 8, 2, 1)));
-		assertTrue(ratings.contains(new SimpleRating(5, 8, 5, 2)));
-		assertTrue(ratings.contains(new SimpleRating(6, 8, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(7, 8, 2, 1)));
-		assertTrue(ratings.contains(new SimpleRating(1, 9, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 9, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 9, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(7, 9, 3, 2)));
-		assertTrue(ratings.contains(new SimpleRating(4, 10, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(7, 10, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(1, 11, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 11, 5, 2)));
-		assertTrue(ratings.contains(new SimpleRating(4, 11, 5, 1)));
+		assertTrue(ratings.contains(preference(1, 7, 4)));
+		assertTrue(ratings.contains(preference(3, 7, 3)));
+		assertTrue(ratings.contains(preference(4, 7, 4)));
+		assertTrue(ratings.contains(preference(5, 7, 3)));
+		assertTrue(ratings.contains(preference(6, 7, 5)));
+		assertTrue(ratings.contains(preference(1, 8, 5)));
+		assertTrue(ratings.contains(preference(3, 8, 3)));
+		assertTrue(ratings.contains(preference(4, 8, 2)));
+		assertTrue(ratings.contains(preference(5, 8, 5)));
+		assertTrue(ratings.contains(preference(6, 8, 5)));
+		assertTrue(ratings.contains(preference(7, 8, 2)));
+		assertTrue(ratings.contains(preference(1, 9, 3)));
+		assertTrue(ratings.contains(preference(3, 9, 4)));
+		assertTrue(ratings.contains(preference(4, 9, 5)));
+		assertTrue(ratings.contains(preference(7, 9, 3)));
+		assertTrue(ratings.contains(preference(4, 10, 4)));
+		assertTrue(ratings.contains(preference(7, 10, 4)));
+		assertTrue(ratings.contains(preference(1, 11, 5)));
+		assertTrue(ratings.contains(preference(3, 11, 5)));
+		assertTrue(ratings.contains(preference(4, 11, 5)));
 	}
 	
 	@Test
 	public void testGetUserRatings() {
-		FastCollection<IndexedRating> ratings = snap.getUserRatings(1);
+		FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
 		assertEquals(4, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(1, 7, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(1, 8, 5, 2)));
-		assertTrue(ratings.contains(new SimpleRating(1, 9, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(1, 11, 5, 1)));
+		assertTrue(ratings.contains(preference(1, 7, 4)));
+		assertTrue(ratings.contains(preference(1, 8, 5)));
+		assertTrue(ratings.contains(preference(1, 9, 3)));
+		assertTrue(ratings.contains(preference(1, 11, 5)));
 		
 		ratings = snap.getUserRatings(2);
 		assertEquals(0, ratings.size());
 		
 		ratings = snap.getUserRatings(3);
 		assertEquals(4, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(3, 7, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 8, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 9, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(3, 11, 5, 2)));
+		assertTrue(ratings.contains(preference(3, 7, 3)));
+		assertTrue(ratings.contains(preference(3, 8, 3)));
+		assertTrue(ratings.contains(preference(3, 9, 4)));
+		assertTrue(ratings.contains(preference(3, 11, 5)));
 		
 		ratings = snap.getUserRatings(4);
-		assertTrue(ratings.contains(new SimpleRating(4, 7, 4, 2)));
-		assertTrue(ratings.contains(new SimpleRating(4, 8, 2, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 9, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 10, 4, 1)));
-		assertTrue(ratings.contains(new SimpleRating(4, 11, 5, 1)));
+		assertEquals(5, ratings.size());
+		assertTrue(ratings.contains(preference(4, 7, 4)));
+		assertTrue(ratings.contains(preference(4, 8, 2)));
+		assertTrue(ratings.contains(preference(4, 9, 5)));
+		assertTrue(ratings.contains(preference(4, 10, 4)));
+		assertTrue(ratings.contains(preference(4, 11, 5)));
 		
 		ratings = snap.getUserRatings(5);
 		assertEquals(2, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(5, 7, 3, 1)));
-		assertTrue(ratings.contains(new SimpleRating(5, 8, 5, 2)));
+		assertTrue(ratings.contains(preference(5, 7, 3)));
+		assertTrue(ratings.contains(preference(5, 8, 5)));
 		
 		ratings = snap.getUserRatings(6);
 		assertEquals(2, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(6, 7, 5, 1)));
-		assertTrue(ratings.contains(new SimpleRating(6, 8, 5, 1)));
+		assertTrue(ratings.contains(preference(6, 7, 5)));
+		assertTrue(ratings.contains(preference(6, 8, 5)));
 		
 		ratings = snap.getUserRatings(7);
 		assertEquals(3, ratings.size());
-		assertTrue(ratings.contains(new SimpleRating(7, 8, 2, 1)));
-		assertTrue(ratings.contains(new SimpleRating(7, 9, 3, 2)));
-		assertTrue(ratings.contains(new SimpleRating(7, 10, 4, 1)));
+		assertTrue(ratings.contains(preference(7, 8, 2)));
+		assertTrue(ratings.contains(preference(7, 9, 3)));
+		assertTrue(ratings.contains(preference(7, 10, 4)));
 	}
 	
 	@Test

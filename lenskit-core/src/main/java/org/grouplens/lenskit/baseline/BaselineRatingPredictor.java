@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.DynamicRatingPredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
@@ -41,7 +41,7 @@ public class BaselineRatingPredictor extends AbstractDynamicRatingPredictor {
      * @param baseline The predictor to delegate to
      * @param dao The DAO.
      */
-    public BaselineRatingPredictor(BaselinePredictor baseline, RatingDataAccessObject dao) {
+    public BaselineRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
         super(dao);
         predictor = baseline;
     }

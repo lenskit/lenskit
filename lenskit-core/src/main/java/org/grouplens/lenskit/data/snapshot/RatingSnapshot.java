@@ -25,8 +25,8 @@ import java.io.Closeable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
 
@@ -36,7 +36,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * <p>
  * The recommender build process often needs to take multiple passes over the
  * rating data. In a live system, the data provided by a
- * {@link RatingDataAccessObject} may change between iterations. Therefore, we
+ * {@link DataAccessObject} may change between iterations. Therefore, we
  * introduce <emph>build contexts</emph> &mdash; snapshots of the rating data at
  * a particular point in time that can be iterated as many times as necessary to
  * build the recommender.
@@ -86,19 +86,25 @@ public interface RatingSnapshot extends Closeable {
      * in an undetermined order. It is guaranteed that no duplicate ratings
      * appear - each <i>(user,item)</i> pair is rated at most once.
      * 
+     * <p>Modifying the returned indexed preferences will <b>not</b> modify the
+     * underlying snapshot.
+     * 
      * @return All ratings in the system.
      */
-	FastCollection<IndexedRating> getRatings();
+	FastCollection<IndexedPreference> getRatings();
 	
     /**
      * Get the ratings for a particular user. It is guaranteed that no duplicate
      * ratings appear - each <i>(user,item)</i> pair is rated at most once.
      * 
+     * <p>Modifying the returned indexed preferences will <b>not</b> modify the
+     * underlying snapshot.
+     * 
      * @param userId The user's ID.
      * @return The user's ratings, or an empty collection if the user is
      *         unknown.
      */
-	FastCollection<IndexedRating> getUserRatings(long userId);
+	FastCollection<IndexedPreference> getUserRatings(long userId);
 	
     /**
      * Get the ratings for a particular user in SparseVector form. It is

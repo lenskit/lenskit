@@ -16,44 +16,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- * 
- */
 package org.grouplens.lenskit.data;
 
-import org.grouplens.lenskit.data.event.SimpleRating;
+import java.util.List;
+
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.grouplens.lenskit.data.event.Event;
 
 /**
+ * Represents a user profile, associating a list of events with a user.  The
+ * events are in timestamp order.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public class SimpleIndexedRating extends SimpleRating implements IndexedRating {
-	final int userIndex, itemIndex;
-
-	public SimpleIndexedRating(long uid, long iid, double r, long ts, int uidx, int iidx) {
-		super(uid, iid, r, ts);
-		userIndex = uidx;
-		itemIndex = iidx;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.dao.IndexedRating#getItemIndex()
-	 */
-	@Override
-	final public int getItemIndex() {
-		return itemIndex;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.grouplens.lenskit.data.dao.IndexedRating#getUserIndex()
-	 */
-	@Override
-	final public int getUserIndex() {
-		return userIndex;
-	}
-	
-	@Override
-    public IndexedRating clone() {
-	    return (IndexedRating) super.clone();
-	}
+@ThreadSafe
+public interface UserHistory<E extends Event> extends List<E> {
+    /**
+     * Retrieve the user ID.
+     * @return The ID of the user who owns this history.
+     */
+    long getUserId();
 }

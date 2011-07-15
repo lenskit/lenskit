@@ -35,8 +35,9 @@ import org.grouplens.common.cursors.AbstractPollingCursor;
  */
 public abstract class AbstractRatingCursor<R extends Rating> extends AbstractCursor<R> {
     /**
-     * Poll for the next rating. This implementation should mutate and re-use the
-     * same rating object if possible.
+     * Poll for the next rating. This implementation should mutate and re-use
+     * the same rating object if possible.
+     * 
      * @return The rating, or <tt>null</tt> if at the end of the cursor.
      */
     protected abstract R poll();

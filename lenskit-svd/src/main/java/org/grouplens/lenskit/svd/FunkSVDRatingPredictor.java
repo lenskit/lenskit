@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRatingPredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -43,9 +43,9 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
 	protected final FunkSVDModel model;
-    private RatingDataAccessObject dao;
+    private DataAccessObject dao;
 
-    public FunkSVDRatingPredictor(RatingDataAccessObject dao, FunkSVDModel m) {
+    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m) {
         this.dao = dao;
         model = m;
     }

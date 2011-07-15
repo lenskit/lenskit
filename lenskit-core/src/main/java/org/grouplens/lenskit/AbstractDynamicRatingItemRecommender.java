@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
@@ -41,7 +41,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  */
 public abstract class AbstractDynamicRatingItemRecommender extends AbstractItemRecommender implements DynamicRatingItemRecommender {
 
-	protected AbstractDynamicRatingItemRecommender(RatingDataAccessObject dao) {
+	protected AbstractDynamicRatingItemRecommender(DataAccessObject dao) {
 		super(dao);
 	}
 

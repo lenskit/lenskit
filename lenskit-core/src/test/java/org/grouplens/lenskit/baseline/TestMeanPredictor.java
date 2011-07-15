@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -52,18 +52,18 @@ import org.junit.Test;
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private RatingDataAccessObject dao;
+    private DataAccessObject dao;
     private RatingSnapshot ratingSnapshot;
 
     @Before
     public void createRatingSource() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(new SimpleRating(1, 5, 2));
-        rs.add(new SimpleRating(1, 7, 4));
-        rs.add(new SimpleRating(8, 4, 5));
-        rs.add(new SimpleRating(8, 5, 4));
+        rs.add(new SimpleRating(1, 1, 5, 2));
+        rs.add(new SimpleRating(2, 1, 7, 4));
+        rs.add(new SimpleRating(3, 8, 4, 5));
+        rs.add(new SimpleRating(4, 8, 5, 4));
         
-        dao = new RatingCollectionDAO.Factory(rs).create();
+        dao = new EventCollectionDAO.Factory(rs).create();
         ratingSnapshot = new PackedRatingSnapshot.Builder(dao).build();
     }
     

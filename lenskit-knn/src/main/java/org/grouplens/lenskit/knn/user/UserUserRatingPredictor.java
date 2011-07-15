@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -55,7 +55,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
     protected final VectorNormalizer<? super UserRatingVector> normalizer;
     protected final BaselinePredictor baseline;
     
-    public UserUserRatingPredictor(RatingDataAccessObject dao, NeighborhoodFinder nbrf,
+    public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
                                    @PredictNormalizer VectorNormalizer<? super UserRatingVector> norm, 
                                    @Nullable BaselinePredictor baseline) {
         super(dao);

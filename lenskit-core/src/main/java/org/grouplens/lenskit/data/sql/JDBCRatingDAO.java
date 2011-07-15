@@ -27,23 +27,27 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.AbstractLongCursor;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.dao.AbstractRatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.AbstractDataAccessObject;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.AbstractRatingCursor;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rating DAO backed by a JDBC connection.
+ * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
+ * no other events are supported.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
+public class JDBCRatingDAO extends AbstractDataAccessObject {
     public static class Factory implements DAOFactory<JDBCRatingDAO> {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
@@ -147,40 +151,67 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
     }
 
     @Override
-    public Cursor<Rating> getRatings() {
-        return getRatings(SortOrder.ANY);
+    public Cursor<Rating> getEvents() {
+        return getEvents(SortOrder.ANY);
     }
 
     @Override
-    public Cursor<Rating> getRatings(SortOrder order) {
+    public Cursor<Rating> getEvents(SortOrder order) {
     	try {
-    		PreparedStatement s = session.ratingStatement(order);
+    		PreparedStatement s = session.eventStatement(order);
     		return new RatingCursor(s);
     	} catch (SQLException e) {
     		throw new RuntimeException(e);
     	}
     }
+    
+    @Override
+    public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
+        if (type.isAssignableFrom(Rating.class))
+            // TODO: do not use a cast - use a type-lifting cursor
+            return (Cursor<E>) getEvents(order);
+        else
+            return Cursors.empty();
+    }
 
     @Override
-    public Cursor<Rating> getUserRatings(long userId, SortOrder order) {
+    public Cursor<Rating> getUserEvents(long userId) {
     	try {
-    		PreparedStatement s = session.userRatingStatement(order);
+    		PreparedStatement s = session.userEventStatement();
     		s.setLong(1, userId);
     		return new RatingCursor(s);
     	} catch (SQLException e) {
     		throw new RuntimeException(e);
     	}
     }
+    
+    @Override
+    public <E extends Event> Cursor<E> getUserEvents(long uid, Class<E> type) {
+        if (type.isAssignableFrom(Rating.class))
+            // TODO: do not use a cast - use a type-lifting cursor
+            return (Cursor<E>) getUserEvents(uid);
+        else
+            return Cursors.empty();
+    }
 
     @Override
-    public Cursor<Rating> getItemRatings(long itemId, SortOrder order) {
+    public Cursor<Rating> getItemEvents(long itemId) {
     	try {
-    		PreparedStatement s = session.itemRatingStatement(order);
+    		PreparedStatement s = session.itemEventStatement();
     		s.setLong(1, itemId);
     		return new RatingCursor(s);
     	} catch (SQLException e) {
     		throw new RuntimeException(e);
     	}
+    }
+    
+    @Override
+    public <E extends Event> Cursor<E> getItemEvents(long iid, Class<E> type) {
+        if (type.isAssignableFrom(Rating.class))
+            // TODO: do not use a cast - use a type-lifting cursor
+            return (Cursor<E>) getItemEvents(iid);
+        else
+            return Cursors.empty();
     }
     
     static class IDCursor extends AbstractLongCursor {
@@ -238,7 +269,7 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
     		rating = new MutableRating();
     		resultSet = stmt.executeQuery();
     		try {
-				hasTimestampColumn = resultSet.getMetaData().getColumnCount() > 3;
+				hasTimestampColumn = resultSet.getMetaData().getColumnCount() > 4;
 			} catch (SQLException e) {
 				resultSet.close();
 				throw e;
@@ -258,18 +289,21 @@ public class JDBCRatingDAO extends AbstractRatingDataAccessObject {
 			}
     		
     		try {
-				rating.setUserId(resultSet.getLong(1));
+    		    rating.setId(resultSet.getLong(1));
+    		    if (resultSet.wasNull())
+    		        throw new RuntimeException("Unexpected null event ID");
+				rating.setUserId(resultSet.getLong(2));
 				if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null user ID");
-				rating.setItemId(resultSet.getLong(2));
+				rating.setItemId(resultSet.getLong(3));
 				if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null item ID");
-	    		rating.setRating(resultSet.getDouble(3));
+	    		rating.setRating(resultSet.getDouble(4));
 	    		if (resultSet.wasNull())
 					throw new RuntimeException("Unexpected null rating");
 	    		long ts = -1;
 	    		if (hasTimestampColumn) {
-	    			ts = resultSet.getLong(4);
+	    			ts = resultSet.getLong(5);
 	    			if (resultSet.wasNull())
 	    				ts = -1;
 	    		}

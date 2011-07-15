@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
@@ -103,20 +103,20 @@ public class ItemMeanPredictor implements BaselinePredictor {
     }
 
     /**
-     * <p>
      * Compute item averages from a rating data source. Used to construct
      * predictors that need this data.
+     * 
      * <p>
      * This method's interface is a little weird, using an output parameter and
      * returning the global mean, so that we can compute the global mean and the
      * item means in a single pass through the data source.
      * 
-     * @param ratings The collection of ratings the averages are based on
+     * @param ratings The collection of preferences the averages are based on.
      * @param itemMeansResult A map in which the means should be stored.
      * @return The global mean rating. The item means are stored in
      *         <var>itemMeans</var>.
      */
-    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeansResult) {
+    public static double computeItemAverages(Iterator<? extends Preference> ratings, double damping, Long2DoubleMap itemMeansResult) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -129,9 +129,9 @@ public class ItemMeanPredictor implements BaselinePredictor {
         itemCounts.defaultReturnValue(0);
 
         while(ratings.hasNext()) {
-            Rating r = ratings.next();
+            Preference r = ratings.next();
             long i = r.getItemId();
-            double v = r.getRating();
+            double v = r.getValue();
             total += v;
             count++;
             itemMeansResult.put(i, v + itemMeansResult.get(i));

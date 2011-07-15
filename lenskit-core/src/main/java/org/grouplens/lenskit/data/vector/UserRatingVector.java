@@ -19,15 +19,19 @@
 package org.grouplens.lenskit.data.vector;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.util.FastCollection;
 
 /**
  * Vector containing a user's ratings.
@@ -52,6 +56,8 @@ public class UserRatingVector extends UserVector {
      * @return A vector containing the ratings of the list.
      */
     private static UserRatingVector userRatingVector(long userId, ArrayList<? extends Rating> ratings) {
+        // TODO Evaluate whether the item-time sort is too slow, or if there's
+        // a faster way to go about this.
         Rating rp = null;
         for (Rating r: ratings) {
             if (rp != null && Ratings.ITEM_TIME_COMPARATOR.compare(rp, r) > 0) {
@@ -66,11 +72,19 @@ public class UserRatingVector extends UserVector {
         double[] values = new double[ratings.size()];
         int li = -1;
         for (Rating r: ratings) {
+            Preference p = r.getPreference();
+            
             long iid = r.getItemId();
-            if (li < 0 || items[li] != iid)
+            if (li < 0 || items[li] != iid) {
+                if (p == null) continue;
+                
                 li++;
+            }
             items[li] = iid;
-            values[li] = r.getRating();
+            if (p == null)
+                values[li] = Double.NaN;
+            else
+                values[li] = p.getValue();
         }
         
         return new UserRatingVector(userId, items, values, li+1);
@@ -102,6 +116,28 @@ public class UserRatingVector extends UserVector {
      */
     public static UserRatingVector fromRatings(long userId, Cursor<? extends Rating> ratings) {
         return userRatingVector(userId, Cursors.makeList(ratings));
+    }
+    
+    /**
+     * Build a user rating vector from a collection of preferences.
+     * @param userId
+     * @param prefs The preference list.  It should not contain duplicates; if
+     * it does, the last occurrences (in iteration order) take precedence.
+     * @return The user rating vector.
+     */
+    public static UserRatingVector fromPreferences(long userId, Collection<? extends Preference> prefs) {
+        Long2DoubleMap m = new Long2DoubleOpenHashMap(prefs.size());
+        Iterator<? extends Preference> iter;
+        if (prefs instanceof FastCollection<?>) {
+            iter = ((FastCollection<? extends Preference>) prefs).fastIterator();
+        } else {
+            iter = prefs.iterator();
+        }
+        while (iter.hasNext()) {
+           Preference p = iter.next();
+           m.put(p.getItemId(), p.getValue());
+        }
+        return new UserRatingVector(userId, m);
     }
     
     public static UserRatingVector wrap(long user, long[] keys, double[] values) {

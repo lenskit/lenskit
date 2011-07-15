@@ -31,7 +31,7 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -41,7 +41,7 @@ import org.junit.Test;
 
 public class TestUserUserRecommender {
 	private static Recommender rec;
-	private static RatingCollectionDAO dao;
+	private static EventCollectionDAO dao;
 
 	@BeforeClass
 	public static void setup() {
@@ -64,7 +64,7 @@ public class TestUserUserRecommender {
 		rs.add(new SimpleRating(3, 9, 4));
 		rs.add(new SimpleRating(6, 9, 4));
 		rs.add(new SimpleRating(5, 9, 4));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
 		factory.setComponent(DynamicRatingItemRecommender.class, UserUserRecommender.class);

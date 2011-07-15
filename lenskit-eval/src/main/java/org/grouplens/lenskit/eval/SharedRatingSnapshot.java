@@ -21,7 +21,7 @@ package org.grouplens.lenskit.eval;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import org.grouplens.lenskit.data.Index;
-import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.FastCollection;
@@ -55,12 +55,12 @@ public class SharedRatingSnapshot implements RatingSnapshot {
     }
 
     @Override
-    public FastCollection<IndexedRating> getRatings() {
+    public FastCollection<IndexedPreference> getRatings() {
         return snapshot.getRatings();
     }
 
     @Override
-    public FastCollection<IndexedRating> getUserRatings(long userId) {
+    public FastCollection<IndexedPreference> getUserRatings(long userId) {
         return snapshot.getUserRatings(userId);
     }
 

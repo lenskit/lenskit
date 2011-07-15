@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.IndexedItemScore;
 
@@ -38,7 +38,7 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
      * Construct a new recommender from a predictor.
      * @param predictor The predictor to use.
      */
-    public ItemItemRecommender(RatingDataAccessObject dao, ItemItemRatingPredictor predictor) {
+    public ItemItemRecommender(DataAccessObject dao, ItemItemRatingPredictor predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

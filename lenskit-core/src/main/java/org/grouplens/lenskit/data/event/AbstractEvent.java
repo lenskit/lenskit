@@ -18,23 +18,18 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import com.google.common.primitives.Longs;
 
 /**
- * Abstract rating implementation.  This just provides the {@link #equals(Object)}
- * and {@link #hashCode()} methods so classes don't have to duplicate the code.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRating implements Rating {
-
+public abstract class AbstractEvent implements Event {
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Rating) {
-            Rating or = (Rating) o;
-            return getUserId() == or.getUserId()
-                && getItemId() == or.getItemId()
-                && getRating() == or.getRating()
-                && getTimestamp() == or.getTimestamp();
+        if (o instanceof Event) {
+            Event oe = (Event) o;
+            return getId() == oe.getId();
         } else {
             return false;
         }
@@ -42,19 +37,19 @@ public abstract class AbstractRating implements Rating {
 
     @Override
     public int hashCode() {
-        return Long.valueOf(getUserId()).hashCode()
-            ^ Long.valueOf(getItemId()).hashCode()
-            ^ Double.valueOf(getRating()).hashCode()
-            ^ Long.valueOf(getTimestamp()).hashCode();
+        return Longs.hashCode(getId());
     }
     
+    /**
+     * Default clone implementation; hands off to {@link Object#clone()}.
+     * @return The cloned event.
+     */
     @Override
-    public Rating clone() {
+    public Event clone() {
         try {
-            return (Rating) super.clone();
+            return (Event) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Rating not cloneable");
         }
     }
-
 }

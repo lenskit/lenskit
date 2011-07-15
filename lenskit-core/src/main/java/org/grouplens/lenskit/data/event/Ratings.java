@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.annotation.WillClose;
 
@@ -35,7 +34,6 @@ import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.vector.ItemRatingVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 import com.google.common.primitives.Longs;
@@ -113,6 +111,7 @@ public final class Ratings {
      * @param ratings
      * @return A vector containing the ratings of the list.
      */
+    @Deprecated
     private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
     	Rating rp = null;
     	for (Rating r: ratings) {
@@ -171,13 +170,19 @@ public final class Ratings {
     }
     
     /**
-     * Convert a sparse vector into a rating list
+     * Make a fresh rating object with no timestamp.
+     * @see #make(long, long, double, long)
      */
-    public static List<Rating> fromUserVector(long user, SparseVector v) {
-        List<Rating> ratings = new ArrayList<Rating>(v.size());
-        for (Long2DoubleMap.Entry e: v.fast()) {
-            ratings.add(new SimpleRating(user, e.getLongKey(), e.getDoubleValue()));
-        }
-        return ratings;
+    public static Rating make(long uid, long iid, double value) {
+        return make(uid, iid, value, -1);
+    }
+    
+    /**
+     * Make a fresh rating event. Event IDs are generated sequentially. This is
+     * mostly useful in test cases.
+     */
+    public static Rating make(long uid, long iid, double value, long ts) {
+        return new SimpleRating(Events.nextEventId.incrementAndGet(),
+                                uid, iid, value, ts);
     }
 }

@@ -21,8 +21,8 @@ package org.grouplens.lenskit.norm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -40,15 +40,17 @@ import org.junit.Test;
  *
  */
 public class MeanVarianceNormalizerTest {
-	RatingDataAccessObject dao;
+	DataAccessObject dao;
 	RatingSnapshot rs;
 	ImmutableSparseVector userRatings;
 	ImmutableSparseVector uniformUserRatings;
 	MeanVarianceNormalizer.Builder builder;
 	final static double MIN_DOUBLE_PRECISION = 0.00001;
 	
+	private static int eid = 0;
+	
 	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
-	    ratings.add(new SimpleRating(uid, iid, value));
+	    ratings.add(new SimpleRating(eid++, uid, iid, value));
 	}
 	
 	@Before
@@ -75,7 +77,7 @@ public class MeanVarianceNormalizerTest {
 		addRating(ratings, 1, 4, 3);
 		addRating(ratings, 1, 5, 3);
 		addRating(ratings, 1, 6, 3);
-		dao = new RatingCollectionDAO.Factory(ratings).create();
+		dao = new EventCollectionDAO.Factory(ratings).create();
 		rs = new PackedRatingSnapshot.Builder(dao).build();
 		builder.setRatingSnapshot(rs);
 	}

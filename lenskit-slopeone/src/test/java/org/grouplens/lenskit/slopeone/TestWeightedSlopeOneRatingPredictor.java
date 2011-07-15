@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -51,8 +51,8 @@ public class TestWeightedSlopeOneRatingPredictor {
 		rs.add(new SimpleRating(6, 8, 2));
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 4));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
-		RatingCollectionDAO dao = manager.create();
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+		EventCollectionDAO dao = manager.create();
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
@@ -84,8 +84,8 @@ public class TestWeightedSlopeOneRatingPredictor {
 		rs.add(new SimpleRating(1, 7, 4));
 		rs.add(new SimpleRating(2, 7, 4));
 		rs.add(new SimpleRating(3, 7, 1.5));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
-		RatingCollectionDAO dao = manager.create();
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+		EventCollectionDAO dao = manager.create();
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
 		PackedRatingSnapshot snap = snapBuilder.build();
 		SlopeOneModelBuilder builder = new SlopeOneModelBuilder();

@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import java.util.Collection;
 
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 
 /**
  * Vector containing ratings for an item.
@@ -45,10 +46,14 @@ public class ItemRatingVector extends ItemVector {
         Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
         tsMap.defaultReturnValue(Long.MIN_VALUE);
         for (Rating r: ratings) {
+            Preference p = r.getPreference();
             long uid = r.getUserId();
             long ts = r.getTimestamp();
             if (ts >= tsMap.get(uid)) {
-                vect.put(uid, r.getRating());
+                if (p == null)
+                    vect.remove(uid);
+                else
+                    vect.put(uid, p.getValue());
                 tsMap.put(uid, ts);
             }
         }

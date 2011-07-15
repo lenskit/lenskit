@@ -25,85 +25,99 @@ import java.sql.SQLException;
 import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Interface for producing prepared statements for rating DAO queries.
  * 
  * <p>
- * Methods on this interface prepare SQL statements to be used by {@link JDBCDataSession}
- * to satisfy queries.  The data session implementation takes care of caching
- * prepared statements, so these methods should always prepare new statements.
+ * Methods on this interface prepare SQL statements to be used by
+ * {@link JDBCDataSession} to satisfy queries. The data session implementation
+ * takes care of caching prepared statements, so these methods should always
+ * prepare new statements.
  * 
- * <p>The JDBC DAO framework operates by expecting a statement factory to construct
+ * <p>
+ * The JDBC DAO framework operates by expecting a statement factory to construct
  * queries which return results in a defined format.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 @Immutable
 public interface SQLStatementFactory {
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getUsers()}.
+     * Prepare a statement to satisfy {@link DataAccessObject#getUsers()}.
      * Querying the statement should return one column per row containing the
      * numeric user ID.
+     * 
      * @return A <tt>PreparedStatement</tt> containing user ID data.
      */
     PreparedStatement prepareUsers(Connection dbc) throws SQLException;
-    
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getUserCount()}.
+     * Prepare a statement to satisfy {@link DataAccessObject#getUserCount()}.
      * The result set should contain a single row whose first column contains
      * the number of users.
-     * @return A <tt>PreparedStatement</tt> containing the total number of users.
+     * 
+     * @return A <tt>PreparedStatement</tt> containing the total number of
+     *         users.
      */
     PreparedStatement prepareUserCount(Connection dbc) throws SQLException;
-    
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getItems()}.
+     * Prepare a statement to satisfy {@link DataAccessObject#getItems()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
+     * 
      * @return A <tt>PreparedStatement</tt> containing item ID data.
      */
     PreparedStatement prepareItems(Connection dbc) throws SQLException;
-    
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getItemCount()}.
+     * Prepare a statement to satisfy {@link DataAccessObject#getItemCount()}.
      * The result set should contain a single row whose first column contains
      * the number of items.
-     * @return A <tt>PreparedStatement</tt> containing the total number of items.
+     * 
+     * @return A <tt>PreparedStatement</tt> containing the total number of
+     *         items.
      */
     PreparedStatement prepareItemCount(Connection dbc) throws SQLException;
-    
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getRatings(SortOrder)}.
-     * Each row should contain three or four columns: the user ID, the item ID,
-     * the rating, and (optionally) the timestamp. The timestamp column is allowed
-     * to contain NULL values or to be omitted entirely. User, item, and rating
+     * Prepare a statement to satisfy
+     * {@link DataAccessObject#getEvents(SortOrder)}. Each row should contain
+     * four or five columns: the event ID, the user ID, the item ID, the rating,
+     * and (optionally) the timestamp. The timestamp column is allowed to
+     * contain NULL values or to be omitted entirely. ID, user, item, and rating
      * columns must be non-null.
      * 
      * @param dbc The database connection
      * @param order The sort order
      */
-    PreparedStatement prepareRatings(Connection dbc, SortOrder order) throws SQLException;
-    
+    PreparedStatement prepareEvents(Connection dbc, SortOrder order)
+            throws SQLException;
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getUserRatings(long, SortOrder)}.
-     * The returned rows should be as in {@link #prepareRatings(Connection, SortOrder)},
-     * and the prepared statement should take a single parameter for the user ID.
+     * Prepare a statement to satisfy
+     * {@link DataAccessObject#getUserEvents(long)}. The returned rows should be
+     * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
+     * statement should take a single parameter for the user ID.
+     * 
      * @param dbc
-     * @param order
-     * @return A <tt>PreparedStatement</tt> containing user rating data.
+     * @return A <tt>PreparedStatement</tt> returning user rating data. The
+     *         ratings must be in timestamp order.
      */
-    PreparedStatement prepareUserRatings(Connection dbc, SortOrder order) throws SQLException;
-    
+    PreparedStatement prepareUserEvents(Connection dbc) throws SQLException;
+
     /**
-     * Prepare a statement to satisfy {@link RatingDataAccessObject#getItemRatings(long, SortOrder)}.
-     * The returned rows should be as in {@link #prepareRatings(Connection, SortOrder)},
-     * and the prepared statement should take a single parameter for the item ID.
+     * Prepare a statement to satisfy
+     * {@link DataAccessObject#getItemEvents(long)}. The returned rows should be
+     * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
+     * statement should take a single parameter for the item ID.
+     * 
      * @param dbc
-     * @param order
-     * @return A <tt>PreparedStatement</tt> containing item rating data.
+     * @return A <tt>PreparedStatement</tt> returning item rating data. The
+     *         ratings must be ordered first by user ID, then by timestamp.
      */
-    PreparedStatement prepareItemRatings(Connection dbc, SortOrder order) throws SQLException;
+    PreparedStatement prepareItemEvents(Connection dbc) throws SQLException;
 }

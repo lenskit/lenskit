@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.grouplens.lenskit.data.dao.RatingCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -42,7 +42,7 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(2, 5, 4));
 		rs.add(new SimpleRating(1, 3, 5));
 		rs.add(new SimpleRating(2, 3, 4));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
@@ -68,7 +68,7 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(1, 6, 1));
 		rs.add(new SimpleRating(2, 6, 5));
 		rs.add(new SimpleRating(3, 6, 3));
-		RatingCollectionDAO.Factory factory = new RatingCollectionDAO.Factory(rs);
+		EventCollectionDAO.Factory factory = new EventCollectionDAO.Factory(rs);
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
@@ -107,7 +107,7 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(6, 8, 2));
 		rs.add(new SimpleRating(1, 9, 3));
 		rs.add(new SimpleRating(3, 9, 4));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snapshot = snapBuilder.build();		
 		SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
@@ -150,7 +150,7 @@ public class TestSlopeOneModelBuilder {
 		rs.add(new SimpleRating(1, 7, 4));
 		rs.add(new SimpleRating(2, 7, 4));
 		rs.add(new SimpleRating(3, 7, 1.5));
-		RatingCollectionDAO.Factory manager = new RatingCollectionDAO.Factory(rs);
+		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
 		PackedRatingSnapshot snap = snapBuilder.build();
 		SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();

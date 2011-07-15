@@ -16,36 +16,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
-
-import org.grouplens.lenskit.data.event.Rating;
-
 
 /**
- * Rating that also knows the indexes for its user and item.
+ * LensKit's events and related types. Events are the core way of tracking user
+ * and item data in LensKit; users have events associated with items. Ratings
+ * are events, as are purchases, clicks, and other forms of user-item
+ * interaction data.
  * 
- * <p>Implementations are not expected to consider index when comparing ratings
- * for equality.
- * 
- * @see org.grouplens.lenskit.data.snapshot.RatingSnapshot RatingSnapshot
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * <p>
+ * In some cases, it makes sense for an event to not be associated with any
+ * particular item (e.g. "user logged in"). In this case, we recommend that
+ * integrators use a designated item ID. So long as this ID does not show up in
+ * any events used by the recommender implementation, it should not affect
+ * recommendation. Likewise, a designated user ID can be used for item-only
+ * events.
  */
-public interface IndexedRating extends Rating {
-	/**
-	 * Return the index for the user.  Indexes are 0-based and consecutive, so
-	 * they can be used for indexing into arrays.
-	 * @return The user index.
-	 */
-	int getUserIndex();
-	
-	/**
-	 * Return the index for the item.  Indexes are 0-based and consecutive, so
-	 * they can be used for indexing into arrays.
-	 * @return The item index.
-	 */
-	int getItemIndex();
-	
-	@Override
-    IndexedRating clone();
-}
+package org.grouplens.lenskit.data.event;

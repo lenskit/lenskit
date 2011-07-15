@@ -33,7 +33,8 @@ import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.RatingDataAccessObject;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.ItemEvent;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -78,7 +79,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         }
     }
     
-    private final RatingDataAccessObject dataSource;
+    private final DataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
 	private final VectorNormalizer<? super UserRatingVector> normalizer;
@@ -90,7 +91,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @param nnbrs The number of neighbors to consider for each item.
      * @param sim The similarity function to use.
      */
-    public SimpleNeighborhoodFinder(RatingDataAccessObject data,
+    public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs, 
                                     @UserSimilarity Similarity<? super SparseVector> sim,
                                     @UserRatingVectorNormalizer VectorNormalizer<? super UserRatingVector> norm) {
@@ -173,7 +174,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             final long item = items.nextLong();
             Cursor<Rating> ratings = dataSource.getItemRatings(item);
             try {
-                for (Rating r: ratings) {
+                for (ItemEvent r: ratings) {
                     long uid = r.getUserId();
                     if (uid == user) continue;
                     users.add(uid);
@@ -202,7 +203,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         // check max timestamp
         long ts = -1;
         if (e != null) {
-            for (Rating r: ratings) {
+            for (ItemEvent r: ratings) {
                 ts = max(ts, r.getTimestamp());
             }
             if (ts != e.lastRatingTimestamp)

@@ -20,11 +20,8 @@ package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class for tracking accumulated global indexes for ratings.  It's basically
@@ -78,20 +75,5 @@ final class IndexManager {
 		if (imap == null)
 			imap = mapping.get(uidx);
 		imap.put(iidx, idx);
-	}
-	
-	/**
-	 * Retrieve a list of used indices.  This will allow the {@link PackedRatingSnapshot}
-	 * to know what entries in its packed arrays are used by which users and allow
-	 * querying of a user's ratings.
-	 * @return A list containing, for each user, the global indexes registered
-	 * for that user.
-	 */
-	public List<IntList> getUserIndexMatrix() {
-		List<IntList> mat = new ArrayList<IntList>(mapping.size());
-		for (Int2IntMap m: mapping) {
-			mat.add(new IntArrayList(m.values()));
-		}
-		return mat;
 	}
 }

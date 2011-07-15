@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.IndexedRating;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -117,7 +117,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         }
 
         MutableSparseVector[] estimates = initializeEstimates(snapshot, baseline);
-        FastCollection<IndexedRating> ratings = snapshot.getRatings();
+        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
@@ -150,7 +150,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
 
     private final void trainFeature(double[][] ufvs, double[][] ifvs,
                                     MutableSparseVector[] estimates,
-                                    FastCollection<IndexedRating> ratings, int feature) {
+                                    FastCollection<IndexedPreference> ratings, int feature) {
         
         logger.trace("Training feature {}", feature);
 
@@ -184,7 +184,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        for (IndexedRating r: ratings.fast()) {
+        for (IndexedPreference r: ratings.fast()) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
             final long item = r.getItemId();
@@ -213,11 +213,11 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     	}
     }
 
-    private final double trainFeatureIteration(FastCollection<IndexedRating> ratings,
+    private final double trainFeatureIteration(FastCollection<IndexedPreference> ratings,
             double[] ufv, double[] ifv, MutableSparseVector[] estimates, double trailingValue) {
         // We'll need to keep track of our sum of squares
         double ssq = 0;
-        for (IndexedRating r: ratings.fast()) {
+        for (IndexedPreference r: ratings.fast()) {
             ssq += trainRating(ufv, ifv, estimates, trailingValue, r);
         }
         // We're done with this feature.  Compute the total error (RMSE)
@@ -228,7 +228,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private final double trainRating(double[] ufv, double[] ifv,
                                  MutableSparseVector[] estimates,
                                  double trailingValue,
-                                 IndexedRating r) {
+                                 IndexedPreference r) {
         final int uidx = r.getUserIndex();
         final int iidx = r.getItemIndex();
         final double value = r.getRating();
