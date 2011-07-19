@@ -6,6 +6,14 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+Release ${project.version}
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=${project.version}}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
 Release 0.3.1
 
   This release just contains a single change that should have been in
