@@ -3,7 +3,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.3.1</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-eval-ant-plugin</artifactId>
