@@ -39,7 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestSlopeOneItemRecommender {
-    private DAOFactory<? extends DataAccessObject> manager;
+    private DAOFactory manager;
     private RecommenderEngine engine;
     
     @Before

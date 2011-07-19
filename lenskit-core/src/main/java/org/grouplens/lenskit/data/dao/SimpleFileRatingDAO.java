@@ -47,7 +47,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     /**
      * Factory for opening DAOs from a file.
      */
-    public static class Factory implements DAOFactory<SimpleFileRatingDAO> {
+    public static class Factory implements DAOFactory {
         private final File file;
         private final String delimiter;
         private final URL url;

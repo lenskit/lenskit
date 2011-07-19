@@ -61,7 +61,7 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
     private final Map<Class<?>, Object> defaultBindings;
-    private DAOFactory<? extends DataAccessObject> daoManager;
+    private DAOFactory daoManager;
     
     /**
      * Create a new engine factory with no DAO factory.
@@ -84,7 +84,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * DAO factory.
      * @param daom The DAO factory for obtaining data access.
      */
-    public LenskitRecommenderEngineFactory(@Nullable DAOFactory<? extends DataAccessObject> daom) {
+    public LenskitRecommenderEngineFactory(@Nullable DAOFactory daom) {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Object>();
         daoManager = daom;
@@ -101,7 +101,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Get the DAO manager configured for this factory.
      * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
      */
-    public @Nullable DAOFactory<? extends DataAccessObject> getDAOFactory() {
+    public @Nullable DAOFactory getDAOFactory() {
         return daoManager;
     }
     
@@ -109,7 +109,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Set the DAO manager.
      * @param daom
      */
-    public void setDAOFactory(@Nullable DAOFactory<? extends DataAccessObject> daom) {
+    public void setDAOFactory(@Nullable DAOFactory daom) {
         daoManager = daom;
     }
     
@@ -360,7 +360,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
 
-        DAOFactory<? extends DataAccessObject> manager =
+        DAOFactory manager =
             useManager ? daoManager : null;       
         LenskitRecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
         Recommender testOpen;

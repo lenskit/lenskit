@@ -25,10 +25,10 @@ package org.grouplens.lenskit.data.dao;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface DAOFactory<T> {
+public interface DAOFactory {
     /**
      * Create a new DAO.
      * @return A new DAO.  The caller is responsible for closing it.
      */
-    T create();
+    DataAccessObject create();
 }

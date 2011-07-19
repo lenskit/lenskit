@@ -166,8 +166,8 @@ public class TrainTestPredictEvaluator {
      */
     public List<Runnable> makeEvalTasks(EvaluationRecipe recipe) {
         
-        final DAOFactory<? extends DataAccessObject> daoMgr = trainingDAOManager();
-        final DAOFactory<? extends DataAccessObject> testDaoMgr = testDAOManager();
+        final DAOFactory daoMgr = trainingDAOManager();
+        final DAOFactory testDaoMgr = testDAOManager();
         
         final ResultAccumulator accum = recipe.makeAccumulator(getName());
         
@@ -203,7 +203,7 @@ public class TrainTestPredictEvaluator {
         return tasks;
     }
 
-    private SharedRatingSnapshot loadSnapshot(DAOFactory<? extends DataAccessObject> daoMgr) {
+    private SharedRatingSnapshot loadSnapshot(DAOFactory daoMgr) {
         DataAccessObject dao = daoMgr.create();
         try {
             return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
@@ -215,13 +215,13 @@ public class TrainTestPredictEvaluator {
     protected class EvalTask implements Runnable {
         private AlgorithmInstance algorithm;
         private ResultAccumulator resultAccumulator;
-        private DAOFactory<? extends DataAccessObject> daoManager;
-        private DAOFactory<? extends DataAccessObject> testDaoManager;
+        private DAOFactory daoManager;
+        private DAOFactory testDaoManager;
         private LazyValue<List<Event>> ratingCache;
         private LazyValue<? extends RatingSnapshot> ratingSnapshot;
         
-        public EvalTask(DAOFactory<? extends DataAccessObject> daoMgr,
-                DAOFactory<? extends DataAccessObject> testDaoMgr,
+        public EvalTask(DAOFactory daoMgr,
+                DAOFactory testDaoMgr,
                 ResultAccumulator results, AlgorithmInstance algo,
                 LazyValue<List<Event>> cache,
                 LazyValue<? extends RatingSnapshot> snap) {

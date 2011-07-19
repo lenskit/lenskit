@@ -51,7 +51,7 @@ import com.google.common.collect.Lists;
  *
  */
 public class EventCollectionDAO extends AbstractDataAccessObject {
-    public static class Factory implements DAOFactory<EventCollectionDAO> {
+    public static class Factory implements DAOFactory {
         private final Collection<? extends Event> events;
         private transient EventCollectionDAO singleton;
         

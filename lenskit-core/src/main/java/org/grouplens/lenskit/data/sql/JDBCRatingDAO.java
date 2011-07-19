@@ -54,7 +54,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     public static final int COL_RATING = 4;
     public static final int COL_TIMESTAMP = 5;
     
-    public static class Factory implements DAOFactory<JDBCRatingDAO> {
+    public static class Factory implements DAOFactory {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
         

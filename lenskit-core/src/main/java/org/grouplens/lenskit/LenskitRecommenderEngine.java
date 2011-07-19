@@ -51,9 +51,9 @@ import org.picocontainer.behaviors.Caching;
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final PicoContainer recommenderContainer;
     private final Map<Object, Object> sessionBindings;
-    private final DAOFactory<? extends DataAccessObject> factory;
+    private final DAOFactory factory;
     
-    public LenskitRecommenderEngine(DAOFactory<? extends DataAccessObject> factory,
+    public LenskitRecommenderEngine(DAOFactory factory,
                                     PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
         this.factory = factory;
         this.recommenderContainer = recommenderContainer;
@@ -74,7 +74,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("unchecked")
-    public LenskitRecommenderEngine(DAOFactory<? extends DataAccessObject> factory,
+    public LenskitRecommenderEngine(DAOFactory factory,
                                     File file) throws IOException, ClassNotFoundException {
         this.factory = factory;
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));

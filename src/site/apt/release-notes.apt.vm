@@ -14,6 +14,19 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+Release 0.3.1
+
+  This release just contains a single change that should have been in
+  0.3 (and is, unfortunately, backwards-incompatible):
+
+  * Removed the generic parameter from <<<DAOFactory>>>.  We will be
+    ensuring in a later release that the dependency injection
+    mechanism allows subclasses of <<<DataAccessObject>>> to be
+    visible as such.
+
+  []
+  
+
 Release 0.3
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and

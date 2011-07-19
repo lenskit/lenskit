@@ -32,7 +32,6 @@ import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -41,7 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestFunkSVDRecommenderBuild {
-	private DAOFactory<? extends DataAccessObject> manager;
+	private DAOFactory manager;
 	private RecommenderEngine engine;
 
 	@Before
