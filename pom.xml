@@ -46,20 +46,6 @@
     </snapshotRepository>
   </distributionManagement>
 
-  <repositories>
-    <repository>
-      <id>jboss.releases</id>
-      <name>JBoss releases</name>
-      <url>http://repository.jboss.org/maven2</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -420,12 +406,12 @@
                         <link>http://fastutil.dsi.unimi.it/docs/</link>
                         <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
                       </links>
-                      <doclet>org.jboss.apiviz.APIviz</doclet>
-                      <docletArtifact>
-                        <groupId>org.jboss.apiviz</groupId>
-                        <artifactId>apiviz</artifactId>
-                        <version>1.3.1.GA</version>
-                      </docletArtifact>
+                      <!-- <doclet>org.jboss.apiviz.APIviz</doclet> -->
+                      <!-- <docletArtifact> -->
+                      <!--   <groupId>org.jboss.apiviz</groupId> -->
+                      <!--   <artifactId>apiviz</artifactId> -->
+                      <!--   <version>1.3.1.GA</version> -->
+                      <!-- </docletArtifact> -->
                       <useStandardDocletOptions>true</useStandardDocletOptions>
                     </configuration>
                   </plugin>
