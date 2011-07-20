@@ -42,7 +42,7 @@
     <snapshotRepository>
       <id>grouplens.org</id>
       <name>GroupLens Maven repository</name>
-      <url>file:///web/research01/lenskit.grouplens.org/maven</url>
+      <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
     </snapshotRepository>
   </distributionManagement>
 
