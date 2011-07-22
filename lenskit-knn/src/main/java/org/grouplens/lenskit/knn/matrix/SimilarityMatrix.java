@@ -37,7 +37,7 @@ public interface SimilarityMatrix {
     /**
      * @return The number of entities for which this matrix has similarities
      */
-    public int size();
+    int size();
 
     /**
      * Retrieve the neighbors for an item.
@@ -50,5 +50,5 @@ public interface SimilarityMatrix {
      * @throws IndexOutOfBoundsException
      *             if the index is invalid.
      */
-    public Iterable<IndexedItemScore> getNeighbors(int i);
+    Iterable<IndexedItemScore> getNeighbors(int i);
 }
