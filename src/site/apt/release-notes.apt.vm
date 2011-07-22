@@ -14,6 +14,25 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Added snapshotting as an explicit concept to the data layer.
+    <<<DAOFactory>>> now has a <<<snapshot()>>> method, which is
+    supposed to return an immutable snapshot of the data for
+    test/build purposes.  Iterative algorithms still use rating
+    snapshots, as they're faster and provide indexing, but this allows
+    us to be more flexible in what kinds of data access recommender
+    component builders can perform.  Factory implementations now need
+    to provide a snapshot method; this can be done by simply creating
+    an event collection DAO from the events.  Users with large data
+    sets may want to use more exotic methods like database replication
+    or transactions.
+
+    The <<<JDBCRatingDAO>>> factory makes snapshotting configurable.
+    By default, it assumes the database is unchanging; it can be
+    configured to take an in-memory snapshot and return an
+    <<<EventCollectionDAO>>>.
+
+  []
+
 Release 0.3.1
 
   This release just contains a single change that should have been in
