@@ -61,7 +61,7 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory {
     private final Map<Class<? extends Annotation>, Object> annotationBindings;
     private final Map<Class<?>, Object> defaultBindings;
-    private DAOFactory daoManager;
+    private DAOFactory daoFactory;
     
     /**
      * Create a new engine factory with no DAO factory.
@@ -87,7 +87,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory daom) {
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Object>();
-        daoManager = daom;
+        daoFactory = daom;
         
         setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
         
@@ -102,7 +102,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
      */
     public @Nullable DAOFactory getDAOFactory() {
-        return daoManager;
+        return daoFactory;
     }
     
     /**
@@ -110,7 +110,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @param daom
      */
     public void setDAOFactory(@Nullable DAOFactory daom) {
-        daoManager = daom;
+        daoFactory = daom;
     }
     
     @SuppressWarnings("unchecked")
@@ -250,9 +250,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     
     @Override
     public LenskitRecommenderEngine create() {
-        if (daoManager == null)
+        if (daoFactory == null)
             throw new IllegalStateException("create() called with no DAO factory");
-        DataAccessObject dao = daoManager.create();
+        DataAccessObject dao = daoFactory.snapshot();
         try {
             return create(dao, null, true);
         } finally {
@@ -261,8 +261,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     /**
-     * Create a new recommender engine from a particular DAO. The factory's DAO
+     * Create a new recommender engine using a particular DAO. The factory's DAO
      * manager, if set, is still used by the resulting engine to open sessions.
+     * The DAO is assumed to be backed by immutable data, as with
+     * {@link DAOFactory#snapshot()}.
      * 
      * @review If the user provides a DAO and has set a DAO Factory, do we use
      *         or ignore the DAO Factory?
@@ -274,7 +276,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         return create(dao, null, false);
     }
     
-    protected LenskitRecommenderEngine create(DataAccessObject dao, PicoContainer parent, boolean useManager) {
+    protected LenskitRecommenderEngine create(DataAccessObject dao, PicoContainer parent, boolean useFactory) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
         Map<Class<?>, Object> defaultBindings;
         
@@ -360,11 +362,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
         }
 
-        DAOFactory manager =
-            useManager ? daoManager : null;       
-        LenskitRecommenderEngine engine = new LenskitRecommenderEngine(manager, recommenderContainer, sessionBindings);
+        DAOFactory factory =
+            useFactory ? daoFactory : null;       
+        LenskitRecommenderEngine engine = new LenskitRecommenderEngine(factory, recommenderContainer, sessionBindings);
         Recommender testOpen;
-        if (useManager)
+        if (useFactory)
             testOpen = engine.open();
         else
             testOpen = engine.open(dao, false);
