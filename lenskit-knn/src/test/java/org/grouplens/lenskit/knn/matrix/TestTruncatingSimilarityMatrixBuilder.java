@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.knn;
+package org.grouplens.lenskit.knn.matrix;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,7 +27,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator.Score;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
+import org.grouplens.lenskit.knn.matrix.TruncatingSimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.matrix.TruncatingSimilarityMatrixAccumulator.Score;
 import org.grouplens.lenskit.util.IndexedItemScore;
 import org.junit.Before;
 import org.junit.Test;

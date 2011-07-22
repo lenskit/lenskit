@@ -26,10 +26,10 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.SimilarityMatrix;
-import org.grouplens.lenskit.knn.SimilarityMatrixAccumulator;
-import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

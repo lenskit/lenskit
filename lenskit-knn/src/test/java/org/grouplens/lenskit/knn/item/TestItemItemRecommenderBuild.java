@@ -32,8 +32,8 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.knn.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.TruncatingSimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.knn.matrix.TruncatingSimilarityMatrixAccumulator;
 import org.junit.Before;
 import org.junit.Test;
 

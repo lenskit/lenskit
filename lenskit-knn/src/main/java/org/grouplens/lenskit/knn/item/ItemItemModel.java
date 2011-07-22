@@ -26,7 +26,7 @@ import java.io.Serializable;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
-import org.grouplens.lenskit.knn.SimilarityMatrix;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.meta.Built;

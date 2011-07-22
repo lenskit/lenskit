@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.knn.SimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
 

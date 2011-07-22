@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.knn.SimilarityMatrix;
+import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 
 
 /**
