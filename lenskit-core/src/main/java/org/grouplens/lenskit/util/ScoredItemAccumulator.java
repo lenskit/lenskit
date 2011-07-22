@@ -24,12 +24,13 @@ import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
 
 /**
- * Accumulate the top <i>N</i> scored IDs.
+ * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
+ * scores.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ScoredItemAccumulator {
-    private static final long serialVersionUID = -3045709409904317792L;
     private final int count;
     private double[] scores;
     private long[] items;
@@ -37,6 +38,10 @@ public class ScoredItemAccumulator {
     private int size;
     private DoubleHeapIndirectPriorityQueue heap;
 
+    /**
+     * Create a new accumulator to accumulate the top <var>n</var> IDs.
+     * @param n The number of IDs to retain.
+     */
     public ScoredItemAccumulator(int n) {
         this.count = n;
         scores = new double[n+1];
@@ -46,22 +51,42 @@ public class ScoredItemAccumulator {
         heap = new DoubleHeapIndirectPriorityQueue(scores);
     }
 
+    /**
+     * Query whether the accumulator is empty.
+     * @return <tt>true</tt> if the accumulator has no items.
+     */
     public boolean isEmpty() {
         return size == 0;
     }
 
+    /**
+     * Get the number of items in the accumulator.
+     * 
+     * @return The number of items accumulated so far, up to the maximum items
+     *         desired from the accumulator.
+     */
     public int size() {
         return size;
     }
 
-    public void put(long i, double val) {
+    /**
+     * Put a new item in the accumulator. Putting the same item twice does
+     * <strong>not</strong> replace the previous entry - it adds a new entry
+     * with the same ID.
+     * 
+     * @param item The item to add to the accumulator.
+     * @param score The item's score.
+     */
+    public void put(long item, double score) {
         assert slot <= count;
         assert heap.size() == size;
-        /* Store the new item. The slot shows where the current item is,
-         * and then we deal with it based on whether we're oversized.
+        
+        /*
+         * Store the new item. The slot shows where the current item is, and
+         * then we deal with it based on whether we're oversized.
          */
-        items[slot] = i;
-        scores[slot] = val;
+        items[slot] = item;
+        scores[slot] = score;
         heap.enqueue(slot);
 
         if (size == count) {
@@ -75,7 +100,9 @@ public class ScoredItemAccumulator {
     }
     
     /**
-     * Accumulate the scores into a sorted scored list and reset the accumulator.
+     * Accumulate the scores into a sorted scored list and reset the
+     * accumulator.
+     * 
      * @return The sorted, scored list of items.
      */
     public ScoredLongList finish() {
