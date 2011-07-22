@@ -18,17 +18,30 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+
 /**
- * Factory to create new DAOs.  This is used when something needs to be able to
+ * Factory to create new DAOs. This is used when something needs to be able to
  * create DAOs at will.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 public interface DAOFactory {
     /**
      * Create a new DAO.
-     * @return A new DAO.  The caller is responsible for closing it.
+     * 
+     * @return A new DAO. The caller is responsible for closing it.
      */
     DataAccessObject create();
+
+    /**
+     * Create a snapshot DAO. Snapshot DAOs provide access to an immutable
+     * snapshot of data for use in recommender training/building.
+     * {@link LenskitRecommenderEngineFactory} uses a snapshot DAO in to build
+     * recommenders, and a normal DAO to create sessions.
+     * 
+     * @return A snapshotted DAO. The caller is responsible for closing it.
+     */
+    DataAccessObject snapshot();
 }

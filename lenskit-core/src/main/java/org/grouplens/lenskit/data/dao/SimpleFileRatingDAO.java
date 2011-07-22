@@ -45,7 +45,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     /**
-     * Factory for opening DAOs from a file.
+     * Factory for opening DAOs from a file.  It assumes that the file is
+     * unchanging, so {@link #snapshot()} just calls {@link #create()}.
      */
     public static class Factory implements DAOFactory {
         private final File file;
@@ -105,6 +106,11 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         @Override
         public SimpleFileRatingDAO create() {
             return new SimpleFileRatingDAO(file, url, delimiter);
+        }
+        
+        @Override
+        public SimpleFileRatingDAO snapshot() {
+            return create();
         }
     }
     

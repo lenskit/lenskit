@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.grouplens.common.cursors.Cursor;
@@ -33,6 +34,8 @@ import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.dao.AbstractDataAccessObject;
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.AbstractRatingCursor;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.MutableRating;
@@ -54,13 +57,44 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     public static final int COL_RATING = 4;
     public static final int COL_TIMESTAMP = 5;
     
+    /**
+     * Factory for creating JDBC DAOs. If the underlying database may be
+     * modified by other processes while a build is running, this factory can be
+     * configured to take an in-memory snapshot of the database (see
+     * {@link #setSnapshotting(boolean)}). By default, this is <tt>false</tt>
+     * and the database is assumed to be immutable.
+     */
     public static class Factory implements DAOFactory {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
+        private volatile boolean takeSnapshot = false;
         
         public Factory(String url, SQLStatementFactory config) {
             cxnUrl = url;
             factory = config;
+        }
+        
+        /**
+         * Query whether this factory takes in-memory snapshots.
+         * 
+         * @return <tt>true</tt> if the factory is configured to take in-memory
+         *         snapshots of the database.
+         */
+        public boolean isSnapshotting() {
+            return takeSnapshot;
+        }
+        
+        /**
+         * Set whether the {@link #snapshot()} method should take a snapshot or
+         * just return a collection. If the database may be modified by other
+         * code while open, set this to <tt>true</tt>.
+         * 
+         * @param take Whether to take an in-memory snapshot of the database in
+         *            the {@link #snapshot()} method.
+         */
+        public Factory setSnapshotting(boolean take) {
+            takeSnapshot = take;
+            return this;
         }
         
         @Override
@@ -77,8 +111,28 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             return new JDBCRatingDAO(new JDBCDataSession(dbc, factory), true);
         }
         
-        public JDBCRatingDAO open(Connection existingConnection) {
-            return new JDBCRatingDAO(new JDBCDataSession(existingConnection, factory), false);
+        @Override
+        public DataAccessObject snapshot() {
+            DataAccessObject dao = create();
+            if (takeSnapshot) {
+                try {
+                    List<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
+                    return new EventCollectionDAO(ratings);
+                } finally {
+                    dao.close();
+                }
+            } else {
+                return dao;
+            }
+        }
+        
+        /**
+         * Wrap an existing database connection in a DAO.
+         * @param cxn A database connection to use.
+         * @return A DAO backed by the connection.
+         */
+        public JDBCRatingDAO open(Connection cxn) {
+            return new JDBCRatingDAO(new JDBCDataSession(cxn, factory), false);
         }
     }
     

@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.BasicUserHistory;
@@ -47,20 +49,29 @@ import com.google.common.collect.Lists;
 
 /**
  * Data source backed by a collection of events.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class EventCollectionDAO extends AbstractDataAccessObject {
+    /**
+     * Factory for creating event collection DAOs.  It assumes that the collection
+     * is not modified by other code, so a singleton DAO is created and returned
+     * for both {@link #create()} and {@link #snapshot()}.
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     *
+     */
+    @ThreadSafe
     public static class Factory implements DAOFactory {
         private final Collection<? extends Event> events;
-        private transient EventCollectionDAO singleton;
+        private transient volatile  EventCollectionDAO singleton;
         
         public Factory(Collection<? extends Event> ratings) {
             this.events = ratings;
         }
         
         @Override
-        public EventCollectionDAO create() {
+        public synchronized EventCollectionDAO create() {
             if (singleton == null) {
                 singleton = new EventCollectionDAO(events);
                 singleton.requireItemCache();
@@ -68,6 +79,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             }
             
             return singleton;
+        }
+        
+        @Override
+        public EventCollectionDAO snapshot() {
+            return create();
         }
     }
     
