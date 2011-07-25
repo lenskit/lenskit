@@ -58,9 +58,9 @@ import org.picocontainer.lifecycle.StartableLifecycleStrategy;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory {
-    private final Map<Class<? extends Annotation>, Object> annotationBindings;
-    private final Map<Class<?>, Object> defaultBindings;
+public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable {
+    private HashMap<Class<? extends Annotation>, Object> annotationBindings;
+    private HashMap<Class<?>, Object> defaultBindings;
     private DAOFactory daoFactory;
     
     /**
@@ -114,7 +114,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     @SuppressWarnings("unchecked")
-    public synchronized void set(Class<? extends Annotation> param, Number instance) {
+    public void set(Class<? extends Annotation> param, Number instance) {
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
         if (Number.class.isAssignableFrom(paramType))
             instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, instance);
@@ -124,7 +124,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     /**
-     * Set the instnace to be used for a particular component.
+     * Set the instance to be used for a particular component.
      * 
      * <p><b>Note:</b> LensKit does not currently support multiple component
      * types with the same annotation.</p>
@@ -133,7 +133,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @param type The component's type.
      * @param instance The component instance.
      */
-    public synchronized <T> void setComponent(Class<? extends Annotation> annot, Class<T> type, T instance) {
+    public <T> void setComponent(Class<? extends Annotation> annot, Class<T> type, T instance) {
         // Proceed with normal instance binding
         validateAnnotation(annot);
         
@@ -153,7 +153,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * @param param The component annotation.
      * @param instanceType The type to use for this component.
      */
-    public synchronized <T> void setComponent(Class<? extends Annotation> param, Class<T> type, Class<? extends T> instanceType) {
+    public <T> void setComponent(Class<? extends Annotation> param, Class<T> type, Class<? extends T> instanceType) {
         // FIXME: Actually use the type
         // FIXME: validate type hierarchy, people can break it with raw types
         validateAnnotation(param);
@@ -177,7 +177,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * (must be annotated with {@link Parameter}).
      * @param type The type of component to be built.
      */
-    public synchronized <T> void setBuilder(Class<? extends Annotation> param, Class<T> type, Class<? extends Builder<? extends T>> builderType) {
+    public <T> void setBuilder(Class<? extends Annotation> param, Class<T> type, Class<? extends Builder<? extends T>> builderType) {
         validateAnnotation(param);
         if (builderType != null) {
             // Verify that the builder generates the appropriate type
@@ -190,7 +190,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         updateBindings(annotationBindings, param, builderType);
     }
     
-    public synchronized <M> void setComponent(Class<M> type, Class<? extends M> instanceType) {
+    public <M> void setComponent(Class<M> type, Class<? extends M> instanceType) {
         if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify that the instanceType is actually a subtype
@@ -206,7 +206,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
-    public synchronized <M> void setComponent(Class<M> type, M instance) {
+    public <M> void setComponent(Class<M> type, M instance) {
         if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify instance is actually a subtype
@@ -218,7 +218,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         updateBindings(defaultBindings, type, instance);
     }
     
-    public synchronized <M> void setBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
+    public <M> void setBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
         if (superType == null)
             throw new NullPointerException("Super-type cannot be null");
         if (builderType != null) {
@@ -231,7 +231,28 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         updateBindings(defaultBindings, superType, builderType);
     }
     
-    private void validateAnnotation(Class<? extends Annotation> param) {
+    /**
+     * Clone the recommender engine factory.  The only connection retained to
+     * the original factory is that the DAO factory is shared.  The component
+     * and parameter settings are entirely independent.
+     * @return A clone of this recommender engine factory.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public synchronized LenskitRecommenderEngineFactory clone() {
+        LenskitRecommenderEngineFactory dup;
+        try {
+            dup = (LenskitRecommenderEngineFactory) super.clone();
+        } catch (CloneNotSupportedException e) {
+            /* should never happen - we are cloneable. */
+            throw new RuntimeException(e);
+        }
+        dup.annotationBindings = (HashMap<Class<? extends Annotation>, Object>) annotationBindings.clone();
+        dup.defaultBindings = (HashMap<Class<?>, Object>) defaultBindings.clone();
+        return dup;
+    }
+    
+    private static void validateAnnotation(Class<? extends Annotation> param) {
         if (param == null)
             throw new NullPointerException("Annotation cannot be null");
         

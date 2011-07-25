@@ -118,17 +118,13 @@ public class AlgorithmInstance {
     public Recommender buildRecommender(DataAccessObject dao, RatingSnapshot sharedSnapshot) {
         if (factory == null)
             throw new IllegalStateException("no factory set");
+
+        // Copy the factory & set up a shared rating snapshot
+        LenskitRecommenderEngineFactory fac2 = factory.clone();
+        fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
         
-        RecommenderEngine engine;
-        synchronized (factory) {
-            factory.setComponent(RatingSnapshot.class, sharedSnapshot);
-            try {
-                engine = factory.create(dao);
-            } finally {
-                factory.setComponent(RatingSnapshot.class, (RatingSnapshot) null);
-            }
-        }
-        
+        RecommenderEngine engine = fac2.create(dao);
+
         return engine.open(dao, false);
     }
     
