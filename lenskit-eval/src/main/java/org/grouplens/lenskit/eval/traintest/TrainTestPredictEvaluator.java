@@ -42,6 +42,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
+import org.grouplens.lenskit.eval.TaskTimer;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.grouplens.lenskit.util.LazyValue;
@@ -176,7 +177,11 @@ public class TrainTestPredictEvaluator {
                 @Override
                 public SharedRatingSnapshot call() {
                     logger.info("Loading snapshot for {}", name);
-                    return loadSnapshot(daoMgr);
+                    TaskTimer timer = new TaskTimer();
+                    SharedRatingSnapshot snap = loadSnapshot(daoMgr);
+                    logger.info("Rating snapshot for {} loaded in {}", 
+                                name, timer);
+                    return snap;
                 }
             });
         final LazyValue<List<Event>> preload =
@@ -184,9 +189,13 @@ public class TrainTestPredictEvaluator {
                 @Override
                 public List<Event> call() {
                     logger.info("Preloading ratings for {}", name);
+                    TaskTimer timer = new TaskTimer();
                     DataAccessObject dao = daoMgr.create();
                     try {
-                        return Cursors.makeList(dao.getEvents());
+                        List<Event> events = Cursors.makeList(dao.getEvents());
+                        logger.info("Ratings for {} preloaded in {}",
+                                    name, timer);
+                        return events;
                     } finally {
                         dao.close();
                     }

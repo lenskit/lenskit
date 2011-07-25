@@ -226,9 +226,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             }
             break;
         case TIMESTAMP:
-            if (timestampColumn == null)
-                throw new UnsupportedQueryException();
-            query.append(" ORDER BY " + timestampColumn);
+            /* If we don't have timestamps, we return in any order. */
+            if (timestampColumn != null) {
+                query.append(" ORDER BY " + timestampColumn);
+            }
             break;
         default:
             throw new UnsupportedQueryException();
