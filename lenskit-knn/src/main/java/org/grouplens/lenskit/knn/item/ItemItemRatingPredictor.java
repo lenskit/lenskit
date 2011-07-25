@@ -93,6 +93,10 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
             // FIXME: Take advantage of the fact that the neighborhood is sorted
             ScoredLongList neighbors = model.getNeighbors(item);
             
+            if (neighbors == null) {
+                unpredItems.add(item);
+                continue;
+            }
             ScoredLongListIterator niter = neighbors.iterator();
             while (niter.hasNext()) {
                 long oi = niter.nextLong();
