@@ -63,4 +63,9 @@ public class TaskTimer {
         s.append(String.format("%ds", secs % 60));
         return s.toString();
     }
+    
+    @Override
+    public String toString() {
+        return elapsedPretty();
+    }
 }
