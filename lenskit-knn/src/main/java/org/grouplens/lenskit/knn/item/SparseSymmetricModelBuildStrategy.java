@@ -18,20 +18,13 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Build strategy that uses symmetric similarities and avoids computing similarity
@@ -39,52 +32,18 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class SparseSymmetricModelBuildStrategy implements
-        ItemItemModelBuildStrategy {
-    private static final Logger logger = LoggerFactory.getLogger(SparseSymmetricModelBuildStrategy.class);
-    private final SimilarityMatrixAccumulatorFactory matrixFactory;
-    private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
-
+class SparseSymmetricModelBuildStrategy extends SparseModelBuildStrategy {
     SparseSymmetricModelBuildStrategy(SimilarityMatrixAccumulatorFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
-        matrixFactory = mfact;
-        similarityFunction = sim;
+        super(mfact, sim);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-     */
     @Override
-    public SimilarityMatrix buildMatrix(BuildState state) {
-        final SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
-        final int nitems = state.itemCount;
-        logger.debug("Building matrix with {} rows", nitems);
-        for (int i = 0; i < nitems; i++) {
-            final SparseVector v = state.itemRatings.get(i);
-            final IntSet candidates = new IntOpenHashSet();
-            final LongIterator uiter = v.keySet().iterator();
-            while (uiter.hasNext()) {
-                long user = uiter.next();
-                IntSortedSet uitems = state.userItemSets.get(user).headSet(i);
-                candidates.addAll(uitems);
-            }
-
-            final IntIterator iter = candidates.iterator();
-            while (iter.hasNext()) {
-                final int j = iter.nextInt();
-                final double sim = similarityFunction.similarity(v,
-                        state.itemRatings.get(j));
-                builder.putSymmetric(i,j,sim);
-            }
-        }
-        return builder.build();
+    protected LongSet subset(LongSortedSet userItems, long outerItem) {
+        return userItems.headSet(outerItem);
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
-     */
+    
     @Override
-    public boolean needsUserItemSets() {
-        return true;
+    protected void put(SimilarityMatrixAccumulator ma, long i, long j, double sim) {
+        ma.putSymmetric(i, j, sim);
     }
-
 }

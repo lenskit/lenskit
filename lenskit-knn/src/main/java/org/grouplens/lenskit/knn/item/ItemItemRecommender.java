@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
-import org.grouplens.lenskit.util.IndexedItemScore;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -43,8 +42,12 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
         this.predictor = predictor;
     }
     
+    /**
+     * Compute the predictable items from the neighborhood.
+     */
     @Override
     public LongSet getPredictableItems(UserRatingVector user) {
+        // FIXME This method incorrectly assumes the model is symmetric
         ItemItemModel model = predictor.getModel();
     	if (model.getBaselinePredictor() != null) {
             return model.getItemUniverse();
@@ -53,9 +56,7 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
             LongIterator iter = user.keySet().iterator();
             while (iter.hasNext()) {
                 final long item = iter.nextLong();
-                for (IndexedItemScore n: model.getNeighbors(item)) {
-                    items.add(model.getItem(n.getIndex()));
-                }
+                items.addAll(model.getNeighbors(item));
             }
             return items;
         }

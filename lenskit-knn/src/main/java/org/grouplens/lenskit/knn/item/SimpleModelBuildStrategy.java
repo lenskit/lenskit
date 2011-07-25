@@ -18,9 +18,11 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
@@ -44,30 +46,50 @@ class SimpleModelBuildStrategy implements
         this.similarityFunction = similarity;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-     */
     @Override
-    public SimilarityMatrix buildMatrix(BuildState state) {
-        final int nitems = state.itemCount;
-        logger.debug("Building matrix with {} rows");
-        SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
-        for (int i = 0; i < nitems; i++) {
-            for (int j = 0; j < nitems; j++) {
+    public SimilarityMatrix buildMatrix(ItemItemModelBuilder state) {
+        final int nitems = state.getItemCount();
+        logger.debug("Building matrix with {} rows", nitems);
+        LongSortedSet items = state.getItems();
+        SimilarityMatrixAccumulator builder = matrixFactory.create(items);
+        LongIterator iit = items.iterator();
+        while (iit.hasNext()) {
+            final long i = iit.nextLong();
+            LongIterator jit = innerIterator(items, i);
+            while (jit.hasNext()) {
+                final long j = jit.nextLong();
                 if (i == j) continue;
-                double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-                builder.put(i, j, sim);
+                double sim = similarityFunction.similarity(state.itemVector(i), state.itemVector(j));
+                put(builder, i, j, sim);
             }
         }
         return builder.build();
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
+    
+    /**
+     * Get the iterator for the inner loop over the items.
+     * @param items The item collection.
+     * @param outer The item we're at in the outer loop.
+     * @return The iterator to use for the inner loop.
      */
+    protected LongIterator innerIterator(LongSortedSet items, long outer) {
+        return items.iterator();
+    }
+
     @Override
     public boolean needsUserItemSets() {
         return false;
+    }
+
+    /**
+     * @param ma
+     * @param i
+     * @param j
+     * @param sim
+     */
+    protected void put(SimilarityMatrixAccumulator ma, long i, long j,
+                       double sim) {
+        ma.put(i, j, sim);
     }
 
 }

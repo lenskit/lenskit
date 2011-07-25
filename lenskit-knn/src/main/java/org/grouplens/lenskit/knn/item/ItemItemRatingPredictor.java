@@ -19,29 +19,26 @@
 package org.grouplens.lenskit.knn.item;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.min;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.ScoredLongListIterator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.util.IndexedItemScore;
 import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,13 +63,6 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     public ItemItemModel getModel() {
         return model;
     }
-    
-    private static final Comparator<IndexedItemScore> itemComp = new Comparator<IndexedItemScore>() {
-        @Override
-        public int compare(IndexedItemScore s1, IndexedItemScore s2) {
-            return Double.compare(s2.getScore(), s1.getScore());
-        }
-    };
 
     @Override
     public SparseVector predict(UserRatingVector user, Collection<Long> items) {
@@ -80,6 +70,8 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         MutableSparseVector normed = user.mutableCopy();
         norm.apply(normed);
 
+        // FIXME Make sure the direction on similarities is right for asym.
+        
         LongSortedSet iset;
         if (items instanceof LongSortedSet)
             iset = (LongSortedSet) items;
@@ -88,28 +80,34 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         
         MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
         
+        // We ran reuse accumulators
+        ScoredItemAccumulator accum = new ScoredItemAccumulator(neighborhoodSize);
+        
         // for each item, compute its prediction
         LongIterator iter = iset.iterator();
-        List<IndexedItemScore> scores = new ArrayList<IndexedItemScore>();
         LongList unpredItems = new LongArrayList();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
             
             // find all potential neighbors
-            for (IndexedItemScore score: model.getNeighbors(item)) {
-                long oi = model.getItem(score.getIndex());
+            // FIXME: Take advantage of the fact that the neighborhood is sorted
+            ScoredLongList neighbors = model.getNeighbors(item);
+            
+            ScoredLongListIterator niter = neighbors.iterator();
+            while (niter.hasNext()) {
+                long oi = niter.nextLong();
+                double score = niter.getScore();
                 if (normed.containsKey(oi))
-                    scores.add(score);
+                    accum.put(oi, score);
             }
-            Collections.sort(scores, itemComp);
             
             // accumulate prediction
-            final int nnbrs = min(neighborhoodSize, scores.size());
             double sum = 0;
             double weight = 0;
-            for (IndexedItemScore s: scores.subList(0, nnbrs)) {
-                long oi = model.getItem(s.getIndex());
-                double sim = s.getScore();
+            niter = accum.finish().iterator();
+            while (niter.hasNext()) {
+                long oi = niter.nextLong();
+                double sim = niter.getScore();
                 weight += abs(sim);
                 sum += sim * normed.get(oi);
             }
@@ -117,7 +115,6 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
                 preds.set(item, sum / weight);
             else
                 unpredItems.add(item);
-            scores.clear();
         }
 
         // denormalize the predictions

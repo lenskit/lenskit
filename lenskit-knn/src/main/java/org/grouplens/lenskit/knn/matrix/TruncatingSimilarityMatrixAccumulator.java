@@ -18,14 +18,17 @@
  */
 package org.grouplens.lenskit.knn.matrix;
 
-import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
+import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.knn.params.ModelSize;
-import org.grouplens.lenskit.util.IndexedItemScore;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,189 +56,60 @@ public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAc
         }
 
         @Override
-        public TruncatingSimilarityMatrixAccumulator create(int nrows) {
-            return new TruncatingSimilarityMatrixAccumulator(maxNeighbors, nrows);
-        }
-    }
-    
-    static final class Score implements IndexedItemScore {
-        private final int index;
-        private final double score;
-
-        public Score(final int i, final double s) {
-            index = i;
-            score = s;
-        }
-
-        @Override
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public double getScore() {
-            return score;
+        public TruncatingSimilarityMatrixAccumulator create(LongCollection entities) {
+            return new TruncatingSimilarityMatrixAccumulator(maxNeighbors, entities);
         }
     }
 
     /**
-     * Priority queue for tracking the <i>N</i> highest-scoring items.
-     *
-     * This uses a {@link DoubleHeapIndirectPriorityQueue} to maintain a heap of
-     * items in parallel unboxed arrays of scores and indices.  The arrays are
-     * of length <var>maxNeighbors</var>+1; this allows them to have one free
-     * slot to hold a new item when the queue is already full.
-     *
-     * Iteration order is undefined for this class.
-     *
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
+     * Matrix implementation.
      */
-    static final class ScoreQueue implements Iterable<IndexedItemScore>, Serializable {
-        private static final long serialVersionUID = -3045709409904317792L;
-        private final int maxNeighbors;
-        private double[] scores;
-        private int[] indices;
-        private int slot;
-        private int size;
-        private DoubleHeapIndirectPriorityQueue heap;
-
-        public ScoreQueue(int nbrs) {
-            this.maxNeighbors = nbrs;
-            scores = new double[nbrs+1];
-            indices = new int[nbrs+1];
-            slot = 0;
-            size = 0;
-            heap = new DoubleHeapIndirectPriorityQueue(scores);
-        }
-
-        @Override
-        public Iterator<IndexedItemScore> iterator() {
-            return new Iterator<IndexedItemScore>() {
-                private int pos = 0;
-
-                @Override
-                public boolean hasNext() {
-                    return pos < size;
-                }
-
-                // TODO Support fast iteration
-                @Override
-                public IndexedItemScore next() {
-                    if (pos < size) {
-                        int i = pos;
-                        if (i >= slot) i++;   // skip the slot
-                        Score s = new Score(indices[i], scores[i]);
-                        pos += 1;
-                        return s;
-                    } else {
-                        throw new NoSuchElementException();
-                    }
-                }
-
-                @Override
-                public void remove() {
-                    throw new UnsupportedOperationException();
-                }
-            };
-        }
-
-        public boolean isEmpty() {
-            return size == 0;
-        }
-
-        public int size() {
-            return size;
-        }
-
-        public void put(int i, double sim) {
-            if (heap == null)
-                throw new RuntimeException("attempt to add to finished queue");
-            assert slot <= maxNeighbors;
-            assert heap.size() == size;
-            /* Store the new item. The slit shows where the current item is,
-             * and then we deal with it based on whether we're oversized.
-             */
-            indices[slot] = i;
-            scores[slot] = sim;
-            heap.enqueue(slot);
-
-            if (size == maxNeighbors) {
-                // already at capacity, so remove and reuse smallest item
-                slot = heap.dequeue();
-            } else {
-                // we have free space, so increment the slot and size
-                slot += 1;
-                size += 1;
-            }
-        }
-
-        /**
-         * Free internal structures needed for adding items.  After calling this
-         * method, it is an error to call {@link #put(int, double)}.
-         */
-        public void finish() {
-            heap = null;
-        }
-    }
-
     private static class Matrix implements SimilarityMatrix, Serializable {
         private static final long serialVersionUID = 6721870011265541987L;
-        private ScoreQueue[] rows;
-        public Matrix(ScoreQueue[] rows) {
-            this.rows = rows;
+        private Long2ObjectMap<ScoredLongList> neighborhoods;
+        public Matrix(Long2ObjectMap<ScoredLongList> data) {
+            neighborhoods = data;
         }
+        
         @Override
-        public Iterable<IndexedItemScore> getNeighbors(int i) {
-            return rows[i];
-        }
-        @Override
-        public int size() {
-            return rows.length;
+        public ScoredLongList getNeighbors(long item) {
+            return neighborhoods.get(item);
         }
     }
 
-    private ScoreQueue[] rows;
+    private Long2ObjectMap<ScoredItemAccumulator> rows;
     private final int maxNeighbors;
-    private final int itemCount;
 
-    public TruncatingSimilarityMatrixAccumulator(int neighborhoodSize, int nitems) {
-        logger.debug("Using neighborhood size of {} for {} items", neighborhoodSize, nitems);
-        maxNeighbors = neighborhoodSize;
-        this.itemCount = nitems;
-        setup();
-    }
-
-    private void setup() {
-        rows = new ScoreQueue[itemCount];
-        for (int i = 0; i < itemCount; i++) {
-            rows[i] = new ScoreQueue(maxNeighbors);
+    public TruncatingSimilarityMatrixAccumulator(@ModelSize int size,
+            LongCollection entities) {
+        logger.debug("Using neighborhood size of {} for {} items",
+                     size, entities.size());
+        maxNeighbors = size;
+        rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
+        LongIterator it = entities.iterator();
+        while (it.hasNext()) {
+            rows.put(it.nextLong(), new ScoredItemAccumulator(maxNeighbors));
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.util.SimilarityMatrix#finish()
-     */
     @Override
     public SimilarityMatrix build() {
-        for (ScoreQueue row: rows) {
-            row.finish();
+        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
+        for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
+            data.put(row.getLongKey(), row.getValue().finish());
         }
-        Matrix m = new Matrix(rows);
+        Matrix m = new Matrix(data);
         rows = null;
         return m;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.util.SimilarityMatrix#put(int, int, double)
-     */
     @Override
-    public void put(int i1, int i2, double sim) {
-        if (sim < 0.0) return;
-        if (i2 < 0 || i2 >= rows.length)
-            throw new IndexOutOfBoundsException();
+    public void put(long i1, long i2, double sim) {
+        // We only accept nonnegative similarities
+        if (sim <= 0.0) return;
+        
         // concurrent read-only array access permitted
-        ScoreQueue q = rows[i1];
+        ScoredItemAccumulator q = rows.get(i1);
         // synchronize on this row to add item
         synchronized (q) {
             q.put(i2, sim);
@@ -243,15 +117,10 @@ public class TruncatingSimilarityMatrixAccumulator implements SimilarityMatrixAc
     }
 
     @Override
-    public void putSymmetric(int i1, int i2, double sim) {
+    public void putSymmetric(long i1, long i2, double sim) {
         if (sim > 0.0) {
             put(i1, i2, sim);
             put(i2, i1, sim);
         }
-    }
-
-    @Override
-    public int size() {
-        return itemCount;
     }
 }

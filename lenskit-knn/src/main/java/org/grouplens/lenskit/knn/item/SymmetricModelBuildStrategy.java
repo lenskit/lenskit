@@ -18,55 +18,34 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Build strategy that harnesses the symmetric nature of some similarity functions.
+ * Build strategy that harnesses the symmetric nature of some similarity
+ * functions. It simply overrides {@link #innerIterator(LongSortedSet, long)} to
+ * return an iterator only considering items after the outer item.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-class SymmetricModelBuildStrategy implements
-        ItemItemModelBuildStrategy {
-    private final static Logger logger = LoggerFactory.getLogger(SymmetricModelBuildStrategy.class);
-
-    private final SimilarityMatrixAccumulatorFactory matrixFactory;
-    private final Similarity<? super SparseVector> similarityFunction;
-
+class SymmetricModelBuildStrategy extends SimpleModelBuildStrategy {
     SymmetricModelBuildStrategy(SimilarityMatrixAccumulatorFactory matrixFactory, Similarity<? super SparseVector> similarity) {
-        this.matrixFactory = matrixFactory;
-        this.similarityFunction = similarity;
+        super(matrixFactory, similarity);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-     */
     @Override
-    public SimilarityMatrix buildMatrix(BuildState state) {
-        final int nitems = state.itemCount;
-        logger.debug("Building matrix with {} rows");
-        SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
-        for (int i = 0; i < nitems; i++) {
-            for (int j = i+1; j < nitems; j++) {
-                double sim = similarityFunction.similarity(state.itemRatings.get(i), state.itemRatings.get(j));
-                builder.putSymmetric(i, j, sim);
-            }
-        }
-        return builder.build();
+    protected LongIterator innerIterator(LongSortedSet items, long outer) {
+        return items.iterator(outer);
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
-     */
+    
     @Override
-    public boolean needsUserItemSets() {
-        return false;
+    protected void put(SimilarityMatrixAccumulator ma, long i, long j, double sim) {
+        ma.putSymmetric(i, j, sim);
     }
-
 }

@@ -101,13 +101,17 @@ public class ScoredItemAccumulator {
     
     /**
      * Accumulate the scores into a sorted scored list and reset the
-     * accumulator.
+     * accumulator.  Items are sorted in decreasing order of score.
+     * 
+     * <p>After this method is called, the accumulator is ready for another
+     * accumulation.
      * 
      * @return The sorted, scored list of items.
      */
     public ScoredLongList finish() {
         assert size == heap.size();
         int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
             indices[i] = heap.dequeue();
         }
@@ -115,6 +119,8 @@ public class ScoredItemAccumulator {
         for (int i: indices) {
             l.add(items[i], scores[i]);
         }
+        
+        assert heap.isEmpty();
         
         size = 0;
         slot = 0;

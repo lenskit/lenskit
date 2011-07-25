@@ -38,18 +38,17 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.knn.matrix.TruncatingSimilarityMatrixAccumulator;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestItemItemRecommender {
 
-	private static Recommender itemItemRecommender;
-	private static DynamicRatingItemRecommender recommender;
-	private static DataAccessObject dao;
+	private Recommender session;
+	private DynamicRatingItemRecommender recommender;
 
-	@BeforeClass
-	public static void setup() {
+	@Before
+	public void setup() {
 		List<Rating> rs = new ArrayList<Rating>();
 		rs.add(Ratings.make(1, 6, 4));
 		rs.add(Ratings.make(2, 6, 2));
@@ -76,9 +75,8 @@ public class TestItemItemRecommender {
 		/*factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
 		                     IdentityVectorNormalizer.class);*/
 		RecommenderEngine engine = factory.create();
-		itemItemRecommender = engine.open();
-		recommender = itemItemRecommender.getDynamicItemRecommender();
-		dao = manager.create();
+		session = engine.open();
+		recommender = session.getDynamicItemRecommender();
 	}
 
 
@@ -272,13 +270,13 @@ public class TestItemItemRecommender {
 	}
 	
 	//Helper method to retrieve user's user and create SparseVector
-	private static UserRatingVector getRatingVector(long user) {
+	private UserRatingVector getRatingVector(long user) {
+	    DataAccessObject dao = session.getRatingDataAccessObject();
 		return UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
 	}
 	
-	@AfterClass
-	public static void cleanUp() {
-		itemItemRecommender.close();
-		dao.close();
+	@After
+	public void cleanUp() {
+		session.close();
 	}
 }

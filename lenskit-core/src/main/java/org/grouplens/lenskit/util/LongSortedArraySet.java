@@ -166,17 +166,11 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         return i;
     }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#comparator()
-     */
     @Override
     public LongComparator comparator() {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#firstLong()
-     */
     @Override
     public long firstLong() {
         if (end - start > 0)
@@ -185,18 +179,6 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             throw new NoSuchElementException();
     }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#headSet(long)
-     */
-    @Override
-    public LongSortedSet headSet(long key) {
-        int nend = findIndexAlways(key);
-        return new LongSortedArraySet(data, start, nend, true);
-    }
-
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#iterator(long)
-     */
     @Override
     public LongBidirectionalIterator iterator(long key) {
         int index = findIndexAlways(key);
@@ -205,42 +187,6 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         return new IterImpl(index);
     }
 
-    private final class IterImpl extends AbstractLongBidirectionalIterator {
-        private int pos;
-        public IterImpl(int start) {
-            pos = start;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return pos < end;
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return pos > start;
-        }
-
-        @Override
-        public long nextLong() {
-            if (hasNext())
-                return data[pos++];
-            else
-                throw new NoSuchElementException();
-        }
-
-        @Override
-        public long previousLong() {
-            if (hasPrevious())
-                return data[--pos];
-            else
-                throw new NoSuchElementException();
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#lastLong()
-     */
     @Override
     public long lastLong() {
         if (end - start > 0)
@@ -249,33 +195,27 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             throw new NoSuchElementException();
     }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#subSet(long, long)
-     */
     @Override
     public LongSortedSet subSet(long startKey, long endKey) {
         return new LongSortedArraySet(data, findIndexAlways(startKey), findIndexAlways(endKey), true);
     }
+    
+    @Override
+    public LongSortedSet headSet(long key) {
+        int nend = findIndexAlways(key);
+        return new LongSortedArraySet(data, start, nend, true);
+    }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.LongSortedSet#tailSet(long)
-     */
     @Override
     public LongSortedSet tailSet(long key) {
         return new LongSortedArraySet(data, findIndexAlways(key), end, true);
     }
 
-    /* (non-Javadoc)
-     * @see it.unimi.dsi.fastutil.longs.AbstractLongSortedSet#iterator()
-     */
     @Override
     public LongBidirectionalIterator iterator() {
         return new IterImpl(start);
     }
 
-    /* (non-Javadoc)
-     * @see java.util.AbstractCollection#size()
-     */
     @Override
     public int size() {
         return end - start;
@@ -334,5 +274,38 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      */
     public static LongSortedSet ofList(LongArrayList list) {
         return new LongSortedArraySet(list.elements(), 0, list.size());
+    }
+    
+    private final class IterImpl extends AbstractLongBidirectionalIterator {
+        private int pos;
+        public IterImpl(int start) {
+            pos = start;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return pos < end;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return pos > start;
+        }
+
+        @Override
+        public long nextLong() {
+            if (hasNext())
+                return data[pos++];
+            else
+                throw new NoSuchElementException();
+        }
+
+        @Override
+        public long previousLong() {
+            if (hasPrevious())
+                return data[--pos];
+            else
+                throw new NoSuchElementException();
+        }
     }
 }

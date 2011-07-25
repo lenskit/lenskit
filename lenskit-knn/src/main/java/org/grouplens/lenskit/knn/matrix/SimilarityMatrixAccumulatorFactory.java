@@ -18,13 +18,30 @@
  */
 package org.grouplens.lenskit.knn.matrix;
 
+import it.unimi.dsi.fastutil.longs.LongCollection;
+
 import org.grouplens.lenskit.params.meta.DefaultClass;
 
 /**
+ * Factory class for creating new matrix accumulators.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 @DefaultClass(TruncatingSimilarityMatrixAccumulator.Factory.class)
 public interface SimilarityMatrixAccumulatorFactory {
-    public SimilarityMatrixAccumulator create(int nrows);
+    
+    /**
+     * Construct a new matrix accumulator to accumulate similarities for the
+     * specified entities.
+     * 
+     * @review Do we want to pass entities into this? Do we even want to use a
+     *         factory, or directly inject accumulators or accumulator providers
+     *         that use the DAO to get the items.
+     * 
+     * @param entities The items or users whose neighborhoods are to be
+     *            collected.
+     * @return A new similarity matrix accumulator.
+     */
+    public SimilarityMatrixAccumulator create(LongCollection entities);
 }

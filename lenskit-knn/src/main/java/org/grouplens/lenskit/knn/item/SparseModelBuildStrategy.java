@@ -18,20 +18,16 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.item.ItemItemModelBuilder.BuildState;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
 import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Model build strategy that avoids computing similarities between items with
@@ -41,7 +37,6 @@ import org.slf4j.LoggerFactory;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private static final Logger logger = LoggerFactory.getLogger(SparseModelBuildStrategy.class);
     private final SimilarityMatrixAccumulatorFactory matrixFactory;
     private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
@@ -50,39 +45,61 @@ class SparseModelBuildStrategy implements
         similarityFunction = sim;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#buildMatrix(org.grouplens.lenskit.knn.ItemItemRecommenderBuilder.BuildState)
-     */
     @Override
-    public SimilarityMatrix buildMatrix(BuildState state) {
-        final SimilarityMatrixAccumulator builder = matrixFactory.create(state.itemCount);
-        logger.debug("Building with AVL tree implementation");
-        final int nitems = state.itemCount;
-        for (int i = 0; i < nitems; i++) {
-            final SparseVector v = state.itemRatings.get(i);
-            final IntSet candidates = new IntOpenHashSet();
+    public SimilarityMatrix buildMatrix(ItemItemModelBuilder state) {
+        final LongSortedSet items = state.getItems();
+        final SimilarityMatrixAccumulator builder = matrixFactory.create(items);
+        
+        LongIterator iit = items.iterator();
+        while (iit.hasNext()) {
+            final long i = iit.nextLong();
+            final SparseVector v = state.itemVector(i);
+            final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
-                long user = uiter.next();
-                IntSortedSet uitems = state.userItemSets.get(user);
-                candidates.addAll(uitems);
+                final long user = uiter.next();
+                LongSortedSet uitems = state.userItemSet(user);
+                LongSet uss = subset(uitems, i);
+                candidates.addAll(uss);
             }
-            candidates.rem(i);
 
-            final IntIterator iter = candidates.iterator();
+            final LongIterator iter = candidates.iterator();
             while (iter.hasNext()) {
-                final int j = iter.nextInt();
-                final double sim = similarityFunction.similarity(v,
-                        state.itemRatings.get(j));
-                builder.put(i,j,sim);
+                final long j = iter.nextLong();
+                if (i == j) continue;
+                
+                final double sim = 
+                        similarityFunction.similarity(v, state.itemVector(j));
+                put(builder, i, j, sim);
             }
         }
         return builder.build();
     }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.knn.SimilarityMatrixBuildStrategy#needsUserItemSets()
+    
+    /**
+     * Subset a user's items for use with the outer item.
+     * 
+     * @param userItems The items for the current user.
+     * @param outerItem The item in the outer loop.
+     * @return The user's items to use as candidate neighbors for
+     *         <var>outerItem</var>. This list is allowed to contain
+     *         <var>outerItem</var>, as it is transparently skipped.
      */
+    protected LongSet subset(LongSortedSet userItems, long outerItem) {
+        return userItems;
+    }
+    
+    /**
+     * Store a similarity.
+     * @param builder The accumulator in which to store the similarity.
+     * @param i The first item.
+     * @param j The second item.
+     * @param sim
+     */
+    protected void put(SimilarityMatrixAccumulator builder, long i, long j, double sim) {
+        builder.put(i,  j, sim);
+    }
+
     @Override
     public boolean needsUserItemSets() {
         return true;

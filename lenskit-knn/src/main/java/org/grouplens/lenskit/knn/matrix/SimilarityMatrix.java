@@ -18,15 +18,12 @@
  */
 package org.grouplens.lenskit.knn.matrix;
 
-import org.grouplens.lenskit.util.IndexedItemScore;
+import org.grouplens.lenskit.data.ScoredLongList;
 
 /**
  * <p>
  * Interface for similarity matrices for collaborative filtering.
- * <p>
- * This interface uses numeric indexes for everything. The indexes are expected
- * to be contiguous starting with 0. Similarity matrices will usually have a
- * fixed size that cannot be exceeded.
+ * 
  * <p>
  * It is strongly recommended that SimilarityMatrix implementations also
  * implement Serializable or Externalizable.
@@ -35,20 +32,10 @@ import org.grouplens.lenskit.util.IndexedItemScore;
  */
 public interface SimilarityMatrix {
     /**
-     * @return The number of entities for which this matrix has similarities
+     * Retrieve the neighbors for an entity.
+     * 
+     * @param i The entity ID.
+     * @return The neighbors of <var>i</var>.
      */
-    int size();
-
-    /**
-     * Retrieve the neighbors for an item.
-     *
-     * @param i
-     *            All neighbors for item <tt>i</tt>. This is all similarity
-     *            scores for which <tt>i</tt> was passed as the first argument
-     *            to {@link SimilarityMatrixAccumulator#put(int, int, double)}.
-     * @return A map of neighbors to similarity scores.
-     * @throws IndexOutOfBoundsException
-     *             if the index is invalid.
-     */
-    Iterable<IndexedItemScore> getNeighbors(int i);
+    ScoredLongList getNeighbors(long i);
 }
