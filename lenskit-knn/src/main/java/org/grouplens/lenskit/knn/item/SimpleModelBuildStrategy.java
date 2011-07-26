@@ -23,9 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,58 +36,38 @@ class SimpleModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
-    private final SimilarityMatrixAccumulatorFactory matrixFactory;
     private final Similarity<? super SparseVector> similarityFunction;
 
-    SimpleModelBuildStrategy(SimilarityMatrixAccumulatorFactory matrixFactory, Similarity<? super SparseVector> similarity) {
-        this.matrixFactory = matrixFactory;
+    SimpleModelBuildStrategy(Similarity<? super SparseVector> similarity) {
         this.similarityFunction = similarity;
     }
 
     @Override
-    public SimilarityMatrix buildMatrix(ItemItemModelBuilder state) {
-        final int nitems = state.getItemCount();
-        logger.debug("Building matrix with {} rows", nitems);
-        LongSortedSet items = state.getItems();
-        SimilarityMatrixAccumulator builder = matrixFactory.create(items);
+    public void buildMatrix(ItemItemBuildContext context,
+                            ItemItemModelAccumulator accum) {
+        final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
+        logger.debug("Building {} model", symmetric ? "symmetric" : "asymmetric");
+        LongSortedSet items = context.getItems();
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
-            LongIterator jit = innerIterator(items, i);
+            // if it is symmetric, trim the item list.
+            LongIterator jit = symmetric ? items.iterator(i) : items.iterator();
             while (jit.hasNext()) {
                 final long j = jit.nextLong();
                 if (i == j) continue;
-                double sim = similarityFunction.similarity(state.itemVector(i), state.itemVector(j));
-                put(builder, i, j, sim);
+                double sim =
+                        similarityFunction.similarity(context.itemVector(i), 
+                                                      context.itemVector(j));
+                accum.put(i, j, sim);
+                if (symmetric)
+                    accum.put(j, i, sim);
             }
         }
-        return builder.build();
     }
     
-    /**
-     * Get the iterator for the inner loop over the items.
-     * @param items The item collection.
-     * @param outer The item we're at in the outer loop.
-     * @return The iterator to use for the inner loop.
-     */
-    protected LongIterator innerIterator(LongSortedSet items, long outer) {
-        return items.iterator();
-    }
-
     @Override
     public boolean needsUserItemSets() {
         return false;
     }
-
-    /**
-     * @param ma
-     * @param i
-     * @param j
-     * @param sim
-     */
-    protected void put(SimilarityMatrixAccumulator ma, long i, long j,
-                       double sim) {
-        ma.put(i, j, sim);
-    }
-
 }

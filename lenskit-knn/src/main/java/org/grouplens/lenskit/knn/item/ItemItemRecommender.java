@@ -49,7 +49,7 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
     public LongSet getPredictableItems(UserRatingVector user) {
         // FIXME This method incorrectly assumes the model is symmetric
         ItemItemModel model = predictor.getModel();
-    	if (model.getBaselinePredictor() != null) {
+    	if (predictor.getBaseline() != null) {
             return model.getItemUniverse();
         } else {
             LongSet items = new LongOpenHashSet();

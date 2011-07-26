@@ -27,6 +27,9 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.ScoredLongList;
@@ -36,7 +39,10 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
+import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.slf4j.Logger;
@@ -51,6 +57,9 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;
+    protected @Nonnull VectorNormalizer<? super UserRatingVector> normalizer =
+            new IdentityVectorNormalizer();
+    protected @Nullable BaselinePredictor baseline;
     
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model, 
                                    @NeighborhoodSize int nnbrs) {
@@ -60,13 +69,32 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         logger.debug("Creating rating predictor with neighborhood size {}", neighborhoodSize);
     }
     
+    @Nonnull
+    public VectorNormalizer<? super UserRatingVector> getNormalizer() {
+        return normalizer;
+    }
+    
+    @UserRatingVectorNormalizer
+    public void setNormalizer(VectorNormalizer<? super UserRatingVector> norm) {
+        normalizer = norm;
+    }
+    
+    @Nullable
+    public BaselinePredictor getBaseline() {
+        return baseline;
+    }
+    
+    public void setBaseline(@Nullable BaselinePredictor pred) {
+        baseline = pred;
+    }
+    
     public ItemItemModel getModel() {
         return model;
     }
 
     @Override
     public SparseVector predict(UserRatingVector user, Collection<Long> items) {
-        VectorTransformation norm = model.normalizingTransformation(user);
+        VectorTransformation norm = normalizer.makeTransformation(user);
         MutableSparseVector normed = user.mutableCopy();
         norm.apply(normed);
 
@@ -125,7 +153,6 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         norm.unapply(preds);
         
         // apply the baseline if applicable
-        final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpredItems.isEmpty()) {
         	logger.trace("Filling {} items from baseline", unpredItems.size());
             SparseVector basePreds = baseline.predict(user, unpredItems);

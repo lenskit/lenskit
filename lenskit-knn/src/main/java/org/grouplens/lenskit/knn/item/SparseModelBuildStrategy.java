@@ -25,9 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulator;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 
 /**
  * Model build strategy that avoids computing similarities between items with
@@ -37,30 +35,30 @@ import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private final SimilarityMatrixAccumulatorFactory matrixFactory;
     private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
 
-    SparseModelBuildStrategy(SimilarityMatrixAccumulatorFactory mfact, OptimizableVectorSimilarity<SparseVector> sim) {
-        matrixFactory = mfact;
+    SparseModelBuildStrategy(OptimizableVectorSimilarity<SparseVector> sim) {
         similarityFunction = sim;
     }
 
     @Override
-    public SimilarityMatrix buildMatrix(ItemItemModelBuilder state) {
-        final LongSortedSet items = state.getItems();
-        final SimilarityMatrixAccumulator builder = matrixFactory.create(items);
+    public void buildMatrix(ItemItemBuildContext context,
+                            ItemItemModelAccumulator accum) {
+        final LongSortedSet items = context.getItems();
+        final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
         
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
-            final SparseVector v = state.itemVector(i);
+            final SparseVector v = context.itemVector(i);
             final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
                 final long user = uiter.next();
-                LongSortedSet uitems = state.userItemSet(user);
-                LongSet uss = subset(uitems, i);
-                candidates.addAll(uss);
+                LongSortedSet uitems = context.userItems(user);
+                if (symmetric)
+                    uitems = uitems.headSet(i);
+                candidates.addAll(uitems);
             }
 
             final LongIterator iter = candidates.iterator();
@@ -69,35 +67,12 @@ class SparseModelBuildStrategy implements
                 if (i == j) continue;
                 
                 final double sim = 
-                        similarityFunction.similarity(v, state.itemVector(j));
-                put(builder, i, j, sim);
+                        similarityFunction.similarity(v, context.itemVector(j));
+                accum.put(i, j, sim);
+                if (symmetric)
+                    accum.put(j, i, sim);
             }
         }
-        return builder.build();
-    }
-    
-    /**
-     * Subset a user's items for use with the outer item.
-     * 
-     * @param userItems The items for the current user.
-     * @param outerItem The item in the outer loop.
-     * @return The user's items to use as candidate neighbors for
-     *         <var>outerItem</var>. This list is allowed to contain
-     *         <var>outerItem</var>, as it is transparently skipped.
-     */
-    protected LongSet subset(LongSortedSet userItems, long outerItem) {
-        return userItems;
-    }
-    
-    /**
-     * Store a similarity.
-     * @param builder The accumulator in which to store the similarity.
-     * @param i The first item.
-     * @param j The second item.
-     * @param sim
-     */
-    protected void put(SimilarityMatrixAccumulator builder, long i, long j, double sim) {
-        builder.put(i,  j, sim);
     }
 
     @Override

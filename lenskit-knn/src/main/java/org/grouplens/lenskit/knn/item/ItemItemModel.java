@@ -18,59 +18,49 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 
+/**
+ * Item-item similarity model. It stores and makes available the similarities
+ * between items. These similarities are post-normalization, so code using them
+ * should use the same normalizations used by the builder to make use of the
+ * similarity scores.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * 
+ */
 @Built
 @DefaultBuilder(ItemItemModelBuilder.class)
 public class ItemItemModel implements Serializable {
     private static final long serialVersionUID = -5986236982760043379L;
     
-    private final SimilarityMatrix matrix;
-    private final VectorNormalizer<? super UserRatingVector> normalizer;
-    private final BaselinePredictor baseline;
+    private static final ScoredLongList EMPTY_LIST = new ScoredLongArrayList();
+    
+    private final Long2ObjectMap<ScoredLongList> similarityMatrix;
     private final LongSortedSet itemUniverse;
-    
-    public ItemItemModel(SimilarityMatrix matrix,
-                         VectorNormalizer<? super UserRatingVector> norm, BaselinePredictor baseline,
-                         LongSortedSet items) {
-        this.normalizer = norm;
-        this.baseline = baseline;
-        this.matrix = matrix;
-        this.itemUniverse = items;
-    }
-    
-    public VectorNormalizer<? super UserRatingVector> getNormalizer() {
-        return normalizer;
-    }
-    
-    public BaselinePredictor getBaselinePredictor() {
-        return baseline;
+
+    public ItemItemModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
+        itemUniverse = universe;
+        similarityMatrix = matrix;
     }
     
     public LongSortedSet getItemUniverse() {
         return itemUniverse;
     }
     
-    public SimilarityMatrix getSimilarityMatrix() {
-        return matrix;
-    }
-    
     public ScoredLongList getNeighbors(long item) {
-        return matrix.getNeighbors(item);
-    }
-    
-    public VectorTransformation normalizingTransformation(UserRatingVector user) {
-        return normalizer.makeTransformation(user);
+        ScoredLongList nbrs = similarityMatrix.get(item);
+        if (nbrs == null)
+            nbrs = EMPTY_LIST;
+        return nbrs;
+            
     }
 }

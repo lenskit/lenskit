@@ -18,9 +18,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrix;
-
-
 /**
  * A strategy for computing similarity matrices.
  *
@@ -41,8 +38,8 @@ public interface ItemItemModelBuildStrategy {
 
     /**
      * Build the item-item matrix.
-     * @param state The build state containing data needed to build the matrix.
-     * @return The completed similarity matrix
+     * @param context The data to be used to compute similarities.
+     * @param accum The accumulator into which similarities should be stored.
      */
-    SimilarityMatrix buildMatrix(ItemItemModelBuilder state);
+    void buildMatrix(ItemItemBuildContext context, ItemItemModelAccumulator accum);
 }

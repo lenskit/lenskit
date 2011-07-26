@@ -36,8 +36,6 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
-import org.grouplens.lenskit.knn.matrix.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.matrix.TruncatingSimilarityMatrixAccumulator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,8 +66,6 @@ public class TestItemItemRecommender {
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
 		factory.setComponent(DynamicRatingItemRecommender.class, ItemItemRecommender.class);
-		factory.setComponent(SimilarityMatrixAccumulatorFactory.class, 
-				TruncatingSimilarityMatrixAccumulator.Factory.class);
 		// this is the default
 		// FIXME Let this work @mludwig
 		/*factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
