@@ -164,6 +164,24 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
     
     /**
+     * Implement {@link DataAccessObject#getUserHistory(long)} by delegating
+     * to {@link #getUserEvents(long)}.
+     */
+    @Override
+    public UserHistory<Event> getUserHistory(long user) {
+        return new BasicUserHistory<Event>(user, Cursors.makeList(getUserEvents(user))); 
+    }
+    
+    /**
+     * Implement {@link DataAccessObject#getUserHistory(long,Class)} by delegating
+     * to {@link #getUserEvents(long,Class)}.
+     */
+    @Override
+    public <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type) {
+        return new BasicUserHistory<E>(user, Cursors.makeList(getUserEvents(user, type))); 
+    }
+    
+    /**
      * Implement {@link DataAccessObject#getItemEvents(long)} by delegating
      * to {@link #getItemEvents(long, Class)}.
      */

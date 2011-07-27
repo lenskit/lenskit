@@ -14,6 +14,10 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Added methods to <<<DataAccessObject>>>, with default
+    implementations in the abstract implementation, to allow user
+    history objects to be directly retrieved for given users.
+
   * Added snapshotting as an explicit concept to the data layer.
     <<<DAOFactory>>> now has a <<<snapshot()>>> method, which is
     supposed to return an immutable snapshot of the data for

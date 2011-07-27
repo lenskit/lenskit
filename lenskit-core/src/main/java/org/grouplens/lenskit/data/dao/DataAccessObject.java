@@ -105,6 +105,16 @@ public interface DataAccessObject extends Closeable {
      *             this data source.
      */
     <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order);
+    
+    /**
+     * Get the user history for a user.
+     */
+    UserHistory<Event> getUserHistory(long user);
+    
+    /**
+     * Get the user history for a user filtered by type.
+     */
+    <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type);
 
     /**
      * Get all user event histories from the system. This serves as a
