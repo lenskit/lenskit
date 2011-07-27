@@ -18,14 +18,18 @@
  */
 package org.grouplens.lenskit.data;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 import java.util.List;
 
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.event.Event;
 
+import com.google.common.base.Predicate;
+
 /**
- * Represents a user profile, associating a list of events with a user.  The
+ * Represents a user profile, associating a list of events with a user. The
  * events are in timestamp order.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -34,7 +38,34 @@ import org.grouplens.lenskit.data.event.Event;
 public interface UserHistory<E extends Event> extends List<E> {
     /**
      * Retrieve the user ID.
+     * 
      * @return The ID of the user who owns this history.
      */
     long getUserId();
+
+    /**
+     * Filter the user history to only contain elements of a particular type.
+     * 
+     * @param type The type of elements to include.
+     * @return A user history containing only the elements of the specified
+     *         type.
+     */
+    <T extends E> UserHistory<T> filter(Class<T> type);
+
+    /**
+     * Filter the user history with a predicate.
+     * 
+     * @param pred The predicate to with which to filter the history.
+     * @return A copy of this user history containing only elements which match
+     *         the predicate.
+     */
+    UserHistory<E> filter(Predicate<? super E> pred);
+    
+    /**
+     * Get the set of items touched by events in this history.  Only nonnegative
+     * item IDs are considered.
+     *
+     * @return The set of all item IDs used in events in this history.
+     */
+    LongSet itemSet();
 }

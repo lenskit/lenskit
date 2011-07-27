@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.data;
 
-import java.util.AbstractList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +32,7 @@ import org.grouplens.lenskit.data.event.Event;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class BasicUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
+public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;
     private List<E> events;
 
