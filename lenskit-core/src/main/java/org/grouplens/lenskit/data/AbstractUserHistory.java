@@ -43,7 +43,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     /**
      * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
      */@Override
-    public <T extends E> UserHistory<T> filter(Class<T> type) {
+    public <T extends Event> UserHistory<T> filter(Class<T> type) {
         List<T> events = Lists.newArrayList(Iterables.filter(this, type));
         return new BasicUserHistory<T>(getUserId(), events);
     }

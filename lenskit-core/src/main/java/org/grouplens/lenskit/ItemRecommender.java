@@ -32,8 +32,7 @@ import org.grouplens.lenskit.data.ScoredLongList;
  */
 public interface ItemRecommender {
     /**
-     * Recommend all possible items for a user. The exclude set is the set of
-     * items the user has rated.
+     * Recommend all possible items for a user using the default exclude set.
      * 
      * @param user The user ID.
      * @return The sorted list of scored items.
@@ -42,9 +41,8 @@ public interface ItemRecommender {
     ScoredLongList recommend(long user);
 
     /**
-     * Recommend up to <var>n</var> items for a user. The exclude set is the set
-     * of keys in <var>ratings</var> (so items the user has rated are not
-     * recommended).
+     * Recommend up to <var>n</var> items for a user using the default exclude
+     * set.
      * 
      * @param user The user ID.
      * @param n The number of recommendations to return.
@@ -54,37 +52,44 @@ public interface ItemRecommender {
     ScoredLongList recommend(long user, int n);
 
     /**
-     * Recommend all possible items for a user from a set of candidates. The
-     * exclude set is the set of keys in <var>ratings</var> (so items the user
-     * has rated are not recommended).
+     * Recommend all possible items for a user from a set of candidates using
+     * the default exclude set.
      * 
      * @param user The user ID.
      * @param candidates The candidate set (can be null to represent the
-     *            universe).
+     *        universe).
      * @return The sorted list of scored items.
      * @see #recommend(long, int, Set, Set)
      */
     ScoredLongList recommend(long user, @Nullable Set<Long> candidates);
 
     /**
-     * Produce a set of recommendations for the user.
+     * Produce a set of recommendations for the user. This is the most general
+     * recommendation method, allowing the recommendations to be constrained by
+     * both a candidate set and an exclude set. The exclude set is applied to
+     * the candidate set, so the final effective candidate set is
+     * <var>canditates</var> minus <var>exclude</var>.
+     * 
+     * <p>
+     * If the exclude set is <tt>null</tt>, a default exclude set is used. The
+     * exact definition of this can vary between implementations, but will be a
+     * sensible set designed to exclude items the user likely already has (e.g.
+     * recommenders operating on user ratings will generally exclude items the
+     * user has rated, and likewise purchase-based recommenders will typically
+     * exclude items the user has purchased).
      * 
      * @param user The user's ID
      * @param n The number of ratings to return. If negative, recommend all
-     *            possible items.
+     *        possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *            <tt>null</tt>, the candidate set is considered to contain the
-     *            universe.
-     * @param exclude A set of items to be excluded. If <tt>null</tt>, it is
-     *            considered the empty set. Exclusions are applied to the
-     *            candidate set, so the final candidate set is
-     *            <var>candidates</var> minus <var>exclude</var>.
+     *        <tt>null</tt>, all items are considered candidates.
+     * @param exclude A set of items to be excluded. If <tt>null</tt>, a default
+     *        exclude set is used.
      * @return A list of recommended items. If the recommender cannot assign
-     *         meaningful scores, it is allowed to leave them {@link Double#NaN}
-     *         . For recommenders where it is relevant, the items should be
-     *         ordered in decreasing order of score (but this is not a hard
-     *         requirement - e.g. set recommenders are allowed to be more
-     *         flexible).
+     *         meaningful scores, the scores will be {@link Double#NaN}. For
+     *         most scoring recommenders, the items should be ordered in
+     *         decreasing order of score. This is not a hard requirement — e.g.
+     *         set recommenders are allowed to be more flexible.
      */
     ScoredLongList recommend(long user, int n, @Nullable Set<Long> candidates,
                              @Nullable Set<Long> exclude);

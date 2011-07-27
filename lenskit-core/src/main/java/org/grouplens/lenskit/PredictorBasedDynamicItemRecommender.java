@@ -20,36 +20,43 @@
 package org.grouplens.lenskit;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+
+import com.google.common.collect.Iterables;
 
 /**
  * Base class for dynamic rating-based item recommenders that use a rating
  * predictor to generate recommendations. Implements all methods required by
- * {@link AbstractDynamicRatingItemRecommender}.
+ * {@link AbstractDynamicItemRecommender}.
  */
-public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRecommender {
+public class PredictorBasedDynamicItemRecommender extends AbstractDynamicItemRecommender {
 	
 	protected final DynamicRatingPredictor predictor;
 	
-	protected PredictorBasedDRItemRecommender(DataAccessObject dao,
+	protected PredictorBasedDynamicItemRecommender(DataAccessObject dao,
 			DynamicRatingPredictor predictor) {
 		super(dao);
 		this.predictor = predictor;
 	}
 
 	@Override
-    protected ScoredLongList recommend(UserRatingVector user, int n, LongSet candidates, LongSet exclude) {
+    protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
 		if (candidates == null)
 			candidates = getPredictableItems(user);
+		if (exclude == null)
+		    exclude = getDefaultExcludes(user);
 		if (!exclude.isEmpty())
 			candidates = LongSortedArraySet.setDifference(candidates, exclude);
 
@@ -70,13 +77,28 @@ public class PredictorBasedDRItemRecommender extends AbstractDynamicRatingItemRe
 	}
 	
 	/**
+     * Get the default exclude set for a user.  The base implementation gets
+     * all their rated items.
+     * 
+     * @param user The user ID.
+     * @return The set of items to exclude.
+     */
+    protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
+        LongSet excludes = new LongOpenHashSet();
+        for (Rating r: Iterables.filter(user, Rating.class)) {
+            excludes.add(r.getItemId());
+        }
+        return excludes;
+    }
+	
+	/**
 	 * Determine the items for which predictions can be made for a certain user.
 	 * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
 	 * @param ratings The user rating vector.
 	 * @return All items for which predictions can be made for the user.
 	 */
-	protected LongSet getPredictableItems(UserRatingVector ratings) {
+	protected LongSet getPredictableItems(UserHistory<? extends Event> ratings) {
         return Cursors2.makeSet(dao.getItems());
     }
 }

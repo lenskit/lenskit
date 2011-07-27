@@ -21,8 +21,9 @@ package org.grouplens.lenskit;
 
 import java.util.Collection;
 
-import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -35,34 +36,30 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractDynamicRatingPredictor extends AbstractRatingPredictor implements DynamicRatingPredictor {
-    private DataAccessObject dao;
+    protected final DataAccessObject dao;
 
     protected AbstractDynamicRatingPredictor(DataAccessObject dao) {
         this.dao = dao;
     }
     
-    protected DataAccessObject getDAO() {
-        return dao;
-    }
-    
-    protected Collection<Rating> getUserRatings(long user) {
-        return Cursors.makeList(dao.getUserEvents(user, Rating.class));
+    protected UserHistory<Rating> getUserRatings(long user) {
+        return dao.getUserHistory(user, Rating.class);
     }
     
     /**
-     * Delegate to {@link #predict(long, java.util.Collection, java.util.Collection)}
+     * Delegate to {@link #predict(UserHistory, Collection)}.
      */
     @Override
     public SparseVector predict(long user, Collection<Long> items) {
-        Collection<Rating> ratings = getUserRatings(user);
-        return predict(user, ratings, items);
+        UserHistory<Rating> ratings = getUserRatings(user);
+        return predict(ratings, items);
     }
     
     /**
      * Delegate to {@link #predict(UserRatingVector, Collection)}.
      */
     @Override
-    public SparseVector predict(long user, Collection<Rating> ratings, Collection<Long> items) {
-        return predict(UserRatingVector.fromRatings(user, ratings), items);
+    public SparseVector predict(UserHistory<? extends Event> profile, Collection<Long> items) {
+        return predict(UserRatingVector.fromRatings(profile.filter(Rating.class)), items);
     }
 }

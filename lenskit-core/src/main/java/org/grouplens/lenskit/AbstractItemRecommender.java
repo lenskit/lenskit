@@ -19,14 +19,12 @@
 package org.grouplens.lenskit;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSets;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 
@@ -39,30 +37,19 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * LensKit release.
  */
 public abstract class AbstractItemRecommender implements ItemRecommender {
-
-	protected final DataAccessObject dao;
-	
-	protected AbstractItemRecommender(DataAccessObject dao) {
-		this.dao = dao;
-	}
-	
-	protected UserRatingVector getRatings(long user) {
-		return UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
-	}
-	
-	@Override
+    @Override
 	public ScoredLongList recommend(long user) {
-		return recommend(user, -1, null, getRatings(user).keySet());
+		return recommend(user, -1, null, null);
 	}
 
 	@Override
 	public ScoredLongList recommend(long user, int n) {
-		return recommend(user, n, null, getRatings(user).keySet());
+		return recommend(user, n, null, null);
 	}
 
 	@Override
 	public ScoredLongList recommend(long user, Set<Long> candidates) {
-		return recommend(user, -1, candidates, getRatings(user).keySet());
+		return recommend(user, -1, candidates, null);
 	}
 
 	@Override
@@ -70,21 +57,23 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 			Set<Long> exclude) {
 		LongSet cs = CollectionUtils.fastSet(candidates);
 		LongSet es = CollectionUtils.fastSet(exclude);
-		if (es == null)
-			es = LongSets.EMPTY_SET;
 		return recommend(user, n, cs, es);
 	}
 	
-	/**
-	 * Implementation method for recommender services.
-	 * @param user The user ID.
-	 * @param n The number of items to return, or negative to return all possible
-	 * items.
-	 * @param candidates The candidate set.
-	 * @param exclude The set of excluded items (the public methods convert
-	 * null sets to the empty set, so this parameter is always non-null).
-     * @return A list of <tt>ScoredId</tt> objects representing recommended items.
-	 * @see ItemRecommender#recommend(long, int, Set, Set)
-	 */
-	protected abstract ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude);
+	    /**
+     * Implementation method for recommender services.
+     * 
+     * @param user The user ID.
+     * @param n The number of items to return, or negative to return all
+     *        possible items.
+     * @param candidates The candidate set.
+     * @param exclude The set of excluded items, or <tt>null</tt> to use the
+     *        default exclude set.
+     * @return A list of <tt>ScoredId</tt> objects representing recommended
+     *         items.
+     * @see ItemRecommender#recommend(long, int, Set, Set)
+     */
+	protected abstract ScoredLongList recommend(long user, int n, 
+	                                            @Nullable LongSet candidates,
+	                                            @Nullable LongSet exclude);
 }

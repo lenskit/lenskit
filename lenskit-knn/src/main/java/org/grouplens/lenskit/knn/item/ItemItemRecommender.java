@@ -22,15 +22,17 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
+import org.grouplens.lenskit.PredictorBasedDynamicItemRecommender;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
+public class ItemItemRecommender extends PredictorBasedDynamicItemRecommender {
     protected final ItemItemRatingPredictor predictor;
     
     /**
@@ -46,14 +48,15 @@ public class ItemItemRecommender extends PredictorBasedDRItemRecommender {
      * Compute the predictable items from the neighborhood.
      */
     @Override
-    public LongSet getPredictableItems(UserRatingVector user) {
+    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
         // FIXME This method incorrectly assumes the model is symmetric
         ItemItemModel model = predictor.getModel();
     	if (predictor.getBaseline() != null) {
             return model.getItemUniverse();
         } else {
             LongSet items = new LongOpenHashSet();
-            LongIterator iter = user.keySet().iterator();
+            LongSet userItems = user.filter(Rating.class).itemSet();
+            LongIterator iter = userItems.iterator();
             while (iter.hasNext()) {
                 final long item = iter.nextLong();
                 items.addAll(model.getNeighbors(item));

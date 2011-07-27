@@ -73,14 +73,14 @@ public interface Recommender {
     ItemRecommender getItemRecommender();
     
     /**
-     * Get the recommender's rating-based dynamic item recommender.
+     * Get the recommender's dynamic item recommender.
      * 
-     * @return The rating-based dynamic item recommender for this recommender
-     *         configuration, or <tt>null</tt> if rating-based dynamic item
-     *         recommendation is not supported.
+     * @return The dynamic item recommender for this recommender configuration,
+     *         or <tt>null</tt> if rating-based dynamic item recommendation is
+     *         not supported.
      */
     @Nullable
-    DynamicRatingItemRecommender getDynamicItemRecommender();
+    DynamicItemRecommender getDynamicItemRecommender();
     
     /**
      * Close the recommender session.  Underlying data connections are released

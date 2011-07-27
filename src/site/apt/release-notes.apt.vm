@@ -14,6 +14,32 @@ Release ${project.version}
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+* Item Recommendation API
+
+  To support more types of recommenders easily, we have changed the
+  way the dynamic recommendation components (formerly
+  <<<DynamicRatingItemRecommender>>>) work.  We now have a single
+  dynamic interface, <<<DynamicItemRecommender>>>, which operates on
+  user event histories.  The abstract implementations have been
+  accordingly renamed.
+
+  <<Compatibility Change>>: We have also changed the behavior of item
+  recommenders when a <<<null>>> exclude set is provided.  Previously,
+  this was equivalent to the empty set.  It is now equivalent to a
+  default exclude set which will be recommender-specific but generally
+  a set of items the user is unlikely to need recommended (such as all
+  items they have rated).  All recommenders have been updated with
+  this change.
+
+* Other Changes
+
+  * Changed <<<DynamicRatingPredictor.predict(long, Collection,
+    Collection)>>> to take a <<<UserHistory>>> of events rather than a
+    collection of ratings.
+
+  * Made abstract recommenders and predictors uniformly expose the DAO
+    as a protected final field.
+
   * Added methods to <<<DataAccessObject>>>, with default
     implementations in the abstract implementation, to allow user
     history objects to be directly retrieved for given users.

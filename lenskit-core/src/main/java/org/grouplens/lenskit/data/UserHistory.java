@@ -50,7 +50,7 @@ public interface UserHistory<E extends Event> extends List<E> {
      * @return A user history containing only the elements of the specified
      *         type.
      */
-    <T extends E> UserHistory<T> filter(Class<T> type);
+    <T extends Event> UserHistory<T> filter(Class<T> type);
 
     /**
      * Filter the user history with a predicate.

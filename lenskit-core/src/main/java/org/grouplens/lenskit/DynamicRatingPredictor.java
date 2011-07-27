@@ -22,7 +22,8 @@ import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
@@ -36,21 +37,22 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
 public interface DynamicRatingPredictor {
     /**
      * Generate predictions for a collection of items.
-     * @param user the user ID
-     * @param ratings The user's ratings
+     * 
+     * @param profile The user's profile
      * @param items the items for which predictions are desired
-     * @return A mapping from item IDs to predicted preference.  This mapping
-     * may not contain all requested items.
+     * @return A mapping from item IDs to predicted preference. This mapping may
+     *         not contain all requested items.
      */
     @Nonnull
-    public SparseVector predict(long user, Collection<Rating> ratings, Collection<Long> items);
+    public SparseVector predict(UserHistory<? extends Event> profile, Collection<Long> items);
     
     /**
      * Generate predictions for a collection of items.
+     * 
      * @param ratings The user rating vector
      * @param items the items for which predictions are desired
-     * @return A mapping from item IDs to predicted preference.  This mapping
-     * may not contain all requested items.
+     * @return A mapping from item IDs to predicted preference. This mapping may
+     *         not contain all requested items.
      */
     @Nonnull
     public SparseVector predict(UserRatingVector ratings, Collection<Long> items);

@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import org.grouplens.lenskit.PredictorBasedDRItemRecommender;
+import org.grouplens.lenskit.PredictorBasedDynamicItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRecommender extends PredictorBasedDRItemRecommender {
+public class UserUserRecommender extends PredictorBasedDynamicItemRecommender {
 	protected final UserUserRatingPredictor predictor;
 
 	public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
