@@ -25,7 +25,27 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.data.ScoredLongList;
 
 /**
- * Interface for recommending items.
+ * Interface for recommending items. Several methods are provided, of varying
+ * generality.
+ * 
+ * <p>
+ * The core idea of the recommend API is to recommend <i>n</i> items for a user,
+ * where the items recommended are taken from a set of candidate items and
+ * further constrained by an exclude set of forbidden items. Items in the
+ * candidate set but not in the exclude set are considered viable for
+ * recommendation.
+ * 
+ * <p>
+ * By default, the candidate set is the universe of all items the recommender
+ * knows about. The default exclude set is somewhat more subtle. Its exact
+ * definition varies across implementations, but will be the set of items the
+ * system believes the user will not be interested in by virtue of already
+ * having or knowing about them. For example, rating-based recommenders will
+ * exclude the items the user has rated, and purchase-based recommenders will
+ * typically exclude items the user has purchased. Some implementations may
+ * allow this to be configured. Client code always has the option of manually
+ * specifying the exclude set, however, so applications with particular needs in
+ * this respect can manually provide the sets they need respected.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
@@ -69,14 +89,6 @@ public interface ItemRecommender {
      * both a candidate set and an exclude set. The exclude set is applied to
      * the candidate set, so the final effective candidate set is
      * <var>canditates</var> minus <var>exclude</var>.
-     * 
-     * <p>
-     * If the exclude set is <tt>null</tt>, a default exclude set is used. The
-     * exact definition of this can vary between implementations, but will be a
-     * sensible set designed to exclude items the user likely already has (e.g.
-     * recommenders operating on user ratings will generally exclude items the
-     * user has rated, and likewise purchase-based recommenders will typically
-     * exclude items the user has purchased).
      * 
      * @param user The user's ID
      * @param n The number of ratings to return. If negative, recommend all
