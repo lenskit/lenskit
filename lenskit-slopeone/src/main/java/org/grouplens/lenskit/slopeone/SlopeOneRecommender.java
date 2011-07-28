@@ -36,8 +36,8 @@ public class SlopeOneRecommender extends PredictorBasedDynamicItemRecommender {
 	private SlopeOneRatingPredictor predictor; 
 	
 	/**
-     * Construct a new recommender from a predictor.
-     * @param predictor The predictor to use.
+     * Construct a new recommender from a scorer.
+     * @param scorer The scorer to use.
      */
     public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
         super(dao, predictor);

@@ -21,8 +21,8 @@ package org.grouplens.lenskit.baseline;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.grouplens.lenskit.DynamicRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
@@ -32,10 +32,11 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
  * recommender algorithm, all BaselinePredictors are required to be Serializable
  * so that they can be easily written to or read from a file.
  * 
- * <p>Note that this class does not implement the {@link RatingPredictor} or
- * {@link DynamicRatingPredictor} interfaces - this is to allow it to operate free
- * of the DAO. If you want to use a baseline predictor as a {@link RatingPredictor},
- * see {@link BaselineRatingPredictor}.
+ * <p>
+ * Note that this class does not implement the {@link RatingPredictor} interface
+ * - this is to allow it to operate free of the DAO. If you want to use a
+ * baseline scorer as a {@link RatingPredictor}, see
+ * {@link BaselineRatingPredictor}.
  * 
  * @author Michael Ludwig
  * @see BaselineRatingPredictor
@@ -43,7 +44,7 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
 public interface BaselinePredictor extends Serializable {
     /**
      * Predict method that returns mutable sparse vectors.
-     * @see DynamicRatingPredictor#predict(UserRatingVector, Collection)
+     * @see RatingPredictor#score(UserHistory, Collection)
      */
     MutableSparseVector predict(UserRatingVector ratings, Collection<Long> items);
 }

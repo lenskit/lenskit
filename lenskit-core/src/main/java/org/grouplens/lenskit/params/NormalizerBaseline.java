@@ -29,8 +29,8 @@ import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
- * Baseline predictor used by the normalizer.  The {@link BaselineSubtractingNormalizer}
- * uses this annotation on its baseline predictor so that the normalization
+ * Baseline scorer used by the normalizer.  The {@link BaselineSubtractingNormalizer}
+ * uses this annotation on its baseline scorer so that the normalization
  * baseline can be set to a different baseline from the other baselines.
  */
 @Documented

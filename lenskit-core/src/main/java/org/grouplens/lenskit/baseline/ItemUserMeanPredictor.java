@@ -38,7 +38,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * Predictor that returns the user's mean offset from item mean rating for all
  * predictions.
  *
- * <p>This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
+ * <p>This implements the baseline scorer <i>p<sub>u,i</sub> = µ + b<sub>i</sub> +
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
@@ -78,7 +78,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     protected final double damping;
 
     /**
-     * Create a new predictor, this assumes ownership of the given map.
+     * Create a new scorer, this assumes ownership of the given map.
      * 
      * @param itemMeans
      * @param globalMean

@@ -44,11 +44,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rating predictor that returns the item's mean rating for all predictions.
+ * Rating scorer that returns the item's mean rating for all predictions.
  *
  * If the item has no ratings, the global mean rating is returned.
  *
- * This implements the baseline predictor <i>p<sub>u,i</sub> = µ + b<sub>i</sub></i>,
+ * This implements the baseline scorer <i>p<sub>u,i</sub> = µ + b<sub>i</sub></i>,
  * where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean µ).
  *
@@ -89,7 +89,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
     protected final double globalMean;
 
     /**
-     * Construct a new predictor. This assumes ownership of the provided map.
+     * Construct a new scorer. This assumes ownership of the provided map.
      * 
      * @param itemMeans A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.

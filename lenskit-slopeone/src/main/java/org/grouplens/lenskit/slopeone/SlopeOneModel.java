@@ -31,7 +31,7 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
  * A model for a <tt>SlopeOneRatingPredictor</tt> or <tt>WeightedSlopeOneRatingPredictor</tt>.
  * Stores calculated deviation values and number of co-rating users for each item pair.
  * Also contains a <tt>BaselinePredictor</tt> and the minimum and maximum rating values
- * for use by a predictor.
+ * for use by a scorer.
  */
 @Built
 @DefaultBuilder (SlopeOneModelBuilder.class)

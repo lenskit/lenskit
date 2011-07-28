@@ -271,7 +271,7 @@ public class TrainTestPredictEvaluator {
                         for (UserHistory<Rating> p: userProfiles) {
                             SparseVector ratings = UserRatingVector.fromRatings(p);
                             SparseVector predictions =
-                                pred.predict(p.getUserId(), ratings.keySet());
+                                pred.score(p.getUserId(), ratings.keySet());
                             acc.evaluatePrediction(p.getUserId(), ratings, predictions);
                         }
                     } finally {

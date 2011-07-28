@@ -23,6 +23,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 
 /**
  * Interface for recommending items. Several methods are provided, of varying
@@ -34,6 +36,11 @@ import org.grouplens.lenskit.data.ScoredLongList;
  * further constrained by an exclude set of forbidden items. Items in the
  * candidate set but not in the exclude set are considered viable for
  * recommendation.
+ * 
+ * <p>
+ * As with {@link ItemScorer}, this interface supports both ID-based and
+ * history-based recommendation. The {@link #canUseHistory()} method allows this
+ * to be queried.
  * 
  * <p>
  * By default, the candidate set is the universe of all items the recommender
@@ -105,4 +112,66 @@ public interface ItemRecommender {
      */
     ScoredLongList recommend(long user, int n, @Nullable Set<Long> candidates,
                              @Nullable Set<Long> exclude);
+    
+    /**
+     * Query whether this recommender can take advantage of user history.
+     * 
+     * @return <tt>true</tt> if the history-based methods can use the history,
+     *         or <tt>false</tt> if they will ignore it in favor of model-based
+     *         data.
+     */
+    boolean canUseHistory();
+    
+    /**
+     * Recommend all possible items for a user with the default exclude set.
+     * 
+     * @param profile The user profile.
+     * @return The sorted list of scored items.
+     * @see #recommend(UserHistory, int, Set, Set)
+     */
+    public ScoredLongList recommend(UserHistory<? extends Event> profile);
+    
+    /**
+     * Recommend up to <var>n</var> items for a user using the default exclude
+     * set.
+     * 
+     * @param profile The user profile.
+     * @param n The number of recommendations to return.
+     * @return The sorted list of scored items.
+     * @see #recommend(UserHistory, int, Set, Set)
+     */
+    public ScoredLongList recommend(UserHistory<? extends Event> profile, int n);
+
+    /**
+     * Recommend all possible items for a user from a set of candidates using
+     * the default exclude set.
+     * 
+     * @param profile The user profile.
+     * @param candidates The candidate set (can be null to represent the
+     *        universe).
+     * @return The sorted list of scored items.
+     * @see #recommend(UserHistory, int, Set, Set)
+     */
+    public ScoredLongList recommend(UserHistory<? extends Event> profile,
+            @Nullable Set<Long> candidates);
+
+    /**
+     * Produce a set of recommendations for the user.
+     * 
+     * @param profile The user profile.
+     * @param n The number of ratings to return. If negative, recommend all
+     *        possible items.
+     * @param candidates A set of candidate items which can be recommended. If
+     *        <tt>null</tt>, the candidate set is considered to contain the
+     *        universe.
+     * @param exclude A set of items to be excluded. If <tt>null</tt>, the
+     *        default exclude set is used. Exclusions are applied to the
+     *        candidate set, so the final candidate set is <var>candidates</var>
+     *        minus <var>exclude</var>.
+     * @return a list of scored recommendations, sorted in nondecreasing order
+     *         of score.
+     * @see ItemRecommender#recommend(long, int, Set, Set)
+     */
+    public ScoredLongList recommend(UserHistory<? extends Event> profile, int n,
+            @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
 }

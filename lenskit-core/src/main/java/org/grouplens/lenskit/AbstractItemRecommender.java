@@ -25,43 +25,108 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 
 /**
- * Base class for item recommenders.  It implements all methods required by
- * {@link ItemRecommender} by delegating them to a single method with a
- * Fastutil-based interface.
- * 
- * @fixme This should not use the rating DAO. That will change in a future
- * LensKit release.
+ * Base class for item recommenders. It implements all methods required by
+ * {@link ItemRecommender} by delegating them to general methods with
+ * fastutil-based interfaces.
  */
 public abstract class AbstractItemRecommender implements ItemRecommender {
+    protected final DataAccessObject dao;
+    
+    protected AbstractItemRecommender(DataAccessObject dao) {
+        this.dao = dao;
+    }
+    
+    /**
+     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     */
     @Override
-	public ScoredLongList recommend(long user) {
-		return recommend(user, -1, null, null);
-	}
+    public ScoredLongList recommend(long user) {
+        return recommend(user, -1, null, null);
+    }
 
-	@Override
-	public ScoredLongList recommend(long user, int n) {
-		return recommend(user, n, null, null);
-	}
+    /**
+     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(long user, int n) {
+        return recommend(user, n, null, null);
+    }
 
-	@Override
-	public ScoredLongList recommend(long user, Set<Long> candidates) {
-		return recommend(user, -1, candidates, null);
-	}
+    /**
+     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(long user, Set<Long> candidates) {
+        return recommend(user, -1, candidates, null);
+    }
 
-	@Override
-	public ScoredLongList recommend(long user, int n, Set<Long> candidates,
-			Set<Long> exclude) {
-		LongSet cs = CollectionUtils.fastSet(candidates);
-		LongSet es = CollectionUtils.fastSet(exclude);
-		return recommend(user, n, cs, es);
-	}
-	
-	    /**
-     * Implementation method for recommender services.
+    /**
+     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(long user, int n, Set<Long> candidates,
+                                    Set<Long> exclude) {
+        LongSet cs = CollectionUtils.fastSet(candidates);
+        LongSet es = CollectionUtils.fastSet(exclude);
+        return recommend(user, n, cs, es);
+    }
+
+    /**
+     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(UserHistory<? extends Event> ratings) {
+        return recommend(ratings, -1, null, null);
+    }
+
+    /**
+     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(UserHistory<? extends Event> ratings, int n) {
+        return recommend(ratings, n, null, null);
+    }
+
+    /**
+     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(UserHistory<? extends Event> ratings, Set<Long> candidates) {
+        return recommend(ratings, -1, CollectionUtils.fastSet(candidates), null);
+    }
+
+    /**
+     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     */
+    @Override
+    public ScoredLongList recommend(UserHistory<? extends Event> ratings, int n,
+            Set<Long> candidates, Set<Long> exclude) {
+        LongSet cs = CollectionUtils.fastSet(candidates);
+        LongSet es = CollectionUtils.fastSet(exclude);
+        return recommend(ratings, n, cs, es);
+    }
+    
+    /**
+     * Return <tt>true</tt>, indicating this recommender can use histories.
+     * Override this if the recommender actually doesn't.
+     */
+    @Override
+    public boolean canUseHistory() {
+        return true;
+    }
+    
+    /**
+     * Implementation method for ID-based recommendation.  All other ID-based
+     * methods are implemented in terms of this one, which in turn delegates to
+     * {@link #recommend(UserHistory, int, LongSet, LongSet)} with a history
+     * obtained by {@link #getUserHistory(long)}.
      * 
      * @param user The user ID.
      * @param n The number of items to return, or negative to return all
@@ -73,7 +138,35 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      *         items.
      * @see ItemRecommender#recommend(long, int, Set, Set)
      */
-	protected abstract ScoredLongList recommend(long user, int n, 
-	                                            @Nullable LongSet candidates,
-	                                            @Nullable LongSet exclude);
+    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
+        return recommend(getUserHistory(user), n, candidates, exclude);
+    }
+    
+    /**
+     * Get the history for the specified user. If a subclass can only take
+     * advantage of particular elements, it can override this method to filter
+     * based on them.
+     * 
+     * @param user The ID of the user whose history is requested.
+     * @return The history for the specified user.
+     */
+    protected UserHistory<? extends Event> getUserHistory(long user) {
+        return dao.getUserHistory(user);
+    }
+    
+    /**
+     * Implementation method for recommender services.
+     * 
+     * @param ratings The user rating vector.
+     * @param n The number of items to return, or negative to return all
+     *        possible items.
+     * @param candidates The candidate set.
+     * @param exclude The set of excluded items, or <tt>null</tt> for the
+     *        default exclude set.
+     * @return The recommendations with associated scores.
+     * @see ItemRecommender#recommend(UserHistory, int, Set, Set)
+     */
+    protected abstract ScoredLongList recommend(UserHistory<? extends Event> ratings, int n,
+                                                @Nullable LongSet candidates,
+                                                @Nullable LongSet exclude);
 }

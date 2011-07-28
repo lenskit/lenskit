@@ -23,25 +23,73 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.util.Collection;
 
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
  * Base class to make rating predictors easier to implement.  Delegates 
- * {@link #predict(long, long)} to {@link #predict(long, Collection)}.
+ * {@link #score(long, long)} to {@link #score(long, Collection)}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public abstract class AbstractRatingPredictor implements RatingPredictor {
+    protected final DataAccessObject dao;
 
+    protected AbstractRatingPredictor(DataAccessObject dao) {
+        this.dao = dao;
+    }
+    
     /**
-     * Delegate to {@link #predict(long, Collection)}.
+     * Get the user's history. Subclasses that only require a particular type of
+     * event can override this to filter the history.
+     * 
+     * @param user The user whose history is required.
+     * @return The event history for this user.
+     */
+    protected UserHistory<? extends Event> getUserHistory(long user) {
+        return dao.getUserHistory(user);
+    }
+    
+    /**
+     * Delegate to {@link #score(UserHistory, Collection)}.
      */
     @Override
-    public double predict(long user, long item) {
+    public SparseVector score(long user, Collection<Long> items) {
+        UserHistory<? extends Event> profile = getUserHistory(user);
+        return score(profile, items);
+    }
+
+    /**
+     * Delegate to {@link #score(long, Collection)}.
+     */
+    @Override
+    public double score(long user, long item) {
         LongList l = new LongArrayList(1);
         l.add(item);
-        SparseVector v = predict(user, l);
-        return v.get(item);
+        SparseVector v = score(user, l);
+        return v.get(item, Double.NaN);
+    }
+    
+    /**
+     * Default implementation can use history.  Override this ins ubclasses that
+     * don't.
+     */
+    @Override
+    public boolean canUseHistory() {
+        return true;
+    }
+    
+    /**
+     * Delegate to {@link #score(UserHistory, Collection)}
+     */
+    @Override
+    public double score(UserHistory<? extends Event> profile, long item) {
+        LongList l = new LongArrayList(1);
+        l.add(item);
+        SparseVector v = score(profile, l);
+        return v.get(item, Double.NaN);
     }
 }

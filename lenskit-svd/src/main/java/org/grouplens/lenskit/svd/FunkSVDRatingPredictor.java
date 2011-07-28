@@ -125,7 +125,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
     }
     
     @Override
-    public MutableSparseVector predict(long user, Collection<Long> items) {
+    public MutableSparseVector score(long user, Collection<Long> items) {
         int uidx = model.userIndex.getIndex(user);
         double[] uprefs = new double[model.featureCount];
         for (int i = 0; i < uprefs.length; i++) {

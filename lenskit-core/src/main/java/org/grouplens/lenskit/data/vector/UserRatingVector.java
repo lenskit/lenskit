@@ -29,6 +29,7 @@ import java.util.Iterator;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -159,6 +160,16 @@ public class UserRatingVector extends UserVector {
         if (!isSorted(keys, size))
             throw new IllegalArgumentException("item array not sorted");
         return new UserRatingVector(user, keys, values, size);
+    }
+
+    /**
+     * Construct a rating vector from the ratings in an event history.
+     * @param history The user history to use.
+     * @return A rating vector extracted from the event history.
+     */
+    public static UserRatingVector fromEvents(UserHistory<? extends Event> history) {
+        // FIXME Make this avoid the rating list copy
+        return fromRatings(history.filter(Rating.class));
     }
 
 }

@@ -22,7 +22,7 @@ import org.grouplens.lenskit.PredictorBasedDynamicItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
- * A recommender and predictor using user-user collaborative filtering.
+ * A recommender and scorer using user-user collaborative filtering.
  * Neighbor user are aggregated using weighted averaging. 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

@@ -67,14 +67,14 @@ public class LenskitRecommender implements Recommender {
         return container.getComponent(RatingPredictor.class);
     }
 
-    @Override
-    public DynamicRatingPredictor getDynamicRatingPredictor() {
-        return container.getComponent(DynamicRatingPredictor.class);
+    @Override @Deprecated
+    public RatingPredictor getDynamicRatingPredictor() {
+        return getRatingPredictor();
     }
 
-    @Override
-    public DynamicItemRecommender getDynamicItemRecommender() {
-        return container.getComponent(DynamicItemRecommender.class);
+    @Override @Deprecated
+    public ItemRecommender getDynamicItemRecommender() {
+        return getItemRecommender();
     }
     
     @Override

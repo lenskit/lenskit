@@ -66,7 +66,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         super(dao);
         this.model = model;
         neighborhoodSize = nnbrs;
-        logger.debug("Creating rating predictor with neighborhood size {}", neighborhoodSize);
+        logger.debug("Creating rating scorer with neighborhood size {}", neighborhoodSize);
     }
     
     @Nonnull

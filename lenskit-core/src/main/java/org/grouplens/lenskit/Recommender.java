@@ -48,20 +48,18 @@ public interface Recommender {
     DataAccessObject getRatingDataAccessObject();
     
     /**
-     * Get the recommender's rating predictor.
-     * @return The rating predictor for this recommender configuration, or
+     * Get the recommender's rating scorer.
+     * @return The rating scorer for this recommender configuration, or
      * <tt>null</tt> if rating prediction is not supported.
      */
     @Nullable
     RatingPredictor getRatingPredictor();
     
     /**
-     * Get the recommender's dynamic rating predictor.
-     * @return The rating predictor for this recommender configuration, or
-     * <tt>null</tt> if dynamic rating prediction is not supported.
+     * @deprecated Use {@link #getRatingPredictor()} instead.
      */
-    @Nullable
-    DynamicRatingPredictor getDynamicRatingPredictor();
+    @Nullable @Deprecated
+    RatingPredictor getDynamicRatingPredictor();
     
     /**
      * Get the recommender's item recommender.
@@ -73,14 +71,10 @@ public interface Recommender {
     ItemRecommender getItemRecommender();
     
     /**
-     * Get the recommender's dynamic item recommender.
-     * 
-     * @return The dynamic item recommender for this recommender configuration,
-     *         or <tt>null</tt> if rating-based dynamic item recommendation is
-     *         not supported.
+     * @deprecated Use {@link #getItemRecommender()} instead.
      */
-    @Nullable
-    DynamicItemRecommender getDynamicItemRecommender();
+    @Nullable @Deprecated
+    ItemRecommender getDynamicItemRecommender();
     
     /**
      * Close the recommender session.  Underlying data connections are released

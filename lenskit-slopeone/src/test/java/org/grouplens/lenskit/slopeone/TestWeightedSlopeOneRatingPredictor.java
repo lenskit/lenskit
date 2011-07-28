@@ -62,16 +62,16 @@ public class TestWeightedSlopeOneRatingPredictor {
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(2.6, predictor.predict(2, 9), EPSILON);
-		assertEquals(4.2, predictor.predict(3, 6), EPSILON);
-		assertEquals(2, predictor.predict(4, 6), EPSILON);
-		assertEquals(2, predictor.predict(4, 9), EPSILON);
-		assertEquals(2.5, predictor.predict(5, 6), EPSILON);
-		assertEquals(3, predictor.predict(5, 7), EPSILON);
-		assertEquals(3.5, predictor.predict(5, 9), EPSILON);
-		assertEquals(1.5, predictor.predict(6, 6), EPSILON);
-		assertEquals(2, predictor.predict(6, 7), EPSILON);
-		assertEquals(2.5, predictor.predict(6, 9), EPSILON);
+		assertEquals(2.6, predictor.score(2, 9), EPSILON);
+		assertEquals(4.2, predictor.score(3, 6), EPSILON);
+		assertEquals(2, predictor.score(4, 6), EPSILON);
+		assertEquals(2, predictor.score(4, 9), EPSILON);
+		assertEquals(2.5, predictor.score(5, 6), EPSILON);
+		assertEquals(3, predictor.score(5, 7), EPSILON);
+		assertEquals(3.5, predictor.score(5, 9), EPSILON);
+		assertEquals(1.5, predictor.score(6, 6), EPSILON);
+		assertEquals(2, predictor.score(6, 7), EPSILON);
+		assertEquals(2.5, predictor.score(6, 9), EPSILON);
 	}
 	
 	@Test
@@ -95,10 +95,10 @@ public class TestWeightedSlopeOneRatingPredictor {
 		builder.setMaxRating(5);
 		SlopeOneModel model = builder.build();
 		WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-		assertEquals(5, predictor.predict(1, 5), EPSILON);
-		assertEquals(2.25, predictor.predict(1, 6), EPSILON);
-		assertEquals(5, predictor.predict(2, 5), EPSILON);
-		assertEquals(1.75, predictor.predict(3, 4), EPSILON);
-		assertEquals(1, predictor.predict(3, 6), EPSILON);
+		assertEquals(5, predictor.score(1, 5), EPSILON);
+		assertEquals(2.25, predictor.score(1, 6), EPSILON);
+		assertEquals(5, predictor.score(2, 5), EPSILON);
+		assertEquals(1.75, predictor.score(3, 4), EPSILON);
+		assertEquals(1, predictor.score(3, 6), EPSILON);
 	}
 }

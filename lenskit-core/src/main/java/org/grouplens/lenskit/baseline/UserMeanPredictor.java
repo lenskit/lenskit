@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rating predictor that returns the user's average rating for all predictions.
+ * Rating scorer that returns the user's average rating for all predictions.
  *
  * If the user has no ratings, the global mean is returned.  This is done by
  * actually computing the average offset from the global mean and adding back
@@ -59,7 +59,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     	
         @Override
         public UserMeanPredictor build() {
-            logger.debug("Building new user mean predictor");
+            logger.debug("Building new user mean scorer");
 
             logger.debug("smoothing = {}", smoothing);
             double mean = GlobalMeanPredictor.computeMeanRating(snapshot);
@@ -74,7 +74,7 @@ public class UserMeanPredictor implements BaselinePredictor {
     private final double smoothing;
 
     /**
-     * Construct a predictor that computes user means offset by the global mean.
+     * Construct a scorer that computes user means offset by the global mean.
    	 * @param globalMean The mean rating value for all items.
    	 * @param damping A damping term for the calculations.
      */

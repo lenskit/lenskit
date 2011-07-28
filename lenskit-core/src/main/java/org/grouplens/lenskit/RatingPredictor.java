@@ -18,37 +18,13 @@
  */
 package org.grouplens.lenskit;
 
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-
-import org.grouplens.lenskit.data.vector.SparseVector;
-
 /**
- * Interface for rating prediction.
+ * {@link ItemScorer} that scores by predicted rating.  The scores returned by
+ * this scorer's methods are predicted ratings in the same scale as the input
+ * ratings.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public interface RatingPredictor {
-    /**
-     * Predict the user's preference for a single item.
-     * 
-     * @param user The user ID.
-     * @param item The item ID.
-     * @return The preference, or {@link Double#NaN} if no preference can be
-     *         predicted.
-     */
-    public double predict(long user, long item);
-
-    /**
-     * Generate predictions for a collection of items.
-     * 
-     * @param user the user ID
-     * @param items the items for which predictions are desired
-     * @return A mapping from item IDs to predicted preference. This mapping may
-     *         not contain all requested items.
-     */
-    @Nonnull
-    public SparseVector predict(long user, Collection<Long> items);
+public interface RatingPredictor extends ItemScorer {
 }

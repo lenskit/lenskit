@@ -23,83 +23,123 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.ScoredLongArrayList;
 import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 
+import com.google.common.collect.Iterables;
+
 /**
- * Base class for item recommenders that use a rating predictor to generate
+ * Base class for item recommenders that use an item scorer to generate
  * recommendations. Implements all methods required by
- * {@link AbstractItemRecommender}.  The default exclude set is all items rated
+ * {@link AbstractItemRecommender}. The default exclude set is all items rated
  * by the user.
+ * 
+ * <p>
+ * Recommendations are returned in descending order of score.
+ * 
  */
 public class PredictorBasedItemRecommender extends AbstractItemRecommender {
-	
-	protected final RatingPredictor predictor;
-	protected final DataAccessObject dao;
-	
-	protected PredictorBasedItemRecommender(DataAccessObject dao, RatingPredictor predictor) {
-		this.predictor = predictor;
-		this.dao = dao;
-	}
-	
-	/**
-	 * Implement the primary recommend method in terms of the predictor.  This
-	 * method uses {@link #getDefaultExcludes(long)} to supply a missing exclude
-	 * set.
-	 */
-	@Override
-    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
-		if (candidates == null)
-			candidates = getPredictableItems(user);
-		if (exclude == null)
-		    exclude = getDefaultExcludes(user);
-		if (!exclude.isEmpty())
-			candidates = LongSortedArraySet.setDifference(candidates, exclude);
+    protected final ItemScorer scorer;
 
-		SparseVector predictions = predictor.predict(user, candidates);
-		assert(predictions.isComplete());
-		if (predictions.isEmpty()) return new ScoredLongArrayList();
-		
-		if (n < 0) n = predictions.size();
-		ScoredItemAccumulator accum = new ScoredItemAccumulator(n);
-		for (Long2DoubleMap.Entry pred: predictions.fast()) {
-			final double v = pred.getDoubleValue();
-			if (!Double.isNaN(v)) {
-			    accum.put(pred.getLongKey(), v);
-			}
-		}
-		
-		return accum.finish();
-	}
-	
-	/**
-	 * Get the default exclude set for a user.  The base implementation gets
-	 * all their rated items.
-	 * 
-	 * @param user The user ID.
-	 * @return The set of items to exclude.
-	 */
-	protected LongSet getDefaultExcludes(long user) {
-	    LongSet excludes = new LongOpenHashSet();
-	    Cursor<? extends Rating> ratings = dao.getUserEvents(user, Rating.class);
-	    try {
-	        for (Rating r: ratings) {
-	            excludes.add(r.getItemId());
-	        }
-	    } finally {
-	        ratings.close();
-	    }
-	    return excludes;
-	}
-	
-	/**
+    public PredictorBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
+        super(dao);
+        this.scorer = scorer;
+    }
+
+    /**
+     * Implement the ID-based recommendation in terms of the scorer. This method
+     * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
+     */
+    @Override
+    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
+        if (candidates == null)
+            candidates = getPredictableItems(user);
+        if (exclude == null)
+            exclude = getDefaultExcludes(user);
+        if (!exclude.isEmpty())
+            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+
+        SparseVector scores = scorer.score(user, candidates);
+        return recommend(n, scores);
+    }
+
+    /**
+     * Implement profile-based recommendation in terms of the scorer. This
+     * method uses {@link #getDefaultExcludes(long)} to supply a missing exclude
+     * set.
+     */	
+    @Override
+    protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
+        if (candidates == null)
+            candidates = getPredictableItems(user);
+        if (exclude == null)
+            exclude = getDefaultExcludes(user);
+        if (!exclude.isEmpty())
+            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+
+        SparseVector scores = scorer.score(user, candidates);
+        return recommend(n, scores);
+    }
+    
+    /**
+     * Pick the top <var>n</var> items from a score vector.
+     * 
+     * @param n The number of items to recommend.
+     * @param scores The scored item vector.
+     * @return The top <var>n</var> items from <var>scores</var>, in descending
+     *         order of score.
+     */
+    protected ScoredLongList recommend(int n, SparseVector scores) {
+        assert(scores.isComplete());
+        if (scores.isEmpty()) return new ScoredLongArrayList();
+
+        if (n < 0) n = scores.size();
+        ScoredItemAccumulator accum = new ScoredItemAccumulator(n);
+        for (Long2DoubleMap.Entry pred: scores.fast()) {
+            final double v = pred.getDoubleValue();
+            if (!Double.isNaN(v)) {
+                accum.put(pred.getLongKey(), v);
+            }
+        }
+
+        return accum.finish();
+    }
+
+    /**
+     * Get the default exclude set for a user.  The base implementation gets
+     * all their rated items.
+     * 
+     * @param user The user ID.
+     * @return The set of items to exclude.
+     */
+    protected LongSet getDefaultExcludes(long user) {
+        return getDefaultExcludes(dao.getUserHistory(user));
+    }
+
+    /**
+     * Get the default exclude set for a user.  The base implementation gets
+     * all their rated items.
+     * 
+     * @param user The user history.
+     * @return The set of items to exclude.
+     */
+    protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
+        LongSet excludes = new LongOpenHashSet();
+        for (Rating r: Iterables.filter(user, Rating.class)) {
+            excludes.add(r.getItemId());
+        }
+        return excludes;
+    }
+
+    /**
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
@@ -107,8 +147,19 @@ public class PredictorBasedItemRecommender extends AbstractItemRecommender {
      * @param user The user's ID.
      * @return All items for which predictions can be generated for the user.
      */
-	protected LongSet getPredictableItems(long user) {
+    protected LongSet getPredictableItems(long user) {
         return Cursors2.makeSet(dao.getItems());
     }
 
+    /**
+     * Determine the items for which predictions can be made for a certain user.
+     * This implementation is naive and asks the DAO for all items; subclasses
+     * should override it with something more efficient if practical.
+     * 
+     * @param user The user's ID.
+     * @return All items for which predictions can be generated for the user.
+     */
+    protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
+        return Cursors2.makeSet(dao.getItems());
+    }
 }

@@ -39,13 +39,13 @@ import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
- * Rating predictor that predicts a constant rating for all items.
+ * Rating scorer that predicts a constant rating for all items.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class ConstantPredictor implements BaselinePredictor {
     /**
-     * Parameter: the value used by the constant predictor.
+     * Parameter: the value used by the constant scorer.
      */
     @Documented
     @DefaultDouble(0.0)
@@ -59,7 +59,7 @@ public class ConstantPredictor implements BaselinePredictor {
     private final double value;
 
     /**
-     * Construct a new constant predictor.  This is exposed so other code
+     * Construct a new constant scorer.  This is exposed so other code
      * can use it as a fallback.
      * @param value
      */

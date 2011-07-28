@@ -20,25 +20,27 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
-import org.grouplens.lenskit.DynamicRatingPredictor;
+import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
- * {@link DynamicRatingPredictor} that delegates to the baseline predictor.  This
- * allows baseline predictors to be used as rating predictors in their own right.
+ * {@link RatingPredictor} that delegates to the baseline predictor. This allows
+ * baseline predictors to be used as rating predictors in their own right.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */
-public class BaselineRatingPredictor extends AbstractDynamicRatingPredictor {
+public class BaselineRatingPredictor extends AbstractRatingPredictor {
     private BaselinePredictor predictor;
 
     /**
      * Construct a new baseline rating predictor.
-     * @param baseline The predictor to delegate to
+     * @param baseline The scorer to delegate to
      * @param dao The DAO.
      */
     public BaselineRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
@@ -47,9 +49,8 @@ public class BaselineRatingPredictor extends AbstractDynamicRatingPredictor {
     }
 
     @Override
-    public SparseVector predict(UserRatingVector ratings,
-        Collection<Long> items) {
+    public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
+        UserRatingVector ratings = UserRatingVector.fromEvents(profile);
         return predictor.predict(ratings, items);
     }
-
 }

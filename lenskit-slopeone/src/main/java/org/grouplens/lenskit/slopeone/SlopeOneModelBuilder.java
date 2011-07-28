@@ -72,7 +72,7 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
 	}
 
 	/**
-	 * @param predictor The <tt>BaselinePredictor</tt> to be included in the constructed <tt>SlopeOneModel</tt>
+	 * @param scorer The <tt>BaselinePredictor</tt> to be included in the constructed <tt>SlopeOneModel</tt>
 	 */
 	public void setBaselinePredictor(BaselinePredictor predictor) {
 		baseline = predictor;

@@ -24,7 +24,7 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.meta.Built;
 
 /**
- * Rating predictor that predicts the global mean rating for all items.
+ * Rating scorer that predicts the global mean rating for all items.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
@@ -47,7 +47,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Construct a new global mean predictor where it is assumed
+     * Construct a new global mean scorer where it is assumed
      * that the given value is the global mean.
      * @param mean
      */
