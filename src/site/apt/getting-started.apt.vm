@@ -137,7 +137,7 @@ Getting LensKit from Mercurial
   Maven repository:
 
 +--------------------------------------+
-  $ hg clone http://dev.grouplens.org/hg/lenskit
+  $ hg clone http://bitbucket.org/grouplens/lenskit
   $ cd lenskit
   $ mvn install
 +--------------------------------------+
