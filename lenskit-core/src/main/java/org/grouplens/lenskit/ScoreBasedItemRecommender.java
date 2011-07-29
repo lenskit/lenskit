@@ -37,19 +37,18 @@ import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import com.google.common.collect.Iterables;
 
 /**
- * Base class for item recommenders that use an item scorer to generate
- * recommendations. Implements all methods required by
- * {@link AbstractItemRecommender}. The default exclude set is all items rated
- * by the user.
+ * Base class for recommenders that recommend the top N items by a scorer.
+ * Implements all methods required by {@link AbstractItemRecommender}. The
+ * default exclude set is all items rated by the user.
  * 
  * <p>
  * Recommendations are returned in descending order of score.
  * 
  */
-public class PredictorBasedItemRecommender extends AbstractItemRecommender {
+public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
 
-    public PredictorBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
+    public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
     }
@@ -125,7 +124,7 @@ public class PredictorBasedItemRecommender extends AbstractItemRecommender {
     }
 
     /**
-     * Get the default exclude set for a user.  The base implementation gets
+     * Get the default exclude set for a user.  The base implementation returns
      * all their rated items.
      * 
      * @param user The user history.

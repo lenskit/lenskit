@@ -30,7 +30,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.ScoredLongListIterator;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
  */
-public class ItemItemRatingPredictor extends AbstractRatingPredictor {
+public class ItemItemRatingPredictor extends AbstractItemScorer {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;

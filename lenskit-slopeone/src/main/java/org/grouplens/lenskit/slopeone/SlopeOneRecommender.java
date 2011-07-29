@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.PredictorBasedItemRecommender;
+import org.grouplens.lenskit.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.event.Rating;
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
-public class SlopeOneRecommender extends PredictorBasedItemRecommender {
+public class SlopeOneRecommender extends ScoreBasedItemRecommender {
 	private SlopeOneRatingPredictor predictor; 
 	
 	/**

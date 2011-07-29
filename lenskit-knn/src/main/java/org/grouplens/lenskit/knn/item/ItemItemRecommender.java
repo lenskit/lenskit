@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.PredictorBasedItemRecommender;
+import org.grouplens.lenskit.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.event.Rating;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommender extends PredictorBasedItemRecommender {
+public class ItemItemRecommender extends ScoreBasedItemRecommender {
     protected final ItemItemRatingPredictor predictor;
     
     /**

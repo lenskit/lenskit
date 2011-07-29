@@ -29,16 +29,17 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
- * Base class to make rating predictors easier to implement.  Delegates 
- * {@link #score(long, long)} to {@link #score(long, Collection)}.
+ * Base class to make item scorers easier to implement. Delegates single=item
+ * score methods to collection-based ones, and {@link #score(long, Collection)}
+ * to {@link #score(UserHistory, Collection)}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-public abstract class AbstractRatingPredictor implements RatingPredictor {
+public abstract class AbstractItemScorer implements RatingPredictor {
     protected final DataAccessObject dao;
 
-    protected AbstractRatingPredictor(DataAccessObject dao) {
+    protected AbstractItemScorer(DataAccessObject dao) {
         this.dao = dao;
     }
     

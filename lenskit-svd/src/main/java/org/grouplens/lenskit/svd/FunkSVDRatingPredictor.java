@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
@@ -45,7 +45,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
+public class FunkSVDRatingPredictor extends AbstractItemScorer {
 	protected final FunkSVDModel model;
     private DataAccessObject dao;
 

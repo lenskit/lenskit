@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -37,7 +37,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
  */
-public class SlopeOneRatingPredictor extends AbstractRatingPredictor {
+public class SlopeOneRatingPredictor extends AbstractItemScorer {
 
 	protected SlopeOneModel model;
 

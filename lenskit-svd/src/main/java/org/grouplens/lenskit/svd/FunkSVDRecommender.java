@@ -18,14 +18,14 @@
  */
 package org.grouplens.lenskit.svd;
 
-import org.grouplens.lenskit.PredictorBasedItemRecommender;
+import org.grouplens.lenskit.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
  * recommendation is not supported.
  */
-public class FunkSVDRecommender extends PredictorBasedItemRecommender {
+public class FunkSVDRecommender extends ScoreBasedItemRecommender {
 	public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
 		super(dao, predictor);
 	}

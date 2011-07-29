@@ -29,7 +29,7 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.UserHistory;
@@ -51,7 +51,7 @@ import com.google.common.collect.Iterables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRatingPredictor extends AbstractRatingPredictor {
+public class UserUserRatingPredictor extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final VectorNormalizer<? super UserRatingVector> normalizer;

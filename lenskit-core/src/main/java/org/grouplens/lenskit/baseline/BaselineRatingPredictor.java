@@ -20,7 +20,7 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -35,7 +35,7 @@ import org.grouplens.lenskit.data.vector.UserRatingVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */
-public class BaselineRatingPredictor extends AbstractRatingPredictor {
+public class BaselineRatingPredictor extends AbstractItemScorer {
     private BaselinePredictor predictor;
 
     /**
