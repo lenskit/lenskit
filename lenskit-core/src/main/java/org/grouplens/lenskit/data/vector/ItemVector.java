@@ -18,7 +18,15 @@
  */
 package org.grouplens.lenskit.data.vector;
 
+import java.util.Collection;
+
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 /**
  * Vector of data for an item (a {@link SparseVector} that is associated with
@@ -40,4 +48,22 @@ public class ItemVector extends ImmutableSparseVector {
 		return itemId;
 	}
 
+	public static ItemVector ratingVector(long item, Collection<? extends Rating> ratings) {
+        Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
+        Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
+        tsMap.defaultReturnValue(Long.MIN_VALUE);
+        for (Rating r: ratings) {
+            Preference p = r.getPreference();
+            long uid = r.getUserId();
+            long ts = r.getTimestamp();
+            if (ts >= tsMap.get(uid)) {
+                if (p == null)
+                    vect.remove(uid);
+                else
+                    vect.put(uid, p.getValue());
+                tsMap.put(uid, ts);
+            }
+        }
+        return new ItemVector(item, vect);
+    }
 }

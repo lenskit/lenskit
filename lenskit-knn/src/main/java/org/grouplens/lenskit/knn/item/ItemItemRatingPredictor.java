@@ -39,10 +39,11 @@ import org.grouplens.lenskit.data.ScoredLongListIterator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
@@ -62,7 +63,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;
-    protected @Nonnull VectorNormalizer<? super UserRatingVector> normalizer =
+    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
             new IdentityVectorNormalizer();
     protected @Nullable BaselinePredictor baseline;
     
@@ -75,12 +76,12 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
     }
     
     @Nonnull
-    public VectorNormalizer<? super UserRatingVector> getNormalizer() {
+    public VectorNormalizer<? super UserVector> getNormalizer() {
         return normalizer;
     }
     
     @UserRatingVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserRatingVector> norm) {
+    public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
         normalizer = norm;
     }
     
@@ -100,7 +101,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
 
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserRatingVector ratings = history.ratingVector();
+        UserVector ratings = RatingVectorSummarizer.makeRatingVector(history);
         VectorTransformation norm = normalizer.makeTransformation(ratings);
         MutableSparseVector normed = ratings.mutableCopy();
         norm.apply(normed);

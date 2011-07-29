@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;
@@ -35,7 +35,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * Some recommenders support different recommenders for building and predicting;
  * in that case, the predict normalizer will be requested with this annotation.
  * 
- * <p>This normalizer is applied to {@link UserRatingVector}s.
+ * <p>This normalizer is applied to {@link UserVector}s.
  */
 @Documented
 @DefaultClass(IdentityVectorNormalizer.class)

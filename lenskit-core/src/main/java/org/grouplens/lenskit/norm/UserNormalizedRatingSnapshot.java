@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
@@ -65,14 +65,14 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<UserNormalizedRatingSnapshot> {
-        private VectorNormalizer<? super UserRatingVector>normalizer;
+        private VectorNormalizer<? super UserVector>normalizer;
         
         /**
          * Set the normalizer to use.
          * @param normalizer
          */
         @UserRatingVectorNormalizer
-        public void setNormalizer(VectorNormalizer<? super UserRatingVector> normalizer) {
+        public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
             this.normalizer = normalizer;
         }
         
@@ -84,11 +84,11 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
     private final RatingSnapshot snapshot;
-    private final VectorNormalizer<? super UserRatingVector> normalizer;
+    private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
     
     public UserNormalizedRatingSnapshot(RatingSnapshot snapshot, 
-                                        VectorNormalizer<? super UserRatingVector> norm) {
+                                        VectorNormalizer<? super UserVector> norm) {
         super();
     	this.snapshot = snapshot;
         normalizer = norm;
@@ -107,7 +107,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                 final long uid = uit.nextLong();
                 final int i = uidx.getIndex(uid);
                 assert normedData[i] == null;
-                UserRatingVector rv = UserRatingVector.fromPreferences(uid, snapshot.getUserRatings(uid));
+                UserVector rv = UserVector.fromPreferences(uid, snapshot.getUserRatings(uid));
                 normedData[i] = normalizer.normalize(rv, null);
                 ndone++;
             }
@@ -115,7 +115,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
         }
     }
     
-    public VectorNormalizer<? super UserRatingVector> getNormalizer() {
+    public VectorNormalizer<? super UserVector> getNormalizer() {
     	return normalizer;
     }
 

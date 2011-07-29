@@ -24,9 +24,10 @@ import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 
 /**
  * {@link RatingPredictor} that delegates to the baseline predictor. This allows
@@ -50,7 +51,7 @@ public class BaselineRatingPredictor extends AbstractItemScorer {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
-        UserRatingVector ratings = profile.ratingVector();
+        UserVector ratings = RatingVectorSummarizer.makeRatingVector(profile);
         return predictor.predict(ratings, items);
     }
 }

@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.util.CollectionUtils;
@@ -68,7 +68,7 @@ public class ConstantPredictor implements BaselinePredictor {
     }
 
     @Override
-    public MutableSparseVector predict(UserRatingVector ratings, Collection<Long> items) {
+    public MutableSparseVector predict(UserVector ratings, Collection<Long> items) {
         return constantPredictions(items, value);
     }
 

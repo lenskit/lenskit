@@ -24,11 +24,12 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -41,7 +42,8 @@ import com.google.common.collect.Lists;
  * 
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
-    private volatile transient UserRatingVector ratingVector;
+    @SuppressWarnings("rawtypes")
+    private final Map<Function, Object> memTable = new ConcurrentHashMap<Function, Object>();
     
     /**
      * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
@@ -68,24 +70,13 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
         }
         return items;
     }
-    
-    /**
-     * Compute the rating vector, memoizing it to avoid recomputation.  The
-     * profile is assumed to be immutable.
-     * 
-     * @return A vector mapping item IDs to the user's ratings.
-     */
+
     @Override
-    public UserRatingVector ratingVector() {
-        if (ratingVector == null) {
-            synchronized (this) {
-                if (ratingVector == null) {
-                    // FIXME Make this avoid the rating list copy
-                    ratingVector = UserRatingVector.fromRatings(filter(Rating.class));
-                }
-            }
-        }
-        assert ratingVector != null;
-        return ratingVector;
+    @SuppressWarnings("unchecked")
+    public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
+         if (!memTable.containsKey(func)) {
+             memTable.put(func, func.apply(this));
+         }
+         return (T) memTable.get(func);
     }
 }

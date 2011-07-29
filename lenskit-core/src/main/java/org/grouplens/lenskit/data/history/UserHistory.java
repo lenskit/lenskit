@@ -21,18 +21,19 @@ package org.grouplens.lenskit.data.history;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
 /**
  * Represents a user profile, associating a list of events with a user. The
- * events are in timestamp order. Histories have special knowledge of some event
- * types; for example, they can extract a rating vector.
+ * events are in timestamp order. Histories also can memoize summaries and other
+ * computed properties of themselves.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -72,10 +73,21 @@ public interface UserHistory<E extends Event> extends List<E> {
     LongSet itemSet();
     
     /**
-     * Extract a rating vector from this history. Implementations will generally
-     * memoize the vector.
+     * Call a function on this history, memoizing its return value. Used for
+     * caching things like summaries. The function should appropriately define
+     * its {@link Function#equals(Object)} and {@link Object#hashCode()} methods
+     * in order for memoization to work well.
      * 
-     * @return A vector mapping item IDs to the user's ratings.
+     * <p>
+     * This method is not synchronized. It is safe to memoize distinct function
+     * in parallel, but potentially-parallel use of the same function must be
+     * synchronized by client code or the function may be called twice. The
+     * implementation in {@link AbstractUserHistory} uses a
+     * {@link ConcurrentHashMap}.  Multiple calls are therefore safe, but may
+     * result in extra work.  All implementations must maintain this safety
+     * guarantee, although they may do so by synchronizing this method.
+     * 
+     * @param func The function to call and memoize.
      */
-    UserRatingVector ratingVector();
+    <T> T memoize(Function<? super UserHistory<E>, ? extends T> func);
 }

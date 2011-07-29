@@ -23,14 +23,14 @@ import java.io.Serializable;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.NormalizerBaseline;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<UserRatingVector> implements Serializable {
+public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<UserVector> implements Serializable {
     private static final long serialVersionUID = 1449043456567302903L;
     
     protected final BaselinePredictor baselinePredictor;
@@ -45,14 +45,14 @@ public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<User
     }
 
     @Override
-    public VectorTransformation makeTransformation(UserRatingVector ratings) {
+    public VectorTransformation makeTransformation(UserVector ratings) {
         return new Transformation(ratings);
     }
     
     protected class Transformation implements VectorTransformation {
-        private final UserRatingVector user;
+        private final UserVector user;
         
-        public Transformation(UserRatingVector r) {
+        public Transformation(UserVector r) {
             user = r;
         }
 

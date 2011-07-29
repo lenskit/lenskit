@@ -26,7 +26,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 public abstract class AbstractRatingSnapshot implements RatingSnapshot {
@@ -47,7 +47,7 @@ public abstract class AbstractRatingSnapshot implements RatingSnapshot {
         else {
             FastCollection<IndexedPreference> prefs =
                 this.getUserRatings(userId);
-            data = UserRatingVector.fromPreferences(userId, prefs);
+            data = UserVector.fromPreferences(userId, prefs);
             cache.put(userId, data);
             return data;
         }

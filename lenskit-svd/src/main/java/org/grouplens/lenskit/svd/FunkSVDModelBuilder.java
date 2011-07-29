@@ -25,7 +25,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.IterationCount;
@@ -141,7 +141,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
             // FIXME Use the snapshot's user rating vector support
-            UserRatingVector user = UserRatingVector.fromPreferences(uid, snapshot.getUserRatings(uid));
+            UserVector user = UserVector.fromPreferences(uid, snapshot.getUserRatings(uid));
             MutableSparseVector blpreds = baseline.predict(user, user.keySet());
             estimates[i] = blpreds;
         }

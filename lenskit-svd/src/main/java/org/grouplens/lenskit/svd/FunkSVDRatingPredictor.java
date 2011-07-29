@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 
@@ -94,7 +94,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
         return featurePrefs;
     }*/
     
-    private MutableSparseVector predict(UserRatingVector user, double[] uprefs, Collection<Long> items) {
+    private MutableSparseVector predict(UserVector user, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
         final DoubleFunction clamp = model.clampingFunction;
         
@@ -124,7 +124,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
     }
     
     private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
-    	return predict(UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
+    	return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
     	               uprefs, items);
     }
     

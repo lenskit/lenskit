@@ -54,10 +54,25 @@ Release ${project.version}
 
   []
 
-* Other Changes
+* Incompatible data structure changes
+
+  To clean up APIs, we made a couple notable incompatible changes to
+  layout and data structures.  These are all compile errors; no subtle
+  behavior changes that the compiler won't catch here.
 
   * Moved <<<UserHistory>>> and related classes to the
     <<<org.grouplens.lenskit.data.history>>> package.
+
+  * Removed <<<ItemRatingVector>>> and <<<UserRatingVector>>>, as they
+    type distinction severely complicates configuration for
+    generalized model builders.  The upside: types remain sane and
+    configuring basket recommenders will be feasible.  Downside: the
+    type system doensn't indicate whether a user vector contains
+    ratings or some other data.
+
+  []
+
+* Other Changes
 
   * Changed <<<DynamicRatingPredictor.predict(long, Collection,
     Collection)>>> to take a <<<UserHistory>>> of events rather than a

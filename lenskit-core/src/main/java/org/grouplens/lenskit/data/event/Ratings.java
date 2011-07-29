@@ -32,9 +32,9 @@ import javax.annotation.WillClose;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.vector.ItemRatingVector;
+import org.grouplens.lenskit.data.vector.ItemVector;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 
 import com.google.common.primitives.Longs;
 
@@ -87,7 +87,7 @@ public final class Ratings {
      *
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
-     * @deprecated Use {@link ItemRatingVector#fromRatings(long, Collection)}.
+     * @deprecated Use {@link ItemVector#ratingVector(long, Collection)}.
      */
     @Deprecated
     public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
@@ -147,7 +147,7 @@ public final class Ratings {
      * 
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
-     * @deprecated Use {@link UserRatingVector#fromRatings(long, Collection)}
+     * @deprecated Use {@link UserVector#fromRatings(long, Collection)}
      *             instead.
      */
     @Deprecated
@@ -161,7 +161,7 @@ public final class Ratings {
      * @param ratings The rating cursor.
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
-     * @deprecated Use {@link UserRatingVector#fromRatings(long, Cursor)}
+     * @deprecated Use {@link UserVector#fromRatings(long, Cursor)}
      *             instead.
      */
     @Deprecated

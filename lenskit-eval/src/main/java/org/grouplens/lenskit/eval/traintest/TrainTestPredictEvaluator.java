@@ -33,13 +33,13 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.TaskTimer;
@@ -269,7 +269,7 @@ public class TrainTestPredictEvaluator {
                     Cursor<UserHistory<Rating>> userProfiles = testDao.getUserHistories(Rating.class);
                     try {
                         for (UserHistory<Rating> p: userProfiles) {
-                            SparseVector ratings = UserRatingVector.fromRatings(p);
+                            SparseVector ratings = RatingVectorSummarizer.makeRatingVector(p);
                             SparseVector predictions =
                                 pred.score(p.getUserId(), ratings.keySet());
                             acc.evaluatePrediction(p.getUserId(), ratings, predictions);

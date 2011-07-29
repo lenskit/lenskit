@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
 import org.grouplens.lenskit.norm.VectorNormalizer;
@@ -35,7 +35,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * Normalizer applied to user rating vectors prior to processing rating data.
  * This is typically used via {@link UserNormalizedRatingSnapshot}.
  * 
- * <p>This normalizer is applied to {@link UserRatingVector}s.
+ * <p>This normalizer is applied to {@link UserVector}s.
  */
 @Documented
 @DefaultClass(IdentityVectorNormalizer.class)

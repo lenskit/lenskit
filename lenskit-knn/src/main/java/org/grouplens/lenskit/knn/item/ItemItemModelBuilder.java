@@ -37,7 +37,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
@@ -62,7 +62,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     private Similarity<? super SparseVector> itemSimilarity;
     
     private RatingSnapshot normalizedData;
-    private VectorNormalizer<? super UserRatingVector> normalizer;
+    private VectorNormalizer<? super UserVector> normalizer;
     private int modelSize;
     
     @ItemSimilarity
@@ -76,7 +76,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     }
     
     @UserRatingVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserRatingVector> normalizer) {
+    public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
         this.normalizer = normalizer;
     }
     

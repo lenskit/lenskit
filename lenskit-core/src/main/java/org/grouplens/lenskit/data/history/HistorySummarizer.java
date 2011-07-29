@@ -16,30 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
-package org.grouplens.lenskit.baseline;
+package org.grouplens.lenskit.data.history;
 
-import static org.junit.Assert.assertEquals;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.UserVector;
-import org.junit.Test;
 
 /**
+ * Summarize user histories as real-valued vectors.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TestConstantPredictor {
-
-    @Test
-    public void testConstantPredict() {
-        BaselinePredictor pred = new ConstantPredictor(5);
-        UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
-        SparseVector pv = pred.predict(map, new LongArrayList(new long[]{2l}));
-        assertEquals(5, pv.get(2l), 0.00001);
-    }
+public interface HistorySummarizer {
+    /**
+     * Compute a vector summary of a user's history.
+     * @param history The history to summarize.
+     * @return A vector summarizing the user's history.
+     */
+    UserVector summarize(UserHistory<? extends Event> history);
 }

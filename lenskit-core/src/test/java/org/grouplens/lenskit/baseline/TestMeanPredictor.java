@@ -32,14 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.junit.After;
 import org.junit.Before;
@@ -80,7 +80,7 @@ public class TestMeanPredictor {
     @Test
     public void testMeanBaseline() {
         BaselinePredictor pred = build(new GlobalMeanPredictor.Builder());
-        UserRatingVector map = new UserRatingVector(10l, Long2DoubleMaps.EMPTY_MAP);
+        UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(map, itemSet(2l));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2l), 0.00001);
     }
@@ -90,7 +90,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = build(new UserMeanPredictor.Builder());
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
-        UserRatingVector map = UserRatingVector.wrap(10l, items, ratings);
+        UserVector map = UserVector.wrap(10l, items, ratings);
         // unseen item
         SparseVector pv = pred.predict(map, itemSet(2l));
         assertEquals(4.33333, pv.get(2l), 0.001);
@@ -105,7 +105,7 @@ public class TestMeanPredictor {
     @Test
     public void testUserMeanBaselineFallback() {
         BaselinePredictor pred = build(new UserMeanPredictor.Builder());
-        UserRatingVector map = new UserRatingVector(10l, Long2DoubleMaps.EMPTY_MAP);
+        UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
     }
@@ -115,7 +115,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = build(new ItemMeanPredictor.Builder());
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
-        UserRatingVector map = UserRatingVector.wrap(10l, items, values);
+        UserVector map = UserVector.wrap(10l, items, values);
         // unseen item, should be global mean
         SparseVector pv = pred.predict(map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
@@ -137,7 +137,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = build(new ItemUserMeanPredictor.Builder());
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
-        UserRatingVector map = UserRatingVector.wrap(10l, items, ratings);
+        UserVector map = UserVector.wrap(10l, items, ratings);
         final double avgOffset = 0.75;
 
         // unseen item, should be global mean + user offset

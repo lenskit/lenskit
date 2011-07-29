@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.slf4j.Logger;
@@ -92,7 +92,7 @@ public class UserMeanPredictor implements BaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(UserRatingVector ratings,
+    public MutableSparseVector predict(UserVector ratings,
                                        Collection<Long> items) {
         double mean = average(ratings, globalMean, smoothing);
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
