@@ -1,38 +1,46 @@
 .. -*- restructuredtext -*-
 
-RefLens
+LensKit
 =======
 
-RefLens is an implementation of collaborative filtering algorithms and
-a set of tools for benchmarking them.
+LensKit is an implementation of collaborative filtering algorithms and
+a set of tools for benchmarking them.  For more information about
+LensKit and the documentation, visit the `web site`_.
 
-Packages
---------
-
-RefLens is comprised of three packages.
-
-``reflens``
-  The top-level ``reflens`` package serves as a parent to collect the
-  other base RefLens packages.  Building it will build all
-  components of RefLens.
-``reflens-core``
-  This package contains the core APIs and recommender implementations.
-``reflens-eval``
-  This package contains the benchmarking program.
+.. _web site: http://lenskit.grouplens.org
 
 Installation and Dependency Management
 --------------------------------------
 
-RefLens is managed and deployed via Maven_ [1]_.  To install it, check out
+LensKit is managed and deployed via Maven_.  To install it, check out
 this repository and run ``mvn install``.  It can also be checked out
-in Eclipse with M2Eclipse_ by using the “Check out Maven projects from
-SCM” import option; select ‘hg’, provide the BitBucket repository
-location and make sure the “Check out All projects” option is
-selected.  The NetBeans Maven support should be similarly usable but
-has not been tested.
+in Eclipse with M2Eclipse_ by cloning the repository with
+MercurialEclipse_, then importing the submodules as “Existing Maven
+projects”.
 
 .. _Maven: http://maven.apache.org
 .. _M2Eclipse: http://m2eclipse.sonatype.org/installing-m2eclipse.html
 
-.. [1] On Debian or Ubuntu systems, Maven is available via the
-       ``maven2`` package.
+Modules
+-------
+
+LensKit is comprised of several modules.  The top-level ``lenskit``
+module serves as a container to build them and provide common settings
+and dependencies.  The other modules are as follows:
+
+``lenskit-core``
+    The core APIs, data structures, and configuration facilities for
+    the rest of LensKit.
+``lenskit-knn``
+    k-NN recommenders (user-user and item-item collaborative
+    filtering).
+``lenskit-svd``
+    The FunkSVD recommender (and eventually real SVD recommenders).
+``lenskit-slopeone``
+    Slope-One recommenders.
+``lenskit-eval``
+    The evaluation framework and APIs.
+``lenskit-eval-ant-plugin``
+    Ant_ plugin for running evaluations of LensKit recommenders.
+
+.. _Ant: http://ant.apache.org
