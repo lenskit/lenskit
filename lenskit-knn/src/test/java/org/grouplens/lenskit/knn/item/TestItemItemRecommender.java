@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.DynamicItemRecommender;
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -43,7 +43,7 @@ import org.junit.Test;
 public class TestItemItemRecommender {
 
 	private Recommender session;
-	private DynamicItemRecommender recommender;
+	private ItemRecommender recommender;
 
 	@Before
 	public void setup() {
@@ -65,14 +65,14 @@ public class TestItemItemRecommender {
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
-		factory.setComponent(DynamicItemRecommender.class, ItemItemRecommender.class);
+		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
 		// FIXME Let this work @mludwig
 		/*factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
 		                     IdentityVectorNormalizer.class);*/
 		RecommenderEngine engine = factory.create();
 		session = engine.open();
-		recommender = session.getDynamicItemRecommender();
+		recommender = session.getItemRecommender();
 	}
 
 

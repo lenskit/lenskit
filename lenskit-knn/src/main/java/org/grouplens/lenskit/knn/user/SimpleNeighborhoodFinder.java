@@ -33,7 +33,9 @@ import java.util.PriorityQueue;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -111,11 +113,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @return A mapping of item IDs to neighborhoods.
      */
     @Override
-    public Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(UserRatingVector user, LongSet items) {
+    public Long2ObjectMap<? extends Collection<Neighbor>>
+    findNeighbors(UserHistory<? extends Event> user, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
         
-        MutableSparseVector nratings = normalizer.normalize(user, null);
+        MutableSparseVector nratings = normalizer.normalize(user.ratingVector(), null);
         
         /* Find candidate neighbors. To reduce scanning, we limit users to those
          * rating target items. If the similarity is sparse and the user has

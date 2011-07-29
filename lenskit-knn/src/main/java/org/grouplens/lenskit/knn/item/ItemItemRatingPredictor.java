@@ -30,11 +30,13 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
+import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.ScoredLongListIterator;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -53,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
  */
-public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
+public class ItemItemRatingPredictor extends AbstractRatingPredictor {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;
@@ -93,9 +95,10 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
     }
 
     @Override
-    public SparseVector predict(UserRatingVector user, Collection<Long> items) {
-        VectorTransformation norm = normalizer.makeTransformation(user);
-        MutableSparseVector normed = user.mutableCopy();
+    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+        UserRatingVector ratings = UserRatingVector.fromEvents(history);
+        VectorTransformation norm = normalizer.makeTransformation(ratings);
+        MutableSparseVector normed = ratings.mutableCopy();
         norm.apply(normed);
 
         // FIXME Make sure the direction on similarities is right for asym.
@@ -155,7 +158,7 @@ public class ItemItemRatingPredictor extends AbstractDynamicRatingPredictor {
         // apply the baseline if applicable
         if (baseline != null && !unpredItems.isEmpty()) {
         	logger.trace("Filling {} items from baseline", unpredItems.size());
-            SparseVector basePreds = baseline.predict(user, unpredItems);
+            SparseVector basePreds = baseline.predict(ratings, unpredItems);
             for (Long2DoubleMap.Entry e: basePreds.fast()) {
                 assert Double.isNaN(preds.get(e.getLongKey()));
                 preds.set(e.getLongKey(), e.getDoubleValue());

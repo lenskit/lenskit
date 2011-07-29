@@ -26,7 +26,8 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.vector.UserRatingVector;
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 
 /**
@@ -41,12 +42,12 @@ public interface NeighborhoodFinder {
      * Find neighboring users for particular items. <var>user</var> and the
      * returned rating vectors are <emph>unnormalized</emph>.  Any normalization
      * used by the neighborhood finder is only for comparing neighbors.
-     * @param user The user rating vector.
+     * @param user The user's event history.
      * @param items The items we're trying to recommend, or <tt>null</tt> to get
      * get neighborhoods for all possible items.
      * @return A map from item IDs to user neighborhoods for all items for which
      * we can find neighboring users.
      */
     Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(
-            @Nonnull UserRatingVector user, @Nullable LongSet items);
+            @Nonnull UserHistory<? extends Event> user, @Nullable LongSet items);
 }

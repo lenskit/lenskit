@@ -23,7 +23,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.grouplens.lenskit.DynamicItemRecommender;
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -52,7 +52,7 @@ public class TestUserUserRecommenderBuild {
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
-		factory.setComponent(DynamicItemRecommender.class, UserUserRecommender.class);
+		factory.setComponent(ItemRecommender.class, UserUserRecommender.class);
 		factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
 
 		engine = factory.create();
@@ -64,9 +64,9 @@ public class TestUserUserRecommenderBuild {
 
 		try {
 			// These assert instanceof's are also assertNotNull's
-			Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof UserUserRatingPredictor);
 			Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-			Assert.assertTrue(rec.getDynamicItemRecommender() instanceof UserUserRecommender);
+			Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
+			Assert.assertTrue(rec.getItemRecommender() instanceof UserUserRecommender);
 		} finally {
 			rec.close();
 		}

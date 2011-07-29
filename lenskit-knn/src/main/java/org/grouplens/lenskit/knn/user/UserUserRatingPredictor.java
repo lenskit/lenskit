@@ -29,10 +29,12 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
+import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -49,7 +51,7 @@ import com.google.common.collect.Iterables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
+public class UserUserRatingPredictor extends AbstractRatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final VectorNormalizer<? super UserRatingVector> normalizer;
@@ -92,8 +94,10 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
      * @see RatingPredictor#score(long, Collection)
      */
     @Override
-    public SparseVector predict(UserRatingVector user, @Nullable Collection<Long> items) {
-        logger.trace("Predicting for user {} with {} user", user.getUserId(), user.size());
+    public SparseVector score(UserHistory<? extends Event> history,
+                              @Nullable Collection<Long> items) {
+        logger.trace("Predicting for user {} with {} events",
+                     history.getUserId(), history.size());
         LongSortedSet iset;
         if (items == null)
             iset = null;
@@ -102,7 +106,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         else
             iset = new LongSortedArraySet(items);
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            neighborhoodFinder.findNeighbors(user, iset);
+            neighborhoodFinder.findNeighbors(history, iset);
         Reference2ObjectMap<UserRatingVector, SparseVector> normedUsers =
             normalizeNeighborRatings(neighborhoods.values());
         long[] keys = iset.toLongArray();
@@ -130,7 +134,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         if (baseline != null && missing.size() > 0) {
             logger.trace("Filling in {} missing user with baseline", missing.size());
             LongSortedSet mset = LongSortedArraySet.ofList(missing);
-            MutableSparseVector blpreds = baseline.predict(user, mset);
+            MutableSparseVector blpreds = baseline.predict(history.ratingVector(), mset);
             for (int i = 0; i < keys.length; i++) {
                 // TODO make this a parallel walk to avoid excess log factor
                 if (Double.isNaN(preds[i])) {
@@ -140,7 +144,7 @@ public class UserUserRatingPredictor extends AbstractDynamicRatingPredictor {
         }
         
         // Denormalize and return the results
-        VectorTransformation vo = normalizer.makeTransformation(user);
+        VectorTransformation vo = normalizer.makeTransformation(history.ratingVector());
         MutableSparseVector v = MutableSparseVector.wrap(keys, preds, true);
         logger.trace("Returning {} predictions (wanted {})", v.size(), items.size());
         vo.unapply(v);

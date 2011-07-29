@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 /**
  * Basic user rating profile backed by a collection of ratings. The event list
@@ -35,6 +36,7 @@ import org.grouplens.lenskit.data.event.Event;
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;
     private List<E> events;
+    private volatile transient UserRatingVector ratingVector;
 
     /**
      * Construct a new basic user profile.
@@ -81,5 +83,18 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     @Override
     public <T> T[] toArray(T[] a) {
         return events.toArray(a);
+    }
+    
+    @Override
+    public UserRatingVector ratingVector() {
+        if (ratingVector == null) {
+            synchronized (this) {
+                if (ratingVector == null) {
+                    ratingVector = UserRatingVector.fromEvents(this);
+                }
+            }
+        }
+        assert ratingVector != null;
+        return ratingVector;
     }
 }

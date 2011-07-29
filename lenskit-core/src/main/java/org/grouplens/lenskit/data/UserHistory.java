@@ -25,12 +25,14 @@ import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.vector.UserRatingVector;
 
 import com.google.common.base.Predicate;
 
 /**
  * Represents a user profile, associating a list of events with a user. The
- * events are in timestamp order.
+ * events are in timestamp order. Histories have special knowledge of some event
+ * types; for example, they can extract a rating vector.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -60,12 +62,20 @@ public interface UserHistory<E extends Event> extends List<E> {
      *         the predicate.
      */
     UserHistory<E> filter(Predicate<? super E> pred);
-    
+
     /**
-     * Get the set of items touched by events in this history.  Only nonnegative
+     * Get the set of items touched by events in this history. Only nonnegative
      * item IDs are considered.
-     *
+     * 
      * @return The set of all item IDs used in events in this history.
      */
     LongSet itemSet();
+    
+    /**
+     * Extract a rating vector from this history. Implementations will generally
+     * memoize the vector.
+     * 
+     * @return A vector mapping item IDs to the user's ratings.
+     */
+    UserRatingVector ratingVector();
 }

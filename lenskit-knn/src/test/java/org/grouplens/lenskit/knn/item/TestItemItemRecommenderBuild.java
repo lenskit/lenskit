@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.DynamicItemRecommender;
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -51,7 +51,7 @@ public class TestItemItemRecommenderBuild {
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
-		factory.setComponent(DynamicItemRecommender.class, ItemItemRecommender.class);
+		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
 //		factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
 //		                     IdentityVectorNormalizer.class);
@@ -64,8 +64,8 @@ public class TestItemItemRecommenderBuild {
 		Recommender rec = engine.open();
 		
 		// These assert instanceof's are also assertNotNull's
-		assertTrue(rec.getDynamicRatingPredictor() instanceof ItemItemRatingPredictor);
 		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-		assertTrue(rec.getDynamicItemRecommender() instanceof ItemItemRecommender);
+		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
+		assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
 	}
 }

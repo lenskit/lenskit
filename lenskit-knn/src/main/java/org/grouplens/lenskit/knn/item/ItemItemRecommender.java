@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.PredictorBasedDynamicItemRecommender;
+import org.grouplens.lenskit.PredictorBasedItemRecommender;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
@@ -32,16 +32,16 @@ import org.grouplens.lenskit.data.event.Rating;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommender extends PredictorBasedDynamicItemRecommender {
+public class ItemItemRecommender extends PredictorBasedItemRecommender {
     protected final ItemItemRatingPredictor predictor;
     
     /**
      * Construct a new recommender from a scorer.
      * @param scorer The scorer to use.
      */
-    public ItemItemRecommender(DataAccessObject dao, ItemItemRatingPredictor predictor) {
-        super(dao, predictor);
-        this.predictor = predictor;
+    public ItemItemRecommender(DataAccessObject dao, ItemItemRatingPredictor scorer) {
+        super(dao, scorer);
+        this.predictor = scorer;
     }
     
     /**
