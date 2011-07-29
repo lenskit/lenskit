@@ -50,7 +50,7 @@ public class BaselineRatingPredictor extends AbstractItemScorer {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
-        UserRatingVector ratings = UserRatingVector.fromEvents(profile);
+        UserRatingVector ratings = profile.ratingVector();
         return predictor.predict(ratings, items);
     }
 }

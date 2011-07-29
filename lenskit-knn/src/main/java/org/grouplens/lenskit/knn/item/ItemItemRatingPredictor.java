@@ -96,7 +96,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserRatingVector ratings = UserRatingVector.fromEvents(history);
+        UserRatingVector ratings = history.ratingVector();
         VectorTransformation norm = normalizer.makeTransformation(ratings);
         MutableSparseVector normed = ratings.mutableCopy();
         norm.apply(normed);
