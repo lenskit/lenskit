@@ -23,8 +23,8 @@ import java.io.Closeable;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 
 /**
  * LensKit core data access object interface. This interface provides access to

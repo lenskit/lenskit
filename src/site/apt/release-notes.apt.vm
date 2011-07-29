@@ -56,6 +56,9 @@ Release ${project.version}
 
 * Other Changes
 
+  * Moved <<<UserHistory>>> and related classes to the
+    <<<org.grouplens.lenskit.data.history>>> package.
+
   * Changed <<<DynamicRatingPredictor.predict(long, Collection,
     Collection)>>> to take a <<<UserHistory>>> of events rather than a
     collection of ratings.

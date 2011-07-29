@@ -28,9 +28,9 @@ import java.util.Iterator;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.FastCollection;
 

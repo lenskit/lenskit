@@ -21,9 +21,9 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

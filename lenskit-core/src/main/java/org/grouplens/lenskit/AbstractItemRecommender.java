@@ -25,9 +25,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.CollectionUtils;
 
 

@@ -34,13 +34,13 @@ import javax.annotation.WillCloseWhenClosed;
 import org.grouplens.common.cursors.AbstractCursor;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.BasicUserHistory;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.LongCursor;
 import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Events;
+import org.grouplens.lenskit.data.history.BasicUserHistory;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

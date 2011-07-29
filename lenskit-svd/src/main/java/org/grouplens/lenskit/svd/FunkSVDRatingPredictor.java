@@ -24,10 +24,10 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractItemScorer;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
