@@ -24,9 +24,11 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.AbstractDynamicRatingPredictor;
+import org.grouplens.lenskit.AbstractRatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -35,7 +37,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
  */
-public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
+public class SlopeOneRatingPredictor extends AbstractRatingPredictor {
 
 	protected SlopeOneModel model;
 
@@ -45,7 +47,8 @@ public class SlopeOneRatingPredictor extends AbstractDynamicRatingPredictor {
 	}
 
 	@Override
-	public SparseVector predict(UserRatingVector user, Collection<Long> items) {
+	public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+	    UserRatingVector user = history.ratingVector();
 
 		LongSortedSet iset;
 		if (items instanceof LongSortedSet)

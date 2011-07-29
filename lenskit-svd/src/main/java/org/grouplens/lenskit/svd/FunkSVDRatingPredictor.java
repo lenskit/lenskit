@@ -24,9 +24,12 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 
 import org.grouplens.lenskit.AbstractRatingPredictor;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.LongSortedArraySet;
@@ -47,6 +50,7 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
     private DataAccessObject dao;
 
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m) {
+        super(dao);
         this.dao = dao;
         model = m;
     }
@@ -122,6 +126,16 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor {
     private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
     	return predict(UserRatingVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
     	               uprefs, items);
+    }
+    
+    @Override
+    public boolean canUseHistory() {
+        return false;
+    }
+    
+    @Override
+    public SparseVector score(UserHistory<? extends Event> user, Collection<Long> items) {
+        return score(user.getUserId(), items);
     }
     
     @Override

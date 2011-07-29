@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.svd;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -70,10 +69,6 @@ public class TestFunkSVDRecommenderBuild {
 			// These assert instanceof's are also assertNotNull's
 			assertTrue(rec.getRatingPredictor() instanceof FunkSVDRatingPredictor);
 			assertTrue(rec.getItemRecommender() instanceof FunkSVDRecommender);
-
-			assertNull(rec.getDynamicItemRecommender());
-			assertNull(rec.getDynamicRatingPredictor());
-
 		} finally {
 			rec.close();
 		}
