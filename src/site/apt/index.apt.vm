@@ -86,8 +86,8 @@ Getting LensKit
   {{{./downloads/lenskit-${project.version}-source-package.tar.gz}gzipped
   tar archive}} or a
   {{{./downloads/lenskit-${project.version}-source-package.zip}zip
-  file}} or clone the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
-  repository}}.
+  file}} or get the sources from
+  {{{http://bitbucket.org/grouplens/lenskit}BitBucket}}.
 
 Development
 
