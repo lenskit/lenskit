@@ -18,50 +18,31 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemRatingPredictor predictor;
+    protected final ItemItemScorer scorer;
     
     /**
-     * Construct a new recommender from a scorer.
+     * Construct a new item-item recommender from a scorer.
      * @param scorer The scorer to use.
      */
-    public ItemItemRecommender(DataAccessObject dao, ItemItemRatingPredictor scorer) {
+    public ItemItemRecommender(DataAccessObject dao, ItemItemScorer scorer) {
         super(dao, scorer);
-        this.predictor = scorer;
+        this.scorer = scorer;
     }
     
-    /**
-     * Compute the predictable items from the neighborhood.
-     */
     @Override
     public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        ItemItemModel model = predictor.getModel();
-    	if (predictor.getBaseline() != null) {
-            return model.getItemUniverse();
-        } else {
-            LongSet items = new LongOpenHashSet();
-            LongSet userItems = user.filter(Rating.class).itemSet();
-            LongIterator iter = userItems.iterator();
-            while (iter.hasNext()) {
-                final long item = iter.nextLong();
-                items.addAll(model.getNeighbors(item));
-            }
-            return items;
-        }
+        return scorer.getScoreableItems(user);
     }
 }

@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
@@ -37,6 +39,7 @@ import org.grouplens.lenskit.data.ScoredLongListIterator;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserRatingVector;
@@ -55,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
  */
-public class ItemItemRatingPredictor extends AbstractItemScorer {
+public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemItemScorer {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected final ItemItemModel model;
     private final int neighborhoodSize;
@@ -90,6 +93,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer {
         baseline = pred;
     }
     
+    @Override
     public ItemItemModel getModel() {
         return model;
     }
@@ -168,5 +172,21 @@ public class ItemItemRatingPredictor extends AbstractItemScorer {
         	return preds.copy(true);
         }
     }
-
+    
+    @Override
+    public LongSet getScoreableItems(UserHistory<? extends Event> user) {
+        // FIXME This method incorrectly assumes the model is symmetric
+        if (baseline != null) {
+            return model.getItemUniverse();
+        } else {
+            LongSet items = new LongOpenHashSet();
+            LongSet userItems = user.filter(Rating.class).itemSet();
+            LongIterator iter = userItems.iterator();
+            while (iter.hasNext()) {
+                final long item = iter.nextLong();
+                items.addAll(model.getNeighbors(item));
+            }
+            return items;
+        }
+    }
 }
