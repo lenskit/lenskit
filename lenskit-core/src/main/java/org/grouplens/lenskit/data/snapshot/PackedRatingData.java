@@ -20,7 +20,7 @@ package org.grouplens.lenskit.data.snapshot;
 
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
 
 /**
  * Data storage for packed build contexts.
@@ -42,12 +42,55 @@ final class PackedRatingData {
 		this.itemIndex = itemIndex;
 	}
 	
-	public IndexedPreference makeRating(int index) {
-		final int uidx = users[index];
-		final int iidx = items[index];
-		final long user = userIndex.getId(uidx);
-		final long item = itemIndex.getId(iidx);
-		final double v = values[index];
-		return new IndexedPreference(user, item, v, uidx, iidx);
+	public IndirectPreference makeRating(int index) {
+	    return new IndirectPreference(index);
+	}
+	
+	final class IndirectPreference implements IndexedPreference {
+	    int index;
+	    IndirectPreference() {
+	        this(-1);
+	    }
+	    
+	    IndirectPreference(int idx) {
+	        index = idx;
+	    }
+	    
+	    @Override
+        public long getUserId() {
+	        return userIndex.getId(users[index]);
+	    }
+	    
+	    @Override
+	    public long getItemId() {
+	        return itemIndex.getId(items[index]);
+	    }
+	    
+	    @Override
+	    public double getValue() {
+	        return values[index];
+	    }
+	    
+	    @Override
+	    public int getIndex() {
+	        return index;
+	    }
+	    
+	    @Override
+	    public int getUserIndex() {
+	        return users[index];
+	    }
+	    
+	    @Override
+	    public int getItemIndex() {
+	        return items[index];
+	    }
+	    
+	    @Override
+        public IndexedPreference clone() {
+	        return new MutableIndexedPreference(getUserId(), getItemId(), 
+	                                            getValue(), getIndex(),
+	                                            getUserIndex(), getItemIndex());
+	    }
 	}
 }

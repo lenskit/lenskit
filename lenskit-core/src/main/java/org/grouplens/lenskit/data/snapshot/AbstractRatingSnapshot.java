@@ -25,26 +25,24 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 public abstract class AbstractRatingSnapshot implements RatingSnapshot {
 
-    protected volatile Long2ObjectMap<SparseVector> cache;
+    protected volatile Long2ObjectMap<UserVector> cache;
 
     public AbstractRatingSnapshot() {
         cache =
-            Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<SparseVector>());
+            Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<UserVector>());
     }
 
     @Override
-    public SparseVector userRatingVector(long userId) {
-        SparseVector data = cache.get(userId);
+    public UserVector userRatingVector(long userId) {
+        UserVector data = cache.get(userId);
         if (data != null) {
             return data;
-        }
-        else {
+        } else {
             FastCollection<IndexedPreference> prefs =
                 this.getUserRatings(userId);
             data = UserVector.fromPreferences(userId, prefs);

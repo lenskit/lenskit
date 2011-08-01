@@ -117,7 +117,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             logger.debug("Error epsilon is {}", trainingThreshold);
         }
 
-        MutableSparseVector[] estimates = initializeEstimates(snapshot, baseline);
+        double[] estimates = initializeEstimates(snapshot, baseline);
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
         logger.debug("Building SVD with {} features for {} ratings",
@@ -135,22 +135,26 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private MutableSparseVector[] initializeEstimates(RatingSnapshot snapshot,
+    private double[] initializeEstimates(RatingSnapshot snapshot,
                                                       BaselinePredictor baseline) {
         final int nusers = snapshot.userIndex().getObjectCount();
-        MutableSparseVector[] estimates = new MutableSparseVector[nusers];
+        final int nprefs = snapshot.getRatings().size();
+        double[] estimates = new double[nprefs];
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
             // FIXME Use the snapshot's user rating vector support
-            UserVector user = UserVector.fromPreferences(uid, snapshot.getUserRatings(uid));
+            FastCollection<IndexedPreference> ratings = snapshot.getUserRatings(uid);
+            UserVector user = UserVector.fromPreferences(uid, ratings);
             MutableSparseVector blpreds = baseline.predict(user, user.keySet());
-            estimates[i] = blpreds;
+            for (IndexedPreference p: ratings.fast()) {
+                estimates[p.getIndex()] = blpreds.get(p.getItemId());
+            }
         }
         return estimates;
     }
 
     private final void trainFeature(double[][] ufvs, double[][] ifvs,
-                                    MutableSparseVector[] estimates,
+                                    double[] estimates,
                                     FastCollection<IndexedPreference> ratings, int feature) {
         
         logger.trace("Training feature {}", feature);
@@ -187,12 +191,12 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
         for (IndexedPreference r: ratings.fast()) {
+            final int idx = r.getIndex();
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
-            final long item = r.getItemId();
-            double est = estimates[uidx].get(item);
+            double est = estimates[idx];
             est = clampingFunction.apply(est + ufv[uidx] * ifv[iidx]);
-            estimates[uidx].set(item, est);
+            estimates[idx] = est;
         }
     }
 
@@ -216,7 +220,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     }
 
     private final double trainFeatureIteration(FastCollection<IndexedPreference> ratings,
-            double[] ufv, double[] ifv, MutableSparseVector[] estimates, double trailingValue) {
+            double[] ufv, double[] ifv, double[] estimates, double trailingValue) {
         // We'll need to keep track of our sum of squares
         double ssq = 0;
         for (IndexedPreference r: ratings.fast()) {
@@ -228,7 +232,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     }
 
     private final double trainRating(double[] ufv, double[] ifv,
-                                 MutableSparseVector[] estimates,
+                                 double[] estimates,
                                  double trailingValue,
                                  IndexedPreference r) {
         final int uidx = r.getUserIndex();
@@ -236,7 +240,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         final double value = r.getValue();
         // Step 1: get the predicted value (based on preceding features
         // and the current feature values)
-        final double estimate = estimates[uidx].get(r.getItemId());
+        final double estimate = estimates[r.getIndex()];
         double pred = estimate + ufv[uidx] * ifv[iidx];
         pred = clampingFunction.apply(pred);
 

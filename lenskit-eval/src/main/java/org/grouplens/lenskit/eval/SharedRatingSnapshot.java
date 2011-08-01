@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 public class SharedRatingSnapshot implements RatingSnapshot {
@@ -70,7 +70,7 @@ public class SharedRatingSnapshot implements RatingSnapshot {
     }
 
 	@Override
-	public SparseVector userRatingVector(long userId) {
+	public UserVector userRatingVector(long userId) {
 		return snapshot.userRatingVector(userId);
 	}
 }

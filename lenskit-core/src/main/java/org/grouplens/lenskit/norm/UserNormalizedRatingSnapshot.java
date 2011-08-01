@@ -28,6 +28,7 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -175,7 +176,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
         public Iterator<IndexedPreference> fastIterator() {
             return new Iterator<IndexedPreference>() {
                 private Iterator<IndexedPreference> biter = base.fastIterator();
-                IndexedPreference preference = new IndexedPreference();
+                IndirectPreference preference = new IndirectPreference();
                 @Override public void remove() {
                     throw new UnsupportedOperationException();
                 }
@@ -183,17 +184,51 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                     return biter.hasNext();
                 }
                 @Override public IndexedPreference next() {
-                    IndexedPreference bp = biter.next();
-                    final int uidx = bp.getUserIndex();
-                    final long iid = bp.getItemId();
-                    preference.setUserId(bp.getUserId());
-                    preference.setItemId(iid);
-                    preference.setUserIndex(uidx);
-                    preference.setItemIndex(bp.getItemIndex());
-                    preference.setValue(normedData[uidx].get(iid));
+                    preference.base = biter.next();
                     return preference;
                 }
             };
+        }
+        
+        final class IndirectPreference implements IndexedPreference {
+            IndexedPreference base;
+            
+            @Override
+            public long getUserId() {
+                return base.getUserId();
+            }
+            
+            @Override
+            public long getItemId() {
+                return base.getItemId();
+            }
+            
+            @Override
+            public double getValue() {
+                return normedData[getUserIndex()].get(getItemId());
+            }
+            
+            @Override
+            public int getIndex() {
+                return base.getIndex();
+            }
+            
+            @Override
+            public int getUserIndex() {
+                return base.getUserIndex();
+            }
+            
+            @Override
+            public int getItemIndex() {
+                return base.getItemIndex();
+            }
+            
+            @Override
+            public IndexedPreference clone() {
+                return new MutableIndexedPreference(getUserId(), getItemId(), 
+                                                    getValue(), getIndex(),
+                                                    getUserIndex(), getItemIndex());
+            }
         }
         
         @Override
@@ -219,8 +254,8 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                     IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
-                    return new IndexedPreference(r.getUserId(), iid, 
-                            normedData[uidx].get(iid), 
+                    return new MutableIndexedPreference(r.getUserId(), iid, 
+                            normedData[uidx].get(iid), r.getIndex(),
                             uidx, r.getItemIndex());
                 }
             };

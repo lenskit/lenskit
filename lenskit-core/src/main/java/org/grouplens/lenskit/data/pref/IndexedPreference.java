@@ -18,56 +18,13 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-
 /**
- * Indexed preference - a preference where user and item IDs are associated with
- * contiguous 0-based indices. It is used in cases where arrays of item and/or
- * user data are being computed; {@link RatingSnapshot} makes indexed
- * preferences available to allow recommender implementations to be more
- * efficient.
- * 
+ * A Preference that stores 0-based indices for the user, item, and itself.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
-public class IndexedPreference extends MutablePreference {
-    int userIndex, itemIndex;
-
-    /**
-     * Create a new indexed preference.
-     * 
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param r The preference value.
-     * @param uidx The user index.
-     * @param iidx The item index.
-     */
-    public IndexedPreference(long uid, long iid, double r, int uidx, int iidx) {
-        super(uid, iid, r);
-        userIndex = uidx;
-        itemIndex = iidx;
-    }
-
-    /**
-     * Create a new, all-zero preference.
-     */
-    public IndexedPreference() {
-        this(0, 0, 0, 0, 0);
-    }
-
-    public final int getItemIndex() {
-        return itemIndex;
-    }
-
-    public final int getUserIndex() {
-        return userIndex;
-    }
-
-    public final void setItemIndex(int idx) {
-        itemIndex = idx;
-    }
-
-    public final void setUserIndex(int idx) {
-        userIndex = idx;
-    }
+public interface IndexedPreference extends Preference {
+    int getIndex();
+    int getItemIndex();
+    int getUserIndex();
 }

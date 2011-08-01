@@ -27,7 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.util.FastCollection;
 
 /**
@@ -84,9 +84,12 @@ public interface RatingSnapshot extends Closeable {
     /**
      * Get the collection of ratings in the snapshot. The ratings are returned
      * in an undetermined order. It is guaranteed that no duplicate ratings
-     * appear - each <i>(user,item)</i> pair is rated at most once.
+     * appear - each <i>(user,item)</i> pair is rated at most once. Each
+     * preference's index is also in the range [0,len), where len is the size of
+     * this collection.
      * 
-     * <p>Modifying the returned indexed preferences will <b>not</b> modify the
+     * <p>
+     * Modifying the returned indexed preferences will <b>not</b> modify the
      * underlying snapshot.
      * 
      * @return All ratings in the system.
@@ -116,7 +119,7 @@ public interface RatingSnapshot extends Closeable {
      *         unknown.
      * @todo Make this track user rating vectors.
      */
-	SparseVector userRatingVector(long userId);
+	UserVector userRatingVector(long userId);
 
     /**
      * Close the build context. This overrides {@link Closeable#close()} to drop

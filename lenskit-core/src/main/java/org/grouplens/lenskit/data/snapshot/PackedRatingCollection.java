@@ -118,7 +118,8 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
     private final class FastIteratorImpl implements Iterator<IndexedPreference> {
         private final IntIterator iter;
-        private IndexedPreference preference = new IndexedPreference();
+        private PackedRatingData.IndirectPreference preference =
+                data.makeRating(0);
 
         FastIteratorImpl() {
             iter = indices.iterator();
@@ -131,14 +132,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            final int index = iter.next();
-            final int uidx = data.users[index];
-            final int iidx = data.items[index];
-            preference.setUserIndex(uidx);
-            preference.setItemIndex(iidx);
-            preference.setUserId(data.userIndex.getId(uidx));
-            preference.setItemId(data.itemIndex.getId(iidx));
-            preference.setValue(data.values[index]);
+            preference.index = iter.next();
             return preference;
         }
 
