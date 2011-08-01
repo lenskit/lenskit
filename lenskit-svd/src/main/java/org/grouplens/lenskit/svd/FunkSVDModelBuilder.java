@@ -34,6 +34,7 @@ import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.FastCollection;
+import org.grouplens.lenskit.util.TaskTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,6 +170,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         // Initialize our counters and error tracking
         double rmse = Double.MAX_VALUE, oldRmse = 0.0;
         int epoch;
+        TaskTimer timer = new TaskTimer();
         
         for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
             logger.trace("Running epoch {} of feature {}", epoch, feature);
@@ -179,8 +181,8 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
         }
 
-        logger.debug("Finished feature {} in {} epochs, rmse={}",
-        		new Object[]{feature, epoch, rmse});
+        logger.debug("Finished feature {} in {} epochs (took {}), rmse={}",
+        		new Object[]{feature, epoch, timer.elapsedPretty(), rmse});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
