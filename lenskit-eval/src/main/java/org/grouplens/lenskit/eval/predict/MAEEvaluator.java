@@ -51,7 +51,7 @@ public class MAEEvaluator implements PredictionEvaluator {
 
     @Override
     public void setup(TableWriterBuilder builder) {
-        colMAE = builder.addColumn("MAE.ByRating");
+        colMAE = builder.addColumn("MAE");
     }
     
     class Accum implements Accumulator {
