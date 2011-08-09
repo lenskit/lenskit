@@ -88,4 +88,9 @@ public class ConstantPredictor implements BaselinePredictor {
         DoubleArrays.fill(preds, value);
         return MutableSparseVector.wrap(keys, preds);
     }
+    
+    @Override
+    public String toString() {
+        return String.format("%s(%.3f)", getClass().getCanonicalName(), value);
+    }
 }
