@@ -25,6 +25,9 @@ Release 0.5-SNAPSHOT
   * Dropped by-user MAE from MAE evaluator and renamed “MAE.ByRating”
     in output to “MAE”, as per-user and global MAE are equivalent.
 
+  * Moved <<<TaskTimer>>> to <<<lenskit-core>>> so it is available for
+    logging elapsed times in algorithm implementations.
+
   []
 
 Release 0.4
