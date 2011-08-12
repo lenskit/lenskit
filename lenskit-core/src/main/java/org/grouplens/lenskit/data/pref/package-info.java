@@ -16,7 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 /**
- * Snapshotting summarized user data.
+ * User preferences for items.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.grouplens.lenskit.data.pref;
