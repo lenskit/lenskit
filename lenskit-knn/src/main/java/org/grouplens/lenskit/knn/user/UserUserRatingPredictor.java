@@ -53,6 +53,7 @@ import com.google.common.collect.Iterables;
  *
  */
 public class UserUserRatingPredictor extends AbstractItemScorer {
+    private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final VectorNormalizer<? super UserVector> normalizer;
@@ -118,11 +119,14 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
             double sum = 0;
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
-            if (nbrs != null && !nbrs.isEmpty()) {
+            if (nbrs != null) {
                 for (final Neighbor n: neighborhoods.get(item)) {
                     weight += abs(n.similarity);
                     sum += n.similarity * normedUsers.get(n.user).get(item);
                 }
+            }
+            
+            if (weight >= MINIMUM_SIMILARITY) {
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
                 preds[i] = sum / weight;
             } else {
