@@ -65,7 +65,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         neighborhoodFinder = nbrf;
         normalizer = norm;
         this.baseline = baseline;
-        logger.debug("Built recommender with baseline {}", baseline);
+        logger.debug("Built predictor with baseline {}", baseline);
     }
     
     /**
@@ -134,7 +134,8 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         UserVector urv = RatingVectorSummarizer.makeRatingVector(history);
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
-            logger.trace("Filling in {} missing user with baseline", missing.size());
+            logger.trace("Filling in {} missing predictions with baseline",
+                         missing.size());
             LongSortedSet mset = LongSortedArraySet.ofList(missing);
             MutableSparseVector blpreds = baseline.predict(urv, mset);
             for (int i = 0; i < keys.length; i++) {
