@@ -46,6 +46,8 @@ public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<User
 
     @Override
     public VectorTransformation makeTransformation(UserVector ratings) {
+        if (ratings.isEmpty())
+            return new IdentityVectorNormalizer().makeTransformation(ratings);
         return new Transformation(ratings);
     }
     

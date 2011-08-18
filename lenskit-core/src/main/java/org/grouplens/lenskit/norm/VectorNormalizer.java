@@ -61,14 +61,18 @@ public interface VectorNormalizer<V extends ImmutableSparseVector> {
      */
     MutableSparseVector normalize(V reference, @Nullable MutableSparseVector target);
 
-	/**
-	 * Create a vector transformation that normalizes and denormalizes vectors
-	 * with respect to the specified entity. This allows transformations to be
-	 * applied multiple times to different vectors and also unapplied.
-	 * 
-	 * @param reference The reference vector.
-	 * @return A transformation built from the reference vector.
-	 */
+    /**
+     * Create a vector transformation that normalizes and denormalizes vectors
+     * with respect to the specified entity. This allows transformations to be
+     * applied multiple times to different vectors and also unapplied.
+     * <p>
+     * If the reference vector is empty, the returned transformation should be
+     * the identity transform. Results are undefined if the reference vector is
+     * not complete or contains NaN values.
+     * 
+     * @param reference The reference vector.
+     * @return A transformation built from the reference vector.
+     */
 	VectorTransformation makeTransformation(V reference);
 
 }

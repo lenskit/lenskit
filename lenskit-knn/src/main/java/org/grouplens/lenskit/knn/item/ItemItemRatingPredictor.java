@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.knn.item;
 
 import static java.lang.Math.abs;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -164,10 +163,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
         if (baseline != null && !unpredItems.isEmpty()) {
         	logger.trace("Filling {} items from baseline", unpredItems.size());
             SparseVector basePreds = baseline.predict(ratings, unpredItems);
-            for (Long2DoubleMap.Entry e: basePreds.fast()) {
-                assert Double.isNaN(preds.get(e.getLongKey()));
-                preds.set(e.getLongKey(), e.getDoubleValue());
-            }
+            preds.set(basePreds);
             return preds;
         } else {
         	return preds.copy(true);

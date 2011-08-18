@@ -201,7 +201,7 @@ public class MutableSparseVector extends SparseVector {
      * Add another rating vector to this one.
      *
      * <p>After calling this method, every element of this vector has been
-     * decreased by the corresponding element in <var>other</var>.  Elements
+     * increased by the corresponding element in <var>other</var>.  Elements
      * with no corresponding element are unchanged.
      * @param other The vector to add.
      */
@@ -215,6 +215,40 @@ public class MutableSparseVector extends SparseVector {
         while (i < len && j < olen) {
             if (keys[i] == other.keys[j]) {
                 values[i] += other.values[j];
+                i++;
+                j++;
+            } else if (keys[i] < other.keys[j]) {
+                i++;
+            } else {
+                j++;
+            }
+        }
+        clearCachedValues();
+    }
+
+    /**
+     * Set the values in this SparseVector to equal the values in
+     * <var>other</var> for each key that is present in both vectors.
+     * 
+     * <p>After calling this method, every element in this vector that has a key
+     * in <var>other</var> has its value set to the corresponding value in
+     * <var>other</var>. Elements with no corresponding key are unchanged, and
+     * elements in <var>other</var> that are not in this vector are not
+     * inserted.
+     * 
+     * @param other The vector to blit its values into this vector
+     */
+    public final void set(final SparseVector other) {
+        checkValid();
+        other.checkValid();
+        
+        final int len = keys.length;
+        final int olen = other.keys.length;
+        int i = 0;
+        int j = 0;
+        while (i < len && j < olen) {
+            if (keys[i] == other.keys[j]) {
+                values[i] = other.values[j];
                 i++;
                 j++;
             } else if (keys[i] < other.keys[j]) {

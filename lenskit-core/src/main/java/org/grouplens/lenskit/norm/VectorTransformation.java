@@ -28,13 +28,26 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
 public interface VectorTransformation {
     /**
      * Apply the vector transformation in-place to a vector.
+     * 
+     * <p>
+     * The transformation must behave well if the vector is incomplete and
+     * contains NaN values. It is expected that NaN's will remain
+     * NaN's without impacting the normalization of the other values in the
+     * vector.
+     * 
      * @param vector The vector to transform.
      * @return <var>vector</var> (for chaining).
      */
     MutableSparseVector apply(MutableSparseVector vector);
-    
+
     /**
      * Unapply the vector transformation in-place on a transformed vector.
+     * 
+     * <p>
+     * The transformation must behave well if the vector is incomplete and
+     * contains NaN values. It is expected that NaN's will remain NaN's without
+     * impacting the de-normalization of the other values in the vector.
+     * 
      * @param vector The vector to transform.
      * @return <var>vector</var> (for chaining).
      */

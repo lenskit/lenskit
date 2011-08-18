@@ -123,6 +123,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
 
 	@Override
 	public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
+	    if (reference.isEmpty())
+	        return new IdentityVectorNormalizer().makeTransformation(reference);
 	    return new Transform(reference);
 	}
 	
