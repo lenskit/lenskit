@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.knn.user;
 
 import static java.lang.Math.abs;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -140,37 +139,19 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         UserVector urv = RatingVectorSummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(urv);
         MutableSparseVector v = MutableSparseVector.wrap(keys, preds, false);
-        logVectorStatus(v, "wrapped");
         vo.unapply(v);
-        logVectorStatus(v, "unnormalized");
         
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
             logger.trace("Filling in {} missing predictions with baseline",
                          missing.size());
             MutableSparseVector basePreds = baseline.predict(urv, missing);
-            logVectorStatus(basePreds, "baseline");
             v.set(basePreds);
-            logVectorStatus(v, "set");
             return v;
         } else {
             // Prune any NaNs since we didn't have a baseline to do it for us
             SparseVector v2 = v.copy(true);
-            logVectorStatus(v2, "copy");
             return v2;
         }
-    }
-    
-    private void logVectorStatus(SparseVector v, String name) {
-        logger.trace("Vector({}) size={} nan={}", new Object[] {name, v.size(), getNaNCount(v)});
-    }
-    
-    private int getNaNCount(SparseVector v) {
-        int count = 0;
-        for (Entry e: v.fast()) {
-            if (Double.isNaN(e.getDoubleValue()))
-                count++;
-        }
-        return count;
     }
 }
