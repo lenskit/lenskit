@@ -16,31 +16,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.history;
+package org.grouplens.lenskit.params;
 
-import org.grouplens.lenskit.data.event.Event;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorNormalizer;
+import org.grouplens.lenskit.params.meta.DefaultClass;
+import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
- * Summarize user histories as real-valued vectors.
+ * Normalizer applied to user history summary vectors prior to processing data.
+ * Rating-based recommenders will use this to process rating data.
  * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * <p>This normalizer is applied to {@link UserVector}s.
  */
-public interface HistorySummarizer {
-    /**
-     * Get the supertype of all events required by this summarizer.
-     * 
-     * @return A type such that any type used by this summarizer is a subtype of
-     *         it.
-     */
-    Class<? extends Event> eventTypeWanted();
-
-    /**
-     * Compute a vector summary of a user's history.
-     * 
-     * @param history The history to summarize.
-     * @return A vector summarizing the user's history.
-     */
-    UserVector summarize(UserHistory<? extends Event> history);
-}
+@Documented
+@DefaultClass(IdentityVectorNormalizer.class)
+@Parameter(VectorNormalizer.class)
+@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UserVectorNormalizer { }

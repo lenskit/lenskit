@@ -47,7 +47,7 @@ import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
         return normalizer;
     }
     
-    @UserRatingVectorNormalizer
+    @UserVectorNormalizer
     public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
         normalizer = norm;
     }

@@ -24,22 +24,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.data.vector.UserVector;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
-import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
-import org.grouplens.lenskit.norm.VectorNormalizer;
+import org.grouplens.lenskit.data.history.HistorySummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
- * Normalizer applied to user rating vectors prior to processing rating data.
- * This is typically used via {@link UserNormalizedRatingSnapshot}.
+ * The summarizer to use for summarizing user data prior to recommendation or
+ * prediction.
  * 
- * <p>This normalizer is applied to {@link UserVector}s.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
  */
 @Documented
-@DefaultClass(IdentityVectorNormalizer.class)
-@Parameter(VectorNormalizer.class)
+@Parameter(HistorySummarizer.class)
+@DefaultClass(RatingVectorSummarizer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UserRatingVectorNormalizer { }
+public @interface UserHistorySummary {
+}

@@ -71,7 +71,7 @@ public class TestUserUserRecommender {
 		factory.setComponent(ItemRecommender.class, UserUserRecommender.class);
 		factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
 		// this is the default
-/*		factory.setComponent(UserRatingVectorNormalizer.class, 
+/*		factory.setComponent(UserVectorNormalizer.class, 
 		                     VectorNormalizer.class, 
 		                     IdentityVectorNormalizer.class);*/
 		RecommenderEngine engine = factory.create();

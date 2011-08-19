@@ -52,6 +52,11 @@ public final class CountSummarizer implements HistorySummarizer {
     public CountSummarizer(@Nonnull Class<? extends Event> type) {
         wantedType = type;
     }
+    
+    @Override
+    public Class<? extends Event> eventTypeWanted() {
+        return wantedType;
+    }
 
     @Override
     public UserVector summarize(UserHistory<? extends Event> history) {

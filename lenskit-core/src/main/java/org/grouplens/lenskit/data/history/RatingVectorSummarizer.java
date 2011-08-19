@@ -34,6 +34,11 @@ public final class RatingVectorSummarizer implements HistorySummarizer, Function
     private static final RatingVectorSummarizer INSTANCE = new RatingVectorSummarizer();
     
     @Override
+    public Class<? extends Event> eventTypeWanted() {
+        return Rating.class;
+    }
+    
+    @Override
     public UserVector summarize(UserHistory<? extends Event> history) {
         return history.memoize(this);
     }

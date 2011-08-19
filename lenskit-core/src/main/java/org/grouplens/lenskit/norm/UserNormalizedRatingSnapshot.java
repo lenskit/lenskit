@@ -34,7 +34,7 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
-import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
          * Set the normalizer to use.
          * @param normalizer
          */
-        @UserRatingVectorNormalizer
+        @UserVectorNormalizer
         public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
             this.normalizer = normalizer;
         }

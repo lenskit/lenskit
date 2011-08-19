@@ -45,7 +45,7 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs, 
                                     @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @UserRatingVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+                                    @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;

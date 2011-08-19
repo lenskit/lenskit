@@ -28,14 +28,17 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
-import java.util.Collection;
-
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.Cursors2;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.HistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
@@ -43,8 +46,8 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.NormalizedSnapshot;
-import org.grouplens.lenskit.params.UserRatingVectorNormalizer;
+import org.grouplens.lenskit.params.UserHistorySummary;
+import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,23 +64,29 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
 
     private Similarity<? super SparseVector> itemSimilarity;
     
-    private RatingSnapshot normalizedData;
     private VectorNormalizer<? super UserVector> normalizer;
+    private HistorySummarizer userSummarizer;
     private int modelSize;
+    
+    private DataAccessObject dao;
+    
+    public ItemItemModelBuilder(DataAccessObject dao) {
+        this.dao = dao;
+    }
     
     @ItemSimilarity
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
         itemSimilarity = similarity;
     }
-
-    @NormalizedSnapshot
-    public void setNormalizedRatingSnapshot(RatingSnapshot data) {
-        this.normalizedData = data;
-    }
     
-    @UserRatingVectorNormalizer
+    @UserVectorNormalizer
     public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
         this.normalizer = normalizer;
+    }
+    
+    @UserHistorySummary
+    public void setSummarizer(HistorySummarizer sum) {
+        userSummarizer = sum;
     }
     
     public int getModelSize() {
@@ -92,7 +101,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     public ItemItemModel build() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
         
-        LongSortedSet items = new LongSortedArraySet(normalizedData.getItemIds());
+        LongArrayList ilist = Cursors2.makeList(dao.getItems());
+        LongSortedSet items = new LongSortedArraySet(ilist);
         
         Long2ObjectMap<LongSortedSet> userItemSets;
         if (similarityStrategy.needsUserItemSets())
@@ -146,32 +156,40 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
             workMatrix.put(iid, new Long2DoubleOpenHashMap(20));
         }
 
-        LongIterator userIter = normalizedData.getUserIds().iterator();
-        while (userIter.hasNext()) {
-            final long user = userIter.nextLong();
-            Collection<? extends Preference> ratings = normalizedData.getUserRatings(user);
+        Cursor<? extends UserHistory<? extends Event>> histories =
+                dao.getUserHistories(userSummarizer.eventTypeWanted());
+        try {
+            for (UserHistory<? extends Event> user: histories) {
+                final long uid = user.getUserId();
+                
+                UserVector summary = userSummarizer.summarize(user);
+                MutableSparseVector normed = summary.mutableCopy();
+                normalizer.normalize(summary, normed);
+                final int nratings = summary.size();
 
-            final int nratings = ratings.size();
-            // allocate the array ourselves to avoid an array copy
-            long[] userItemArr = null;
-            LongCollection userItems = null;
-            if (collectItems) {
-                userItemArr = new long[nratings];
-                userItems = LongArrayList.wrap(userItemArr, 0);
-            }
+                // allocate the array ourselves to avoid an array copy
+                long[] userItemArr = null;
+                LongCollection userItems = null;
+                if (collectItems) {
+                    userItemArr = new long[nratings];
+                    userItems = LongArrayList.wrap(userItemArr, 0);
+                }
 
-            for (Preference rating: ratings) {
-                final long item = rating.getItemId();
-                // get the item's rating vector
-                Long2DoubleMap ivect = workMatrix.get(item);
-                ivect.put(user, rating.getValue());
-                if (userItems != null)
-                    userItems.add(item);
+                for (Long2DoubleMap.Entry rating: normed.fast()) {
+                    final long item = rating.getLongKey();
+                    // get the item's rating vector
+                    Long2DoubleMap ivect = workMatrix.get(item);
+                    ivect.put(uid, rating.getDoubleValue());
+                    if (userItems != null)
+                        userItems.add(item);
+                }
+                if (collectItems) {
+                    LongSortedSet itemSet = new LongSortedArraySet(userItemArr, 0, userItems.size());
+                    userItemSets.put(uid, itemSet);
+                }
             }
-            if (collectItems) {
-                LongSortedSet itemSet = new LongSortedArraySet(userItemArr, 0, userItems.size());
-                userItemSets.put(user, itemSet);
-            }
+        } finally {
+            histories.close();
         }
 
         return workMatrix;

@@ -53,7 +53,7 @@ public class TestItemItemRecommenderBuild {
 		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
 		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
-//		factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
+//		factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //		                     IdentityVectorNormalizer.class);
 
 		engine = factory.create();

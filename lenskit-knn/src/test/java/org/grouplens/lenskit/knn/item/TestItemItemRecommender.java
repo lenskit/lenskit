@@ -68,7 +68,7 @@ public class TestItemItemRecommender {
 		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
 		// FIXME Let this work @mludwig
-		/*factory.setComponent(UserRatingVectorNormalizer.class, VectorNormalizer.class,
+		/*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 		                     IdentityVectorNormalizer.class);*/
 		RecommenderEngine engine = factory.create();
 		session = engine.open();

@@ -54,7 +54,7 @@ public class TestSlopeOneItemRecommender {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
         factory.setComponent(ItemRecommender.class, SlopeOneRecommender.class);
-        // factory.setComponent(UserRatingVectorNormalizer.class, IdentityVectorNormalizer.class);
+        // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
         factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
         engine = factory.create();
     }
