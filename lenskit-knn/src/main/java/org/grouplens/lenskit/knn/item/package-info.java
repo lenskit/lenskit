@@ -18,5 +18,7 @@
  */
 /**
  * Implementation of item-item collaborative filtering.
+ * 
+ * @cite Sarwar et al. 2001.
  */
 package org.grouplens.lenskit.knn.item;
