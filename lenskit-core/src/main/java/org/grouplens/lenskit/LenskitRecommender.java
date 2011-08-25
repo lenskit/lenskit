@@ -61,6 +61,11 @@ public class LenskitRecommender implements Recommender {
     public <T> T getComponent(Class<T> cls) {
         return container.getComponent(cls);
     }
+    
+    @Override
+    public ItemScorer getItemScorer() {
+        return container.getComponent(ItemScorer.class);
+    }
 
     @Override
     public RatingPredictor getRatingPredictor() {

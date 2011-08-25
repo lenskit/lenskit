@@ -18,70 +18,47 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static java.lang.Math.abs;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.AbstractItemScorer;
+import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.ScoredLongListIterator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
+import org.grouplens.lenskit.data.history.HistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.util.LongSortedArraySet;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.params.UserHistorySummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Generate predictions with item-item collaborative filtering.
+ * Generate predictions with item-item collaborative filtering. This configures
+ * {@link ItemItemScorer} to predict ratings, and can supply baseline
+ * predictions if so configured.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
+ * @see ItemItemScorer
  */
-public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemItemScorer {
+public class ItemItemRatingPredictor extends ItemItemScorer implements ItemItemModelBackedScorer {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected final ItemItemModel model;
-    private final int neighborhoodSize;
-    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
-            new IdentityVectorNormalizer();
     protected @Nullable BaselinePredictor baseline;
     
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model, 
-                                   @NeighborhoodSize int nnbrs) {
-        super(dao);
-        this.model = model;
-        neighborhoodSize = nnbrs;
+                                   @NeighborhoodSize int nnbrs,
+                                   @UserHistorySummary HistorySummarizer summarizer) {
+        super(dao, model, nnbrs, summarizer, new WeightedAverageNeighborhoodScorer());
         logger.debug("Creating rating scorer with neighborhood size {}", neighborhoodSize);
-    }
-    
-    @Nonnull
-    public VectorNormalizer<? super UserVector> getNormalizer() {
-        return normalizer;
-    }
-    
-    @UserVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
-        normalizer = norm;
     }
     
     @Nullable
@@ -89,101 +66,78 @@ public class ItemItemRatingPredictor extends AbstractItemScorer implements ItemI
         return baseline;
     }
     
+    /**
+     * Configure the baseline predictor for unpredicatble items. If an item
+     * cannot be have its preference predicted (e.g. no neighborhood is found),
+     * the prediction is supplied from this baseline.
+     * 
+     * @param pred The baseline predictor. Configure this by setting the
+     *        {@link BaselinePredictor} component.
+     * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
+     */
     public void setBaseline(@Nullable BaselinePredictor pred) {
         baseline = pred;
     }
     
+    /**
+     * Configure a neighborhood scorer. The default scorer is
+     * {@link WeightedAverageNeighborhoodScorer}.
+     * 
+     * @param scorer
+     */
+    // FIXME: Enable this code when the new config system allows it
+//    public void setScorer(NeighborhoodScorer scorer) {
+//        this.scorer = scorer;
+//    }
+    
+    /**
+     * Normalize data and supply baselines. The resulting transformation uses
+     * the normalizer ({@link #setNormalizer(VectorNormalizer)}) to normalize
+     * the user data and denormalize the predictions. It then supplies missing
+     * predictions from the baseline predictor (
+     * {@link #setBaseline(BaselinePredictor)}) if one has been configured.
+     */
     @Override
-    public ItemItemModel getModel() {
-        return model;
-    }
-
-    @Override
-    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserVector ratings = RatingVectorSummarizer.makeRatingVector(history);
-        VectorTransformation norm = normalizer.makeTransformation(ratings);
-        MutableSparseVector normed = ratings.mutableCopy();
-        norm.apply(normed);
-
-        // FIXME Make sure the direction on similarities is right for asym.
-        
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet)
-            iset = (LongSortedSet) items;
-        else
-            iset = new LongSortedArraySet(items);
-        
-        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
-        
-        // We ran reuse accumulators
-        ScoredItemAccumulator accum = new ScoredItemAccumulator(neighborhoodSize);
-        
-        // for each item, compute its prediction
-        LongIterator iter = iset.iterator();
-        LongList unpredItems = new LongArrayList();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+    protected VectorTransformation makeTransform(final UserVector userData) {
+        return new VectorTransformation() {
+            final VectorTransformation norm =
+                    normalizer.makeTransformation(userData);
+            final UserVector ratings = userData;
             
-            // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
-            
-            if (neighbors == null) {
-                unpredItems.add(item);
-                continue;
-            }
-            ScoredLongListIterator niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
-                if (normed.containsKey(oi))
-                    accum.put(oi, score);
+            @Override
+            public MutableSparseVector unapply(MutableSparseVector vector) {
+                norm.unapply(vector);
+                // apply the baseline if applicable
+                if (baseline != null) {
+                    LongList unpredItems = new LongArrayList();
+                    for (Long2DoubleMap.Entry pred: vector.fast()) {
+                        double p = pred.getDoubleValue();
+                        if (Double.isNaN(p)) {
+                            unpredItems.add(pred.getLongKey());
+                        }
+                    }
+                    if (!unpredItems.isEmpty()) {
+                        logger.trace("Filling {} items from baseline", unpredItems.size());
+                        SparseVector basePreds = baseline.predict(ratings, unpredItems);
+                        vector.set(basePreds);
+                    }
+                }
+                return vector;
             }
             
-            // accumulate prediction
-            double sum = 0;
-            double weight = 0;
-            niter = accum.finish().iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double sim = niter.getScore();
-                weight += abs(sim);
-                sum += sim * normed.get(oi);
+            @Override
+            public MutableSparseVector apply(MutableSparseVector vector) {
+                return norm.apply(vector);
             }
-            if (weight > 0)
-                preds.set(item, sum / weight);
-            else
-                unpredItems.add(item);
-        }
-
-        // denormalize the predictions
-        norm.unapply(preds);
-        
-        // apply the baseline if applicable
-        if (baseline != null && !unpredItems.isEmpty()) {
-        	logger.trace("Filling {} items from baseline", unpredItems.size());
-            SparseVector basePreds = baseline.predict(ratings, unpredItems);
-            preds.set(basePreds);
-            return preds;
-        } else {
-        	return preds.copy(true);
-        }
+        };
     }
     
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {
-        // FIXME This method incorrectly assumes the model is symmetric
         if (baseline != null) {
             return model.getItemUniverse();
         } else {
-            LongSet items = new LongOpenHashSet();
-            LongSet userItems = user.filter(Rating.class).itemSet();
-            LongIterator iter = userItems.iterator();
-            while (iter.hasNext()) {
-                final long item = iter.nextLong();
-                items.addAll(model.getNeighbors(item));
-            }
-            return items;
+            return super.getScoreableItems(user);
         }
     }
 }

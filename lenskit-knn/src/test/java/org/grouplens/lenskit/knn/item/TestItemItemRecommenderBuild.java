@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -50,7 +50,7 @@ public class TestItemItemRecommenderBuild {
 		manager = new EventCollectionDAO.Factory(rs);
 
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
+		factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
 		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
 //		factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
@@ -64,7 +64,7 @@ public class TestItemItemRecommenderBuild {
 		Recommender rec = engine.open();
 		
 		// These assert instanceof's are also assertNotNull's
-		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
+		assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
 		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
 		assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
 	}

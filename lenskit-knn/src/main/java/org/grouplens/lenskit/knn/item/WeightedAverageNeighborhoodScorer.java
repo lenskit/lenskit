@@ -18,31 +18,33 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
+import static java.lang.Math.abs;
 
-import org.grouplens.lenskit.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.ScoredLongListIterator;
+import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
+ * Neighborhood scorer that computes the weighted average of neighbor scores.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemModelBackedScorer scorer;
-    
-    /**
-     * Construct a new item-item recommender from a scorer.
-     * @param scorer The scorer to use.
-     */
-    public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
-        super(dao, scorer);
-        this.scorer = scorer;
-    }
-    
+public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer {
     @Override
-    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return scorer.getScoreableItems(user);
+    public double score(ScoredLongList neighbors, SparseVector scores) {
+        double sum = 0;
+        double weight = 0;
+        ScoredLongListIterator nIter = neighbors.iterator();
+        while (nIter.hasNext()) {
+            long oi = nIter.nextLong();
+            double sim = nIter.getScore();
+            weight += abs(sim);
+            sum += sim * scores.get(oi);
+        }
+        if (weight > 0) {
+            return sum / weight;
+        } else {
+            return Double.NaN;
+        }
     }
 }

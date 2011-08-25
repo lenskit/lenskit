@@ -20,29 +20,29 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
 /**
+ * Item scorer specific to item-item recommenders. It exposes the item-item
+ * model as well as the scoring functionality.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemModelBackedScorer scorer;
+public interface ItemItemModelBackedScorer extends ItemScorer {
+    /**
+     * Get the item-item model backing this scorer.
+     * 
+     * @return The model this scorer uses to compute scores.
+     */
+    ItemItemModel getModel();
     
     /**
-     * Construct a new item-item recommender from a scorer.
-     * @param scorer The scorer to use.
+     * Get the set of scoreable items for a user.
+     * @param user The user to query for.
+     * @return The set of items for which scores can be generated.
      */
-    public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
-        super(dao, scorer);
-        this.scorer = scorer;
-    }
-    
-    @Override
-    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return scorer.getScoreableItems(user);
-    }
+    LongSet getScoreableItems(UserHistory<? extends Event> user);
 }

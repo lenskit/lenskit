@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -64,7 +64,7 @@ public class TestItemItemRecommender {
 		rs.add(Ratings.make(3, 9, 4));
 		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
 		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-		factory.setComponent(RatingPredictor.class, ItemItemRatingPredictor.class);
+		factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
 		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
 		// this is the default
 		// FIXME Let this work @mludwig

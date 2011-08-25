@@ -18,31 +18,24 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import org.grouplens.lenskit.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
+ * Compute scores from neighborhoods and score vectors.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemModelBackedScorer scorer;
-    
+public interface NeighborhoodScorer {
     /**
-     * Construct a new item-item recommender from a scorer.
-     * @param scorer The scorer to use.
+     * Compute a score based on similar neighbors and their corresponding
+     * scores.
+     * 
+     * @param neighbors A list of neighbors with similarity measures.
+     * @param scores A vector of item scores. It should contain a score for
+     *        every item in <var>neighbors</var>.
+     * @return An accumulated score from the neighbors.
      */
-    public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
-        super(dao, scorer);
-        this.scorer = scorer;
-    }
-    
-    @Override
-    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return scorer.getScoreableItems(user);
-    }
+    double score(ScoredLongList neighbors, SparseVector scores);
 }

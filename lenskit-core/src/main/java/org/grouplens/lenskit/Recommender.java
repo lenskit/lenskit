@@ -48,9 +48,19 @@ public interface Recommender {
     DataAccessObject getRatingDataAccessObject();
     
     /**
+     * Get the recommender's item scorer.
+     * 
+     * @return The item scorer for this recommender configuration, or
+     *         <tt>null</tt> if item scoring is not supported.
+     */
+    @Nullable
+    ItemScorer getItemScorer();
+    
+    /**
      * Get the recommender's rating scorer.
+     * 
      * @return The rating scorer for this recommender configuration, or
-     * <tt>null</tt> if rating prediction is not supported.
+     *         <tt>null</tt> if rating prediction is not supported.
      */
     @Nullable
     RatingPredictor getRatingPredictor();
