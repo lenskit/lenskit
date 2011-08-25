@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * @see ItemItemModelBuilder
  * @see ItemItemScorer
  */
-public class ItemItemRatingPredictor extends ItemItemScorer implements ItemItemModelBackedScorer {
+public class ItemItemRatingPredictor extends ItemItemScorer {
 	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected @Nullable BaselinePredictor baseline;
     
