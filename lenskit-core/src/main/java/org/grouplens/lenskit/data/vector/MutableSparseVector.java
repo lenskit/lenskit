@@ -19,10 +19,8 @@
 package org.grouplens.lenskit.data.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -275,19 +273,13 @@ public class MutableSparseVector extends SparseVector {
      */
     public final MutableSparseVector copy(boolean removeNaN) {
         checkValid();
-        if (removeNaN) {
-            boolean copy = false;
-            for (int i = 0; !copy && i < size; i++) {
-                if (Double.isNaN(values[i]))
-                    copy = true;
-            }
-            if (copy) {
-                long[] k2 = LongArrays.copy(keys, 0, size);
-                double[] v2 = DoubleArrays.copy(values, 0, size);
-                return wrap(k2, v2, true);
-            }
+        if (removeNaN && !isComplete()) {
+            long[] k2 = Arrays.copyOf(keys, size);
+            double[] v2 = Arrays.copyOf(values, size);
+            return wrap(k2, v2, true);
+        } else {
+            return copy();
         }
-        return copy();
     }
 
     /**
@@ -319,6 +311,27 @@ public class MutableSparseVector extends SparseVector {
     	ImmutableSparseVector isv = new ImmutableSparseVector(keys, values, size);
         invalidate();
         return isv;
+    }
+    
+    /**
+     * Freeze the vector, optionally removing NaN values. The mutable vector is
+     * invalidated.
+     * 
+     * @param removeNaN If <tt>true</tt>, remove all keys with NaN values from
+     *        the final vector, resulting in a complete vector.
+     * @return An immutable vector containing this vector's data, with NaN
+     *         values possibly removed.
+     * @see #freeze()
+     * @see #copy(boolean)
+     */
+    public ImmutableSparseVector freeze(boolean removeNaN) {
+        checkValid();
+        if (!removeNaN || isComplete()) return freeze();
+        
+        // we need to remove NaN values
+        long[] k2 = Arrays.copyOf(keys, size);
+        double[] v2 = Arrays.copyOf(values, size);
+        return wrap(k2, v2, true).freeze();
     }
 
     /**
