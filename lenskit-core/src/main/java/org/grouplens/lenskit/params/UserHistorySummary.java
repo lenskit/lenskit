@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
@@ -38,7 +38,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  */
 @Documented
 @Parameter(HistorySummarizer.class)
-@DefaultClass(RatingVectorSummarizer.class)
+@DefaultClass(RatingVectorHistorySummarizer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserHistorySummary {

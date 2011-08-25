@@ -34,7 +34,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -136,7 +136,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         }
         
         // Denormalize and return the results
-        UserVector urv = RatingVectorSummarizer.makeRatingVector(history);
+        UserVector urv = RatingVectorHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(urv);
         MutableSparseVector v = MutableSparseVector.wrap(keys, preds, false);
         vo.unapply(v);

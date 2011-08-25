@@ -30,8 +30,8 @@ import com.google.common.base.Function;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class RatingVectorSummarizer implements HistorySummarizer, Function<UserHistory<? extends Event>, UserVector> {
-    private static final RatingVectorSummarizer INSTANCE = new RatingVectorSummarizer();
+public final class RatingVectorHistorySummarizer implements HistorySummarizer, Function<UserHistory<? extends Event>, UserVector> {
+    private static final RatingVectorHistorySummarizer INSTANCE = new RatingVectorHistorySummarizer();
     
     @Override
     public Class<? extends Event> eventTypeWanted() {

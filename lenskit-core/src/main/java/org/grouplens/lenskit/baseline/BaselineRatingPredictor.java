@@ -24,7 +24,7 @@ import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.data.vector.UserVector;
@@ -51,7 +51,7 @@ public class BaselineRatingPredictor extends AbstractItemScorer {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
-        UserVector ratings = RatingVectorSummarizer.makeRatingVector(profile);
+        UserVector ratings = RatingVectorHistorySummarizer.makeRatingVector(profile);
         return predictor.predict(ratings, items);
     }
 }

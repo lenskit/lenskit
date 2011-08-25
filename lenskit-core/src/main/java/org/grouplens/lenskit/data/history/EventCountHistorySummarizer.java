@@ -35,13 +35,13 @@ import com.google.common.collect.Iterables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class CountSummarizer implements HistorySummarizer {
+public final class EventCountHistorySummarizer implements HistorySummarizer {
     protected final Class<? extends Event> wantedType;
     
     /**
      * Create a summarizer that counts all events.
      */
-    public CountSummarizer() {
+    public EventCountHistorySummarizer() {
         this(Event.class);
     }
     
@@ -49,7 +49,7 @@ public final class CountSummarizer implements HistorySummarizer {
      * Create a summarizer that counts events of a particular type.
      * @param type
      */
-    public CountSummarizer(@Nonnull Class<? extends Event> type) {
+    public EventCountHistorySummarizer(@Nonnull Class<? extends Event> type) {
         wantedType = type;
     }
     
@@ -75,8 +75,8 @@ public final class CountSummarizer implements HistorySummarizer {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof CountSummarizer) {
-            CountSummarizer ocs = (CountSummarizer) o;
+        if (o instanceof EventCountHistorySummarizer) {
+            EventCountHistorySummarizer ocs = (EventCountHistorySummarizer) o;
             return wantedType.equals(ocs.wantedType);
         } else {
             return false;

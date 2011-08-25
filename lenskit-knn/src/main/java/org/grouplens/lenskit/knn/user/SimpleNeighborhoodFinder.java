@@ -36,7 +36,7 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorSummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.data.vector.SparseVector;
@@ -119,7 +119,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
         
-        UserVector urs = RatingVectorSummarizer.makeRatingVector(user);
+        UserVector urs = RatingVectorHistorySummarizer.makeRatingVector(user);
         MutableSparseVector nratings = normalizer.normalize(urs, null);
         
         /* Find candidate neighbors. To reduce scanning, we limit users to those
