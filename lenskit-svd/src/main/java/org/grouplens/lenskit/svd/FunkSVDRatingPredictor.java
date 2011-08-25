@@ -141,10 +141,16 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
     @Override
     public MutableSparseVector score(long user, Collection<Long> items) {
         int uidx = model.userIndex.getIndex(user);
-        double[] uprefs = new double[model.featureCount];
-        for (int i = 0; i < uprefs.length; i++) {
-            uprefs[i] = model.userFeatures[i][uidx];
+        if (uidx >= 0) {
+            double[] uprefs = new double[model.featureCount];
+            for (int i = 0; i < uprefs.length; i++) {
+                uprefs[i] = model.userFeatures[i][uidx];
+            }
+            return predict(user, uprefs, items);
+        } else {
+            // The user was not included in the model, so we fallback to the baseline
+            UserVector ratings = UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
+            return model.baseline.predict(ratings, items);
         }
-        return predict(user, uprefs, items);
     }
 }
