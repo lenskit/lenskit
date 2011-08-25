@@ -479,9 +479,10 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         return v;
     }
     
-    public boolean isComplete() {
+    public final boolean isComplete() {
         if (!isValid()) return false;
-        for (int i = 0; i < size; i++) {
+        final int sz = size;
+        for (int i = 0; i < sz; i++) {
     		if (Double.isNaN(values[i])) return false;
     	}
     	return true;
