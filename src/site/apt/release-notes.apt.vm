@@ -6,7 +6,7 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
-Release 0.6-SNAPSHOT
+Release 0.6
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -19,6 +19,16 @@ Release 0.6-SNAPSHOT
 
   * Added history summarizers to compute vector summaries of user
     histories.  This paves the way for non-rating-based scorers.
+
+  * Updated to <<<gl-common>>> 0.4, including the new citation JavaDoc
+    taglet.  More citations in the JavaDoc to come.
+
+  * Added version of <<<MutableSparseVector.freeze()>>> that strips NaN
+    values in the frozen vector.
+
+  * Fixed a couple bugs in the user-user rating predictor with how
+    baselines were added and what happens when the total similarity
+    for an item is 0.
 
   * Build our first basket recommender (see #issue(3)).  It isn't
     tested in basket configuration yet, but item-item CF is now
@@ -41,7 +51,7 @@ Release 0.6-SNAPSHOT
 
   []
 
-Release 0.5-SNAPSHOT
+Release 0.5
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
