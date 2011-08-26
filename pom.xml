@@ -142,8 +142,114 @@
             </rules>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-module-docbook-simple</artifactId>
+              <version>1.2</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <reportPlugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.4</version>
+                <reports>
+                  <report>index</report>
+                  <report>dependencies</report>
+                  <report>dependency-convergence</report>
+                  <report>dependency-management</report>
+                  <report>plugins</report>
+                </reports>
+              </plugin>
+              
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                  <quiet>true</quiet>
+
+                  <tags>
+                    <tag>
+                      <name>todo</name>
+                      <placement>a</placement>
+                      <head>To Do:</head>
+                    </tag>
+                    <tag>
+                      <name>review</name>
+                      <placement>a</placement>
+                      <head>Review:</head>
+                    </tag>
+                  </tags>
+
+                  <additionalJOption>
+                    "-J-Djavadoc.cite.database=${cite.database}"
+                  </additionalJOption>
+
+                  <taglets>
+                    <taglet>
+                      <tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass>
+                      <tagletArtifact>
+                        <groupId>org.grouplens.common</groupId>
+                        <artifactId>javadoc-citation-taglet</artifactId>
+                        <version>0.4</version>
+                      </tagletArtifact>
+                    </taglet>
+                  </taglets>
+
+                  <footer><![CDATA[
+                  <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
+                  ]]></footer>
+                  <excludePackageNames>org.grouplens.lenskit.pico</excludePackageNames>
+                  <detectJavaApiLink>false</detectJavaApiLink>
+                  <links>
+                    <link>http://download.oracle.com/javase/6/docs/api/</link>
+                    <link>http://fastutil.dsi.unimi.it/docs/</link>
+                    <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+                  </links>
+                  <!-- <doclet>org.jboss.apiviz.APIviz</doclet> -->
+                  <!-- <docletArtifact> -->
+                  <!--   <groupId>org.jboss.apiviz</groupId> -->
+                  <!--   <artifactId>apiviz</artifactId> -->
+                  <!--   <version>1.3.1.GA</version> -->
+                  <!-- </docletArtifact> -->
+                  <useStandardDocletOptions>true</useStandardDocletOptions>
+                </configuration>
+              </plugin>
+              
+              <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jdepend-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+              </plugin>
+
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
+                <reports>
+                  <report>jxr</report>
+                  <report>test-jxr</report>
+                </reports>
+                <configuration>
+                  <linkJavadoc>true</linkJavadoc>
+                </configuration>
+              </plugin>
+              
+            </reportPlugins>
+          </configuration>
+        </plugin>
+
       </plugins>
+
     </pluginManagement>
+
     <plugins>
 
       <plugin>
@@ -184,6 +290,28 @@
           <htmlCustomization>${docbook.xsl.custom}/common.xsl</htmlCustomization>
           <xhtmlCustomization>${docbook.xsl.custom}/common.xsl</xhtmlCustomization>
           <foCustomization>${docbook.xsl.custom}/fo.xsl</foCustomization>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <inherited>false</inherited>
+        
+        <configuration>
+          <reportPlugins combine.children="append">
+            
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jxr-plugin</artifactId>
+              <version>2.2</version>
+              <configuration>
+                <linkJavadoc>true</linkJavadoc>
+                <aggregate>true</aggregate>
+              </configuration>
+            </plugin>
+            
+          </reportPlugins>
         </configuration>
       </plugin>
 
@@ -337,149 +465,6 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <!-- Put the real site configuration here, so we can build with Maven 2 -->
-      <id>maven-3</id>
-      <activation>
-        <file>
-          <exists>${basedir}</exists>
-        </file>
-      </activation>
-
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-site-plugin</artifactId>
-              <version>3.0</version>
-              <dependencies>
-                <dependency>
-                  <groupId>org.apache.maven.doxia</groupId>
-                  <artifactId>doxia-module-docbook-simple</artifactId>
-                  <version>1.2</version>
-                </dependency>
-              </dependencies>
-              <configuration>
-                <reportPlugins>
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>2.4</version>
-                    <reports>
-                      <report>index</report>
-                      <report>dependencies</report>
-                      <report>dependency-convergence</report>
-                      <report>dependency-management</report>
-                      <report>plugins</report>
-                    </reports>
-                  </plugin>
-                  
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
-                      <quiet>true</quiet>
-
-                      <tags>
-                        <tag>
-                          <name>todo</name>
-                          <placement>a</placement>
-                          <head>To Do:</head>
-                        </tag>
-                        <tag>
-                          <name>review</name>
-                          <placement>a</placement>
-                          <head>Review:</head>
-                        </tag>
-                      </tags>
-
-                      <additionalJOption>
-                        "-J-Djavadoc.cite.database=${cite.database}"
-                      </additionalJOption>
-
-                      <taglets>
-                        <taglet>
-                          <tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass>
-                          <tagletArtifact>
-                            <groupId>org.grouplens.common</groupId>
-                            <artifactId>javadoc-citation-taglet</artifactId>
-                            <version>0.4</version>
-                          </tagletArtifact>
-                        </taglet>
-                      </taglets>
-
-                      <footer><![CDATA[
-                      <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
-                      ]]></footer>
-                      <excludePackageNames>org.grouplens.lenskit.pico</excludePackageNames>
-                      <detectJavaApiLink>false</detectJavaApiLink>
-                      <links>
-                        <link>http://download.oracle.com/javase/6/docs/api/</link>
-                        <link>http://fastutil.dsi.unimi.it/docs/</link>
-                        <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
-                      </links>
-                      <!-- <doclet>org.jboss.apiviz.APIviz</doclet> -->
-                      <!-- <docletArtifact> -->
-                      <!--   <groupId>org.jboss.apiviz</groupId> -->
-                      <!--   <artifactId>apiviz</artifactId> -->
-                      <!--   <version>1.3.1.GA</version> -->
-                      <!-- </docletArtifact> -->
-                      <useStandardDocletOptions>true</useStandardDocletOptions>
-                    </configuration>
-                  </plugin>
-                  
-                  <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>jdepend-maven-plugin</artifactId>
-                    <version>2.0-beta-2</version>
-                  </plugin>
-
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jxr-plugin</artifactId>
-                    <version>2.2</version>
-                    <reports>
-                      <report>jxr</report>
-                      <report>test-jxr</report>
-                    </reports>
-                    <configuration>
-                      <linkJavadoc>true</linkJavadoc>
-                    </configuration>
-                  </plugin>
-                  
-                </reportPlugins>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <inherited>false</inherited>
-            
-            <configuration>
-              <reportPlugins combine.children="append">
-                
-                <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-jxr-plugin</artifactId>
-                  <version>2.2</version>
-                  <configuration>
-                    <linkJavadoc>true</linkJavadoc>
-                    <aggregate>true</aggregate>
-                  </configuration>
-                </plugin>
-                
-              </reportPlugins>
-            </configuration>
           </plugin>
         </plugins>
       </build>

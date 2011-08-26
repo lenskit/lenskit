@@ -7,7 +7,7 @@
   <body>
     <menu name="LensKit Eval">
       <item name="About" href="index.html"/>
-      <item ref="reports" inherit="bottom"/>
     </menu>
+    <menu ref="reports" inherit="bottom"/>
   </body>
 </project>

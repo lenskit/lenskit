@@ -13,8 +13,10 @@
   <poweredBy/>
   <body>
     <breadcrumbs>
-      <item name="GroupLens Research" href="http://www.grouplens.org"/>
-      <item name="LensKit (Recommender Implementation)"/>
+      <item name="GroupLens Research"
+            href="http://www.grouplens.org"/>
+      <item name="LensKit (Recommender Implementation)"
+            href="index.html"/>
     </breadcrumbs>
     <menu name="LensKit">
       <item name="About" href="index.html"/>
