@@ -68,6 +68,7 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!-- Configure the compiler -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -78,14 +79,8 @@
             <showWarnings>true</showWarnings>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.2.1</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-          </configuration>
-        </plugin>
+
+        <!-- JavaDoc -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
@@ -109,6 +104,8 @@
             ]]></footer>
           </configuration>
         </plugin>
+
+        <!-- Testing and verification -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -124,25 +121,43 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>2.5</version>
+          <configuration>
+            <format>xml</format>
+            <targetJdk>1.6</targetJdk>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>2.7</version>
+          <configuration>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          </configuration>
+        </plugin>
+
+        <!-- Packaging and build assistance -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.2.1</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.5</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.0</version>
-          <configuration>
-            <rules>
-              <requireJavaVersion><version>[1.6.0,)</version></requireJavaVersion>
-            </rules>
-          </configuration>
-        </plugin>
 
+        <!-- Site generation -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
@@ -251,6 +266,18 @@
     </pluginManagement>
 
     <plugins>
+
+      <plugin>
+        <!-- LensKit requires Java 1.6 or better. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <rules>
+            <requireJavaVersion><version>[1.6.0,)</version></requireJavaVersion>
+          </rules>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -471,9 +498,14 @@
     </profile>
 
     <profile>
-      <id>static-analysis</id>
+      <id>smoketest</id>
+    </profile>
+
+    <profile>
+      <id>continuous-integration</id>
       <build>
         <plugins>
+
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
@@ -484,90 +516,8 @@
                 <goals>
                   <goal>check</goal>
                 </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <configuration>
-              <reportPlugins combine.children="append">
-                <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-pmd-plugin</artifactId>
-                  <version>2.5</version>
-                  <configuration>
-                    <format>xml</format>
-                    <aggregate>true</aggregate>
-                    <targetJdk>1.6</targetJdk>
-                  </configuration>
-                </plugin>
-              </reportPlugins>
-            </configuration>
-          </plugin>
-        </plugins>
-
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-site-plugin</artifactId>
-              <configuration>
-                <reportPlugins combine.children="append">
-                  <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>findbugs-maven-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <reports><report>findbugs</report></reports>
-                  </plugin>
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-pmd-plugin</artifactId>
-                    <version>2.5</version>
-                    <configuration>
-                      <format>xml</format>
-                      <targetJdk>1.6</targetJdk>
-                    </configuration>
-                  </plugin>
-                </reportPlugins>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-    
-    <profile>
-      <id>smoketest</id>
-    </profile>
-
-    <profile>
-      <id>continuous-integration</id>
-      <properties>
-        <lenskit.web.url>http://lenskit.grouplens.org/trunk</lenskit.web.url>
-      </properties>
-      <distributionManagement>
-        <site>
-          <id>grouplens.org</id>
-          <name>LensKit Dev Website</name>
-          <url>file:///web/research01/lenskit.grouplens.org/trunk</url>
-        </site>
-      </distributionManagement>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>clean-installed</id>
-                <phase>clean</phase>
-                <goals>
-                  <goal>remove-project-artifact</goal>
-                </goals>
                 <configuration>
-                  <removeAll>true</removeAll>
+                  <failOnError>false</failOnError>
                 </configuration>
               </execution>
             </executions>
@@ -575,53 +525,32 @@
 
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <inherited>false</inherited>
-            <configuration>
-              <reportPlugins combine.children="append">
-                <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>taglist-maven-plugin</artifactId>
-                  <version>2.4</version>
-                  <reports><report>taglist</report></reports>
-                  <configuration>
-                    <aggregate>true</aggregate>
-                    <tagListOptions>
-                      <tagClasses>
-                        <tagClass>
-                          <displayName>TODO items</displayName>
-                          <tags>
-                            <tag>
-                              <matchString>@?todo</matchString>
-                              <matchType>regEx</matchType>
-                            </tag>
-                          </tags>
-                        </tagClass>
-                        <tagClass>
-                          <displayName>Review items</displayName>
-                          <tags>
-                            <tag>
-                              <matchString>@review</matchString>
-                              <matchType>exact</matchType>
-                            </tag>
-                          </tags>
-                        </tagClass>
-                        <tagClass>
-                          <displayName>FIXME items</displayName>
-                          <tags>
-                            <tag>
-                              <matchString>FIXME</matchString>
-                              <matchType>exact</matchType>
-                            </tag>
-                          </tags>
-                        </tagClass>
-                      </tagClasses>
-                    </tagListOptions>
-                  </configuration>
-                </plugin>
-              </reportPlugins>
-            </configuration>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>lint</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>pmd</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>checkstyle</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>checkstyle</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
         </plugins>
       </build>
     </profile>
