@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class BasicSQLStatementFactory implements SQLStatementFactory {
     private static final Logger logger =
@@ -43,7 +43,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the name of the rating table.
-     * 
+     *
      * @return the tableName
      */
     public String getTableName() {
@@ -52,13 +52,13 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the rating table.
-     * 
+     *
      * @param tableName the tableName to set
      */
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-    
+
     /**
      * Get the column of the event ID in the rating table.
      * @return The name of the event ID column.
@@ -66,7 +66,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     public String getIdColumn() {
         return idColumn;
     }
-    
+
     /**
      * Set the name of the event ID column in the rating table.
      * @param col The name of the event ID column.
@@ -77,7 +77,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the name of the user ID column in the rating table.
-     * 
+     *
      * @return the userColumn
      */
     public String getUserColumn() {
@@ -86,7 +86,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the user ID column in the rating table.
-     * 
+     *
      * @param userColumn the userColumn to set
      */
     public void setUserColumn(String userColumn) {
@@ -95,7 +95,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the name of the item ID column in the rating table.
-     * 
+     *
      * @return the itemColumn
      */
     public String getItemColumn() {
@@ -104,7 +104,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the item ID column in the rating table.
-     * 
+     *
      * @param itemColumn the itemColumn to set
      */
     public void setItemColumn(String itemColumn) {
@@ -113,7 +113,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the name of the rating column in the rating table.
-     * 
+     *
      * @return the ratingColumn
      */
     public String getRatingColumn() {
@@ -122,7 +122,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the rating column in the rating table.
-     * 
+     *
      * @param ratingColumn the ratingColumn to set
      */
     public void setRatingColumn(String ratingColumn) {
@@ -132,7 +132,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Get the name of the timestamp column in the rating table (or
      * <tt>null</tt> if there is no timestamp column).
-     * 
+     *
      * @return the timestampColumn
      */
     public String getTimestampColumn() {
@@ -142,7 +142,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the timestamp column in the rating table. Set to
      * <tt>null</tt> if there is no timestamp column.
-     * 
+     *
      * @param timestampColumn the timestampColumn to set
      */
     public void setTimestampColumn(String timestampColumn) {
@@ -183,7 +183,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Add the SELECT and FROM clauses to the query
-     * 
+     *
      * @param query
      */
     protected void rqAddSelectFrom(StringBuilder query) {

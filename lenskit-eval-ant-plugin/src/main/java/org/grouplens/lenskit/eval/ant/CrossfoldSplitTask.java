@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.eval.ant;
 
@@ -54,44 +54,44 @@ import org.grouplens.lenskit.data.sql.JDBCUtils;
  *
  */
 public class CrossfoldSplitTask extends Task {
-	private String dataFile;
-	private String dbFilePattern;
-	private String delimiter = "\t";
-	private int numFolds = 5;
-	private boolean useTimestamp = true;
-	private boolean timeSplit = false;
-	private int holdoutCount = 10;
-	
-	public void setDataFile(String dataFile) {
-		this.dataFile = dataFile;
-	}
-	public void setDbFile(String dbFilePattern) {
-		this.dbFilePattern = dbFilePattern;
-	}
-	public void setDelimiter(String delimiter) {
-		this.delimiter = delimiter;
-	}
-	public void setNumFolds(int numFolds) {
-		this.numFolds = numFolds;
-	}
-	public void setUseTimestamp(boolean useTimestamp) {
-		this.useTimestamp = useTimestamp;
-	}
-	public void setHoldoutCount(int holdoutCount) {
-		this.holdoutCount = holdoutCount;
-	}
-	
-	public void setMode(String mode) {
-	    if (mode.toLowerCase().equals("time"))
-	        timeSplit = true;
-	    else if (mode.toLowerCase().equals("random"))
-	        timeSplit = false;
-	    else
-	        throw new IllegalArgumentException("Invalid mode " + mode);
-	}
-	
-	@Override
-	public void execute() throws BuildException {
+    private String dataFile;
+    private String dbFilePattern;
+    private String delimiter = "\t";
+    private int numFolds = 5;
+    private boolean useTimestamp = true;
+    private boolean timeSplit = false;
+    private int holdoutCount = 10;
+
+    public void setDataFile(String dataFile) {
+        this.dataFile = dataFile;
+    }
+    public void setDbFile(String dbFilePattern) {
+        this.dbFilePattern = dbFilePattern;
+    }
+    public void setDelimiter(String delimiter) {
+        this.delimiter = delimiter;
+    }
+    public void setNumFolds(int numFolds) {
+        this.numFolds = numFolds;
+    }
+    public void setUseTimestamp(boolean useTimestamp) {
+        this.useTimestamp = useTimestamp;
+    }
+    public void setHoldoutCount(int holdoutCount) {
+        this.holdoutCount = holdoutCount;
+    }
+
+    public void setMode(String mode) {
+        if (mode.toLowerCase().equals("time"))
+            timeSplit = true;
+        else if (mode.toLowerCase().equals("random"))
+            timeSplit = false;
+        else
+            throw new IllegalArgumentException("Invalid mode " + mode);
+    }
+
+    @Override
+    public void execute() throws BuildException {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -105,7 +105,7 @@ public class CrossfoldSplitTask extends Task {
         } catch (FileNotFoundException e) {
             throw new BuildException("Cannot open data file", e);
         }
-        
+
         DataAccessObject dao = daoManager.create();
         try {
             Long2IntMap userSegments = splitUsers(dao);
@@ -116,7 +116,7 @@ public class CrossfoldSplitTask extends Task {
             dao.close();
         }
     }
-    
+
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Random r = new Random();
         Long2IntMap userMap = new Long2IntOpenHashMap();
@@ -130,10 +130,10 @@ public class CrossfoldSplitTask extends Task {
             users.close();
         }
         log(String.format("Partitioned %d users", userMap.size()),
-        		Project.MSG_DEBUG);
+                Project.MSG_DEBUG);
         return userMap;
     }
-    
+
     protected void writeRatings(DataAccessObject dao, Long2IntMap userSegments) throws BuildException, SQLException {
         Connection[] dbcs = new Connection[numFolds];
         PreparedStatement[] insert = new PreparedStatement[numFolds];
@@ -161,13 +161,13 @@ public class CrossfoldSplitTask extends Task {
                 test[i] = dbcs[i].prepareStatement(String.format(qmake, "test"));
                 dbcs[i].setAutoCommit(false);
             }
-            
+
             // prepare maps for user ratings
             Long2ObjectMap<List<Rating>> userRatings = new Long2ObjectOpenHashMap<List<Rating>>(userSegments.size());
             LongIterator iter = userSegments.keySet().iterator();
             while (iter.hasNext())
                 userRatings.put(iter.nextLong(), new ArrayList<Rating>());
-            
+
             // take pass through ratings, collecting by user and adding to
             // training sets
             log("Processing ratings");
@@ -187,7 +187,7 @@ public class CrossfoldSplitTask extends Task {
             } finally {
                 ratings.close();
             }
-            
+
             // run through the user's ratings, adding to train and test sets
             // as appropriate
             log("Writing test sets");
@@ -202,25 +202,25 @@ public class CrossfoldSplitTask extends Task {
                 else
                     Collections.shuffle(urs);
                 int midpt = urs.size() - holdoutCount;
-                
+
                 // Insert training data
                 for (Rating r: urs.subList(0, midpt)) {
                     ImportTask.bindRating(sTrain, r, useTimestamp);
                     sTrain.executeUpdate();
                 }
-                
+
                 // Insert test data
                 for (Rating r: urs.subList(midpt, urs.size())) {
                     ImportTask.bindRating(sTest, r, useTimestamp);
                     sTest.executeUpdate();
                 }
-                
+
                 // done with ratings
                 urs.clear();
             }
-            
+
             userRatings = null;
-            
+
             log("Committing data");
             // Commit and index
             for (int i = 0; i < numFolds; i++) {
@@ -250,7 +250,7 @@ public class CrossfoldSplitTask extends Task {
                     try {
                         insert[i].close();
                     } catch (SQLException e) {
-                    	handleErrorOutput("Error closing: " + e.getMessage());
+                        handleErrorOutput("Error closing: " + e.getMessage());
                         failed = true;
                     }
                 }
@@ -258,7 +258,7 @@ public class CrossfoldSplitTask extends Task {
                     try {
                         dbcs[i].close();
                     } catch (SQLException e) {
-                    	handleErrorOutput("Error closing: " + e.getMessage());
+                        handleErrorOutput("Error closing: " + e.getMessage());
                         failed = true;
                     }
                 }
@@ -266,5 +266,5 @@ public class CrossfoldSplitTask extends Task {
                     throw new BuildException("Failed to close database");
             }
         }
-	}
+    }
 }

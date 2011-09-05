@@ -23,11 +23,11 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 /**
  * Service providing access to a recommender.  In LensKit, you build a recommender
  * engine from a {@link RecommenderEngineFactory}, then use it to open recommenders.
- * 
+ *
  * <p>Recommender engines can be shared across threads or sessions; they are
  * long-lived objects that should be built once.  Recommenders are opened "per-request"
  * or per thread and provide access to the actual recommendation.</p>
- * 
+ *
  * <p>Recommender engines do not hold connections to data sources.  The data
  * source is accessed by the factory, and then re-connected to the recommender
  * machinery in {@link #open()}.</p>
@@ -40,7 +40,7 @@ public interface RecommenderEngine {
      * Open a recommender.  The client code must close the recommender when it is
      * finished with it.  The recommender is connected to the DAO using whatever
      * provider was configured for its factory.
-     * 
+     *
      * @return A recommender ready for use.
      * @throws IllegalStateException if the recommender requires a DAO and no
      * DAO provider is available.

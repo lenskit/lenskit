@@ -31,13 +31,13 @@ import org.grouplens.lenskit.data.vector.UserVector;
  * of items. Because BaselinePredictors are often part of a "model" used by a
  * recommender algorithm, all BaselinePredictors are required to be Serializable
  * so that they can be easily written to or read from a file.
- * 
+ *
  * <p>
  * Note that this class does not implement the {@link RatingPredictor} interface
  * - this is to allow it to operate free of the DAO. If you want to use a
  * baseline scorer as a {@link RatingPredictor}, see
  * {@link BaselineRatingPredictor}.
- * 
+ *
  * @author Michael Ludwig
  * @see BaselineRatingPredictor
  */

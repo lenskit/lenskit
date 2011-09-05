@@ -60,7 +60,7 @@ public final class Ratings {
     public static final Comparator<Rating> ITEM_COMPARATOR = new Comparator<Rating>() {
         @Override
         public int compare(Rating r1, Rating r2) {
-        	return Longs.compare(r1.getItemId(), r2.getItemId());
+            return Longs.compare(r1.getItemId(), r2.getItemId());
         }
     };
     public static final Comparator<Rating> ITEM_TIME_COMPARATOR = new Comparator<Rating>() {
@@ -69,11 +69,11 @@ public final class Ratings {
             long i1 = r1.getItemId();
             long i2 = r2.getItemId();
             if (i1 < i2)
-            	return -1;
+                return -1;
             else if (i1 > i2)
-            	return 1;
+                return 1;
             else
-            	return Longs.compare(r1.getTimestamp(), r2.getTimestamp());
+                return Longs.compare(r1.getTimestamp(), r2.getTimestamp());
         }
     };
 
@@ -104,7 +104,7 @@ public final class Ratings {
         }
         return new MutableSparseVector(vect);
     }
-    
+
     /**
      * Real implementation of {@link #userRatingVector(Collection)}, using a list
      * we are free to sort.
@@ -113,28 +113,28 @@ public final class Ratings {
      */
     @Deprecated
     private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
-    	Rating rp = null;
-    	for (Rating r: ratings) {
-    		if (rp != null && ITEM_TIME_COMPARATOR.compare(rp, r) > 0) {
-    			Collections.sort(ratings, ITEM_TIME_COMPARATOR);
-    			break;
-    		}
-    		rp = r;
-    	}
-    	
-    	// collect the list of unique item IDs
-    	long[] items = new long[ratings.size()];
-    	double[] values = new double[ratings.size()];
-    	int li = -1;
-    	for (Rating r: ratings) {
-    		long iid = r.getItemId();
-    		if (li < 0 || items[li] != iid)
-    			li++;
-    		items[li] = iid;
-    		values[li] = r.getRating();
-    	}
-    	
-    	return MutableSparseVector.wrap(items, values, li+1);
+        Rating rp = null;
+        for (Rating r: ratings) {
+            if (rp != null && ITEM_TIME_COMPARATOR.compare(rp, r) > 0) {
+                Collections.sort(ratings, ITEM_TIME_COMPARATOR);
+                break;
+            }
+            rp = r;
+        }
+
+        // collect the list of unique item IDs
+        long[] items = new long[ratings.size()];
+        double[] values = new double[ratings.size()];
+        int li = -1;
+        for (Rating r: ratings) {
+            long iid = r.getItemId();
+            if (li < 0 || items[li] != iid)
+                li++;
+            items[li] = iid;
+            values[li] = r.getRating();
+        }
+
+        return MutableSparseVector.wrap(items, values, li+1);
     }
 
     /**
@@ -144,7 +144,7 @@ public final class Ratings {
      * for the same item, the one with the greatest timestamp is retained. Ties
      * are broken by preferring ratings which come later when iterating through
      * the collection.
-     * 
+     *
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      * @deprecated Use {@link UserVector#fromRatings(long, Collection)}
@@ -152,12 +152,12 @@ public final class Ratings {
      */
     @Deprecated
     public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-    	return userRatingVector(new ArrayList<Rating>(ratings));
+        return userRatingVector(new ArrayList<Rating>(ratings));
     }
-    
+
     /**
      * Extract a user rating vector from a rating cursor.
-     * 
+     *
      * @param ratings The rating cursor.
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
@@ -166,9 +166,9 @@ public final class Ratings {
      */
     @Deprecated
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
-    	return userRatingVector(Cursors.makeList(ratings));
+        return userRatingVector(Cursors.makeList(ratings));
     }
-    
+
     /**
      * Make a fresh rating object with no timestamp.
      * @see #make(long, long, double, long)
@@ -176,7 +176,7 @@ public final class Ratings {
     public static Rating make(long uid, long iid, double value) {
         return make(uid, iid, value, -1);
     }
-    
+
     /**
      * Make a fresh rating event. Event IDs are generated sequentially. This is
      * mostly useful in test cases.

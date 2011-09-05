@@ -47,7 +47,7 @@ import org.grouplens.lenskit.util.FastCollection;
  * towards the average community variance. Accordingly, set smoothing = 0 (or
  * use default constructor) for no smoothing. The 'global variance' parameter
  * only pertains to smoothing, and is unnecessary otherwise.
- * 
+ *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @Built
@@ -57,7 +57,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
     /**
      * A Builder for UserVarianceNormalizers that computes the variance from a
      * RatingBuildContext.
-     * 
+     *
      * @author Michael Ludwig
      */
     public static class Builder extends RecommenderComponentBuilder<MeanVarianceNormalizer> {
@@ -68,11 +68,11 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
         public void setSmoothing(double smoothing) {
             this.smoothing = smoothing;
         }
-        
+
         @Override
         public MeanVarianceNormalizer build() {
             double variance = 0;
-            
+
             if (smoothing != 0) {
                 double mean = 0;
                 double sum = 0;
@@ -89,67 +89,67 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
                 }
                 variance = sum / numRatings;
             }
-            
+
             return new MeanVarianceNormalizer(smoothing, variance);
         }
     }
-    
-	private final double smoothing;
-	private final double globalVariance;
-	
-	/**
-	 * Initializes basic normalizer with no smoothing.
-	 */
-	public MeanVarianceNormalizer() {
-		this(0, 0);
-	}
 
-	/**
-	 * @param smoothing			smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
-	 * @param globalVariance	global variance to use in the smoothing calculations.
-	 */
-	public MeanVarianceNormalizer(double smoothing, double globalVariance) {
-		this.smoothing = smoothing;
-		this.globalVariance = globalVariance;
-	}
-	
-	public double getSmoothing() {
-	    return smoothing;
-	}
-	
-	public double getGlobalVariance() {
-	    return globalVariance;
-	}
+    private final double smoothing;
+    private final double globalVariance;
 
-	@Override
-	public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
-	    if (reference.isEmpty())
-	        return new IdentityVectorNormalizer().makeTransformation(reference);
-	    return new Transform(reference);
-	}
-	
-	class Transform implements VectorTransformation {
-	    private final double mean;
+    /**
+     * Initializes basic normalizer with no smoothing.
+     */
+    public MeanVarianceNormalizer() {
+        this(0, 0);
+    }
+
+    /**
+     * @param smoothing            smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
+     * @param globalVariance    global variance to use in the smoothing calculations.
+     */
+    public MeanVarianceNormalizer(double smoothing, double globalVariance) {
+        this.smoothing = smoothing;
+        this.globalVariance = globalVariance;
+    }
+
+    public double getSmoothing() {
+        return smoothing;
+    }
+
+    public double getGlobalVariance() {
+        return globalVariance;
+    }
+
+    @Override
+    public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
+        if (reference.isEmpty())
+            return new IdentityVectorNormalizer().makeTransformation(reference);
+        return new Transform(reference);
+    }
+
+    class Transform implements VectorTransformation {
+        private final double mean;
         private final double stdDev;
-        
-	    public Transform(ImmutableSparseVector reference) {
-	        final double m = mean = reference.mean();
-	        
-	        double var = 0;
-	        DoubleIterator iter = reference.values().iterator();
-	        while (iter.hasNext()) {
-	            final double v = iter.nextDouble();
-	            final double diff = v - m;
-	            var += diff * diff;
-	        }
-	    
-	        /* smoothing calculation as described in Hofmann '04 
-	         * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
-	         */
-	        stdDev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
-	    }
-	    
-	    @Override
+
+        public Transform(ImmutableSparseVector reference) {
+            final double m = mean = reference.mean();
+
+            double var = 0;
+            DoubleIterator iter = reference.values().iterator();
+            while (iter.hasNext()) {
+                final double v = iter.nextDouble();
+                final double diff = v - m;
+                var += diff * diff;
+            }
+
+            /* smoothing calculation as described in Hofmann '04
+             * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
+             */
+            stdDev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
+        }
+
+        @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
             for (Entry rating : vector.fast()) {
                 vector.set(rating.getLongKey(), /* r' = (r - u) / s */
@@ -168,5 +168,5 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
             }
             return vector;
         }
-	}
+    }
 }

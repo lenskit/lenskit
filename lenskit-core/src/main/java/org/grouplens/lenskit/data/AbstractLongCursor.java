@@ -33,7 +33,7 @@ public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
         LongCursor {
 
     /**
-     * Implement {@link org.grouplens.common.cursors.Cursor#next() Cursor.next()} 
+     * Implement {@link org.grouplens.common.cursors.Cursor#next() Cursor.next()}
      * by delegating to {@link #nextLong()}.
      */
     @Override

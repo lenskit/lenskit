@@ -27,18 +27,18 @@ import org.grouplens.lenskit.data.history.UserHistory;
 /**
  * Item scorer specific to item-item recommenders. It exposes the item-item
  * model as well as the scoring functionality.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface ItemItemModelBackedScorer extends ItemScorer {
     /**
      * Get the item-item model backing this scorer.
-     * 
+     *
      * @return The model this scorer uses to compute scores.
      */
     ItemItemModel getModel();
-    
+
     /**
      * Get the set of scoreable items for a user.
      * @param user The user to query for.

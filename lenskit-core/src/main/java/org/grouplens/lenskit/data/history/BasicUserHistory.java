@@ -28,9 +28,9 @@ import org.grouplens.lenskit.data.event.Event;
  * Basic user rating profile backed by a collection of ratings. The event list
  * aspects of the profile are implemented as a read-only delegation to an
  * underlying list.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;
@@ -38,7 +38,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
 
     /**
      * Construct a new basic user profile.
-     * 
+     *
      * @param user The user ID.
      * @param events The list of events in this user's history. All events must
      *            be for the user.
@@ -52,32 +52,32 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     public long getUserId() {
         return user;
     }
-    
+
     @Override
     public E get(int i) {
         return events.get(i);
     }
-    
+
     @Override
     public int size() {
         return events.size();
     }
-    
+
     @Override
     public Iterator<E> iterator() {
         return events.iterator();
     }
-    
+
     @Override
     public List<E> subList(int from, int to) {
         return Collections.unmodifiableList(events.subList(from, to));
     }
-    
+
     @Override
     public Object[] toArray() {
         return events.toArray();
     }
-    
+
     @Override
     public <T> T[] toArray(T[] a) {
         return events.toArray(a);

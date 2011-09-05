@@ -41,16 +41,16 @@ public class TypeUtils {
      * all supertypes which are themselves subclasses of <var>parent</var>.  The
      * resulting set is the set of all subclasses of <var>parent</var> such that
      * there exists some object in <var>objects</var> assignable to one of them.
-     * 
+     *
      * @param objects A collection of objects.
      * @param parent The parent type of interest.
      * @return The set of types applicable to objects in <var>objects</var>.
      */
-    public static <T> Set<Class<? extends T>> 
+    public static <T> Set<Class<? extends T>>
     findTypes(Iterable<? extends T> objects, Class<T> parent) {
         Set<Class<? extends T>> objTypes =
                 Sets.newHashSet(transform(objects, extractClass(parent)));
-        
+
         Set<Class<? extends T>> allTypes = new HashSet<Class<? extends T>>();
         for (Class<? extends T> t: objTypes) {
             addAll(allTypes, transform(filter(typeClosure(t), isSubclass(parent)),
@@ -58,7 +58,7 @@ public class TypeUtils {
         }
         return allTypes;
     }
-    
+
     /**
      * Return the supertype closure of a type (the type and all its transitive
      * supertypes).
@@ -68,17 +68,17 @@ public class TypeUtils {
     public static Set<Class<?>> typeClosure(Class<?> type) {
         if (type == null)
             return Collections.emptySet();
-        
+
         Set<Class<?>> supertypes = new HashSet<Class<?>>();
         supertypes.add(type);
         supertypes.addAll(typeClosure(type.getSuperclass()));
         for (Class<?> iface: type.getInterfaces()) {
             supertypes.addAll(typeClosure(iface));
         }
-        
+
         return supertypes;
     }
-    
+
     public static Predicate<Class<?>> isSubclass(final Class<?> cls) {
         return new Predicate<Class<?>>() {
 
@@ -88,7 +88,7 @@ public class TypeUtils {
             }
         };
     }
-    
+
     /**
      * Function that gets the class for its argument.
      * @param supertype A class known to be a valid supertype for any argument.
@@ -101,7 +101,7 @@ public class TypeUtils {
             }
         };
     }
-    
+
     /**
      * Function that gets the class for its argument.
      * @param supertype A class known to be a valid supertype for any argument.
@@ -114,7 +114,7 @@ public class TypeUtils {
             }
         };
     }
-    
+
     /**
      * Function that gets the class for its argument.
      */

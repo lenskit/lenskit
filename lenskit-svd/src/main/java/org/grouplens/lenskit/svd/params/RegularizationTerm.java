@@ -32,7 +32,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
  * The regularization factor applied in the gradient descent update for learning
  * features in FunkSVD.  For a regularization term \(\lambda\) and current value,
  * \(x\), the update for each step is decreased by \(\lambda x\).
- * 
+ *
  *  @see FunkSVDModelBuilder
  */
 @Documented

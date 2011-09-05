@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * ItemItemModelAccumulator creates SimilarityMatrices where rows
  * are truncated to a specific size, so only the top N similar items are stored
  * in each row. The created matrices are Serializable.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class ItemItemModelAccumulator {
@@ -70,7 +70,7 @@ public class ItemItemModelAccumulator {
     public void put(long i1, long i2, double sim) {
         // We only accept nonnegative similarities
         if (sim <= 0.0) return;
-        
+
         // concurrent read-only array access permitted
         ScoredItemAccumulator q = rows.get(i1);
         // synchronize on this row to add item

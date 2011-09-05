@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCUtils {
     private static Logger logger = LoggerFactory.getLogger(JDBCUtils.class);
-    
+
     public static void execute(Connection dbc, String sql) throws SQLException {
         logger.debug("Executing: {}", sql);
         Statement stmt = dbc.createStatement();

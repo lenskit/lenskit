@@ -38,231 +38,231 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestPackedRatingSnapshot {
-	
-	private PackedRatingSnapshot snap;
-	private static final double EPSILON = 1.0e-6;
-	
-	private static int eid;
-	
-	private static Rating rating(long uid, long iid, double value, long ts) {
-	    return new SimpleRating(eid++, uid, iid, value, ts);
-	}
-	
-	private static Preference preference(long uid, long iid, double value) {
-	    return new SimplePreference(uid, iid, value);
-	}
-	
-	@Before
-	public void setup() {
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(rating(1, 7, 4, 1));
-		rs.add(rating(3, 7, 3, 1));
-		rs.add(rating(4, 7, 5, 1));
-		rs.add(rating(4, 7, 4, 2));
-		rs.add(rating(5, 7, 3, 1));
-		rs.add(rating(6, 7, 5, 1));
-		rs.add(rating(1, 8, 4, 1));
-		rs.add(rating(1, 8, 5, 2));
-		rs.add(rating(3, 8, 3, 1));
-		rs.add(rating(4, 8, 2, 1));
-		rs.add(rating(5, 8, 3, 1));
-		rs.add(rating(5, 8, 5, 2));
-		rs.add(rating(6, 8, 5, 1));
-		rs.add(rating(7, 8, 2, 1));
-		rs.add(rating(1, 9, 3, 1));
-		rs.add(rating(3, 9, 4, 1));
-		rs.add(rating(4, 9, 5, 1));
-		rs.add(rating(7, 9, 2, 1));
-		rs.add(rating(7, 9, 3, 2));
-		rs.add(rating(4, 10, 4, 1));
-		rs.add(rating(7, 10, 4, 1));
-		rs.add(rating(1, 11, 5, 1));
-		rs.add(rating(3, 11, 5, 2));
-		rs.add(rating(4, 11, 5, 1));
-		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-		PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.create());
-		snap = builder.build();
-	}
 
-	
-	@Test
-	public void testGetUserIds() {
-		LongCollection users = snap.getUserIds();
-		assertTrue(users.contains(1));
-		assertTrue(users.contains(3));
-		assertTrue(users.contains(4));
-		assertTrue(users.contains(5));
-		assertTrue(users.contains(6));
-		assertTrue(users.contains(7));
-	}
-	
-	@Test
-	public void testGetItemIds() {
-		LongCollection items = snap.getItemIds();
-		assertEquals(5, items.size());
-		assertTrue(items.contains(7));
-		assertTrue(items.contains(8));
-		assertTrue(items.contains(9));
-		assertTrue(items.contains(10));
-		assertTrue(items.contains(11));
-	}
-	
-	@Test
-	public void testUserIndex() {
-		Index ind = snap.userIndex();
-		assertEquals(6, ind.getObjectCount());
-		assertTrue(ind.getIds().contains(1));
-		assertTrue(ind.getIds().contains(3));
-		assertTrue(ind.getIds().contains(4));
-		assertTrue(ind.getIds().contains(5));
-		assertTrue(ind.getIds().contains(6));
-		assertTrue(ind.getIds().contains(7));
-		assertEquals(0, ind.getIndex(1));
-		assertEquals(1, ind.getIndex(3));
-		assertEquals(2, ind.getIndex(4));
-		assertEquals(3, ind.getIndex(5));
-		assertEquals(4, ind.getIndex(6));
-		assertEquals(5, ind.getIndex(7));
-		assertEquals(1, ind.getId(0));
-		assertEquals(3, ind.getId(1));
-		assertEquals(4, ind.getId(2));
-		assertEquals(5, ind.getId(3));
-		assertEquals(6, ind.getId(4));
-		assertEquals(7, ind.getId(5));
-	}
-	
-	@Test
-	public void testItemIndex() {
-		Index ind = snap.itemIndex();
-		assertEquals(5, ind.getObjectCount());
-		assertTrue(ind.getIds().contains(7));
-		assertTrue(ind.getIds().contains(8));
-		assertTrue(ind.getIds().contains(9));
-		assertTrue(ind.getIds().contains(10));
-		assertTrue(ind.getIds().contains(11));
-		assertEquals(0, ind.getIndex(7));
-		assertEquals(1, ind.getIndex(8));
-		assertEquals(2, ind.getIndex(9));
-		assertEquals(3, ind.getIndex(10));
-		assertEquals(4, ind.getIndex(11));
-		assertEquals(7, ind.getId(0));
-		assertEquals(8, ind.getId(1));
-		assertEquals(9, ind.getId(2));
-		assertEquals(10, ind.getId(3));
-		assertEquals(11, ind.getId(4));
-	}
-	
-	@Test
-	public void testGetRatings() {
-		FastCollection<IndexedPreference> ratings = snap.getRatings();
-		assertEquals(20, ratings.size());
-		assertTrue(ratings.contains(preference(1, 7, 4)));
-		assertTrue(ratings.contains(preference(3, 7, 3)));
-		assertTrue(ratings.contains(preference(4, 7, 4)));
-		assertTrue(ratings.contains(preference(5, 7, 3)));
-		assertTrue(ratings.contains(preference(6, 7, 5)));
-		assertTrue(ratings.contains(preference(1, 8, 5)));
-		assertTrue(ratings.contains(preference(3, 8, 3)));
-		assertTrue(ratings.contains(preference(4, 8, 2)));
-		assertTrue(ratings.contains(preference(5, 8, 5)));
-		assertTrue(ratings.contains(preference(6, 8, 5)));
-		assertTrue(ratings.contains(preference(7, 8, 2)));
-		assertTrue(ratings.contains(preference(1, 9, 3)));
-		assertTrue(ratings.contains(preference(3, 9, 4)));
-		assertTrue(ratings.contains(preference(4, 9, 5)));
-		assertTrue(ratings.contains(preference(7, 9, 3)));
-		assertTrue(ratings.contains(preference(4, 10, 4)));
-		assertTrue(ratings.contains(preference(7, 10, 4)));
-		assertTrue(ratings.contains(preference(1, 11, 5)));
-		assertTrue(ratings.contains(preference(3, 11, 5)));
-		assertTrue(ratings.contains(preference(4, 11, 5)));
-	}
-	
-	@Test
-	public void testGetUserRatings() {
-		FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
-		assertEquals(4, ratings.size());
-		assertTrue(ratings.contains(preference(1, 7, 4)));
-		assertTrue(ratings.contains(preference(1, 8, 5)));
-		assertTrue(ratings.contains(preference(1, 9, 3)));
-		assertTrue(ratings.contains(preference(1, 11, 5)));
-		
-		ratings = snap.getUserRatings(2);
-		assertEquals(0, ratings.size());
-		
-		ratings = snap.getUserRatings(3);
-		assertEquals(4, ratings.size());
-		assertTrue(ratings.contains(preference(3, 7, 3)));
-		assertTrue(ratings.contains(preference(3, 8, 3)));
-		assertTrue(ratings.contains(preference(3, 9, 4)));
-		assertTrue(ratings.contains(preference(3, 11, 5)));
-		
-		ratings = snap.getUserRatings(4);
-		assertEquals(5, ratings.size());
-		assertTrue(ratings.contains(preference(4, 7, 4)));
-		assertTrue(ratings.contains(preference(4, 8, 2)));
-		assertTrue(ratings.contains(preference(4, 9, 5)));
-		assertTrue(ratings.contains(preference(4, 10, 4)));
-		assertTrue(ratings.contains(preference(4, 11, 5)));
-		
-		ratings = snap.getUserRatings(5);
-		assertEquals(2, ratings.size());
-		assertTrue(ratings.contains(preference(5, 7, 3)));
-		assertTrue(ratings.contains(preference(5, 8, 5)));
-		
-		ratings = snap.getUserRatings(6);
-		assertEquals(2, ratings.size());
-		assertTrue(ratings.contains(preference(6, 7, 5)));
-		assertTrue(ratings.contains(preference(6, 8, 5)));
-		
-		ratings = snap.getUserRatings(7);
-		assertEquals(3, ratings.size());
-		assertTrue(ratings.contains(preference(7, 8, 2)));
-		assertTrue(ratings.contains(preference(7, 9, 3)));
-		assertTrue(ratings.contains(preference(7, 10, 4)));
-	}
-	
-	@Test
-	public void testUserRatingVector() {
-		SparseVector ratings = snap.userRatingVector(1);
-		assertEquals(4, ratings.size());
-		assertEquals(4, ratings.get(7), EPSILON);
-		assertEquals(5, ratings.get(8), EPSILON);
-		assertEquals(3, ratings.get(9), EPSILON);
-		assertEquals(5, ratings.get(11), EPSILON);
-		
-		ratings = snap.userRatingVector(2);
-		assertEquals(0, ratings.size());
-		
-		ratings = snap.userRatingVector(3);
-		assertEquals(4, ratings.size());
-		assertEquals(3, ratings.get(7), EPSILON);
-		assertEquals(3, ratings.get(8), EPSILON);
-		assertEquals(4, ratings.get(9), EPSILON);
-		assertEquals(5, ratings.get(11), EPSILON);
-				
-		ratings = snap.userRatingVector(4);
-		assertEquals(5, ratings.size());
-		assertEquals(4, ratings.get(7), EPSILON);
-		assertEquals(2, ratings.get(8), EPSILON);
-		assertEquals(5, ratings.get(9), EPSILON);
-		assertEquals(4, ratings.get(10), EPSILON);
-		assertEquals(5, ratings.get(11), EPSILON);
-		
-		ratings = snap.userRatingVector(5);
-		assertEquals(2, ratings.size());
-		assertEquals(3, ratings.get(7), EPSILON);
-		assertEquals(5, ratings.get(8), EPSILON);
-		
-		ratings = snap.userRatingVector(6);
-		assertEquals(2, ratings.size());
-		assertEquals(5, ratings.get(7), EPSILON);
-		assertEquals(5, ratings.get(8), EPSILON);
-		
-		ratings = snap.userRatingVector(7);
-		assertEquals(3, ratings.size());
-		assertEquals(2, ratings.get(8), EPSILON);
-		assertEquals(3, ratings.get(9), EPSILON);
-		assertEquals(4, ratings.get(10), EPSILON);
-	}
+    private PackedRatingSnapshot snap;
+    private static final double EPSILON = 1.0e-6;
+
+    private static int eid;
+
+    private static Rating rating(long uid, long iid, double value, long ts) {
+        return new SimpleRating(eid++, uid, iid, value, ts);
+    }
+
+    private static Preference preference(long uid, long iid, double value) {
+        return new SimplePreference(uid, iid, value);
+    }
+
+    @Before
+    public void setup() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(rating(1, 7, 4, 1));
+        rs.add(rating(3, 7, 3, 1));
+        rs.add(rating(4, 7, 5, 1));
+        rs.add(rating(4, 7, 4, 2));
+        rs.add(rating(5, 7, 3, 1));
+        rs.add(rating(6, 7, 5, 1));
+        rs.add(rating(1, 8, 4, 1));
+        rs.add(rating(1, 8, 5, 2));
+        rs.add(rating(3, 8, 3, 1));
+        rs.add(rating(4, 8, 2, 1));
+        rs.add(rating(5, 8, 3, 1));
+        rs.add(rating(5, 8, 5, 2));
+        rs.add(rating(6, 8, 5, 1));
+        rs.add(rating(7, 8, 2, 1));
+        rs.add(rating(1, 9, 3, 1));
+        rs.add(rating(3, 9, 4, 1));
+        rs.add(rating(4, 9, 5, 1));
+        rs.add(rating(7, 9, 2, 1));
+        rs.add(rating(7, 9, 3, 2));
+        rs.add(rating(4, 10, 4, 1));
+        rs.add(rating(7, 10, 4, 1));
+        rs.add(rating(1, 11, 5, 1));
+        rs.add(rating(3, 11, 5, 2));
+        rs.add(rating(4, 11, 5, 1));
+        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.create());
+        snap = builder.build();
+    }
+
+
+    @Test
+    public void testGetUserIds() {
+        LongCollection users = snap.getUserIds();
+        assertTrue(users.contains(1));
+        assertTrue(users.contains(3));
+        assertTrue(users.contains(4));
+        assertTrue(users.contains(5));
+        assertTrue(users.contains(6));
+        assertTrue(users.contains(7));
+    }
+
+    @Test
+    public void testGetItemIds() {
+        LongCollection items = snap.getItemIds();
+        assertEquals(5, items.size());
+        assertTrue(items.contains(7));
+        assertTrue(items.contains(8));
+        assertTrue(items.contains(9));
+        assertTrue(items.contains(10));
+        assertTrue(items.contains(11));
+    }
+
+    @Test
+    public void testUserIndex() {
+        Index ind = snap.userIndex();
+        assertEquals(6, ind.getObjectCount());
+        assertTrue(ind.getIds().contains(1));
+        assertTrue(ind.getIds().contains(3));
+        assertTrue(ind.getIds().contains(4));
+        assertTrue(ind.getIds().contains(5));
+        assertTrue(ind.getIds().contains(6));
+        assertTrue(ind.getIds().contains(7));
+        assertEquals(0, ind.getIndex(1));
+        assertEquals(1, ind.getIndex(3));
+        assertEquals(2, ind.getIndex(4));
+        assertEquals(3, ind.getIndex(5));
+        assertEquals(4, ind.getIndex(6));
+        assertEquals(5, ind.getIndex(7));
+        assertEquals(1, ind.getId(0));
+        assertEquals(3, ind.getId(1));
+        assertEquals(4, ind.getId(2));
+        assertEquals(5, ind.getId(3));
+        assertEquals(6, ind.getId(4));
+        assertEquals(7, ind.getId(5));
+    }
+
+    @Test
+    public void testItemIndex() {
+        Index ind = snap.itemIndex();
+        assertEquals(5, ind.getObjectCount());
+        assertTrue(ind.getIds().contains(7));
+        assertTrue(ind.getIds().contains(8));
+        assertTrue(ind.getIds().contains(9));
+        assertTrue(ind.getIds().contains(10));
+        assertTrue(ind.getIds().contains(11));
+        assertEquals(0, ind.getIndex(7));
+        assertEquals(1, ind.getIndex(8));
+        assertEquals(2, ind.getIndex(9));
+        assertEquals(3, ind.getIndex(10));
+        assertEquals(4, ind.getIndex(11));
+        assertEquals(7, ind.getId(0));
+        assertEquals(8, ind.getId(1));
+        assertEquals(9, ind.getId(2));
+        assertEquals(10, ind.getId(3));
+        assertEquals(11, ind.getId(4));
+    }
+
+    @Test
+    public void testGetRatings() {
+        FastCollection<IndexedPreference> ratings = snap.getRatings();
+        assertEquals(20, ratings.size());
+        assertTrue(ratings.contains(preference(1, 7, 4)));
+        assertTrue(ratings.contains(preference(3, 7, 3)));
+        assertTrue(ratings.contains(preference(4, 7, 4)));
+        assertTrue(ratings.contains(preference(5, 7, 3)));
+        assertTrue(ratings.contains(preference(6, 7, 5)));
+        assertTrue(ratings.contains(preference(1, 8, 5)));
+        assertTrue(ratings.contains(preference(3, 8, 3)));
+        assertTrue(ratings.contains(preference(4, 8, 2)));
+        assertTrue(ratings.contains(preference(5, 8, 5)));
+        assertTrue(ratings.contains(preference(6, 8, 5)));
+        assertTrue(ratings.contains(preference(7, 8, 2)));
+        assertTrue(ratings.contains(preference(1, 9, 3)));
+        assertTrue(ratings.contains(preference(3, 9, 4)));
+        assertTrue(ratings.contains(preference(4, 9, 5)));
+        assertTrue(ratings.contains(preference(7, 9, 3)));
+        assertTrue(ratings.contains(preference(4, 10, 4)));
+        assertTrue(ratings.contains(preference(7, 10, 4)));
+        assertTrue(ratings.contains(preference(1, 11, 5)));
+        assertTrue(ratings.contains(preference(3, 11, 5)));
+        assertTrue(ratings.contains(preference(4, 11, 5)));
+    }
+
+    @Test
+    public void testGetUserRatings() {
+        FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
+        assertEquals(4, ratings.size());
+        assertTrue(ratings.contains(preference(1, 7, 4)));
+        assertTrue(ratings.contains(preference(1, 8, 5)));
+        assertTrue(ratings.contains(preference(1, 9, 3)));
+        assertTrue(ratings.contains(preference(1, 11, 5)));
+
+        ratings = snap.getUserRatings(2);
+        assertEquals(0, ratings.size());
+
+        ratings = snap.getUserRatings(3);
+        assertEquals(4, ratings.size());
+        assertTrue(ratings.contains(preference(3, 7, 3)));
+        assertTrue(ratings.contains(preference(3, 8, 3)));
+        assertTrue(ratings.contains(preference(3, 9, 4)));
+        assertTrue(ratings.contains(preference(3, 11, 5)));
+
+        ratings = snap.getUserRatings(4);
+        assertEquals(5, ratings.size());
+        assertTrue(ratings.contains(preference(4, 7, 4)));
+        assertTrue(ratings.contains(preference(4, 8, 2)));
+        assertTrue(ratings.contains(preference(4, 9, 5)));
+        assertTrue(ratings.contains(preference(4, 10, 4)));
+        assertTrue(ratings.contains(preference(4, 11, 5)));
+
+        ratings = snap.getUserRatings(5);
+        assertEquals(2, ratings.size());
+        assertTrue(ratings.contains(preference(5, 7, 3)));
+        assertTrue(ratings.contains(preference(5, 8, 5)));
+
+        ratings = snap.getUserRatings(6);
+        assertEquals(2, ratings.size());
+        assertTrue(ratings.contains(preference(6, 7, 5)));
+        assertTrue(ratings.contains(preference(6, 8, 5)));
+
+        ratings = snap.getUserRatings(7);
+        assertEquals(3, ratings.size());
+        assertTrue(ratings.contains(preference(7, 8, 2)));
+        assertTrue(ratings.contains(preference(7, 9, 3)));
+        assertTrue(ratings.contains(preference(7, 10, 4)));
+    }
+
+    @Test
+    public void testUserRatingVector() {
+        SparseVector ratings = snap.userRatingVector(1);
+        assertEquals(4, ratings.size());
+        assertEquals(4, ratings.get(7), EPSILON);
+        assertEquals(5, ratings.get(8), EPSILON);
+        assertEquals(3, ratings.get(9), EPSILON);
+        assertEquals(5, ratings.get(11), EPSILON);
+
+        ratings = snap.userRatingVector(2);
+        assertEquals(0, ratings.size());
+
+        ratings = snap.userRatingVector(3);
+        assertEquals(4, ratings.size());
+        assertEquals(3, ratings.get(7), EPSILON);
+        assertEquals(3, ratings.get(8), EPSILON);
+        assertEquals(4, ratings.get(9), EPSILON);
+        assertEquals(5, ratings.get(11), EPSILON);
+
+        ratings = snap.userRatingVector(4);
+        assertEquals(5, ratings.size());
+        assertEquals(4, ratings.get(7), EPSILON);
+        assertEquals(2, ratings.get(8), EPSILON);
+        assertEquals(5, ratings.get(9), EPSILON);
+        assertEquals(4, ratings.get(10), EPSILON);
+        assertEquals(5, ratings.get(11), EPSILON);
+
+        ratings = snap.userRatingVector(5);
+        assertEquals(2, ratings.size());
+        assertEquals(3, ratings.get(7), EPSILON);
+        assertEquals(5, ratings.get(8), EPSILON);
+
+        ratings = snap.userRatingVector(6);
+        assertEquals(2, ratings.size());
+        assertEquals(5, ratings.get(7), EPSILON);
+        assertEquals(5, ratings.get(8), EPSILON);
+
+        ratings = snap.userRatingVector(7);
+        assertEquals(3, ratings.size());
+        assertEquals(2, ratings.get(8), EPSILON);
+        assertEquals(3, ratings.get(9), EPSILON);
+        assertEquals(4, ratings.get(10), EPSILON);
+    }
 }

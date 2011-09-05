@@ -32,7 +32,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 /**
  * The summarizer to use for summarizing user data prior to recommendation or
  * prediction.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

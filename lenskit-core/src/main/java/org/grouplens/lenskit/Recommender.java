@@ -27,12 +27,12 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * is effectively a recommender <i>session</i>: it is a per-thread or per-request
  * object, likely connected to a database connection or persistence session, that
  * needs to be closed when the client code is finished with it.
- * 
+ *
  * <p>The various methods in this class return <var>null</var> if the corresponding
  * operation is not supported by the underlying recommender configuration.  This
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * @see LenskitRecommender
@@ -46,53 +46,53 @@ public interface Recommender {
      * from other frameworks that are adapted to the LensKit API may not be.
      */
     DataAccessObject getRatingDataAccessObject();
-    
+
     /**
      * Get the recommender's item scorer.
-     * 
+     *
      * @return The item scorer for this recommender configuration, or
      *         <tt>null</tt> if item scoring is not supported.
      */
     @Nullable
     ItemScorer getItemScorer();
-    
+
     /**
      * Get the recommender's rating scorer.
-     * 
+     *
      * @return The rating scorer for this recommender configuration, or
      *         <tt>null</tt> if rating prediction is not supported.
      */
     @Nullable
     RatingPredictor getRatingPredictor();
-    
+
     /**
      * @deprecated Use {@link #getRatingPredictor()} instead.
      */
     @Nullable @Deprecated
     RatingPredictor getDynamicRatingPredictor();
-    
+
     /**
      * Get the recommender's item recommender.
-     * 
+     *
      * @return The item recommender for this recommender configuration, or
      *         <tt>null</tt> if item recommendation is not supported.
      */
     @Nullable
     ItemRecommender getItemRecommender();
-    
+
     /**
      * @deprecated Use {@link #getItemRecommender()} instead.
      */
     @Nullable @Deprecated
     ItemRecommender getDynamicItemRecommender();
-    
+
     /**
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
-     * 
+     *
      * @see RecommenderEngine#open(DataAccessObject, boolean)
      */
     void close();
-    
-    
+
+
 }

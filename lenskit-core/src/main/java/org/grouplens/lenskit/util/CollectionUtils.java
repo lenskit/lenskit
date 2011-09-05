@@ -222,11 +222,11 @@ public class CollectionUtils {
     public static LongIterator fastIterator(final Iterator<Long> iter) {
         return LongIterators.asLongIterator(iter);
     }
-    
+
     public static <E> FastCollection<E> emptyFastCollection() {
         return new EmptyFastCollection<E>();
     }
-    
+
     static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
 
         @Override
@@ -248,6 +248,6 @@ public class CollectionUtils {
         public int size() {
             return 0;
         }
-        
+
     }
 }

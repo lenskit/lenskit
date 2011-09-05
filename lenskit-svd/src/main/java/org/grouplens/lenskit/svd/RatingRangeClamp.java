@@ -28,7 +28,7 @@ public final class RatingRangeClamp implements DoubleFunction, Serializable {
 
     private static final long serialVersionUID = 1012447846494918355L;
     private final double minRating, maxRating;
-    
+
     public RatingRangeClamp() {
         this(1, 5);
     }
@@ -44,7 +44,7 @@ public final class RatingRangeClamp implements DoubleFunction, Serializable {
     public double getMinRating() {
         return minRating;
     }
-    
+
     /**
      * @return the maxRating
      */

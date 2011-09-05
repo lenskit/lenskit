@@ -53,7 +53,7 @@ import com.google.common.base.Predicate;
  * */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
     protected final Logger logger;
-    
+
     protected AbstractDataAccessObject() {
         logger = LoggerFactory.getLogger(getClass());
     }
@@ -66,7 +66,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     public Cursor<? extends Event> getEvents(SortOrder order) {
         return getEvents(Event.class, order);
     }
-    
+
     /**
      * Delegate to {@link #getEvents(Class, SortOrder)}.
      */
@@ -115,7 +115,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
             throw new IllegalArgumentException();
         }
     }
-    
+
     /**
      * Delegate to {@link #getUserHistories(Class)}.
      */
@@ -162,25 +162,25 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
         };
         return Cursors.filter(getEvents(type, SortOrder.TIMESTAMP), pred);
     }
-    
+
     /**
      * Implement {@link DataAccessObject#getUserHistory(long)} by delegating
      * to {@link #getUserEvents(long)}.
      */
     @Override
     public UserHistory<Event> getUserHistory(long user) {
-        return new BasicUserHistory<Event>(user, Cursors.makeList(getUserEvents(user))); 
+        return new BasicUserHistory<Event>(user, Cursors.makeList(getUserEvents(user)));
     }
-    
+
     /**
      * Implement {@link DataAccessObject#getUserHistory(long,Class)} by delegating
      * to {@link #getUserEvents(long,Class)}.
      */
     @Override
     public <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type) {
-        return new BasicUserHistory<E>(user, Cursors.makeList(getUserEvents(user, type))); 
+        return new BasicUserHistory<E>(user, Cursors.makeList(getUserEvents(user, type)));
     }
-    
+
     /**
      * Implement {@link DataAccessObject#getItemEvents(long)} by delegating
      * to {@link #getItemEvents(long, Class)}.
@@ -189,7 +189,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     public Cursor<? extends Event> getItemEvents(long itemId) {
         return getItemEvents(itemId, Event.class);
     }
-    
+
     /**
      * Implement {@link DataAccessObject#getItemEvents(long, Class)}
      * by filtering the output of {@link #getEvents(Class,SortOrder)}.
@@ -207,7 +207,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
 
     private LongSet getItemSet() {
         LongSet items = null;
-        
+
         Cursor<? extends Event> ratings = getEvents();
         try {
             items = new LongOpenHashSet();
@@ -237,7 +237,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
 
     private LongSet getUserSet() {
         LongSet users;
-        
+
         Cursor<? extends Event> events = getEvents();
         try {
             users = new LongOpenHashSet();

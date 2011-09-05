@@ -66,26 +66,26 @@ public class TrainTestPredictEvaluator {
     private boolean timestamp = true;
     private int threadCount = 0;
     private String name;
-    
+
     public TrainTestPredictEvaluator(String dbUrl, String train, String test) {
         databaseUrl = dbUrl;
         name = dbUrl;
         trainingTable = train;
         testTable = test;
     }
-    
+
     public boolean isTimestampEnabled() {
-    	return timestamp;
+        return timestamp;
     }
-    
+
     public void setTimestampEnabled(boolean ts) {
-    	timestamp = ts;
+        timestamp = ts;
     }
-    
+
     public void setThreadCount(int nthreads) {
         threadCount = nthreads;
     }
-    
+
     /**
      * Get the identifying name of this evaluator. The default name is the database
      * URL.
@@ -94,7 +94,7 @@ public class TrainTestPredictEvaluator {
     public String getName() {
         return name;
     }
-    
+
     /**
      * Provide a meaningful name for this evaluator.
      * @param n The evaluator's name.
@@ -102,7 +102,7 @@ public class TrainTestPredictEvaluator {
     public void setName(String n) {
         name = n;
     }
-    
+
     public int getThreadCount() {
         if (threadCount > 0) {
             return threadCount;
@@ -114,7 +114,7 @@ public class TrainTestPredictEvaluator {
                 return Runtime.getRuntime().availableProcessors();
         }
     }
-    
+
     protected JDBCRatingDAO.Factory trainingDAOManager() {
         BasicSQLStatementFactory sfac = new BasicSQLStatementFactory();
         sfac.setTableName(trainingTable);
@@ -122,14 +122,14 @@ public class TrainTestPredictEvaluator {
             sfac.setTimestampColumn(null);
         return new JDBCRatingDAO.Factory(databaseUrl, sfac);
     }
-    
+
     protected JDBCRatingDAO.Factory testDAOManager() {
         BasicSQLStatementFactory testfac = new BasicSQLStatementFactory();
         testfac.setTableName(testTable);
         testfac.setTimestampColumn(null);
         return new JDBCRatingDAO.Factory(databaseUrl, testfac);
     }
-    
+
     /**
      * Evaluate a set of algorithms.
      * @param recipe The evaluation recipe.
@@ -140,15 +140,15 @@ public class TrainTestPredictEvaluator {
     public void evaluateAlgorithms(EvaluationRecipe recipe) {
         runEvaluation(recipe);
     }
-    
+
     /**
      * Run a train-test evaluation with an evaluation recipe.
      * @param recipe The evaluation recipe to execute.
      */
     public void runEvaluation(EvaluationRecipe recipe) {
-        
+
         List<Runnable> tasks = makeEvalTasks(recipe);
-        
+
         ExecutorService svc = Executors.newFixedThreadPool(getThreadCount());
         try {
             ExecHelpers.parallelRun(svc, tasks);
@@ -166,12 +166,12 @@ public class TrainTestPredictEvaluator {
      * @return The tasks to run to perform a train-test evaluation on the algorithms.
      */
     public List<Runnable> makeEvalTasks(EvaluationRecipe recipe) {
-        
+
         final DAOFactory daoMgr = trainingDAOManager();
         final DAOFactory testDaoMgr = testDAOManager();
-        
+
         final ResultAccumulator accum = recipe.makeAccumulator(getName());
-        
+
         final LazyValue<SharedRatingSnapshot> snap =
             new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
                 @Override
@@ -179,7 +179,7 @@ public class TrainTestPredictEvaluator {
                     logger.info("Loading snapshot for {}", name);
                     TaskTimer timer = new TaskTimer();
                     SharedRatingSnapshot snap = loadSnapshot(daoMgr);
-                    logger.info("Rating snapshot for {} loaded in {}", 
+                    logger.info("Rating snapshot for {} loaded in {}",
                                 name, timer);
                     return snap;
                 }
@@ -201,7 +201,7 @@ public class TrainTestPredictEvaluator {
                     }
                 }
             });
-        
+
         List<Runnable> tasks = Lists.transform(recipe.getAlgorithms(),
                                                new Function<AlgorithmInstance, Runnable>() {
             @Override
@@ -220,7 +220,7 @@ public class TrainTestPredictEvaluator {
             dao.close();
         }
     }
-    
+
     protected class EvalTask implements Runnable {
         private AlgorithmInstance algorithm;
         private ResultAccumulator resultAccumulator;
@@ -228,7 +228,7 @@ public class TrainTestPredictEvaluator {
         private DAOFactory testDaoManager;
         private LazyValue<List<Event>> ratingCache;
         private LazyValue<? extends RatingSnapshot> ratingSnapshot;
-        
+
         public EvalTask(DAOFactory daoMgr,
                 DAOFactory testDaoMgr,
                 ResultAccumulator results, AlgorithmInstance algo,

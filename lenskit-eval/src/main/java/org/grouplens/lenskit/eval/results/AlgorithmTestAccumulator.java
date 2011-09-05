@@ -34,17 +34,17 @@ public interface AlgorithmTestAccumulator {
      * Stop the algorithm's build timer.
      */
     void finishBuild();
-    
+
     /**
      * Start the algorithm's test timer.
      */
     void startTestTimer();
-    
+
     /**
      * Stop the test timer and finalize the evaluation results.
      */
     void finish();
-    
+
     /**
      * Post a prediction to the evaluation.
      */

@@ -49,7 +49,7 @@ public class TypeUtilsTest {
         assertFalse(p.apply(URL.class));
         assertFalse(p.apply(Element.class));
     }
-    
+
     @Test
     public void testTypeClosure() {
         Set<Class<?>> closure = TypeUtils.typeClosure(SortedSet.class);

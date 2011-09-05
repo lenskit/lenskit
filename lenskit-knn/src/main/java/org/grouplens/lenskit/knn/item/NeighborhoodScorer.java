@@ -23,7 +23,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
 
 /**
  * Compute scores from neighborhoods and score vectors.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -31,7 +31,7 @@ public interface NeighborhoodScorer {
     /**
      * Compute a score based on similar neighbors and their corresponding
      * scores.
-     * 
+     *
      * @param neighbors A list of neighbors with similarity measures.
      * @param scores A vector of item scores. It should contain a score for
      *        every item in <var>neighbors</var>.

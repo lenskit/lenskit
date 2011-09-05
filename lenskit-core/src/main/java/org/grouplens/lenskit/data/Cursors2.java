@@ -65,7 +65,7 @@ public class Cursors2 {
         list.trim();
         return list;
     }
-    
+
     public static LongSet makeSet(LongCursor cursor) {
         LongOpenHashSet set = null;
         try {

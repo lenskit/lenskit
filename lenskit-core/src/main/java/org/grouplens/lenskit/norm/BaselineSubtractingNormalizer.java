@@ -32,12 +32,12 @@ import org.grouplens.lenskit.params.NormalizerBaseline;
  */
 public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<UserVector> implements Serializable {
     private static final long serialVersionUID = 1449043456567302903L;
-    
+
     protected final BaselinePredictor baselinePredictor;
 
     /**
      * Create a new BaselineSubtractingNormalizer with the given baseline.
-     * 
+     *
      * @param baseline
      */
     public BaselineSubtractingNormalizer(@NormalizerBaseline BaselinePredictor baseline) {
@@ -50,10 +50,10 @@ public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<User
             return new IdentityVectorNormalizer().makeTransformation(ratings);
         return new Transformation(ratings);
     }
-    
+
     protected class Transformation implements VectorTransformation {
         private final UserVector user;
-        
+
         public Transformation(UserVector r) {
             user = r;
         }
@@ -75,6 +75,6 @@ public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<User
 
     @Override
     public String toString() {
-    	return String.format("[BaselineNorm: %s]", baselinePredictor);
+        return String.format("[BaselineNorm: %s]", baselinePredictor);
     }
 }

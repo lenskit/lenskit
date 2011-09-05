@@ -34,7 +34,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * Normalizers to be used in the predict phase (as opposed to the build phase).
  * Some recommenders support different recommenders for building and predicting;
  * in that case, the predict normalizer will be requested with this annotation.
- * 
+ *
  * <p>This normalizer is applied to {@link UserVector}s.
  */
 @Documented

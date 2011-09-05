@@ -37,35 +37,35 @@ import org.junit.Test;
 
 public class TestItemItemRecommenderBuild {
 
-	private DAOFactory manager;
-	private RecommenderEngine engine;
+    private DAOFactory manager;
+    private RecommenderEngine engine;
 
-	@Before
-	public void setup() {
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 5, 2));
-		rs.add(Ratings.make(1, 7, 4));
-		rs.add(Ratings.make(8, 4, 5));
-		rs.add(Ratings.make(8, 5, 4));
-		manager = new EventCollectionDAO.Factory(rs);
+    @Before
+    public void setup() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 5, 2));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(8, 4, 5));
+        rs.add(Ratings.make(8, 5, 4));
+        manager = new EventCollectionDAO.Factory(rs);
 
-		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-		factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
-		factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
-		// this is the default
-//		factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
-//		                     IdentityVectorNormalizer.class);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
+        factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
+        // this is the default
+//        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
+//                             IdentityVectorNormalizer.class);
 
-		engine = factory.create();
-	}
+        engine = factory.create();
+    }
 
-	@Test
-	public void testItemItemRecommenderEngineCreate() {
-		Recommender rec = engine.open();
-		
-		// These assert instanceof's are also assertNotNull's
-		assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
-		assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-		assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
-	}
+    @Test
+    public void testItemItemRecommenderEngineCreate() {
+        Recommender rec = engine.open();
+
+        // These assert instanceof's are also assertNotNull's
+        assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
+        assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
+        assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
+    }
 }

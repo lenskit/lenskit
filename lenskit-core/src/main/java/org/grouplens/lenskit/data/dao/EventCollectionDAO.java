@@ -49,7 +49,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Data source backed by a collection of events.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -65,11 +65,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
     public static class Factory implements DAOFactory {
         private final Collection<? extends Event> events;
         private transient volatile  EventCollectionDAO singleton;
-        
+
         public Factory(Collection<? extends Event> ratings) {
             this.events = ratings;
         }
-        
+
         @Override
         public synchronized EventCollectionDAO create() {
             if (singleton == null) {
@@ -77,16 +77,16 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
                 singleton.requireItemCache();
                 singleton.requireUserCache();
             }
-            
+
             return singleton;
         }
-        
+
         @Override
         public EventCollectionDAO snapshot() {
             return create();
         }
     }
-    
+
     private Collection<? extends Event> ratings;
     private Set<Class<? extends Event>> types;
     private Long2ObjectMap<UserHistory<Event>> users;
@@ -126,7 +126,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             }
         }
     }
-    
+
     private synchronized void requireItemCache() {
         if (items == null) {
             logger.debug("Caching item event collections");
@@ -146,11 +146,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             }
         }
     }
-    
+
     /**
      * Query whether there may be any events of the specified type in this DAO.
      * This does not guarantee that there are, but only
-     * 
+     *
      * @param type
      * @return <tt>true</tt> if the data set contains some objects which are
      *         compatible with <var>type</var>.
@@ -169,7 +169,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
     public <E extends Event> Cursor<E> getUserEvents(long user, Class<E> type) {
         if (!containsType(type))
             return Cursors.empty();
-        
+
         requireUserCache();
         Collection<? extends Event> ratings = users.get(user);
         if (ratings == null) return Cursors.empty();
@@ -182,7 +182,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         requireUserCache();
         return Cursors.wrap(users.values().iterator());
     }
-    
+
     @Override
     public <E extends Event> Cursor<UserHistory<E>> getUserHistories(final Class<E> type) {
         return Cursors.transform(getUserHistories(),
@@ -198,16 +198,16 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             }
         });
     }
-    
+
     @Override
     public <E extends Event> Cursor<E> getItemEvents(long item, Class<E> type) {
         if (!containsType(type)) return Cursors.empty();
-        
+
         requireItemCache();
-        
+
         List<Event> ratings = items.get(item);
         if (ratings == null) return Cursors.empty();
-        
+
         return Cursors.filter(Cursors.wrap(ratings), type);
     }
 

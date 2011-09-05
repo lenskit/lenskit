@@ -38,11 +38,11 @@ import org.grouplens.lenskit.util.CollectionUtils;
  */
 public abstract class AbstractItemRecommender implements ItemRecommender {
     protected final DataAccessObject dao;
-    
+
     protected AbstractItemRecommender(DataAccessObject dao) {
         this.dao = dao;
     }
-    
+
     /**
      * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
      */
@@ -112,7 +112,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
         LongSet es = CollectionUtils.fastSet(exclude);
         return recommend(ratings, n, cs, es);
     }
-    
+
     /**
      * Return <tt>true</tt>, indicating this recommender can use histories.
      * Override this if the recommender actually doesn't.
@@ -121,13 +121,13 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     public boolean canUseHistory() {
         return true;
     }
-    
+
     /**
      * Implementation method for ID-based recommendation.  All other ID-based
      * methods are implemented in terms of this one, which in turn delegates to
      * {@link #recommend(UserHistory, int, LongSet, LongSet)} with a history
      * obtained by {@link #getUserHistory(long)}.
-     * 
+     *
      * @param user The user ID.
      * @param n The number of items to return, or negative to return all
      *        possible items.
@@ -141,22 +141,22 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
         return recommend(getUserHistory(user), n, candidates, exclude);
     }
-    
+
     /**
      * Get the history for the specified user. If a subclass can only take
      * advantage of particular elements, it can override this method to filter
      * based on them.
-     * 
+     *
      * @param user The ID of the user whose history is requested.
      * @return The history for the specified user.
      */
     protected UserHistory<? extends Event> getUserHistory(long user) {
         return dao.getUserHistory(user);
     }
-    
+
     /**
      * Implementation method for recommender services.
-     * 
+     *
      * @param ratings The user rating vector.
      * @param n The number of items to return, or negative to return all
      *        possible items.

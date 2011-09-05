@@ -24,11 +24,11 @@ import org.grouplens.lenskit.data.pref.Preference;
 
 /**
  * Simple implementation of a null rating (unrate event).
- * 
+ *
  * @see SimpleRating
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @Immutable
 public class SimpleNullRating implements Rating {
@@ -39,7 +39,7 @@ public class SimpleNullRating implements Rating {
 
     /**
      * Construct a new null rating.
-     * 
+     *
      * @param id The event ID.
      * @param uid The user ID.
      * @param iid The item ID.

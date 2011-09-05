@@ -32,12 +32,12 @@ import java.io.Serializable;
  *
  */
 public interface Index extends Serializable {
-	/**
-	 * Get the index of an id.  If the object has not been interned,
-	 * returns a negative number.
-	 * @param id The id to query.
-	 * @return The id's index or a negative value if the id does not exist.
-	 */
+    /**
+     * Get the index of an id.  If the object has not been interned,
+     * returns a negative number.
+     * @param id The id to query.
+     * @return The id's index or a negative value if the id does not exist.
+     */
     int getIndex(long id);
     /**
      * Get the key for an index.
@@ -45,7 +45,7 @@ public interface Index extends Serializable {
      * @return The ID for the given <var>idx</var>
      */
     long getId(int idx);
-    
+
     int getObjectCount();
     /**
      * Get the list of IDs.

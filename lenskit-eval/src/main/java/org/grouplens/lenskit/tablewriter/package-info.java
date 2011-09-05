@@ -25,8 +25,8 @@
  *
  * The table writer framework consists of two primary interfaces:
  * {@link org.grouplens.lenskit.tablewriter.TableWriterBuilder TableWriterBuilder}
- * is used to set up the format of a table (e.g. the number and titles of the columns).  
- * Once the table is set up, the client code obtains a 
+ * is used to set up the format of a table (e.g. the number and titles of the columns).
+ * Once the table is set up, the client code obtains a
  * {@link org.grouplens.lenskit.tablewriter.TableWriter TableWriter} which it
  * then uses to write the actual table data.
  */

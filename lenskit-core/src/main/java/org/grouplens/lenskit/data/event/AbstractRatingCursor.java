@@ -25,11 +25,11 @@ import org.grouplens.common.cursors.AbstractPollingCursor;
 
 /**
  * Polling-based cursor implementation for ratings with fast poll methods.
- * 
+ *
  * <p>This is only for cursors which support mutating rating objects.  The ratings
  * are cloned to implement {@link #next()}.  If your {@link #poll()} method returns
  * fresh rating objects for each rating, extend {@link AbstractPollingCursor} instead.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -37,29 +37,29 @@ public abstract class AbstractRatingCursor<R extends Rating> extends AbstractCur
     /**
      * Poll for the next rating. This implementation should mutate and re-use
      * the same rating object if possible.
-     * 
+     *
      * @return The rating, or <tt>null</tt> if at the end of the cursor.
      */
     protected abstract R poll();
-    
+
     private boolean hasNextCalled;
     private R polled;
-    
+
     public AbstractRatingCursor() {
         super();
     }
-    
+
     public AbstractRatingCursor(int rowCount) {
         super(rowCount);
     }
-    
+
     @Override
     public boolean hasNext() {
         if (!hasNextCalled) {
             polled = poll();
             hasNextCalled = true;
         }
-        
+
         return polled != null;
     }
 
@@ -69,13 +69,13 @@ public abstract class AbstractRatingCursor<R extends Rating> extends AbstractCur
             polled = poll();
         if (polled == null)
             throw new NoSuchElementException();
-        
+
         R n = polled;
         polled = null;
         hasNextCalled = false;
         return n;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public R next() {

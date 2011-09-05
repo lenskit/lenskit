@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Base implementation for table builders.  Implements everything in terms of
  * {@link #writeRow(String[])}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -34,11 +34,11 @@ public abstract class AbstractTableWriter implements TableWriter {
     private final ReentrantLock lock = new ReentrantLock(true);
     protected final String[] columns;
     protected String[] values;
-    
+
     protected AbstractTableWriter(String[] columns) {
         this.columns = columns;
     }
-    
+
     /**
      * Query whether a row is active on the current thread.
      * @return <tt>true</tt> iff the current thread has a row active.
@@ -46,7 +46,7 @@ public abstract class AbstractTableWriter implements TableWriter {
     protected boolean isRowActive() {
         return lock.isHeldByCurrentThread();
     }
-    
+
     @Override
     public void startRow() {
         if (isRowActive())
@@ -62,7 +62,7 @@ public abstract class AbstractTableWriter implements TableWriter {
             throw e;
         }
     }
-    
+
     @Override
     public void finishRow() throws IOException {
         if (!isRowActive())
@@ -73,7 +73,7 @@ public abstract class AbstractTableWriter implements TableWriter {
             lock.unlock();
         }
     }
-    
+
     @Override
     public void cancelRow() {
         if (!isRowActive())

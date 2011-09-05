@@ -30,7 +30,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 
 /**
  * The learning rate for gradient descent.
- * 
+ *
  * @see FunkSVDModelBuilder
  */
 @Documented

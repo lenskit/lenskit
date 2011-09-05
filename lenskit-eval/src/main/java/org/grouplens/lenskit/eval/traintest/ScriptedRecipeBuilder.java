@@ -39,11 +39,11 @@ public class ScriptedRecipeBuilder {
     private List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
     @SuppressWarnings("unused")
     private Scriptable scope;
-    
+
     public ScriptedRecipeBuilder(Scriptable scope) {
-        this.scope = scope; 
+        this.scope = scope;
     }
-    
+
     /**
      * Add an evaluation.
      * @param eval The evaluator to add.
@@ -51,7 +51,7 @@ public class ScriptedRecipeBuilder {
     public void addEval(PredictionEvaluator eval) {
         evaluators.add(eval);
     }
-    
+
     /**
      * Add an evaluation by class.
      * @param eval A class to instantiate to make an evaluator.
@@ -65,7 +65,7 @@ public class ScriptedRecipeBuilder {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Add an evaluation by name.
      * @param name The name of the evaluator. Looks for the class
@@ -76,7 +76,7 @@ public class ScriptedRecipeBuilder {
     public void addEval(String name) throws ClassNotFoundException {
         addEval((Class) Class.forName("org.grouplens.lenskit.eval.predict." + name + "Evaluator"));
     }
-    
+
     /**
      * Create a new algorithm and add it to the algorithm list. The script
      * should then fill in the algorithm's details.
@@ -87,11 +87,11 @@ public class ScriptedRecipeBuilder {
         algorithms.add(a);
         return a;
     }
-    
+
     public List<AlgorithmInstance> getAlgorithms() {
         return algorithms;
     }
-    
+
     EvaluationRecipe build(File file) {
         logger.info("Loaded {} algorithms", algorithms.size());
         return new EvaluationRecipe(algorithms, evaluators, file);

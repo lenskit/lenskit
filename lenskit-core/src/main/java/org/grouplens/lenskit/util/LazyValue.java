@@ -25,14 +25,14 @@ import javax.annotation.Nonnull;
 /**
  * A thread-safe lazy value class.  It waits until its value is actually required
  * to compute it, then caches it.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class LazyValue<T> {
     private volatile T value;
     private Callable<T> provider; // set to null once the value is computed
-    
+
     /**
      * Create a lazy value whose value will be provided by a callable.
      * @param f The callable responsible for providing the lazy value.
@@ -40,7 +40,7 @@ public class LazyValue<T> {
     public LazyValue(@Nonnull Callable<T> f) {
         provider = f;
     }
-    
+
     /**
      * Get the value, computing it if necessary.
      * @return The value returned by the callable.
@@ -48,7 +48,7 @@ public class LazyValue<T> {
     public synchronized T get() {
         if (provider != null) {
             // still have the provider, we need to compute the value
-            try {                
+            try {
                 value = provider.call();
             } catch (Exception e) {
                 throw new RuntimeException("Error computing lazy value", e);

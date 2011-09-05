@@ -35,20 +35,20 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
  *
  */
 public class ItemVector extends ImmutableSparseVector {
-	private static final long serialVersionUID = 6027858130934920280L;
-	
-	private final long itemId;
+    private static final long serialVersionUID = 6027858130934920280L;
 
-	public ItemVector(long item, Long2DoubleMap ratings) {
-		super(ratings);
-		itemId = item;
-	}
-	
-	public long getItemId() {
-		return itemId;
-	}
+    private final long itemId;
 
-	public static ItemVector ratingVector(long item, Collection<? extends Rating> ratings) {
+    public ItemVector(long item, Long2DoubleMap ratings) {
+        super(ratings);
+        itemId = item;
+    }
+
+    public long getItemId() {
+        return itemId;
+    }
+
+    public static ItemVector ratingVector(long item, Collection<? extends Rating> ratings) {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
         Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
         tsMap.defaultReturnValue(Long.MIN_VALUE);

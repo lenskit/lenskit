@@ -43,7 +43,7 @@ import java.util.NoSuchElementException;
  */
 public final class IntSortedArraySet extends AbstractIntSortedSet implements Serializable {
     private static final long serialVersionUID = 8855635312935829479L;
-    
+
     private final int[] data;
     private final int start, end;
 

@@ -25,7 +25,7 @@ import org.grouplens.lenskit.params.meta.Built;
 
 /**
  * Rating scorer that predicts the global mean rating for all items.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
@@ -33,7 +33,7 @@ import org.grouplens.lenskit.params.meta.Built;
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.
-     * 
+     *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<GlobalMeanPredictor> {
@@ -43,7 +43,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
             return new GlobalMeanPredictor(avg);
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -54,27 +54,27 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     public GlobalMeanPredictor(double mean) {
         super(mean);
     }
-    
+
     /**
      * Utility method to compute the mean or average of the rating values
      * contained in the given collection of ratings.
-     * 
+     *
      * @param ratings
      * @return The average of the rating values stored in <var>ratings</var>.
      */
     public static double computeMeanRating(RatingSnapshot ratings) {
         double total = 0;
         long count = 0;
-        
+
         for (Preference r: ratings.getRatings().fast()) {
             total += r.getValue();
             count += 1;
         }
-        
+
         double avg = 0;
         if (count > 0)
             avg = total / count;
-        
+
         return avg;
     }
 }

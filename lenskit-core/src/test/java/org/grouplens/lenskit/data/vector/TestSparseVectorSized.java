@@ -20,7 +20,7 @@ package org.grouplens.lenskit.data.vector;
 
 /**
  * Re-run sparse vector tests with a longer version of the vector.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

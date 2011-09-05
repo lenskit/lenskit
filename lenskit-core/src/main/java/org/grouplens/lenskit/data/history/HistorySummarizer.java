@@ -23,14 +23,14 @@ import org.grouplens.lenskit.data.vector.UserVector;
 
 /**
  * Summarize user histories as real-valued vectors.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public interface HistorySummarizer {
     /**
      * Get the supertype of all events required by this summarizer.
-     * 
+     *
      * @return A type such that any type used by this summarizer is a subtype of
      *         it.
      */
@@ -38,7 +38,7 @@ public interface HistorySummarizer {
 
     /**
      * Compute a vector summary of a user's history.
-     * 
+     *
      * @param history The history to summarize.
      * @return A vector summarizing the user's history.
      */

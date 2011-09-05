@@ -22,7 +22,7 @@
  * and item data in LensKit; users have events associated with items. Ratings
  * are events, as are purchases, clicks, and other forms of user-item
  * interaction data.
- * 
+ *
  * <p>
  * In some cases, it makes sense for an event to not be associated with any
  * particular item (e.g. "user logged in"). In this case, we recommend that

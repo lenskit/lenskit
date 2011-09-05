@@ -40,12 +40,12 @@ public class ImmutableSparseVector extends SparseVector {
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
     }
-    
+
     protected ImmutableSparseVector(SparseVector v) {
-    	super(v.keys,
-    	      (v instanceof ImmutableSparseVector ? 
-    	    		  v.values : Arrays.copyOf(v.values, v.size)),
-    	      v.size);
+        super(v.keys,
+              (v instanceof ImmutableSparseVector ?
+                      v.values : Arrays.copyOf(v.values, v.size)),
+              v.size);
     }
 
     /**
@@ -56,7 +56,7 @@ public class ImmutableSparseVector extends SparseVector {
     protected ImmutableSparseVector(long[] keys, double[] values) {
         super(keys, values);
     }
-    
+
     /**
      * @param keys
      * @param values
@@ -66,7 +66,7 @@ public class ImmutableSparseVector extends SparseVector {
     protected ImmutableSparseVector(long[] keys, double[] values, int size) {
         super(keys, values, size);
     }
-    
+
     /**
      * Override {@link SparseVector#invalidate()} to prohibit immutable sparse
      * vectors from being invalidated.
@@ -75,7 +75,7 @@ public class ImmutableSparseVector extends SparseVector {
     protected final void invalidate() {
         throw new UnsupportedOperationException("Immutable vectors cannot be invalidated");
     }
-    
+
     @Override
     public ImmutableSparseVector clone() {
         return (ImmutableSparseVector) super.clone(false);
@@ -85,14 +85,14 @@ public class ImmutableSparseVector extends SparseVector {
     public ImmutableSparseVector immutable() {
         return this;
     }
-    
+
     /**
      * @see MutableSparseVector#wrap(long[], double[])
      */
     public static ImmutableSparseVector wrap(long[] keys, double[] values) {
         return MutableSparseVector.wrap(keys, values).freeze();
     }
-    
+
     /**
      * @see MutableSparseVector#wrap(long[], double[], int)
      */

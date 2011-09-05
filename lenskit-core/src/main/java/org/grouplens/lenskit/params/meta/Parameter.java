@@ -26,13 +26,13 @@ import java.lang.annotation.Target;
 
 /**
  * Marks an annotation as specifying a recommender parameter.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  * @review Is this the best name for component role annotations?
  * @review Should the type be mandatory? What about parameters supporting
  *         multiple types?
- * 
+ *
  */
 @Documented
 @Target(ElementType.ANNOTATION_TYPE)

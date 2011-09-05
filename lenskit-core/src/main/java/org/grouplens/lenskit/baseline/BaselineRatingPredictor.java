@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.vector.UserVector;
 /**
  * {@link RatingPredictor} that delegates to the baseline predictor. This allows
  * baseline predictors to be used as rating predictors in their own right.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */

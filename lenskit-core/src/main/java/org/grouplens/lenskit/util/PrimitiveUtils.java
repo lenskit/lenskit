@@ -22,11 +22,11 @@ public class PrimitiveUtils {
 
     public static boolean isBoxedTypePrimitive(Class<?> type) {
         type = box(type);
-        return Number.class.isAssignableFrom(type) || 
-               Boolean.class.isAssignableFrom(type) || 
+        return Number.class.isAssignableFrom(type) ||
+               Boolean.class.isAssignableFrom(type) ||
                Character.class.isAssignableFrom(type);
     }
-    
+
     public static Number parse(Class<? extends Number> type, String value) {
         if (type.equals(Integer.class))
             return Integer.parseInt(value);
@@ -43,7 +43,7 @@ public class PrimitiveUtils {
         else
             throw new IllegalArgumentException("Unsupported Number type: " + type);
     }
-    
+
     public static Class<?> box(Class<?> type) {
         if (type.isPrimitive()) {
             if (type.equals(int.class))
@@ -65,7 +65,7 @@ public class PrimitiveUtils {
         }
         return type;
     }
-    
+
     public static Class<?> unboox(Class<?> type) {
         if (type.equals(Integer.class))
             return int.class;
@@ -86,7 +86,7 @@ public class PrimitiveUtils {
         else
             return type;
     }
-    
+
     public static Number cast(Class<? extends Number> newType, Number value) {
         if (Integer.class.equals(newType))
             return value.intValue();

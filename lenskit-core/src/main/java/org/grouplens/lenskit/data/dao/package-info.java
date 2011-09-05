@@ -18,20 +18,20 @@
  */
 /**
  * LensKit data access objects.
- * 
+ *
  * <p>LensKit uses <a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data Access Objects</a>
  * to obtain access to rating data.  These objects allow LensKit to query for
  * users, items, ratings, etc.  DAOs correspond generally to database connections
  * or their equivalent, so they should only be used in a single thread.  When
  * threads need to be able to create DAOs, {@link org.grouplens.lenskit.data.dao.DAOFactory} objects
  * should be used.
- * 
+ *
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to
- * provide mutation.  The recommender building process uses a 
+ * provide mutation.  The recommender building process uses a
  * {@link org.grouplens.lenskit.data.snapshot.RatingSnapshot RatingSnapshot}
  * so that it can make multiple passes over a snapshot of the data.
- * 
+ *
  */
 package org.grouplens.lenskit.data.dao;
 

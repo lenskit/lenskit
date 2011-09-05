@@ -29,29 +29,29 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
  * a reference vector.  The reference vector is used to compute the normalization,
  * and it is applied to the target vector; this allows e.g. the user's average
  * rating to be subtracted from a set of ratings.
- * 
+ *
  * @param <V> The type of reference vectors.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @DefaultClass(IdentityVectorNormalizer.class)
 public interface VectorNormalizer<V extends ImmutableSparseVector> {
 
     /**
      * Normalize a vector in-place with a reference vector.
-     * 
+     *
      * <p>
      * To understand the relationship of <var>reference</var> and
      * <var>vector</var>, consider wanting to subtract the user's mean rating
      * from a set of ratings. To do that, the user's rating vector is
      * <var>reference</var>, and the vector of ratings to be adjusted is
      * <var>vector</var>.
-     * 
+     *
      * <p>
      * This method is equivalent to
      * <code>makeTransformation(reference).apply(target)</code).
-     * 
+     *
      * @param reference The reference used to compute whatever transformation is
      *            needed (e.g. the mean value).
      * @param target The vector to normalize. If <tt>null</tt>, a new mutable
@@ -69,10 +69,10 @@ public interface VectorNormalizer<V extends ImmutableSparseVector> {
      * If the reference vector is empty, the returned transformation should be
      * the identity transform. Results are undefined if the reference vector is
      * not complete or contains NaN values.
-     * 
+     *
      * @param reference The reference vector.
      * @return A transformation built from the reference vector.
      */
-	VectorTransformation makeTransformation(V reference);
+    VectorTransformation makeTransformation(V reference);
 
 }

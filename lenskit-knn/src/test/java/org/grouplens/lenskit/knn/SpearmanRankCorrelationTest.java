@@ -33,12 +33,12 @@ import org.junit.Test;
  *
  */
 public class SpearmanRankCorrelationTest {
-    
+
     @Test
     public void testRankEmpty() {
         assertTrue(rank(new MutableSparseVector()).isEmpty());
     }
-    
+
     @Test
     public void testRankSingle() {
         SparseVector v = MutableSparseVector.wrap(new long[]{1}, new double[]{5});
@@ -46,7 +46,7 @@ public class SpearmanRankCorrelationTest {
         assertEquals(1, r.size());
         assertEquals(1, r.get(1), 1.0e-6);
     }
-    
+
     @Test
     public void testRankSeveral() {
         long[] keys = { 1, 2, 3, 4, 5 };
@@ -60,7 +60,7 @@ public class SpearmanRankCorrelationTest {
         assertEquals(4, r.get(2), 1.0e-6);
         assertEquals(5, r.get(4), 1.0e-6);
     }
-    
+
     @Test
     public void testRankTie() {
         long[] keys = { 1, 2, 3, 4, 5 };

@@ -33,17 +33,17 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
  * between items. These similarities are post-normalization, so code using them
  * should use the same normalizations used by the builder to make use of the
  * similarity scores.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @Built
 @DefaultBuilder(ItemItemModelBuilder.class)
 public class ItemItemModel implements Serializable {
     private static final long serialVersionUID = -5986236982760043379L;
-    
+
     private static final ScoredLongList EMPTY_LIST = new ScoredLongArrayList();
-    
+
     private final Long2ObjectMap<ScoredLongList> similarityMatrix;
     private final LongSortedSet itemUniverse;
 
@@ -51,16 +51,16 @@ public class ItemItemModel implements Serializable {
         itemUniverse = universe;
         similarityMatrix = matrix;
     }
-    
+
     public LongSortedSet getItemUniverse() {
         return itemUniverse;
     }
-    
+
     public ScoredLongList getNeighbors(long item) {
         ScoredLongList nbrs = similarityMatrix.get(item);
         if (nbrs == null)
             nbrs = EMPTY_LIST;
         return nbrs;
-            
+
     }
 }

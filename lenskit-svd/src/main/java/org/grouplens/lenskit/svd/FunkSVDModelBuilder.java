@@ -66,39 +66,39 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private double trainingRegularization;
     private DoubleFunction clampingFunction;
     private int iterationCount;
-    
+
     private BaselinePredictor baseline;
-    
+
     @FeatureCount
     public void setFeatureCount(int count) {
         featureCount = count;
     }
-    
+
     @LearningRate
     public void setLearningRate(double rate) {
         learningRate = rate;
     }
-    
+
     @TrainingThreshold
     public void setTrainingThreshold(double threshold) {
         trainingThreshold = threshold;
     }
-    
+
     @RegularizationTerm
     public void setGradientDescentRegularization(double regularization) {
         trainingRegularization = regularization;
     }
-    
+
     @ClampingFunction
     public void setClampingFunction(DoubleFunction function) {
         clampingFunction = function;
     }
-    
+
     @IterationCount
     public void setIterationCount(int count) {
         iterationCount = count;
     }
-    
+
     public void setBaseline(BaselinePredictor baseline) {
         this.baseline = baseline;
     }
@@ -122,7 +122,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
 
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
-        
+
         final int numUsers = snapshot.getUserIds().size();
         final int numItems = snapshot.getItemIds().size();
         double[][] userFeatures = new double[featureCount][numUsers];
@@ -130,7 +130,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         for (int i = 0; i < featureCount; i++) {
             trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
         }
-        
+
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
@@ -156,7 +156,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private final void trainFeature(double[][] ufvs, double[][] ifvs,
                                     double[] estimates,
                                     FastCollection<IndexedPreference> ratings, int feature) {
-        
+
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
@@ -175,7 +175,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         double rmse = Double.MAX_VALUE, oldRmse = 0.0;
         int epoch;
         TaskTimer timer = new TaskTimer();
-        
+
         for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
             logger.trace("Running epoch {} of feature {}", epoch, feature);
             // Save the old RMSE so that we can measure change in error
@@ -186,7 +186,7 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         }
 
         logger.debug("Finished feature {} in {} epochs (took {}), rmse={}",
-        		new Object[]{feature, epoch, timer.elapsedPretty(), rmse});
+                new Object[]{feature, epoch, timer.elapsedPretty(), rmse});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
@@ -200,23 +200,23 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         }
     }
 
-	/**
-	 * We have two potential terminating conditions: if iterationCount is
-	 * specified, we run for that many iterations irregardless of error.
-	 * Otherwise, we run until the change in error is less than the training
-	 * threshold.
-	 * 
-	 * @param epoch
-	 * @param rmse
-	 * @param oldRmse
-	 * @return <tt>true</tt> if the feature is sufficiently trained
-	 */
+    /**
+     * We have two potential terminating conditions: if iterationCount is
+     * specified, we run for that many iterations irregardless of error.
+     * Otherwise, we run until the change in error is less than the training
+     * threshold.
+     *
+     * @param epoch
+     * @param rmse
+     * @param oldRmse
+     * @return <tt>true</tt> if the feature is sufficiently trained
+     */
     protected final boolean isDone(int epoch, double rmse, double oldRmse) {
-    	if (iterationCount > 0) {
-    		return epoch >= iterationCount;
-    	} else {
-    		return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
-    	}
+        if (iterationCount > 0) {
+            return epoch >= iterationCount;
+        } else {
+            return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
+        }
     }
 
     private final double trainFeatureIteration(FastCollection<IndexedPreference> ratings,

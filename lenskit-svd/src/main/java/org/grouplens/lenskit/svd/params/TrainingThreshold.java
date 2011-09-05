@@ -32,7 +32,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
  * Threshold for convergence to stop training a feature.  If no {@link IterationCount}
  * is specified, then each feature is trained until the difference in RMSE between
  * two subsequent iterations is less than this value.
- * 
+ *
  * @see FunkSVDModelBuilder
  */
 @Documented

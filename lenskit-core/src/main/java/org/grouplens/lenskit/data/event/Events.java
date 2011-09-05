@@ -34,7 +34,7 @@ public class Events {
      * test cases.
      */
     static AtomicLong nextEventId = new AtomicLong();
-    
+
     /**
      * Compare two events by timestamp.
      */
@@ -44,7 +44,7 @@ public class Events {
             return Longs.compare(e1.getTimestamp(), e2.getTimestamp());
         }
     };
-    
+
     /**
      * Compare two events by user, then timestamp.
      */
@@ -57,7 +57,7 @@ public class Events {
                     .result();
         }
     };
-    
+
     /**
      * Compare two item events by item, then timestamp.
      */

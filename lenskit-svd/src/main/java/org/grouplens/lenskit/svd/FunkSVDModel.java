@@ -30,16 +30,16 @@ import org.grouplens.lenskit.util.DoubleFunction;
 @DefaultBuilder(FunkSVDModelBuilder.class)
 public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;
-    
+
     public final int featureCount;
     public final double itemFeatures[][];
     public final double userFeatures[][];
     public final DoubleFunction clampingFunction;
-    
+
     public final Index itemIndex;
     public final Index userIndex;
     public final BaselinePredictor baseline;
-    
+
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         DoubleFunction clamp, Index iidx, Index uidx,
                         BaselinePredictor baseline) {
@@ -51,11 +51,11 @@ public class FunkSVDModel implements Serializable {
         userIndex = uidx;
         this.baseline = baseline;
     }
-    
+
     public double getItemFeatureValue(int item, int feature) {
         return itemFeatures[feature][item];
     }
-    
+
     public int getItemIndex(long item) {
         return itemIndex.getIndex(item);
     }

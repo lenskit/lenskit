@@ -52,7 +52,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         private final File file;
         private final String delimiter;
         private final URL url;
-        
+
         /**
          * Create a new DAO factory from a file.
          * @param file The name of the file toopen.
@@ -70,7 +70,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
             }
             this.delimiter = delimiter;
         }
-        
+
         /**
          * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
          * property (defaults to "\t" if not found).
@@ -102,20 +102,20 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
                 file = null;
             this.delimiter = delimiter;
         }
-        
+
         @Override
         public SimpleFileRatingDAO create() {
             return new SimpleFileRatingDAO(file, url, delimiter);
         }
-        
+
         @Override
         public SimpleFileRatingDAO snapshot() {
             return create();
         }
     }
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
-    
+
     private final File file;
     private final URL url;
     private final String delimiter;
@@ -139,22 +139,22 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     public URL getURL() {
         return url;
     }
-    
+
     @Override
     public Cursor<? extends Event> getEvents() {
         return getEvents(Event.class, SortOrder.ANY);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         // if they don't want ratings, they get nothing
         if (!type.isAssignableFrom(Rating.class))
             return Cursors.empty();
-        
+
         @SuppressWarnings("rawtypes")
         Comparator comp = getComparator(order);
-        
+
         Scanner scanner;
         String name = null;
         try {
@@ -177,7 +177,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         else
             return Cursors.sort(cursor, comp);
     }
-    
+
     @Override
     public void close() {
         // do nothing, each file stream is closed by the cursor

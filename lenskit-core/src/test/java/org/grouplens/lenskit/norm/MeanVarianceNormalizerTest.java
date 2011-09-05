@@ -35,130 +35,130 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * 
+ *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  *
  */
 public class MeanVarianceNormalizerTest {
-	DataAccessObject dao;
-	RatingSnapshot rs;
-	ImmutableSparseVector userRatings;
-	ImmutableSparseVector uniformUserRatings;
-	MeanVarianceNormalizer.Builder builder;
-	final static double MIN_DOUBLE_PRECISION = 0.00001;
-	
-	private static int eid = 0;
-	
-	private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
-	    ratings.add(new SimpleRating(eid++, uid, iid, value));
-	}
-	
-	@Before
-	public void setUp() {
-	    builder = new MeanVarianceNormalizer.Builder();
-	    
-		long[] keys = {0L, 1L, 2L};
-		double[] values = {0., 2., 4.};
-		userRatings = MutableSparseVector.wrap(keys, values).freeze();
-		double[] uniformValues = {2., 2., 2.};
-		uniformUserRatings = MutableSparseVector.wrap(keys, uniformValues).freeze();
-		List<Rating> ratings = new ArrayList<Rating>();
-		addRating(ratings, 0, 0, 0);
-		addRating(ratings, 0, 1, 1);
-		addRating(ratings, 0, 2, 2);
-		addRating(ratings, 0, 3, 3);
-		addRating(ratings, 0, 4, 4);
-		addRating(ratings, 0, 5, 5);
-		addRating(ratings, 0, 6, 6);
-		addRating(ratings, 1, 0, 3);
-		addRating(ratings, 1, 1, 3);
-		addRating(ratings, 1, 2, 3);
-		addRating(ratings, 1, 3, 3);
-		addRating(ratings, 1, 4, 3);
-		addRating(ratings, 1, 5, 3);
-		addRating(ratings, 1, 6, 3);
-		dao = new EventCollectionDAO.Factory(ratings).create();
-		rs = new PackedRatingSnapshot.Builder(dao).build();
-		builder.setRatingSnapshot(rs);
-	}
-	
-	@After
-	public void close() {
-	    rs.close();
-	    dao.close();
-	}
+    DataAccessObject dao;
+    RatingSnapshot rs;
+    ImmutableSparseVector userRatings;
+    ImmutableSparseVector uniformUserRatings;
+    MeanVarianceNormalizer.Builder builder;
+    final static double MIN_DOUBLE_PRECISION = 0.00001;
 
-	@Test
-	public void testBuilderNoSmoothing() {
-		MeanVarianceNormalizer urvn = builder.build();
-		Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
-	}
-	
-	@Test
-	public void testBuilderSmoothing() {
-	    builder.setSmoothing(3);
+    private static int eid = 0;
+
+    private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
+        ratings.add(new SimpleRating(eid++, uid, iid, value));
+    }
+
+    @Before
+    public void setUp() {
+        builder = new MeanVarianceNormalizer.Builder();
+
+        long[] keys = {0L, 1L, 2L};
+        double[] values = {0., 2., 4.};
+        userRatings = MutableSparseVector.wrap(keys, values).freeze();
+        double[] uniformValues = {2., 2., 2.};
+        uniformUserRatings = MutableSparseVector.wrap(keys, uniformValues).freeze();
+        List<Rating> ratings = new ArrayList<Rating>();
+        addRating(ratings, 0, 0, 0);
+        addRating(ratings, 0, 1, 1);
+        addRating(ratings, 0, 2, 2);
+        addRating(ratings, 0, 3, 3);
+        addRating(ratings, 0, 4, 4);
+        addRating(ratings, 0, 5, 5);
+        addRating(ratings, 0, 6, 6);
+        addRating(ratings, 1, 0, 3);
+        addRating(ratings, 1, 1, 3);
+        addRating(ratings, 1, 2, 3);
+        addRating(ratings, 1, 3, 3);
+        addRating(ratings, 1, 4, 3);
+        addRating(ratings, 1, 5, 3);
+        addRating(ratings, 1, 6, 3);
+        dao = new EventCollectionDAO.Factory(ratings).create();
+        rs = new PackedRatingSnapshot.Builder(dao).build();
+        builder.setRatingSnapshot(rs);
+    }
+
+    @After
+    public void close() {
+        rs.close();
+        dao.close();
+    }
+
+    @Test
+    public void testBuilderNoSmoothing() {
+        MeanVarianceNormalizer urvn = builder.build();
+        Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
+    }
+
+    @Test
+    public void testBuilderSmoothing() {
+        builder.setSmoothing(3);
         MeanVarianceNormalizer urvn = builder.build();
         Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
         Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
-	}
+    }
 
-	@Test
-	public void testMakeTransformation() {
-		MeanVarianceNormalizer urvn;
-		urvn = new MeanVarianceNormalizer();
-		VectorTransformation trans = urvn.makeTransformation(userRatings);
-		MutableSparseVector nUR = userRatings.mutableCopy();
-		final double mean = 2.0;
-		final double stdev = Math.sqrt(8.0 / 3.0);
-		trans.apply(nUR);
-		//Test apply
-		Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
-		trans.unapply(nUR);
-		//Test unapply
-		Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
-	}
+    @Test
+    public void testMakeTransformation() {
+        MeanVarianceNormalizer urvn;
+        urvn = new MeanVarianceNormalizer();
+        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        MutableSparseVector nUR = userRatings.mutableCopy();
+        final double mean = 2.0;
+        final double stdev = Math.sqrt(8.0 / 3.0);
+        trans.apply(nUR);
+        //Test apply
+        Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        trans.unapply(nUR);
+        //Test unapply
+        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+    }
 
-	@Test
-	public void testUniformRatings() {
-		MeanVarianceNormalizer urvn;
-		urvn = new MeanVarianceNormalizer();
-		VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
-		MutableSparseVector nUR = userRatings.mutableCopy();
-		trans.apply(nUR);
-		//Test apply
-		Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 0.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 0.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
-		trans.unapply(nUR);
-		//Test unapply
-		Assert.assertEquals( 2.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 2.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
-	}	
-	
-	@Test
-	public void testSmoothingDetailed() {
-	    builder.setSmoothing(3.0);
-		MeanVarianceNormalizer urvn = builder.build();
+    @Test
+    public void testUniformRatings() {
+        MeanVarianceNormalizer urvn;
+        urvn = new MeanVarianceNormalizer();
+        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
+        MutableSparseVector nUR = userRatings.mutableCopy();
+        trans.apply(nUR);
+        //Test apply
+        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 0.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 0.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        trans.unapply(nUR);
+        //Test unapply
+        Assert.assertEquals( 2.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 2.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+    }
 
-		VectorTransformation trans = urvn.makeTransformation(userRatings);
-		MutableSparseVector nUR = userRatings.mutableCopy();
-		final double mean = 2.0;
-		final double stdev = Math.sqrt(7.0/3.0);
-		trans.apply(nUR);
-		//Test apply
-		Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
-		trans.unapply(nUR);
-		//Test unapply
-		Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-		Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
-	}
+    @Test
+    public void testSmoothingDetailed() {
+        builder.setSmoothing(3.0);
+        MeanVarianceNormalizer urvn = builder.build();
+
+        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        MutableSparseVector nUR = userRatings.mutableCopy();
+        final double mean = 2.0;
+        final double stdev = Math.sqrt(7.0/3.0);
+        trans.apply(nUR);
+        //Test apply
+        Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        trans.unapply(nUR);
+        //Test unapply
+        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+    }
 
 }

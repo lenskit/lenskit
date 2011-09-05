@@ -36,7 +36,7 @@ public class ScannerRatingCursor extends AbstractRatingCursor<Rating> {
     private final Pattern splitter;
     private int lineno;
     private MutableRating rating;
-    
+
     public ScannerRatingCursor(@WillCloseWhenClosed Scanner s) {
         this(s, null, System.getProperty("lenskit.delimiter", "\t"));
     }
@@ -57,11 +57,11 @@ public class ScannerRatingCursor extends AbstractRatingCursor<Rating> {
         scanner = null;
         rating = null;
     }
-    
+
     @Override
     protected Rating poll() {
         if (scanner == null) return null;
-        
+
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             lineno += 1;
@@ -81,7 +81,7 @@ public class ScannerRatingCursor extends AbstractRatingCursor<Rating> {
 
             return rating;
         }
-        
+
         return null;
     }
 }

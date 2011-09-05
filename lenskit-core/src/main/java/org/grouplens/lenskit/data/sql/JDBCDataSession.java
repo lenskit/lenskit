@@ -35,74 +35,74 @@ import org.slf4j.LoggerFactory;
  */
 public class JDBCDataSession implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     final Connection connection;
     final boolean closeConnection;
-    
+
     private final SQLStatementFactory statementFactory;
-    
+
     private PreparedStatement userStatement;
     private PreparedStatement userCountStatement;
     private PreparedStatement itemStatement;
     private PreparedStatement itemCountStatement;
     private PreparedStatement eventStatements[] =
-    	new PreparedStatement[SortOrder.values().length];
+        new PreparedStatement[SortOrder.values().length];
     private PreparedStatement userEventStatement;
     private PreparedStatement itemEventStatement;
-    
+
     public JDBCDataSession(Connection dbc, SQLStatementFactory sfac) {
         this(dbc, sfac, true);
     }
-    
+
     public JDBCDataSession(Connection dbc, SQLStatementFactory sfac, boolean close) {
         connection = dbc;
         closeConnection = close;
         statementFactory = sfac;
     }
-    
+
     public PreparedStatement userStatement() throws SQLException {
-    	if (userStatement == null)
-    		userStatement = statementFactory.prepareUsers(connection);
-    	return userStatement;
+        if (userStatement == null)
+            userStatement = statementFactory.prepareUsers(connection);
+        return userStatement;
     }
-    
+
     public PreparedStatement userCountStatement() throws SQLException {
-    	if (userCountStatement == null)
-    		userCountStatement = statementFactory.prepareUserCount(connection);
-    	return userCountStatement;
+        if (userCountStatement == null)
+            userCountStatement = statementFactory.prepareUserCount(connection);
+        return userCountStatement;
     }
-    
+
     public PreparedStatement itemStatement() throws SQLException {
-    	if (itemStatement == null)
-    		itemStatement = statementFactory.prepareItems(connection);
-    	return itemStatement;
+        if (itemStatement == null)
+            itemStatement = statementFactory.prepareItems(connection);
+        return itemStatement;
     }
-    
+
     public PreparedStatement itemCountStatement() throws SQLException {
-    	if (itemCountStatement == null)
-    		itemCountStatement = statementFactory.prepareItemCount(connection);
-    	return itemCountStatement;
+        if (itemCountStatement == null)
+            itemCountStatement = statementFactory.prepareItemCount(connection);
+        return itemCountStatement;
     }
-    
+
     public PreparedStatement eventStatement(SortOrder order) throws SQLException {
-    	int o = order.ordinal();
-    	if (eventStatements[o] == null)
-    		eventStatements[o] = statementFactory.prepareEvents(connection, order);
-    	return eventStatements[o];
+        int o = order.ordinal();
+        if (eventStatements[o] == null)
+            eventStatements[o] = statementFactory.prepareEvents(connection, order);
+        return eventStatements[o];
     }
-    
+
     public PreparedStatement userEventStatement() throws SQLException {
-    	if (userEventStatement == null)
-    		userEventStatement = statementFactory.prepareUserEvents(connection);
-    	return userEventStatement;
+        if (userEventStatement == null)
+            userEventStatement = statementFactory.prepareUserEvents(connection);
+        return userEventStatement;
     }
-    
+
     public PreparedStatement itemEventStatement() throws SQLException {
-    	if (itemEventStatement == null)
-    		itemEventStatement = statementFactory.prepareItemEvents(connection);
-    	return itemEventStatement;
+        if (itemEventStatement == null)
+            itemEventStatement = statementFactory.prepareItemEvents(connection);
+        return itemEventStatement;
     }
-    
+
     private boolean closeStatement(Statement s) {
         try {
             if (s != null)

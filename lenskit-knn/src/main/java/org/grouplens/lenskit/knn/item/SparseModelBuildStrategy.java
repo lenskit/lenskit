@@ -46,7 +46,7 @@ class SparseModelBuildStrategy implements
                             ItemItemModelAccumulator accum) {
         final LongSortedSet items = context.getItems();
         final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
-        
+
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
@@ -65,8 +65,8 @@ class SparseModelBuildStrategy implements
             while (iter.hasNext()) {
                 final long j = iter.nextLong();
                 if (i == j) continue;
-                
-                final double sim = 
+
+                final double sim =
                         similarityFunction.similarity(v, context.itemVector(j));
                 accum.put(i, j, sim);
                 if (symmetric)

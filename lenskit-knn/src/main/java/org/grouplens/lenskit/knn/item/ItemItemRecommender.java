@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
  */
 public class ItemItemRecommender extends ScoreBasedItemRecommender {
     protected final ItemItemModelBackedScorer scorer;
-    
+
     /**
      * Construct a new item-item recommender from a scorer.
      * @param scorer The scorer to use.
@@ -40,7 +40,7 @@ public class ItemItemRecommender extends ScoreBasedItemRecommender {
         super(dao, scorer);
         this.scorer = scorer;
     }
-    
+
     @Override
     public LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return scorer.getScoreableItems(user);

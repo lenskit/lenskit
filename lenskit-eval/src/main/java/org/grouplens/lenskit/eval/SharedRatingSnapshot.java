@@ -28,12 +28,12 @@ import org.grouplens.lenskit.util.FastCollection;
 
 public class SharedRatingSnapshot implements RatingSnapshot {
     private final RatingSnapshot snapshot;
-    
+
     public SharedRatingSnapshot(RatingSnapshot snapshot) {
         super();
-    	this.snapshot = snapshot;
+        this.snapshot = snapshot;
     }
-    
+
     @Override
     public LongCollection getUserIds() {
         return snapshot.getUserIds();
@@ -69,8 +69,8 @@ public class SharedRatingSnapshot implements RatingSnapshot {
         // don't close
     }
 
-	@Override
-	public UserVector userRatingVector(long userId) {
-		return snapshot.userRatingVector(userId);
-	}
+    @Override
+    public UserVector userRatingVector(long userId) {
+        return snapshot.userRatingVector(userId);
+    }
 }

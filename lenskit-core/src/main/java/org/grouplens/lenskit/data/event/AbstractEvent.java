@@ -39,7 +39,7 @@ public abstract class AbstractEvent implements Event {
     public int hashCode() {
         return Longs.hashCode(getId());
     }
-    
+
     /**
      * Default clone implementation; hands off to {@link Object#clone()}.
      * @return The cloned event.

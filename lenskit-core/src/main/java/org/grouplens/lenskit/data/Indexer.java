@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongLists;
 
 /**
  * Build contiguous 0-based indexes for long IDs.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -67,7 +67,7 @@ public class Indexer implements Index {
 
     /**
      * Get the index for an ID.
-     * 
+     *
      * @param id The ID o query.
      * @return The index assigned to <var>id</var>, or -1 if <var>id</var> has
      *         not been interned.
@@ -87,7 +87,7 @@ public class Indexer implements Index {
 
     /**
      * Get an index for an ID, generating a new one if necessary.
-     * 
+     *
      * @param id The ID.
      * @return The index for <var>id</var>. If the ID has already been interned,
      *         the old index is returned; otherwise, a new index is generated

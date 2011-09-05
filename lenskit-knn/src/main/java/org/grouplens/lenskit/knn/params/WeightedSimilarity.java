@@ -33,7 +33,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * to weight similarities.  Bind {@link SignificanceWeight} to either {@link ItemSimilarity}
  * or {@link UserSimilarity}, then bind the internal similarity function to this
  * parameter.
- * 
+ *
  *  @see SignificanceWeight
  *  @see WeightThreshold
  */

@@ -31,7 +31,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
 /**
  * The number of iterations to use per feature.  If 0, then each feature is
  * trained to convergence (defined by {@link TrainingThreshold}).
- * 
+ *
  * @see FunkSVDModelBuilder
  */
 @Documented

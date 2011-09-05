@@ -28,69 +28,69 @@ import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
  *
  */
 final class PackedRatingData {
-	final int[] users;
-	final int[] items;
-	final double[] values;
-	final Index itemIndex;
-	final Index userIndex;
-	
-	PackedRatingData(int[] users, int[] items, double[] values, Index userIndex, Index itemIndex) {
-		this.users = users;
-		this.items = items;
-		this.values = values;
-		this.userIndex = userIndex;
-		this.itemIndex = itemIndex;
-	}
-	
-	public IndirectPreference makeRating(int index) {
-	    return new IndirectPreference(index);
-	}
-	
-	final class IndirectPreference implements IndexedPreference {
-	    int index;
-	    IndirectPreference() {
-	        this(-1);
-	    }
-	    
-	    IndirectPreference(int idx) {
-	        index = idx;
-	    }
-	    
-	    @Override
+    final int[] users;
+    final int[] items;
+    final double[] values;
+    final Index itemIndex;
+    final Index userIndex;
+
+    PackedRatingData(int[] users, int[] items, double[] values, Index userIndex, Index itemIndex) {
+        this.users = users;
+        this.items = items;
+        this.values = values;
+        this.userIndex = userIndex;
+        this.itemIndex = itemIndex;
+    }
+
+    public IndirectPreference makeRating(int index) {
+        return new IndirectPreference(index);
+    }
+
+    final class IndirectPreference implements IndexedPreference {
+        int index;
+        IndirectPreference() {
+            this(-1);
+        }
+
+        IndirectPreference(int idx) {
+            index = idx;
+        }
+
+        @Override
         public long getUserId() {
-	        return userIndex.getId(users[index]);
-	    }
-	    
-	    @Override
-	    public long getItemId() {
-	        return itemIndex.getId(items[index]);
-	    }
-	    
-	    @Override
-	    public double getValue() {
-	        return values[index];
-	    }
-	    
-	    @Override
-	    public int getIndex() {
-	        return index;
-	    }
-	    
-	    @Override
-	    public int getUserIndex() {
-	        return users[index];
-	    }
-	    
-	    @Override
-	    public int getItemIndex() {
-	        return items[index];
-	    }
-	    
-	    @Override
+            return userIndex.getId(users[index]);
+        }
+
+        @Override
+        public long getItemId() {
+            return itemIndex.getId(items[index]);
+        }
+
+        @Override
+        public double getValue() {
+            return values[index];
+        }
+
+        @Override
+        public int getIndex() {
+            return index;
+        }
+
+        @Override
+        public int getUserIndex() {
+            return users[index];
+        }
+
+        @Override
+        public int getItemIndex() {
+            return items[index];
+        }
+
+        @Override
         public IndexedPreference clone() {
-	        return new MutableIndexedPreference(getUserId(), getItemId(), 
-	                                            getValue(), getIndex(),
-	                                            getUserIndex(), getItemIndex());
-	    }
-	}
+            return new MutableIndexedPreference(getUserId(), getItemId(),
+                                                getValue(), getIndex(),
+                                                getUserIndex(), getItemIndex());
+        }
+    }
 }

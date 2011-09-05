@@ -58,9 +58,9 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final VectorNormalizer<? super UserVector> normalizer;
     protected final BaselinePredictor baseline;
-    
+
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
-                                   @PredictNormalizer VectorNormalizer<? super UserVector> norm, 
+                                   @PredictNormalizer VectorNormalizer<? super UserVector> norm,
                                    @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
@@ -68,15 +68,15 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         this.baseline = baseline;
         logger.debug("Built predictor with baseline {}", baseline);
     }
-    
+
     /**
      * Normalize all neighbor rating vectors, taking care to normalize each one
      * only once.
-     * 
+     *
      * FIXME: MDE does not like this method.
-     * 
+     *
      * @param neighborhoods
-     * 
+     *
      */
     protected Reference2ObjectMap<UserVector, SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
         Reference2ObjectMap<UserVector, SparseVector> normedVectors =
@@ -88,7 +88,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
         }
         return normedVectors;
     }
-    
+
     /**
      * Get predictions for a set of items.  Unlike the interface method, this
      * method can take a null <var>items</var> set, in which case it returns all
@@ -125,7 +125,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
                     sum += n.similarity * normedUsers.get(n.user).get(item);
                 }
             }
-            
+
             if (weight >= MINIMUM_SIMILARITY) {
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
                 preds[i] = sum / weight;
@@ -134,13 +134,13 @@ public class UserUserRatingPredictor extends AbstractItemScorer {
                 missing.add(item);
             }
         }
-        
+
         // Denormalize and return the results
         UserVector urv = RatingVectorHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(urv);
         MutableSparseVector v = MutableSparseVector.wrap(keys, preds, false);
         vo.unapply(v);
-        
+
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
             logger.trace("Filling in {} missing predictions with baseline",

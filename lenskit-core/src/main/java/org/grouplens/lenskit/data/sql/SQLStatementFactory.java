@@ -29,19 +29,19 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Interface for producing prepared statements for rating DAO queries.
- * 
+ *
  * <p>
  * Methods on this interface prepare SQL statements to be used by
  * {@link JDBCDataSession} to satisfy queries. The data session implementation
  * takes care of caching prepared statements, so these methods should always
  * prepare new statements.
- * 
+ *
  * <p>
  * The JDBC DAO framework operates by expecting a statement factory to construct
  * queries which return results in a defined format.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @Immutable
 public interface SQLStatementFactory {
@@ -49,7 +49,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link DataAccessObject#getUsers()}.
      * Querying the statement should return one column per row containing the
      * numeric user ID.
-     * 
+     *
      * @return A <tt>PreparedStatement</tt> containing user ID data.
      */
     PreparedStatement prepareUsers(Connection dbc) throws SQLException;
@@ -58,7 +58,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link DataAccessObject#getUserCount()}.
      * The result set should contain a single row whose first column contains
      * the number of users.
-     * 
+     *
      * @return A <tt>PreparedStatement</tt> containing the total number of
      *         users.
      */
@@ -68,7 +68,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link DataAccessObject#getItems()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
-     * 
+     *
      * @return A <tt>PreparedStatement</tt> containing item ID data.
      */
     PreparedStatement prepareItems(Connection dbc) throws SQLException;
@@ -77,7 +77,7 @@ public interface SQLStatementFactory {
      * Prepare a statement to satisfy {@link DataAccessObject#getItemCount()}.
      * The result set should contain a single row whose first column contains
      * the number of items.
-     * 
+     *
      * @return A <tt>PreparedStatement</tt> containing the total number of
      *         items.
      */
@@ -90,7 +90,7 @@ public interface SQLStatementFactory {
      * and (optionally) the timestamp. The timestamp column is allowed to
      * contain NULL values or to be omitted entirely. ID, user, item, and rating
      * columns must be non-null.
-     * 
+     *
      * @param dbc The database connection
      * @param order The sort order
      */
@@ -102,7 +102,7 @@ public interface SQLStatementFactory {
      * {@link DataAccessObject#getUserEvents(long)}. The returned rows should be
      * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
      * statement should take a single parameter for the user ID.
-     * 
+     *
      * @param dbc
      * @return A <tt>PreparedStatement</tt> returning user rating data. The
      *         ratings must be in timestamp order.
@@ -114,7 +114,7 @@ public interface SQLStatementFactory {
      * {@link DataAccessObject#getItemEvents(long)}. The returned rows should be
      * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
      * statement should take a single parameter for the item ID.
-     * 
+     *
      * @param dbc
      * @return A <tt>PreparedStatement</tt> returning item rating data. The
      *         ratings must be ordered first by user ID, then by timestamp.

@@ -31,154 +31,154 @@ import org.junit.Test;
 
 public class TestSlopeOneModelBuilder {
 
-	public static final double EPSILON = 1.0e-6;
-	
-	@Test
-	public void testBuild1() {
+    public static final double EPSILON = 1.0e-6;
 
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 5, 2));
-		rs.add(Ratings.make(2, 5, 4));
-		rs.add(Ratings.make(1, 3, 5));
-		rs.add(Ratings.make(2, 3, 4));
-		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-		PackedRatingSnapshot snapshot = snapBuilder.build();		
-		SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
-		builder1.setRatingSnapshot(snapshot);
-		builder1.setDamping(0);
-		SlopeOneModel model1 = builder1.build();
-		assertEquals(2, model1.getCoratings(5, 3));
-		assertEquals(2, model1.getCoratings(3, 5));
-		assertEquals(-1.5, model1.getDeviation(5, 3),EPSILON);
-		assertEquals(1.5, model1.getDeviation(3,5), EPSILON);
-	}
+    @Test
+    public void testBuild1() {
 
-	@Test
-	public void testBuild2() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 5, 2));
+        rs.add(Ratings.make(2, 5, 4));
+        rs.add(Ratings.make(1, 3, 5));
+        rs.add(Ratings.make(2, 3, 4));
+        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
+        PackedRatingSnapshot snapshot = snapBuilder.build();
+        SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
+        builder1.setRatingSnapshot(snapshot);
+        builder1.setDamping(0);
+        SlopeOneModel model1 = builder1.build();
+        assertEquals(2, model1.getCoratings(5, 3));
+        assertEquals(2, model1.getCoratings(3, 5));
+        assertEquals(-1.5, model1.getDeviation(5, 3),EPSILON);
+        assertEquals(1.5, model1.getDeviation(3,5), EPSILON);
+    }
 
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 4, 4));
-		rs.add(Ratings.make(2, 4, 5));
-		rs.add(Ratings.make(3, 4, 4));
-		rs.add(Ratings.make(1, 5, 3));
-		rs.add(Ratings.make(2, 5, 5));
-		rs.add(Ratings.make(3, 5, 1));
-		rs.add(Ratings.make(1, 6, 1));
-		rs.add(Ratings.make(2, 6, 5));
-		rs.add(Ratings.make(3, 6, 3));
-		EventCollectionDAO.Factory factory = new EventCollectionDAO.Factory(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
-		PackedRatingSnapshot snapshot = snapBuilder.build();		
-		SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
-		builder2.setRatingSnapshot(snapshot);
-		builder2.setDamping(0);
-		SlopeOneModel model2 = builder2.build();
-		assertEquals(3, model2.getCoratings(4, 5));
-		assertEquals(3, model2.getCoratings(5, 4));
-		assertEquals(3, model2.getCoratings(4, 6));
-		assertEquals(3, model2.getCoratings(6, 4));
-		assertEquals(3, model2.getCoratings(5, 6));
-		assertEquals(3, model2.getCoratings(6, 5));
-		assertEquals(4/3.0, model2.getDeviation(4, 6), EPSILON);
-		assertEquals(-4/3.0, model2.getDeviation(6, 4), EPSILON);
-		assertEquals(4/3.0, model2.getDeviation(4, 5), EPSILON);
-		assertEquals(-4/3.0, model2.getDeviation(5, 4), EPSILON);
-		assertEquals(0, model2.getDeviation(5, 6), EPSILON);
-		assertEquals(0, model2.getDeviation(6, 5), EPSILON);
-	}
+    @Test
+    public void testBuild2() {
 
-	@Test
-	public void testBuild3() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 4, 4));
+        rs.add(Ratings.make(2, 4, 5));
+        rs.add(Ratings.make(3, 4, 4));
+        rs.add(Ratings.make(1, 5, 3));
+        rs.add(Ratings.make(2, 5, 5));
+        rs.add(Ratings.make(3, 5, 1));
+        rs.add(Ratings.make(1, 6, 1));
+        rs.add(Ratings.make(2, 6, 5));
+        rs.add(Ratings.make(3, 6, 3));
+        EventCollectionDAO.Factory factory = new EventCollectionDAO.Factory(rs);
+        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
+        PackedRatingSnapshot snapshot = snapBuilder.build();
+        SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
+        builder2.setRatingSnapshot(snapshot);
+        builder2.setDamping(0);
+        SlopeOneModel model2 = builder2.build();
+        assertEquals(3, model2.getCoratings(4, 5));
+        assertEquals(3, model2.getCoratings(5, 4));
+        assertEquals(3, model2.getCoratings(4, 6));
+        assertEquals(3, model2.getCoratings(6, 4));
+        assertEquals(3, model2.getCoratings(5, 6));
+        assertEquals(3, model2.getCoratings(6, 5));
+        assertEquals(4/3.0, model2.getDeviation(4, 6), EPSILON);
+        assertEquals(-4/3.0, model2.getDeviation(6, 4), EPSILON);
+        assertEquals(4/3.0, model2.getDeviation(4, 5), EPSILON);
+        assertEquals(-4/3.0, model2.getDeviation(5, 4), EPSILON);
+        assertEquals(0, model2.getDeviation(5, 6), EPSILON);
+        assertEquals(0, model2.getDeviation(6, 5), EPSILON);
+    }
 
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 6, 4));
-		rs.add(Ratings.make(2, 6, 2));
-		rs.add(Ratings.make(1, 7, 3));
-		rs.add(Ratings.make(2, 7, 2));
-		rs.add(Ratings.make(3, 7, 5));
-		rs.add(Ratings.make(4, 7, 2));
-		rs.add(Ratings.make(1, 8, 3));
-		rs.add(Ratings.make(2, 8, 4));
-		rs.add(Ratings.make(3, 8, 3));
-		rs.add(Ratings.make(4, 8, 2));
-		rs.add(Ratings.make(5, 8, 3));
-		rs.add(Ratings.make(6, 8, 2));
-		rs.add(Ratings.make(1, 9, 3));
-		rs.add(Ratings.make(3, 9, 4));
-		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-		PackedRatingSnapshot snapshot = snapBuilder.build();		
-		SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
-		builder3.setRatingSnapshot(snapshot);
-		builder3.setDamping(0);
-		SlopeOneModel model3 = builder3.build();
-		assertEquals(2, model3.getCoratings(6, 7));
-		assertEquals(2, model3.getCoratings(7, 6));
-		assertEquals(2, model3.getCoratings(6, 8));
-		assertEquals(2, model3.getCoratings(8, 6));
-		assertEquals(1, model3.getCoratings(6, 9));
-		assertEquals(1, model3.getCoratings(9, 6));
-		assertEquals(4, model3.getCoratings(7, 8));
-		assertEquals(4, model3.getCoratings(8, 7));
-		assertEquals(2, model3.getCoratings(7, 9));
-		assertEquals(2, model3.getCoratings(9, 7));
-		assertEquals(2, model3.getCoratings(8, 9));
-		assertEquals(2, model3.getCoratings(9, 8));
-		assertEquals(0.5, model3.getDeviation(6, 7), EPSILON);
-		assertEquals(-0.5, model3.getDeviation(7, 6), EPSILON);
-		assertEquals(-0.5, model3.getDeviation(6, 8), EPSILON);
-		assertEquals(0.5, model3.getDeviation(8, 6), EPSILON);
-		assertEquals(1, model3.getDeviation(6, 9), EPSILON);
-		assertEquals(-1, model3.getDeviation(9, 6), EPSILON);
-		assertEquals(0, model3.getDeviation(7, 8), EPSILON);
-		assertEquals(0, model3.getDeviation(8, 7), EPSILON);
-		assertEquals(0.5, model3.getDeviation(7, 9), EPSILON);
-		assertEquals(-0.5, model3.getDeviation(9, 7), EPSILON);
-		assertEquals(-0.5, model3.getDeviation(8, 9), EPSILON);
-		assertEquals(0.5, model3.getDeviation(9, 8), EPSILON);
-	}
-	
-	@Test
-	public void testBuild4() {
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 4, 3.5));
-		rs.add(Ratings.make(2, 4, 5));
-		rs.add(Ratings.make(3, 5, 4.25));
-		rs.add(Ratings.make(2, 6, 3));
-		rs.add(Ratings.make(1, 7, 4));
-		rs.add(Ratings.make(2, 7, 4));
-		rs.add(Ratings.make(3, 7, 1.5));
-		EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-		PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-		PackedRatingSnapshot snap = snapBuilder.build();
-		SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();
-		builder4.setRatingSnapshot(snap);
-		builder4.setDamping(0);
-		SlopeOneModel model4 = builder4.build();
-		assertEquals(0, model4.getCoratings(4, 5));
-		assertEquals(0, model4.getCoratings(5, 4));
-		assertEquals(1, model4.getCoratings(4, 6));
-		assertEquals(1, model4.getCoratings(6, 4));
-		assertEquals(2, model4.getCoratings(4, 7));
-		assertEquals(2, model4.getCoratings(7, 4));
-		assertEquals(0, model4.getCoratings(5, 6));
-		assertEquals(0, model4.getCoratings(6, 5));
-		assertEquals(1, model4.getCoratings(5, 7));
-		assertEquals(1, model4.getCoratings(7, 5));
-		assertEquals(1, model4.getCoratings(6, 7));
-		assertEquals(1, model4.getCoratings(7, 6));
-		assertEquals(Double.NaN, model4.getDeviation(4, 5), 0);
-		assertEquals(Double.NaN, model4.getDeviation(5, 4), 0);
-		assertEquals(2, model4.getDeviation(4, 6), EPSILON);
-		assertEquals(-2, model4.getDeviation(6, 4), EPSILON);
-		assertEquals(0.25, model4.getDeviation(4, 7), EPSILON);
-		assertEquals(-0.25, model4.getDeviation(7, 4), EPSILON);
-		assertEquals(Double.NaN, model4.getDeviation(5, 6), 0);
-		assertEquals(Double.NaN, model4.getDeviation(6, 5), 0);
-		assertEquals(2.75, model4.getDeviation(5, 7), EPSILON);
-		assertEquals(-2.75, model4.getDeviation(7, 5), EPSILON);
-		assertEquals(-1, model4.getDeviation(6, 7), EPSILON);
-		assertEquals(1, model4.getDeviation(7, 6), EPSILON);
-	}
+    @Test
+    public void testBuild3() {
+
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 6, 4));
+        rs.add(Ratings.make(2, 6, 2));
+        rs.add(Ratings.make(1, 7, 3));
+        rs.add(Ratings.make(2, 7, 2));
+        rs.add(Ratings.make(3, 7, 5));
+        rs.add(Ratings.make(4, 7, 2));
+        rs.add(Ratings.make(1, 8, 3));
+        rs.add(Ratings.make(2, 8, 4));
+        rs.add(Ratings.make(3, 8, 3));
+        rs.add(Ratings.make(4, 8, 2));
+        rs.add(Ratings.make(5, 8, 3));
+        rs.add(Ratings.make(6, 8, 2));
+        rs.add(Ratings.make(1, 9, 3));
+        rs.add(Ratings.make(3, 9, 4));
+        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
+        PackedRatingSnapshot snapshot = snapBuilder.build();
+        SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
+        builder3.setRatingSnapshot(snapshot);
+        builder3.setDamping(0);
+        SlopeOneModel model3 = builder3.build();
+        assertEquals(2, model3.getCoratings(6, 7));
+        assertEquals(2, model3.getCoratings(7, 6));
+        assertEquals(2, model3.getCoratings(6, 8));
+        assertEquals(2, model3.getCoratings(8, 6));
+        assertEquals(1, model3.getCoratings(6, 9));
+        assertEquals(1, model3.getCoratings(9, 6));
+        assertEquals(4, model3.getCoratings(7, 8));
+        assertEquals(4, model3.getCoratings(8, 7));
+        assertEquals(2, model3.getCoratings(7, 9));
+        assertEquals(2, model3.getCoratings(9, 7));
+        assertEquals(2, model3.getCoratings(8, 9));
+        assertEquals(2, model3.getCoratings(9, 8));
+        assertEquals(0.5, model3.getDeviation(6, 7), EPSILON);
+        assertEquals(-0.5, model3.getDeviation(7, 6), EPSILON);
+        assertEquals(-0.5, model3.getDeviation(6, 8), EPSILON);
+        assertEquals(0.5, model3.getDeviation(8, 6), EPSILON);
+        assertEquals(1, model3.getDeviation(6, 9), EPSILON);
+        assertEquals(-1, model3.getDeviation(9, 6), EPSILON);
+        assertEquals(0, model3.getDeviation(7, 8), EPSILON);
+        assertEquals(0, model3.getDeviation(8, 7), EPSILON);
+        assertEquals(0.5, model3.getDeviation(7, 9), EPSILON);
+        assertEquals(-0.5, model3.getDeviation(9, 7), EPSILON);
+        assertEquals(-0.5, model3.getDeviation(8, 9), EPSILON);
+        assertEquals(0.5, model3.getDeviation(9, 8), EPSILON);
+    }
+
+    @Test
+    public void testBuild4() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 4, 3.5));
+        rs.add(Ratings.make(2, 4, 5));
+        rs.add(Ratings.make(3, 5, 4.25));
+        rs.add(Ratings.make(2, 6, 3));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(2, 7, 4));
+        rs.add(Ratings.make(3, 7, 1.5));
+        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
+        PackedRatingSnapshot snap = snapBuilder.build();
+        SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();
+        builder4.setRatingSnapshot(snap);
+        builder4.setDamping(0);
+        SlopeOneModel model4 = builder4.build();
+        assertEquals(0, model4.getCoratings(4, 5));
+        assertEquals(0, model4.getCoratings(5, 4));
+        assertEquals(1, model4.getCoratings(4, 6));
+        assertEquals(1, model4.getCoratings(6, 4));
+        assertEquals(2, model4.getCoratings(4, 7));
+        assertEquals(2, model4.getCoratings(7, 4));
+        assertEquals(0, model4.getCoratings(5, 6));
+        assertEquals(0, model4.getCoratings(6, 5));
+        assertEquals(1, model4.getCoratings(5, 7));
+        assertEquals(1, model4.getCoratings(7, 5));
+        assertEquals(1, model4.getCoratings(6, 7));
+        assertEquals(1, model4.getCoratings(7, 6));
+        assertEquals(Double.NaN, model4.getDeviation(4, 5), 0);
+        assertEquals(Double.NaN, model4.getDeviation(5, 4), 0);
+        assertEquals(2, model4.getDeviation(4, 6), EPSILON);
+        assertEquals(-2, model4.getDeviation(6, 4), EPSILON);
+        assertEquals(0.25, model4.getDeviation(4, 7), EPSILON);
+        assertEquals(-0.25, model4.getDeviation(7, 4), EPSILON);
+        assertEquals(Double.NaN, model4.getDeviation(5, 6), 0);
+        assertEquals(Double.NaN, model4.getDeviation(6, 5), 0);
+        assertEquals(2.75, model4.getDeviation(5, 7), EPSILON);
+        assertEquals(-2.75, model4.getDeviation(7, 5), EPSILON);
+        assertEquals(-1, model4.getDeviation(6, 7), EPSILON);
+        assertEquals(1, model4.getDeviation(7, 6), EPSILON);
+    }
 }

@@ -33,7 +33,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 /**
  * Normalizer applied to user history summary vectors prior to processing data.
  * Rating-based recommenders will use this to process rating data.
- * 
+ *
  * <p>This normalizer is applied to {@link UserVector}s.
  */
 @Documented

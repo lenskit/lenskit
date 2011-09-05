@@ -25,12 +25,12 @@ import org.picocontainer.PicoContainer;
  * Recommender implementation built on LensKit containers.  Recommenders built
  * with {@link LenskitRecommenderEngineFactory} will produce this type of
  * recommender.
- * 
+ *
  * <p>The {@link Recommender} interface will meet most needs, so most users can
  * ignore this class.  However, if you need to inspect internal components of a
  * recommender (e.g. extract the item-item similarity matrix), this class and its
  * {@link #getComponent(Class)} method can be useful.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -38,7 +38,7 @@ public class LenskitRecommender implements Recommender {
     private final PicoContainer container;
     private final DataAccessObject dao;
     private final boolean shouldCloseDao;
-    
+
     // An alternate to this LenskitRecommender where it asks for the components as needed
     // is to see if there is an actual Recommender that can be built from the container
     // and then delegate to that.  The wrapper recommender would still handle the closing
@@ -48,7 +48,7 @@ public class LenskitRecommender implements Recommender {
         this.dao = dao;
         this.shouldCloseDao = shouldCloseDao;
     }
-    
+
     /**
      * Get a particular component from the recommender session.  Generally
      * you want to use one of the type-specific getters; this method only exists
@@ -61,7 +61,7 @@ public class LenskitRecommender implements Recommender {
     public <T> T getComponent(Class<T> cls) {
         return container.getComponent(cls);
     }
-    
+
     @Override
     public ItemScorer getItemScorer() {
         return container.getComponent(ItemScorer.class);
@@ -81,7 +81,7 @@ public class LenskitRecommender implements Recommender {
     public ItemRecommender getDynamicItemRecommender() {
         return getItemRecommender();
     }
-    
+
     @Override
     public void close() {
         if (shouldCloseDao)
@@ -93,8 +93,8 @@ public class LenskitRecommender implements Recommender {
         return dao;
     }
 
-	@Override
-	public ItemRecommender getItemRecommender() {
-		return container.getComponent(ItemRecommender.class);
-	}
+    @Override
+    public ItemRecommender getItemRecommender() {
+        return container.getComponent(ItemRecommender.class);
+    }
 }

@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
  * RecommenderComponentBuilder would produce is an item-item similarity matrix
  * used in item-item recommenders.
  * </p>
- * 
+ *
  * @author Michael Ludwig
  * @param <M>
  */
@@ -38,7 +38,7 @@ public abstract class RecommenderComponentBuilder<M> implements Builder<M> {
      * Set (or inject) the default RatingSnapshot. This is the base snapshot
      * that has not been modified in any way (such as the normalized or training
      * snapshots).
-     * 
+     *
      * @param snapshot
      */
     public void setRatingSnapshot(RatingSnapshot snapshot) {

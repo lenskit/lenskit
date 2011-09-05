@@ -40,59 +40,59 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class SlopeOneRatingPredictor extends AbstractItemScorer {
 
-	protected SlopeOneModel model;
+    protected SlopeOneModel model;
 
-	public SlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
-		super(dao);
-		this.model = model;
-	}
+    public SlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
+        super(dao);
+        this.model = model;
+    }
 
-	@Override
-	public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-	    UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
+    @Override
+    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+        UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
 
-		LongSortedSet iset;
-		if (items instanceof LongSortedSet)
-			iset = (LongSortedSet) items;
-		else
-			iset = new LongSortedArraySet(items);
-		MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
-		LongArrayList unpreds = new LongArrayList();
-		for (long predicteeItem : items) {
-			if (!user.containsKey(predicteeItem)) {
-				double total = 0;
-				int nitems = 0;
-				for (long currentItem : user.keySet()) {
-					int nusers = model.getCoratings(predicteeItem, currentItem);
-					if (nusers != 0) {
-						double currentDev = model.getDeviation(predicteeItem, currentItem);
-						total += currentDev + user.get(currentItem);
-						nitems++;
-					}
-				}
-				if (nitems == 0) unpreds.add(predicteeItem);
-				else {
-					double predValue = total/nitems;
-					if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
-					else if (predValue < model.getMinRating()) predValue = model.getMinRating();
-					preds.set(predicteeItem, predValue);
-				}
-			}
-		}
-		//Use Baseline Predictor if necessary
-		final BaselinePredictor baseline = model.getBaselinePredictor();
-		if (baseline != null && !unpreds.isEmpty()) {
-			SparseVector basePreds = baseline.predict(user, unpreds);
-			for (Long2DoubleMap.Entry e: basePreds.fast()) {
-				assert Double.isNaN(preds.get(e.getLongKey()));
-				preds.set(e.getLongKey(), e.getDoubleValue());
-			}
-			return preds;
-		}
-		else return preds.copy(true);
-	}
-	
-	public SlopeOneModel getModel() {
-		return model;
-	}
+        LongSortedSet iset;
+        if (items instanceof LongSortedSet)
+            iset = (LongSortedSet) items;
+        else
+            iset = new LongSortedArraySet(items);
+        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
+        LongArrayList unpreds = new LongArrayList();
+        for (long predicteeItem : items) {
+            if (!user.containsKey(predicteeItem)) {
+                double total = 0;
+                int nitems = 0;
+                for (long currentItem : user.keySet()) {
+                    int nusers = model.getCoratings(predicteeItem, currentItem);
+                    if (nusers != 0) {
+                        double currentDev = model.getDeviation(predicteeItem, currentItem);
+                        total += currentDev + user.get(currentItem);
+                        nitems++;
+                    }
+                }
+                if (nitems == 0) unpreds.add(predicteeItem);
+                else {
+                    double predValue = total/nitems;
+                    if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
+                    else if (predValue < model.getMinRating()) predValue = model.getMinRating();
+                    preds.set(predicteeItem, predValue);
+                }
+            }
+        }
+        //Use Baseline Predictor if necessary
+        final BaselinePredictor baseline = model.getBaselinePredictor();
+        if (baseline != null && !unpreds.isEmpty()) {
+            SparseVector basePreds = baseline.predict(user, unpreds);
+            for (Long2DoubleMap.Entry e: basePreds.fast()) {
+                assert Double.isNaN(preds.get(e.getLongKey()));
+                preds.set(e.getLongKey(), e.getDoubleValue());
+            }
+            return preds;
+        }
+        else return preds.copy(true);
+    }
+
+    public SlopeOneModel getModel() {
+        return model;
+    }
 }

@@ -47,7 +47,7 @@ public class ExecHelpers {
             }
         }
     }
-    
+
     /**
      * Extract the cause exception for an execution exception if possible.
      * @param e The execution exception.
@@ -59,7 +59,7 @@ public class ExecHelpers {
         else
             return e;
     }
-    
+
     /**
      * Run a collection of tasks in an executor and wait for all to finish.
      * @param svc The executor service to use.

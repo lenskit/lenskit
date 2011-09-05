@@ -40,7 +40,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
 
 /**
  * Rating scorer that predicts a constant rating for all items.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class ConstantPredictor implements BaselinePredictor {
@@ -53,9 +53,9 @@ public class ConstantPredictor implements BaselinePredictor {
     @Target({ ElementType.METHOD, ElementType.PARAMETER })
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value { }
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     private final double value;
 
     /**
@@ -74,7 +74,7 @@ public class ConstantPredictor implements BaselinePredictor {
 
     /**
      * Construct a rating vector with the same rating for all items.
-     * 
+     *
      * @param items The items to include in the vector.
      * @param value The rating/prediction to give.
      * @return A rating vector mapping all items in <var>items</var> to
@@ -88,7 +88,7 @@ public class ConstantPredictor implements BaselinePredictor {
         DoubleArrays.fill(preds, value);
         return MutableSparseVector.wrap(keys, preds);
     }
-    
+
     @Override
     public String toString() {
         return String.format("%s(%.3f)", getClass().getCanonicalName(), value);

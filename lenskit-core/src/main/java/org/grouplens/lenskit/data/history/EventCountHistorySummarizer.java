@@ -31,20 +31,20 @@ import com.google.common.collect.Iterables;
 /**
  * Summarize a history by counting all events referencing an item.  The history
  * can be filtered by type prior to counting.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public final class EventCountHistorySummarizer implements HistorySummarizer {
     protected final Class<? extends Event> wantedType;
-    
+
     /**
      * Create a summarizer that counts all events.
      */
     public EventCountHistorySummarizer() {
         this(Event.class);
     }
-    
+
     /**
      * Create a summarizer that counts events of a particular type.
      * @param type
@@ -52,7 +52,7 @@ public final class EventCountHistorySummarizer implements HistorySummarizer {
     public EventCountHistorySummarizer(@Nonnull Class<? extends Event> type) {
         wantedType = type;
     }
-    
+
     @Override
     public Class<? extends Event> eventTypeWanted() {
         return wantedType;
@@ -67,12 +67,12 @@ public final class EventCountHistorySummarizer implements HistorySummarizer {
         }
         return new UserVector(history.getUserId(), map);
     }
-    
+
     @Override
     public int hashCode() {
         return wantedType.hashCode();
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof EventCountHistorySummarizer) {

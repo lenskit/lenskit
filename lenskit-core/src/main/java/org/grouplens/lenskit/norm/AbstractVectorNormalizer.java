@@ -37,7 +37,7 @@ public abstract class AbstractVectorNormalizer<V extends ImmutableSparseVector> 
     public MutableSparseVector normalize(V reference, @Nullable MutableSparseVector target) {
         if (target == null)
             target = reference.mutableCopy();
-        
+
         VectorTransformation tform = makeTransformation(reference);
         return tform.apply(target);
     }

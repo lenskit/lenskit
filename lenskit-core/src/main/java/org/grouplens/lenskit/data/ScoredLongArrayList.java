@@ -39,7 +39,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
 /**
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
  * are stored in parallel arrays.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -47,14 +47,14 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     private static final long serialVersionUID = 5831057078223040093L;
     private LongList items;
     private DoubleList scores;
-    
+
     /**
      * Create a new list with capacity of 10.
      */
     public ScoredLongArrayList() {
         this(10);
     }
-    
+
     /**
      * Create a new list with a specified initial capacity.
      */
@@ -63,7 +63,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         // scores aren't allocated until they are actually used
         scores = null;
     }
-    
+
     /**
      * Create a new scored list with items from the given array and no scores.
      * @param items An array of items to copy into the list.
@@ -71,7 +71,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public ScoredLongArrayList(long[] items) {
         this.items = new LongArrayList(items);
     }
-    
+
     /**
      * Create a new scored list with items and scores from the given arrays.
      * @param items An array of items to copy into the list.
@@ -83,7 +83,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         this.items = new LongArrayList(items);
         this.scores = new DoubleArrayList(scores);
     }
-    
+
     protected ScoredLongArrayList(LongList items, DoubleList scores) {
         this.items = items;
         this.scores = scores;
@@ -115,7 +115,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -183,7 +183,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public void getElements(int from, long[] a, int offset, int length) {
         items.getElements(from, a, offset, length);
     }
-    
+
     private double[] makeNaNArray(int sz) {
         double[] a = new double[sz];
         DoubleArrays.fill(a, Double.NaN);
@@ -337,7 +337,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException(); 
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -538,12 +538,12 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         }
         return v;
     }
-    
+
     class Iter implements ScoredLongListIterator {
         final LongListIterator bitems;
         final DoubleListIterator bscores;
         double score = Double.NaN;
-        
+
         public Iter(LongListIterator bi, DoubleListIterator bs) {
             bitems = bi;
             bscores = bs;
@@ -650,6 +650,6 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             else
                 throw new IllegalStateException();
         }
-        
+
     }
 }

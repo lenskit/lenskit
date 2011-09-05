@@ -53,7 +53,7 @@ import com.google.common.primitives.Longs;
  * They will show up in enumeration and {@link #containsKey(long)} will return
  * <tt>true</tt>, but {@link #get(long)} will not distinguish between them and
  * missing entries ({@link #get(long, double)} will).
- * 
+ *
  * <p>This class provides a <em>read-only</em> interface to sparse vectors. It
  * may actually be a {@link MutableSparseVector}, so the data may be modified
  * by code elsewhere that has access to the mutable representation. For sparse
@@ -95,14 +95,14 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         size = keys.length;
         assert isSorted(keys, size);
     }
-    
+
     /**
      * Construct a new sparse vector from existing arrays.  The arrays must
      * be sorted by key; no checking is done.
      * @param keys The array of keys.
      * @param values The keys' values.
      * @param length The size of the vector. Only the first <var>length</var>
-     * elements are used. 
+     * elements are used.
      */
     protected SparseVector(long[] keys, double[] values, int length) {
         this.keys = keys;
@@ -134,15 +134,15 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     protected void invalidate() {
         values = null;
     }
-    
+
     /**
      * Query whether this vector is valid.
-     * 
+     *
      * <p>
      * Vectors are marked invalid by the {@link #invalidate()} method, which
      * operates by clearing the {@link #values} vector. This method is final so
      * it can be inlined aggressively.
-     * 
+     *
      * @return <tt>true</tt> iff the vector is valid.
      */
     public final boolean isValid() {
@@ -175,7 +175,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      */
     public final double get(long key, double dft) {
         checkValid();
-        
+
         int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0)
             return values[idx];
@@ -187,7 +187,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * Query whether the vector contains an entry for the key in question. If
      * the vector contains an entry whose value is {@link Double#NaN},
      * <tt>true</tt> is still returned.
-     * 
+     *
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.
      */
@@ -195,7 +195,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         checkValid();
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
-    
+
     /**
      * Deprecated alias for {@link #containsKey(long)}.
      */
@@ -216,7 +216,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     /**
      * Fast iterator over all entries (it can reuse entry objects).
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
-     * 		Long2DoubleMap.FastEntrySet.fastIterator()
+     *         Long2DoubleMap.FastEntrySet.fastIterator()
      * @return a fast iterator over all key/value pairs
      */
     public Iterator<Long2DoubleMap.Entry> fastIterator() {
@@ -237,7 +237,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         checkValid();
         return new LongSortedArraySet(keys, 0, size);
     }
-    
+
     /**
      * Return the keys of this vector sorted by value.
      * @return A list of keys in nondecreasing order of value.
@@ -246,7 +246,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public LongArrayList keysByValue() {
         return keysByValue(false);
     }
-    
+
     /**
      * Get the keys of this vector sorted by value.
      * @param decreasing If <var>true</var>, sort in decreasing order.
@@ -257,7 +257,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         if (!isComplete())
             throw new IllegalStateException();
         long[] skeys = Arrays.copyOf(keys, size);
-        
+
         LongComparator cmp;
         // Set up the comparator. We use the key as a secondary comparison to get
         // a reproducible sort irrespective of sorting algorithm.
@@ -284,7 +284,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
                 }
             };
         }
-        
+
         LongArrays.quickSort(skeys, cmp);
         return LongArrayList.wrap(skeys);
     }
@@ -330,8 +330,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         if (sum == null) {
             double s = 0;
             for (int i = 0; i < size; i++) {
-            	if (!Double.isNaN(values[i]))
-            		s += values[i];
+                if (!Double.isNaN(values[i]))
+                    s += values[i];
             }
             sum = s;
         }
@@ -376,7 +376,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         }
         return dot;
     }
-    
+
     /**
      * Count the common keys of two vectors.
      * @param other The vector to count mutual keys with.
@@ -412,7 +412,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             SparseVector vo = (SparseVector) o;
             if (!isValid()) return false;
             if (!vo.isValid()) return false;
-            
+
             int sz = size();
             int osz = vo.size();
             if (sz != osz) {
@@ -459,7 +459,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public SparseVector clone() {
         return clone(true);
     }
-    
+
     /**
      * Clone method parameterized on whether to copy the value array.
      * @param copyValues If <tt>true</tt>, make a copy of the value array in the
@@ -478,14 +478,14 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             v.values = DoubleArrays.copy(v.values);
         return v;
     }
-    
+
     public final boolean isComplete() {
         if (!isValid()) return false;
         final int sz = size;
         for (int i = 0; i < sz; i++) {
-    		if (Double.isNaN(values[i])) return false;
-    	}
-    	return true;
+            if (Double.isNaN(values[i])) return false;
+        }
+        return true;
     }
 
     final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
@@ -560,7 +560,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             return setValue(value.doubleValue());
         }
     }
-    
+
     /**
      * Return an immutable snapshot of this sparse vector.
      * @return An immutable sparse vector whose contents are the same as this
@@ -571,7 +571,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         checkValid();
         return new ImmutableSparseVector(keys, values);
     }
-    
+
     /**
      * Return a mutable copy of this sparse vector.
      * @return A mutable sparse vector which can be modified without modifying
@@ -589,7 +589,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     public static SparseVector wrap(long[] keys, double[] values) {
         return MutableSparseVector.wrap(keys, values);
     }
-    
+
     /**
      * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
      */

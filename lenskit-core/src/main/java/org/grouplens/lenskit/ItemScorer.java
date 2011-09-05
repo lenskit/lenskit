@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * Score items for users.  These scores can be predicted ratings, relevance
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a particular user.
- * 
+ *
  * <p>
  * This method provides two flavors of score methods: those that take a user ID,
  * loading data from the database as appropriate, and those that take a user
@@ -40,16 +40,16 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * recommender.  Both methods will work, but if {@link #canUseHistory()} returns
  * <tt>false</tt>, then the history-based methods will be equivalent to calling
  * the ID-based methods.
- * 
+ *
  * @since 0.4
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface ItemScorer {
     /**
      * Score a single item.
-     * 
+     *
      * @param user The user ID for whom to generate a score.
      * @param item The item ID to score.
      * @return The preference, or {@link Double#NaN} if no preference can be
@@ -59,7 +59,7 @@ public interface ItemScorer {
 
     /**
      * Score a collection of items.
-     * 
+     *
      * @param user The user ID for whom to generate scores.
      * @param items The item to score.
      * @return A mapping from item IDs to predicted preference. This mapping may
@@ -67,31 +67,31 @@ public interface ItemScorer {
      */
     @Nonnull
     SparseVector score(long user, Collection<Long> items);
-    
+
     /**
      * Query whether this scorer can actually use user history.
-     * 
+     *
      * @return <tt>true</tt> if the history passed to one of the history-based
      *         methods may be used, and <tt>false</tt> if it will be ignored.
      */
     boolean canUseHistory();
-    
+
     /**
      * Score an item for the user using a history. If possible, the provided
      * history is used instead of whatever history may be in the database or
      * model.
-     * 
+     *
      * @param profile The user's profile.
      * @param item The item to score.
      * @return The score, or {@link Double#NaN} if no score can be computed.
      */
     double score(UserHistory<? extends Event> profile, long item);
-    
+
     /**
      * Score a collection of items for the user using a history. If possible,
      * the provided history is used instead of whatever history may be in the
      * database or model.
-     * 
+     *
      * @param profile The user's profile
      * @param items The items to score.
      * @return A mapping from item IDs to scores. This mapping may not contain

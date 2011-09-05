@@ -57,22 +57,22 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                                                               LifecycleStrategy lifecycleStrategy,
                                                               Properties componentProperties, Object componentKey,
                                                               Class<T> componentImplementation, Parameter... parameters) throws PicoCompositionException {
-            return wrapLifeCycle(new ParameterAnnotationInjector<T>(componentKey, componentImplementation, 
-                                                                    parameters, componentMonitor), 
+            return wrapLifeCycle(new ParameterAnnotationInjector<T>(componentKey, componentImplementation,
+                                                                    parameters, componentMonitor),
                                  lifecycleStrategy);
         }
-        
+
     }
-    
+
     private transient ThreadLocal<Boolean> cycleGuard;
-    
+
     private transient Constructor<T> constructor;
     private transient InjectionParameter[] constructorParameterKeys;
     private transient boolean constructorFound;
-    
+
     private transient Method[] methods;
     private transient InjectionParameter[] methodKeys;
-    
+
     public ParameterAnnotationInjector(Object componentKey, Class<?> componentImplementation,
                                        Parameter[] parameters, ComponentMonitor monitor) {
         super(componentKey, componentImplementation, parameters, monitor, false);
@@ -91,7 +91,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     maxArgConstructor = constructors[i];
                 }
             }
-            
+
             // use the constructor with the largest number of arguments
             return (Constructor<T>) maxArgConstructor;
         } else {
@@ -99,16 +99,16 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             return null;
         }
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected InjectionParameter[] getConstructorParameterKeys(Constructor<T> constructor) {
         Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
         Class<?>[] parameterTypes = constructor.getParameterTypes();
-        
+
         InjectionParameter[] keys = new InjectionParameter[parameterTypes.length];
         for (int i = 0; i < keys.length; i++) {
             Class<?> type = PrimitiveUtils.box(parameterTypes[i]);
-            
+
             Annotation binding = null;
             for (Annotation annot: parameterAnnotations[i]) {
                 if (annot.annotationType().getAnnotation(org.grouplens.lenskit.params.meta.Parameter.class) != null) {
@@ -116,17 +116,17 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     break;
                 }
             }
-            
+
             boolean optional = isOptional(parameterAnnotations[i]);
             if (binding == null)
                 keys[i] = new InjectionParameter(type, optional);
             else
                 keys[i] = new InjectionParameter(new BindKey(type, binding.annotationType()), optional);
         }
-        
+
         return keys;
     }
-    
+
     protected boolean isOptional(Annotation[] parameterAnnots) {
         for (Annotation a: parameterAnnots) {
             if (a.annotationType().equals(Nullable.class) || a.annotationType().equals(org.picocontainer.annotations.Nullable.class))
@@ -134,7 +134,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
         }
         return false;
     }
-    
+
     protected Annotation getMethodBinding(Method method) {
         Annotation[] methodAnnotations = method.getAnnotations();
         for (Annotation annot: methodAnnotations) {
@@ -148,20 +148,20 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             if (annot.annotationType().getAnnotation(org.grouplens.lenskit.params.meta.Parameter.class) != null)
                 return annot;
         }
-        
+
         return null;
     }
-    
+
     protected boolean isInjectedMethod(Method m) {
         final String prefix = "set";
         String name = m.getName();
-        boolean nameMatch = name.startsWith(prefix) && 
-                            name.length() > prefix.length() && 
+        boolean nameMatch = name.startsWith(prefix) &&
+                            name.length() > prefix.length() &&
                             Character.isUpperCase(name.charAt(prefix.length()));
                             // FIXME: is nameMatch sufficient?
         return nameMatch;
     }
-    
+
     protected Method[] getInjectedMethods() {
         Method[] allMethods = getComponentImplementation().getMethods();
         List<Method> filteredMethods = new ArrayList<Method>();
@@ -174,28 +174,28 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 filteredMethods.add(m);
             }
         }
-        
+
         return filteredMethods.toArray(new Method[filteredMethods.size()]);
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected InjectionParameter[] getInjectedMethodKeys(Method[] methods) {
         InjectionParameter[] keys = new InjectionParameter[methods.length];
         for (int i = 0; i < methods.length; i++) {
             Class<?> type = PrimitiveUtils.box(methods[i].getParameterTypes()[0]);
             Annotation binding = getMethodBinding(methods[i]);
-            
+
             Object key = (binding == null ? type : new BindKey(type, binding.annotationType()));
             boolean optional = isOptional(methods[i].getAnnotations()) || isOptional(methods[i].getParameterAnnotations()[0]);
             keys[i] = new InjectionParameter(key, optional);
         }
-        
+
         return keys;
     }
-    
+
     private T getInstance(PicoContainer container, Constructor<T> constructor, InjectionParameter[] constructorKeys) {
         long start = System.currentTimeMillis();
-        
+
         // Build required objects for the constructor
         Object[] constructorArgs = new Object[constructorKeys.length];
         for (int i = 0; i < constructorArgs.length; i++) {
@@ -204,42 +204,42 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 throw new PicoCompositionException("Unable to resolve dependency for " + constructorKeys[i]);
             constructorArgs[i] = arg;
         }
-        
+
         // instantiate instance
         try {
             T instance = constructor.newInstance(constructorArgs);
             long end = System.currentTimeMillis();
-            
+
             // If we've gotten here, we know this is the constructor being used
             // so notify the monitor (although we do both steps at once since
             // we don't know when 'instantiation' started
             currentMonitor().instantiating(container, this, constructor);
             currentMonitor().instantiated(container, this, constructor, instance, constructorArgs, end - start);
-            
+
             return instance;
         } catch (Exception e) {
             throw new PicoCompositionException("Error instantiating component", e);
         }
     }
-    
+
     private Object getInstance(PicoContainer container, InjectionParameter param) {
         Object key = param.containerKey;
-        
+
         RuntimeException failure = null;
         Object result = null;
         try {
             // First try to resolve everything with the regular key
-            // If the parameter is optional, lookup the adapter first to avoid JIT 
-            //   finding an instance (in that case it should pass in null) 
+            // If the parameter is optional, lookup the adapter first to avoid JIT
+            //   finding an instance (in that case it should pass in null)
             // TODO discuss this policy with MICHAEL
             if (param.optional && container.getComponentAdapter(key) == null)
                 return null;
-            
+
             result = container.getComponent(key);
         } catch(RuntimeException re) {
             failure = re;
         }
-        
+
         // Only fall back on defaults if the parameter is not optional
         // FIXME: Should fallback even for non-optional parameters.
         if (result == null && !param.optional) {
@@ -250,7 +250,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 DefaultInt dfltInt = bindKey.getAnnotation().getAnnotation(DefaultInt.class);
                 DefaultDouble dfltDouble = bindKey.getAnnotation().getAnnotation(DefaultDouble.class);
                 DefaultBoolean dfltBoolean = bindKey.getAnnotation().getAnnotation(DefaultBoolean.class);
-           
+
                 // We can't modify the container, though, because it may not be mutable and if it was
                 // we could get ConcurrentModificationExceptions when getComponents() is called on it
                 if (dfltClass != null) {
@@ -267,7 +267,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     result = dfltBoolean.value();
                 }
 
-                // If the BindKey's annotation didn't give us a default type, see if can 
+                // If the BindKey's annotation didn't give us a default type, see if can
                 // use the BindKey's type
                 if (result == null) {
                     try {
@@ -290,7 +290,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                 }
             }
         }
-        
+
         if (result != null)
             return result;
         else if (failure != null && !param.optional)
@@ -298,7 +298,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
         else
             return null;
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     public T getComponentInstance(PicoContainer container, Type into) throws PicoCompositionException {
@@ -306,7 +306,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
             cycleGuard = new ThreadLocal<Boolean>();
         if (Boolean.TRUE.equals(cycleGuard.get()))
             throw new CyclicDependencyException(getComponentImplementation());
-        
+
         cycleGuard.set(Boolean.TRUE);
         try {
             T instance = null;
@@ -319,7 +319,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                         return o2.getParameterTypes().length - o1.getParameterTypes().length;
                     }
                 });
-                
+
                 // check every constructor to see if we can create an instance
                 // since it's sorted, we start with the greediest
                 Constructor<T> c = null;
@@ -328,7 +328,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     try {
                         c = (Constructor<T>) allConstructors[i];
                         InjectionParameter[] keys = getConstructorParameterKeys(c);
-                        
+
                         // check for cycles now and skip any constructor that depends on this type
                         boolean simpleCycleFound = false;
                         for (Object key: keys) {
@@ -340,7 +340,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                         }
                         if (simpleCycleFound)
                             continue;
-                        
+
                         instance = getInstance(container, c, keys);
                         if (instance != null) {
                             // found the constructor
@@ -353,7 +353,7 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                         lastPCE = pce;
                     }
                 }
-                
+
                 // set this to true (since we have one, or we've tried and failed and don't want to search again)
                 constructorFound = true;
                 if (lastPCE != null) {
@@ -369,24 +369,24 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     throw pce; // continue throwing
                 }
             }
-            
+
             if (instance == null) {
                 PicoCompositionException failure = new PicoCompositionException("Unable to instantiate an instance of " + getComponentImplementation());
                 currentMonitor().instantiationFailed(container, this, constructor, failure);
                 throw failure;
             }
-            
+
             // we have an instance, proceed with method injection
             if (methods == null) {
                 methods = getInjectedMethods();
                 methodKeys = getInjectedMethodKeys(methods);
             }
-            
+
             // invoke all extra setter injectors
             for (int i = 0; i < methods.length; i++) {
                 long start = System.currentTimeMillis();
                 Object arg = getInstance(container, methodKeys[i]);
-                
+
                 if (arg == null && !methodKeys[i].optional) {
                     throw new PicoCompositionException("Unable to resolve dependency for " + methodKeys[i]);
                 } else {
@@ -400,30 +400,30 @@ public class ParameterAnnotationInjector<T> extends AbstractInjector<T> {
                     }
                 }
             }
-            
+
             return instance;
         } finally {
             cycleGuard.set(Boolean.FALSE);
         }
     }
-    
+
     protected static class InjectionParameter {
         private final Object containerKey;
         private final boolean optional;
-        
+
         public InjectionParameter(Object key, boolean optional) {
             containerKey = key;
             this.optional = optional;
         }
-        
+
         public Object getKey() {
             return containerKey;
         }
-        
+
         public boolean isOptional() {
             return optional;
         }
-        
+
         @Override
         public String toString() {
             return containerKey + "(optional=" + optional +")";

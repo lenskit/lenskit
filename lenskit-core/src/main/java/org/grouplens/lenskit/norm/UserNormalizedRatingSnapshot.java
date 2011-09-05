@@ -43,18 +43,18 @@ import org.slf4j.LoggerFactory;
 /**
  * Rating snapshot that provides normalized ratings. They are built
  * with a {@link UserNormalizedRatingSnapshot.Builder}.
- * 
+ *
  * <p>
  * This class also computes the normed data lazily, so the computation cost
  * isn't incurred unless necessary.
- * 
+ *
  * <p>
  * <strong>Warning:</strong> Do not configure this component in the
  * {@link LenskitRecommenderEngineFactory} as a plain RatingSnapshot. If this is
  * done, reference cycles will exist as UserNormalizedRatingSnapshot depends on
  * another RatingSnapshot for its data.It can be configured if combined with an
  * annotation, such as {@link NormalizedSnapshot}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Built(ephemeral=true)
@@ -62,12 +62,12 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     /**
      * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
      * with a specific {@link VectorNormalizer} applied to the user ratings.
-     * 
+     *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<UserNormalizedRatingSnapshot> {
         private VectorNormalizer<? super UserVector>normalizer;
-        
+
         /**
          * Set the normalizer to use.
          * @param normalizer
@@ -76,25 +76,25 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
         public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
             this.normalizer = normalizer;
         }
-        
+
         @Override
         public UserNormalizedRatingSnapshot build() {
             return new UserNormalizedRatingSnapshot(snapshot, normalizer);
         }
     }
-    
+
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
     private final RatingSnapshot snapshot;
     private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
-    
-    public UserNormalizedRatingSnapshot(RatingSnapshot snapshot, 
+
+    public UserNormalizedRatingSnapshot(RatingSnapshot snapshot,
                                         VectorNormalizer<? super UserVector> norm) {
         super();
-    	this.snapshot = snapshot;
+        this.snapshot = snapshot;
         normalizer = norm;
     }
-    
+
     private synchronized void requireNormedData() {
         if (normedData == null) {
             logger.debug("Computing normalized build context");
@@ -115,9 +115,9 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
             assert ndone == normedData.length;
         }
     }
-    
+
     public VectorNormalizer<? super UserVector> getNormalizer() {
-    	return normalizer;
+        return normalizer;
     }
 
     @Override
@@ -159,19 +159,19 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     @Override
     public synchronized void close() {
         super.close();
-    	normedData = null;
+        normedData = null;
     }
-    
-    private static class NormalizingCollection extends AbstractCollection<IndexedPreference> 
+
+    private static class NormalizingCollection extends AbstractCollection<IndexedPreference>
             implements FastCollection<IndexedPreference> {
         private FastCollection<IndexedPreference> base;
         private SparseVector[] normedData;
-        
+
         public NormalizingCollection(SparseVector[] nd, FastCollection<IndexedPreference> base) {
             this.base = base;
             normedData = nd;
         }
-        
+
         @Override
         public Iterator<IndexedPreference> fastIterator() {
             return new Iterator<IndexedPreference>() {
@@ -189,48 +189,48 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                 }
             };
         }
-        
+
         final class IndirectPreference implements IndexedPreference {
             IndexedPreference base;
-            
+
             @Override
             public long getUserId() {
                 return base.getUserId();
             }
-            
+
             @Override
             public long getItemId() {
                 return base.getItemId();
             }
-            
+
             @Override
             public double getValue() {
                 return normedData[getUserIndex()].get(getItemId());
             }
-            
+
             @Override
             public int getIndex() {
                 return base.getIndex();
             }
-            
+
             @Override
             public int getUserIndex() {
                 return base.getUserIndex();
             }
-            
+
             @Override
             public int getItemIndex() {
                 return base.getItemIndex();
             }
-            
+
             @Override
             public IndexedPreference clone() {
-                return new MutableIndexedPreference(getUserId(), getItemId(), 
+                return new MutableIndexedPreference(getUserId(), getItemId(),
                                                     getValue(), getIndex(),
                                                     getUserIndex(), getItemIndex());
             }
         }
-        
+
         @Override
         public Iterable<IndexedPreference> fast() {
             return new Iterable<IndexedPreference>() {
@@ -239,7 +239,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                 }
             };
         }
-        
+
         @Override
         public Iterator<IndexedPreference> iterator() {
             return new Iterator<IndexedPreference>() {
@@ -254,13 +254,13 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                     IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
-                    return new MutableIndexedPreference(r.getUserId(), iid, 
+                    return new MutableIndexedPreference(r.getUserId(), iid,
                             normedData[uidx].get(iid), r.getIndex(),
                             uidx, r.getItemIndex());
                 }
             };
         }
-        
+
         @Override
         public int size() {
             return base.size();

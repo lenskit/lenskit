@@ -59,17 +59,17 @@ import org.slf4j.LoggerFactory;
  */
 public class EvaluationRecipe {
     private static final Logger logger = LoggerFactory.getLogger(EvaluationRecipe.class);
-    
+
     private int colRun;
     private int colAlgorithm;
     private Map<String,Integer> algoAttrCols;
     private int colBuildTime;
     private int colTestTime;
-    
+
     private List<PredictionEvaluator> evaluators;
     private TableWriter writer;
     private TableWriter predictionWriter;
-    
+
     private List<AlgorithmInstance> algorithms;
 
     public EvaluationRecipe(List<AlgorithmInstance> algos,
@@ -77,11 +77,11 @@ public class EvaluationRecipe {
             File outfile) {
         evaluators = evals;
         algorithms = algos;
-        
+
         TableWriterBuilder twb = new CSVWriterBuilder();
         colRun = twb.addColumn("Run");
         colAlgorithm = twb.addColumn("Algorithm");
-        
+
         algoAttrCols = new HashMap<String, Integer>();
         for (AlgorithmInstance algo: algos) {
             for (String a: algo.getAttributes().keySet()) {
@@ -89,13 +89,13 @@ public class EvaluationRecipe {
                     algoAttrCols.put(a, twb.addColumn(a));
             }
         }
-        
+
         colBuildTime = twb.addColumn("BuildTime");
         colTestTime = twb.addColumn("TestTime");
         for (PredictionEvaluator ev: evaluators) {
             ev.setup(twb);
         }
-        
+
         Writer fw;
         try {
             fw = new FileWriter(outfile);
@@ -104,28 +104,28 @@ public class EvaluationRecipe {
             throw new RuntimeException("Error creating table writer", e);
         }
     }
-    
+
     public List<AlgorithmInstance> getAlgorithms() {
         return algorithms;
     }
-    
+
     public void setPredictionOutput(@Nullable File f) throws IOException {
-    	if (predictionWriter != null)
-    		predictionWriter.finish();
-    	predictionWriter = null;
-    	
-    	if (f != null) {
-    		TableWriterBuilder twb = new CSVWriterBuilder();
-    		twb.addColumn("Run");
-    		twb.addColumn("Algorithm");
-    		twb.addColumn("User");
-    		twb.addColumn("Item");
-    		twb.addColumn("Rating");
-    		twb.addColumn("Prediction");
-    		predictionWriter = twb.makeWriter(new FileWriter(f));
-    	}
+        if (predictionWriter != null)
+            predictionWriter.finish();
+        predictionWriter = null;
+
+        if (f != null) {
+            TableWriterBuilder twb = new CSVWriterBuilder();
+            twb.addColumn("Run");
+            twb.addColumn("Algorithm");
+            twb.addColumn("User");
+            twb.addColumn("Item");
+            twb.addColumn("Rating");
+            twb.addColumn("Prediction");
+            predictionWriter = twb.makeWriter(new FileWriter(f));
+        }
     }
-    
+
     public ResultAccumulator makeAccumulator(final String run) {
         return new ResultAccumulator() {
             @Override
@@ -135,7 +135,7 @@ public class EvaluationRecipe {
             }
         };
     }
-    
+
     public void finish() {
         try {
             writer.finish();
@@ -145,23 +145,23 @@ public class EvaluationRecipe {
             throw new RuntimeException("Error closing table writer", e);
         }
     }
-    
+
     class MRTAlgorithmTestAccumulator implements AlgorithmTestAccumulator {
         private List<PredictionEvaluator.Accumulator> evalAccums;
         TaskTimer buildTimer;
         TaskTimer testTimer;
         String run;
         AlgorithmInstance algo;
-        
+
         MRTAlgorithmTestAccumulator(String r, AlgorithmInstance a) {
-        	run = r;
-        	algo = a;
+            run = r;
+            algo = a;
             evalAccums = new ArrayList<PredictionEvaluator.Accumulator>(evaluators.size());
             for (PredictionEvaluator eval: evaluators) {
                 evalAccums.add(eval.makeAccumulator());
             }
         }
-        
+
         @Override
         public void startBuildTimer() {
             buildTimer = new TaskTimer();
@@ -183,14 +183,14 @@ public class EvaluationRecipe {
         public void finish() {
             testTimer.stop();
             logger.info("Test of {} finished in {}", algo.getName(), testTimer.elapsedPretty());
-            
+
             writer.startRow();
             try {
                 writer.setValue(colRun, run);
                 writer.setValue(colAlgorithm, algo.getName());
                 writer.setValue(colBuildTime, buildTimer.elapsed());
                 writer.setValue(colTestTime, testTimer.elapsed());
-                
+
                 Map<String,Object> attrs = algo.getAttributes();
                 for (Map.Entry<String, Integer> ae: algoAttrCols.entrySet()) {
                     String k = ae.getKey();
@@ -206,7 +206,7 @@ public class EvaluationRecipe {
                 writer.cancelRow();
                 throw e;
             }
-            
+
             try {
                 writer.finishRow();
             } catch (IOException e) {
@@ -218,33 +218,33 @@ public class EvaluationRecipe {
         @Override
         public void evaluatePrediction(long user, SparseVector ratings,
                 SparseVector predictions) {
-        	if (predictionWriter != null) {
-        		try {
-        			for (Long2DoubleMap.Entry r: ratings) {
-        				long iid = r.getLongKey();
-        				double p = predictions.get(iid);
-        				predictionWriter.writeRow(run, algo.getName(), user, iid,
-        						r.getDoubleValue(),
-        						Double.isNaN(p) ? "NA" : p);
-        			}
-        		} catch (IOException e) {
-        			logger.error("Error writing prediction", e);
-        			predictionWriter = null;
-        		}
-        	}
+            if (predictionWriter != null) {
+                try {
+                    for (Long2DoubleMap.Entry r: ratings) {
+                        long iid = r.getLongKey();
+                        double p = predictions.get(iid);
+                        predictionWriter.writeRow(run, algo.getName(), user, iid,
+                                r.getDoubleValue(),
+                                Double.isNaN(p) ? "NA" : p);
+                    }
+                } catch (IOException e) {
+                    logger.error("Error writing prediction", e);
+                    predictionWriter = null;
+                }
+            }
             for (PredictionEvaluator.Accumulator ea: evalAccums) {
                 ea.evaluatePredictions(user, ratings, predictions);
             }
         }
     }
-    
+
     public static EvaluationRecipe load(File sourceFile, Properties properties, File outputFile) throws InvalidRecommenderException {
         logger.info("Loading recommender definition from {}", sourceFile);
         URI uri = sourceFile.toURI();
         Context cx = Context.enter();
         try {
             Scriptable scope = new ImporterTopLevel(cx);
-            
+
             ScriptedRecipeBuilder builder = new ScriptedRecipeBuilder(scope);
             Object wbld = Context.javaToJS(builder, scope);
             ScriptableObject.putProperty(scope, "recipe", wbld);
@@ -252,7 +252,7 @@ public class EvaluationRecipe {
             ScriptableObject.putProperty(scope, "logger", Context.javaToJS(slog, scope));
 
             ScriptableObject.putProperty(scope, "properties", Context.javaToJS(properties, scope));
-            
+
             Reader r = new FileReader(sourceFile);
             try {
                 cx.evaluateReader(scope, r, sourceFile.getPath(), 1, null);

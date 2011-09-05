@@ -34,11 +34,11 @@ public enum SortOrder {
     /**
      * Sort by timestamp.
      */
-    TIMESTAMP, 
+    TIMESTAMP,
     /**
      * Sort by user, then by timestamp.
      */
-    USER, 
+    USER,
     /**
      * Sort by item, then by timestamp.
      */

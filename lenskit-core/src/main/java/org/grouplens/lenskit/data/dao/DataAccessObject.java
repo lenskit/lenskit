@@ -29,14 +29,14 @@ import org.grouplens.lenskit.data.history.UserHistory;
 /**
  * LensKit core data access object interface. This interface provides access to
  * users, items, and event histories to LensKit recommenders.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface DataAccessObject extends Closeable {
     /**
      * Retrieve the users from the data source.
-     * 
+     *
      * @return a cursor iterating the user IDs.
      */
     LongCursor getUsers();
@@ -45,14 +45,14 @@ public interface DataAccessObject extends Closeable {
      * Get the number of users in the system. This should be the same number of
      * users that will be returned by iterating {@link #getUsers()} (unless a
      * user is added or removed between the two calls).
-     * 
+     *
      * @return The number of users in the system.
      */
     int getUserCount();
 
     /**
      * Retrieve the items from the data source.
-     * 
+     *
      * @return a cursor iterating the item IDs.
      */
     LongCursor getItems();
@@ -61,7 +61,7 @@ public interface DataAccessObject extends Closeable {
      * Get the number of items in the system. This should be the same number of
      * items that will be returned by iterating {@link #getItems()} (unless an
      * item is added or removed between the two calls).
-     * 
+     *
      * @return The number of items in the system.
      */
     int getItemCount();
@@ -69,7 +69,7 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all events from the data set. Equivalent to
      * <code>getEvents(Event.class, SortOrder.ANY)</code>.
-     * 
+     *
      * @return A cursor iterating over all events.
      * @see #getEvents(Class, SortOrder)
      */
@@ -78,7 +78,7 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all events with a specified sort order. Equivalent to
      * <code>getEvents(Event.class, order)</code>.
-     * 
+     *
      * @param order The sort to apply for the ratings.
      * @return The events in order.
      * @throws UnsupportedQueryException if the sort order is not supported by
@@ -90,7 +90,7 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all events of a particular type. Equivalent to
      * <code>getEvents(type, SortOrder.ANY)</code>.
-     * 
+     *
      * @param type The type of event to retrieve. All events of this type,
      *        including subclasses, are returned.
      * @return The events of type <var>type</var>.
@@ -100,7 +100,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events of a particular type with a specified sort order.
-     * 
+     *
      * @param type The type of event to retrieve. All events of this type,
      *        including subclasses, are returned.
      * @param order The sort to apply for the ratings.
@@ -109,12 +109,12 @@ public interface DataAccessObject extends Closeable {
      *         this data source.
      */
     <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order);
-    
+
     /**
      * Get the user history for a user.
      */
     UserHistory<Event> getUserHistory(long user);
-    
+
     /**
      * Get the user history for a user filtered by type.
      */
@@ -123,7 +123,7 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all user event histories from the system. This serves as a
      * {@link #getEvents()} call grouped by user.
-     * 
+     *
      * @return A cursor returning the event history for each user in the data
      *         source.
      * @see #getUserHistories(Class)
@@ -133,7 +133,7 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all user event histories from the system, filtering events by type.
      * This serves as a {@link #getEvents(Class)} call grouped by user.
-     * 
+     *
      * @param type The type of event to retrieve.
      * @return A cursor iterating the event history for each user.
      * @review Should this return Cursor<UserHistory<? extends E>>?
@@ -142,7 +142,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events for the specified user.
-     * 
+     *
      * @param userId The ID of the user whose events are requested.
      * @return An iterator over the user's events in timestamp order.
      * @see #getUserEvents(long, Class)
@@ -151,7 +151,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get events of a particular type for the specified user.
-     * 
+     *
      * @param userId The ID of the user whose ratings are requested.
      * @param type The type of event to retrieve.
      * @return An iterator over the user's events in timestamp order.
@@ -160,7 +160,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events related to the specified item.
-     * 
+     *
      * @param itemId The ID of the item whose events are requested. The events
      *        are first sorted by user, then by timestamp.
      * @see #getItemEvents(long, Class)
@@ -169,7 +169,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all ratings for the specified item.
-     * 
+     *
      * @param itemId The ID of the item whose events are requested.
      * @param type The type of events to retrieve.
      * @return An iterator over the item's events. The events are first sorted

@@ -47,7 +47,7 @@ import java.util.NoSuchElementException;
  */
 public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 885774794586510968L;
-    
+
     private final long[] data;
     private final int start, end;
 
@@ -199,7 +199,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     public LongSortedSet subSet(long startKey, long endKey) {
         return new LongSortedArraySet(data, findIndexAlways(startKey), findIndexAlways(endKey), true);
     }
-    
+
     @Override
     public LongSortedSet headSet(long key) {
         int nend = findIndexAlways(key);
@@ -238,7 +238,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     public boolean rem(long k) {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public long[] toLongArray(long[] a) {
         final int sz = size();
@@ -247,7 +247,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         System.arraycopy(data, start, a, 0, sz);
         return a;
     }
-    
+
     /**
      * Compute the set difference of two sets.
      */
@@ -267,7 +267,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             data = Arrays.copyOf(data, i);
         return new LongSortedArraySet(data, 0, i, true);
     }
-    
+
     /**
      * Convert a {@link LongArrayList} to a sorted array set. The array list's
      * internal storage will be sorted and re-used.
@@ -275,7 +275,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     public static LongSortedSet ofList(LongArrayList list) {
         return new LongSortedArraySet(list.elements(), 0, list.size());
     }
-    
+
     private final class IterImpl extends AbstractLongBidirectionalIterator {
         private int pos;
         public IterImpl(int start) {

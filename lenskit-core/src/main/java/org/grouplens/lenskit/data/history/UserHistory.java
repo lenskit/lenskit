@@ -34,21 +34,21 @@ import com.google.common.base.Predicate;
  * Represents a user profile, associating a list of events with a user. The
  * events are in timestamp order. Histories also can memoize summaries and other
  * computed properties of themselves.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe
 public interface UserHistory<E extends Event> extends List<E> {
     /**
      * Retrieve the user ID.
-     * 
+     *
      * @return The ID of the user who owns this history.
      */
     long getUserId();
 
     /**
      * Filter the user history to only contain elements of a particular type.
-     * 
+     *
      * @param type The type of elements to include.
      * @return A user history containing only the elements of the specified
      *         type.
@@ -57,7 +57,7 @@ public interface UserHistory<E extends Event> extends List<E> {
 
     /**
      * Filter the user history with a predicate.
-     * 
+     *
      * @param pred The predicate to with which to filter the history.
      * @return A copy of this user history containing only elements which match
      *         the predicate.
@@ -67,17 +67,17 @@ public interface UserHistory<E extends Event> extends List<E> {
     /**
      * Get the set of items touched by events in this history. Only nonnegative
      * item IDs are considered.
-     * 
+     *
      * @return The set of all item IDs used in events in this history.
      */
     LongSet itemSet();
-    
+
     /**
      * Call a function on this history, memoizing its return value. Used for
      * caching things like summaries. The function should appropriately define
      * its {@link Function#equals(Object)} and {@link Object#hashCode()} methods
      * in order for memoization to work well.
-     * 
+     *
      * <p>
      * This method is not synchronized. It is safe to memoize distinct function
      * in parallel, but potentially-parallel use of the same function must be
@@ -86,7 +86,7 @@ public interface UserHistory<E extends Event> extends List<E> {
      * {@link ConcurrentHashMap}.  Multiple calls are therefore safe, but may
      * result in extra work.  All implementations must maintain this safety
      * guarantee, although they may do so by synchronizing this method.
-     * 
+     *
      * @param func The function to call and memoize.
      */
     <T> T memoize(Function<? super UserHistory<E>, ? extends T> func);

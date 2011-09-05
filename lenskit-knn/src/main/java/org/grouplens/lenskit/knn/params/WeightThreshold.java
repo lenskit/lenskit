@@ -31,7 +31,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 /**
  * The weight threshold for significance weighting.  If the vectors in question
  * have fewer than <i>n</i> keys in common, then the similarity is decreased.
- * 
+ *
  * @see SignificanceWeight
  * @see WeightedSimilarity
  */

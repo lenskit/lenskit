@@ -22,9 +22,9 @@ package org.grouplens.lenskit;
  * {@link ItemScorer} that scores by predicted rating.  The scores returned by
  * this scorer's methods are predicted ratings in the same scale as the input
  * ratings.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface RatingPredictor extends ItemScorer {
 }

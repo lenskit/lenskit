@@ -89,7 +89,7 @@ public class AlgorithmInstance {
     public void setName(String name) {
         algoName = name;
     }
-    
+
     /**
      * Query whether this algorithm is to operate on in-memory data.
      * @return <tt>true</tt> if the ratings database should be loaded in-memory
@@ -98,7 +98,7 @@ public class AlgorithmInstance {
     public boolean getPreload() {
         return preload;
     }
-    
+
     public void setPreload(boolean pl) {
         preload = pl;
     }
@@ -110,7 +110,7 @@ public class AlgorithmInstance {
     public RecommenderEngineFactory getFactory() {
         return factory;
     }
-    
+
     public void setFactory(LenskitRecommenderEngineFactory factory) {
         this.factory = factory;
     }
@@ -122,12 +122,12 @@ public class AlgorithmInstance {
         // Copy the factory & set up a shared rating snapshot
         LenskitRecommenderEngineFactory fac2 = factory.clone();
         fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
-        
+
         RecommenderEngine engine = fac2.create(dao);
 
         return engine.open(dao, false);
     }
-    
+
     public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
         return load(f, null);
     }
@@ -142,7 +142,7 @@ public class AlgorithmInstance {
         ScriptEngine engine = mgr.getEngineByExtension(xtn);
         if (engine == null)
             throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
-        
+
         ScriptEngineFactory factory = engine.getFactory();
         logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
         AlgorithmInstance algo = new AlgorithmInstance();

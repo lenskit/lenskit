@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * Note that PackedRatingSnapshot is annotated with @Built but is declared as
  * ephemeral. Because of this, the snapshot will not be included in built
  * RecommenderEngines, so it is not Serializable.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Built(ephemeral = true)
@@ -195,7 +195,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
                         } else {
                             users.add(uidx);
                             items.add(iidx);
-                            values.add(p.getValue());    
+                            values.add(p.getValue());
                         }
 
                         // array sizes should be rating count + unused entries
@@ -231,7 +231,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
             assert users.size() == nratings;
             assert items.size() == nratings;
             assert values.size() == nratings;
-            
+
             // Blit each list to a new array & clear old array
             // TODO Evaluate if we want to allow wasted space to reduce copying
             int[] itemArray = items.toIntArray();
@@ -241,7 +241,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
             double[] valueArray = values.toDoubleArray();
             values = null;
 
-            List<? extends IntList> userIndices = 
+            List<? extends IntList> userIndices =
                 shuffleAndIndex(userIndex.getObjectCount(),
                                 userArray, itemArray, valueArray);
 
@@ -258,7 +258,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
          * Re-pack the data arrays to eliminate free slots. We do this by moving
          * values from the end of the arrays into the free slots. Finally, we
          * trim the arrays to eliminate wasted space.
-         * 
+         *
          * @param users The user array.
          * @param items The item array.
          * @param values The value array.
@@ -297,7 +297,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
         /**
          * Shuffle the packed data set, clear free slots, and index the user
          * entries.
-         * 
+         *
          * @param nusers The number of users in the snapshot.
          * @param users The user indices for the packed ratings.
          * @param items The item indices for the packed ratings.

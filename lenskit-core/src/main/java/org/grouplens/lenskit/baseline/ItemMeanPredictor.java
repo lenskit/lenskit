@@ -65,32 +65,32 @@ public class ItemMeanPredictor implements BaselinePredictor {
      */
     public static class Builder extends RecommenderComponentBuilder<ItemMeanPredictor> {
         private double damping = 0;
-        
+
         @MeanSmoothing
         public void setDamping(double damping) {
             this.damping = damping;
         }
-        
+
         @Override
         public ItemMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             double globalMean = computeItemAverages(
-                snapshot.getRatings().fastIterator(), 
+                snapshot.getRatings().fastIterator(),
                 damping, itemMeans);
-            
+
             return new ItemMeanPredictor(itemMeans, globalMean);
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
-    
+
     private final Long2DoubleMap itemMeans;
     protected final double globalMean;
 
     /**
      * Construct a new scorer. This assumes ownership of the provided map.
-     * 
+     *
      * @param itemMeans A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.
      */
@@ -105,12 +105,12 @@ public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * Compute item averages from a rating data source. Used to construct
      * predictors that need this data.
-     * 
+     *
      * <p>
      * This method's interface is a little weird, using an output parameter and
      * returning the global mean, so that we can compute the global mean and the
      * item means in a single pass through the data source.
-     * 
+     *
      * @param ratings The collection of preferences the averages are based on.
      * @param itemMeansResult A map in which the means should be stored.
      * @return The global mean rating. The item means are stored in

@@ -57,7 +57,7 @@ class SimpleModelBuildStrategy implements
                 final long j = jit.nextLong();
                 if (i == j) continue;
                 double sim =
-                        similarityFunction.similarity(context.itemVector(i), 
+                        similarityFunction.similarity(context.itemVector(i),
                                                       context.itemVector(j));
                 accum.put(i, j, sim);
                 if (symmetric)
@@ -65,7 +65,7 @@ class SimpleModelBuildStrategy implements
             }
         }
     }
-    
+
     @Override
     public boolean needsUserItemSets() {
         return false;

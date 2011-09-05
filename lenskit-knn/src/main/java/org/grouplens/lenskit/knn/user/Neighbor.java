@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.vector.UserVector;
 public class Neighbor {
     public final UserVector user;
     public final double similarity;
-    
+
     /**
      * Construct a new neighbor.
      * @param u The neighbor's rating vector.
@@ -40,7 +40,7 @@ public class Neighbor {
         user = u;
         similarity = sim;
     }
-    
+
     /**
      * Comparator to order neighbors by similarity.
      */

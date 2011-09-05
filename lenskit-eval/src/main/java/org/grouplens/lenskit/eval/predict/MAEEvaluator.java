@@ -30,18 +30,18 @@ import org.slf4j.LoggerFactory;
 /**
  * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
  * RMSE ({@link RMSEEvaluator}) to MAE.
- * 
+ *
  * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
  * where the absolute error is averaged over all predictions. The second is
  * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
  * over all users.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class MAEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
-    
+
     int colMAE;
 
     @Override
@@ -53,11 +53,11 @@ public class MAEEvaluator implements PredictionEvaluator {
     public void setup(TableWriterBuilder builder) {
         colMAE = builder.addColumn("MAE");
     }
-    
+
     class Accum implements Accumulator {
         private double totalError = 0;
         private int nratings = 0;
-        
+
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
@@ -65,7 +65,7 @@ public class MAEEvaluator implements PredictionEvaluator {
             int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
-                
+
                 err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
                 n++;
             }
@@ -79,6 +79,6 @@ public class MAEEvaluator implements PredictionEvaluator {
             logger.info("MAE: {}", v);
             writer.setValue(colMAE, v);
         }
-        
+
     }
 }

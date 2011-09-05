@@ -24,21 +24,21 @@ import com.google.common.primitives.Longs;
 
 /**
  * Basic preference implementation that stores data in fields.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class SimplePreference implements Preference, Cloneable {
     protected long userId;
     protected long itemId;
     protected double value;
-    
+
     public SimplePreference(long uid, long iid, double v) {
         userId = uid;
         itemId = iid;
         value = v;
     }
-    
+
     @Override
     public final long getUserId() {
         return userId;
@@ -51,11 +51,11 @@ public class SimplePreference implements Preference, Cloneable {
     public final double getValue() {
         return value;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
-        
+
         if (o instanceof Preference) {
             Preference p = (Preference) o;
             return userId == p.getUserId() && itemId == p.getItemId() && value == p.getValue();
@@ -63,12 +63,12 @@ public class SimplePreference implements Preference, Cloneable {
             return false;
         }
     }
-    
+
     @Override
     public int hashCode() {
         return Longs.hashCode(userId) ^ Longs.hashCode(itemId) ^ Doubles.hashCode(value);
     }
-    
+
     @Override
     public Preference clone() {
         try {

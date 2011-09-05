@@ -33,9 +33,9 @@ import org.grouplens.lenskit.data.history.UserHistory;
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
  */
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
-	private SlopeOneRatingPredictor predictor; 
-	
-	/**
+    private SlopeOneRatingPredictor predictor;
+
+    /**
      * Construct a new recommender from a scorer.
      * @param predictor The predictor to use.
      */
@@ -43,21 +43,21 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
         super(dao, predictor);
         this.predictor = predictor;
     }
-	
-	@Override
-	protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
-		if (predictor.getModel().getBaselinePredictor() != null) return predictor.getModel().getItemUniverse();
-		else {
-			LongSet predictable = new LongOpenHashSet();
-			for (long id1 : predictor.getModel().getItemUniverse()) {
-				LongIterator iter = user.filter(Rating.class).itemSet().iterator();
-				int nusers = 0;
-				while (iter.hasNext() && nusers == 0) {
-					nusers += predictor.getModel().getCoratings(id1, iter.next());
-				}
-				if (nusers > 0) predictable.add(id1);
-			}
-			return predictable;
-		}		
-	}
+
+    @Override
+    protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
+        if (predictor.getModel().getBaselinePredictor() != null) return predictor.getModel().getItemUniverse();
+        else {
+            LongSet predictable = new LongOpenHashSet();
+            for (long id1 : predictor.getModel().getItemUniverse()) {
+                LongIterator iter = user.filter(Rating.class).itemSet().iterator();
+                int nusers = 0;
+                while (iter.hasNext() && nusers == 0) {
+                    nusers += predictor.getModel().getCoratings(id1, iter.next());
+                }
+                if (nusers > 0) predictable.add(id1);
+            }
+            return predictable;
+        }
+    }
 }

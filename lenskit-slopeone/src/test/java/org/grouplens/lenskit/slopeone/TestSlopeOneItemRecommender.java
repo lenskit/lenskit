@@ -40,7 +40,7 @@ import org.junit.Test;
 public class TestSlopeOneItemRecommender {
     private DAOFactory manager;
     private RecommenderEngine engine;
-    
+
     @Before
     public void setup() {
         List<Rating> rs = new ArrayList<Rating>();
@@ -48,9 +48,9 @@ public class TestSlopeOneItemRecommender {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
-        
+
         manager = new EventCollectionDAO.Factory(rs);
-        
+
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
         factory.setComponent(ItemRecommender.class, SlopeOneRecommender.class);
@@ -58,11 +58,11 @@ public class TestSlopeOneItemRecommender {
         factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
         engine = factory.create();
     }
-    
+
     @Test
     public void testSlopeOneRecommenderEngineCreate() {
         Recommender rec = engine.open();
-        
+
         try {
             // These assert instanceof's are also assertNotNull's
             Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof SlopeOneRatingPredictor);

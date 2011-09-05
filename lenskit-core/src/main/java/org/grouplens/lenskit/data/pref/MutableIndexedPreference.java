@@ -26,16 +26,16 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
  * user data are being computed; {@link RatingSnapshot} makes indexed
  * preferences available to allow recommender implementations to be more
  * efficient.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class MutableIndexedPreference extends MutablePreference implements IndexedPreference {
     int index, userIndex, itemIndex;
 
     /**
      * Create a new indexed preference.
-     * 
+     *
      * @param uid The user ID.
      * @param iid The item ID.
      * @param r The preference value.
@@ -55,7 +55,7 @@ public class MutableIndexedPreference extends MutablePreference implements Index
     public MutableIndexedPreference() {
         this(0, 0, 0, 0, 0, 0);
     }
-    
+
     @Override
     public final int getIndex() {
         return index;

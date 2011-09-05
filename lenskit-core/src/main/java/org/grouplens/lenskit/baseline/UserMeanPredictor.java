@@ -46,17 +46,17 @@ public class UserMeanPredictor implements BaselinePredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**
      * A builder that creates UserMeanPredictors.
-     * 
+     *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
         private double smoothing = 0;
-        
+
         @MeanSmoothing
         public void setSmoothing(double damping) {
-        	this.smoothing = damping;
+            this.smoothing = damping;
         }
-    	
+
         @Override
         public UserMeanPredictor build() {
             logger.debug("Building new user mean scorer");
@@ -67,16 +67,16 @@ public class UserMeanPredictor implements BaselinePredictor {
             return new UserMeanPredictor(mean, smoothing);
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     private final double globalMean;
     private final double smoothing;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
-   	 * @param globalMean The mean rating value for all items.
-   	 * @param damping A damping term for the calculations.
+        * @param globalMean The mean rating value for all items.
+        * @param damping A damping term for the calculations.
      */
     public UserMeanPredictor(double globalMean, double damping) {
         this.globalMean = globalMean;
@@ -98,9 +98,9 @@ public class UserMeanPredictor implements BaselinePredictor {
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         return ConstantPredictor.constantPredictions(items, mean);
     }
-    
+
     @Override
     public String toString() {
-    	return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
+        return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
     }
 }

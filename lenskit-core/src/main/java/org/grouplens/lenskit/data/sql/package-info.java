@@ -19,7 +19,7 @@
 
 /**
  * JDBC-based data access layer.
- * 
+ *
  * @see org.grouplens.lenskit.data.dao
  */
 package org.grouplens.lenskit.data.sql;

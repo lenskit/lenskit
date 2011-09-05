@@ -39,51 +39,51 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 
-	public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
-		super(dao, model);
-	}
-	
-	@Override
-	public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-	    UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
+    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
+        super(dao, model);
+    }
 
-		LongSortedSet iset;
-		if (items instanceof LongSortedSet)
-			iset = (LongSortedSet) items;
-		else
-			iset = new LongSortedArraySet(items);
-		MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
-		LongArrayList unpreds = new LongArrayList();
-		for (long predicteeItem : items) {
-			if (!user.containsKey(predicteeItem)) {
-				double total = 0;
-				int nusers = 0;
-				for (long currentItem : user.keySet()) {
-					double currentDev = model.getDeviation(predicteeItem, currentItem);	
-					if (!Double.isNaN(currentDev)) {
-						int weight = model.getCoratings(predicteeItem, currentItem);
-						total += (currentDev +user.get(currentItem))* weight;
-						nusers += weight;
-					}
-				}
-				if (nusers == 0) unpreds.add(predicteeItem);
-				else {
-					double predValue = total/nusers;
-					if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
-					else if (predValue < model.getMinRating()) predValue = model.getMinRating();
-					preds.set(predicteeItem, predValue);
-				}
-			}
-		}
-		final BaselinePredictor baseline = model.getBaselinePredictor();
-		if (baseline != null && !unpreds.isEmpty()) {
-			SparseVector basePreds = baseline.predict(user, unpreds);
-			for (Long2DoubleMap.Entry e: basePreds.fast()) {
-				assert Double.isNaN(preds.get(e.getLongKey()));
-				preds.set(e.getLongKey(), e.getDoubleValue());
-			}
-			return preds;
-		}
-		else return preds.copy(true);
-	}
+    @Override
+    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+        UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
+
+        LongSortedSet iset;
+        if (items instanceof LongSortedSet)
+            iset = (LongSortedSet) items;
+        else
+            iset = new LongSortedArraySet(items);
+        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
+        LongArrayList unpreds = new LongArrayList();
+        for (long predicteeItem : items) {
+            if (!user.containsKey(predicteeItem)) {
+                double total = 0;
+                int nusers = 0;
+                for (long currentItem : user.keySet()) {
+                    double currentDev = model.getDeviation(predicteeItem, currentItem);
+                    if (!Double.isNaN(currentDev)) {
+                        int weight = model.getCoratings(predicteeItem, currentItem);
+                        total += (currentDev +user.get(currentItem))* weight;
+                        nusers += weight;
+                    }
+                }
+                if (nusers == 0) unpreds.add(predicteeItem);
+                else {
+                    double predValue = total/nusers;
+                    if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
+                    else if (predValue < model.getMinRating()) predValue = model.getMinRating();
+                    preds.set(predicteeItem, predValue);
+                }
+            }
+        }
+        final BaselinePredictor baseline = model.getBaselinePredictor();
+        if (baseline != null && !unpreds.isEmpty()) {
+            SparseVector basePreds = baseline.predict(user, unpreds);
+            for (Long2DoubleMap.Entry e: basePreds.fast()) {
+                assert Double.isNaN(preds.get(e.getLongKey()));
+                preds.set(e.getLongKey(), e.getDoubleValue());
+            }
+            return preds;
+        }
+        else return preds.copy(true);
+    }
 }

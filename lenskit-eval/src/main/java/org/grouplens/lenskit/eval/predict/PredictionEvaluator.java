@@ -39,7 +39,7 @@ public interface PredictionEvaluator {
      * get the columns of its output fields here.
      */
     void setup(TableWriterBuilder twbuilder);
-    
+
     public static interface Accumulator {
         /**
          * Evaluate the predictions for a user.
@@ -48,7 +48,7 @@ public interface PredictionEvaluator {
          * @param predictions
          */
         void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
-        
+
         /**
          * Finalize the evaluation and write the output to the current row of a table.
          * @param writer The table writer to use.

@@ -25,9 +25,9 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
 /**
  * Rating implementation for mutation by fast iterators. It is used in
  * {@link ScannerRatingCursor} and similar places.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class MutableRating implements Rating {
     private long eid;
@@ -35,7 +35,7 @@ public class MutableRating implements Rating {
     private long iid;
     private double value;
     private long timestamp;
-    
+
     // preference object mirroring this value.
     private final Preference preference = new Preference() {
         @Override
@@ -55,7 +55,7 @@ public class MutableRating implements Rating {
             return new SimplePreference(uid, iid, value);
         }
     };
-    
+
     @Override
     public long getId() {
         return eid;
@@ -63,28 +63,28 @@ public class MutableRating implements Rating {
     public void setId(long eid) {
         this.eid = eid;
     }
-    
+
     @Override
     public long getUserId() {
         return uid;
     }
     public void setUserId(long uid) {
-    	this.uid = uid;
+        this.uid = uid;
     }
-    
+
     @Override
     public long getItemId() {
         return iid;
     }
     public void setItemId(long iid) {
-    	this.iid = iid;
+        this.iid = iid;
     }
-    
+
     @Override @Deprecated
     public double getRating() {
         return value;
     }
-    
+
     @Override
     public Preference getPreference() {
         if (Double.isNaN(value))
@@ -96,21 +96,21 @@ public class MutableRating implements Rating {
     /**
      * Set the rating value. A value of {@link Double#NaN} indicates an unrate
      * event.
-     * 
+     *
      * @param v The rating value.
      */
     public void setRating(double v) {
-    	value = v;
+        value = v;
     }
-    
+
     @Override
     public long getTimestamp() {
         return timestamp;
     }
     public void setTimestamp(long ts) {
-    	timestamp = ts;
+        timestamp = ts;
     }
-    
+
     @Override
     public Rating clone() {
         return new SimpleRating(eid, uid, iid, value, timestamp);

@@ -45,45 +45,45 @@ import org.slf4j.LoggerFactory;
  * components that have not been bound, and JIT will bind them if they are
  * concrete types that can be instantiated by the container (possibly requiring
  * more JIT bindings for dependencies).
- * 
+ *
  * @author Michael Ludwig
  */
 public class JustInTimePicoContainer extends DefaultPicoContainer {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(JustInTimePicoContainer.class);
-    
+
     private transient Map<Object, ComponentAdapter<?>> jitAdapters;
 
     public JustInTimePicoContainer(final ComponentFactory componentFactory,
                                    final LifecycleStrategy lifecycleStrategy,
-                                   final PicoContainer parent, 
+                                   final PicoContainer parent,
                                    final ComponentMonitor componentMonitor) {
         super(componentFactory, lifecycleStrategy, parent, componentMonitor);
     }
 
-    public JustInTimePicoContainer(final ComponentMonitor monitor, 
-                                   final LifecycleStrategy lifecycleStrategy, 
+    public JustInTimePicoContainer(final ComponentMonitor monitor,
+                                   final LifecycleStrategy lifecycleStrategy,
                                    final PicoContainer parent) {
         super(monitor, lifecycleStrategy, parent);
     }
-    
+
     public JustInTimePicoContainer(final ComponentFactory componentFactory,
                                    final LifecycleStrategy lifecycleStrategy,
                                    final PicoContainer parent) {
         super(componentFactory, lifecycleStrategy, parent);
     }
-    
-    public JustInTimePicoContainer(final ComponentFactory componentFactory, 
+
+    public JustInTimePicoContainer(final ComponentFactory componentFactory,
                                    final PicoContainer parent) {
         super(componentFactory, parent);
     }
-    
-    public JustInTimePicoContainer(final ComponentMonitor monitor, 
+
+    public JustInTimePicoContainer(final ComponentMonitor monitor,
                                    final PicoContainer parent) {
         super(monitor, parent);
     }
 
-    public JustInTimePicoContainer(final LifecycleStrategy lifecycleStrategy, 
+    public JustInTimePicoContainer(final LifecycleStrategy lifecycleStrategy,
                                    final PicoContainer parent) {
         super(lifecycleStrategy, parent);
     }
@@ -103,13 +103,13 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
     public JustInTimePicoContainer() {
         super();
     }
-    
+
     private boolean attemptJustInTime(Object key) {
         // Don't do any jit-binding if we already have something (and don't report failures)
-        if (getComponentAdapter(key) != null || 
+        if (getComponentAdapter(key) != null ||
             (jitAdapters != null && jitAdapters.containsKey(key)))
             return true;
-        
+
         Class<?> impl = null;
         if (key instanceof Class)
             impl = (Class<?>) key;
@@ -121,7 +121,7 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
             return false;
         logger.debug("Attempting JIT binding for {} -> {}", key, impl);
         try {
-            ComponentAdapter<?> adapter = componentFactory.createComponentAdapter(componentMonitor, lifecycleStrategy, new Properties(), 
+            ComponentAdapter<?> adapter = componentFactory.createComponentAdapter(componentMonitor, lifecycleStrategy, new Properties(),
                                                                                   key, impl, (Parameter[]) null);
             if (jitAdapters == null)
                 jitAdapters = new HashMap<Object, ComponentAdapter<?>>();
@@ -131,7 +131,7 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
             return false;
         }
     }
-    
+
     @Override
     public Object getComponent(Object componentKeyOrType) {
         Object result = super.getComponent(componentKeyOrType);
@@ -171,23 +171,23 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
         else
             return (T) getComponent(new BindKey<T>(componentType, binding));
     }
-    
+
     @Override
     public List<Object> getComponents() {
         List<Object> all = super.getComponents();
         List<Object> withJIT = new ArrayList<Object>(all);
-        
+
         for (ComponentAdapter<?> adapter: jitAdapters.values())
             withJIT.add(adapter.getComponentInstance(this, null));
         return withJIT;
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> getComponents(Class<T> type) {
         List<T> all = super.getComponents(type);
         List<T> withJIT = new ArrayList<T>(all);
-        
+
         for (ComponentAdapter<?> adapter: jitAdapters.values()) {
             if (type.isAssignableFrom(adapter.getComponentImplementation()))
                 withJIT.add((T) adapter.getComponentInstance(this, null));

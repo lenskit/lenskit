@@ -32,9 +32,9 @@ import org.grouplens.lenskit.data.vector.SparseVector;
  * Base class to make item scorers easier to implement. Delegates single=item
  * score methods to collection-based ones, and {@link #score(long, Collection)}
  * to {@link #score(UserHistory, Collection)}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public abstract class AbstractItemScorer implements RatingPredictor {
     protected final DataAccessObject dao;
@@ -42,18 +42,18 @@ public abstract class AbstractItemScorer implements RatingPredictor {
     protected AbstractItemScorer(DataAccessObject dao) {
         this.dao = dao;
     }
-    
+
     /**
      * Get the user's history. Subclasses that only require a particular type of
      * event can override this to filter the history.
-     * 
+     *
      * @param user The user whose history is required.
      * @return The event history for this user.
      */
     protected UserHistory<? extends Event> getUserHistory(long user) {
         return dao.getUserHistory(user);
     }
-    
+
     /**
      * Delegate to {@link #score(UserHistory, Collection)}.
      */
@@ -73,7 +73,7 @@ public abstract class AbstractItemScorer implements RatingPredictor {
         SparseVector v = score(user, l);
         return v.get(item, Double.NaN);
     }
-    
+
     /**
      * Default implementation can use history.  Override this ins ubclasses that
      * don't.
@@ -82,7 +82,7 @@ public abstract class AbstractItemScorer implements RatingPredictor {
     public boolean canUseHistory() {
         return true;
     }
-    
+
     /**
      * Delegate to {@link #score(UserHistory, Collection)}
      */

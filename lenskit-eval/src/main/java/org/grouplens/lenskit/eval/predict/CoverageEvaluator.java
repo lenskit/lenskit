@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Simple evaluator that records user, rating and prediction counts and computes
  * recommender coverage over the queried items.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -44,7 +44,7 @@ public class CoverageEvaluator implements PredictionEvaluator {
     public Accumulator makeAccumulator() {
         return new Accum();
     }
-    
+
     @Override
     public void setup(TableWriterBuilder builder) {
         colUsers = builder.addColumn("NUsers");
@@ -52,12 +52,12 @@ public class CoverageEvaluator implements PredictionEvaluator {
         colGood = builder.addColumn("NGood");
         colCoverage = builder.addColumn("Coverage");
     }
-    
+
     class Accum implements Accumulator {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;
-        
+
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
@@ -75,11 +75,11 @@ public class CoverageEvaluator implements PredictionEvaluator {
             writer.setValue(colUsers, nusers);
             writer.setValue(colAttempts, npreds);
             writer.setValue(colGood, ngood);
-            
+
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
             writer.setValue(colCoverage, coverage);
         }
-        
+
     }
 }

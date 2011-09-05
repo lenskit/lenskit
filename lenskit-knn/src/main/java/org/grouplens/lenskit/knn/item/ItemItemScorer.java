@@ -48,7 +48,7 @@ import org.grouplens.lenskit.util.ScoredItemAccumulator;
 
 /**
  * Score items using an item-item CF model.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
@@ -59,9 +59,9 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
     protected final int neighborhoodSize;
     protected HistorySummarizer summarizer;
     protected @Nonnull NeighborhoodScorer scorer;
-    
+
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-                          @NeighborhoodSize int nnbrs, 
+                          @NeighborhoodSize int nnbrs,
                           @UserHistorySummary HistorySummarizer sum,
                           NeighborhoodScorer scorer) {
         super(dao);
@@ -75,12 +75,12 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
     public ItemItemModel getModel() {
         return model;
     }
-    
+
     @Nonnull
     public VectorNormalizer<? super UserVector> getNormalizer() {
         return normalizer;
     }
-    
+
     /**
      * Set the normalizer to apply to user summaries.
      * @param norm The normalizer.
@@ -90,7 +90,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
     public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
         normalizer = norm;
     }
-    
+
     /**
      * Score items by computing predicted ratings.
      */
@@ -106,7 +106,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
             iset = (LongSortedSet) items;
         else
             iset = new LongSortedArraySet(items);
-        
+
         MutableSparseVector preds = scoreItems(normed, iset);
 
         // untransform the scores
@@ -116,7 +116,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
 
     /**
      * Compute item scores for a user.
-     * 
+     *
      * @param userData The user vector for which scores are to be computed.
      * @param items The items to score.
      * @return The scores for the items. This vector contains all items as keys;
@@ -132,16 +132,16 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            
+
             // find all potential neighbors
             // FIXME: Take advantage of the fact that the neighborhood is sorted
             ScoredLongList neighbors = model.getNeighbors(item);
-            
+
             if (neighbors == null) {
                 /* we cannot predict this item */
                 continue;
             }
-            
+
             // filter and truncate the neighborhood
             ScoredLongListIterator niter = neighbors.iterator();
             while (niter.hasNext()) {
@@ -151,15 +151,15 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
                     accum.put(oi, score);
             }
             neighbors = accum.finish();
-            
+
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
             scores.set(item, score);
         }
-        
+
         return scores;
     }
-    
+
     /**
      * Construct a transformation that is used to pre- and post-process
      * summarized user data in {@link #score(UserHistory, Collection)}. The
@@ -168,19 +168,19 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
      * {@link VectorTransformation#unapply(MutableSparseVector)} method is
      * expected also to populate missing scores (supplied in the vector as
      * {@link Double#NaN} as appropriate (e.g. from a baseline).
-     * 
+     *
      * <p>
      * The default implementation delegates to the normalizer (
      * {@link #setNormalizer(VectorNormalizer)}).
-     * 
+     *
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */
     protected VectorTransformation makeTransform(final UserVector userData) {
         return normalizer.makeTransformation(userData);
     }
-    
-    
+
+
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {
         // FIXME This method incorrectly assumes the model is symmetric

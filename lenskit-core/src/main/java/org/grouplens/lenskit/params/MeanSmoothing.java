@@ -29,7 +29,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Smoothing parameter for mean baselines.
- * 
+ *
  * <p>
  * The smoothing enabled by this parameter is based on <a
  * href="http://sifter.org/~simon/journal/20061211.html">FunkSVD</a>. The idea

@@ -62,10 +62,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     private HashMap<Class<? extends Annotation>, Object> annotationBindings;
     private HashMap<Class<?>, Object> defaultBindings;
     private DAOFactory daoFactory;
-    
+
     /**
      * Create a new engine factory with no DAO factory.
-     * 
+     *
      * <p>
      * Unless a DAO manager is provided by
      * {@link #setDAOFactory(DAOFactory)}, the factory and all
@@ -78,7 +78,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public LenskitRecommenderEngineFactory() {
         this(null);
     }
-    
+
     /**
      * Construct a new engine factory that will get DAOs from the specified
      * DAO factory.
@@ -88,9 +88,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
         defaultBindings = new HashMap<Class<?>, Object>();
         daoFactory = daom;
-        
+
         setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
-        
+
         // Technically this isn't needed since the default type is configured,
         // but it's nice to show explicit bindings for these snapshots
         // Disabled 2011-05-25 by MDE to avoid pulling in normalizers unnecessarily
@@ -104,7 +104,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public @Nullable DAOFactory getDAOFactory() {
         return daoFactory;
     }
-    
+
     /**
      * Set the DAO manager.
      * @param daom
@@ -112,7 +112,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public void setDAOFactory(@Nullable DAOFactory daom) {
         daoFactory = daom;
     }
-    
+
     @SuppressWarnings("unchecked")
     public void set(Class<? extends Annotation> param, Number instance) {
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
@@ -122,10 +122,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             throw new IllegalArgumentException("Parameter type not Number-compatible");
         updateBindings(annotationBindings, param, instance);
     }
-    
+
     /**
      * Set the instance to be used for a particular component.
-     * 
+     *
      * <p><b>Note:</b> LensKit does not currently support multiple component
      * types with the same annotation.</p>
      * @param <T>
@@ -136,20 +136,20 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public <T> void setComponent(Class<? extends Annotation> annot, Class<T> type, T instance) {
         // Proceed with normal instance binding
         validateAnnotation(annot);
-        
+
         if (instance != null) {
             // TODO Review to deal with types specified on parameter annotations
         }
         // TODO Actually use the class type in bindings
         updateBindings(annotationBindings, annot, instance);
     }
-    
+
     /**
      * Set the implementation to be used for a particular component.
-     * 
+     *
      * <p><b>Note:</b> LensKit does not currently support multiple component
      * types with the same annotation.</p>
-     * 
+     *
      * @param param The component annotation.
      * @param instanceType The type to use for this component.
      */
@@ -160,9 +160,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         // Verify that the types match
         Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
         if (instanceType != null && !paramType.isAssignableFrom(type))
-            throw new IllegalArgumentException(instanceType + " is incompatible with the type expected by parameter " + param.getClass() 
+            throw new IllegalArgumentException(instanceType + " is incompatible with the type expected by parameter " + param.getClass()
                                                + ", expected " + paramType);
-        
+
         if (instanceType.getAnnotation(Built.class) != null) {
             setBuilder(param, type, findBuilder(instanceType));
         } else {
@@ -170,7 +170,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             updateBindings(annotationBindings, param, instanceType);
         }
     }
-    
+
     /**
      * Set the builder to use for a particular component.
      * @param param The annotation class specifying the role for the parameter
@@ -189,14 +189,14 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
         updateBindings(annotationBindings, param, builderType);
     }
-    
+
     public <M> void setComponent(Class<M> type, Class<? extends M> instanceType) {
         if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify that the instanceType is actually a subtype
         if (instanceType != null && !type.isAssignableFrom(instanceType))
             throw new IllegalArgumentException(instanceType + " is not a subclass of " + type);
-        
+
         if (instanceType != null && instanceType.getAnnotation(Built.class) != null) {
             // Bind a builder instead
             setBuilder(type, findBuilder(instanceType));
@@ -205,19 +205,19 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             updateBindings(defaultBindings, type, instanceType);
         }
     }
-    
+
     public <M> void setComponent(Class<M> type, M instance) {
         if (type == null)
             throw new NullPointerException("Super-type cannot be null");
         // Verify instance is actually a subtype
         if (instance != null && !type.isInstance(instance))
             throw new IllegalArgumentException(instance + " is not a subclass of " + type);
-        
+
         // Since we have an instance, there is no distinction between if it
         // uses a builder or not (it's already been built)
         updateBindings(defaultBindings, type, instance);
     }
-    
+
     public <M> void setBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
         if (superType == null)
             throw new NullPointerException("Super-type cannot be null");
@@ -225,12 +225,12 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             // Verify that the builder generates a proper subtype
             Class<?> builtType = getBuiltType(builderType);
             if (!superType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builderType + " creates instances of " + builtType 
+                throw new IllegalArgumentException(builderType + " creates instances of " + builtType
                                                    + ", which are not subclasses of " + superType);
         }
         updateBindings(defaultBindings, superType, builderType);
     }
-    
+
     /**
      * Clone the recommender engine factory.  The only connection retained to
      * the original factory is that the DAO factory is shared.  The component
@@ -251,15 +251,15 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         dup.defaultBindings = (HashMap<Class<?>, Object>) defaultBindings.clone();
         return dup;
     }
-    
+
     private static void validateAnnotation(Class<? extends Annotation> param) {
         if (param == null)
             throw new NullPointerException("Annotation cannot be null");
-        
+
         if (!Parameters.isParameter(param))
             throw new IllegalArgumentException("Annotation must be annotated with Parameter");
     }
-    
+
     private <K, V> void updateBindings(Map<K, ? super V> bindings, K key, V value) {
         synchronized(this) {
             if (value == null)
@@ -268,7 +268,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 bindings.put(key, value);
         }
     }
-    
+
     @Override
     public LenskitRecommenderEngine create() {
         if (daoFactory == null)
@@ -280,13 +280,13 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             dao.close();
         }
     }
-    
+
     /**
      * Create a new recommender engine using a particular DAO. The factory's DAO
      * manager, if set, is still used by the resulting engine to open sessions.
      * The DAO is assumed to be backed by immutable data, as with
      * {@link DAOFactory#snapshot()}.
-     * 
+     *
      * @review If the user provides a DAO and has set a DAO Factory, do we use
      *         or ignore the DAO Factory?
      * @param dao The DAO to user for building the recommender.
@@ -296,23 +296,23 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public LenskitRecommenderEngine create(DataAccessObject dao) {
         return create(dao, null, false);
     }
-    
+
     protected LenskitRecommenderEngine create(DataAccessObject dao, PicoContainer parent, boolean useFactory) {
         Map<Class<? extends Annotation>, Object> annotationBindings;
         Map<Class<?>, Object> defaultBindings;
-        
+
         synchronized(this) {
             // Clone configuration so that this build is thread safe
             annotationBindings = new HashMap<Class<? extends Annotation>, Object>(this.annotationBindings);
             defaultBindings = new HashMap<Class<?>, Object>(this.defaultBindings);
         }
-        
+
         DependencyMonitor daoMonitor = new DependencyMonitor(DataAccessObject.class);
         BuilderTrackingAdapterFactory jitBuilderFactory = new BuilderTrackingAdapterFactory(new ParameterAnnotationInjector.Factory());
-        MutablePicoContainer buildContainer = new JustInTimePicoContainer(new Caching().wrap(jitBuilderFactory), 
+        MutablePicoContainer buildContainer = new JustInTimePicoContainer(new Caching().wrap(jitBuilderFactory),
                                                                           new StartableLifecycleStrategy(daoMonitor),
                                                                           parent, daoMonitor);
-        
+
         // We assume that these generated bindings include configurations for a build context
         // and recommender type
         Map<Object, Object> keyBindings = generateBindings(annotationBindings, defaultBindings);
@@ -324,7 +324,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             else
                 buildContainer.addComponent(binding.getKey(), binding.getValue());
         }
-        
+
         // Stash a dao into the container for the build
         buildContainer.addComponent(dao);
         // Construct all known objects to discover dependencies and to build things made by builders
@@ -342,21 +342,21 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         //  - dao dependencies are placed in a separate child container created per-session
         MutablePicoContainer recommenderContainer = new JustInTimePicoContainer(new ParameterAnnotationInjector.Factory(), parent);
         Map<Object, Object> sessionBindings = new HashMap<Object, Object>();
-        
+
         // Configure recommender container with all bindings that don't depend on a dao
         // FIXME: we really ought to configure the JIT bound objects too in-case parameters/defaults
         //   change what gets bound
         for (Entry<Object, Object> binding: keyBindings.entrySet()) {
             if (!isBindingValidAfterBuild(binding.getValue()))
                 continue;
-            
+
             Object key = binding.getKey();
             if (daoDependentKeys.contains(key)) {
                 // This key (or some of its dependencies) depends on a dao session,
                 // so it can only be constructed at the session container level
                 if (binding.getValue() instanceof BuilderAdapter)
                     throw new IllegalStateException("Binding relying on a Builder cannot depend on a DAO");
-                
+
                 sessionBindings.put(key, binding.getValue());
             } else {
                 // This key does not depend on a dao session so it can be
@@ -371,12 +371,12 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 }
             }
         }
-        
+
         // Add additional configuration for the built instances that were JIT bound
         for (Entry<Object, BuilderAdapter<?>> jitBinding: jitBuilderFactory.jitBuilderAdapters.entrySet()) {
             if (!isBindingValidAfterBuild(jitBinding.getValue()))
                 continue;
-            
+
             if (daoDependentKeys.contains(jitBinding.getKey()))
                 throw new IllegalStateException("Binding relying on a Builder cannot depend on a DAO");
             // As above, the built instance should be memoized so this is very fast
@@ -384,7 +384,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
 
         DAOFactory factory =
-            useFactory ? daoFactory : null;       
+            useFactory ? daoFactory : null;
         LenskitRecommenderEngine engine = new LenskitRecommenderEngine(factory, recommenderContainer, sessionBindings);
         Recommender testOpen;
         if (useFactory)
@@ -392,26 +392,26 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         else
             testOpen = engine.open(dao, false);
         testOpen.close();
-        
+
         return engine;
     }
-    
+
     private boolean isBindingValidAfterBuild(Object value) {
         Class<?> implType = null;
-        if (value instanceof BuilderAdapter) { 
+        if (value instanceof BuilderAdapter) {
             implType = ((BuilderAdapter<?>) value).getComponentImplementation();
         } else if (value instanceof Class) {
             implType = (Class<?>) value;
         } else {
             implType = value.getClass();
         }
-        
+
         // Do not configure any builders, snapshots or daos
         if (RatingSnapshot.class.isAssignableFrom(implType) || DataAccessObject.class.isAssignableFrom(implType)
             || Builder.class.isAssignableFrom(implType)) {
             return false;
         }
-        
+
         // Also check if it is a built type declared as ephemeral
         Built built = implType.getAnnotation(Built.class);
         if (built != null && built.ephemeral())
@@ -419,18 +419,18 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 
         return true;
     }
-    
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Map<Object, Object> generateBindings(Map<Class<? extends Annotation>, Object> annotationBindings,
                                                  Map<Class<?>, Object> defaultBindings) {
         Map<Object, Object> keyBindings = new HashMap<Object, Object>();
-        
+
         // Configure annotation bound types
         for (Entry<Class<? extends Annotation>, Object> paramBinding: annotationBindings.entrySet()) {
             Object value = paramBinding.getValue();
             Class implType = null;
             boolean usesBuilder = false;
-            
+
             if (value instanceof Class) {
                 if (Builder.class.isAssignableFrom((Class) value)) {
                     implType = getBuiltType((Class) value);
@@ -446,9 +446,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                     implType = value.getClass();
                 }
             }
-            
+
             implType = PrimitiveUtils.box(implType);
-            
+
             // Walk up the type tree, creating bindings for every intermediate type
             // to allow for more specific injection points
             // FIXME: I don't think that this loop is sufficient for tree hierarchies that
@@ -463,18 +463,18 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 } else {
                     keyBindings.put(key, new BuilderAdapter(key, (Builder) value));
                 }
-                    
+
                 implType = implType.getSuperclass();
                 if (implType != null && implType.equals(Object.class))
                     implType = interfaceType;
             }
         }
-        
+
         // Configure type-to-type bindings
         for (Entry<Class<?>, Object> dfltBinding: defaultBindings.entrySet()) {
             Object key = dfltBinding.getKey();
             Object value = dfltBinding.getValue();
-            
+
             if (value instanceof Class) {
                 if (Builder.class.isAssignableFrom((Class) value))
                     keyBindings.put(key, new BuilderAdapter(key, (Class) value));
@@ -487,7 +487,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                     keyBindings.put(key, value);
             }
         }
-        
+
 // FIXME: log configured bindings (maybe super-type tree at a finer level)
 // FIXME: log warnings if bound types aren't serializable
 //        for (Entry<Object, Object> b: keyBindings.entrySet()) {
@@ -501,20 +501,20 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 //        }
         return keyBindings;
     }
-    
+
     @SuppressWarnings("unchecked")
     private static <T> Class<? extends Builder<? extends T>> findBuilder(Class<? extends T> type) {
         // Special handling for null types, must return a null builder so binding is still removed
         if (type == null)
             return null;
-        
+
         // Convention #1: Type has been annotated with DefaultBuilder
         DefaultBuilder dfltBuilder = type.getAnnotation(DefaultBuilder.class);
         if (dfltBuilder != null) {
             // Type has been annotated with a default builder, so use that
             return (Class<? extends Builder<? extends T>>) dfltBuilder.value();
         }
-        
+
         // Convention #2: Type has an static inner class that is a Builder of the appropriate type
         for (Class<?> cls: type.getClasses()) {
             if (Modifier.isStatic(cls.getModifiers()) && Builder.class.isAssignableFrom(cls)) {
@@ -523,21 +523,21 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                     return (Class<? extends Builder<? extends T>>) cls;
             }
         }
-        
+
         // Convention #3: There is a type named XBuilder in the same package as X
         String builderName = type.getName() + "Builder";
         try {
             Class<?> builderType = type.getClassLoader().loadClass(builderName);
-            if (Builder.class.isAssignableFrom(builderType) 
+            if (Builder.class.isAssignableFrom(builderType)
                 && type.isAssignableFrom(getBuiltType((Class<? extends Builder<?>>) builderType)))
                 return (Class<? extends Builder<? extends T>>) builderType;
         } catch (ClassNotFoundException e) {
             // do nothing, a Builder wasn't found so throw an exception after leaving this block
         }
-        
+
         throw new IllegalArgumentException("Unable to find a Builder for type: " + type);
     }
-    
+
     private static Class<?> getBuiltType(Class<? extends Builder<?>> buildType) {
         try {
             // Builders are expected to update the return type of their build()
@@ -548,18 +548,18 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             throw new RuntimeException(e);
         }
     }
-    
+
     private static class BuilderTrackingAdapterFactory extends AbstractInjectionFactory {
         private static final long serialVersionUID = 1L;
 
         transient Map<Object, BuilderAdapter<?>> jitBuilderAdapters;
         transient InjectionFactory delegate;
-        
+
         public BuilderTrackingAdapterFactory(InjectionFactory delegate) {
             this.delegate = delegate;
             jitBuilderAdapters = new HashMap<Object, BuilderAdapter<?>>();
         }
-        
+
         @Override
         public <T> ComponentAdapter<T> createComponentAdapter(ComponentMonitor componentMonitor,
                                                               LifecycleStrategy lifecycleStrategy,
@@ -570,12 +570,12 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 // Yes, so find a builder implementation and create an adapter for it
                 Class<? extends Builder<? extends T>> builderType = findBuilder(componentImplementation);
                 BuilderAdapter<T> adapter = new BuilderAdapter<T>(componentKey, builderType);
-                
+
                 jitBuilderAdapters.put(componentKey, adapter);
                 return adapter;
             } else {
                 // A regular jit binding so use the delegate
-                return delegate.createComponentAdapter(componentMonitor, lifecycleStrategy, componentProperties, 
+                return delegate.createComponentAdapter(componentMonitor, lifecycleStrategy, componentProperties,
                                                        componentKey, componentImplementation, parameters);
             }
         }

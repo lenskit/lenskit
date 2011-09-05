@@ -44,13 +44,13 @@ import org.grouplens.lenskit.util.SymmetricBinaryFunction;
  */
 public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
     private static final long serialVersionUID = 4116492312815769666L;
-    
+
     private final double shrinkage;
-    
+
     public PearsonCorrelation() {
         this(0);
     }
-    
+
     public PearsonCorrelation(@SimilarityDamping double s) {
         shrinkage = s;
     }
@@ -104,7 +104,7 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
                     e2 = it2.next();
             }
         } while (it1.hasNext() && it2.hasNext());
-        
+
         if (nCoratings == 0)
             return 0;
         else

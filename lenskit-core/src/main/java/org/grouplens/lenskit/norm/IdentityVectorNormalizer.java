@@ -31,14 +31,14 @@ import org.grouplens.lenskit.data.vector.MutableSparseVector;
 public class IdentityVectorNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector>
 implements Serializable {
     private static final long serialVersionUID = -6708410675383598691L;
-    
+
     private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
-        
+
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
             return vector;
         }
-        
+
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
             return vector;

@@ -42,7 +42,7 @@ import org.grouplens.lenskit.util.CollectionUtils;
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
- * 
+ *
  * <p>It supports mean smoothing (see {@link MeanSmoothing}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -52,34 +52,34 @@ import org.grouplens.lenskit.util.CollectionUtils;
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
-     * 
+     *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Builder extends RecommenderComponentBuilder<ItemUserMeanPredictor> {
         private double damping = 0;
-        
+
         @MeanSmoothing
         public void setDamping(double d) {
             damping = d;
         }
-        
+
         @Override
         public ItemUserMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             double globalMean = computeItemAverages(snapshot.getRatings().fastIterator(), damping, itemMeans);
-            
+
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }
     }
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     // "final" but for Serializable
     protected final double damping;
 
     /**
      * Create a new scorer, this assumes ownership of the given map.
-     * 
+     *
      * @param itemMeans
      * @param globalMean
      * @param damping

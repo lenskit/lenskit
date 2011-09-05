@@ -37,38 +37,38 @@ import org.junit.Test;
 
 public class TestUserUserRecommenderBuild {
 
-	private DAOFactory manager;
-	private static RecommenderEngine engine;
+    private DAOFactory manager;
+    private static RecommenderEngine engine;
 
-	@Before
-	public void setup() {
-		List<Rating> rs = new ArrayList<Rating>();
-		rs.add(Ratings.make(1, 5, 2));
-		rs.add(Ratings.make(1, 7, 4));
-		rs.add(Ratings.make(8, 4, 5));
-		rs.add(Ratings.make(8, 5, 4));
+    @Before
+    public void setup() {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 5, 2));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(8, 4, 5));
+        rs.add(Ratings.make(8, 5, 4));
 
-		manager = new EventCollectionDAO.Factory(rs);
+        manager = new EventCollectionDAO.Factory(rs);
 
-		LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-		factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
-		factory.setComponent(ItemRecommender.class, UserUserRecommender.class);
-		factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
+        factory.setComponent(ItemRecommender.class, UserUserRecommender.class);
+        factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
 
-		engine = factory.create();
-	}
+        engine = factory.create();
+    }
 
-	@Test
-	public void testUserUserRecommenderEngineCreate() {        
-		Recommender rec = engine.open();
+    @Test
+    public void testUserUserRecommenderEngineCreate() {
+        Recommender rec = engine.open();
 
-		try {
-			// These assert instanceof's are also assertNotNull's
-			Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-			Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-			Assert.assertTrue(rec.getItemRecommender() instanceof UserUserRecommender);
-		} finally {
-			rec.close();
-		}
-	}
+        try {
+            // These assert instanceof's are also assertNotNull's
+            Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
+            Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
+            Assert.assertTrue(rec.getItemRecommender() instanceof UserUserRecommender);
+        } finally {
+            rec.close();
+        }
+    }
 }

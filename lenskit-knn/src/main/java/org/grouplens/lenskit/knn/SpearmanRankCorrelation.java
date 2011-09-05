@@ -35,17 +35,17 @@ import com.google.common.primitives.Doubles;
 public class SpearmanRankCorrelation implements
         OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
     private static final long serialVersionUID = 3023239202579332883L;
-    
+
     private final PearsonCorrelation pearson;
-    
+
     public SpearmanRankCorrelation(@SimilarityDamping double shrink) {
         pearson = new PearsonCorrelation(shrink);
     }
-    
+
     public SpearmanRankCorrelation() {
         this(0.0);
     }
-    
+
     static SparseVector rank(final SparseVector vec) {
         long[] ids = vec.keySet().toLongArray();
         // sort ID set by value (decreasing)
@@ -55,7 +55,7 @@ public class SpearmanRankCorrelation implements
                 return Doubles.compare(vec.get(k2), vec.get(k1));
             }
         });
-        
+
         final int n = ids.length;
         final double[] values = new double[n];
         MutableSparseVector rank = vec.mutableCopy();
@@ -64,7 +64,7 @@ public class SpearmanRankCorrelation implements
             rank.set(ids[i], i+1);
             values[i] = vec.get(ids[i]);
         }
-        
+
         // average ranks for items with same values
         int i = 0;
         while (i < n) {
@@ -80,7 +80,7 @@ public class SpearmanRankCorrelation implements
             }
             i = j;
         }
-        
+
         // Make a sparse vector out of it
         return rank;
     }

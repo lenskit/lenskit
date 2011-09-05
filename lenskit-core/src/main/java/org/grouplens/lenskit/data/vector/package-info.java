@@ -22,7 +22,7 @@
  * framework for storing things such as rating vectors. Sparse vectors are
  * stored efficiently and have a fixed set of keys, although their values can
  * change.
- * 
+ *
  * <p>
  * To allow the type system to communicate valuable information about how
  * vectors are used while still preserving efficiency, sparse vectors come in
@@ -35,13 +35,13 @@
  * {@link org.grouplens.lenskit.data.vector.ImmutableSparseVector}, where the
  * vector is guaranteed to be unchanging and can be safely stored or shared
  * across threads without concern about the caller mutating it later.
- * 
+ *
  * <p>
  * There are further versions of immutable vectors with particular information
  * associated with them: {@link org.grouplens.lenskit.data.vector.ItemVector},
  * {@link org.grouplens.lenskit.data.vector.UserVector}, and their subclasses.
  * These classes are used for vectors of data associated with particular users.
- * 
+ *
  * <p>
  * The {@link org.grouplens.lenskit.data.vector.SparseVector SparseVector} class
  * also provides utility methods for manipulating sparse vectors (e.g. the

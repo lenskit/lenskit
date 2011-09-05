@@ -28,12 +28,12 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * A simple rating immutable rating implementation, storing ratings in fields.
  * This class is not intended to be derived, so its key methods are
  * <code>final</code>.
- * 
+ *
  * <p>This implementation only supports set ratings; for null ratings (unrate
  * events), use {@link SimpleNullRating}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 @Immutable
 public class SimpleRating extends AbstractEvent implements Rating {
@@ -61,10 +61,10 @@ public class SimpleRating extends AbstractEvent implements Rating {
         timestamp = ts;
         preference = pref;
     }
-    
+
     /**
      * Construct a rating with a value directly.
-     * 
+     *
      * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
@@ -73,7 +73,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
    public SimpleRating(long eid, long uid, long iid, double v) {
        this(eid, uid, iid, v, -1L);
    }
-    
+
     /**
      * Construct a rating with a timestamp and value.
      * @param eid The event ID.
@@ -87,7 +87,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
         timestamp = ts;
         preference = new SimplePreference(uid, iid, v);
     }
-    
+
     @Override
     public long getId() {
         return eventId;
@@ -101,8 +101,8 @@ public class SimpleRating extends AbstractEvent implements Rating {
     @Override
     final public long getItemId() {
         return preference.getItemId();
-    }    
-    
+    }
+
     @Override
     final public Preference getPreference() {
         return preference;
@@ -126,7 +126,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
         else
             return Double.NaN;
     }
-    
+
     @Override
     public Rating clone() {
         return (Rating) super.clone();

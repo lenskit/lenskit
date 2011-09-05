@@ -26,7 +26,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * recommendation is not supported.
  */
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
-	public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
-		super(dao, predictor);
-	}
+    public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
+        super(dao, predictor);
+    }
 }

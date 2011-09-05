@@ -29,31 +29,31 @@ import org.grouplens.lenskit.util.SymmetricBinaryFunction;
  * Apply significance weighting to a similarity function. The inner function is
  * specified with the {@link WeightedSimilarity} component, and the threshold
  * with the {@link WeightThreshold} parameter.
- * 
+ *
  * <p>Significance weighting decreases the similarity between two vectors when
  * the number of common entities between the two vectors is low.  For a threshold
  * \(S\) and key sets \(K_1\) and \(K_2\), the similarity is multipled by
  * \[\frac{|K_1 \cap K_2|}{\mathrm{max}(|K_1 \cap K_2|, S)}\]
- * 
+ *
  * <ul>
  * <li>Herlocker, J., Konstan, J.A., and Riedl, J. <a
  * href="http://dx.doi.org/10.1023/A:1020443909834">An Empirical Analysis of
  * Design Choices in Neighborhood-Based Collaborative Filtering Algorithms</a>.
  * <i>Information Retrieval</i> Vol. 5 Issue 4 (October 2002), pp. 287-310.</li>
  * </ul>
- * 
+ *
  * @see WeightedSimilarity
  * @see WeightThreshold
  */
 public class SignificanceWeight implements
         OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
-    
+
     private static final long serialVersionUID = 5748342121367821678L;
-    
+
     private final int threshold;
     private final Similarity<? super SparseVector> similarity;
 
-    public SignificanceWeight(@WeightThreshold int thresh, 
+    public SignificanceWeight(@WeightThreshold int thresh,
                               @WeightedSimilarity Similarity<? super SparseVector> sim) {
         if (!(sim instanceof SymmetricBinaryFunction))
             throw new IllegalArgumentException();

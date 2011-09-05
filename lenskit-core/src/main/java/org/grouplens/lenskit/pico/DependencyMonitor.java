@@ -37,21 +37,21 @@ import org.picocontainer.PicoContainer;
 /**
  * DependencyMonitor is a ComponentMonitor that will report all types that
  * depending on a configured type.
- * 
+ *
  * @author Michael Ludwig
  */
 public class DependencyMonitor implements ComponentMonitor, Serializable {
     private static final long serialVersionUID = 3122853872642985784L;
 
     private Class<?> monitorType;
-    
+
     private transient Set<Object> keysDependingOnMonitor;
     private transient WeakHashMap<Object, Boolean> dependentInstances;
-    
+
     public DependencyMonitor(Class<?> typeToMonitor) {
         monitorType = typeToMonitor;
     }
-    
+
     public Set<Object> getDependentKeys() {
         synchronized(this) {
             if (keysDependingOnMonitor == null)
@@ -60,34 +60,34 @@ public class DependencyMonitor implements ComponentMonitor, Serializable {
                 return Collections.unmodifiableSet(new HashSet<Object>(keysDependingOnMonitor));
         }
     }
-    
+
     @Override
     public <T> void instantiated(PicoContainer container, ComponentAdapter<T> componentAdapter,
                                  Constructor<T> constructor, Object instantiated,
                                  Object[] injected, long duration) {
         updateDependencies(instantiated, componentAdapter, injected);
     }
-    
+
     @Override
     public void invoked(PicoContainer container, ComponentAdapter<?> componentAdapter, Member member,
                         Object instance, long duration, Object[] args, Object retVal) {
         updateDependencies(instance, componentAdapter, args);
     }
-    
+
     private void updateDependencies(Object instance, ComponentAdapter<?> adapter, Object[] injected) {
         synchronized(this) {
             if (keysDependingOnMonitor == null)
                 keysDependingOnMonitor = new HashSet<Object>();
             if (dependentInstances == null)
                 dependentInstances = new WeakHashMap<Object, Boolean>();
-            
+
             Object key = adapter.getComponentKey();
             if (keysDependingOnMonitor.contains(key)) {
                 // No need to examine dependencies, but make sure its in the instance map
                 dependentInstances.put(instance, Boolean.TRUE);
                 return;
             }
-            
+
             for (Object injectee: injected) {
                 if (dependentInstances.containsKey(injectee) || monitorType.isInstance(injectee)) {
                     // Store the adapter key and the created instance.
@@ -95,7 +95,7 @@ public class DependencyMonitor implements ComponentMonitor, Serializable {
                     //  of the injected parameters (so we use the instances to look at transitive dependencies)
                     dependentInstances.put(instance, Boolean.TRUE);
                     keysDependingOnMonitor.add(key);
-                    
+
                     // Once we've placed the instantiated object in the tracking structures,
                     // there's no need to continue
                     break;
@@ -110,12 +110,12 @@ public class DependencyMonitor implements ComponentMonitor, Serializable {
                                         Constructor<T> constructor, Exception cause) {
         // do nothing
     }
-    
+
     @Override
     public void invocationFailed(Member member, Object instance, Exception cause) {
         // do nothing
     }
-    
+
     @Override
     public <T> Constructor<T> instantiating(PicoContainer container,
                                             ComponentAdapter<T> componentAdapter,

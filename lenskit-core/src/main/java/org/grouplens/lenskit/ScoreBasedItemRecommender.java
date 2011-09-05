@@ -40,10 +40,10 @@ import com.google.common.collect.Iterables;
  * Base class for recommenders that recommend the top N items by a scorer.
  * Implements all methods required by {@link AbstractItemRecommender}. The
  * default exclude set is all items rated by the user.
- * 
+ *
  * <p>
  * Recommendations are returned in descending order of score.
- * 
+ *
  */
 public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
@@ -74,7 +74,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * Implement profile-based recommendation in terms of the scorer. This
      * method uses {@link #getDefaultExcludes(long)} to supply a missing exclude
      * set.
-     */	
+     */
     @Override
     protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null)
@@ -87,10 +87,10 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
     }
-    
+
     /**
      * Pick the top <var>n</var> items from a score vector.
-     * 
+     *
      * @param n The number of items to recommend.
      * @param scores The scored item vector.
      * @return The top <var>n</var> items from <var>scores</var>, in descending
@@ -115,7 +115,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     /**
      * Get the default exclude set for a user.  The base implementation gets
      * all their rated items.
-     * 
+     *
      * @param user The user ID.
      * @return The set of items to exclude.
      */
@@ -126,7 +126,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     /**
      * Get the default exclude set for a user.  The base implementation returns
      * all their rated items.
-     * 
+     *
      * @param user The user history.
      * @return The set of items to exclude.
      */
@@ -142,7 +142,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
-     * 
+     *
      * @param user The user's ID.
      * @return All items for which predictions can be generated for the user.
      */
@@ -154,7 +154,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
-     * 
+     *
      * @param user The user's ID.
      * @return All items for which predictions can be generated for the user.
      */

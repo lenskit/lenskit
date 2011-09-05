@@ -45,32 +45,32 @@ import org.slf4j.LoggerFactory;
  * Generate predictions with item-item collaborative filtering. This configures
  * {@link ItemItemScorer} to predict ratings, and can supply baseline
  * predictions if so configured.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
  * @see ItemItemScorer
  */
 public class ItemItemRatingPredictor extends ItemItemScorer {
-	private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected @Nullable BaselinePredictor baseline;
-    
-    public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model, 
+
+    public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
                                    @NeighborhoodSize int nnbrs,
                                    @UserHistorySummary HistorySummarizer summarizer) {
         super(dao, model, nnbrs, summarizer, new WeightedAverageNeighborhoodScorer());
         logger.debug("Creating rating scorer with neighborhood size {}", neighborhoodSize);
     }
-    
+
     @Nullable
     public BaselinePredictor getBaseline() {
         return baseline;
     }
-    
+
     /**
      * Configure the baseline predictor for unpredicatble items. If an item
      * cannot be have its preference predicted (e.g. no neighborhood is found),
      * the prediction is supplied from this baseline.
-     * 
+     *
      * @param pred The baseline predictor. Configure this by setting the
      *        {@link BaselinePredictor} component.
      * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
@@ -78,18 +78,18 @@ public class ItemItemRatingPredictor extends ItemItemScorer {
     public void setBaseline(@Nullable BaselinePredictor pred) {
         baseline = pred;
     }
-    
+
     /**
      * Configure a neighborhood scorer. The default scorer is
      * {@link WeightedAverageNeighborhoodScorer}.
-     * 
+     *
      * @param scorer
      */
     // FIXME: Enable this code when the new config system allows it
 //    public void setScorer(NeighborhoodScorer scorer) {
 //        this.scorer = scorer;
 //    }
-    
+
     /**
      * Normalize data and supply baselines. The resulting transformation uses
      * the normalizer ({@link #setNormalizer(VectorNormalizer)}) to normalize
@@ -103,7 +103,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer {
             final VectorTransformation norm =
                     normalizer.makeTransformation(userData);
             final UserVector ratings = userData;
-            
+
             @Override
             public MutableSparseVector unapply(MutableSparseVector vector) {
                 norm.unapply(vector);
@@ -124,14 +124,14 @@ public class ItemItemRatingPredictor extends ItemItemScorer {
                 }
                 return vector;
             }
-            
+
             @Override
             public MutableSparseVector apply(MutableSparseVector vector) {
                 return norm.apply(vector);
             }
         };
     }
-    
+
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {
         if (baseline != null) {

@@ -21,9 +21,9 @@ package org.grouplens.lenskit.data.pref;
 /**
  * A mutable preference object for use in fast iteration and other mutable
  * contexts.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public class MutablePreference extends SimplePreference {
 
@@ -34,7 +34,7 @@ public class MutablePreference extends SimplePreference {
     public MutablePreference() {
         super(0,0,Double.NaN);
     }
-    
+
     /**
      * Create a new mutable preference.
      * @param uid The user ID.
@@ -56,7 +56,7 @@ public class MutablePreference extends SimplePreference {
     public final void setValue(double v) {
         value = v;
     }
-    
+
     @Override
     public Preference clone() {
         return new SimplePreference(userId, itemId, value);

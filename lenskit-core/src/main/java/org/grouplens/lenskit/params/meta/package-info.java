@@ -19,7 +19,7 @@
 
 /**
  * Meta-annotations for defining parameters.
- * 
+ *
  * <p>The annotations in this package are used on annotations to configure them
  * to represent recommender parameters.</p>
  */

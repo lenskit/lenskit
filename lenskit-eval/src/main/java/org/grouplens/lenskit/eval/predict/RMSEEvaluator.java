@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RMSEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(RMSEEvaluator.class);
-    
+
     int colRMSE, colUserRMSE;
 
     @Override
@@ -47,22 +47,22 @@ public class RMSEEvaluator implements PredictionEvaluator {
         colRMSE = builder.addColumn("RMSE.ByRating");
         colUserRMSE = builder.addColumn("RMSE.ByUser");
     }
-    
+
     class Accum implements Accumulator {
         private double sse = 0;
         private double totalRMSE = 0;
         private int nratings = 0;
         private int nusers = 0;
-        
+
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-            
+
             double usse = 0;
             int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
-                
+
                 double err = e.getDoubleValue() - ratings.get(e.getLongKey());
                 usse += err * err;
                 n++;
@@ -82,6 +82,6 @@ public class RMSEEvaluator implements PredictionEvaluator {
             writer.setValue(colRMSE, v);
             writer.setValue(colUserRMSE, totalRMSE / nusers);
         }
-        
+
     }
 }

@@ -45,7 +45,7 @@ import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
  * Because {@link LenskitRecommenderEngine} uses default object serialization to
  * store its state on disk, it is strongly recommended that types annotated with @Built
  * implement Serializable or Externalizable.
- * 
+ *
  * @author Michael Ludwig
  */
 @Documented
@@ -59,7 +59,7 @@ public @interface Built {
      * the build phase. If <tt>true</tt>, built instances will not be retained
      * directly in the recommender container (although they may be referenced by
      * objects which are retained).
-     * 
+     *
      * @return <tt>true</tt> if the built instance is used only in the build
      *         process.
      */

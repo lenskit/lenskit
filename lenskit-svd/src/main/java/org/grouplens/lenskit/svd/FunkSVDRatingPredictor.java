@@ -46,7 +46,7 @@ import org.grouplens.lenskit.util.LongSortedArraySet;
  *
  */
 public class FunkSVDRatingPredictor extends AbstractItemScorer {
-	protected final FunkSVDModel model;
+    protected final FunkSVDModel model;
     private DataAccessObject dao;
 
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m) {
@@ -74,10 +74,10 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
      * @see #getFeatureCount()
      */
     /*protected double[] foldIn(long user, SparseVector ratings) {
-    	final int nf = model.featureCount;
-    	final double[][] ifeats = model.itemFeatures;
-        // FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON    	
-    	final double[] svals = null; //model.singularValues;
+        final int nf = model.featureCount;
+        final double[][] ifeats = model.itemFeatures;
+        // FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON
+        final double[] svals = null; //model.singularValues;
         double featurePrefs[] = new double[nf];
         DoubleArrays.fill(featurePrefs, 0.0);
 
@@ -93,17 +93,17 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
 
         return featurePrefs;
     }*/
-    
+
     private MutableSparseVector predict(UserVector user, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
         final DoubleFunction clamp = model.clampingFunction;
-        
+
         LongSortedSet iset;
         if (items instanceof LongSortedSet)
             iset = (LongSortedSet) items;
         else
             iset = new LongSortedArraySet(items);
-        
+
         MutableSparseVector preds = model.baseline.predict(user, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
@@ -119,25 +119,25 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer {
             }
             preds.set(item, score);
         }
-        
+
         return preds;
     }
-    
+
     private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
-    	return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
-    	               uprefs, items);
+        return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
+                       uprefs, items);
     }
-    
+
     @Override
     public boolean canUseHistory() {
         return false;
     }
-    
+
     @Override
     public SparseVector score(UserHistory<? extends Event> user, Collection<Long> items) {
         return score(user.getUserId(), items);
     }
-    
+
     @Override
     public MutableSparseVector score(long user, Collection<Long> items) {
         int uidx = model.userIndex.getIndex(user);

@@ -37,66 +37,66 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
 @DefaultBuilder (SlopeOneModelBuilder.class)
 public class SlopeOneModel {
 
-	private final Long2ObjectOpenHashMap<Long2IntOpenHashMap> coMatrix;
-	private final Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devMatrix;
-	private final BaselinePredictor baseline;
-	private final LongSortedSet itemUniverse;
-	private final double minRating;
-	private final double maxRating;
+    private final Long2ObjectOpenHashMap<Long2IntOpenHashMap> coMatrix;
+    private final Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devMatrix;
+    private final BaselinePredictor baseline;
+    private final LongSortedSet itemUniverse;
+    private final double minRating;
+    private final double maxRating;
 
-	public SlopeOneModel(Long2ObjectOpenHashMap<Long2IntOpenHashMap> coData,
-			Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devData, BaselinePredictor predictor,
-			LongSortedSet universe, double min, double max) {
+    public SlopeOneModel(Long2ObjectOpenHashMap<Long2IntOpenHashMap> coData,
+            Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devData, BaselinePredictor predictor,
+            LongSortedSet universe, double min, double max) {
 
-		coMatrix = coData;
-		devMatrix = devData;
-		baseline = predictor;
-		itemUniverse = universe;
-		minRating = min;
-		maxRating = max;
-	}
+        coMatrix = coData;
+        devMatrix = devData;
+        baseline = predictor;
+        itemUniverse = universe;
+        minRating = min;
+        maxRating = max;
+    }
 
-	public double getDeviation(long item1, long item2) {
-		if (item1 == item2) return 0;
-		else if (item1 < item2) {
-			Long2DoubleOpenHashMap map = devMatrix.get(item1);
-			if (map == null) return Double.NaN;
-			else return map.get(item2);
-		}
-		else {
-			Long2DoubleOpenHashMap map = devMatrix.get(item2);
-			if (map == null) return Double.NaN;
-			else return -map.get(item1);
-		}
-	}
-	
-	public int getCoratings(long item1, long item2) {
-		if (item1 == item2) return 0;
-		else if (item1 < item2) {
-			Long2IntOpenHashMap map = coMatrix.get(item1);
-			if (map == null) return 0;
-			else return map.get(item2);
-		}
-		else {
-			Long2IntOpenHashMap map = coMatrix.get(item2);
-			if (map == null) return 0;
-			else return map.get(item1);
-		}
-	}
-	
-	public BaselinePredictor getBaselinePredictor() {
-		return baseline;
-	}
+    public double getDeviation(long item1, long item2) {
+        if (item1 == item2) return 0;
+        else if (item1 < item2) {
+            Long2DoubleOpenHashMap map = devMatrix.get(item1);
+            if (map == null) return Double.NaN;
+            else return map.get(item2);
+        }
+        else {
+            Long2DoubleOpenHashMap map = devMatrix.get(item2);
+            if (map == null) return Double.NaN;
+            else return -map.get(item1);
+        }
+    }
 
-	public LongSortedSet getItemUniverse() {
-		return itemUniverse;
-	}
+    public int getCoratings(long item1, long item2) {
+        if (item1 == item2) return 0;
+        else if (item1 < item2) {
+            Long2IntOpenHashMap map = coMatrix.get(item1);
+            if (map == null) return 0;
+            else return map.get(item2);
+        }
+        else {
+            Long2IntOpenHashMap map = coMatrix.get(item2);
+            if (map == null) return 0;
+            else return map.get(item1);
+        }
+    }
 
-	public double getMinRating() {
-		return minRating;
-	}
+    public BaselinePredictor getBaselinePredictor() {
+        return baseline;
+    }
 
-	public double getMaxRating() {
-		return maxRating;
-	}
+    public LongSortedSet getItemUniverse() {
+        return itemUniverse;
+    }
+
+    public double getMinRating() {
+        return minRating;
+    }
+
+    public double getMaxRating() {
+        return maxRating;
+    }
 }

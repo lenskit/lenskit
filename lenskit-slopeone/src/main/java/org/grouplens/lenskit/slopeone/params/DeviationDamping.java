@@ -32,7 +32,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * Damping term added to the denominator of average deviations.  This has the
  * effect of shrinking them towards 0 as the number of items in consideration
  * decreases.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

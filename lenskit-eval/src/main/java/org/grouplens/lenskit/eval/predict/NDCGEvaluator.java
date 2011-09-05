@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluate a recommender's predictions with normalized discounted cumulative gain.
- * 
+ *
  * <p>This is a prediction evaluator that uses base-2 nDCG to evaluate recommender
  * accuracy. The items are ordered by predicted preference and the nDCG is
  * computed using the user's real rating as the gain for each item. Doing this
@@ -37,15 +37,15 @@ import org.slf4j.LoggerFactory;
  * avoids penalizing recommenders for recommending items that would be better
  * if the user had known about them and provided ratings (e.g., for doing their
  * job).
- * 
+ *
  * <p>nDCG is computed per-user and then averaged over all users.
- *   
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class NDCGEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
-    
+
     int colNDCG;
 
     @Override
@@ -57,16 +57,16 @@ public class NDCGEvaluator implements PredictionEvaluator {
     public void setup(TableWriterBuilder builder) {
         colNDCG = builder.addColumn("nDCG");
     }
-    
+
     /**
      * Compute the DCG of a list of items with respect to a value vector.
      */
     static double computeDCG(LongList items, SparseVector values) {
         final double lg2 = log(2);
-        
+
         double gain = 0;
         int rank = 0;
-        
+
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long item = iit.nextLong();
@@ -77,14 +77,14 @@ public class NDCGEvaluator implements PredictionEvaluator {
             else
                 gain += v * lg2 / log(rank);
         }
-        
+
         return gain;
     }
-    
+
     class Accum implements Accumulator {
         double total = 0;
         int nusers = 0;
-        
+
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {

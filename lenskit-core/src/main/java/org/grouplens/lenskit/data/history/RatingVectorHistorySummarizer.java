@@ -26,37 +26,37 @@ import com.google.common.base.Function;
 
 /**
  * Summarize a history by extracting a rating vector.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public final class RatingVectorHistorySummarizer implements HistorySummarizer, Function<UserHistory<? extends Event>, UserVector> {
     private static final RatingVectorHistorySummarizer INSTANCE = new RatingVectorHistorySummarizer();
-    
+
     @Override
     public Class<? extends Event> eventTypeWanted() {
         return Rating.class;
     }
-    
+
     @Override
     public UserVector summarize(UserHistory<? extends Event> history) {
         return history.memoize(this);
     }
-    
+
     @Override
     public UserVector apply(UserHistory<? extends Event> history) {
         return UserVector.fromRatings(history.getUserId(), history.filter(Rating.class));
     }
-    
+
     public static UserVector makeRatingVector(UserHistory<? extends Event> history) {
         return INSTANCE.summarize(history);
     }
-    
+
     @Override
     public int hashCode() {
         return getClass().hashCode();
     }
-    
+
     /**
      * All rating vector summarizers are equal.
      */

@@ -26,7 +26,7 @@ import org.grouplens.lenskit.data.ScoredLongList;
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -61,7 +61,7 @@ public class ScoredItemAccumulator {
 
     /**
      * Get the number of items in the accumulator.
-     * 
+     *
      * @return The number of items accumulated so far, up to the maximum items
      *         desired from the accumulator.
      */
@@ -73,14 +73,14 @@ public class ScoredItemAccumulator {
      * Put a new item in the accumulator. Putting the same item twice does
      * <strong>not</strong> replace the previous entry - it adds a new entry
      * with the same ID.
-     * 
+     *
      * @param item The item to add to the accumulator.
      * @param score The item's score.
      */
     public void put(long item, double score) {
         assert slot <= count;
         assert heap.size() == size;
-        
+
         /*
          * Store the new item. The slot shows where the current item is, and
          * then we deal with it based on whether we're oversized.
@@ -98,14 +98,14 @@ public class ScoredItemAccumulator {
             size += 1;
         }
     }
-    
+
     /**
      * Accumulate the scores into a sorted scored list and reset the
      * accumulator.  Items are sorted in decreasing order of score.
-     * 
+     *
      * <p>After this method is called, the accumulator is ready for another
      * accumulation.
-     * 
+     *
      * @return The sorted, scored list of items.
      */
     public ScoredLongList finish() {
@@ -119,9 +119,9 @@ public class ScoredItemAccumulator {
         for (int i: indices) {
             l.add(items[i], scores[i]);
         }
-        
+
         assert heap.isEmpty();
-        
+
         size = 0;
         slot = 0;
         return l;

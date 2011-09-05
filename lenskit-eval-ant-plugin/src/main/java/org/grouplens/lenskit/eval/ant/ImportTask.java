@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.eval.ant;
 
@@ -50,30 +50,30 @@ import org.grouplens.lenskit.data.sql.JDBCUtils;
  *
  */
 public class ImportTask extends Task {
-	private File sourceFile;
-	private File dbFile;
-	private String tableName;
-	private String delimiter = "\t";
-	private boolean useTimestamp = true;
-	
-	public void setSource(File file) {
-		sourceFile = file;
-	}
-	public void setDatabase(File file) {
-		dbFile = file;
-	}
-	public void setDelimiter(String d) {
-		delimiter = d;
-	}
-	public void setTable(String table) {
-	    tableName = table;
-	}
-	public void setTimestamp(boolean useTimestamp) {
-		this.useTimestamp = useTimestamp;
-	}
-	
-	@Override
-	public void execute() throws BuildException {
+    private File sourceFile;
+    private File dbFile;
+    private String tableName;
+    private String delimiter = "\t";
+    private boolean useTimestamp = true;
+
+    public void setSource(File file) {
+        sourceFile = file;
+    }
+    public void setDatabase(File file) {
+        dbFile = file;
+    }
+    public void setDelimiter(String d) {
+        delimiter = d;
+    }
+    public void setTable(String table) {
+        tableName = table;
+    }
+    public void setTimestamp(boolean useTimestamp) {
+        this.useTimestamp = useTimestamp;
+    }
+
+    @Override
+    public void execute() throws BuildException {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -96,7 +96,7 @@ public class ImportTask extends Task {
             ratings.close();
         }
     }
-    
+
     protected void writeRatings(Cursor<Rating> ratings) throws SQLException, BuildException {
         Connection dbc = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getPath());
         try {
@@ -109,7 +109,7 @@ public class ImportTask extends Task {
             qmake += ");";
             JDBCUtils.execute(dbc, String.format(qmake, tableName));
             dbc.setAutoCommit(false);
-            
+
             qmake = "INSERT INTO %s (id, user, item, rating";
             if (useTimestamp) qmake += ", timestamp";
             qmake += ") VALUES (?, ?, ?, ?";
@@ -145,13 +145,13 @@ public class ImportTask extends Task {
         } finally {
             dbc.close();
         }
-	}
+    }
     /**
      * Fill in the values in a prepared statement from a rating object. Expects
      * the statement to have 4 or 5 parameters:
      * (id,user,item,rating,timestamp?). Uses the column definitions in
      * {@link JDBCRatingDAO}.
-     * 
+     *
      * @param stmt The prepared statement.
      * @param r The rating value.
      * @param useTimestamp If <tt>true</tt>, insert the timestamp as the 5th
@@ -162,14 +162,14 @@ public class ImportTask extends Task {
         stmt.setLong(COL_EVENT_ID, r.getId());
         stmt.setLong(COL_USER_ID, r.getUserId());
         stmt.setLong(COL_ITEM_ID, r.getItemId());
-        
+
         Preference p = r.getPreference();
         if (p != null) {
             stmt.setDouble(COL_RATING, p.getValue());
         } else {
             stmt.setNull(COL_RATING, Types.DOUBLE);
         }
-        
+
         if (useTimestamp) {
             long ts = r.getTimestamp();
             if (ts >= 0)

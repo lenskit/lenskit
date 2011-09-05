@@ -51,41 +51,41 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
- * 
+ *
  * <p>This rating vector has support for caching user rating vectors, where it
  * avoids rebuilding user rating vectors for users with no changed user. When
  * caching is enabled, it assumes that the underlying data is timestamped and
  * that the timestamps are well-behaved: if a rating has been added after the
  * currently cached rating vector was computed, then its timestamp is greater
  * than any timestamp seen while computing the cached vector.
- * 
+ *
  * <p>Currently, this cache is never cleared. This should probably be changed
  * sometime.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
-    
+
     static class CacheEntry {
         final UserVector user;
         final long lastRatingTimestamp;
         final int ratingCount;
-        
+
         CacheEntry(UserVector urv, long ts, int count) {
             user = urv;
             lastRatingTimestamp = ts;
             ratingCount = count;
         }
     }
-    
+
     private final DataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
-	private final VectorNormalizer<? super UserVector> normalizer;
-	private final Long2ObjectMap<CacheEntry> userVectorCache;
+    private final VectorNormalizer<? super UserVector> normalizer;
+    private final Long2ObjectMap<CacheEntry> userVectorCache;
 
     /**
      * Construct a new user-user recommender.
@@ -94,7 +94,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @param sim The similarity function to use.
      */
     public SimpleNeighborhoodFinder(DataAccessObject data,
-                                    @NeighborhoodSize int nnbrs, 
+                                    @NeighborhoodSize int nnbrs,
                                     @UserSimilarity Similarity<? super SparseVector> sim,
                                     @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         dataSource = data;
@@ -118,25 +118,25 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     findNeighbors(UserHistory<? extends Event> user, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
-        
+
         UserVector urs = RatingVectorHistorySummarizer.makeRatingVector(user);
         MutableSparseVector nratings = normalizer.normalize(urs, null);
-        
+
         /* Find candidate neighbors. To reduce scanning, we limit users to those
          * rating target items. If the similarity is sparse and the user has
          * fewer items than target items, then we use the user's rated items to
          * attempt to minimize the number of users considered.
          */
         LongSet users = findRatingUsers(user.getUserId(), items);
-        
+
         logger.trace("Found {} candidate neighbors", users.size());
-        
+
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
             final long uid = uiter.nextLong();
             UserVector urv = getUserRatingVector(uid);
-            MutableSparseVector nurv = normalizer.normalize(urv, null);            
-            
+            MutableSparseVector nurv = normalizer.normalize(urv, null);
+
             final double sim = similarity.similarity(nratings, nurv);
             if (Double.isNaN(sim) || Double.isInfinite(sim))
                 continue;
@@ -172,7 +172,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      */
     private LongSet findRatingUsers(long user, LongCollection itemSet) {
         LongSet users = new LongOpenHashSet(100);
-        
+
         LongIterator items = itemSet.iterator();
         while (items.hasNext()) {
             final long item = items.nextLong();
@@ -187,10 +187,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
                 ratings.close();
             }
         }
-        
+
         return users;
     }
-    
+
     /**
      * Look up the user's rating vector, using the cached version if possible.
      * @param user The user ID.
@@ -199,11 +199,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private synchronized UserVector getUserRatingVector(long user) {
         List<Rating> ratings = Cursors.makeList(dataSource.getUserEvents(user, Rating.class));
         CacheEntry e = userVectorCache.get(user);
-        
+
         // check rating count
         if (e != null && e.ratingCount != ratings.size())
             e = null;
-        
+
         // check max timestamp
         long ts = -1;
         if (e != null) {
@@ -213,14 +213,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             if (ts != e.lastRatingTimestamp)
                 e = null;
         }
-        
+
         // create new cache entry
         if (e == null) {
             UserVector v = UserVector.fromRatings(user, ratings);
             e = new CacheEntry(v, ts, ratings.size());
             userVectorCache.put(user, e);
         }
-        
+
         return e.user;
     }
 }

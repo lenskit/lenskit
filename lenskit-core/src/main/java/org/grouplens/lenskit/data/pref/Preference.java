@@ -22,38 +22,38 @@ package org.grouplens.lenskit.data.pref;
  * A real-valued preference a user has for an item. Preferences can be
  * articulated by the user in the form of ratings, or they may be predicted or
  * otherwise computed. The distinction will generally be apparent from context.
- * 
+ *
  * <p>
  * Instances of this class should generally be immutable (or at least treated as
  * such). All exceptions must be clearly documented, and should only be in
  * contexts such as fast iteration.
- * 
+ *
  * <p>
  * Only user ID, item ID, and preference values are to be considered for
  * equality. Subclasses must <strong>not</strong> introduce additional fields
  * that need to be compared for equality.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public interface Preference {
     /**
      * Get the ID of the user whose preference this is.
-     * 
+     *
      * @return The user ID.
      */
     long getUserId();
 
     /**
      * Get the ID of the item the preference is for.
-     * 
+     *
      * @return The item ID.
      */
     long getItemId();
 
     /**
      * Get the preference value.
-     * 
+     *
      * @return The preference value.
      */
     double getValue();

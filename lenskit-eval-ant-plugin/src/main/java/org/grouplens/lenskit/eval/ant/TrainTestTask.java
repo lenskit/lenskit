@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.eval.ant;
 
@@ -51,80 +51,80 @@ import com.google.common.primitives.Longs;
  *
  */
 public class TrainTestTask extends Task {
-	private String databaseDriver = "org.sqlite.JDBC";
-	private FileSet databases;
-	private File outFile;
-	private File script;
-	private int threadCount = Runtime.getRuntime().availableProcessors();
-	private boolean isolateDatasets = false;
-	private File predictionOutput;
-	private boolean useTimestamp = true;
-	private Properties properties = new Properties();
-	
-	public void setDatabaseDriver(String driver) {
-		databaseDriver = driver;
-	}
-	
-	public void setOutput(File f) {
-		outFile = f;
-	}
-	
-	public void setScript(File s) {
-	    script = s;
-	}
-	
-	public void setThreadCount(int n) {
-	    if (n > 0)
-	        threadCount = n;
-	    else
-	        threadCount = Runtime.getRuntime().availableProcessors();
-	}
-	
-	public void setIsolate(boolean isolate) {
-	    isolateDatasets = isolate;
-	}
-	
-	public void setPredictions(File f) {
-		predictionOutput = f;
-	}
-	
-	public void setTimestamp(boolean ts) {
-		useTimestamp = ts;
-	}
-	
-	public void addConfiguredDatabases(FileSet dbs) {
-		databases = dbs;
-	}
-	
-	public void addConfiguredProperty(Property prop) {
-	    properties.put(prop.getName(), prop.getValue());
-	}
-	
-	@Override
+    private String databaseDriver = "org.sqlite.JDBC";
+    private FileSet databases;
+    private File outFile;
+    private File script;
+    private int threadCount = Runtime.getRuntime().availableProcessors();
+    private boolean isolateDatasets = false;
+    private File predictionOutput;
+    private boolean useTimestamp = true;
+    private Properties properties = new Properties();
+
+    public void setDatabaseDriver(String driver) {
+        databaseDriver = driver;
+    }
+
+    public void setOutput(File f) {
+        outFile = f;
+    }
+
+    public void setScript(File s) {
+        script = s;
+    }
+
+    public void setThreadCount(int n) {
+        if (n > 0)
+            threadCount = n;
+        else
+            threadCount = Runtime.getRuntime().availableProcessors();
+    }
+
+    public void setIsolate(boolean isolate) {
+        isolateDatasets = isolate;
+    }
+
+    public void setPredictions(File f) {
+        predictionOutput = f;
+    }
+
+    public void setTimestamp(boolean ts) {
+        useTimestamp = ts;
+    }
+
+    public void addConfiguredDatabases(FileSet dbs) {
+        databases = dbs;
+    }
+
+    public void addConfiguredProperty(Property prop) {
+        properties.put(prop.getName(), prop.getValue());
+    }
+
+    @Override
     public void execute() throws BuildException {
-		if (databaseDriver != null) {
-			try {
-				Class.forName(databaseDriver);
-			} catch (ClassNotFoundException e) {
-				throw new BuildException("Database driver " + databaseDriver + " not found");
-			}
-		}
-		EvaluationRecipe recipe;
-		try {
-		    log("Loading recommender from " + script.getPath());
-		    recipe = EvaluationRecipe.load(script, properties, outFile);
-		    if (predictionOutput != null) {
-		        try {
-		            recipe.setPredictionOutput(predictionOutput);
-		        } catch (IOException e) {
-		            handleErrorOutput("Cannot open prediction output");
-		        }
-		    }
-		} catch (InvalidRecommenderException e) {
-			throw new BuildException("Invalid recommender", e);
-		}
-		
-		DirectoryScanner dbs = databases.getDirectoryScanner();
+        if (databaseDriver != null) {
+            try {
+                Class.forName(databaseDriver);
+            } catch (ClassNotFoundException e) {
+                throw new BuildException("Database driver " + databaseDriver + " not found");
+            }
+        }
+        EvaluationRecipe recipe;
+        try {
+            log("Loading recommender from " + script.getPath());
+            recipe = EvaluationRecipe.load(script, properties, outFile);
+            if (predictionOutput != null) {
+                try {
+                    recipe.setPredictionOutput(predictionOutput);
+                } catch (IOException e) {
+                    handleErrorOutput("Cannot open prediction output");
+                }
+            }
+        } catch (InvalidRecommenderException e) {
+            throw new BuildException("Invalid recommender", e);
+        }
+
+        DirectoryScanner dbs = databases.getDirectoryScanner();
         dbs.scan();
         String[] dbNames = dbs.getIncludedFiles();
         File[] dbFiles = new File[dbNames.length];
@@ -137,7 +137,7 @@ public class TrainTestTask extends Task {
                 return Longs.compare(f1.length(), f2.length());
             }
         });
-        
+
         List<TrainTestPredictEvaluator> evaluators =
             new ArrayList<TrainTestPredictEvaluator>(dbFiles.length);
         for (int i = 0; i < dbFiles.length; i++) {
@@ -149,7 +149,7 @@ public class TrainTestTask extends Task {
             eval.setTimestampEnabled(useTimestamp);
             evaluators.add(eval);
         }
-        
+
         if (isolateDatasets) {
             for (TrainTestPredictEvaluator eval: evaluators) {
                 eval.runEvaluation(recipe);
@@ -174,5 +174,5 @@ public class TrainTestTask extends Task {
                 svc.shutdown();
             }
         }
-	}
+    }
 }

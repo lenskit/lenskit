@@ -491,7 +491,7 @@ public class TestSparseVector {
         assertEquals(5.5, v.get(7), EPSILON);
         assertEquals(1.5, v.get(3), EPSILON);
     }
-    
+
     @Test
     public void testSortedKeys() {
         assertArrayEquals(new long[]{3,8,7}, simpleVector().keysByValue().toLongArray());

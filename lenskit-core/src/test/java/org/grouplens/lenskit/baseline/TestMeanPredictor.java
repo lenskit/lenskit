@@ -62,17 +62,17 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(2, 1, 7, 4));
         rs.add(new SimpleRating(3, 8, 4, 5));
         rs.add(new SimpleRating(4, 8, 5, 4));
-        
+
         dao = new EventCollectionDAO.Factory(rs).create();
         ratingSnapshot = new PackedRatingSnapshot.Builder(dao).build();
     }
-    
+
     @After
     public void closeRatingSession() {
         ratingSnapshot.close();
         dao.close();
     }
-    
+
     LongSortedSet itemSet(long item) {
         return new LongSortedArraySet(new long[]{item});
     }
@@ -155,7 +155,7 @@ public class TestMeanPredictor {
         assertEquals(RATINGS_DAT_MEAN + avgOffset, preds.get(2l), 0.001);
         assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
     }
-    
+
     private <T extends BaselinePredictor> T build(RecommenderComponentBuilder<T> builder) {
         builder.setRatingSnapshot(ratingSnapshot);
         return builder.build();

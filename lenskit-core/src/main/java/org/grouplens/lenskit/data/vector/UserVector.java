@@ -40,16 +40,16 @@ import org.grouplens.lenskit.util.FastCollection;
  *
  */
 public class UserVector extends ImmutableSparseVector {
-	private static final long serialVersionUID = 6027858130934920280L;
-	
-	private final long userId;
+    private static final long serialVersionUID = 6027858130934920280L;
 
-	public UserVector(long user, Long2DoubleMap ratings) {
-		super(ratings);
-		userId = user;
-	}
-	
-	/**
+    private final long userId;
+
+    public UserVector(long user, Long2DoubleMap ratings) {
+        super(ratings);
+        userId = user;
+    }
+
+    /**
      * @param user
      * @param items
      * @param values
@@ -61,8 +61,8 @@ public class UserVector extends ImmutableSparseVector {
     }
 
     public long getUserId() {
-		return userId;
-	}
+        return userId;
+    }
 
     /**
      * Create a new user rating vector from pre-existing arrays.
@@ -104,7 +104,7 @@ public class UserVector extends ImmutableSparseVector {
 
     /**
      * Extract a user rating vector from a rating cursor.
-     * 
+     *
      * @param userId The user ID.
      * @param ratings A cursor of ratings.
      * @return The user rating vector.
@@ -121,7 +121,7 @@ public class UserVector extends ImmutableSparseVector {
      * for the same item, the one with the greatest timestamp is retained. Ties
      * are broken by preferring ratings which come later when iterating through
      * the collection.
-     * 
+     *
      * @param userId The user ID.
      * @param ratings A collection of ratings (should all be by the same user)/
      * @return A sparse vector mapping item IDs to ratings.
@@ -147,18 +147,18 @@ public class UserVector extends ImmutableSparseVector {
             }
             rp = r;
         }
-        
+
         // collect the list of unique item IDs
         long[] items = new long[ratings.size()];
         double[] values = new double[ratings.size()];
         int li = -1;
         for (Rating r: ratings) {
             Preference p = r.getPreference();
-            
+
             long iid = r.getItemId();
             if (li < 0 || items[li] != iid) {
                 if (p == null) continue;
-                
+
                 li++;
             }
             items[li] = iid;
@@ -167,7 +167,7 @@ public class UserVector extends ImmutableSparseVector {
             else
                 values[li] = p.getValue();
         }
-        
+
         return new UserVector(userId, items, values, li+1);
     }
 

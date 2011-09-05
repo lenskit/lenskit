@@ -32,7 +32,7 @@ import org.picocontainer.injectors.AbstractInjector.CyclicDependencyException;
  * provided (e.g. <code>Class&lt? extends Builder&lt? extends T&gt&gt</code>), a
  * new instance of the builder is created using injection with PicoContainer. If
  * a Builder instance is provided, the Builder is used directly
- * 
+ *
  * @author Michael Ludwig
  * @param <T>
  */
@@ -43,23 +43,23 @@ public class BuilderAdapter<T> extends AbstractAdapter<T> {
 
     private transient Builder<? extends T> builder;
     private transient ThreadLocal<Boolean> cycleGuard;
-    
+
     public BuilderAdapter(Object key, Class<? extends Builder<? extends T>> builderType) {
         super(key, getBuiltType(builderType));
         this.builderType = builderType;
         builder = null;
     }
-    
+
     @SuppressWarnings("unchecked")
     public BuilderAdapter(Object key, Builder<? extends T> builder) {
         this(key, (Class<? extends Builder<? extends T>>) builder.getClass());
         this.builder = builder;
     }
-    
+
     public Class<? extends Builder<? extends T>> getBuilderType() {
         return builderType;
     }
-    
+
     @SuppressWarnings("unchecked")
     private static <T> Class<? extends T> getBuiltType(Class<? extends Builder<? extends T>> builderType) {
         try {
@@ -73,7 +73,7 @@ public class BuilderAdapter<T> extends AbstractAdapter<T> {
     public T getComponentInstance(PicoContainer container, Type into) throws PicoCompositionException {
         if (cycleGuard == null)
             cycleGuard = new ThreadLocal<Boolean>();
-        
+
         if (Boolean.TRUE.equals(cycleGuard.get()))
             throw new CyclicDependencyException(getComponentImplementation());
 

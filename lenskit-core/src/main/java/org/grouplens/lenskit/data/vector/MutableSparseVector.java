@@ -46,12 +46,12 @@ import java.util.Arrays;
  */
 public class MutableSparseVector extends SparseVector {
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * Construct a new empty vector.
      */
     public MutableSparseVector() {
-    	this(new long[0], new double[0]);
+        this(new long[0], new double[0]);
     }
 
     /**
@@ -69,7 +69,7 @@ public class MutableSparseVector extends SparseVector {
     public MutableSparseVector(LongSet keySet) {
         this(keySet, 0);
     }
-    
+
     /**
      * Construct a new vector with specified keys, setting all values to a constant
      * value.
@@ -80,7 +80,7 @@ public class MutableSparseVector extends SparseVector {
         super(normalizeKeys(keySet), new double[keySet.size()]);
         Arrays.fill(values, value);
     }
-    
+
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length.
@@ -90,7 +90,7 @@ public class MutableSparseVector extends SparseVector {
     protected MutableSparseVector(long[] keys, double[] values) {
         super(keys, values);
     }
-    
+
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length.
@@ -145,7 +145,7 @@ public class MutableSparseVector extends SparseVector {
             return Double.NaN;
         }
     }
-    
+
     /**
      * Add a value to the specified entry, replacing {@link Double#NaN}.  If the
      * current value for <var>key</var> is {@link Double#NaN}, then the value is
@@ -227,19 +227,19 @@ public class MutableSparseVector extends SparseVector {
     /**
      * Set the values in this SparseVector to equal the values in
      * <var>other</var> for each key that is present in both vectors.
-     * 
+     *
      * <p>After calling this method, every element in this vector that has a key
      * in <var>other</var> has its value set to the corresponding value in
      * <var>other</var>. Elements with no corresponding key are unchanged, and
      * elements in <var>other</var> that are not in this vector are not
      * inserted.
-     * 
+     *
      * @param other The vector to blit its values into this vector
      */
     public final void set(final SparseVector other) {
         checkValid();
         other.checkValid();
-        
+
         final int len = keys.length;
         final int olen = other.keys.length;
         int i = 0;
@@ -266,7 +266,7 @@ public class MutableSparseVector extends SparseVector {
         checkValid();
         return mutableCopy();
     }
-    
+
     /**
      * Copy the rating vector, optionally removing NaN values.
      * @return A new rating vector which is a copy of this one.
@@ -297,26 +297,26 @@ public class MutableSparseVector extends SparseVector {
     public MutableSparseVector clone() {
         return (MutableSparseVector) super.clone();
     }
-    
+
     /**
      * Construct an immutable sparse vector from this vector's data,
      * invalidating this vector in the process. Any subsequent use of this
      * vector is invalid; all access must be through the returned immutable
      * vector.
-     * 
+     *
      * @return An immutable vector built from this vector's data.
      */
     public ImmutableSparseVector freeze() {
         checkValid();
-    	ImmutableSparseVector isv = new ImmutableSparseVector(keys, values, size);
+        ImmutableSparseVector isv = new ImmutableSparseVector(keys, values, size);
         invalidate();
         return isv;
     }
-    
+
     /**
      * Freeze the vector, optionally removing NaN values. The mutable vector is
      * invalidated.
-     * 
+     *
      * @param removeNaN If <tt>true</tt>, remove all keys with NaN values from
      *        the final vector, resulting in a complete vector.
      * @return An immutable vector containing this vector's data, with NaN
@@ -327,7 +327,7 @@ public class MutableSparseVector extends SparseVector {
     public ImmutableSparseVector freeze(boolean removeNaN) {
         checkValid();
         if (!removeNaN || isComplete()) return freeze();
-        
+
         // we need to remove NaN values
         long[] k2 = Arrays.copyOf(keys, size);
         double[] v2 = Arrays.copyOf(values, size);
@@ -351,15 +351,15 @@ public class MutableSparseVector extends SparseVector {
     public static MutableSparseVector wrap(long[] keys, double[] values) {
         return wrap(keys, values, keys.length);
     }
-    
+
     /**
      * Wrap key and value arrays in a sparse vector.
-     * 
+     *
      * <p>
      * This method allows a new vector to be constructed from pre-created
      * arrays. After wrapping arrays in a rating vector, client code should not
      * modify them (particularly the <var>items</var> array).
-     * 
+     *
      * @param keys Array of entry keys. This array must be in sorted order and
      *            be duplicate-free.
      * @param values The values for the vector.
@@ -376,7 +376,7 @@ public class MutableSparseVector extends SparseVector {
             throw new IllegalArgumentException("item array not sorted");
         return new MutableSparseVector(keys, values, size);
     }
-    
+
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
      * the original lists once this has been called!
@@ -384,29 +384,29 @@ public class MutableSparseVector extends SparseVector {
     public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
         if (valueList.size() < keyList.size())
             throw new IllegalArgumentException("Value list too short");
-        
+
         long[] keys = keyList.elements();
         double[] values = valueList.elements();
-        
+
         if (!isSorted(keys, keyList.size()))
             throw new IllegalArgumentException("key array not sorted");
-        
+
         return new MutableSparseVector(keys, values, keyList.size());
     }
 
     /**
      * Wrap key and value arrays in a sparse vector.
-     * 
+     *
      * <p>
      * This method allows a new vector to be constructed from pre-created
      * arrays. After wrapping arrays in a rating vector, client code should not
      * modify them (particularly the <var>items</var> array).
-     * 
+     *
      * <p>
      * The arrays may be modified, particularly to remove NaN values. The client
      * should not depend on them exhibiting any particular behavior after
      * calling this method.
-     * 
+     *
      * @param keys Array of entry keys. This array must be in sorted order and
      *            be duplicate-free.
      * @param values The values for the vector.
@@ -419,7 +419,7 @@ public class MutableSparseVector extends SparseVector {
     public static MutableSparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
         if (values.length < keys.length)
             throw new IllegalArgumentException("key/value length mismatch");
-        
+
         int length = keys.length;
         if (removeNaN) {
             length = 0;

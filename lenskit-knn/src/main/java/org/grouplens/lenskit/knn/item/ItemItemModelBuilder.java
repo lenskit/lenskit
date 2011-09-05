@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Build an item-item CF model from rating data.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
@@ -63,32 +63,32 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private Similarity<? super SparseVector> itemSimilarity;
-    
+
     private VectorNormalizer<? super UserVector> normalizer;
     private HistorySummarizer userSummarizer;
     private int modelSize;
-    
+
     private DataAccessObject dao;
-    
+
     public ItemItemModelBuilder(DataAccessObject dao) {
         this.dao = dao;
     }
-    
+
     @ItemSimilarity
     public void setSimilarity(Similarity<? super SparseVector> similarity) {
         itemSimilarity = similarity;
     }
-    
+
     @UserVectorNormalizer
     public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
         this.normalizer = normalizer;
     }
-    
+
     @UserHistorySummary
     public void setSummarizer(HistorySummarizer sum) {
         userSummarizer = sum;
     }
-    
+
     public int getModelSize() {
         return modelSize;
     }
@@ -96,20 +96,20 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     public void setModelSize(int size) {
         modelSize = size;
     }
-    
+
     @Override
     public ItemItemModel build() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
-        
+
         LongArrayList ilist = Cursors2.makeList(dao.getItems());
         LongSortedSet items = new LongSortedArraySet(ilist);
-        
+
         Long2ObjectMap<LongSortedSet> userItemSets;
         if (similarityStrategy.needsUserItemSets())
             userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>(items.size());
         else
             userItemSets = null;
-        
+
         logger.debug("Building item data");
         Long2ObjectMap<Long2DoubleMap> itemData =
                 buildItemRatings(items, userItemSets);
@@ -126,23 +126,23 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
             entry.setValue(null);          // clear the array so GC can free
         }
         assert itemRatings.size() == itemData.size();
-        
+
         ItemItemBuildContext context =
                 new ItemItemBuildContext(items, itemRatings, userItemSets);
         ItemItemModelAccumulator accum =
                 new ItemItemModelAccumulator(modelSize, items);
         similarityStrategy.buildMatrix(context, accum);
-        
+
         return accum.build();
     }
-    
+
     /**
      * Transpose the user matrix so we have a list of item
      * rating vectors.
      * @todo Fix this method to abstract item collection.
      * @todo Review and document this method.
      */
-    private Long2ObjectMap<Long2DoubleMap> 
+    private Long2ObjectMap<Long2DoubleMap>
     buildItemRatings(LongSortedSet items, Long2ObjectMap<LongSortedSet> userItemSets) {
         final boolean collectItems = userItemSets != null;
         final int nitems = items.size();
@@ -161,7 +161,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         try {
             for (UserHistory<? extends Event> user: histories) {
                 final long uid = user.getUserId();
-                
+
                 UserVector summary = userSummarizer.summarize(user);
                 MutableSparseVector normed = summary.mutableCopy();
                 normalizer.normalize(summary, normed);
@@ -194,7 +194,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
 
         return workMatrix;
     }
-    
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected ItemItemModelBuildStrategy createBuildStrategy(Similarity<? super SparseVector> similarity) {
         if (similarity instanceof OptimizableVectorSimilarity) {

@@ -37,14 +37,14 @@ import com.google.common.collect.Lists;
 /**
  * An abstract implementation of {@link UserHistory} to provide default
  * implementations of convenience methods.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
     private final Map<Function, Object> memTable = new ConcurrentHashMap<Function, Object>();
-    
+
     /**
      * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
      */@Override
@@ -52,7 +52,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
         List<T> events = Lists.newArrayList(Iterables.filter(this, type));
         return new BasicUserHistory<T>(getUserId(), events);
     }
-    
+
     /**
      * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
      */
@@ -61,7 +61,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
         List<E> events = Lists.newArrayList(Iterables.filter(this, pred));
         return new BasicUserHistory<E>(getUserId(), events);
     }
-    
+
     @Override
     public LongSet itemSet() {
         LongSet items = new LongOpenHashSet();

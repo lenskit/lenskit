@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * 
+ *
  */
 package org.grouplens.lenskit.data.snapshot;
 
@@ -36,9 +36,9 @@ import org.grouplens.lenskit.util.IntIntervalList;
  * {@link PackedRatingData}. This is used to provide the collection
  * implementations for {@link PackedRatingSnapshot}. It supports subsetting the
  * packed data set to only a particular list of indices.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *
  */
 class PackedRatingCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
@@ -47,7 +47,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
     /**
      * Construct a preference collection view of the entire packed data set.
-     * 
+     *
      * @param data A packed rating data set.
      */
     PackedRatingCollection(PackedRatingData data) {
@@ -57,7 +57,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
     /**
      * Construct a collection view of a subset of the rating data.
-     * 
+     *
      * @param data The rating data.
      * @param indices A list of indices in the packed data arrays to include in
      *            the collection.
