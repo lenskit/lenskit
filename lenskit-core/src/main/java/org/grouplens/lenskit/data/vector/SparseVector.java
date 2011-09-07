@@ -569,7 +569,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      */
     public ImmutableSparseVector immutable() {
         checkValid();
-        return new ImmutableSparseVector(keys, values);
+        return new ImmutableSparseVector(keys, values, size);
     }
 
     /**
@@ -579,7 +579,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      */
     public MutableSparseVector mutableCopy() {
         checkValid();
-        return new MutableSparseVector(keys, Arrays.copyOf(values, values.length));
+        return new MutableSparseVector(keys, Arrays.copyOf(values, values.length), size);
     }
 
     /**
