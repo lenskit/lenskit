@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.Indexer;
 import org.grouplens.lenskit.data.SortOrder;
@@ -38,8 +40,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.util.CollectionUtils;
-import org.grouplens.lenskit.util.FastCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

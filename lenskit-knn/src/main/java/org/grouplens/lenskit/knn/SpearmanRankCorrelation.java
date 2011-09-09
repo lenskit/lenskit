@@ -21,10 +21,10 @@ package org.grouplens.lenskit.knn;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 import com.google.common.primitives.Doubles;
 

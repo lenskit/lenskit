@@ -24,7 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.meta.DefaultClass;

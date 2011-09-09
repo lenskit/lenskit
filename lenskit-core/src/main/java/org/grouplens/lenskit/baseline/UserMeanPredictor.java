@@ -23,11 +23,11 @@ import static java.lang.Math.abs;
 import java.util.Collection;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

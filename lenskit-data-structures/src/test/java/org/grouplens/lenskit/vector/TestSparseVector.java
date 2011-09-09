@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.vector;
+package org.grouplens.lenskit.vector;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
@@ -32,15 +32,13 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -91,7 +89,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#get(long)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#get(long)}.
      */
     @Test
     public void testGet() {
@@ -111,7 +109,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#get(long, double)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#get(long, double)}.
      */
     @Test
     public void testGetWithDft() {
@@ -132,7 +130,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#containsKey(long)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#containsKey(long)}.
      */
     @Test
     public void testContainsId() {
@@ -153,7 +151,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#iterator()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#iterator()}.
      */
     @Test
     public void testIterator() {
@@ -192,7 +190,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#fastIterator()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#fastIterator()}.
      */
     @Test
     public void testFastIterator() {
@@ -231,7 +229,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#fast()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#fast()}.
      */
     @Test
     public void testFast() {
@@ -240,7 +238,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#keySet()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#keySet()}.
      */
     @Test
     public void testIdSet() {
@@ -255,7 +253,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#values()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#values()}.
      */
     @Test
     public void testValues() {
@@ -270,7 +268,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#size()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#size()}.
      */
     @Test
     public void testSize() {
@@ -280,7 +278,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#isEmpty()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#isEmpty()}.
      */
     @Test
     public void testIsEmpty() {
@@ -290,7 +288,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#norm()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#norm()}.
      */
     @Test
     public void testNorm() {
@@ -300,7 +298,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#sum()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#sum()}.
      */
     @Test
     public void testSum() {
@@ -310,7 +308,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#mean()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#mean()}.
      */
     @Test
     public void testMean() {
@@ -320,7 +318,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#copy()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#copy()}.
      */
     @Test
     public void testCopy() {
@@ -347,7 +345,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#clone()}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#clone()}.
      */
     @Test
     public void testClone() {
@@ -362,7 +360,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#subtract(org.grouplens.lenskit.data.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#subtract(org.grouplens.lenskit.vector.SparseVector)}.
      */
     @Test
     public void testSubtract() {
@@ -394,7 +392,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#add(org.grouplens.lenskit.data.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#add(org.grouplens.lenskit.vector.SparseVector)}.
      */
     @Test
     public void testAdd() {
@@ -426,7 +424,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#dot(org.grouplens.lenskit.data.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#dot(org.grouplens.lenskit.vector.SparseVector)}.
      */
     @Test
     public void testDot() {
@@ -435,38 +433,6 @@ public class TestSparseVector {
         assertEquals(0, singleton().dot(simpleVector()), EPSILON);
         assertEquals(0, simpleVector().dot(singleton()), EPSILON);
         assertEquals(6.4, simpleVector().dot(simpleVector2()), EPSILON);
-    }
-
-    /**
-     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#userRatingVector(java.util.Collection)}.
-     */
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testUserRatingVector() {
-        Collection<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 5, 7, 3.5));
-        ratings.add(new SimpleRating(2, 5, 3, 1.5));
-        ratings.add(new SimpleRating(3, 5, 8, 2));
-        SparseVector v = Ratings.userRatingVector(ratings);
-        assertEquals(3, v.size());
-        assertEquals(7, v.sum(), EPSILON);
-        assertEquals(simpleVector(), v);
-    }
-
-    /**
-     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#itemRatingVector(java.util.Collection)}.
-     */
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testItemRatingVector() {
-        Collection<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 7, 5, 3.5));
-        ratings.add(new SimpleRating(2, 3, 5, 1.5));
-        ratings.add(new SimpleRating(3, 8, 5, 2));
-        SparseVector v = Ratings.itemRatingVector(ratings);
-        assertEquals(3, v.size());
-        assertEquals(7, v.sum(), EPSILON);
-        assertEquals(simpleVector(), v);
     }
 
     /**

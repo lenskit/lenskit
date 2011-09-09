@@ -16,19 +16,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.collections;
 
-import it.unimi.dsi.fastutil.longs.AbstractLongBidirectionalIterator;
-import it.unimi.dsi.fastutil.longs.AbstractLongSortedSet;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArraySet;
-import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongComparator;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.ints.AbstractIntBidirectionalIterator;
+import it.unimi.dsi.fastutil.ints.AbstractIntSortedSet;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
+import it.unimi.dsi.fastutil.ints.IntComparator;
+import it.unimi.dsi.fastutil.ints.IntIterators;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -36,8 +32,8 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 
 /**
- * A sorted set of longs implemented using a sorted array.  It's much faster
- * than {@link LongArraySet} as it is able to use binary searches.  The set
+ * A sorted set of ints implemented using a sorted array.  It's much faster
+ * than {@link IntArraySet} as it is able to use binary searches.  The set
  * is also immutable.
  *
  * No orders are supported other than the natural ordering.
@@ -45,15 +41,14 @@ import java.util.NoSuchElementException;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
-    private static final long serialVersionUID = 885774794586510968L;
+public final class IntSortedArraySet extends AbstractIntSortedSet implements Serializable {
+    private static final long serialVersionUID = 8855635312935829479L;
 
-    private final long[] data;
+    private final int[] data;
     private final int start, end;
 
-    public LongSortedArraySet(Collection<Long> items) {
-        this(items instanceof LongCollection ? ((LongCollection) items).toLongArray()
-                : LongIterators.unwrap(LongIterators.asLongIterator(items.iterator())));
+    public IntSortedArraySet(Collection<Integer> items) {
+        this(IntIterators.unwrap(IntIterators.asIntIterator(items.iterator())));
     }
 
     /**
@@ -61,9 +56,9 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @param items An array of items. The array will be sorted and used as the
      * backing store for the set. If this array is changed after creating the
      * set, behavior is undefined.
-     * @see #LongSortedArraySet(long[], int, int)
+     * @see #IntSortedArraySet(int[], int, int)
      */
-    public LongSortedArraySet(long[] items) {
+    public IntSortedArraySet(int[] items) {
         this(items, 0, items.length);
     }
 
@@ -77,7 +72,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @throws IndexOutOfBoundsException if <var>start</var> or <var>end</var>
      * is out of range.
      */
-    public LongSortedArraySet(long[] items, int fromIndex, int toIndex) {
+    public IntSortedArraySet(int[] items, int fromIndex, int toIndex) {
         this(items, fromIndex, toIndex, false);
     }
 
@@ -92,7 +87,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @throws IndexOutOfBoundsException if <var>start</var> or <var>end</var>
      * is out of range.
      */
-    private LongSortedArraySet(long[] items, int fromIndex, int toIndex, boolean clean) {
+    private IntSortedArraySet(int[] items, int fromIndex, int toIndex, boolean clean) {
         data = items;
         start = fromIndex;
         if (fromIndex < 0 || toIndex > data.length)
@@ -112,7 +107,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * Check that the array is sorted.
      * @return <code>true</code> iff the array is sorted.
      */
-    static boolean isSorted(final long[] data, final int start, final int end) {
+    static boolean isSorted(final int[] data, final int start, final int end) {
         for (int i = start; i < end - 1; i++) {
             if (data[i] > data[i+1]) return false;
         }
@@ -124,7 +119,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * unsorted.
      * @return the new end index of the array
      */
-    static int deduplicate(final long[] data, final int start, final int end) {
+    static int deduplicate(final int[] data, final int start, final int end) {
         if (start == end) return end;   // special-case empty arrays
 
         // Since we have a non-empty array, the pos will always be where the
@@ -144,11 +139,11 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
 
     /**
      * Find the index for a key.
-     * @see Arrays#binarySearch(long[], int, int, long)
+     * @see Arrays#binarySearch(int[], int, int, int)
      * @param key
      * @return The index at which <var>key</var> is stored.
      */
-    private int findIndex(long key) {
+    private int findIndex(int key) {
         return Arrays.binarySearch(data, start, end, key);
     }
 
@@ -159,124 +154,53 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * index of the first element greater than <var>key</var> (or the end of the
      * array).
      */
-    private int findIndexAlways(long key) {
+    private int findIndexAlways(int key) {
         int i = findIndex(key);
         if (i < 0)
             i = -(i+1);
         return i;
     }
 
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#comparator()
+     */
     @Override
-    public LongComparator comparator() {
+    public IntComparator comparator() {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#firstInt()
+     */
     @Override
-    public long firstLong() {
+    public int firstInt() {
         if (end - start > 0)
             return data[start];
         else
             throw new NoSuchElementException();
     }
 
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#headSet(int)
+     */
     @Override
-    public LongBidirectionalIterator iterator(long key) {
+    public IntSortedSet headSet(int key) {
+        int nend = findIndexAlways(key);
+        return new IntSortedArraySet(data, start, nend, true);
+    }
+
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#iterator(int)
+     */
+    @Override
+    public IntBidirectionalIterator iterator(int key) {
         int index = findIndexAlways(key);
         if (index < end && data[index] == key)
             index++;
         return new IterImpl(index);
     }
 
-    @Override
-    public long lastLong() {
-        if (end - start > 0)
-            return data[end-1];
-        else
-            throw new NoSuchElementException();
-    }
-
-    @Override
-    public LongSortedSet subSet(long startKey, long endKey) {
-        return new LongSortedArraySet(data, findIndexAlways(startKey), findIndexAlways(endKey), true);
-    }
-
-    @Override
-    public LongSortedSet headSet(long key) {
-        int nend = findIndexAlways(key);
-        return new LongSortedArraySet(data, start, nend, true);
-    }
-
-    @Override
-    public LongSortedSet tailSet(long key) {
-        return new LongSortedArraySet(data, findIndexAlways(key), end, true);
-    }
-
-    @Override
-    public LongBidirectionalIterator iterator() {
-        return new IterImpl(start);
-    }
-
-    @Override
-    public int size() {
-        return end - start;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return end == start;
-    }
-
-    @Override
-    public boolean contains(long key) {
-        return findIndex(key) >= 0;
-    }
-
-    /**
-     * Unsupported remove operation.
-     */
-    @Override
-    public boolean rem(long k) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public long[] toLongArray(long[] a) {
-        final int sz = size();
-        if (a == null || a.length < sz)
-            a = new long[sz];
-        System.arraycopy(data, start, a, 0, sz);
-        return a;
-    }
-
-    /**
-     * Compute the set difference of two sets.
-     */
-    public static LongSortedSet setDifference(LongSet items, LongSet exclude) {
-        long[] data = new long[items.size()];
-        LongIterator iter = items.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            final long x = iter.nextLong();
-            if (!exclude.contains(x))
-                data[i++] = x;
-        }
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(data, 0, i);
-        // trim the array
-        if (data.length * 2 > i * 3)
-            data = Arrays.copyOf(data, i);
-        return new LongSortedArraySet(data, 0, i, true);
-    }
-
-    /**
-     * Convert a {@link LongArrayList} to a sorted array set. The array list's
-     * internal storage will be sorted and re-used.
-     */
-    public static LongSortedSet ofList(LongArrayList list) {
-        return new LongSortedArraySet(list.elements(), 0, list.size());
-    }
-
-    private final class IterImpl extends AbstractLongBidirectionalIterator {
+    private final class IterImpl extends AbstractIntBidirectionalIterator {
         private int pos;
         public IterImpl(int start) {
             pos = start;
@@ -293,7 +217,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         }
 
         @Override
-        public long nextLong() {
+        public int nextInt() {
             if (hasNext())
                 return data[pos++];
             else
@@ -301,11 +225,72 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         }
 
         @Override
-        public long previousLong() {
+        public int previousInt() {
             if (hasPrevious())
                 return data[--pos];
             else
                 throw new NoSuchElementException();
         }
+    }
+
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#lastInt()
+     */
+    @Override
+    public int lastInt() {
+        if (end - start > 0)
+            return data[end-1];
+        else
+            throw new NoSuchElementException();
+    }
+
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#subSet(int, int)
+     */
+    @Override
+    public IntSortedSet subSet(int startKey, int endKey) {
+        return new IntSortedArraySet(data, findIndexAlways(startKey), findIndexAlways(endKey), true);
+    }
+
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.IntSortedSet#tailSet(int)
+     */
+    @Override
+    public IntSortedSet tailSet(int key) {
+        return new IntSortedArraySet(data, findIndexAlways(key), end, true);
+    }
+
+    /* (non-Javadoc)
+     * @see it.unimi.dsi.fastutil.ints.AbstractIntSortedSet#iterator()
+     */
+    @Override
+    public IntBidirectionalIterator iterator() {
+        return new IterImpl(start);
+    }
+
+    /* (non-Javadoc)
+     * @see java.util.AbstractCollection#size()
+     */
+    @Override
+    public int size() {
+        return end - start;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return end == start;
+    }
+
+    @Override
+    public boolean contains(int key) {
+        return findIndex(key) >= 0;
+    }
+
+    /**
+     * Unsupported remove operation.
+     */
+    @Override
+    public boolean rem(int k) {
+        throw new UnsupportedOperationException();
     }
 }

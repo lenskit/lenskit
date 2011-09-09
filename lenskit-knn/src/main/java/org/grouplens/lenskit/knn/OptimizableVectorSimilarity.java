@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * A similarity function of vectors that is optimizable based on its keys.

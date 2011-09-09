@@ -16,7 +16,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.vector;
+package org.grouplens.lenskit.vector;
+
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * Re-run sparse vector tests with a longer version of the vector.

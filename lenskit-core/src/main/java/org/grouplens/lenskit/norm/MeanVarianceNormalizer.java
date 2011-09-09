@@ -24,12 +24,12 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import java.io.Serializable;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.util.FastCollection;
+import org.grouplens.lenskit.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * <p>

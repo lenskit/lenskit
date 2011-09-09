@@ -32,11 +32,11 @@ import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
-import org.grouplens.lenskit.util.CollectionUtils;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * Rating scorer that predicts a constant rating for all items.

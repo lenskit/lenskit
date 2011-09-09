@@ -35,7 +35,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
@@ -45,6 +44,7 @@ import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.grouplens.lenskit.util.TaskTimer;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;

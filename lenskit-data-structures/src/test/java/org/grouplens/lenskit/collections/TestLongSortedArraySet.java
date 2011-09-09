@@ -16,15 +16,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.grouplens.lenskit.util.LongSortedArraySet.deduplicate;
-import static org.grouplens.lenskit.util.LongSortedArraySet.isSorted;
+import static org.grouplens.lenskit.collections.LongSortedArraySet.deduplicate;
+import static org.grouplens.lenskit.collections.LongSortedArraySet.isSorted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
@@ -33,7 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collections;
 
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
 

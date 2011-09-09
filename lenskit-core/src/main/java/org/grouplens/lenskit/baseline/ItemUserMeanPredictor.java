@@ -27,12 +27,12 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.util.CollectionUtils;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all

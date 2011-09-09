@@ -26,7 +26,7 @@ import java.util.Collection;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Base class to make item scorers easier to implement. Delegates single=item

@@ -25,14 +25,14 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Collection;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.

@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Encapsulation of data needed during an item-item model build.  This class

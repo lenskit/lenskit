@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * Reversible in-place vector transformations.

@@ -39,7 +39,6 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
@@ -47,6 +46,7 @@ import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.util.parallel.ExecHelpers;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

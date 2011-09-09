@@ -16,15 +16,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.grouplens.lenskit.util.IntSortedArraySet.deduplicate;
-import static org.grouplens.lenskit.util.IntSortedArraySet.isSorted;
+import static org.grouplens.lenskit.collections.IntSortedArraySet.deduplicate;
+import static org.grouplens.lenskit.collections.IntSortedArraySet.isSorted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
@@ -33,7 +33,7 @@ import it.unimi.dsi.fastutil.ints.IntSortedSet;
 
 import java.util.Collections;
 
-import org.grouplens.lenskit.util.IntSortedArraySet;
+import org.grouplens.lenskit.collections.IntSortedArraySet;
 import org.junit.Test;
 
 

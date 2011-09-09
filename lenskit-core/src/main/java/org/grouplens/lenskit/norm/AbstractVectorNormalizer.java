@@ -20,8 +20,8 @@ package org.grouplens.lenskit.norm;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

@@ -6,6 +6,31 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+Release 0.7
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.7}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Fixed a couple bugs in the sparse vector copy methods.
+
+  * Split new module <<<lenskit-data-structures>>> out of
+    <<<lenskit-core>>> to contain interesting data structures we use.
+    This resulted in some additional class moves:
+
+    * Moved sorted array sets, scored lists, and interval lists into
+      the <<<o.g.l.collections>>> package.
+
+    * Renamed <<<o.g.l.data.vector>>> to <<<o.g.l.vector>>> and moved
+      the <<<UserVector>>> and <<<ItemVector>>> classes into
+      <<<o.g.l.data.history>>>.
+
+    []
+
+  []
+
 Release 0.6
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and

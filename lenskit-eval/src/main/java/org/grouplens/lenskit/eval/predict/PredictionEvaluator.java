@@ -18,9 +18,9 @@
  */
 package org.grouplens.lenskit.eval.predict;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.vector.SparseVector;
 
 
 /**

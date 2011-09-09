@@ -32,9 +32,9 @@ import javax.annotation.WillClose;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.vector.ItemVector;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.ItemVector;
+import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 import com.google.common.primitives.Longs;
 

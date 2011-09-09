@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.data.history;
 
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.vector.UserVector;
 
 /**
  * Summarize user histories as real-valued vectors.

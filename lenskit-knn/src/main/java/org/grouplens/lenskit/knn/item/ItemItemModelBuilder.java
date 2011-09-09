@@ -32,15 +32,13 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.Cursors2;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
@@ -48,7 +46,9 @@ import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

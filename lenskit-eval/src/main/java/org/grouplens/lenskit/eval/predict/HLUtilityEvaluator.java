@@ -21,9 +21,9 @@ package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

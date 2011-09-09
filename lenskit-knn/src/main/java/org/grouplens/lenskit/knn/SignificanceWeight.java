@@ -20,10 +20,10 @@ package org.grouplens.lenskit.knn;
 
 import static java.lang.Math.max;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.WeightThreshold;
 import org.grouplens.lenskit.knn.params.WeightedSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Apply significance weighting to a similarity function. The inner function is

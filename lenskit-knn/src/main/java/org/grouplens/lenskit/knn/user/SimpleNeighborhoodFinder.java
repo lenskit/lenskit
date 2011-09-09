@@ -38,14 +38,14 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

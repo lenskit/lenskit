@@ -20,8 +20,8 @@ package org.grouplens.lenskit.eval.predict;
 
 import static org.junit.Assert.assertEquals;
 
-import org.grouplens.lenskit.data.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.vector.ImmutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.junit.Test;
 
 public class TestHLU {

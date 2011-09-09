@@ -27,9 +27,9 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.collections.IntIntervalList;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.util.FastCollection;
-import org.grouplens.lenskit.util.IntIntervalList;
 
 /**
  * Preference collection implemented as a view on top of

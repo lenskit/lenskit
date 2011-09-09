@@ -24,9 +24,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.vector.UserVector;
-import org.grouplens.lenskit.util.FastCollection;
 
 public abstract class AbstractRatingSnapshot implements RatingSnapshot {
 

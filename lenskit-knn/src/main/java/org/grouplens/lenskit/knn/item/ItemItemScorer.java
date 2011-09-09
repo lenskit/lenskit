@@ -28,23 +28,23 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.AbstractItemScorer;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.ScoredLongListIterator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.util.LongSortedArraySet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Score items using an item-item CF model.

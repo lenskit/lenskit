@@ -32,15 +32,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

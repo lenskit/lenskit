@@ -26,17 +26,17 @@ import java.util.Iterator;
 
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.Index;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.util.FastCollection;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

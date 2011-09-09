@@ -20,7 +20,7 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.data.ScoredLongList;
 import org.grouplens.lenskit.data.ScoredLongListIterator;
-import org.grouplens.lenskit.data.vector.SparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.

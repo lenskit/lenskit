@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.util.Iterator;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Similarity function using Pearson correlation.

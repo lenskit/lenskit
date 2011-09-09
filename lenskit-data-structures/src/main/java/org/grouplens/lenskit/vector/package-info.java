@@ -27,25 +27,25 @@
  * To allow the type system to communicate valuable information about how
  * vectors are used while still preserving efficiency, sparse vectors come in
  * three forms: <em>read-only</em>, realized by
- * {@link org.grouplens.lenskit.data.vector.SparseVector}, provides the basic
+ * {@link org.grouplens.lenskit.vector.SparseVector}, provides the basic
  * sparse vector interface; <em>read-write</em>, in
- * {@link org.grouplens.lenskit.data.vector.MutableSparseVector}, provides an
+ * {@link org.grouplens.lenskit.vector.MutableSparseVector}, provides an
  * interface where the values can be changed (e.g. for in-place addition or
  * subtraction); and <em>immutable</em>, in
- * {@link org.grouplens.lenskit.data.vector.ImmutableSparseVector}, where the
+ * {@link org.grouplens.lenskit.vector.ImmutableSparseVector}, where the
  * vector is guaranteed to be unchanging and can be safely stored or shared
  * across threads without concern about the caller mutating it later.
  *
  * <p>
  * There are further versions of immutable vectors with particular information
- * associated with them: {@link org.grouplens.lenskit.data.vector.ItemVector},
- * {@link org.grouplens.lenskit.data.vector.UserVector}, and their subclasses.
+ * associated with them: {@link org.grouplens.lenskit.data.history.ItemVector},
+ * {@link org.grouplens.lenskit.data.history.UserVector}, and their subclasses.
  * These classes are used for vectors of data associated with particular users.
  *
  * <p>
- * The {@link org.grouplens.lenskit.data.vector.SparseVector SparseVector} class
+ * The {@link org.grouplens.lenskit.vector.SparseVector SparseVector} class
  * also provides utility methods for manipulating sparse vectors (e.g. the
- * {@link org.grouplens.lenskit.data.vector.SparseVector#immutable()
+ * {@link org.grouplens.lenskit.vector.SparseVector#immutable()
  * SparseVector.immutable()} method for getting an immutable sparse vector).
  */
-package org.grouplens.lenskit.data.vector;
+package org.grouplens.lenskit.vector;

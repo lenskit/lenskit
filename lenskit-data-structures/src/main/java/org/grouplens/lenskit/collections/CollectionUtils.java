@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.collections;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;

@@ -23,8 +23,8 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 
 /**
  * Rating predictor that operates on sparse vectors and guarantees 100% coverage

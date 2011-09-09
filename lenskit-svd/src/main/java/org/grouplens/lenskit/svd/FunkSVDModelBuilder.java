@@ -22,10 +22,10 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.IterationCount;
@@ -33,8 +33,8 @@ import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
-import org.grouplens.lenskit.util.FastCollection;
 import org.grouplens.lenskit.util.TaskTimer;
+import org.grouplens.lenskit.vector.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

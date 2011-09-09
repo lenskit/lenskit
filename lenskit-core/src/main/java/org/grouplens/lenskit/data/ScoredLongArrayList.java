@@ -32,9 +32,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.lenskit.data.vector.MutableSparseVector;
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores

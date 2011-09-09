@@ -22,13 +22,13 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.data.vector.SparseVector;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.slopeone.params.DeviationDamping;
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.vector.SparseVector;
 
 /**
  * Pre-computes the deviations and number of mutual rating users for every pair

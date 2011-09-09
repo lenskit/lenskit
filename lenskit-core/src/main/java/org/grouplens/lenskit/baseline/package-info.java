@@ -21,7 +21,7 @@
  * Baseline predictors.
  *
  * <p>Baseline predictors are like rating predictors, but they provide an unboxed
- * {@link org.grouplens.lenskit.data.vector.SparseVector}-based interface and are
+ * {@link org.grouplens.lenskit.vector.SparseVector}-based interface and are
  * guaranteed to be able to predict for all users and items.  They are used for
  * things like normalizations and starting points for iterative methods.</p>
  */

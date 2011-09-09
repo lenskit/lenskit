@@ -25,8 +25,8 @@ import static org.junit.Assert.assertEquals;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
-import org.grouplens.lenskit.data.vector.SparseVector;
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.vector.SparseVector;
 import org.junit.Test;
 
 /**

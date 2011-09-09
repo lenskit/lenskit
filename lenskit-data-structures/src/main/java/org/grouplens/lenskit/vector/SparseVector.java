@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.vector;
+package org.grouplens.lenskit.vector;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
@@ -35,7 +35,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.util.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;

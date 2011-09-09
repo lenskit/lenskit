@@ -20,7 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import java.util.Comparator;
 
-import org.grouplens.lenskit.data.vector.UserVector;
+import org.grouplens.lenskit.data.history.UserVector;
 
 /**
  * Representation of a single neighboring user.
