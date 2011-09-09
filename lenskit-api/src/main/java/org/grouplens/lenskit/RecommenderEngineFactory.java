@@ -19,8 +19,8 @@
 package org.grouplens.lenskit;
 
 /**
- * Interface for creating recommender engines.  Usually, you will want to use
- * {@link LenskitRecommenderEngineFactory} to build a LensKit recommender.
+ * Interface for creating recommender engines.  <tt>lenskit-core</tt> provides
+ * an implementation of this class that builds a recommender from a data source.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see LenskitRecommenderEngineFactory

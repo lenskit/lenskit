@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.util.Collection;
 
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.vector.SparseVector;
 
 /**

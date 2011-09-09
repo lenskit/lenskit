@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

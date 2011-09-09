@@ -16,19 +16,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
-package org.grouplens.lenskit.data;
+package org.grouplens.common.cursors;
 
-import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 
-import org.grouplens.common.cursors.Cursor;
+public class LongCollectionCursor extends LongIteratorCursor {
+    private final int size;
 
-/**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public interface LongCursor extends Cursor<Long>, LongIterable {
-    public long nextLong();
+    public LongCollectionCursor(LongCollection collection) {
+        super(collection.iterator());
+        size = collection.size();
+    }
+
+    @Override
+    public int getRowCount() {
+        return size;
+    }
 }

@@ -20,6 +20,7 @@ package org.grouplens.lenskit.data.event;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.pref.Preference;
 
 /**

@@ -32,8 +32,8 @@ import java.util.Scanner;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.SortOrder;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

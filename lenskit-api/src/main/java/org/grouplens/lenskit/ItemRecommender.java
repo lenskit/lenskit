@@ -22,9 +22,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
 /**
  * Interface for recommending items. Several methods are provided, of varying

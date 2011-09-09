@@ -22,7 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
 /**
  * Basic user rating profile backed by a collection of ratings. The event list

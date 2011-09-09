@@ -31,13 +31,13 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.common.cursors.Cursor;
+import org.grouplens.common.cursors.Cursors2;
 import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.Cursors2;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;

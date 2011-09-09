@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.collections;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
@@ -32,7 +32,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.vector.MutableSparseVector;
 import org.grouplens.lenskit.vector.SparseVector;
 

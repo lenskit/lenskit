@@ -23,7 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
 import com.google.common.collect.Iterables;
 

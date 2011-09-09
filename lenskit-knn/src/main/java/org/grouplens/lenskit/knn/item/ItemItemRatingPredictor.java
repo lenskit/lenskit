@@ -27,10 +27,10 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;

@@ -24,10 +24,10 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserHistory;
 
 /**
  * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.

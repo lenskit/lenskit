@@ -88,7 +88,12 @@ public class LenskitRecommender implements Recommender {
             dao.close();
     }
 
-    @Override
+    /**
+     * Get the rating DAO for this recommender session.
+     * @return The DAO, or <var>null</var> if this recommender is not connected
+     * to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
+     * from other frameworks that are adapted to the LensKit API may not be.
+     */
     public DataAccessObject getRatingDataAccessObject() {
         return dao;
     }

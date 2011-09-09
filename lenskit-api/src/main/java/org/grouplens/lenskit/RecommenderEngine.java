@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Service providing access to a recommender.  In LensKit, you build a recommender
@@ -46,15 +45,4 @@ public interface RecommenderEngine {
      * DAO provider is available.
      */
     public Recommender open();
-
-    /**
-     * Open a recommender with a specific data connection. The client code must
-     * close the recommender when it is finished with it.
-     *
-     * @param dao The DAO to connect the recommender to.
-     * @param shouldClose If <tt>true</tt>, then the recommender should close the
-     * DAO when it is closed.
-     * @return A recommender ready for use and backed by <var>dao</var>.
-     */
-    public Recommender open(DataAccessObject dao, boolean shouldClose);
 }

@@ -42,7 +42,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.grouplens.common.cursors.Cursor;
-import org.grouplens.lenskit.data.LongCursor;
+import org.grouplens.common.cursors.LongCursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;

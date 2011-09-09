@@ -20,8 +20,8 @@ package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 
-import org.grouplens.lenskit.data.ScoredLongArrayList;
-import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongArrayList;
+import org.grouplens.lenskit.collections.ScoredLongList;
 
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated

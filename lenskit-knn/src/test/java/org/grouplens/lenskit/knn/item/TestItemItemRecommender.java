@@ -28,21 +28,21 @@ import java.util.List;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.LenskitRecommender;
+import org.grouplens.lenskit.LenskitRecommenderEngine;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestItemItemRecommender {
 
-    private Recommender session;
+    private LenskitRecommender session;
     private ItemRecommender recommender;
 
     @Before
@@ -70,7 +70,7 @@ public class TestItemItemRecommender {
         // FIXME Let this work @mludwig
         /*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
                              IdentityVectorNormalizer.class);*/
-        RecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = factory.create();
         session = engine.open();
         recommender = session.getItemRecommender();
     }

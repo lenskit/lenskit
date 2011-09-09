@@ -16,8 +16,14 @@ Release 0.7
 
   * Fixed a couple bugs in the sparse vector copy methods.
 
-  * Split new module <<<lenskit-data-structures>>> out of
-    <<<lenskit-core>>> to contain interesting data structures we use.
+  * Split new modules <<<lenskit-data-structures>>> and
+    <<<lenskit-api>>> out of <<<lenskit-core>>> to contain interesting
+    data structures we use.  The main purpose of the API abstraction
+    is to make the core recommendation API in a separate module so
+    that re-implementing it on top of another framework such as Mahout
+    does not pull in all of LensKit.  It will also provide us a good
+    layer at which to make API stability guarantees.
+
     This resulted in some additional class moves:
 
     * Moved sorted array sets, scored lists, and interval lists into
@@ -26,6 +32,18 @@ Release 0.7
     * Renamed <<<o.g.l.data.vector>>> to <<<o.g.l.vector>>> and moved
       the <<<UserVector>>> and <<<ItemVector>>> classes into
       <<<o.g.l.data.history>>>.
+
+    * Pushed DAO-based <<<open>>> method from <<<RecommenderEngine>>>
+      to <<<LenskitRecommenderEngine>>>, as the API layer knows
+      nothing about DAOs.
+
+    * Pushed <<<getDataAccessObject()>> from <<<Recommender>>> down
+      to <<<LenskitRecommender>>>.
+
+    * Moved <<<UserHistory>>> and <<<Event>>> interfaces into
+      <<<o.g.l.data>>> in the <<<lenskit-api>>> packages.  The
+      implementations remain in <<<lenskit-core>>> in their respective
+      <<<.history>>> and <<<.event>>> packages.
 
     []
 

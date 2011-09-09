@@ -20,8 +20,8 @@ package org.grouplens.lenskit.knn.item;
 
 import static java.lang.Math.abs;
 
-import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.ScoredLongListIterator;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.vector.SparseVector;
 
 /**

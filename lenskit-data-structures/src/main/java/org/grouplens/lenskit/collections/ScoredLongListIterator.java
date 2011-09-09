@@ -16,34 +16,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.collections;
+
+import it.unimi.dsi.fastutil.longs.LongListIterator;
+
 /**
+ * Iterator for {@link ScoredLongList}s.
  *
- */
-package org.grouplens.lenskit.data;
-
-import it.unimi.dsi.fastutil.longs.LongIterator;
-
-import org.grouplens.common.cursors.AbstractCursor;
-
-/**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
-        LongCursor {
+public interface ScoredLongListIterator extends LongListIterator {
+    /**
+     * Get the score of the last item returned by a call to {@link #previous()}
+     * or {@link #next()}.
+     * @return The item's score.
+     */
+    double getScore();
 
     /**
-     * Implement {@link org.grouplens.common.cursors.Cursor#next() Cursor.next()}
-     * by delegating to {@link #nextLong()}.
+     * Set the score of the last item returned by a call to {@link #previous()}
+     * or {@link #next()} (optional operation).
+     *
+     * @param s The new score.
+     * @throws UnsupportedOperationException if the set/setScore operation is
+     *             not supported.
+     * @see #set(Long)
      */
-    @Override
-    public Long next() {
-        return nextLong();
-    }
-
-    @Override
-    public LongIterator iterator() {
-        return new LongCursorIterator(this);
-    }
-
+    void setScore(double s);
 }

@@ -23,14 +23,14 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import org.grouplens.common.cursors.Cursors2;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.Cursors2;
-import org.grouplens.lenskit.data.ScoredLongArrayList;
-import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongArrayList;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.vector.SparseVector;
 

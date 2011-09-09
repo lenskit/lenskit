@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.history;
+package org.grouplens.lenskit.data;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.concurrent.ThreadSafe;
-
-import org.grouplens.lenskit.data.event.Event;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

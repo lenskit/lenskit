@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.collections;
 
 import static java.lang.Double.isNaN;
 import static java.lang.Math.E;
@@ -37,6 +37,9 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
+import org.grouplens.lenskit.collections.ScoredLongArrayList;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.junit.Test;
 
 /**

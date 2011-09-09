@@ -32,9 +32,9 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.grouplens.lenskit.LenskitRecommenderEngine;
 import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -123,7 +123,7 @@ public class AlgorithmInstance {
         LenskitRecommenderEngineFactory fac2 = factory.clone();
         fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
 
-        RecommenderEngine engine = fac2.create(dao);
+        LenskitRecommenderEngine engine = fac2.create(dao);
 
         return engine.open(dao, false);
     }

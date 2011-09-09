@@ -38,6 +38,11 @@
       <artifactId>lenskit-data-structures</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

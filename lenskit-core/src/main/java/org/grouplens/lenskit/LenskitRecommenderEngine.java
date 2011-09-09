@@ -119,7 +119,15 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         }
     }
 
-    @Override
+    /**
+     * Open a recommender with a specific data connection. The client code must
+     * close the recommender when it is finished with it.
+     *
+     * @param dao The DAO to connect the recommender to.
+     * @param shouldClose If <tt>true</tt>, then the recommender should close the
+     * DAO when it is closed.
+     * @return A recommender ready for use and backed by <var>dao</var>.
+     */
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         if (dao == null)
             throw new IllegalArgumentException("Cannot open with null DAO");

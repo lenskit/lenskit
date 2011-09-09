@@ -23,8 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.data.ScoredLongArrayList;
-import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongArrayList;
+import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 

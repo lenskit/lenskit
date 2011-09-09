@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.data.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.vector.SparseVector;
 
 /**

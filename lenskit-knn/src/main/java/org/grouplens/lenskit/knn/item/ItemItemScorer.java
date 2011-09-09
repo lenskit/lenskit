@@ -29,12 +29,12 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.AbstractItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.ScoredLongList;
-import org.grouplens.lenskit.data.ScoredLongListIterator;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;

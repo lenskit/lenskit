@@ -23,7 +23,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.common.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
@@ -32,8 +32,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

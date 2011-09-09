@@ -20,8 +20,6 @@ package org.grouplens.lenskit;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-
 /**
  * Main entry point for accessing recommender components.  A recommender object
  * is effectively a recommender <i>session</i>: it is a per-thread or per-request
@@ -39,14 +37,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @see RecommenderEngine
  */
 public interface Recommender {
-    /**
-     * Get the rating DAO for this recommender session.
-     * @return The DAO, or <var>null</var> if this recommender is not connected
-     * to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
-     * from other frameworks that are adapted to the LensKit API may not be.
-     */
-    DataAccessObject getRatingDataAccessObject();
-
     /**
      * Get the recommender's item scorer.
      *

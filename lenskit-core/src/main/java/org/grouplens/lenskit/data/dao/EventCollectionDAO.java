@@ -35,12 +35,12 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors;
-import org.grouplens.lenskit.data.Cursors2;
-import org.grouplens.lenskit.data.LongCursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.common.cursors.Cursors2;
+import org.grouplens.common.cursors.LongCursor;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Events;
 import org.grouplens.lenskit.data.history.BasicUserHistory;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.TypeUtils;
 
 import com.google.common.base.Function;

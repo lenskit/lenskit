@@ -21,6 +21,8 @@ package org.grouplens.lenskit.data.event;
 import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.grouplens.lenskit.data.Event;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.primitives.Longs;
 

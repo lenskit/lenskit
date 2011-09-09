@@ -21,8 +21,8 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
 /**
  * Item scorer specific to item-item recommenders. It exposes the item-item
