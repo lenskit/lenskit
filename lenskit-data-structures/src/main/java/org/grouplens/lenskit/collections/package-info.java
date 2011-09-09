@@ -18,6 +18,11 @@
  */
 
 /**
- * Interfaces defining the LensKit API.
+ * Custom collections and related utilities.
+ * 
+ * <p>
+ * This package contains various custom collections LensKit requires, extending
+ * both Java collections and fastutil collections.  It also contains some
+ * collection utility methods.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.collections;

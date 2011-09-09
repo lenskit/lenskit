@@ -18,6 +18,8 @@
  */
 
 /**
- * Interfaces defining the LensKit API.
+ * User history and event interfaces for querying recommenders.  Recommender
+ * methods that take run-time user data use these interfaces to represent that
+ * data.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.data;
