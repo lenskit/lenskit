@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import org.grouplens.lenskit.RecommenderComponentBuilder;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.meta.Built;

@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -28,6 +28,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;

@@ -24,9 +24,9 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.MutableIndexedPreference;

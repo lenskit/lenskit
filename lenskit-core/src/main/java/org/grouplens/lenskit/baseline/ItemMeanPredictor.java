@@ -33,8 +33,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.MeanSmoothing;

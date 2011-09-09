@@ -122,7 +122,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
      * DataAccessObject.
      */
     public static class Builder implements
-            org.grouplens.lenskit.Builder<PackedRatingSnapshot> {
+            org.grouplens.lenskit.core.Builder<PackedRatingSnapshot> {
         private final DataAccessObject dao;
 
         public Builder(DataAccessObject dao) {

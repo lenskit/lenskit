@@ -32,8 +32,8 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.Cursors2;
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

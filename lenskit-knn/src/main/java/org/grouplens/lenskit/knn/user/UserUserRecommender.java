@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import org.grouplens.lenskit.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**

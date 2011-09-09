@@ -16,8 +16,32 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.core;
+
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 
 /**
- * Core API classes and interfaces for LensKit.
+ * <p>
+ * RecommenderComponentBuilders are used to construct usually-expensive objects
+ * that depend on a {@link RatingSnapshot}. An example of an object a
+ * RecommenderComponentBuilder would produce is an item-item similarity matrix
+ * used in item-item recommenders.
+ * </p>
+ *
+ * @author Michael Ludwig
+ * @param <M>
  */
-package org.grouplens.lenskit;
+public abstract class RecommenderComponentBuilder<M> implements Builder<M> {
+    protected RatingSnapshot snapshot;
+
+    /**
+     * Set (or inject) the default RatingSnapshot. This is the base snapshot
+     * that has not been modified in any way (such as the normalized or training
+     * snapshots).
+     *
+     * @param snapshot
+     */
+    public void setRatingSnapshot(RatingSnapshot snapshot) {
+        this.snapshot = snapshot;
+    }
+}

@@ -49,6 +49,11 @@ Release 0.7
 
     * Moved <<<Index>>> and <<<Indexer>>> to <<<o.g.l.util>>>.
 
+    * Moved abstract classes, <<<Lenskit*>>> classes, and
+      <<<Builder>>> from <<<o.g.lenskit>>> to <<<o.g.lenskit.core>>>,
+      so only <<<lenskit-api>>> provides classes directly in
+      <<<org.grouplens.lenskit>>>.
+
     []
 
   []

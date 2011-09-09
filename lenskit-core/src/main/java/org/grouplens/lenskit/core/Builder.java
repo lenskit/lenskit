@@ -16,32 +16,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.core;
 
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.params.meta.Built;
 
 /**
+ * Builder provides a flexible mechanism for RecommenderEngineFactories to
+ * create instances of components that can be built once for the
+ * RecommenderEngine and shared by all the Recommender instances.
  * <p>
- * RecommenderComponentBuilders are used to construct usually-expensive objects
- * that depend on a {@link RatingSnapshot}. An example of an object a
- * RecommenderComponentBuilder would produce is an item-item similarity matrix
- * used in item-item recommenders.
- * </p>
+ * In the LenskitRecommenderEngineFactory, Builders can be configured directly,
+ * or types can be annotated with the {@link Built} annotation.
  *
  * @author Michael Ludwig
  * @param <M>
  */
-public abstract class RecommenderComponentBuilder<M> implements Builder<M> {
-    protected RatingSnapshot snapshot;
-
+public interface Builder<M> {
     /**
-     * Set (or inject) the default RatingSnapshot. This is the base snapshot
-     * that has not been modified in any way (such as the normalized or training
-     * snapshots).
+     * Build the model object of type M using the Builder's current
+     * configuration.
      *
-     * @param snapshot
+     * @return An instance of type M built with the builder's configuration
      */
-    public void setRatingSnapshot(RatingSnapshot snapshot) {
-        this.snapshot = snapshot;
-    }
+    public abstract M build();
 }

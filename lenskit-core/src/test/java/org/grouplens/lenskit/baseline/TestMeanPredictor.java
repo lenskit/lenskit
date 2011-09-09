@@ -31,8 +31,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;

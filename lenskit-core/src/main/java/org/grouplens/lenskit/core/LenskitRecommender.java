@@ -16,8 +16,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit;
+package org.grouplens.lenskit.core;
 
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.picocontainer.PicoContainer;
 

@@ -20,7 +20,7 @@ package org.grouplens.lenskit.pico;
 
 import java.lang.reflect.Type;
 
-import org.grouplens.lenskit.Builder;
+import org.grouplens.lenskit.core.Builder;
 import org.picocontainer.PicoCompositionException;
 import org.picocontainer.PicoContainer;
 import org.picocontainer.adapters.AbstractAdapter;

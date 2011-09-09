@@ -25,8 +25,8 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

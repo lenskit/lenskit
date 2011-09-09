@@ -25,9 +25,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.Builder;
-import org.grouplens.lenskit.LenskitRecommenderEngine;
-import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.Builder;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 
 /**
  * A component type annotated with @Built will be automatically built by a

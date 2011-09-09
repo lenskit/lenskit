@@ -23,8 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.RecommenderComponentBuilder;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;

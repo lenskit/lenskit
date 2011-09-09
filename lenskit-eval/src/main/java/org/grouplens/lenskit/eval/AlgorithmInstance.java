@@ -32,10 +32,10 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.grouplens.lenskit.LenskitRecommenderEngine;
-import org.grouplens.lenskit.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.slf4j.Logger;
