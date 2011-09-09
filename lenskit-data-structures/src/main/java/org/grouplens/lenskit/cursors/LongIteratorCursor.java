@@ -16,25 +16,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vector;
+package org.grouplens.lenskit.cursors;
 
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
-/**
- * Re-run sparse vector tests with a longer version of the vector.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public class TestSparseVectorSized extends TestSparseVector {
-    /**
-     * Construct a simple rating vector with three ratings.
-     * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
-     */
+public class LongIteratorCursor extends AbstractLongCursor {
+    private LongIterator iterator;
+
+    public LongIteratorCursor(LongIterator iter) {
+        iterator = iter;
+    }
+
     @Override
-    protected MutableSparseVector simpleVector() {
-        long[] keys = {3, 7, 8, 2};
-        double[] values = {1.5, 3.5, 2, 5};
-        return new MutableSparseVector(keys, values, 3);
+    public boolean hasNext() {
+        return iterator.hasNext();
+    }
+
+    @Override
+    public Long next() {
+        return iterator.next();
+    }
+
+    @Override
+    public long nextLong() {
+        return iterator.nextLong();
+    }
+
+    @Override
+    public LongIterator iterator() {
+        return iterator;
     }
 }

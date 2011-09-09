@@ -16,11 +16,46 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.cursors;
+
+import java.util.Iterator;
+
 /**
- * Cursors for iterative data access.
- *
- * <p>Cursors (see {@link Cursor}) are basically closeable iterators, used for
- * accessing data sources.  They also expose the number of rows they will return,
- * although it is not guaranteed that a cursor can compute its length.
+ * Simple implementation of an Iterator that wraps a Cursor's data. This is
+ * suitable for use with {@link Cursor#iterator()}.
+ * 
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-package org.grouplens.common.cursors;
+public class CursorIterator<T> implements Iterator<T> {
+	
+	private Cursor<T> cursor;
+
+	public CursorIterator(Cursor<T> cursor) {
+		this.cursor = cursor;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
+	@Override
+	public boolean hasNext() {
+		return cursor.hasNext();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#next()
+	 */
+	@Override
+	public T next() {
+		return cursor.next();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#remove()
+	 */
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+
+}

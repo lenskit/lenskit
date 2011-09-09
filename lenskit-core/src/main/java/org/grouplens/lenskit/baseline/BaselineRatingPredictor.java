@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * {@link RatingPredictor} that delegates to the baseline predictor. This allows

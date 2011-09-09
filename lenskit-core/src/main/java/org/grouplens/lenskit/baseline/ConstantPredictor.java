@@ -36,7 +36,7 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Rating scorer that predicts a constant rating for all items.

@@ -31,8 +31,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -44,8 +44,8 @@ import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

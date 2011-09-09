@@ -20,7 +20,7 @@ package org.grouplens.lenskit.knn;
 
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

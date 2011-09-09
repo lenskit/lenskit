@@ -27,7 +27,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Base class to make item scorers easier to implement. Delegates single=item

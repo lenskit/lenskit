@@ -23,8 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongArrays;
 
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import com.google.common.primitives.Doubles;
 

@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items for users.  These scores can be predicted ratings, relevance

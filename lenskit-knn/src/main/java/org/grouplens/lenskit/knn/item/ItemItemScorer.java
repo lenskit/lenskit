@@ -43,8 +43,8 @@ import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items using an item-item CF model.

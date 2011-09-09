@@ -16,45 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.common.cursors;
-
-import it.unimi.dsi.fastutil.longs.LongIterator;
-
-class LongCursorIterator implements LongIterator {
-    private final LongCursor cursor;
-
-    public LongCursorIterator(LongCursor cursor) {
-        this.cursor = cursor;
-    }
-
-    @Override
-    public long nextLong() {
-        return cursor.nextLong();
-    }
-
-    @Override
-    public int skip(int n) {
-        int i = 0;
-        while (i < n && cursor.hasNext()) {
-            nextLong();
-            i++;
-        }
-        return i;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return cursor.hasNext();
-    }
-
-    @Override
-    public Long next() {
-        return cursor.next();
-    }
-
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
-}
+/**
+ * Cursors for iterative data access.
+ *
+ * <p>Cursors (see {@link Cursor}) are basically closeable iterators, used for
+ * accessing data sources.  They also expose the number of rows they will return,
+ * although it is not guaranteed that a cursor can compute its length.
+ */
+package org.grouplens.lenskit.cursors;

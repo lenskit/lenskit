@@ -44,7 +44,7 @@ import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.grouplens.lenskit.util.TaskTimer;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;

@@ -22,7 +22,7 @@ import static java.lang.Math.abs;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.

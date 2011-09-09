@@ -16,33 +16,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
-package org.grouplens.common.cursors;
+package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
+class LongCursorIterator implements LongIterator {
+    private final LongCursor cursor;
 
-/**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
-        LongCursor {
-
-    /**
-     * Implement {@link org.grouplens.common.cursors.Cursor#next() Cursor.next()}
-     * by delegating to {@link #nextLong()}.
-     */
-    @Override
-    public Long next() {
-        return nextLong();
+    public LongCursorIterator(LongCursor cursor) {
+        this.cursor = cursor;
     }
 
     @Override
-    public LongIterator iterator() {
-        return new LongCursorIterator(this);
+    public long nextLong() {
+        return cursor.nextLong();
+    }
+
+    @Override
+    public int skip(int n) {
+        int i = 0;
+        while (i < n && cursor.hasNext()) {
+            nextLong();
+            i++;
+        }
+        return i;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return cursor.hasNext();
+    }
+
+    @Override
+    public Long next() {
+        return cursor.next();
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 
 }

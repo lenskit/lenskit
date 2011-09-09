@@ -16,36 +16,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.common.cursors;
+package org.grouplens.lenskit.vectors;
 
-import com.google.common.base.Function;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
+ * Re-run sparse vector tests with a longer version of the vector.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class TransformedCursor<S,T> extends AbstractCursor<T> {
-	private final Cursor<S> cursor;
-	private final Function<? super S, ? extends T> function;
-
-	public TransformedCursor(Cursor<S> cursor, Function<? super S, ? extends T> function) {
-	    super(cursor.getRowCount());
-		this.cursor = cursor;
-		this.function = function;
-	}
-	
-	@Override
-	public void close() {
-		cursor.close();
-	}
-
+public class TestSparseVectorSized extends TestSparseVector {
+    /**
+     * Construct a simple rating vector with three ratings.
+     * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
+     */
     @Override
-    public boolean hasNext() {
-        return cursor.hasNext();
-    }
-    
-    @Override
-    public T next() {
-        return function.apply(cursor.next());
+    protected MutableSparseVector simpleVector() {
+        long[] keys = {3, 7, 8, 2};
+        double[] values = {1.5, 3.5, 2, 5};
+        return new MutableSparseVector(keys, values, 3);
     }
 }

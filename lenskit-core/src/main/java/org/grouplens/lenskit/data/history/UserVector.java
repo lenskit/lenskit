@@ -26,15 +26,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Vector of data for a user (a {@link SparseVector} that is associated with

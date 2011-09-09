@@ -25,7 +25,7 @@ import java.util.Iterator;
 
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Similarity function using Pearson correlation.

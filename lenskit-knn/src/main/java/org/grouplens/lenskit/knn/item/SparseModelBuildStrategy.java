@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Model build strategy that avoids computing similarities between items with

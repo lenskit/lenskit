@@ -30,8 +30,8 @@ import java.net.URL;
 import java.util.Comparator;
 import java.util.Scanner;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;

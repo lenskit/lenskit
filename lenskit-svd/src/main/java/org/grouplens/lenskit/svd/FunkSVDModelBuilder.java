@@ -34,7 +34,7 @@ import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.TaskTimer;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

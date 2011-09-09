@@ -33,10 +33,10 @@ import java.util.Set;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
-import org.grouplens.common.cursors.Cursors2;
-import org.grouplens.common.cursors.LongCursor;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.cursors.Cursors2;
+import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Events;

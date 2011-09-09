@@ -27,10 +27,10 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.grouplens.common.cursors.AbstractLongCursor;
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
-import org.grouplens.common.cursors.LongCursor;
+import org.grouplens.lenskit.cursors.AbstractLongCursor;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.AbstractDataAccessObject;
 import org.grouplens.lenskit.data.dao.DAOFactory;

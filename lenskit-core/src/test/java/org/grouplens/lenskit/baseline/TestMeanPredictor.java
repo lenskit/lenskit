@@ -40,7 +40,7 @@ import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

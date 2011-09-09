@@ -30,11 +30,11 @@ import java.util.Comparator;
 
 import javax.annotation.WillClose;
 
-import org.grouplens.common.cursors.Cursor;
-import org.grouplens.common.cursors.Cursors;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import com.google.common.primitives.Longs;
 

@@ -29,7 +29,7 @@ Release 0.7
     * Moved sorted array sets, scored lists, and interval lists into
       the <<<o.g.l.collections>>> package.
 
-    * Renamed <<<o.g.l.data.vector>>> to <<<o.g.l.vector>>> and moved
+    * Renamed <<<o.g.l.data.vector>>> to <<<o.g.l.vectors>>> and moved
       the <<<UserVector>>> and <<<ItemVector>>> classes into
       <<<o.g.l.data.history>>>.
 
@@ -55,6 +55,9 @@ Release 0.7
       <<<org.grouplens.lenskit>>>.
 
     []
+
+  * Moved cursors from GL Common into <<<lenskit-data-structures>>> in
+    the new package <<<org.grouplens.lenskit.cursors>>>.
 
   []
 

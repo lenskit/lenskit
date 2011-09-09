@@ -16,18 +16,38 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
-package org.grouplens.common.cursors;
+package org.grouplens.lenskit.cursors;
 
-import it.unimi.dsi.fastutil.longs.LongIterable;
-
+import com.google.common.base.Predicate;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface LongCursor extends Cursor<Long>, LongIterable {
-    public long nextLong();
+class FilteredCursor<T> extends AbstractPollingCursor<T> {
+	private final Cursor<T> cursor;
+	private final Predicate<? super T> filter;
+	
+	public FilteredCursor(Cursor<T> cursor, Predicate<? super T> filter) {
+	    super();
+		this.cursor = cursor;
+		this.filter = filter;
+	}
+	
+	@Override
+	public void close() {
+		cursor.close();
+	}
+
+    @Override
+    protected T poll() {
+        while(cursor.hasNext()) {
+            T next = cursor.next();
+            if (filter.apply(next))
+                return next;
+        }
+        
+        // Reached the end of the base cursor, so return null
+        return null;
+    }
 }

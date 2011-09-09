@@ -20,8 +20,8 @@ package org.grouplens.lenskit.data.event;
 
 import java.util.NoSuchElementException;
 
-import org.grouplens.common.cursors.AbstractCursor;
-import org.grouplens.common.cursors.AbstractPollingCursor;
+import org.grouplens.lenskit.cursors.AbstractCursor;
+import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 /**
  * Polling-based cursor implementation for ratings with fast poll methods.

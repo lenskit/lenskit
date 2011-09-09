@@ -23,7 +23,7 @@
 /**
  *
  */
-package org.grouplens.common.cursors;
+package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;

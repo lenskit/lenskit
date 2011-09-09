@@ -28,8 +28,8 @@ import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * <p>

@@ -20,8 +20,8 @@ package org.grouplens.lenskit.norm;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Identity normalization (makes no change).

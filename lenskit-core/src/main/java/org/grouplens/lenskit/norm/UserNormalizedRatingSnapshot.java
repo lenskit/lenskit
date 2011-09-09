@@ -36,7 +36,7 @@ import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.Index;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

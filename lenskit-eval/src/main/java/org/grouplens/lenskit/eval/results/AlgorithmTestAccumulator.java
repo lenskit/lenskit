@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.eval.results;
 
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Accumulates the results of a single test pass on a single algorithm.

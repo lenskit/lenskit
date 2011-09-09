@@ -28,7 +28,7 @@ import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.slopeone.params.DeviationDamping;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Pre-computes the deviations and number of mutual rating users for every pair

@@ -22,7 +22,7 @@ import javax.annotation.Nonnull;
 
 import it.unimi.dsi.fastutil.longs.LongList;
 
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * {@link LongList} that has double-valued scores for each entry. Undefined

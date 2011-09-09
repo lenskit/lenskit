@@ -21,8 +21,8 @@ package org.grouplens.lenskit.norm;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Normalize vectors by applying a reversible transformation with respect to

@@ -16,22 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.common.cursors;
+package org.grouplens.lenskit.cursors;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class FilteredCursor<T> extends AbstractPollingCursor<T> {
-	private final Cursor<T> cursor;
-	private final Predicate<? super T> filter;
-	
-	public FilteredCursor(Cursor<T> cursor, Predicate<? super T> filter) {
-	    super();
+class TransformedCursor<S,T> extends AbstractCursor<T> {
+	private final Cursor<S> cursor;
+	private final Function<? super S, ? extends T> function;
+
+	public TransformedCursor(Cursor<S> cursor, Function<? super S, ? extends T> function) {
+	    super(cursor.getRowCount());
 		this.cursor = cursor;
-		this.filter = filter;
+		this.function = function;
 	}
 	
 	@Override
@@ -40,14 +40,12 @@ class FilteredCursor<T> extends AbstractPollingCursor<T> {
 	}
 
     @Override
-    protected T poll() {
-        while(cursor.hasNext()) {
-            T next = cursor.next();
-            if (filter.apply(next))
-                return next;
-        }
-        
-        // Reached the end of the base cursor, so return null
-        return null;
+    public boolean hasNext() {
+        return cursor.hasNext();
+    }
+    
+    @Override
+    public T next() {
+        return function.apply(cursor.next());
     }
 }

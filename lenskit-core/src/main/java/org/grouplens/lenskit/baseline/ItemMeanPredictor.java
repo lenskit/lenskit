@@ -39,7 +39,7 @@ import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.vector.MutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

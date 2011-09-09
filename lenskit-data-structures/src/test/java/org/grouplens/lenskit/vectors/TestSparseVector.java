@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vector;
+package org.grouplens.lenskit.vectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
@@ -36,9 +36,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.vector.ImmutableSparseVector;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -89,7 +89,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#get(long)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#get(long)}.
      */
     @Test
     public void testGet() {
@@ -109,7 +109,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#get(long, double)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#get(long, double)}.
      */
     @Test
     public void testGetWithDft() {
@@ -130,7 +130,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#containsKey(long)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#containsKey(long)}.
      */
     @Test
     public void testContainsId() {
@@ -151,7 +151,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#iterator()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#iterator()}.
      */
     @Test
     public void testIterator() {
@@ -190,7 +190,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#fastIterator()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#fastIterator()}.
      */
     @Test
     public void testFastIterator() {
@@ -229,7 +229,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#fast()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#fast()}.
      */
     @Test
     public void testFast() {
@@ -238,7 +238,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#keySet()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#keySet()}.
      */
     @Test
     public void testIdSet() {
@@ -253,7 +253,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#values()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#values()}.
      */
     @Test
     public void testValues() {
@@ -268,7 +268,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#size()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#size()}.
      */
     @Test
     public void testSize() {
@@ -278,7 +278,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#isEmpty()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#isEmpty()}.
      */
     @Test
     public void testIsEmpty() {
@@ -288,7 +288,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#norm()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#norm()}.
      */
     @Test
     public void testNorm() {
@@ -298,7 +298,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#sum()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#sum()}.
      */
     @Test
     public void testSum() {
@@ -308,7 +308,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#mean()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#mean()}.
      */
     @Test
     public void testMean() {
@@ -318,7 +318,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#copy()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#copy()}.
      */
     @Test
     public void testCopy() {
@@ -345,7 +345,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#clone()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#clone()}.
      */
     @Test
     public void testClone() {
@@ -360,7 +360,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#subtract(org.grouplens.lenskit.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#subtract(org.grouplens.lenskit.vectors.SparseVector)}.
      */
     @Test
     public void testSubtract() {
@@ -392,7 +392,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#add(org.grouplens.lenskit.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#add(org.grouplens.lenskit.vectors.SparseVector)}.
      */
     @Test
     public void testAdd() {
@@ -424,7 +424,7 @@ public class TestSparseVector {
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vector.MutableSparseVector#dot(org.grouplens.lenskit.vector.SparseVector)}.
+     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#dot(org.grouplens.lenskit.vectors.SparseVector)}.
      */
     @Test
     public void testDot() {

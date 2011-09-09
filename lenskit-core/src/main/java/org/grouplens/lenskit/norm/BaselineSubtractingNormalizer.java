@@ -23,8 +23,8 @@ import java.io.Serializable;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.NormalizerBaseline;
-import org.grouplens.lenskit.vector.MutableSparseVector;
-import org.grouplens.lenskit.vector.SparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
