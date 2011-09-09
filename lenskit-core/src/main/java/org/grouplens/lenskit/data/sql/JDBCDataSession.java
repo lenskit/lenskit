@@ -25,7 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.grouplens.lenskit.data.SortOrder;
+import org.grouplens.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

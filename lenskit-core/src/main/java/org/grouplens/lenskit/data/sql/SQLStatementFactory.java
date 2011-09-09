@@ -24,8 +24,8 @@ import java.sql.SQLException;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.SortOrder;
 
 /**
  * Interface for producing prepared statements for rating DAO queries.

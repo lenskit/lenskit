@@ -37,7 +37,6 @@ import org.grouplens.common.cursors.Cursors;
 import org.grouplens.common.cursors.Cursors2;
 import org.grouplens.common.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Events;
 import org.grouplens.lenskit.data.history.BasicUserHistory;

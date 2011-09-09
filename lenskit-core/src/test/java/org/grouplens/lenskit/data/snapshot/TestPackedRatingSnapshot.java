@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.SimplePreference;
+import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vector.SparseVector;
 import org.junit.Before;
 import org.junit.Test;

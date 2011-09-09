@@ -16,31 +16,40 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.util;
+
+import it.unimi.dsi.fastutil.longs.LongList;
+
+import java.io.Serializable;
+
 /**
+ * An index mapping long IDs to consecuitive 0-based integers.  The indexes
+ * fall in the range [0,{@linkplain #getObjectCount()}).
  *
- */
-package org.grouplens.lenskit.data;
-
-
-/**
+ * Indexes must be serializable.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public enum SortOrder {
+public interface Index extends Serializable {
     /**
-     * Any order is acceptable.
+     * Get the index of an id.  If the object has not been interned,
+     * returns a negative number.
+     * @param id The id to query.
+     * @return The id's index or a negative value if the id does not exist.
      */
-    ANY,
+    int getIndex(long id);
     /**
-     * Sort by timestamp.
+     * Get the key for an index.
+     * @param idx
+     * @return The ID for the given <var>idx</var>
      */
-    TIMESTAMP,
+    long getId(int idx);
+
+    int getObjectCount();
     /**
-     * Sort by user, then by timestamp.
+     * Get the list of IDs.
+     * @return The list of (unique) IDs in the index.
      */
-    USER,
-    /**
-     * Sort by item, then by timestamp.
-     */
-    ITEM
+    LongList getIds();
 }

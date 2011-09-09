@@ -21,10 +21,10 @@ package org.grouplens.lenskit.svd;
 import java.io.Serializable;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.util.Index;
 
 @Built
 @DefaultBuilder(FunkSVDModelBuilder.class)

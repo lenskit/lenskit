@@ -18,9 +18,9 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
+import org.grouplens.lenskit.util.Index;
 
 /**
  * Data storage for packed build contexts.

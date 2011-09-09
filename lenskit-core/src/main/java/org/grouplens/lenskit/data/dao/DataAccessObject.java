@@ -23,7 +23,6 @@ import java.io.Closeable;
 import org.grouplens.common.cursors.Cursor;
 import org.grouplens.common.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.SortOrder;
 import org.grouplens.lenskit.data.UserHistory;
 
 /**

@@ -21,10 +21,10 @@ package org.grouplens.lenskit.eval;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.util.Index;
 
 public class SharedRatingSnapshot implements RatingSnapshot {
     private final RatingSnapshot snapshot;

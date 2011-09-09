@@ -45,6 +45,10 @@ Release 0.7
       implementations remain in <<<lenskit-core>>> in their respective
       <<<.history>>> and <<<.event>>> packages.
 
+    * Moved <<<SortOrder>>> into the DAO package.
+
+    * Moved <<<Index>>> and <<<Indexer>>> to <<<o.g.l.util>>>.
+
     []
 
   []

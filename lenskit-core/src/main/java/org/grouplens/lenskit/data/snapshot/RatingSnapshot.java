@@ -25,10 +25,10 @@ import java.io.Closeable;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.Index;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.util.Index;
 
 /**
  * Snapshot of the ratings data for building a recommender.
