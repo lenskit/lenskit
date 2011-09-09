@@ -525,6 +525,9 @@
                   <goal>check</goal>
                 </goals>
                 <configuration>
+                  <findbugsXmlOutput>true</findbugsXmlOutput>
+                  <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+                  <xmlOutput>true</xmlOutput>
                   <failOnError>false</failOnError>
                 </configuration>
               </execution>
