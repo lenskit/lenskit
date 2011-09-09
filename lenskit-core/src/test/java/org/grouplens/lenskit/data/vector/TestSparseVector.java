@@ -333,6 +333,18 @@ public class TestSparseVector {
         assertEquals(Math.PI - 2.3, v2.sum(), EPSILON);
         assertEquals(Math.PI, v1.sum(), EPSILON);
     }
+    
+    /**
+     * Test making the vector immutable — is it properly separated?
+     */
+    @Test
+    public void testImmutable() {
+        MutableSparseVector v = simpleVector();
+        ImmutableSparseVector iv = v.immutable();
+        v.set(7, 42.0);
+        assertEquals(42.0, v.get(7), 1.0e-6);
+        assertEquals(3.5, iv.get(7), 1.0e-6);
+    }
 
     /**
      * Test method for {@link org.grouplens.lenskit.data.vector.MutableSparseVector#clone()}.
