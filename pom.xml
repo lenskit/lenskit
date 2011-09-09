@@ -63,6 +63,7 @@
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
     <module>lenskit-package</module>
+    <module>lenskit-data-structures</module>
   </modules>
 
   <build>
@@ -389,11 +390,6 @@
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
         <version>6.2.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.grouplens.common</groupId>
-        <artifactId>common-core</artifactId>
-        <version>0.4</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

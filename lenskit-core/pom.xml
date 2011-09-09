@@ -27,15 +27,16 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>common-core</artifactId>
-    </dependency>
-    <dependency>
     	<groupId>org.picocontainer</groupId>
     	<artifactId>picocontainer</artifactId>
     	<version>2.13.3</version>
     	<type>jar</type>
     	<scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-data-structures</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
