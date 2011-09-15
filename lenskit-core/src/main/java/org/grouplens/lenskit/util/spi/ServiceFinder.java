@@ -24,7 +24,6 @@ import java.util.ServiceLoader;
 
 import javax.annotation.Nonnull;
 
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +115,7 @@ public class ServiceFinder<S extends Selectable> {
         // no config name, look for class names
         for (S svc: loader) {
             Class<?> cls = svc.getClass();
-            String[] nameParts = StringUtils.split(cls.getName(), ".");
+            String[] nameParts = cls.getName().split("\\.");
             if (nameParts[nameParts.length - 1].equals(name) || cls.getName().equals(name)) {
                 if (impl == null) {
                     logger.debug("Satisfying {}:{} with {}",
