@@ -18,10 +18,24 @@
  */
 package org.grouplens.lenskit.util.spi;
 
+import javax.annotation.Nullable;
+
 /**
+ * Base interface for configurable modules. Interfaces extending this interface
+ * allow implementations to provide a short alias for easier reference in
+ * configuration files.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
-public interface DummyInterface extends Selectable {
-    String getMessage();
+public interface Selectable {
+    /**
+     * Get a short configuration name for this module.
+     * 
+     * @return A short name that can be used to refer to this implementation in
+     *         configuration files.  If <tt>null</tt>, the class's name must
+     *         be used.
+     */
+    @Nullable
+    String getConfigName();
 }

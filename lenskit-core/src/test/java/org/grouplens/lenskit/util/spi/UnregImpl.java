@@ -22,6 +22,15 @@ package org.grouplens.lenskit.util.spi;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface DummyInterface extends Selectable {
-    String getMessage();
+public class UnregImpl implements DummyInterface {
+    @Override
+    public String getConfigName() {
+        return null;
+    }
+
+    @Override
+    public String getMessage() {
+        return "HACKEM MUCHE";
+    }
+
 }

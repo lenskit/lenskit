@@ -23,6 +23,10 @@ package org.grouplens.lenskit.util.spi;
  *
  */
 public class DummyImpl implements DummyInterface {
+    @Override
+    public String getConfigName() {
+        return "dummy";
+    }
 
     @Override
     public String getMessage() {
