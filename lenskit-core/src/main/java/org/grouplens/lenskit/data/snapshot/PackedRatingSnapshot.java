@@ -190,7 +190,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
                         // add the new rating data
                         if (reuse) {
                             users.set(index, uidx);
-                            users.set(index, iidx);
+                            items.set(index, iidx);
                             values.set(index, p.getValue());
                         } else {
                             users.add(uidx);
