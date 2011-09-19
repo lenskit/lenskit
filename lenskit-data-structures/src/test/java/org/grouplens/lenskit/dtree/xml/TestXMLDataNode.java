@@ -1,16 +1,33 @@
+/*
+ * LensKit, a reference implementation of recommender algorithms.
+ * Copyright 2010-2011 Regents of the University of Minnesota
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.grouplens.lenskit.dtree.xml;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Properties;
 
 import org.grouplens.lenskit.dtree.DataNode;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,37 +52,33 @@ public class TestXMLDataNode extends XMLTestCase {
         assertThat(XMLDataNode.wrap(null), nullValue());
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void testWrapElement() {
         DataNode node = XMLDataNode.wrap(simpleDoc.getDocumentElement());
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("config"));
-        assertThat((Collection) node.getChildren(), empty());
+        assertThat(node.getChildren(), Matchers.<DataNode>empty());
         assertThat(node.getValue(), equalTo(""));
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testWrapDocument() {
         DataNode node = XMLDataNode.wrap(simpleDoc);
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("config"));
-        assertThat((Collection) node.getChildren(), empty());
+        assertThat(node.getChildren(), Matchers.<DataNode>empty());
         assertThat(node.getValue(), equalTo(""));
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testWrapContent() throws SAXException, IOException {
         DataNode node = parse("<content>READ ME</content>");
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("content"));
-        assertThat((Collection) node.getChildren(), empty());
+        assertThat( node.getChildren(), Matchers.<DataNode>empty());
         assertThat(node.getValue(), equalTo("READ ME"));
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void testWrapChildren() throws SAXException, IOException {
         DataNode node = parse("<scroll>\n" +
@@ -77,7 +90,7 @@ public class TestXMLDataNode extends XMLTestCase {
         assertThat(node.getValue(), equalTo(""));
         
         assertThat(node.getChildren().size(), equalTo(2));
-        assertThat((Collection) node.getChildren("foo"), empty());
+        assertThat(node.getChildren("foo"), Matchers.<DataNode>empty());
         assertThat(node.getChildren().get(0).getName(), equalTo("name"));
         assertThat(node.getChildren().get(0).getValue(), equalTo("HACKEM MUCHE"));
         assertThat(node.getChildren().get(1).getName(), equalTo("type"));
