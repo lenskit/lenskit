@@ -21,8 +21,7 @@ package org.grouplens.lenskit.eval.predict;
 import static java.lang.Math.sqrt;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +31,10 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ConfigAlias("RMSE")
 public class RMSEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(RMSEEvaluator.class);
-
-    int colRMSE, colUserRMSE;
+    private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
 
     @Override
     public Accumulator makeAccumulator() {
@@ -43,9 +42,8 @@ public class RMSEEvaluator implements PredictionEvaluator {
     }
 
     @Override
-    public void setup(TableWriterBuilder builder) {
-        colRMSE = builder.addColumn("RMSE.ByRating");
-        colUserRMSE = builder.addColumn("RMSE.ByUser");
+    public String[] getColumnLabels() {
+        return COLUMNS;
     }
 
     class Accum implements Accumulator {
@@ -76,11 +74,13 @@ public class RMSEEvaluator implements PredictionEvaluator {
         }
 
         @Override
-        public void finalize(TableWriter writer) {
+        public String[] results() {
             double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
-            writer.setValue(colRMSE, v);
-            writer.setValue(colUserRMSE, totalRMSE / nusers);
+            return new String[] {
+                    Double.toString(v),
+                    Double.toString(totalRMSE / nusers)
+            };
         }
 
     }

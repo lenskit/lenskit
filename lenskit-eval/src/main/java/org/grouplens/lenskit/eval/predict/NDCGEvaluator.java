@@ -21,8 +21,8 @@ package org.grouplens.lenskit.eval.predict;
 import static java.lang.Math.log;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+
+import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +43,10 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ConfigAlias("nDCG")
 public class NDCGEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
-
-    int colNDCG;
+    private static final String[] COLUMNS = { "nDCG" };
 
     @Override
     public Accum makeAccumulator() {
@@ -54,8 +54,8 @@ public class NDCGEvaluator implements PredictionEvaluator {
     }
 
     @Override
-    public void setup(TableWriterBuilder builder) {
-        colNDCG = builder.addColumn("nDCG");
+    public String[] getColumnLabels() {
+        return COLUMNS;
     }
 
     /**
@@ -97,10 +97,10 @@ public class NDCGEvaluator implements PredictionEvaluator {
         }
 
         @Override
-        public void finalize(TableWriter writer) {
+        public String[] results() {
             double v = total / nusers;
             logger.info("nDCG: {}", v);
-            writer.setValue(colNDCG, v);
+            return new String[]{ Double.toString(v) };
         }
     }
 }

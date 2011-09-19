@@ -21,8 +21,7 @@ package org.grouplens.lenskit.eval.predict;
 import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +38,10 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ConfigAlias("MAE")
 public class MAEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
-
-    int colMAE;
+    private static final String[] COLUMNS = { "MAE" };
 
     @Override
     public Accumulator makeAccumulator() {
@@ -50,8 +49,8 @@ public class MAEEvaluator implements PredictionEvaluator {
     }
 
     @Override
-    public void setup(TableWriterBuilder builder) {
-        colMAE = builder.addColumn("MAE");
+    public String[] getColumnLabels() {
+        return COLUMNS;
     }
 
     class Accum implements Accumulator {
@@ -74,10 +73,10 @@ public class MAEEvaluator implements PredictionEvaluator {
         }
 
         @Override
-        public void finalize(TableWriter writer) {
+        public String[] results() {
             double v = totalError / nratings;
             logger.info("MAE: {}", v);
-            writer.setValue(colMAE, v);
+            return new String[]{ Double.toString(v) };
         }
 
     }

@@ -20,8 +20,7 @@ package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,24 +32,21 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@ConfigAlias("coverage")
 public class CoverageEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(CoverageEvaluator.class);
-    private int colUsers;
-    private int colAttempts;
-    private int colGood;
-    private int colCoverage;
+    private static final String[] COLUMNS = {
+        "NUsers", "NAttempted", "NGood", "Coverage"
+    };
 
     @Override
     public Accumulator makeAccumulator() {
         return new Accum();
     }
-
+    
     @Override
-    public void setup(TableWriterBuilder builder) {
-        colUsers = builder.addColumn("NUsers");
-        colAttempts = builder.addColumn("NAttempted");
-        colGood = builder.addColumn("NGood");
-        colCoverage = builder.addColumn("Coverage");
+    public String[] getColumnLabels() {
+        return COLUMNS;
     }
 
     class Accum implements Accumulator {
@@ -71,14 +67,16 @@ public class CoverageEvaluator implements PredictionEvaluator {
         }
 
         @Override
-        public void finalize(TableWriter writer) {
-            writer.setValue(colUsers, nusers);
-            writer.setValue(colAttempts, npreds);
-            writer.setValue(colGood, ngood);
-
+        public String[] results() {
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
-            writer.setValue(colCoverage, coverage);
+            
+            return new String[]{
+                    Integer.toString(nusers), 
+                    Integer.toString(npreds),
+                    Integer.toString(ngood), 
+                    Double.toString(coverage) 
+            };
         }
 
     }

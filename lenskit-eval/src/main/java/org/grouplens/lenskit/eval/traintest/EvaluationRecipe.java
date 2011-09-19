@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.predict.PredictionEvaluator.Accumulator;
 import org.grouplens.lenskit.eval.results.AlgorithmTestAccumulator;
 import org.grouplens.lenskit.eval.results.ResultAccumulator;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
@@ -65,6 +67,7 @@ public class EvaluationRecipe {
     private Map<String,Integer> algoAttrCols;
     private int colBuildTime;
     private int colTestTime;
+    private List<int[]> evalColumns;
 
     private List<PredictionEvaluator> evaluators;
     private TableWriter writer;
@@ -92,8 +95,14 @@ public class EvaluationRecipe {
 
         colBuildTime = twb.addColumn("BuildTime");
         colTestTime = twb.addColumn("TestTime");
+        evalColumns = new ArrayList<int[]>(evaluators.size());
         for (PredictionEvaluator ev: evaluators) {
-            ev.setup(twb);
+            String[] labels = ev.getColumnLabels();
+            int[] cols = new int[labels.length];
+            evalColumns.add(cols);
+            for (int i = 0; i < cols.length; i++) {
+                cols[i] = twb.addColumn(labels[i]);
+            }
         }
 
         Writer fw;
@@ -199,8 +208,21 @@ public class EvaluationRecipe {
                                         attrs.get(k).toString());
                 }
 
-                for (PredictionEvaluator.Accumulator ea: evalAccums) {
-                    ea.finalize(writer);
+                ListIterator<Accumulator> iter =
+                        evalAccums.listIterator();
+                while (iter.hasNext()) {
+                    int idx = iter.nextIndex();
+                    Accumulator accum = iter.next();
+                    int[] cols = evalColumns.get(idx);
+                    String[] vals = accum.results();
+                    if (cols.length != vals.length) {
+                        String msg = String.format("Column mismatch on %s: expected %d, got %d",
+                                                   accum, cols.length, vals.length);
+                        throw new RuntimeException(msg);
+                    }
+                    for (int i = 0; i < vals.length; i++ ) {
+                        writer.setValue(cols[i], vals[i]);
+                    }
                 }
             } catch (RuntimeException e) {
                 writer.cancelRow();

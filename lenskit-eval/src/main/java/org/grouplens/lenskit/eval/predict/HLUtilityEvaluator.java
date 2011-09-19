@@ -21,17 +21,17 @@ package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+
+import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@ConfigAlias("HLUtility")
 public class HLUtilityEvaluator implements PredictionEvaluator {
-
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityEvaluator.class);
-    private int colHLU;
+    private static final String[] COLUMNS = { "HLUtility" };
+    
     private double alpha;
 
     public HLUtilityEvaluator(double newAlpha) {
@@ -46,10 +46,10 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
     public Accum makeAccumulator() {
         return new Accum();
     }
-
+    
     @Override
-    public void setup(TableWriterBuilder builder) {
-        colHLU = builder.addColumn("HLUtility");
+    public String[] getColumnLabels() {
+        return COLUMNS;
     }
 
     double computeHLU(LongList items, SparseVector values) {
@@ -68,7 +68,6 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
 
     public class Accum implements Accumulator {
 
-
         double total = 0;
         int nusers = 0;
 
@@ -84,11 +83,10 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
         }
 
         @Override
-        public void finalize(TableWriter writer) {
-
+        public String[] results() {
             double v = total/nusers;
             logger.info("HLU: {}", v);
-            writer.setValue(colHLU, v);
+            return new String[]{Double.toString(v)};
         }
     }
 }

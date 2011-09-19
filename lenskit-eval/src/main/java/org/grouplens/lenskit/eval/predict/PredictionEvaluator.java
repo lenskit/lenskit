@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.eval.predict;
 
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-
 /**
- * Interface for prediction accuracy evalutors.
+ * Interface for prediction accuracy evaluators. Evaluators produce accumulators
+ * which in turn accumulate prediction accuracy, returning aggregate error
+ * information in the {@link Accumulator#results()} method.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface PredictionEvaluator {
@@ -33,12 +33,11 @@ public interface PredictionEvaluator {
      * @return The result accumulator for aggregating prediction results.
      */
     Accumulator makeAccumulator();
-
+    
     /**
-     * Set the table writer builder used for the evaluator. The evaluator should
-     * get the columns of its output fields here.
+     * Get labels for the columns output by this evaluator.
      */
-    void setup(TableWriterBuilder twbuilder);
+    String[] getColumnLabels();
 
     public static interface Accumulator {
         /**
@@ -50,9 +49,9 @@ public interface PredictionEvaluator {
         void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
 
         /**
-         * Finalize the evaluation and write the output to the current row of a table.
-         * @param writer The table writer to use.
+         * Finalize the evaluation and return the final values.
+         * @return The column values for the final evaluation.
          */
-        void finalize(TableWriter writer);
+        String[] results();
     }
 }
