@@ -33,7 +33,7 @@ import com.google.common.collect.Iterables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ServiceFinder<S extends Selectable> {
+public class ServiceFinder<S> {
     static Map<Class<?>, ServiceFinder<?>> instanceMap =
             new HashMap<Class<?>, ServiceFinder<?>>();
     
@@ -47,7 +47,7 @@ public class ServiceFinder<S extends Selectable> {
      * @param iface The interface for the service.
      * @return A service finder capable of locating interfaces for this service.
      */
-    public static <S extends Selectable> ServiceFinder<S> get(Class<S> iface) {
+    public static <S> ServiceFinder<S> get(Class<S> iface) {
         synchronized (instanceMap) {
             @SuppressWarnings("unchecked")
             ServiceFinder<S> finder = (ServiceFinder<S>) instanceMap.get(iface);
@@ -97,7 +97,8 @@ public class ServiceFinder<S extends Selectable> {
         S impl = null;
         
         for (S svc: loader) {
-            if (name.equals(svc.getConfigName())) {
+            ConfigAlias alias = svc.getClass().getAnnotation(ConfigAlias.class);
+            if (alias != null && alias.value().equals(name)) {
                 if (impl == null) {
                     logger.debug("Satisfying {}:{} with {}",
                                  new Object[]{serviceInterface, name, svc});

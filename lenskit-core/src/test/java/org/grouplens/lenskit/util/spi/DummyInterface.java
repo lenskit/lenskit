@@ -22,6 +22,6 @@ package org.grouplens.lenskit.util.spi;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface DummyInterface extends Selectable {
+public interface DummyInterface {
     String getMessage();
 }

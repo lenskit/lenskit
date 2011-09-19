@@ -23,10 +23,6 @@ package org.grouplens.lenskit.util.spi;
  *
  */
 public class UnregImpl implements DummyInterface {
-    @Override
-    public String getConfigName() {
-        return null;
-    }
 
     @Override
     public String getMessage() {
