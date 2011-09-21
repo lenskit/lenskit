@@ -29,6 +29,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.lenskit.dtree.DataNode;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -116,6 +117,16 @@ public class XMLDataNode implements DataNode {
     @Override
     public String getName() {
         return xml.getNodeName();
+    }
+    
+    @Override
+    public String getAttribute(String attr) {
+        Element elt = (Element) xml;
+        if (elt.hasAttribute(attr)) {
+            return elt.getAttribute(attr);
+        } else {
+            return null;
+        }
     }
 
     @Override

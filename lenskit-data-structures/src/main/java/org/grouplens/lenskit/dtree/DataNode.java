@@ -20,6 +20,9 @@ package org.grouplens.lenskit.dtree;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Abstract interface for data nodes. They are like XML nodes, and are used to
  * represent evaluator configurations. Using these rather than directly using
@@ -36,24 +39,33 @@ public interface DataNode {
      * Get the name of this node.  In XML, this would be the element name.
      * @return The node's name.
      */
-    String getName();
+    @Nonnull String getName();
     
     /**
      * Get the value of this node.  In XML, this is its text content.
      * @return The node's text value.
      */
-    String getValue();
+    @Nonnull String getValue();
+    
+    /**
+     * Get the value for an attribute of this node.
+     * 
+     * @param name The attribute name.
+     * @return The attribute value, or <tt>null</tt> if no such attribute is
+     *         present.
+     */
+    @Nullable String getAttribute(String name);
     
     /**
      * Get the children of this node.
      * @return The node's children.
      */
-    List<DataNode> getChildren();
+    @Nonnull List<DataNode> getChildren();
     
     /**
      * Get all children having a particular name.
      * @param name The name to look for.
      * @return All children named <var>name</var>.
      */
-    List<DataNode> getChildren(String name);
+    @Nonnull List<DataNode> getChildren(String name);
 }

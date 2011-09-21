@@ -29,11 +29,15 @@ public class Trees {
     private Trees() {}
     
     public static String childValue(DataNode node, String name) {
+        return childValue(node, name, null);
+    }
+    
+    public static String childValue(DataNode node, String name, String dft) {
         for (DataNode n: node.getChildren()) {
             if (n.getName().equals(name)) {
                 return n.getValue();
             }
         }
-        return null;
+        return dft;
     }
 }

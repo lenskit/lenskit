@@ -62,6 +62,14 @@ public class TestXMLDataNode extends XMLTestCase {
     }
     
     @Test
+    public void testAttribute() throws SAXException, IOException {
+        DataNode node = XMLDataNode.wrap(simpleDoc.getDocumentElement());
+        assertThat(node.getAttribute("foo"), nullValue());
+        node = parse("<config foo=\"bar\"/>");
+        assertThat(node.getAttribute("foo"), equalTo("bar"));
+    }
+    
+    @Test
     public void testWrapDocument() {
         DataNode node = XMLDataNode.wrap(simpleDoc);
         assertThat(node, notNullValue());
