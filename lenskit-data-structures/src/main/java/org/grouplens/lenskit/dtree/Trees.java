@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.dtree;
 
+import java.util.regex.Pattern;
+
 
 /**
  * Helper methods for data trees.
@@ -27,6 +29,14 @@ package org.grouplens.lenskit.dtree;
  */
 public class Trees {
     private Trees() {}
+    
+    public static DataNode child(DataNode node, String name) {
+        for (DataNode n: node.getChildren()) {
+            if (n.getName().equals(name))
+                return n;
+        }
+        return null;
+    }
     
     public static String childValue(DataNode node, String name) {
         return childValue(node, name, null);
@@ -39,5 +49,36 @@ public class Trees {
             }
         }
         return dft;
+    }
+    
+    private static final Pattern truePattern = 
+            Pattern.compile("^true|yes$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern falsePattern =
+            Pattern.compile("^false|no$", Pattern.CASE_INSENSITIVE);
+    
+    static boolean reMatches(Pattern pat, String st) {
+        return pat.matcher(st).find();
+    }
+    
+    public static boolean childValueBool(DataNode node, String name, boolean dft) {
+        String v = childValue(node, name);
+        if (v == null) {
+            return dft;
+        } else if (reMatches(truePattern, v)) {
+            return true;
+        } else if (reMatches(falsePattern, v)) {
+            return false;
+        } else {
+            throw new IllegalArgumentException("Invalid boolean: " + v);
+        }
+    }
+    
+    public static int childValueInt(DataNode node, String name, int dft) {
+        String v = childValue(node, name);
+        if (v == null) {
+            return dft;
+        } else {
+            return Integer.parseInt(v);
+        }
     }
 }
