@@ -6,6 +6,20 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+Release 0.8
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.8}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Cleaned up cursor utilities, moving all methods from
+    <<<Cursors2>>> to <<<Cursors>>>.  The old <<<Cursors2>>> methods
+    are deprecated and will be removed before 1.0 is released.
+
+  []
+
 Release 0.7
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and

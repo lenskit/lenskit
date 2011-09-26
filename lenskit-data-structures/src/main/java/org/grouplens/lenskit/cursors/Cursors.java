@@ -18,6 +18,13 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +33,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import javax.annotation.WillClose;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -37,7 +47,8 @@ import com.google.common.base.Predicates;
  *
  */
 public class Cursors {
-
+    private static final Logger logger = LoggerFactory.getLogger(Cursors.class);
+    
 	/**
 	 * Wrap an iterator in a cursor.
 	 * @param <T> The type of data to return.
@@ -153,6 +164,94 @@ public class Cursors {
 
 		return list;
 	}
+	
+	public static LongArrayList makeList(@WillClose LongCursor cursor) {
+        LongArrayList list = null;
+        try {
+            int n = cursor.getRowCount();
+            if (n < 0) n = 10;
+            list = new LongArrayList(n);
+            while (cursor.hasNext()) {
+                list.add(cursor.nextLong());
+            }
+        } catch (OutOfMemoryError e) {
+            logger.error("Ran out of memory with {} users",
+                    list == null ? -1 : list.size());
+            throw e;
+        } finally {
+            cursor.close();
+        }
+        list.trim();
+        return list;
+    }
+	
+	public static LongSet makeSet(@WillClose LongCursor cursor) {
+        LongOpenHashSet set = null;
+        try {
+            int n = cursor.getRowCount();
+            if (n < 0) n = 10;
+            set = new LongOpenHashSet(n);
+            while (cursor.hasNext()) {
+                set.add(cursor.nextLong());
+            }
+        } catch (OutOfMemoryError e) {
+            logger.error("Ran out of memory with {} users",
+                    set == null ? -1 : set.size());
+            throw e;
+        } finally {
+            cursor.close();
+        }
+        set.trim();
+        return set;
+    }
+	
+	public static LongCursor wrap(LongIterator iter) {
+        return new LongIteratorCursor(iter);
+    }
+
+    public static LongCursor wrap(LongCollection collection) {
+        return new LongCollectionCursor(collection);
+    }
+    
+    public static LongCursor makeLongCursor(final Cursor<Long> cursor) {
+        if (cursor instanceof LongCursor)
+            return (LongCursor) cursor;
+
+        return new LongCursor() {
+            @Override
+            public boolean hasNext() {
+                return cursor.hasNext();
+            }
+            @Override
+            public Long next() {
+                return cursor.next();
+            }
+            @Override
+            public Long fastNext() {
+                return cursor.fastNext();
+            }
+            @Override
+            public LongIterable fast() {
+                return this;
+            }
+            @Override
+            public long nextLong() {
+                return next();
+            }
+            @Override
+            public void close() {
+                cursor.close();
+            }
+            @Override
+            public int getRowCount() {
+                return cursor.getRowCount();
+            }
+            @Override
+            public LongIterator iterator() {
+                return new LongCursorIterator(this);
+            }
+        };
+    }
 	
 	/**
 	 * Sort a cursor.  This reads the original cursor into a list, sorts it, and
