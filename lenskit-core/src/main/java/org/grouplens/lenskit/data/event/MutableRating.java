@@ -113,6 +113,7 @@ public class MutableRating implements Rating {
 
     @Override
     public Rating clone() {
-        return new SimpleRating(eid, uid, iid, value, timestamp);
+        if (Double.isNaN(value)) return new SimpleNullRating(eid, uid, iid, timestamp);
+        else return new SimpleRating(eid, uid, iid, value, timestamp);
     }
 }

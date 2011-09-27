@@ -360,7 +360,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                     throw new RuntimeException("Unexpected null item ID");
                 rating.setRating(resultSet.getDouble(COL_RATING));
                 if (resultSet.wasNull())
-                    throw new RuntimeException("Unexpected null rating");
+                    rating.setRating(Double.NaN);
                 long ts = -1;
                 if (hasTimestampColumn) {
                     ts = resultSet.getLong(COL_TIMESTAMP);
