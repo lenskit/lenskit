@@ -22,34 +22,7 @@
     <profile>
       <id>smoketest</id>
       <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>data-test</id>
-                <goals>
-                  <goal>add-test-source</goal>
-                </goals>
-                <configuration>
-                  <sources>
-                    <source>src/data-test/java</source>
-                  </sources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
       </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.grouplens.movielens</groupId>
-          <artifactId>ml-data-100k</artifactId>
-          <version>1.0.0-SNAPSHOT</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 </project>
