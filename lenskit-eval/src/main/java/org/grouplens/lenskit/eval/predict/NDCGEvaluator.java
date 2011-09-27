@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @ConfigAlias("nDCG")
+@MetaInfServices
 public class NDCGEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
     private static final String[] COLUMNS = { "nDCG" };

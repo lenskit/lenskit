@@ -41,7 +41,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.traintest.EvaluationRecipe;
-import org.grouplens.lenskit.eval.traintest.TrainTestPredictEvaluator;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvaluator;
 import org.grouplens.lenskit.util.parallel.ExecHelpers;
 
 import com.google.common.primitives.Longs;
@@ -138,27 +138,27 @@ public class TrainTestTask extends Task {
             }
         });
 
-        List<TrainTestPredictEvaluator> evaluators =
-            new ArrayList<TrainTestPredictEvaluator>(dbFiles.length);
+        List<TrainTestEvaluator> evaluators =
+            new ArrayList<TrainTestEvaluator>(dbFiles.length);
         for (int i = 0; i < dbFiles.length; i++) {
             File dbf = dbFiles[i];
             String name = FileUtils.basename(dbf.getName(), ".db");
             String dsn = "jdbc:sqlite:" + dbf.getPath();
-            TrainTestPredictEvaluator eval = new TrainTestPredictEvaluator(dsn, "train", "test");
+            TrainTestEvaluator eval = new TrainTestEvaluator(dsn, "train", "test");
             eval.setName(name);
             eval.setTimestampEnabled(useTimestamp);
             evaluators.add(eval);
         }
 
         if (isolateDatasets) {
-            for (TrainTestPredictEvaluator eval: evaluators) {
+            for (TrainTestEvaluator eval: evaluators) {
                 eval.runEvaluation(recipe);
             }
         } else {
             ExecutorService svc = Executors.newFixedThreadPool(threadCount);
             try {
                 List<Future<?>> results = new ArrayList<Future<?>>();
-                for (TrainTestPredictEvaluator eval: evaluators) {
+                for (TrainTestEvaluator eval: evaluators) {
                     Collection<Runnable> tasks = eval.makeEvalTasks(recipe);
                     for (Runnable task: tasks) {
                         results.add(svc.submit(task));

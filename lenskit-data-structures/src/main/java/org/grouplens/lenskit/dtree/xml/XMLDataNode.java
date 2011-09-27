@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.dtree.xml;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import org.codehaus.plexus.util.StringUtils;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -108,8 +110,9 @@ public class XMLDataNode implements DataNode {
     private final Properties properties;
     private final Node xml;
     private List<DataNode> kids;
+    private XMLDataNode parent;
     
-    public XMLDataNode(Properties props, Node node) {
+    XMLDataNode(Properties props, Node node) {
         properties = new Properties(props);
         xml = node;
     }
@@ -131,11 +134,16 @@ public class XMLDataNode implements DataNode {
 
     @Override
     public String getValue() {
+        return getRawValue().trim();
+    }
+    
+    @Override
+    public String getRawValue() {
         if (getChildren().isEmpty()) {
             String val = xml.getTextContent();
             if (properties != null)
                 val = interpolate(val, properties);
-            return val.trim();
+            return val;
         } else {
             return "";
         }
@@ -196,5 +204,20 @@ public class XMLDataNode implements DataNode {
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+    
+    public List<String> getPath() {
+        LinkedList<String> elts = new LinkedList<String>();
+        Node e = xml;
+        while (e instanceof Element) {
+            elts.addFirst(e.getNodeName());
+            e = e.getParentNode();
+        }
+        return elts;
+    }
+    
+    @Override
+    public String toString() {
+        return "{XMLNode " + StringUtils.join(getPath().iterator(), "/") + "}";
     }
 }

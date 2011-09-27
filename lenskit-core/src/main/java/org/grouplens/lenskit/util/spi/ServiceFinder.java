@@ -30,8 +30,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Iterables;
 
 /**
+ * Find and select services by name. Uses a {@link ServiceLoader} to load
+ * services from SPI definitions, and allows implementations to be selected by
+ * configuration alias or class name.
+ * 
+ * @since 0.8
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 public class ServiceFinder<S> {
     static Map<Class<?>, ServiceFinder<?>> instanceMap =

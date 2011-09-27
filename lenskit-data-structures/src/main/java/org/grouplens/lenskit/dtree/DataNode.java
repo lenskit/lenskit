@@ -48,6 +48,11 @@ public interface DataNode {
     @Nonnull String getValue();
     
     /**
+     * Get the raw (untrimmed) value of this node.
+     */
+    @Nonnull String getRawValue();
+    
+    /**
      * Get the value for an attribute of this node.
      * 
      * @param name The attribute name.

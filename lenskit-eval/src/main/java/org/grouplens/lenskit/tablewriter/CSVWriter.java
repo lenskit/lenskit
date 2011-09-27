@@ -26,19 +26,18 @@ import java.io.Writer;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CSVWriter extends AbstractTableWriter {
+public class CSVWriter implements TableWriter {
     private Writer writer;
+    private String[] columns;
 
     CSVWriter(Writer w, String[] cnames) throws IOException {
-        super(cnames);
+        columns = cnames;
         writer = w;
         writeRow(cnames);
     }
 
     @Override
-    public void finish() throws IOException {
-        if (isRowActive())
-            throw new IllegalStateException("Row in progress");
+    public void close() throws IOException {
         writer.close();
         writer = null;
     }
@@ -66,6 +65,11 @@ public class CSVWriter extends AbstractTableWriter {
         }
         writer.write('\n');
         writer.flush();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columns.length;
     }
 
 }

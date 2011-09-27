@@ -43,9 +43,16 @@ public class Trees {
     }
     
     public static String childValue(DataNode node, String name, String dft) {
+        return childValue(node, name, dft, true);
+    }
+    
+    public static String childValue(DataNode node, String name, String dft, boolean trimmed) {
         for (DataNode n: node.getChildren()) {
             if (n.getName().equals(name)) {
-                return n.getValue();
+                if (trimmed)
+                    return n.getValue();
+                else
+                    return n.getRawValue();
             }
         }
         return dft;

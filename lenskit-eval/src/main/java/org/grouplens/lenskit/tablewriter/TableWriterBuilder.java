@@ -36,11 +36,10 @@ import javax.annotation.WillClose;
  */
 public interface TableWriterBuilder {
     /**
-     * Add a column with the given name (will be output in the header).
-     * @param name The column's name.
-     * @return The column's index (0-based).
+     * Set the array of columns.
+     * @param columns The names of the columns in the output.
      */
-    int addColumn(String name);
+    void setColumns(String[] columns);
 
     /**
      * Get a {@link TableWriter} so you can start writing rows.  Table writers

@@ -21,6 +21,7 @@ package org.grouplens.lenskit.util;
 import java.util.concurrent.Callable;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 
 /**
  * A thread-safe lazy value class.  It waits until its value is actually required
@@ -29,13 +30,16 @@ import javax.annotation.Nonnull;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class LazyValue<T> {
+public class LazyValue<T> implements Provider<T> {
     private volatile T value;
-    private Callable<T> provider; // set to null once the value is computed
+    private Callable<T> provider;
 
     /**
      * Create a lazy value whose value will be provided by a callable.
-     * @param f The callable responsible for providing the lazy value.
+     * 
+     * @param f The callable responsible for providing the lazy value. The
+     *        callable's {@link Callable#call()} method cannot return
+     *        <tt>null</tt>.
      */
     public LazyValue(@Nonnull Callable<T> f) {
         provider = f;
@@ -45,17 +49,16 @@ public class LazyValue<T> {
      * Get the value, computing it if necessary.
      * @return The value returned by the callable.
      */
+    @Override
     public synchronized T get() {
-        if (provider != null) {
-            // still have the provider, we need to compute the value
+        if (value == null) {
             try {
                 value = provider.call();
             } catch (Exception e) {
-                throw new RuntimeException("Error computing lazy value", e);
+                throw new RuntimeException(e);
             }
-            // free the provider, mark as computed
-            provider = null;
         }
+        
         return value;
     }
 }

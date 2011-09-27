@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @ConfigAlias("coverage")
+@MetaInfServices
 public class CoverageEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(CoverageEvaluator.class);
     private static final String[] COLUMNS = {

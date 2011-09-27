@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
  * Specify a short name that can be used to select a class with
  * {@link ServiceFinder}.
  * 
+ * @since 0.8 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */

@@ -25,29 +25,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import com.google.common.util.concurrent.Futures;
+
 /**
  * Helper methods for working with futures and executor services.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class ExecHelpers {
-    /**
-     * Get the value of a future, automatically retrying when interrupted.
-     * @param <T> The type of the future.
-     * @param future The future to wait for.
-     * @return The future's value.
-     * @throws ExecutionException if the task failed.
-     */
-    public static <T> T force(Future<T> future) throws ExecutionException {
-        while (true) {
-            try {
-                return future.get();
-            } catch (InterruptedException e) {
-                /* no-op, try again */
-            }
-        }
-    }
-
     /**
      * Extract the cause exception for an execution exception if possible.
      * @param e The execution exception.
@@ -77,13 +62,13 @@ public class ExecHelpers {
 
     /**
      * Wait for all futures to finish.
-     * @param results
-     * @throws ExecutionException
+     * @param results The futures to wait on.
+     * @throws ExecutionException if one or more futures failed.
      */
     public static void waitAll(List<Future<?>> results)
             throws ExecutionException {
         for (Future<?> f: results) {
-            force(f);
+            Futures.makeUninterruptible(f).get();
         }
     }
 }

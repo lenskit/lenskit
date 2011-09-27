@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluation>
+  <type>train-test</type>
+  <output>${project.build.directory}/eval-output/baselines.csv</output>
+  <datasets>
+    <crossfold>
+      <sources>
+        <csvfile>
+          <file displayName="ml-100k">${project.build.directory}/ml-100k/u.data</file>
+          <delimiter>&#x9;</delimiter> <!-- tab character -->
+        </csvfile>
+      </sources>
+    </crossfold>
+  </datasets>
+
+  <algorithms>
+    <script>${scripts.directory}/baselines.js</script>
+  </algorithms>
+</evaluation>

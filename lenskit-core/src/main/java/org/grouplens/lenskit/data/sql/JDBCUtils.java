@@ -44,4 +44,39 @@ public class JDBCUtils {
             stmt.close();
         }
     }
+    
+    /**
+     * Safely clsoe a group of statements. Throws the first SQLException thrown
+     * in closing the statements. If no SQLExceptions are thrown but closing a
+     * statement throws a runtime exception, that is thrown.
+     * 
+     * @param statements A set of statements to close.
+     * @throws SQLException if one of the statements fails. The other statements
+     *         are still closed if possible.
+     */
+    public static void close(Statement... statements) throws SQLException {
+        Exception err = null;
+        for (Statement s: statements) {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (SQLException e) {
+                    logger.error("Error closing statement: " + e.getMessage(), e);
+                    if (err == null || err instanceof RuntimeException)
+                        err = e;
+                } catch (RuntimeException e) {
+                    logger.error("Error closing statement: " + e.getMessage(), e);
+                    if (err == null || err instanceof RuntimeException)
+                        err = e;
+                }
+            }
+        }
+        if (err instanceof SQLException) {
+            throw (SQLException) err;
+        } else if (err instanceof RuntimeException) {
+            throw (RuntimeException) err;
+        } else if (err != null) {
+            throw new RuntimeException("Unexpected error", err);
+        }
+    }
 }

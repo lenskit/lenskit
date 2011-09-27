@@ -20,8 +20,6 @@ package org.grouplens.lenskit.tablewriter;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Write tables as CSV files.
@@ -29,27 +27,21 @@ import java.util.List;
  *
  */
 public class CSVWriterBuilder implements TableWriterBuilder {
-    private List<String> columns;
+    private String[] columns;
 
-    public CSVWriterBuilder() {
-        columns = new ArrayList<String>();
+    @Override
+    public void setColumns(String[] names) {
+        columns = names;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#addColumn(java.lang.String)
-     */
     @Override
-    public int addColumn(String name) {
-        columns.add(name);
-        return columns.size() - 1;
-    }
-
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.tablewriter.TableWriterBuilder#makeWriter(java.io.Writer)
-     */
-    @Override
-    public AbstractTableWriter makeWriter(Writer output) throws IOException {
-        return new CSVWriter(output, columns.toArray(new String[columns.size()]));
+    public TableWriter makeWriter(Writer output) throws IOException {
+        try {
+            return new CSVWriter(output, columns);
+        } catch (RuntimeException e) {
+            output.close();
+            throw e;
+        }
     }
 
 }

@@ -28,11 +28,11 @@
       <artifactId>lenskit-eval</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-eval-ant-plugin</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <!-- <dependency> -->
+    <!--   <groupId>org.grouplens.lenskit</groupId> -->
+    <!--   <artifactId>lenskit-eval-ant-plugin</artifactId> -->
+    <!--   <version>${project.version}</version> -->
+    <!-- </dependency> -->
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-knn</artifactId>
@@ -42,6 +42,11 @@
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-svd</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
@@ -71,23 +76,32 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.2</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>1.1.1</version>
+
+        <configuration>
+          <assembleDirectory>${project.build.directory}/dist/lenskit</assembleDirectory>
+          <repositoryLayout>flat</repositoryLayout>
+          <repositoryName>lib</repositoryName>
+          <programs>
+            <program>
+              <mainClass>org.grouplens.lenskit.eval.EvalCLI</mainClass>
+              <name>lenskit-eval</name>
+            </program>
+          </programs>
+        </configuration>
+
         <executions>
           <execution>
-            <id>copy-deps</id>
+            <id>assemble</id>
             <phase>package</phase>
-            <goals><goal>copy-dependencies</goal></goals>
-            <configuration>
-              <stripVersion>true</stripVersion>
-              <outputDirectory>${jar.directory}</outputDirectory>
-              <excludeGroupIds>
-                org.grouplens.common,org.grouplens.lenskit
-              </excludeGroupIds>
-            </configuration>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
           </execution>
         </executions>
+        
       </plugin>
     </plugins>
   </build>
