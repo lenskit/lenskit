@@ -70,8 +70,8 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
         logger.debug("Configuring crossfolder from {}", config);
         int holdout = Trees.childValueInt(config, "holdout", 10);
         int folds = Trees.childValueInt(config, "folds", 5);
-        HoldoutMode mode =
-            HoldoutMode.fromString(Trees.childValue(config, "mode", "random"));
+        HoldoutMode mode = HoldoutMode.fromString(Trees.childValue(config, "mode", "random"));
+        boolean useDB = Trees.childValueBool(config, "database", false);
 
         List<DataSource> sources = configureSources(config);
         if (sources.isEmpty()) {
@@ -84,7 +84,13 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
             CrossfoldManager cx =
                 new CrossfoldManager(src, holdout, folds, mode);
             for (int i = 1; i <= folds; i++) {
-                ttSources.add(new CrossfoldTTDataSet(cx, i));
+                TTDataSet set;
+                if (useDB) {
+                    set = new DBCrossfoldTTDataSet(cx, i);
+                } else {
+                    set = new MemoryCrossfoldTTDataSet(cx, i);
+                }
+                ttSources.add(set);
             }
         }
         return ttSources;

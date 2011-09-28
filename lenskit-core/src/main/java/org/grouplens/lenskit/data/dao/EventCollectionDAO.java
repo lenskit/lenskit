@@ -25,6 +25,7 @@ import static com.google.common.collect.Iterables.filter;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.concurrent.ThreadSafe;
+import javax.inject.Provider;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -83,6 +85,39 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
         @Override
         public EventCollectionDAO snapshot() {
+            return create();
+        }
+    }
+    
+    /**
+     * Soft-caching factory for event collection DAOs.
+     * @since 0.8
+     */
+    public static class SoftFactory implements DAOFactory {
+        private final Provider<? extends Collection<? extends Event>> provider;
+        private transient volatile SoftReference<DataAccessObject> instance;
+        
+        public SoftFactory(Provider<? extends Collection<? extends Event>> p) {
+            provider = p;
+        }
+        
+        @Override
+        public synchronized DataAccessObject create() {
+            DataAccessObject dao = null;
+            if (instance != null) {
+                dao = instance.get();
+            }
+            
+            if (dao == null) {
+                dao = new EventCollectionDAO(provider.get());
+                instance = new SoftReference<DataAccessObject>(dao);
+            }
+            
+            return dao;
+        }
+        
+        @Override
+        public DataAccessObject snapshot() {
             return create();
         }
     }

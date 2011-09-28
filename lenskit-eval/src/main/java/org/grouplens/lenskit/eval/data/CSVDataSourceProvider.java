@@ -25,9 +25,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Provider;
+
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.grouplens.lenskit.dtree.Trees;
 import org.grouplens.lenskit.eval.ConfigUtils;
@@ -56,6 +62,9 @@ import org.kohsuke.MetaInfServices;
  * <dt>fileset
  * <dd>A fileset specifying some data sources. A <var>dir</var> attribute is
  * supported to provide a base directory.
+ * <dt>cache
+ * <dd>If <tt>true</tt> (the default), a soft reference is used to cache rating
+ * data in-memory to avoid unnecessary reloads.
  * </dl>
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -68,16 +77,16 @@ public class CSVDataSourceProvider implements DataSourceProvider {
     public Collection<DataSource> configure(DataNode config)
             throws EvaluatorConfigurationException {
         String delimiter = Trees.childValue(config, "delimiter", "\t", false);
-        
+        boolean cache = Trees.childValueBool(config, "cache", true);
         List<DataSource> sources = new ArrayList<DataSource>();
         for (DataNode child: config.getChildren()) {
             String n = child.getName();
             if (n.equals("url")) {
                 sources.add(configureURLSource(delimiter, child));
             } else if (n.equals("file")) {
-                sources.add(configureFileSource(delimiter, child));
+                sources.add(configureFileSource(delimiter, child, cache));
             } else if (n.equals("fileset")) {
-                sources.addAll(configureGlobSource(delimiter, child));
+                sources.addAll(configureGlobSource(delimiter, child, cache));
             }
         }
         
@@ -98,7 +107,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         //return new CSVSource(name, new SimpleFileRatingDAO.Factory(url, delim));
     }
     
-    CSVSource configureFileSource(String delim, DataNode config) throws EvaluatorConfigurationException {
+    CSVSource configureFileSource(String delim, DataNode config, boolean cache) throws EvaluatorConfigurationException {
         String fn = config.getValue();
         String bdir = config.getAttribute("dir");
         File file;
@@ -110,10 +119,10 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         String name = config.getAttribute("displayName");
         if (name == null)
             name = file.getName();
-        return new CSVSource(name, file, delim);
+        return new CSVSource(name, file, delim, cache);
     }
     
-    List<CSVSource> configureGlobSource(String delim, DataNode config) throws EvaluatorConfigurationException {
+    List<CSVSource> configureGlobSource(String delim, DataNode config, boolean cache) throws EvaluatorConfigurationException {
         DirectoryScanner ds = ConfigUtils.configureScanner(config);
         File base = ds.getBasedir();
         ds.scan();
@@ -121,20 +130,18 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         List<CSVSource> sources = new ArrayList<CSVSource>();
         for (String fn: ds.getIncludedFiles()) {
             File file = new File(base, fn);
-            sources.add(new CSVSource(fn, file, delim));
+            sources.add(new CSVSource(fn, file, delim, cache));
         }
         
         return sources;
     }
     
     static class CSVSource implements DataSource {
-        private String name;
+        private final String name;
+        private final DAOFactory factory;
+        private final File sourceFile;
         
-        SimpleFileRatingDAO.Factory factory;
-
-        private File sourceFile;
-        
-        public CSVSource(String name, File file, String delim) {
+        public CSVSource(String name, File file, String delim, boolean cache) {
             this.name = name;
             sourceFile = file;
             URL url;
@@ -143,7 +150,22 @@ public class CSVDataSourceProvider implements DataSourceProvider {
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
-            this.factory = new SimpleFileRatingDAO.Factory(url, delim);
+            final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
+            if (cache) {
+                factory = new EventCollectionDAO.SoftFactory(new Provider<List<Rating>>() {
+                    @Override
+                    public List<Rating> get() {
+                        DataAccessObject dao = csvFactory.create();
+                        try {
+                            return Cursors.makeList(dao.getEvents(Rating.class));
+                        } finally {
+                            dao.close();
+                        }
+                    }
+                });
+            } else {
+                factory = csvFactory;
+            }
         }
 
         @Override

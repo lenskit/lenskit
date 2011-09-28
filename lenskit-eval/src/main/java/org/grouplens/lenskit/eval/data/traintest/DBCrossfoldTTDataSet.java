@@ -52,11 +52,15 @@ import org.sqlite.SQLiteConfig;
 import com.google.common.io.Files;
 
 /**
+ * Database-backed crossfold data set.  This data set gets the split from a
+ * crossfold manager and stores it in a pre-computed database table.
+ * 
+ * @since 0.8
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CrossfoldTTDataSet implements TTDataSet {
-    private Logger logger = LoggerFactory.getLogger(CrossfoldTTDataSet.class);
+public class DBCrossfoldTTDataSet implements TTDataSet {
+    private Logger logger = LoggerFactory.getLogger(DBCrossfoldTTDataSet.class);
     
     private CrossfoldManager manager;
     private final int foldNumber;
@@ -66,7 +70,7 @@ public class CrossfoldTTDataSet implements TTDataSet {
     private boolean useTimestamp = true;
     private GenericTTDataSet dataset;
 
-    public CrossfoldTTDataSet(CrossfoldManager mgr, int fold) {
+    public DBCrossfoldTTDataSet(CrossfoldManager mgr, int fold) {
 	    manager = mgr;
 	    foldNumber = fold;
 	    stampName = String.format("data.%d.stamp", fold);
