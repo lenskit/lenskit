@@ -47,6 +47,9 @@ import org.slf4j.LoggerFactory;
  * <dd>The holdout mode. <tt>random</tt> (the default) or <tt>timestamp</tt>.
  * <dt>sources
  * <dd>A list of input sources to build crossfold sets from.
+ * <dt>database
+ * <dd>If <tt>true</tt>, store cross-folded data in databases in the evaluator
+ * cache.  Otherwise, splits are cached in memory.
  * </dl>
  * 
  * <p>

@@ -33,6 +33,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Properties;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -40,13 +41,13 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
+import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteConfig.LockingMode;
 
 import com.google.common.io.Files;
 
@@ -63,7 +64,7 @@ public class CrossfoldTTDataSet implements TTDataSet {
     private final String dbName;
     private File dbFile;
     private boolean useTimestamp = true;
-    private DBTTDataSet dataset;
+    private GenericTTDataSet dataset;
 
     public CrossfoldTTDataSet(CrossfoldManager mgr, int fold) {
 	    manager = mgr;
@@ -99,21 +100,21 @@ public class CrossfoldTTDataSet implements TTDataSet {
             logger.debug("Data set {} up to date", this);
         }
         
-        BasicSQLStatementFactory trainSF = new BasicSQLStatementFactory();
-        trainSF.setTableName("train");
-        trainSF.setTimestampColumn(useTimestamp ? "timestamp" : null);
-        BasicSQLStatementFactory testSF = new BasicSQLStatementFactory();
-        testSF.setTableName("test");
-        testSF.setTimestampColumn(useTimestamp ? "timestamp" : null);
+        DAOFactory trainFact = makeDAOFactory("train");
+        DAOFactory testFact = makeDAOFactory("test");
+
+        dataset = new GenericTTDataSet(getName(), trainFact, testFact);
+        context.prepare(dataset);
+    }
+    
+    private DAOFactory makeDAOFactory(String table) {
+        BasicSQLStatementFactory sf = new BasicSQLStatementFactory();
+        sf.setTableName(table);
+        sf.setTimestampColumn(useTimestamp ? "timestamp" : null);
         SQLiteConfig config = new SQLiteConfig();
         config.setReadOnly(true);
-        //config.setLockingMode(LockingMode.NORMAL);
-        dataset = new DBTTDataSet(getDSN())
-                .setTrainStatementFactory(trainSF)
-                .setTestStatementFactory(testSF)
-                .setProperties(config.toProperties());
-        
-        context.prepare(dataset);
+        Properties cfgProps = config.toProperties();
+        return new JDBCRatingDAO.Factory(getDSN(), sf, cfgProps);
     }
 
     /**
