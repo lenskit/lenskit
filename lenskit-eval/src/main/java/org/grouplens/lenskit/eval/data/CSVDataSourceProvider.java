@@ -30,6 +30,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.grouplens.lenskit.dtree.Trees;
+import org.grouplens.lenskit.eval.ConfigUtils;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
@@ -52,8 +53,8 @@ import org.kohsuke.MetaInfServices;
  * <dt>file
  * <dd>The file name of a data source. A <var>dir</var> attribute is supported
  * to provide a parent directory.
- * <dt>glob
- * <dd>A glob specifying some data sources. A <var>dir</var> attribute is
+ * <dt>fileset
+ * <dd>A fileset specifying some data sources. A <var>dir</var> attribute is
  * supported to provide a base directory.
  * </dl>
  * 
@@ -75,7 +76,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
                 sources.add(configureURLSource(delimiter, child));
             } else if (n.equals("file")) {
                 sources.add(configureFileSource(delimiter, child));
-            } else if (n.equals("glob")) {
+            } else if (n.equals("fileset")) {
                 sources.addAll(configureGlobSource(delimiter, child));
             }
         }
@@ -113,24 +114,13 @@ public class CSVDataSourceProvider implements DataSourceProvider {
     }
     
     List<CSVSource> configureGlobSource(String delim, DataNode config) throws EvaluatorConfigurationException {
-        String bdir = config.getAttribute("dir");
-        if (bdir == null)
-            bdir = ".";
-        File base = new File(bdir);
-        DirectoryScanner ds = new DirectoryScanner();
-        ds.setBasedir(base);
-        ds.setIncludes(new String[]{config.getValue()});
+        DirectoryScanner ds = ConfigUtils.configureScanner(config);
+        File base = ds.getBasedir();
         ds.scan();
         
         List<CSVSource> sources = new ArrayList<CSVSource>();
         for (String fn: ds.getIncludedFiles()) {
             File file = new File(base, fn);
-            URL url;
-            try {
-                url = file.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new EvaluatorConfigurationException(e);
-            }
             sources.add(new CSVSource(fn, file, delim));
         }
         

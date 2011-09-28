@@ -62,6 +62,15 @@ public interface DataNode {
     @Nullable String getAttribute(String name);
     
     /**
+     * Get the value for an attribute of this node with a default.
+     * @param name The attribute name.
+     * @param dft The default value.
+     * @return The attribute value, or <var>dft</var> if no such attribute is
+     *         present.
+     */
+    String getAttribute(String name, String dft);
+    
+    /**
      * Get the children of this node.
      * @return The node's children.
      */

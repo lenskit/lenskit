@@ -110,7 +110,6 @@ public class XMLDataNode implements DataNode {
     private final Properties properties;
     private final Node xml;
     private List<DataNode> kids;
-    private XMLDataNode parent;
     
     XMLDataNode(Properties props, Node node) {
         properties = new Properties(props);
@@ -124,11 +123,16 @@ public class XMLDataNode implements DataNode {
     
     @Override
     public String getAttribute(String attr) {
+        return getAttribute(attr, null);
+    }
+    
+    @Override
+    public String getAttribute(String attr, String dft) {
         Element elt = (Element) xml;
         if (elt.hasAttribute(attr)) {
-            return elt.getAttribute(attr);
+            return interpolate(elt.getAttribute(attr), properties);
         } else {
-            return null;
+            return dft;
         }
     }
 

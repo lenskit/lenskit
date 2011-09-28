@@ -28,9 +28,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.grouplens.lenskit.dtree.Trees;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.ConfigUtils;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.Evaluator;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
@@ -143,13 +145,47 @@ public class TrainTestEvaluator implements Evaluator {
         
         List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
         for (DataNode ae: algosElt.getChildren()) {
-            if (!ae.getName().equals("script"))
+            if (ae.getName().equals("script")) {
+                algos.addAll(loadScript(properties, ae));
+            } else if (ae.getName().equals("scriptset")) {
+                algos.addAll(loadScriptSet(properties, ae));
+            } else {
                 throw new EvaluatorConfigurationException("Unexpected element " + ae.getName());
-            
-            // TODO Support glob expressions
-            String fn = ae.getValue();
+            }
+        }
+        return algos;
+    }
+
+    /**
+     * @param properties
+     * @param config
+     * @throws EvaluatorConfigurationException
+     */
+    private List<AlgorithmInstance> loadScript(Properties properties, DataNode config) throws EvaluatorConfigurationException {
+        String fn = config.getValue();
+        try {
+            return loadAlgorithm(properties, new File(fn));
+        } catch (InvalidRecommenderException e) {
+            throw new EvaluatorConfigurationException(e);
+        }
+    }
+    
+    /**
+     * @param properties
+     * @param config
+     * @throws EvaluatorConfigurationException
+     */
+    private List<AlgorithmInstance> loadScriptSet(Properties properties,
+                                                  DataNode config) throws EvaluatorConfigurationException {
+        DirectoryScanner ds = ConfigUtils.configureScanner(config);
+        ds.scan();
+        String[] files = ds.getIncludedFiles();
+        File base = ds.getBasedir();
+
+        List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>();
+        for (String fn: files) {
             try {
-                algos.addAll(loadAlgorithm(properties, new File(fn)));
+                algos.addAll(loadAlgorithm(properties, new File(base, fn)));
             } catch (InvalidRecommenderException e) {
                 throw new EvaluatorConfigurationException(e);
             }
@@ -158,7 +194,7 @@ public class TrainTestEvaluator implements Evaluator {
     }
     
     private List<AlgorithmInstance> loadAlgorithm(Properties properties, File file) throws InvalidRecommenderException {
-        logger.info("Loading recommender definition from {}", file);
+        logger.info("Loading recommenders from {}", file);
         URI uri = file.toURI();
         Context cx = Context.enter();
         try {

@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
+import java.util.Properties;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -43,6 +45,7 @@ public class DBTTDataSet implements TTDataSet {
             new BasicSQLStatementFactory();
     private SQLStatementFactory testStatementFactory =
             new BasicSQLStatementFactory();
+    private Properties properties;
     
     public DBTTDataSet(@Nonnull String dsn) {
         connectionString = dsn;
@@ -98,6 +101,15 @@ public class DBTTDataSet implements TTDataSet {
      */
     public @Nullable String getDriver() {
         return driver;
+    }
+    
+    public DBTTDataSet setProperties(@Nullable Properties props) {
+        properties = props;
+        return this;
+    }
+    
+    public @Nullable Properties getProperties() {
+        return properties;
     }
     
     /**
@@ -157,12 +169,12 @@ public class DBTTDataSet implements TTDataSet {
 
     @Override
     public DAOFactory getTrainFactory() {
-        return new JDBCRatingDAO.Factory(connectionString, trainStatementFactory);
+        return new JDBCRatingDAO.Factory(connectionString, trainStatementFactory, properties);
     }
 
     @Override
     public DAOFactory getTestFactory() {
-        return new JDBCRatingDAO.Factory(connectionString, testStatementFactory);
+        return new JDBCRatingDAO.Factory(connectionString, testStatementFactory, properties);
     }
     
     @Override

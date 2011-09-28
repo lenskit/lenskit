@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import org.grouplens.lenskit.cursors.AbstractLongCursor;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -68,10 +69,16 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         private final String cxnUrl;
         private final SQLStatementFactory factory;
         private volatile boolean takeSnapshot = false;
-
+        private final Properties properties;
+        
         public Factory(String url, SQLStatementFactory config) {
+            this(url, config, null);
+        }
+
+        public Factory(String url, SQLStatementFactory config, Properties props) {
             cxnUrl = url;
             factory = config;
+            properties = props;
         }
 
         /**
@@ -104,7 +111,11 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
             Connection dbc;
             try {
-                dbc = DriverManager.getConnection(cxnUrl);
+                if (properties == null) {
+                    dbc = DriverManager.getConnection(cxnUrl);
+                } else {
+                    dbc = DriverManager.getConnection(cxnUrl, properties);
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

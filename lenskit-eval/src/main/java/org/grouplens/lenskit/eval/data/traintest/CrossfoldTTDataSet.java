@@ -45,6 +45,8 @@ import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteConfig.LockingMode;
 
 import com.google.common.io.Files;
 
@@ -103,9 +105,13 @@ public class CrossfoldTTDataSet implements TTDataSet {
         BasicSQLStatementFactory testSF = new BasicSQLStatementFactory();
         testSF.setTableName("test");
         testSF.setTimestampColumn(useTimestamp ? "timestamp" : null);
+        SQLiteConfig config = new SQLiteConfig();
+        config.setReadOnly(true);
+        //config.setLockingMode(LockingMode.NORMAL);
         dataset = new DBTTDataSet(getDSN())
                 .setTrainStatementFactory(trainSF)
-                .setTestStatementFactory(testSF);
+                .setTestStatementFactory(testSF)
+                .setProperties(config.toProperties());
         
         context.prepare(dataset);
     }
