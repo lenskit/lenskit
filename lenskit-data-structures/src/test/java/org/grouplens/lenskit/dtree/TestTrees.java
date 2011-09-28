@@ -51,4 +51,41 @@ public class TestTrees extends XMLTestCase {
         DataNode node = parse("<config><foo>bar</foo></config>");
         assertThat(Trees.childValue(node, "foo"), equalTo("bar"));
     }
+    
+    @Test
+    public void testToBoolTrue() {
+        assertThat(Trees.stringToBool("true"), equalTo(true));
+        assertThat(Trees.stringToBool("True"), equalTo(true));
+        assertThat(Trees.stringToBool("tRUe"), equalTo(true));
+        assertThat(Trees.stringToBool("yes"), equalTo(true));
+        assertThat(Trees.stringToBool("YeS"), equalTo(true));
+    }
+    
+    @Test
+    public void testToBoolFalse() {
+        assertThat(Trees.stringToBool("false"), equalTo(false));
+        assertThat(Trees.stringToBool("false"), equalTo(false));
+        assertThat(Trees.stringToBool("fAlSE"), equalTo(false));
+        assertThat(Trees.stringToBool("no"), equalTo(false));
+        assertThat(Trees.stringToBool("No"), equalTo(false));
+        assertThat(Trees.stringToBool("bob"), equalTo(false));
+    }
+    
+    @Test
+    public void testCVChildTrue() throws SAXException, IOException {
+        DataNode node = parse("<config><foo>true</foo></config>");
+        assertThat(Trees.childValueBool(node, "foo", false), equalTo(true));
+    }
+    
+    @Test
+    public void testCVChildFalse() throws SAXException, IOException {
+        DataNode node = parse("<config><foo>no</foo></config>");
+        assertThat(Trees.childValueBool(node, "foo", true), equalTo(false));
+    }
+    
+    @Test
+    public void testCVChildBoolDft() throws SAXException, IOException {
+        DataNode node = parse("<config><foo>no</foo></config>");
+        assertThat(Trees.childValueBool(node, "bar", true), equalTo(true));
+    }
 }

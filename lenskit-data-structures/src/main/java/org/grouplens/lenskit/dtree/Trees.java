@@ -60,23 +60,25 @@ public class Trees {
     
     private static final Pattern truePattern = 
             Pattern.compile("^true|yes$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern falsePattern =
-            Pattern.compile("^false|no$", Pattern.CASE_INSENSITIVE);
     
     static boolean reMatches(Pattern pat, String st) {
         return pat.matcher(st).find();
+    }
+    
+    static boolean stringToBool(String s) {
+        if (reMatches(truePattern, s)) {
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public static boolean childValueBool(DataNode node, String name, boolean dft) {
         String v = childValue(node, name);
         if (v == null) {
             return dft;
-        } else if (reMatches(truePattern, v)) {
-            return true;
-        } else if (reMatches(falsePattern, v)) {
-            return false;
         } else {
-            throw new IllegalArgumentException("Invalid boolean: " + v);
+            return stringToBool(v);
         }
     }
     
