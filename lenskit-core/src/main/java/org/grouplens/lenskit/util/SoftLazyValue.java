@@ -53,7 +53,7 @@ public class SoftLazyValue<T> implements Provider<T> {
      */
     @Override
     public synchronized T get() {
-        T val = value == null ? null : value.get();
+        T val = (value == null) ? null : value.get();
         if (val == null) {
             try {
                 val = provider.call();
