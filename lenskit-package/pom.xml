@@ -28,11 +28,6 @@
       <artifactId>lenskit-eval</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <!-- <dependency> -->
-    <!--   <groupId>org.grouplens.lenskit</groupId> -->
-    <!--   <artifactId>lenskit-eval-ant-plugin</artifactId> -->
-    <!--   <version>${project.version}</version> -->
-    <!-- </dependency> -->
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-knn</artifactId>

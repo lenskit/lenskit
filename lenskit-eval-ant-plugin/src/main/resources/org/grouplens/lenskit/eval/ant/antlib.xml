@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<antlib>
-  <taskdef name="traintest" classname="org.grouplens.lenskit.eval.ant.TrainTestTask" />
-  <taskdef name="split" classname="org.grouplens.lenskit.eval.ant.CrossfoldSplitTask" />
-  <taskdef name="import" classname="org.grouplens.lenskit.eval.ant.ImportTask" />
-</antlib>
