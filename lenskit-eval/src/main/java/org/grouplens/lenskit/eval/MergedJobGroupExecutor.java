@@ -39,8 +39,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class MergedJobGroupExecutor implements JobGroupExecutor {
-    private static final Logger logger = LoggerFactory
-        .getLogger(MergedJobGroupExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MergedJobGroupExecutor.class);
 
     enum JobGroupState {
         WAITING, RUNNING, FINISHED
