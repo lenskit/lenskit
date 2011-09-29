@@ -80,7 +80,10 @@ Getting LensKit
 
   The easiest way to get LensKit is through Maven by adding it as a
   dependency; see the {{{./getting-started.html}Getting Started
-  guide}} for more information.
+  guide}} for more information.  We also provide LensKit binaries with
+  all dependencies in both
+  {{{./lenskit-package/lenskit-${project.version}.tar.gz}tar.gz}} and
+  {{{./lenskit-package/lenskit-${project.version}.zip}zip}} formats.
 
   Alternatively, you can download the source code as a
   {{{./downloads/lenskit-${project.version}-source-package.tar.gz}gzipped
