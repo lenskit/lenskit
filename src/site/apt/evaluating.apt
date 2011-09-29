@@ -5,12 +5,13 @@
 Using the Evaluator
 
   LensKit provides an offline evaluation framework for testing
-  recommenders.  It is in the <<<lenskit-eval>>> subpackage.  The
-  resulting jar, however, does not include the core or any
-  recommenders.  We have created a {{{./lenskit-eval-ant-plugin/}Ant
-  plugin}} that takes care of running the recommender as a Maven task.
-  For now, that is the only supported means of running recommender
-  evaluations.
+  recommenders.  It is in the <<<lenskit-eval>>> package.  As that
+  package does not depend on any of the recommenders, it is necessary
+  to add recommenders to the class path.  The binary distribution
+  ({{{./lenskit-package/lenskit-latest.zip}zip}},
+  {{{./lenskit-package/lenskit-latest.tar.gz}tar.gz}} provides the
+  evaluator, all of LensKit's recommenders, and a shell script to run
+  them for convenience.
 
 Configuring Recommenders
 
@@ -19,73 +20,30 @@ Configuring Recommenders
   parameters.  Multiple configurations can be generated from a single
   script.
 
-  Here's a simple script that demonstrates configuring user-user CF:
+  Here's a simple script that demonstrates configuring item-item CF:
 
-%{snippet|file=lenskit-knn/etc/useruser.js}
+%{snippet|file=lenskit-eval-demo/src/integration-test/itemitem.js}
 
 Running the Evaluator
 
-  Since the evaluator is a Maven plugin, you configure it from a
-  build.xml.  The following XML configures the evaluator to run with
-  the MovieLens 100K data set against a recommender script in
-  <<<etc/itemitem.js>>>.
+  Evaluators are configured using XML files.  The following is a
+  sample XML configuration that does a crossfold evaluation using the
+  MovieLens data:
 
 +--------------------------------------------+
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="LensKit Evaluation Suite" basedir="."
-         xmlns:lk="antlib:org.grouplens.lenskit.eval.ant"
-         xmlns:ac="antlib:net.sf.antcontrib">
-  <property name="build.dir" location="${basedir}/target" />
-  <property name="csv.dir" location="${build.dir}"/>
-  <property name="scripts.dir" location="${basedir}/etc"/>
-  <property name="data.dir" location="${basedir}/data" />
-
-  <target name="init">
-    <condition property="datasets.100k.uptodate">
-      <uptodate srcfile="${basedir}/data/ml-100k/u.data"
-                targetfile="${build.dir}/ml-100k.stamp"/>
-    </condition>
-  </target>
-
-  <target name="import-100k" depends="init"
-          unless="datasets.100k.uptodate">
-    <mkdir dir="${build.dir}/datasets"/>
-    <delete failonerror="false" verbose="true">
-      <fileset dir="${build.dir}/datasets" includes="ml-100k.*.db"/>
-    </delete>
-    <lk:split dataFile="${data.dir}/ml-100k/u.data"
-              dbFile="${build.dir}/datasets/ml-100k.%d.db"/>
-    <touch file="${build.dir}/ml-100k.stamp"/>
-  </target>
-
-  <macrodef name="eval">
-    <attribute name="data" default="ml-100k"/>
-    <attribute name="name"/>
-    <sequential>
-    </sequential>
-  </macrodef>
-  
-  <target name="useruser" depends="import-100k">
-    <lk:traintest script="${scripts.dir}/useruser.js"
-                  output="${csv.dir}/useruser.ml-100k.csv">
-      <databases dir="${build.dir}/datasets">
-        <include name="ml-100k.*.db"/>
-      </databases>
-    </lk:traintest>
-  </target>
-</project>
+%{snippet|file=lenskit-eval/src/integration-test/eval.xml
 +--------------------------------------------+
 
-  LensKit must be available on the classpath.  An easy way to do this
-  is to run the <<<package>>> target in the LensKit source tree and
-  copy all the JARs from <<<lenskit-package/target/jars>>> directory
-  to your Ant lib directory.  Alternatively, you can run Ant from
-  Maven with the
-  {{{http://maven.apache.org/plugins/maven-antrun-plugin/}AntRun
-  plugin}}} to pull in LensKit.
+  To run the evaluator, use the <<<lenskit-eval>>> script from the
+  binary distribution or the
+  <<<org.grouplens.lenskit.eval.cli.EvalCLI>>> main class.  The
+  <<<lenskit-eval-demo>>> module in the source tree shows how to run
+  the evaluator CLI from within Maven.
 
 Processing Output
 
   The evaluation framework produces CSV files, so the output can be
   analyzed and summarized in R, OpenOffice.org, Excel, or any other
-  data analysis tool that can import CSVs.
+  data analysis tool that can import CSVs.  A sample R script,
+  depending on the <<<doBy>>> and <<<lattice>>> R packages, is in
+  <<<lenskit-eval-demo>>> in the source tree.
