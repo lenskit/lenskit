@@ -95,9 +95,12 @@
                       <key>project.build.directory</key>
                       <value>${project.build.directory}</value>
                     </systemProperty>
+                    <systemProperty>
+                      <key>lenskit.eval.throwErrors</key>
+                      <value>true</value>
+                    </systemProperty>
                   </systemProperties>
                   <arguments>
-                    <argument>--throw-errors</argument>
                     <argument>--cache-dir</argument>
                     <argument>${project.build.directory}/eval-cache</argument>
                     <argument>${basedir}/src/integration-test/eval.xml</argument>
