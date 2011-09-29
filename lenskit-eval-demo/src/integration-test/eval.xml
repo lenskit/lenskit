@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <evaluation>
   <type>train-test</type>
-  <output>${project.build.directory}/eval-output/baselines.csv</output>
+  <output>${project.build.directory}/eval-output.csv</output>
   <datasets>
     <crossfold>
       <sources>

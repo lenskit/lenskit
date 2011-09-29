@@ -35,6 +35,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-slopeone</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
@@ -73,6 +78,7 @@
             <artifactId>exec-maven-plugin</artifactId>
             <groupId>org.codehaus.mojo</groupId>
             <version>1.2.1</version>
+
             <executions>
               <execution>
                 <id>run-eval</id>
@@ -95,6 +101,19 @@
                     <argument>--cache-dir</argument>
                     <argument>${project.build.directory}/eval-cache</argument>
                     <argument>${basedir}/src/integration-test/eval.xml</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>analyze-eval</id>
+                <phase>post-integration-test</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>Rscript</executable>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                  <arguments>
+                    <argument>${basedir}/src/integration-test/chart.R</argument>
                   </arguments>
                 </configuration>
               </execution>
