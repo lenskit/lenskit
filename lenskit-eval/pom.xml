@@ -114,7 +114,7 @@
                 <phase>integration-test</phase>
                 <goals><goal>java</goal></goals>
                 <configuration>
-                  <mainClass>org.grouplens.lenskit.eval.EvalCLI</mainClass>
+                  <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
                   <systemProperties>
                     <systemProperty>
                       <key>scripts.directory</key>

@@ -81,7 +81,7 @@
           <repositoryName>lib</repositoryName>
           <programs>
             <program>
-              <mainClass>org.grouplens.lenskit.eval.EvalCLI</mainClass>
+              <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
               <name>lenskit-eval</name>
             </program>
           </programs>

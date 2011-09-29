@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.eval.cli;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +31,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.grouplens.lenskit.dtree.Trees;
 import org.grouplens.lenskit.dtree.xml.XMLDataNode;
+import org.grouplens.lenskit.eval.EvalRunner;
+import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
+import org.grouplens.lenskit.eval.IsolationLevel;
+import org.grouplens.lenskit.eval.PreparationContext;
+import org.grouplens.lenskit.eval.PreparationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
