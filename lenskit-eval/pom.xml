@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
     <artifactId>lenskit</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-eval</artifactId>
@@ -91,12 +91,9 @@
                 <goals><goal>run</goal></goals>
                 <configuration>
                   <target>
-                    <property name="project.build.directory"
-                              value="${project.build.directory}"/>
-                    <property name="grouplens.mldata.acknowledge"
-                              value="${grouplens.mldata.acknowledge}"/>
-                    <ant antfile="src/integration-test/setup.xml"
-                         target="prepare-100k"/>
+                    <property name="project.build.directory" value="${project.build.directory}" />
+                    <property name="grouplens.mldata.acknowledge" value="${grouplens.mldata.acknowledge}" />
+                    <ant antfile="src/integration-test/setup.xml" target="prepare-100k" />
                   </target>
                 </configuration>
               </execution>

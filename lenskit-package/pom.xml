@@ -3,7 +3,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
     <relativePath>..</relativePath>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
@@ -116,17 +116,14 @@
               <target>
                 <chmod perm="a+x">
                   <fileset dir="${project.build.directory}/dist/lenskit">
-                    <include name="bin/*"/>
+                    <include name="bin/*" />
                   </fileset>
                 </chmod>
-                <tar destfile="${project.build.directory}/site/lenskit-${project.version}.tar.gz"
-                     compression="gzip">
-                  <tarfileset dir="${project.build.directory}/dist/lenskit"
-                              prefix="lenskit-${project.version}/"/>
+                <tar destfile="${project.build.directory}/site/lenskit-${project.version}.tar.gz" compression="gzip">
+                  <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                 </tar>
                 <zip destfile="${project.build.directory}/site/lenskit-${project.version}.zip">
-                  <zipfileset dir="${project.build.directory}/dist/lenskit"
-                              prefix="lenskit-${project.version}/"/>
+                  <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                 </zip>
               </target>
             </configuration>
