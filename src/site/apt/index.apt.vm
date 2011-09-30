@@ -84,6 +84,7 @@ Getting LensKit
   all dependencies in both
   {{{./lenskit-package/lenskit-${project.version}.tar.gz}tar.gz}} and
   {{{./lenskit-package/lenskit-${project.version}.zip}zip}} formats.
+  The JavaDoc is browseable {{{./apidocs}here}}.
 
   Alternatively, you can download the source code as a
   {{{./downloads/lenskit-${project.version}-source-package.tar.gz}gzipped
