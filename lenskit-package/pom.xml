@@ -3,7 +3,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.8</version>
+    <version>0.9-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
