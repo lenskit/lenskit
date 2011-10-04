@@ -18,12 +18,18 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.grouplens.lenskit.data.AbstractUserHistory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Basic user rating profile backed by a collection of ratings. The event list
@@ -82,5 +88,23 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     @Override
     public <T> T[] toArray(T[] a) {
         return events.toArray(a);
+    }
+
+    /**
+     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     */
+    @Override
+    public <T extends Event> UserHistory<T> filter(Class<T> type) {
+        List<T> events = Lists.newArrayList(Iterables.filter(this, type));
+        return new BasicUserHistory<T>(getUserId(), events);
+    }
+
+    /**
+     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     */
+    @Override
+    public UserHistory<E> filter(Predicate<? super E> pred) {
+        List<E> events = Lists.newArrayList(Iterables.filter(this, pred));
+        return new BasicUserHistory<E>(getUserId(), events);
     }
 }

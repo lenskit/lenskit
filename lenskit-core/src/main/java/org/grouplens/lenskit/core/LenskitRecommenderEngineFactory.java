@@ -75,7 +75,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * resulting engines cannot open DAOs themselves, so the {@link #create()}
      * and {@link RecommenderEngine#open()} methods will not work. In that case,
      * the {@link #create(DataAccessObject)} and
-     * {@link RecommenderEngine#open(DataAccessObject, boolean)} methods
+     * {@link LenskitRecommenderEngine#open(DataAccessObject, boolean)} methods
      * must be used instead.
      */
     public LenskitRecommenderEngineFactory() {

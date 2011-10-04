@@ -18,9 +18,11 @@
  */
 /**
  * Cursors for iterative data access.
- *
- * <p>Cursors (see {@link Cursor}) are basically closeable iterators, used for
- * accessing data sources.  They also expose the number of rows they will return,
- * although it is not guaranteed that a cursor can compute its length.
+ * 
+ * <p>
+ * Cursors (see {@link org.grouplens.lenskit.cursors.Cursor}) are basically
+ * closeable iterators, used for accessing data sources. They also expose the
+ * number of rows they will return, although it is not guaranteed that a cursor
+ * can compute its length.
  */
 package org.grouplens.lenskit.cursors;

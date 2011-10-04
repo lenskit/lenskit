@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * @see LenskitRecommender
  * @see RecommenderEngine
  */
 public interface Recommender {
@@ -79,8 +78,6 @@ public interface Recommender {
     /**
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
-     *
-     * @see RecommenderEngine#open(DataAccessObject, boolean)
      */
     void close();
 

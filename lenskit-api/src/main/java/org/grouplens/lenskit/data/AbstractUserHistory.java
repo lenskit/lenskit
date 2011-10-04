@@ -16,24 +16,17 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.history;
+package org.grouplens.lenskit.data;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * An abstract implementation of {@link UserHistory} to provide default
@@ -45,23 +38,6 @@ import com.google.common.collect.Lists;
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
     private final Map<Function, Object> memTable = new ConcurrentHashMap<Function, Object>();
-
-    /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
-     */@Override
-    public <T extends Event> UserHistory<T> filter(Class<T> type) {
-        List<T> events = Lists.newArrayList(Iterables.filter(this, type));
-        return new BasicUserHistory<T>(getUserId(), events);
-    }
-
-    /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
-     */
-    @Override
-    public UserHistory<E> filter(Predicate<? super E> pred) {
-        List<E> events = Lists.newArrayList(Iterables.filter(this, pred));
-        return new BasicUserHistory<E>(getUserId(), events);
-    }
 
     @Override
     public LongSet itemSet() {

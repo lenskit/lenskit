@@ -46,8 +46,8 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
     private RatingSnapshot normalizedData;
 
     /**
-     * Constructs a <tt>SlopeOneModel</tt> and the necessary matrices from
-     * a <tt>RatingSnapshot</tt>.
+     * Constructs a {@link SlopeOneModel} and the necessary matrices from
+     * a {@link RatingSnapshot}.
      */
     @Override
     public SlopeOneModel build() {
@@ -72,7 +72,10 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
     }
 
     /**
-     * @param scorer The <tt>BaselinePredictor</tt> to be included in the constructed <tt>SlopeOneModel</tt>
+     * Set the model's baseline predictor.
+     * 
+     * @param predictor The baseline predictor to be used with the resulting
+     *        model.
      */
     public void setBaselinePredictor(BaselinePredictor predictor) {
         baseline = predictor;
@@ -100,7 +103,7 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
     }
 
     /**
-     * @param data A <tt>RatingSnapshot</tt> containing normalized data.
+     * @param data A {@link RatingSnapshot} containing normalized data.
      */
     @NormalizedSnapshot
     public void setNormalizedData(RatingSnapshot data) {

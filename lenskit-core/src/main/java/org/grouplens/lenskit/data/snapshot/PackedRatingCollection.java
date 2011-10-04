@@ -40,6 +40,7 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@SuppressWarnings("javadoc") // JavaDoc warnings incorrectly flag PackedRatingData
 class PackedRatingCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
     final private PackedRatingData data;

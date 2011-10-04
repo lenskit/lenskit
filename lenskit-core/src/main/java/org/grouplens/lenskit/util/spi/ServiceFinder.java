@@ -86,12 +86,11 @@ public class ServiceFinder<S> {
     }
     
     /**
-     * Find a service by name. This name can be a configurable name (as in
-     * {@link Selectable#getConfigName()}, a bare class name, or a
-     * fully-qualified class name. Fully-qualified class names are not required
-     * to be registered via the SPI — if no SPI-registered implementation is
-     * found with the specified name, then this method attempts to load and
-     * instantiate the specified class.
+     * Find a service by name. This name can be a configurable alias (as in
+     * {@link ConfigAlias}, a bare class name, or a fully-qualified class name.
+     * Fully-qualified class names are not required to be registered via the SPI
+     * — if no SPI-registered implementation is found with the specified name,
+     * then this method attempts to load and instantiate the specified class.
      * 
      * @param name The name of the instance desired.
      * @return An instance of the service identified by <var>name</var>, or
