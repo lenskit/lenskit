@@ -6,7 +6,6 @@
     <version>0.9-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-package</artifactId>
   <name>LensKit Jar Packaging</name>
   <packaging>pom</packaging>
@@ -56,7 +55,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.4</version>
         <executions>
           <execution>
             <id>combined-package</id>

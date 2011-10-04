@@ -6,7 +6,6 @@
     <version>0.9-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-svd</artifactId>
   <name>LensKit SVD-based Recommenders</name>
   <dependencies>
