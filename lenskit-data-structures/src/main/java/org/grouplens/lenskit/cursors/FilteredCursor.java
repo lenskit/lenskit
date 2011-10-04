@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.WillCloseWhenClosed;
+
 import com.google.common.base.Predicate;
 
 /**
@@ -28,7 +30,7 @@ class FilteredCursor<T> extends AbstractPollingCursor<T> {
 	private final Cursor<T> cursor;
 	private final Predicate<? super T> filter;
 	
-	public FilteredCursor(Cursor<T> cursor, Predicate<? super T> filter) {
+	public FilteredCursor(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> filter) {
 	    super();
 		this.cursor = cursor;
 		this.filter = filter;

@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import javax.annotation.WillClose;
+import javax.annotation.WillCloseWhenClosed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,7 @@ public class Cursors {
 	 * @return A cursor returning all rows for which <var>predicate</var> returns
 	 * <tt>true</tt>.
 	 */
-	public static <T> Cursor<T> filter(Cursor<T> cursor, Predicate<? super T> predicate) {
+	public static <T> Cursor<T> filter(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> predicate) {
 		return new FilteredCursor<T>(cursor, predicate);
 	}
 
@@ -92,7 +93,7 @@ public class Cursors {
      * @return A cursor returning all elements in <var>cursor</var> which are
      *         instances of type <var>type</var>.
      */
-	public static <T> Cursor<T> filter(final Cursor<?> cursor, final Class<T> type) {
+	public static <T> Cursor<T> filter(@WillCloseWhenClosed final Cursor<?> cursor, final Class<T> type) {
 	    return new AbstractPollingCursor<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -103,6 +104,11 @@ public class Cursors {
                         return (T) obj;
                 }
                 return null;
+            }
+            
+            @Override
+            public void close() {
+                cursor.close();
             }
         };
 	}
@@ -115,7 +121,7 @@ public class Cursors {
 	 * @param function A function to apply to each row in the cursor.
 	 * @return A new cursor iterating the results of <var>function</var>.
 	 */
-	public static <S,T> Cursor<T> transform(Cursor<S> cursor, Function<? super S, ? extends T> function) {
+	public static <S,T> Cursor<T> transform(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
 	    return new TransformedCursor<S,T>(cursor, function);
 	}
 
@@ -213,7 +219,7 @@ public class Cursors {
         return new LongCollectionCursor(collection);
     }
     
-    public static LongCursor makeLongCursor(final Cursor<Long> cursor) {
+    public static LongCursor makeLongCursor(@WillCloseWhenClosed final Cursor<Long> cursor) {
         if (cursor instanceof LongCursor)
             return (LongCursor) cursor;
 

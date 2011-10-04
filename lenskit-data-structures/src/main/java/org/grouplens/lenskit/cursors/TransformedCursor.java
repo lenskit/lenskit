@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.WillCloseWhenClosed;
+
 import com.google.common.base.Function;
 
 /**
@@ -28,7 +30,7 @@ class TransformedCursor<S,T> extends AbstractCursor<T> {
 	private final Cursor<S> cursor;
 	private final Function<? super S, ? extends T> function;
 
-	public TransformedCursor(Cursor<S> cursor, Function<? super S, ? extends T> function) {
+	public TransformedCursor(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
 	    super(cursor.getRowCount());
 		this.cursor = cursor;
 		this.function = function;
