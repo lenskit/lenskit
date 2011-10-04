@@ -37,7 +37,6 @@ import javax.inject.Provider;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.cursors.Cursors2;
 import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -197,7 +196,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
     @Override
     public LongCursor getUsers() {
         requireUserCache();
-        return Cursors2.wrap(users.keySet());
+        return Cursors.wrap(users.keySet());
     }
 
     @Override

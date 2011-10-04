@@ -33,7 +33,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors2;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -101,7 +101,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     public ItemItemModel build() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
 
-        LongArrayList ilist = Cursors2.makeList(dao.getItems());
+        LongArrayList ilist = Cursors.makeList(dao.getItems());
         LongSortedSet items = new LongSortedArraySet(ilist);
 
         Long2ObjectMap<LongSortedSet> userItemSets;

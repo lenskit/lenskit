@@ -27,7 +27,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.cursors.Cursors2;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -148,7 +148,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * @return All items for which predictions can be generated for the user.
      */
     protected LongSet getPredictableItems(long user) {
-        return Cursors2.makeSet(dao.getItems());
+        return Cursors.makeSet(dao.getItems());
     }
 
     /**
@@ -160,6 +160,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * @return All items for which predictions can be generated for the user.
      */
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return Cursors2.makeSet(dao.getItems());
+        return Cursors.makeSet(dao.getItems());
     }
 }

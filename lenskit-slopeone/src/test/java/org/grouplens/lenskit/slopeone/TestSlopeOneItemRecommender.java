@@ -65,7 +65,7 @@ public class TestSlopeOneItemRecommender {
 
         try {
             // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getDynamicRatingPredictor() instanceof SlopeOneRatingPredictor);
+            Assert.assertTrue(rec.getItemScorer() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
             Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneRecommender);
         } finally {

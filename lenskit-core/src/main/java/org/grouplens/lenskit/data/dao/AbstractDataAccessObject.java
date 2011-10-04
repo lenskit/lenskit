@@ -34,7 +34,6 @@ import javax.annotation.WillCloseWhenClosed;
 import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.cursors.Cursors2;
 import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -226,7 +225,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public LongCursor getItems() {
-        return Cursors2.wrap(getItemSet());
+        return Cursors.wrap(getItemSet());
     }
 
     @Override
@@ -256,7 +255,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public LongCursor getUsers() {
-        return Cursors2.wrap(getUserSet());
+        return Cursors.wrap(getUserSet());
     }
 
     @Override
