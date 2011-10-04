@@ -103,6 +103,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         String name = config.getAttribute("name");
         if (name == null) 
             name = url.toString();
+        // TODO Implement URL sources
         throw new UnsupportedOperationException();
         //return new CSVSource(name, new SimpleFileRatingDAO.Factory(url, delim));
     }

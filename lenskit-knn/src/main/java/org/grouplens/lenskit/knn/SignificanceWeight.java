@@ -20,6 +20,8 @@ package org.grouplens.lenskit.knn;
 
 import static java.lang.Math.max;
 
+import java.io.Serializable;
+
 import org.grouplens.lenskit.knn.params.WeightThreshold;
 import org.grouplens.lenskit.knn.params.WeightedSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
@@ -46,7 +48,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @see WeightThreshold
  */
 public class SignificanceWeight implements
-        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
 
     private static final long serialVersionUID = 5748342121367821678L;
 

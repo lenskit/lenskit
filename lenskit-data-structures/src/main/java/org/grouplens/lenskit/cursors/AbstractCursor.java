@@ -51,21 +51,27 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
 	/**
 	 * Implementation of {@link Cursor#fastNext()} that delegates to {@link #next()}.
 	 */
-	public T fastNext() {
+	@Override
+    public T fastNext() {
 	    return next();
 	}
 	
-	public Iterable<T> fast() {
+	@Override
+    public Iterable<T> fast() {
 	    return new Iterable<T>() {
-	        public Iterator<T> iterator() {
+	        @Override
+            public Iterator<T> iterator() {
 	            return new Iterator<T>() {
-	                public boolean hasNext() {
+	                @Override
+                    public boolean hasNext() {
 	                    return AbstractCursor.this.hasNext();
 	                }
-	                public T next() {
+	                @Override
+                    public T next() {
 	                    return fastNext();
 	                }
-	                public void remove() {
+	                @Override
+                    public void remove() {
 	                    throw new UnsupportedOperationException();
 	                }
 	            };

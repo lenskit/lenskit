@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.knn;
 
+import java.io.Serializable;
+
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 
@@ -29,11 +31,13 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import com.google.common.primitives.Doubles;
 
 /**
+ * Similarity function using Spearman rank correlation.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public class SpearmanRankCorrelation implements
-        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
     private static final long serialVersionUID = 3023239202579332883L;
 
     private final PearsonCorrelation pearson;

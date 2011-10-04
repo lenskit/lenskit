@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn;
 import static java.lang.Math.sqrt;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.knn.params.SimilarityDamping;
@@ -42,7 +43,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction {
+public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
     private static final long serialVersionUID = 4116492312815769666L;
 
     private final double shrinkage;
