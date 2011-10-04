@@ -41,6 +41,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.AbstractRatingCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.util.MoreFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,11 +239,11 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
-        if (type.isAssignableFrom(Rating.class))
-            // TODO: do not use a cast - use a type-lifting cursor
-            return (Cursor<E>) getEvents(order);
-        else
+        if (type.isAssignableFrom(Rating.class)) {
+            return Cursors.transform(getEvents(order), MoreFunctions.cast(type));
+        } else {
             return Cursors.empty();
+        }
     }
 
     @Override
@@ -258,11 +259,11 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<E> getUserEvents(long uid, Class<E> type) {
-        if (type.isAssignableFrom(Rating.class))
-            // TODO: do not use a cast - use a type-lifting cursor
-            return (Cursor<E>) getUserEvents(uid);
-        else
+        if (type.isAssignableFrom(Rating.class)) {
+            return Cursors.transform(getUserEvents(uid), MoreFunctions.cast(type));
+        } else {
             return Cursors.empty();
+        }
     }
 
     @Override
@@ -278,11 +279,11 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<E> getItemEvents(long iid, Class<E> type) {
-        if (type.isAssignableFrom(Rating.class))
-            // TODO: do not use a cast - use a type-lifting cursor
-            return (Cursor<E>) getItemEvents(iid);
-        else
+        if (type.isAssignableFrom(Rating.class)) {
+            return Cursors.transform(getItemEvents(iid), MoreFunctions.cast(type));
+        } else {
             return Cursors.empty();
+        }
     }
 
     static class IDCursor extends AbstractLongCursor {
