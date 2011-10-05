@@ -4,6 +4,7 @@
 (^|/)\.settings/
 ~$
 \.[ct]sv$
+\.i(ml|pr|ws)$
 
 
 \.orig\..*$
