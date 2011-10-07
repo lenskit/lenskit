@@ -160,18 +160,23 @@ public class UserVector extends ImmutableSparseVector {
 
             long iid = r.getItemId();
             if (li < 0 || items[li] != iid) {
-                if (p == null) continue;
-
-                li++;
+                if (p == null) {
+                    continue;
+                } else {
+                    li++;
+                }
             }
             items[li] = iid;
-            if (p == null)
-                values[li] = Double.NaN;
-            else
+            if (p == null) {
+                li--; // pretend we didn't see that item
+            } else {
                 values[li] = p.getValue();
+            }
         }
 
-        return new UserVector(userId, items, values, li+1);
+        UserVector v = new UserVector(userId, items, values, li+1);
+        assert v.isComplete();
+        return v;
     }
 
 }
