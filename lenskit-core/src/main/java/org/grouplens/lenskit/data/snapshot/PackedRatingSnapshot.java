@@ -173,17 +173,19 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
                     final Preference p = r.getPreference();
 
                     int index = imgr.getIndex(uidx, iidx);
-                    if (index < 0) {
-                        // this user-item pair has no rating
-
+                    if (index < 0) { // we've never seen (user,item) before
                         // skip to next rating if unrate
-                        if (p == null)
+                        if (p == null) {
                             continue;
+                        }
 
                         // new rating - find a free index
-                        boolean reuse = !free.isEmpty();
+                        final boolean reuse = !free.isEmpty();
+                        // either we are re-using an index or there are no holes
+                        assert reuse || nratings == users.size();
+                        // pop a free index (if available) or create a new one
                         index = reuse ? free.dequeueInt() : nratings;
-                        // remember the index and bump the count
+                        // remember the index and bump the rating count
                         imgr.putIndex(uidx, iidx, index);
                         nratings++;
 
@@ -202,13 +204,15 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
                         assert users.size() == nratings + free.size();
                         assert items.size() == nratings + free.size();
                         assert values.size() == nratings + free.size();
-                    } else {
-                        // we have seen this rating before...
+                    } else { // we have seen this rating before
                         if (p == null) {
                             // free the entry, no rating here
                             free.enqueue(index);
                             nratings--;
-                            // User-item pair? What user-item pair?
+                            /*
+                             * Clear the index for this (user,item) pair so
+                             * subsequent appearances get a new index.
+                             */
                             imgr.putIndex(uidx, iidx, -1);
                         } else {
                             // just overwrite the previous value
@@ -224,8 +228,9 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
             }
 
             imgr = null;
-            if (!free.isEmpty())
+            if (!free.isEmpty()) {
                 repack(users, items, values, free);
+            }
 
             // at this point, no free slots
             assert users.size() == nratings;
@@ -266,10 +271,13 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
          */
         private void repack(IntArrayList users, IntArrayList items,
                             DoubleArrayList values, IntPriorityQueue free) {
+            assert users.size() == items.size();
+            assert users.size() == values.size();
+            
             /*
              * we have to do this backwards so we don't copy free slots from the
              * end of the arrays. So, we first create an array of free indices
-             * in reverse order.
+             * in reverse order (the greatest index is first).
              */
             int[] fidxes = new int[free.size()];
             for (int i = free.size() - 1; !free.isEmpty(); i--) {
@@ -282,7 +290,8 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
              */
             for (int i: fidxes) {
                 int lasti = users.size() - 1;
-                if (i == users.size()) {
+                assert i <= lasti; // only way to get this is duplicate fidxes
+                if (i == lasti) {
                     users.removeInt(i);
                     items.removeInt(i);
                     values.removeDouble(i);
