@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 @MetaInfServices
 public class MAEEvaluator implements PredictionEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
-    private static final String[] COLUMNS = { "MAE" };
+    private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
 
     @Override
     public Accumulator makeAccumulator() {
@@ -57,7 +57,9 @@ public class MAEEvaluator implements PredictionEvaluator {
 
     class Accum implements Accumulator {
         private double totalError = 0;
+        private double totalUserError = 0;
         private int nratings = 0;
+        private int nusers = 0;
 
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
@@ -72,13 +74,19 @@ public class MAEEvaluator implements PredictionEvaluator {
             }
             totalError += err;
             nratings += n;
+            totalUserError += err / n;
+            nusers += 1;
         }
 
         @Override
         public String[] results() {
             double v = totalError / nratings;
+            double uv = totalUserError / nusers;
             logger.info("MAE: {}", v);
-            return new String[]{ Double.toString(v) };
+            return new String[]{
+            		Double.toString(v),
+            		Double.toString(uv)
+            };
         }
 
     }
