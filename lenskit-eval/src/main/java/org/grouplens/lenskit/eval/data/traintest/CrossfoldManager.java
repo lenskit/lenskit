@@ -52,15 +52,13 @@ public class CrossfoldManager implements Preparable {
     private static final Random random = new Random();
     
 	private DataSource source;
-	private final int holdoutCount;
 	private final int foldCount;
-	private final HoldoutMode holdoutMode;
+	private final Holdout holdout;
 
-	public CrossfoldManager(DataSource src, int holdout, int folds, HoldoutMode mode) {
+	public CrossfoldManager(DataSource src, int folds, Holdout hout) {
 	    source = src;
-	    holdoutCount = holdout;
 	    foldCount = folds;
-	    holdoutMode = mode;
+	    holdout = hout;
     }
 	
 	/**
@@ -69,14 +67,6 @@ public class CrossfoldManager implements Preparable {
      */
     public DataSource getSource() {
         return source;
-    }
-
-    /**
-     * Get the per-user holdout count.
-     * @return The number of ratings to hold out for each user.
-     */
-    public int getHoldoutCount() {
-        return holdoutCount;
     }
 
     /**
@@ -91,8 +81,8 @@ public class CrossfoldManager implements Preparable {
      * Get the holdout mode.
      * @return The holdout mode.
      */
-    public HoldoutMode getHoldoutMode() {
-        return holdoutMode;
+    public Holdout getHoldout() {
+        return holdout;
     }
 
     /**

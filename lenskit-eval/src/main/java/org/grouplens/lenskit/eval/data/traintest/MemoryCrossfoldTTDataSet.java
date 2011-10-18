@@ -81,7 +81,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         logger.debug("Preparing data source {}", getName());
         DAOFactory factory = manager.getSource().getDAOFactory();
         
-        HoldoutMode mode = manager.getHoldoutMode();
+        Holdout mode = manager.getHoldout();
         
         testEvents = new LongOpenHashSet();
         
@@ -92,7 +92,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
             while (iter.hasNext()) {
                 UserHistory<Rating> history = dao.getUserHistory(iter.nextLong(), Rating.class);
                 List<Rating> ratings = new ArrayList<Rating>(history);
-                final int p = mode.partition(ratings, manager.getHoldoutCount());
+                final int p = mode.partition(ratings);
                 final int n = ratings.size();
                 for (int i = p; i < n; i++) {
                     testEvents.add(ratings.get(i).getId());

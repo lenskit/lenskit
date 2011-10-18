@@ -21,7 +21,10 @@ package org.grouplens.lenskit.eval.data.traintest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.grouplens.lenskit.dtree.Trees;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
@@ -40,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * 
  * <dl>
  * <dt>holdout
- * <dd>The number of items to hold out from each user.
+ * <dd>The number or percent of items to hold out from each user (e.g. 5 or 20%).
  * <dt>folds
  * <dd>The number of sets to partition users into.
  * <dt>mode
@@ -68,9 +71,10 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
     public List<TTDataSet> configure(DataNode config)
             throws EvaluatorConfigurationException {
         logger.debug("Configuring crossfolder from {}", config);
-        int holdout = Trees.childValueInt(config, "holdout", 10);
         int folds = Trees.childValueInt(config, "folds", 5);
-        HoldoutMode mode = HoldoutMode.fromString(Trees.childValue(config, "mode", "random"));
+        Holdout holdout = new Holdout();
+        holdout.setOrder(parseOrder(config));
+        holdout.setPartition(parsePartition(config));
         boolean useDB = Trees.childValueBool(config, "database", false);
 
         List<DataSource> sources = configureSources(config);
@@ -82,7 +86,7 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
         List<TTDataSet> ttSources = new ArrayList<TTDataSet>();
         for (DataSource src: sources) {
             CrossfoldManager cx =
-                new CrossfoldManager(src, holdout, folds, mode);
+                new CrossfoldManager(src, folds, holdout);
             for (int i = 1; i <= folds; i++) {
                 TTDataSet set;
                 if (useDB) {
@@ -127,4 +131,36 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
         return sources;
     }
 
+    private Order<Rating> parseOrder(DataNode config) throws EvaluatorConfigurationException {
+    	String mstr = Trees.childValue(config, "mode", "random");
+    	if (mstr.equalsIgnoreCase("random")) {
+        	return new RandomOrder<Rating>();
+        } else if (mstr.equalsIgnoreCase("timestamp")) {
+        	return new TimestampSort<Rating>();
+        } else {
+        	throw new EvaluatorConfigurationException("Unknown holdout mode " + mstr);
+        }
+    }
+    
+    static final Pattern intPat = Pattern.compile("^\\d+$");
+    static final Pattern pctPat = Pattern.compile("^(\\d+)%");
+    
+    private PartitionAlgorithm<Rating> parsePartition(DataNode config) throws EvaluatorConfigurationException {
+    	String hspec = Trees.childValue(config, "holdout", "10");
+    	Matcher im = intPat.matcher(hspec);
+    	if (im.find()) {
+    		int n = Integer.parseInt(im.group(0));
+    		logger.info("Holding out {} ratings", n);
+    		return new CountPartition<Rating>(n);
+    	}
+    	im = pctPat.matcher(hspec);
+    	if (im.find()) {
+    		int pct = Integer.parseInt(im.group(1));
+    		double f = pct / 100.0;
+    		logger.info("Holding out {} of the ratings", f);
+    		return new FractionPartition<Rating>(f);
+    	}
+    	
+    	throw new EvaluatorConfigurationException("Invalid holdout specification " + hspec);
+    }
 }

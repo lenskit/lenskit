@@ -210,8 +210,7 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
     
     private void writePartitionData(PreparationContext context, 
                                     DataAccessObject dao, Connection dbc) throws SQLException {
-        HoldoutMode mode = manager.getHoldoutMode();
-        int n = manager.getHoldoutCount();
+        Holdout mode = manager.getHoldout();
         PreparedStatement insTrain = null, insTest = null;
         
         dbc.setAutoCommit(false);
@@ -241,7 +240,7 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
             
             logger.debug("Splitting and writing query users");
             for (List<Rating> history: userEvents.values()) {
-                int idx = mode.partition(history, n);
+                int idx = mode.partition(history);
                 ListIterator<Rating> iter = history.listIterator();
                 while (iter.hasNext()) {
                     int i = iter.nextIndex();
