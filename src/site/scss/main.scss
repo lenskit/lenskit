@@ -1,0 +1,172 @@
+@import url(http://kernest.com/fonts/pt-sans.css);
+@import url(http://kernest.com/fonts/liberation-serif.css);
+
+$title_font: "PT Sans", sans-serif;
+$text_font: "Liberation Serif", serif;
+$text_size: 16pt;
+$nav_size: 24px;
+
+$rounding: 10px;
+
+$logo_height: 64px;
+$sidebar_width: 250px;
+$sidebar_margin: 10px;
+
+$menu_sel_bg: #666;
+$menu_sel_text: #EEEEEE;
+/* $bg_color: #decd86; */
+$bg_color: rgb(234, 225, 182);
+$shadow_color: #999;
+
+@mixin header-font {
+    font: {
+        family: $title_font;
+    }
+}
+
+@mixin rounded($r: 15px) {
+    -moz-border-radius: $r;
+    -webkit-border-radius: $r;
+    -ms-border-radius: $r;
+    border-radius: $r;
+}
+
+@mixin shadow($s: 3px 3px 5px $shadow_color) {
+    -moz-box-shadow: $s;
+    -webkit-box-shadow: $s;
+    box-shadow: $s;
+}
+
+@mixin gradient-bg($start, $stop) {
+    background: -moz-linear-gradient(left, $bg_color, white);
+    background: -webkit-gradient(linear, left center, right center, from($start), to($stop));
+    background: -webkit-linear-gradient(left, $bg_color, white);
+    background: -o-linear-gradient(left, $bg_color, white);
+    background: linear-gradient(left, $bg_color, white);
+}
+
+body {
+    margin: 0;
+    font: {
+        family: $text_font;
+        size: $text_size;
+    }
+
+    /* Use a reverse gradient to stop at the right spot. */
+    background: $bg_color;
+    background: -moz-linear-gradient(right, white,
+                                     $bg_color $sidebar_width, $bg_color);
+    background: -webkit-linear-gradient(right, white,
+                                        $bg_color $sidebar_width, $bg_color);
+    background: -o-linear-gradient(right, white,
+                                   $bg_color $sidebar_width, $bg_color);
+    background: linear-gradient(right, white,
+                                $bg_color $sidebar_width, $bg_color);
+}
+
+#logo {
+    float: left;
+}
+
+#topnav {
+    text-align: right;
+}
+
+#banner {
+    position: relative;
+    height: $logo_height;
+}
+
+#bannersep {
+    clear: left;
+    border: none;
+    margin: 0;
+    height: 0;
+}
+
+ul.navbar {
+    @include header-font;
+    text-align: center;
+    vertical-align: bottom;
+    margin: 0;
+    font: {
+        size: $nav_size;
+    }
+    position: relative;
+    height: 100%;
+
+    li {
+        display: inline;
+        vertical-align: middle;
+
+        position: relative;
+        top: ($logo_height - $nav_size) / 2.5;
+        margin-left: 25px;
+        padding: 0 10px;
+
+        &:first-child { margin-left: 0px; }
+
+        &.current {
+            @include rounded($rounding);
+            background: $menu_sel_bg;
+            @include shadow(1px 1px 2px $shadow_color);
+            a {
+                color: $menu_sel_text;
+                text-shadow: rgba(0,0,0,0.1) -1px 0, rgba(0,0,0,0.1) 0 -1px,
+                rgba(255,255,255,0.1) 1px 0, rgba(255,255,255,0.1) 0 1px,
+                rgba(0,0,0,0.1) -1px -1px, rgba(255,255,255,0.1) 1px 1px; 
+            }
+        }
+        
+        a {
+            color: black;
+            text-decoration: none;
+            &:hover { text-decoration: underline; }
+        }
+    }
+}
+
+#sidebar {
+    background: $bg_color;
+    @include gradient-bg($bg_color, white);
+    float: right;
+    width: $sidebar_width;
+    margin: 0 0 0 10px;
+    padding: $sidebar_margin;
+    padding-top: $sidebar_margin + 24;
+
+    .twtr-widget, .sidebox {
+        margin-bottom: 10px;
+    }
+
+    .twtr-doc {
+        @include shadow;
+    }
+
+    .sidebox {
+        @include shadow;
+        @include rounded(5px);
+        border: solid 1px black;
+        padding: 5px;
+        font-size: $text_size - 4pt;
+        background: transparentize(white, 0.2);
+    }
+}
+
+#body {
+    font: {
+        size: $text_size;
+    }
+    background: white;
+    padding-left: 10px;
+    -moz-border-top-right-radius: $rounding;
+    -webkit-border-top-right-radius: $rounding;
+    -o-border-top-right-radius: $rounding;
+    border-top-right-radius: $rounding;
+
+    margin: {
+        top: 0;
+        bottom: 0;
+        right: $sidebar_width + 2 * $sidebar_margin;
+    }
+}

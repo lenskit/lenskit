@@ -4,6 +4,8 @@
 (^|/)\.settings/
 ~$
 \.[ct]sv$
+^src/site/scss/\.sass-cache/
+^src/site/scss/.*\.css
 
 
 \.orig\..*$

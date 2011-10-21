@@ -1,0 +1,73 @@
+## A lot of this is based on things in the Maven default template
+#macro ( menuItem $item)
+#if ( $alignedFileName == $item.href )
+  #set ($cur = "current")
+#else
+  #set ($cur = "other")
+#end
+<li class="$cur"><a href="$item.href">$item.name</a></li>
+#end
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Generated for $alignedFileName ($relativePath) -->
+<title>LensKit Recommender Framework &mdash; $title</title>
+<link rel="stylesheet" type="text/css" href="main.css">
+<script type="text/javascript" src="http://widgets.twimg.com/j/2/widget.js"></script>
+</head>
+<body>
+  <div id="banner">
+    <img id="logo" src="logo.png" alt="LensKit" height="64" >
+    <ul id="topnav" class="navbar">
+      #foreach ($menu in $decoration.body.menus)
+        #if ( $menu.name == "LensKit" )
+          #foreach ($item in $menu.items)
+            #menuItem($item)
+          #end
+        #end
+      #end
+    </ul>
+  </div>
+  <div id="sidebar">
+#if ( $alignedFileName == "index.html" )
+    <div class="sidebox">
+      Latest version: 0.8.1<br>
+      Development sources on <a href="http://bitbucket.org/grouplens/lenskit">BitBucket</a>
+    </div>
+    <script type="text/javascript">
+      new TWTR.Widget({
+        version: 2,
+        type: 'profile',
+        rpp: 4,
+        interval: 6000,
+        width: 'auto',
+        height: 300,
+        theme: {
+          shell: {
+            background: '#333333',
+            color: '#ffffff'
+          },
+          tweets: {
+            background: '#000000',
+            color: '#ffffff',
+            links: '#4aed05'
+          }
+        },
+        features: {
+          scrollbar: true,
+          loop: false,
+          live: true,
+          hashtags: true,
+          timestamp: true,
+          avatars: true,
+          behavior: 'all'
+        }
+      }).render().setUser('LensKitRS').start();
+    </script>
+#end
+  </div>
+  <div id="body">
+    $bodyContent
+  </div>
+</body>
+</html>

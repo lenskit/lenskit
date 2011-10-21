@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd"
          name="LensKit Recommender Implementation">
-  <skin>
-    <groupId>org.grouplens.common</groupId>
-    <artifactId>grouplens-skin</artifactId>
-    <version>4-SNAPSHOT</version>
-  </skin>
+  <!-- <skin> -->
+  <!--   <groupId>org.grouplens.common</groupId> -->
+  <!--   <artifactId>grouplens-skin</artifactId> -->
+  <!--   <version>4-SNAPSHOT</version> -->
+  <!-- </skin> -->
   <version position="right"/>
   <publishDate position="right"/>
   <poweredBy/>
@@ -20,13 +20,11 @@
     </breadcrumbs>
     <menu name="LensKit">
       <item name="About" href="index.html"/>
-      <item name="Release Notes" href="release-notes.html"/>
-      <item name="Getting Started" href="getting-started.html"/>
-      <item name="Offline Evaluation" href="evaluating.html"/>
-      <item name="Versioning" href="versioning.html"/>
-      <item name="API Docs" href="apidocs"/>
+      <item name="Download" href="download.html"/>
+      <item name="Documentation" href="documentation.html"/>
+      <item name="Research" href="research.html"/>
     </menu>
-    <menu ref="modules"/>
-    <menu ref="reports" inherit="bottom"/>
+    <!-- <menu ref="modules"/> -->
+    <!-- <menu ref="reports" inherit="bottom"/> -->
   </body>
 </project>

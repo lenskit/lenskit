@@ -2,6 +2,17 @@
                                 About
                                -------
 
+LensKit is an open-source toolkit for building, researching, and
+studying recommender systems.
+
+Build
+
+  Do you need a recommender for your next project? Look no further
+  than LensKit.  LensKit provides high-quality implementations of
+  well-regarded collaborative filtering algorithms and is designed for
+  integration into web applications and other similarly complex
+  environments.
+
 About LensKit
 
   LensKit is an open-source implementation of recommender algorithms
