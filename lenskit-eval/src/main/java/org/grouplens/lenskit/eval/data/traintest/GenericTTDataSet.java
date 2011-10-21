@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
@@ -50,6 +53,11 @@ public class GenericTTDataSet implements TTDataSet {
     @Override
     public String getName() {
         return name;
+    }
+    
+    @Override
+    public Map<String, Object> getAttributes() {
+        return Collections.<String,Object>singletonMap("DataSet", getName());
     }
     
     /**
