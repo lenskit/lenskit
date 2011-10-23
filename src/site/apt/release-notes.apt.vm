@@ -6,6 +6,8 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+LensKit Release Notes
+
 * Release 0.8.1
 
   Bugfix release.
