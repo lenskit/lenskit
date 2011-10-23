@@ -1,0 +1,63 @@
+                -------------------------------------
+                              Downloads
+                -------------------------------------
+
+Download LensKit
+
+  The latest version of LensKit is ${project.version}.  For an
+  overview of changes in this release, see the
+  {{{./release-notes.html}release notes}}.
+
+  * {{{./lenskit-package/lenskit-${project.version}.tar.gz}Binary
+    archive}} (also available as a
+    {{{./lenskit-package/lenskit-${project.version}.zip}zip file}}) —
+    contains LensKit JAR files, all dependencies, and scripts to run
+    the LensKit evaluator.
+
+  * {{{./lenskit-${project.version}-source.tar.gz}Source archive}}
+    (also available as a
+    {{{./lenskit-${project.version}-source.zip}zip file}}).
+
+  []
+
+Using Maven
+
+  If you want to use LensKit within another Java project, there is no
+  need to download anything — LensKit is published to Maven Central,
+  so just add it as a dependency in Maven, Ivy, or use it via a Groovy
+  Grape.  This is the recommended way to integrate LensKit as a
+  library.
+
++---------------------------------------+
+  <dependency>
+    <groupId>org.grouplens.lenskit</groupId>
+    <artifactId>lenskit-core</artifactId>
+    <version>${project.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>org.grouplens.lenskit</groupId>
+    <!-- replace with the appropriate algorithm module -->
+    <artifactId>lenskit-knn</artifactId>
+    <version>${project.version}</version>
+  </dependency>
++---------------------------------------+
+
+Developing LensKit
+
+  The latest development sources for LensKit are in our
+  {{{https://bitbucket.org/grouplens/lenskit}Mercurial repository}}
+  (hosted on BitBucket).  
+
+  To use the development sources in Eclipse, we recommend using the
+  latest version of Eclipse (3.7.x or later) and the
+  {{{http://javaforge.com/project/HGE}MercurialEclipse}} plugin. Clone
+  the repository with MercurialEclipse, then “Import existing Maven
+  projects” from the resulting directory in your workspace.  This will
+  find all submodules and import them into your workspace.  Earlier
+  versions of Eclipse will work if you install the M2Eclipse plugin.
+
+  We welcome patch submissions for LensKit. To submit a patch, just
+  fork the repository on BitBucket, prepare your changes, and send a
+  pull request.  We encourage you to discuss your proposed changes on
+  the LensKit
+  {{{https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit}mailing list}}.

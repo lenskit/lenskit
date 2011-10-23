@@ -178,6 +178,11 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>2.2.1</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2.1</version>
+        </plugin>
 
         <!-- Site generation -->
         <plugin>
@@ -302,27 +307,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>default-single</id>
-            <phase>site</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
-              <descriptors>
-                <descriptor>src/assemble/source-package.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <groupId>com.agilejava.docbkx</groupId>
         <artifactId>docbkx-maven-plugin</artifactId>
         <version>2.0.11</version>
@@ -348,6 +332,8 @@
         <inherited>false</inherited>
         
         <configuration>
+          <templateFile>src/site/site.vm</templateFile>
+
           <reportPlugins combine.children="append">
             
             <plugin>
@@ -362,6 +348,29 @@
             
           </reportPlugins>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>compile-sass</id>
+            <phase>site</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>sass</executable>
+              <arguments>
+                <argument>--no-cache</argument>
+                <argument>-t</argument>
+                <argument>compact</argument>
+                <argument>src/site/scss/main.scss</argument>
+                <argument>${project.build.directory}/site/main.css</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
@@ -480,6 +489,30 @@
             </plugin>
           </plugins>
         </pluginManagement>
+
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>default-single</id>
+                <phase>site</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/site</outputDirectory>
+                  <tarLongFileMode>gnu</tarLongFileMode>
+                  <descriptors>
+                    <descriptor>src/assemble/source-package.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
     <profile>
