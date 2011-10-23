@@ -68,7 +68,9 @@
       (<a href="release-notes.html">release notes</a>)<br>
       Fork it on
       <a href="http://bitbucket.org/grouplens/lenskit">BitBucket</a><br>
-      <a href="https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit">Mailing list</a>
+      <a href="https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit">Mailing
+      List</a><br>
+      <a href="http://dev.grouplens.org/trac/lenskit">Wiki/Bug Tracker</a>
     </div>
 #if ( $alignedFileName == "index.html" )
     <script type="text/javascript">
