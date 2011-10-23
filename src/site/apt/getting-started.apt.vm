@@ -119,10 +119,8 @@ Configuring and Creating the Recommender
 
 Further Topics
 
-  See the {{{./design.html}design document}}} for information on how
-  LensKit was designed and why.  Also, the {{{./apidocs/}API
-  documentation}} and the {{{./xref/}sources}} provide more
-  information about how LensKit works and how to use it.
+  The {{{./apidocs/}API documentation}} and the {{{./xref/}sources}}
+  provide more information about how LensKit works and how to use it.
 
   There are many parameters provided by the various LensKit
   recommenders.  Consult their JavaDoc for information on their
