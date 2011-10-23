@@ -47,7 +47,7 @@
     </ul>
   </div>
   <div id="sidebar">
-  #if ($currentItem.items && $currentItem.items.size > 0)
+  #if ($currentItem.items && $currentItem.items.size() > 0)
     <div class="sidebox">
     <h2>$currentItem.name</h2>
     <ul>
