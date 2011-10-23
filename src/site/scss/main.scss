@@ -191,7 +191,7 @@ ul.navbar {
 
     margin: {
         top: $margin;
-        bottom: 0;
+        bottom: $margin;
         left: $margin;
         right: $sidebar_width + 2 * $sidebar_margin;
     }
