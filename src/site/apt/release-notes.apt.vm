@@ -6,7 +6,9 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
-Release 0.8
+LensKit Release Notes
+
+* Release 0.8
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -39,7 +41,7 @@ Release 0.8
 
   []
 
-Release 0.7
+* Release 0.7
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -94,7 +96,7 @@ Release 0.7
 
   []
 
-Release 0.6
+* Release 0.6
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -139,7 +141,7 @@ Release 0.6
 
   []
 
-Release 0.5
+* Release 0.5
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -163,7 +165,7 @@ Release 0.5
 
   []
 
-Release 0.4
+* Release 0.4
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -211,7 +213,7 @@ Release 0.4
 
   []
 
-* Incompatible data structure changes
+** Incompatible data structure changes
 
   To clean up APIs, we made a couple notable incompatible changes to
   layout and data structures.  These are all compile errors; no subtle
@@ -229,7 +231,7 @@ Release 0.4
 
   []
 
-* Other Changes
+** Other Changes
 
   * Changed <<<DynamicRatingPredictor.predict(long, Collection,
     Collection)>>> to take a <<<UserHistory>>> of events rather than a
@@ -261,7 +263,7 @@ Release 0.4
 
   []
 
-Release 0.3.1
+* Release 0.3.1
 
   This release just contains a single change that should have been in
   0.3 (and is, unfortunately, backwards-incompatible):
@@ -274,7 +276,7 @@ Release 0.3.1
   []
   
 
-Release 0.3
+* Release 0.3
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -282,7 +284,7 @@ Release 0.3
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
-* Event Infrastructure
+** Event Infrastructure
 
   For flexibility going forward, LensKit 0.3 introduces a new
   <<<Event>>> infrastructure (#issue(48)) for representing user data.
@@ -309,7 +311,7 @@ Release 0.3
   class has been removed and replaced with <<<UserHistory>>> for a
   generalized representation of user histories.
 
-** Restructured DAO interfaces
+*** Restructured DAO interfaces
 
    The new event infrastructure has necessitated some overhauling of
    the DAO interface.  The new interface is hopefully simpler.  There
@@ -335,7 +337,7 @@ Release 0.3
 
    []
 
-* Other Changes
+** Other Changes
 
   * The deprecated <<<SparseVector.wrap>>> methods now return
     <<<SparseVector>>> rather than <<<MutableSparseVector>>>, so that
@@ -362,7 +364,7 @@ Release 0.3
   []
 
 
-Release 0.2
+* Release 0.2
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
@@ -370,7 +372,7 @@ Release 0.2
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
-* Core changes
+** Core changes
 
   * Introduce user- and item-associated sparse vectors, including
     rating-specific variants of them, to allow types to express what
@@ -401,7 +403,7 @@ Release 0.2
 
   []
 
-** Compatibility notes
+*** Compatibility notes
 
   Backwards-incompatible core changes:
 
@@ -430,7 +432,7 @@ Release 0.2
 
   []
 
-* Evaluator changes
+** Evaluator changes
 
   * Add boolean <<<isolate>>> option to the train-test Ant task to
     process datasets one at a time rather than parallelizing
@@ -439,7 +441,7 @@ Release 0.2
 
   []
 
-Release 0.1
+* Release 0.1
 
   The first beta release!  What this means for the future is that our
   core APIs (such as the recommenders and predictors) are pretty
@@ -486,7 +488,7 @@ Release 0.1
   Keep watching LensKit for further developments and lots of exciting
   new work this summer.
 
-Release 0.0.3
+* Release 0.0.3
 
   This release contains many large changes, including significant
   architectural and API changes to make it easier to take LensKit
@@ -527,7 +529,7 @@ Release 0.0.3
   {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.0.3}list
   of closed tickets}} provide more information on what has happened.
 
-Release 0.0.2 (March 28, 2011)
+* Release 0.0.2 (March 28, 2011)
 
   This release contains a number of API changes to make the API
   cleaner and easier to move forward.
@@ -548,7 +550,7 @@ Release 0.0.2 (March 28, 2011)
 
   []
 
-* API Compatibility Notes
+** API Compatibility Notes
 
     * Code dependent on <<<BuildContext>>> or <<<PackedBuildContext>>>
       must be updated to use <<<RatingBuildContext>>> and
@@ -564,7 +566,7 @@ Release 0.0.2 (March 28, 2011)
 
     []
 
-Release 0.0.1 (March 25, 2011)
+* Release 0.0.1 (March 25, 2011)
 
   * Initial release
 

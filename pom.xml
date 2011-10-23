@@ -502,7 +502,8 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
+                  <outputDirectory>${project.build.directory}/site</outputDirectory>
+                  <tarLongFileMode>gnu</tarLongFileMode>
                   <descriptors>
                     <descriptor>src/assemble/source-package.xml</descriptor>
                   </descriptors>

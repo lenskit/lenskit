@@ -1,16 +1,16 @@
-@import url(http://kernest.com/fonts/pt-sans.css);
-@import url(http://kernest.com/fonts/liberation-serif.css);
-
 $title_font: "PT Sans", sans-serif;
 $text_font: "Liberation Serif", serif;
 $text_size: 16pt;
+$box_size: $text_size - 4pt;
 $nav_size: 24px;
 
 $rounding: 10px;
 
+$margin: 10px;
+
 $logo_height: 64px;
 $sidebar_width: 250px;
-$sidebar_margin: 10px;
+$sidebar_margin: $margin;
 
 $menu_sel_bg: #666;
 $menu_sel_text: #EEEEEE;
@@ -132,8 +132,10 @@ ul.navbar {
     float: right;
     width: $sidebar_width;
     margin: 0 0 0 10px;
-    padding: $sidebar_margin;
-    padding-top: $sidebar_margin + 24;
+    padding: {
+        top: $sidebar_margin;
+        right: $sidebar_margin;
+    }
 
     .twtr-widget, .sidebox {
         margin-bottom: 10px;
@@ -146,10 +148,29 @@ ul.navbar {
     .sidebox {
         @include shadow;
         @include rounded(5px);
-        border: solid 1px black;
+        // border: solid 1px black;
         padding: 5px;
-        font-size: $text_size - 4pt;
+        font-size: $box_size;
         background: transparentize(white, 0.2);
+
+        h2 {
+            font-size: $box_size;
+            margin: 0;
+        }
+        p, ul, ol, dl {
+            margin-bottom: 0;
+        }
+        ul {
+            padding-left: 1em;
+        }
+
+        li.current {
+            font-weight: bold;
+            a {
+                text-decoration: none;
+                color: black;
+            }
+        }
     }
 }
 
@@ -158,15 +179,69 @@ ul.navbar {
         size: $text_size;
     }
     background: white;
-    padding-left: 10px;
-    -moz-border-top-right-radius: $rounding;
-    -webkit-border-top-right-radius: $rounding;
-    -o-border-top-right-radius: $rounding;
-    border-top-right-radius: $rounding;
+
+    padding: $margin;
+
+    *:first-child {
+        margin-top: 0;
+    }
+    
+    @include rounded($rounding);
+    @include shadow;
 
     margin: {
-        top: 0;
+        top: $margin;
         bottom: 0;
+        left: $margin;
         right: $sidebar_width + 2 * $sidebar_margin;
+    }
+
+}
+
+tt, code, pre, var {
+    font: {
+        family: Inconsolata, DejaVu Sans Serif, Consolas, monospace;
+        size: $text_size - 2pt;
+    }
+}
+
+p, ul {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+
+h2 {
+    font: {
+        family: $title_font;
+        weight: normal;
+        size: $text_size + 2pt;
+    }
+    margin-bottom: 12pt;
+}
+
+h3 {
+    font: {
+        family: $title_font;
+        weight: normal;
+        size: $text_size;
+    }
+    margin: {
+        bottom: 12pt;
+//        top: 1em;
+    }
+}
+
+.section {
+    padding-left: 12pt;
+    h2, h3 {
+        margin-left: -12pt;
+    }
+
+    .section .section {
+        padding-left: 0;
+
+        h2, h3, h4, h5, h6 {
+            margin-left: 0;
+        }
     }
 }

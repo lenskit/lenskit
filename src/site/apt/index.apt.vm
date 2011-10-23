@@ -2,8 +2,8 @@
                                 About
                                -------
 
-LensKit is an open-source toolkit for building, researching, and
-studying recommender systems.
+  LensKit is an open source toolkit for building, researching, and
+  studying recommender systems.
 
 Build
 
@@ -13,103 +13,22 @@ Build
   integration into web applications and other similarly complex
   environments.
 
-About LensKit
+Research
 
-  LensKit is an open-source implementation of recommender algorithms
-  with an emphasis on collaborative filtering.  It is developed by
-  {{{http://www.grouplens.org}GroupLens Research}}.
+  Do you want to experiment with new recommender algorithms or
+  evaluation strategies?  LensKit provides infrastructure to manage
+  configuration, data access, and the model build process, and allows
+  you to easily compare your new algorithm against high-quality
+  implementations of existing well-accepted algorithms.
 
-  LensKit is currently beta softare (see
-  {{{./versioning.html}Versioning}} for more information).  Please
-  download it, try it out, and provide us with feedback on how it
-  works for you, but be advised that it is still very much a
-  work-in-progress and APIs may change as we gain more experience with
-  them and the project stabilizes.
+Study
 
-Project Goals
-
-  LensKit is intended to be a reference implementation of common
-  collaborative filtering algorithms and a useful starting point for
-  recommender systems research and education.
-
-  To support education, we place an emphasis on clean, readable code
-  that demonstrates what is necessary to take algorithms from
-  mathematical descriptions to actual implementation. LensKit is
-  currently in a beta state, so the code does not yet live up to this
-  standard.  As development progresses, we will be auditing the code
-  for readability and documenting it more carefully.  The goal is to
-  have the implementation be ready for use in courses on adaptive web
-  and recommender technologies or for self-study on recommender
-  implementation.
-
-  We also intend LensKit to be a good platform for experimenting with
-  new algorithms and evaluation metrics.  There are several specific
-  design goals we have to further this objective:
-
-  * A common recommender API covering item rating prediction and item
-    recommendation in both rated and rating-free contexts.
-
-    <<Status>>: The rating-based APIs are in place and seem
-    to work pretty well.  The rating-free APIs still need development.
-
-  * A highly modular implementation of common algorithms with
-    state-of-the-art normalizations and tweaks.  This will provide
-    easy access to high-quality implementations of existing algorithms
-    to use as a baseline for evaluating new algorithms and a framework
-    for testing modifications to individual components of algorithms
-    (e.g. testing a new similarity function for item-item
-    collaborative filtering).
-
-    <<Status>>: The framework for this is in place and we
-    have modular implementations of user-user and item-item
-    collaborative filtering.  We also have a gradient descent SVD
-    implementation that has not yet had as much refinement.
-
-  * A comprehensive benchmarking tool capable of evaluating any
-    compatible recommender algorithm using a variety of offline
-    evaluation methods and metrics.
-
-    <<Status>>: We have a leave-N-out crossfold benchmarker
-    and the beginnings of a benchmarking framework.  Significant
-    further development is needed on this goal.
-
-  []
-
-* Non-goals
-
-  LensKit is not intended to be an industry-strength implementation
-  capable of running on a large e-commerce site (although we don't
-  mind at all if you use it for that).  It is intended to be useful at
-  research and education scales and suitable for providing
-  recommendations in small- to medium-scale web applications.
-
-  In particular, distributed recommender implementations are
-  out-of-scope for LensKit — we are focusing on building high-quality
-  single-process (but potentially multi-threaded) implementations.
-
-Getting LensKit
-
-  The easiest way to get LensKit is through Maven by adding it as a
-  dependency; see the {{{./getting-started.html}Getting Started
-  guide}} for more information.  We also provide LensKit binaries with
-  all dependencies in both
-  {{{./lenskit-package/lenskit-${project.version}.tar.gz}tar.gz}} and
-  {{{./lenskit-package/lenskit-${project.version}.zip}zip}} formats.
-  The JavaDoc is browseable {{{./apidocs}here}}.
-
-  Alternatively, you can download the source code as a
-  {{{./downloads/lenskit-${project.version}-source-package.tar.gz}gzipped
-  tar archive}} or a
-  {{{./downloads/lenskit-${project.version}-source-package.zip}zip
-  file}} or get the sources from
-  {{{http://bitbucket.org/grouplens/lenskit}BitBucket}}.
-
-Development
-
-  LensKit is developed by GroupLens Research.  Development is managed with
-  {{{http://dev.grouplens.org/trac/lenskit}Trac}}
-
-Mailing List
-
-  LensKit use and development is discussed on its
-  {{{https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit}mailing list}}.
+  LensKit's source code is freely available under an open source
+  license and is suitable for self-study or use in classroom settings.
+  Our goal is to produce readable, straightforward implementations
+  that achieve good performance while at the same time serving as
+  executable documentation for how to turn recommender algorithms from
+  math to code, as well as a working example of how to deal with the
+  details necessary to connect recommenders to databases, manage
+  models and configuration, and integrate them into web-based
+  environments.
