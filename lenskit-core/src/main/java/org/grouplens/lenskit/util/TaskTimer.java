@@ -52,15 +52,15 @@ public class TaskTimer {
 
     public String elapsedPretty() {
         long elapsed = elapsedMillis();
-        long secs = elapsed / 1000;
-        long mins = secs / 60;
+        double secs = (elapsed % 60000) / 1000.0;
+        long mins = elapsed / 60000;
         long hrs = mins / 60;
         StringBuilder s = new StringBuilder();
         if (hrs > 0)
             s.append(String.format("%dh", hrs));
         if (mins > 0)
             s.append(String.format("%dm", mins % 60));
-        s.append(String.format("%ds", secs % 60));
+        s.append(String.format("%0.2fs", secs));
         return s.toString();
     }
 
