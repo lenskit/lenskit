@@ -29,6 +29,9 @@ import org.grouplens.lenskit.util.parallel.ExecHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+
 /**
  * Execute job groups sequentially. Used to implement
  * {@link IsolationLevel#JOB_GROUP}.
@@ -42,10 +45,13 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
     
     private List<JobGroup> groups;
     private int threadCount;
+
+    private EvalListenerManager listeners;
     
-    public SequentialJobGroupExecutor(int nthreads) {
+    public SequentialJobGroupExecutor(int nthreads, EvalListenerManager lm) {
         groups = new ArrayList<JobGroup>();
         threadCount = nthreads;
+        listeners = lm;
     }
     
     @Override
@@ -53,22 +59,50 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
         groups.add(group);
     }
     
+    class JobWrapper implements Function<Job, Runnable> {
+        @Override
+        public Runnable apply(final Job job) {
+            return new Runnable() {
+                @Override
+                public void run() {
+                    listeners.jobStarting(job);
+                    try {
+                        job.run();
+                        listeners.jobFinished(job, null);
+                    } catch (RuntimeException e) {
+                        listeners.jobFinished(job, e);
+                    }
+                }
+            };
+        }
+    }
+    
     @Override
     public void run() throws ExecutionException {
         ExecutorService svc = Executors.newFixedThreadPool(threadCount);
         try {
+            listeners.evaluationStarting();
             for (JobGroup group: groups) {
                 TaskTimer timer = new TaskTimer();
                 logger.info("Running job group {}", group.getName());
+                listeners.jobGroupStarting(group);
                 group.start();
                 try {
-                    ExecHelpers.parallelRun(svc, group.getJobs());
+                    ExecHelpers.parallelRun(svc, Lists.transform(group.getJobs(), new JobWrapper()));
                 } finally {
+                    listeners.jobGroupFinished(group);
                     group.finish();
                 }
                 logger.info("Job group {} finished in {}",
                             group.getName(), timer.elapsedPretty());
             }
+            listeners.evaluationFinished(null);
+        } catch (ExecutionException err) {
+            listeners.evaluationFinished(err);
+            throw err;
+        } catch (RuntimeException err) {
+            listeners.evaluationFinished(err);
+            throw err;
         } finally {
             svc.shutdownNow();
         }

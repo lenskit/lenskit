@@ -51,6 +51,7 @@ public class EvalRunner {
     private IsolationLevel isolationLevel = IsolationLevel.NONE;
     
     private Evaluation evaluation;
+    private EvalListenerManager listeners = new EvalListenerManager();
     
     /**
      * Construct an evaluation runner from an evaluator name and configuration.
@@ -134,6 +135,14 @@ public class EvalRunner {
         return this;
     }
     
+    public void addListener(EvaluationListener listener) {
+        listeners.addListener(listener);
+    }
+
+    public void removeListener(EvaluationListener listener) {
+        listeners.removeListener(listener);
+    }
+
     /**
      * Prepare all job groups.
      * 
@@ -163,10 +172,10 @@ public class EvalRunner {
         JobGroupExecutor exec;
         switch (isolationLevel) {
         case NONE:
-            exec = new MergedJobGroupExecutor(nthreads);
+            exec = new MergedJobGroupExecutor(nthreads, listeners);
             break;
         case JOB_GROUP:
-            exec = new SequentialJobGroupExecutor(nthreads);
+            exec = new SequentialJobGroupExecutor(nthreads, listeners);
             break;
         default:
             throw new RuntimeException("Invalid isolation level " + isolationLevel);

@@ -50,12 +50,14 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     private Reference2IntMap<Job> jobGroupMap;
     private int[] pendingJobCounts;
     private JobGroupState[] groupStates;
+    private EvalListenerManager listeners;
 
-    public MergedJobGroupExecutor(int threads) {
+    public MergedJobGroupExecutor(int threads, EvalListenerManager lm) {
         threadCount = threads;
         groups = new ArrayList<JobGroup>();
         jobGroupMap = new Reference2IntOpenHashMap<Job>();
         jobGroupMap.defaultReturnValue(-1);
+        listeners = lm;
     }
 
     @Override
@@ -96,7 +98,15 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
         }
 
         try {
+            listeners.evaluationStarting();
             ExecHelpers.parallelRun(svc, tasks);
+            listeners.evaluationFinished(null);
+        } catch (RuntimeException err) {
+            listeners.evaluationFinished(err);
+            throw err;
+        } catch (ExecutionException err) {
+            listeners.evaluationFinished(err);
+            throw err;
         } finally {
             pendingJobCounts = null;
             groupStates = null;
@@ -117,9 +127,11 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
         if (groupStates[gnum] == JobGroupState.WAITING) {
             JobGroup group = groups.get(gnum);
             logger.info("Starting job group {}", group.getName());
+            listeners.jobGroupStarting(group);
             group.start();
             groupStates[gnum] = JobGroupState.RUNNING;
         }
+        listeners.jobStarting(job);
     }
 
     /**
@@ -133,10 +145,12 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
         int gnum = jobGroupMap.getInt(job);
         assert pendingJobCounts[gnum] > 0;
         assert groupStates[gnum] == JobGroupState.RUNNING;
+        // the task has already invoked the listener jobFinished
         if (--pendingJobCounts[gnum] == 0) {
             JobGroup group = groups.get(gnum);
             logger.info("Finishing job group {}", group.getName());
             group.finish();
+            listeners.jobGroupFinished(group);
             groupStates[gnum] = JobGroupState.FINISHED;
         }
     }
@@ -160,6 +174,10 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
             jobStarting(job);
             try {
                 job.run();
+                listeners.jobFinished(job, null);
+            } catch (RuntimeException e) {
+                listeners.jobFinished(job, e);
+                throw e;
             } finally {
                 jobFinished(job);
             }
