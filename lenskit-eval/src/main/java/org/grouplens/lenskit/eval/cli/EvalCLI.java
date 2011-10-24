@@ -89,7 +89,7 @@ public class EvalCLI {
     private boolean forcePrepare;
     private int threadCount = 1;
     private IsolationLevel isolation = IsolationLevel.NONE;
-    private File cacheDir;
+    private File cacheDir = new File(".eval-cache");
     private boolean prepareOnly;
     private boolean throwErrors;
     private List<File> configFiles;
