@@ -48,7 +48,7 @@
 
   <profiles>
     <profile>
-      <id>smoketest</id>
+      <id>demo</id>
       <build>
         <plugins>
           <plugin>

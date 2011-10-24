@@ -3,7 +3,7 @@
   <property name="mldata.zipfile" value="${project.build.directory}/ml-100k.zip"/>
   <property name="mldata.directory" value="${project.build.directory}/ml-100k"/>
   <target name="prepare-100k">
-    <fail message="The `smoketest' integration tests make use of the MovieLens 100K data set
+    <fail message="The evaluation demo makes use of the MovieLens 100K data set
 from GroupLens Research. Use of this data set is restricted to non-commercial
 purposes and is only permitted in accordance with the license terms. To use
 this data in LensKit's automated tests, set the `grouplens.mldata.acknowledge'
