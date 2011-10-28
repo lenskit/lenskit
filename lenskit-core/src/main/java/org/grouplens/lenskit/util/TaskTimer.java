@@ -60,7 +60,7 @@ public class TaskTimer {
             s.append(String.format("%dh", hrs));
         if (mins > 0)
             s.append(String.format("%dm", mins % 60));
-        s.append(String.format("%0.2fs", secs));
+        s.append(String.format("%.2fs", secs));
         return s.toString();
     }
 
