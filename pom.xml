@@ -79,7 +79,6 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
-            <showWarnings>true</showWarnings>
           </configuration>
         </plugin>
 
@@ -373,7 +372,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 
@@ -546,6 +544,15 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <showWarnings>true</showWarnings>
+              <showDeprecation>true</showDeprecation>
+            </configuration>
           </plugin>
 
           <plugin>
