@@ -1,0 +1,112 @@
+## -*- mode: html -*-
+## Find the top menu
+#foreach ($menu in $decoration.body.menus)
+  #if ($menu.name == "LensKit")
+    #set ($mainMenu = $menu)
+  #end
+#end
+#foreach ($item in $mainMenu.items)
+  #if ($alignedFileName == $item.href)
+    #set ($currentItem = $item)
+  #else
+    #if ($item.items)
+      #foreach ($si in $item.items)
+        #if ($alignedFileName == $si.href)
+          #set ($currentItem = $item)
+        #end
+      #end
+    #end
+  #end
+#end
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Generated for $alignedFileName ($relativePath) -->
+<title>LensKit Recommender Framework &mdash; $title</title>
+<link rel="stylesheet" type="text/css"
+      href="http://kernest.com/fonts/pt-sans.css">
+<link rel="stylesheet" type="text/css"
+      href="http://kernest.com/fonts/liberation-serif.css">
+<link rel="stylesheet" type="text/css"
+      href="http://kernest.com/fonts/inconsolata.css">
+<link rel="stylesheet" type="text/css" href="main.css">
+<script type="text/javascript" src="http://widgets.twimg.com/j/2/widget.js"></script>
+</head>
+<body>
+  <div id="banner">
+    <img id="logo" src="logo.png" alt="LensKit" height="64" >
+    <ul id="topnav" class="navbar">
+    #foreach ($item in $mainMenu.items)
+      #if ($currentItem && $item == $currentItem)
+        #set ($cur = "current")
+      #else
+        #set ($cur = "other")
+      #end
+      <li class="$cur"><a href="$item.href">$item.name</a></li>
+    #end
+    </ul>
+  </div>
+  <div id="sidebar">
+  #if ($currentItem.items && $currentItem.items.size() > 0)
+    <div class="sidebox">
+    <h2>$currentItem.name</h2>
+    <ul>
+    #foreach ($i in $currentItem.items)
+      #if ($alignedFileName == $i.href)
+        #set ($cur = "current")
+      #else
+        #set ($cur = "other")
+      #end
+      <li class="$cur"><a href="$i.href">$i.name</a></li>
+    #end
+    </ul>
+    </div>
+  #end
+    <div class="sidebox">
+      Latest version:
+      <a href="lenskit-${project.version}-source.tar.gz">${project.version}</a>
+      (<a href="release-notes.html">release notes</a>)<br>
+      Fork it on
+      <a href="http://bitbucket.org/grouplens/lenskit">BitBucket</a><br>
+      <a href="https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit">Mailing
+      List</a><br>
+      <a href="http://dev.grouplens.org/trac/lenskit">Wiki/Bug Tracker</a>
+    </div>
+#if ( $alignedFileName == "index.html" )
+    <script type="text/javascript">
+      new TWTR.Widget({
+        version: 2,
+        type: 'profile',
+        rpp: 4,
+        interval: 6000,
+        width: 'auto',
+        height: 300,
+        theme: {
+          shell: {
+            background: '#333333',
+            color: '#ffffff'
+          },
+          tweets: {
+            background: '#000000',
+            color: '#ffffff',
+            links: '#4aed05'
+          }
+        },
+        features: {
+          scrollbar: true,
+          loop: false,
+          live: true,
+          hashtags: true,
+          timestamp: true,
+          avatars: true,
+          behavior: 'all'
+        }
+      }).render().setUser('LensKitRS').start();
+    </script>
+#end
+  </div>
+  <div id="body">
+    $bodyContent
+  </div>
+</body>
+</html>

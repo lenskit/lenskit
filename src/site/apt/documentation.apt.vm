@@ -1,0 +1,26 @@
+                -------------------------------------
+                            Documentation
+                -------------------------------------
+
+LensKit Documentation
+
+  * {{{./getting-started.html}Getting Started guide}}
+
+  * {{{./evaluating.html}Evaluating Recommenders}}
+
+  * {{{./apidocs}Combined API documentation}} (merged JavaDoc for all
+    modules)
+
+  []
+
+  LensKit is divided into several modules.  Some of these modules can
+  be used independently (e.g. <<<lenskit-data-structures>>> can be
+  used to take advantage of LensKit's <<<SparseVector>>>, etc. in
+  other projects).  Their individual Maven-generated sites, with per-module JavaDoc and reporting, are linked here:
+
+#foreach ($proj in $project.modules)
+  * {{{./${proj}/}${proj}}}
+
+#end
+  []
+
