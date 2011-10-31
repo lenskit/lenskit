@@ -8,6 +8,36 @@
 
 LensKit Release Notes
 
+* Release 0.9
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
+  the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.8}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Clean up documentation, warnings, and documenting annotations in
+    several places.
+
+  []
+
+** Evaluation runner
+
+   * Use <<<.eval-cache>>> as default cache directory.
+
+   * Add evaluation listener framework for future evaluation monitor
+     consoles.
+  
+   []
+
+** Cleanup
+
+   Several unused classes have been removed:
+
+   * <<<IndexedItemScore>>>
+
+   []
+
 * Release 0.8.1
 
   Bugfix release.
