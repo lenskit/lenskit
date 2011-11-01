@@ -226,6 +226,17 @@ public class CollectionUtils {
     public static <E> FastCollection<E> emptyFastCollection() {
         return new EmptyFastCollection<E>();
     }
+    
+    /**
+     * Wrap an iterator in a pointer.
+     * @param iter The iterator to wrap.
+     * @return A pointer backed by the iterator.
+     * @see Pointer
+     * @since 0.9
+     */
+    public static <E> Pointer<E> pointer(Iterator<E> iter) {
+        return new IteratorPointer<E>(iter);
+    }
 
     static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
 
