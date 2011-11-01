@@ -18,22 +18,24 @@
  */
 package org.grouplens.lenskit.collections;
 
+import static org.grouplens.lenskit.collections.LongSortedArraySet.deduplicate;
+import static org.grouplens.lenskit.collections.LongSortedArraySet.isSorted;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.grouplens.lenskit.collections.LongSortedArraySet.deduplicate;
-import static org.grouplens.lenskit.collections.LongSortedArraySet.isSorted;
-import static org.hamcrest.CoreMatchers.equalTo;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.util.BitSet;
 import java.util.Collections;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -245,4 +247,113 @@ public class TestLongSortedArraySet {
         assertEquals(2, data[0]);
         testSetSimple(set);
     }
+    
+    @Test
+    public void testMaskFirst() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        bits.set(1, data.length);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        assertThat(set.size(), equalTo(4));
+        assertThat(set.first(), equalTo(7l));
+        assertThat(set.last(), equalTo(639l));
+        assertTrue(set.contains(7));
+        assertTrue(set.contains(42));
+        assertFalse(set.contains(2));
+        assertThat(LongIterators.unwrap(set.iterator()),
+                   equalTo(new long[]{7, 8, 42, 639}));
+        assertThat(LongIterators.unwrap(set.iterator(2)),
+                   equalTo(new long[]{7, 8, 42, 639}));
+        assertThat(LongIterators.unwrap(set.iterator(7)),
+                   equalTo(new long[]{8, 42, 639}));
+        assertThat(set.headSet(42), hasSize(2));
+    }
+    
+    @Test
+    public void testMaskMid() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        bits.set(0, data.length);
+        bits.clear(2);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        assertThat(set.size(), equalTo(4));
+        assertThat(set.first(), equalTo(2l));
+        assertThat(set.last(), equalTo(639l));
+        assertTrue(set.contains(7));
+        assertTrue(set.contains(42));
+        assertFalse(set.contains(8));
+        assertThat(LongIterators.unwrap(set.iterator()),
+                   equalTo(new long[]{2, 7, 42, 639}));
+        assertThat(LongIterators.unwrap(set.iterator(2)),
+                   equalTo(new long[]{7, 42, 639}));
+        assertThat(LongIterators.unwrap(set.iterator(7)),
+                   equalTo(new long[]{42, 639}));
+        assertThat(set.headSet(42), hasSize(2));
+        assertThat(set.toLongArray(),
+                   equalTo(new long[]{2, 7, 42, 639}));
+    }
+    
+    @Test
+    public void testMaskLast() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        bits.set(0, data.length - 1);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        assertThat(set.size(), equalTo(4));
+        assertThat(set.first(), equalTo(2l));
+        assertThat(set.last(), equalTo(42l));
+        assertTrue(set.contains(8));
+        assertFalse(set.contains(639));
+        assertThat(LongIterators.unwrap(set.iterator()),
+                   equalTo(new long[]{2, 7, 8, 42}));
+        assertThat(LongIterators.unwrap(set.iterator(2)),
+                   equalTo(new long[]{7, 8, 42}));
+        assertThat(LongIterators.unwrap(set.iterator(7)),
+                   equalTo(new long[]{8, 42}));
+        assertThat(set.headSet(42).toLongArray(),
+                   equalTo(new long[]{2, 7, 8}));
+        assertThat(set.tailSet(7).toLongArray(),
+                   equalTo(new long[]{7, 8, 42}));
+    }
+    
+    @Test
+    public void testMaskEmpty() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        
+        assertThat(set.size(), equalTo(0));
+        assertTrue(set.isEmpty());
+        assertFalse(set.iterator().hasNext());
+        for (int i = 0; i < data.length; i++) {
+            assertFalse(set.contains(data[i]));
+        }
+    }
+    
+    @Test @Ignore
+    public void testMaskedIterator() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        bits.set(1, data.length - 1);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        assertTrue(set.iterator(7).hasNext());
+        assertTrue(set.iterator(7).hasPrevious());
+        assertThat(set.iterator(7).nextLong(), equalTo(8l));
+        assertThat(set.iterator(7).previousLong(), equalTo(7l));
+    }
+    
+    @Test @Ignore
+    public void testMaskedIteratorMid() {
+        long[] data = {2, 7, 8, 42, 639};
+        BitSet bits = new BitSet(data.length);
+        bits.set(1, data.length - 1);
+        bits.clear(2);
+        LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
+        assertTrue(set.iterator(8).hasNext());
+        assertTrue(set.iterator(8).hasPrevious());
+        assertThat(set.iterator(8).nextLong(), equalTo(42l));
+        assertThat(set.iterator(8).previousLong(), equalTo(7l));
+    }
+    
+    
 }
