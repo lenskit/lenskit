@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
+import java.util.Map;
+
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.Preparable;
@@ -38,7 +40,16 @@ public interface TTDataSet extends Preparable {
     String getName();
     
     /**
-     * Release the data set.  Called when the train-test job group using this
+     * Get the data set attributes (used for identification in output).
+     * 
+     * @return A key -> value map of the attributes used to identify this data
+     *         set. For example, a crossfold data set may include the source
+     *         name and fold number.
+     */
+    Map<String,Object> getAttributes();
+
+    /**
+     * Release the data set. Called when the train-test job group using this
      * data set is finished.
      */
     void release();

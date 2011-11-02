@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Provider;
 
@@ -113,6 +115,14 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
     @Override
     public String getName() {
         return String.format("%s:%d", manager.getSource().getName(), foldNumber);
+    }
+    
+    @Override
+    public Map<String,Object> getAttributes() {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("DataSet", manager.getSource().getName());
+        map.put("Segment", foldNumber);
+        return map;
     }
 
     @Override

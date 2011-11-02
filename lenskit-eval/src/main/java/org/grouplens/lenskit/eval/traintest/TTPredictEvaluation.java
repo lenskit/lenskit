@@ -18,15 +18,15 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import static com.google.common.collect.Iterables.concat;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -41,6 +41,8 @@ import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
 /**
@@ -65,44 +67,67 @@ public class TTPredictEvaluation implements Evaluation {
                                List<TTDataSet> dataSources) {
         outputFile = output;
         
-        // Collect attribute columns
-        Set<String> acols = new LinkedHashSet<String>();
-        for (AlgorithmInstance algo: algos) {
-            acols.addAll(algo.getAttributes().keySet());
-        }
-        
-        // Collect column indexes
-        Map<String,Integer> acIndexes = new HashMap<String, Integer>();
-        int idx = 2;
-        for (String col: acols) {
-            if (!acIndexes.containsKey(col))
-                acIndexes.put(col, idx++);
-        }
+        Map<String,Integer> dsColumns =
+                indexColumns(1,
+                             Lists.transform(dataSources,
+                                             new Function<TTDataSet, Map<String,?>>() {
+                                 @Override
+                                 public Map<String,?> apply(TTDataSet ds) {
+                                     return ds.getAttributes();
+                                 }
+                             }));
+        Map<String,Integer> aiColumns =
+                indexColumns(1 + dsColumns.size(),
+                             Lists.transform(algos,
+                                             new Function<AlgorithmInstance, Map<String,?>>() {
+                                 @Override
+                                 public Map<String,?> apply(AlgorithmInstance ai) {
+                                     return ai.getAttributes();
+                                 }
+                             }));
         
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet ds: dataSources) {
             TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algos, evals, acIndexes, ds);
+            group = new TTPredictEvalJobGroup(this, algos, evals, dsColumns, aiColumns, ds);
             jobGroups.add(group);
         }
         
         // Set up the columns & output builder
         outputBuilder = new CSVWriterBuilder();
-        List<String> headers = new ArrayList<String>();
-        headers.add("Run");
-        headers.add("Algorithm");
-        for (String c: acols) {
-            assert acIndexes.get(c).equals(headers.size());
-            headers.add(c);
+        int evalColCount = 0;
+        for (PredictionEvaluator ev: evals) {
+            evalColCount += ev.getColumnLabels().length;
         }
-        headers.add("BuildTime");
-        headers.add("TestTime");
+        final int dacc = dsColumns.size() + aiColumns.size();
+        String[] headers = new String[3 + dacc + evalColCount];
+        headers[0] = "Algorithm";
+        for (Map.Entry<String,Integer> col: concat(dsColumns.entrySet(), aiColumns.entrySet())) {
+            headers[col.getValue()] = col.getKey();
+        }
+        int index = dacc + 1;
+        headers[index++] = "BuildTime";
+        headers[index++] = "TestTime";
         for (PredictionEvaluator ev: evals) {
             for (String c: ev.getColumnLabels()) {
-                headers.add(c);
+                headers[index++] = c;
             }
         }
-        outputBuilder.setColumns(headers.toArray(new String[headers.size()]));
+        outputBuilder.setColumns(headers);
+    }
+    
+    static Map<String,Integer> indexColumns(int startIndex, Iterable<Map<String,?>> maps) {
+        int idx = startIndex;
+        Map<String,Integer> columns = new LinkedHashMap<String, Integer>();
+        for (Map<String,?> map: maps) {
+            for (String k: map.keySet()) {
+                if (!columns.containsKey(k)) {
+                    columns.put(k, idx++);
+                }
+            }
+        }
+        assert startIndex + columns.size() == idx;
+        return columns;
     }
 
     @Override

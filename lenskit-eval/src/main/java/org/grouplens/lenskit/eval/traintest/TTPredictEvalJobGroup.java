@@ -54,17 +54,19 @@ public class TTPredictEvalJobGroup implements JobGroup {
     
     private TTDataSet dataSet;
     private List<Job> jobs;
-    private Map<String,Integer> algoColIndexes;
+    private Map<String,Integer> dataColIndexes, algoColIndexes;
 
     private TTPredictEvaluation evaluation;
 
     public TTPredictEvalJobGroup(TTPredictEvaluation eval,
                                  List<AlgorithmInstance> algos,
                                  List<PredictionEvaluator> evals,
+                                 Map<String,Integer> dcIndexes,
                                  Map<String,Integer> acIndexes,
                                  TTDataSet data) {
         evaluation = eval;
         dataSet = data;
+        dataColIndexes = dcIndexes;
         algoColIndexes = acIndexes;
         
         final Provider<SharedRatingSnapshot> snap =
@@ -136,9 +138,13 @@ public class TTPredictEvalJobGroup implements JobGroup {
         @Override
         public TableWriter get() {
             TableWriter output = evaluation.getOutputTable();
-            String[] cols = new String[algoColIndexes.size() + 2];
-            cols[0] = getName();
-            cols[1] = algorithm.getName();
+            final int d_ncols = dataColIndexes.size();
+            final int a_ncols = algoColIndexes.size();
+            String[] cols = new String[1 + d_ncols + a_ncols];
+            cols[0] = algorithm.getName();
+            for (Map.Entry<String, Object> entry: dataSet.getAttributes().entrySet()) {
+                cols[dataColIndexes.get(entry.getKey())] = entry.getValue().toString();
+            }
             for (Map.Entry<String, Object> entry: algorithm.getAttributes().entrySet()) {
                 cols[algoColIndexes.get(entry.getKey())] = entry.getValue().toString();
             }

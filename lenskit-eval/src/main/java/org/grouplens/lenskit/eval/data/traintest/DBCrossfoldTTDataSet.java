@@ -31,8 +31,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Properties;
 
 import org.grouplens.lenskit.cursors.Cursor;
@@ -272,6 +274,14 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
     public String getName() {
 	    return String.format("%s:%d", manager.getSource().getName(), foldNumber);
     }
+	
+	@Override
+	public Map<String,Object> getAttributes() {
+	    Map<String, Object> map = new LinkedHashMap<String, Object>();
+	    map.put("DataSet", manager.getSource().getName());
+	    map.put("Segment", foldNumber);
+	    return map;
+	}
 
 	@Override
     public void release() {
