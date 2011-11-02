@@ -18,8 +18,14 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
@@ -36,6 +42,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +82,22 @@ public class TestItemItemRecommender {
         recommender = session.getItemRecommender();
     }
 
-
+    /**
+     * Check that we score items but do not provide rating scores.
+     */
+    @Test
+    public void testItemScorerNoRating() {
+        UserHistory<Rating> history = getRatings(5);
+        long[] items = { 7, 8 };
+        ItemItemScorer scorer = session.getComponent(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        assertThat(scores, notNullValue());
+        assertThat(scores.size(), equalTo(1));
+        assertThat(scores.get(7), not(notANumber()));
+        assertThat(scores.get(8), notANumber());
+        assertThat(scores.containsKey(8), equalTo(false));
+    }
 
     /**
      * Tests <tt>recommend(long, SparseVector)</tt>.

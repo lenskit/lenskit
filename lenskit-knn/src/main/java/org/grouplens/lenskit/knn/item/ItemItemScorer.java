@@ -47,7 +47,10 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Score items using an item-item CF model.
+ * Score items using an item-item CF model. User ratings are <b>not</b> supplied
+ * as default preferences.
+ * 
+ * @review Should user ratings be supplied? Optionally?
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
@@ -107,10 +110,11 @@ public class ItemItemScorer extends AbstractItemScorer implements
         transform.apply(normed);
 
         LongSortedSet iset;
-        if (items instanceof LongSortedSet)
+        if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;
-        else
+        } else {
             iset = new LongSortedArraySet(items);
+        }
 
         MutableSparseVector preds = scoreItems(normed, iset);
 
@@ -161,7 +165,9 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
-            scores.set(item, score);
+            if (!Double.isNaN(score)) {
+                scores.set(item, score);
+            }
         }
 
         return scores;
