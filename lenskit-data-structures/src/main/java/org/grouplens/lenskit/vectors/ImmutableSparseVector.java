@@ -129,28 +129,74 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
     
     /**
-     * Count the common keys of two vectors.
-     * @param other The vector to count mutual keys with.
-     * @return The number of keys shared between this vector and <var>other</var>.
+     * Reimplement {@link SparseVector#dot(SparseVector)} to use an optimized
+     * implementation when computing the dot product of two immutable sparse
+     * vectors.
+     * @see SparseVector#dot(SparseVector)
      */
-    public int countCommonKeys(ImmutableSparseVector other) {
-        int n = 0;
-        int i = 0;
-        int j = 0;
-        final int sz1 = size;
-        final int sz2 = other.size;
-        while (i < sz1 && j < sz2) {
-            if (keys[i] == other.keys[j]) {
-                n++;
-                i++;
-                j++;
-            } else if (keys[i] < other.keys[j]) {
-                i++;
-            } else {
-                j++;
+    @Override
+    public double dot(SparseVector o) {
+        if (o instanceof ImmutableSparseVector) {
+            // we can speed this up a lot
+            ImmutableSparseVector iv = (ImmutableSparseVector) o;
+            double dot = 0;
+            
+            final int sz = size;
+            final int osz = iv.size;
+            int i = 0, j = 0;
+            while (i < sz && j < osz) {
+                final long k1 = keys[i];
+                final long k2 = iv.keys[j];
+                if (k1 == k2) {
+                    dot += values[i] * iv.values[j];
+                    i++;
+                    j++;
+                } else if (k1 < k2) {
+                    i++;
+                } else {
+                    j++;
+                }
             }
+            
+            return dot;
+        } else {
+            return super.dot(o);
         }
-        return n;
+    }
+    
+    /**
+     * Reimplement {@link SparseVector#countCommonKeys(SparseVector)} to be more
+     * efficient when computing common keys of two immutable sparse vectors.
+     * @see SparseVector#countCommonKeys(SparseVector)
+     */
+    @Override
+    public int countCommonKeys(SparseVector o) {
+        if (o instanceof ImmutableSparseVector) {
+            // we can speed this up a lot
+            ImmutableSparseVector iv = (ImmutableSparseVector) o;
+            int n = 0;
+            
+            final int sz = size;
+            final int osz = iv.size;
+            int i = 0, j = 0;
+            while (i < sz && j < osz) {
+                final long k1 = keys[i];
+                final long k2 = iv.keys[j];
+                if (k1 == k2) {
+                    n += 1;
+                    i++;
+                    j++;
+                } else if (k1 < k2) {
+                    i++;
+                } else {
+                    j++;
+                }
+            }
+            
+            return n;
+        } else {
+            return super.countCommonKeys(o);
+        }
     }
 
     @Override
