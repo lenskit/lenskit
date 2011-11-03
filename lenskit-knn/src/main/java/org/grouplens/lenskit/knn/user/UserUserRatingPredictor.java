@@ -52,7 +52,7 @@ import com.google.common.collect.Iterables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UserUserRatingPredictor extends AbstractItemScorer {
+public class UserUserRatingPredictor extends AbstractItemScorer implements RatingPredictor {
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;

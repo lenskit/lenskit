@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.util.Collection;
 
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -37,7 +38,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractItemScorer implements RatingPredictor {
+public abstract class AbstractItemScorer implements ItemScorer {
     protected final DataAccessObject dao;
 
     protected AbstractItemScorer(DataAccessObject dao) {

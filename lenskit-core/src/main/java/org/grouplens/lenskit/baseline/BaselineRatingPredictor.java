@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */
-public class BaselineRatingPredictor extends AbstractItemScorer {
+public class BaselineRatingPredictor extends AbstractItemScorer implements RatingPredictor {
     private BaselinePredictor predictor;
 
     /**

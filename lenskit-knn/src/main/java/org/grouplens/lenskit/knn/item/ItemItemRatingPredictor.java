@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import javax.annotation.Nullable;
 
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @see ItemItemModelBuilder
  * @see ItemItemScorer
  */
-public class ItemItemRatingPredictor extends ItemItemScorer {
+public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected @Nullable BaselinePredictor baseline;
 

@@ -19,6 +19,11 @@ LensKit Release Notes
   * Clean up documentation, warnings, and documenting annotations in
     several places.
 
+  * Fix the <<<ItemScorer>>> inheritance hierarchy by making
+    <<<AbstractItemScorer>>> implement <<<ItemScorer>>> rather than
+    <<<RatingPredictor>>>, and make subclasses implement
+    <<<RatingPredictor>>> directly.
+
   []
 
 ** Evaluation runner
