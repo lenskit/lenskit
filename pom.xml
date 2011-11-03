@@ -450,6 +450,11 @@
         <artifactId>sqlite-jdbc</artifactId>
         <version>3.7.2</version>
       </dependency>
+      <dependency>
+        <groupId>org.grouplens.common</groupId>
+        <artifactId>common-test</artifactId>
+        <version>0.5-SNAPSHOT</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
