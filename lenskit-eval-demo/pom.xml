@@ -13,6 +13,10 @@
     Project demonstrating LensKit evaluations on the ML-100K data set.
   </description>
 
+  <properties>
+    <eval.java.executable>java</eval.java.executable>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
@@ -80,24 +84,17 @@
               <execution>
                 <id>run-eval</id>
                 <phase>integration-test</phase>
-                <goals><goal>java</goal></goals>
+                <goals><goal>exec</goal></goals>
                 <configuration>
-                  <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
-                  <systemProperties>
-                    <systemProperty>
-                      <key>scripts.directory</key>
-                      <value>${basedir}/src/integration-test</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>project.build.directory</key>
-                      <value>${project.build.directory}</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>lenskit.eval.throwErrors</key>
-                      <value>true</value>
-                    </systemProperty>
-                  </systemProperties>
+                  <executable>${eval.java.executable}</executable>
                   <arguments>
+                    <argument>-XX:CompileThreshold=100</argument>
+                    <argument>-Dscripts.directory=${basedir}/src/integration-test</argument>
+                    <argument>-Dproject.build.directory=${project.build.directory}</argument>
+                    <argument>-Dlenskit.eval.throwErrors=true</argument>
+                    <argument>-classpath</argument>
+                    <classpath/>
+                    <argument>org.grouplens.lenskit.eval.cli.EvalCLI</argument>
                     <argument>--cache-dir</argument>
                     <argument>${project.build.directory}/eval-cache</argument>
                     <argument>${basedir}/src/integration-test/eval.xml</argument>
