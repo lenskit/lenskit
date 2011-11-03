@@ -47,8 +47,11 @@ public class SlopeOneModelDataAccumulator {
         long[] items = snapshot.getItemIds().toLongArray();
         for (int i = 0; i < items.length-1; i++) {
             for (int j = i; j < items.length; j++) {
-                if (items[i] < items[j]) deviationMatrix.get(items[i]).put(items[j], Double.NaN);
-                else deviationMatrix.get(items[j]).put(items[i], Double.NaN);
+                if (items[i] < items[j]) {
+                    deviationMatrix.get(items[i]).put(items[j], Double.NaN);
+                } else {
+                    deviationMatrix.get(items[j]).put(items[i], Double.NaN);
+                }
             }
         }
     }

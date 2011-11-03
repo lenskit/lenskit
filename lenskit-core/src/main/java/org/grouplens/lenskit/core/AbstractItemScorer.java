@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.core;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongLists;
 
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
+
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -39,9 +39,17 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  */
 public abstract class AbstractItemScorer implements ItemScorer {
-    protected final DataAccessObject dao;
+    /**
+     * The DAO passed to the constructor.
+     */
+    protected final @Nonnull DataAccessObject dao;
 
-    protected AbstractItemScorer(DataAccessObject dao) {
+    /**
+     * Initialize the abstract item scorer.
+     * 
+     * @param dao The data access object to use for retrieving histories.
+     */
+    protected AbstractItemScorer(@Nonnull DataAccessObject dao) {
         this.dao = dao;
     }
 
@@ -57,7 +65,9 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(UserHistory, Collection)}.
+     * Delegate to {@link #score(UserHistory, Collection)} with a history
+     * retrieved from the DAO.
+     * @see #getUserHistory(long)
      */
     @Override
     public SparseVector score(long user, Collection<Long> items) {
@@ -70,29 +80,25 @@ public abstract class AbstractItemScorer implements ItemScorer {
      */
     @Override
     public double score(long user, long item) {
-        LongList l = new LongArrayList(1);
-        l.add(item);
-        SparseVector v = score(user, l);
+        SparseVector v = score(user, LongLists.singleton(item));
         return v.get(item, Double.NaN);
     }
-
-    /**
-     * Default implementation can use history.  Override this ins ubclasses that
-     * don't.
-     */
-    @Override
-    public boolean canUseHistory() {
-        return true;
-    }
-
+    
     /**
      * Delegate to {@link #score(UserHistory, Collection)}
      */
     @Override
     public double score(UserHistory<? extends Event> profile, long item) {
-        LongList l = new LongArrayList(1);
-        l.add(item);
-        SparseVector v = score(profile, l);
+        SparseVector v = score(profile, LongLists.singleton(item));
         return v.get(item, Double.NaN);
+    }
+
+    /**
+     * Default implementation can use history. Override this in subclasses that
+     * don't.
+     */
+    @Override
+    public boolean canUseHistory() {
+        return true;
     }
 }

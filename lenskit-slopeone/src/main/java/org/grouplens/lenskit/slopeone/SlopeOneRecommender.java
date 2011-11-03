@@ -46,8 +46,9 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
 
     @Override
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        if (predictor.getModel().getBaselinePredictor() != null) return predictor.getModel().getItemUniverse();
-        else {
+        if (predictor.getModel().getBaselinePredictor() != null) {
+            return predictor.getModel().getItemUniverse();
+        } else {
             LongSet predictable = new LongOpenHashSet();
             for (long id1 : predictor.getModel().getItemUniverse()) {
                 LongIterator iter = user.filter(Rating.class).itemSet().iterator();
@@ -55,7 +56,9 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
                 while (iter.hasNext() && nusers == 0) {
                     nusers += predictor.getModel().getCoratings(id1, iter.next());
                 }
-                if (nusers > 0) predictable.add(id1);
+                if (nusers > 0) {
+                    predictable.add(id1);
+                }
             }
             return predictable;
         }

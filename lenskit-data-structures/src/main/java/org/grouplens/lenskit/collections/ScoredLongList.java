@@ -116,7 +116,8 @@ public interface ScoredLongList extends LongList {
      * Return a sparse vector mapping items to scores.
      *
      * @return A vector whose keys are the items and values the scores in this
-     *         list.
+     *         list. {@link Double#NaN} values are preserved and their items are
+     *         included in the key set.
      */
     SparseVector scoreVector();
 }

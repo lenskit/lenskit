@@ -90,39 +90,56 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 //    }
 
     /**
-     * Normalize data and supply baselines. The resulting transformation uses
-     * the normalizer ({@link #setNormalizer(VectorNormalizer)}) to normalize
-     * the user data and denormalize the predictions. It then supplies missing
-     * predictions from the baseline predictor (
-     * {@link #setBaseline(BaselinePredictor)}) if one has been configured.
+     * Make a transform that wraps the normalizer (
+     * {@link #setNormalizer(VectorNormalizer)}) with a baseline-adding
+     * transform if there is a baseline configured.
      */
     @Override
     protected VectorTransformation makeTransform(final UserVector userData) {
-        return new VectorTransformation() {
-            final VectorTransformation norm =
-                    normalizer.makeTransformation(userData);
-            final UserVector ratings = userData;
+        if (baseline == null) {
+            return normalizer.makeTransformation(userData);
+        } else {
+            return new BaselineAddingTransform(userData);
+        }
+    }
+    
+    /**
+     * Vector transformation that wraps the normalizer to supply baseline
+     * predictions for missing values in the
+     * {@link #unapply(MutableSparseVector)} method.
+     * 
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     * 
+     */
+    protected class BaselineAddingTransform implements VectorTransformation {
+        final VectorTransformation norm;
+        final UserVector ratings;
+        
+        public BaselineAddingTransform(UserVector userData) {
+            ratings = userData;
+            norm = normalizer.makeTransformation(userData);
+        }
 
-            @Override
-            public MutableSparseVector unapply(MutableSparseVector vector) {
-                norm.unapply(vector);
-                // apply the baseline if applicable
-                if (baseline != null) {
-                    LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
-                    if (!unpredItems.isEmpty()) {
-                        logger.trace("Filling {} items from baseline", unpredItems.size());
-                        SparseVector basePreds = baseline.predict(ratings, unpredItems);
-                        vector.set(basePreds);
-                    }
-                }
-                return vector;
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            norm.unapply(vector);
+            
+            assert baseline != null;
+            LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
+            if (!unpredItems.isEmpty()) {
+                logger.trace("Filling {} items from baseline",
+                             unpredItems.size());
+                SparseVector basePreds = baseline.predict(ratings, unpredItems);
+                vector.set(basePreds);
             }
+            
+            return vector;
+        }
 
-            @Override
-            public MutableSparseVector apply(MutableSparseVector vector) {
-                return norm.apply(vector);
-            }
-        };
+        @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            return norm.apply(vector);
+        }
     }
 
     @Override

@@ -60,13 +60,19 @@ public class SlopeOneModel {
         if (item1 == item2) return 0;
         else if (item1 < item2) {
             Long2DoubleOpenHashMap map = devMatrix.get(item1);
-            if (map == null) return Double.NaN;
-            else return map.get(item2);
+            if (map == null) {
+                return Double.NaN;
+            } else {
+                return map.get(item2);
+            }
         }
         else {
             Long2DoubleOpenHashMap map = devMatrix.get(item2);
-            if (map == null) return Double.NaN;
-            else return -map.get(item1);
+            if (map == null) {
+                return Double.NaN;
+            } else {
+                return -map.get(item1);
+            }
         }
     }
 

@@ -354,25 +354,30 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         @Override
         public Rating poll() {
             try {
-                if (!resultSet.next())
+                if (!resultSet.next()) {
                     return null;
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
 
             try {
                 rating.setId(resultSet.getLong(COL_EVENT_ID));
-                if (resultSet.wasNull())
+                if (resultSet.wasNull()) {
                     throw new RuntimeException("Unexpected null event ID");
+                }
                 rating.setUserId(resultSet.getLong(COL_USER_ID));
-                if (resultSet.wasNull())
+                if (resultSet.wasNull()) {
                     throw new RuntimeException("Unexpected null user ID");
+                }
                 rating.setItemId(resultSet.getLong(COL_ITEM_ID));
-                if (resultSet.wasNull())
+                if (resultSet.wasNull()) {
                     throw new RuntimeException("Unexpected null item ID");
+                }
                 rating.setRating(resultSet.getDouble(COL_RATING));
-                if (resultSet.wasNull())
+                if (resultSet.wasNull()) {
                     rating.setRating(Double.NaN);
+                }
                 long ts = -1;
                 if (hasTimestampColumn) {
                     ts = resultSet.getLong(COL_TIMESTAMP);

@@ -96,20 +96,24 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public boolean equals(Object o) {
         if (o instanceof ScoredLongList) {
             ScoredLongList oll = (ScoredLongList) o;
-            if (size() != oll.size())
+            if (size() != oll.size()) {
                 return false;
+            }
             final int sz = size();
             for (int i = 0; i < sz; i++) {
                 if (getLong(i) != oll.getLong(i))
                     return false;
                 double s = getScore(i);
                 double os = oll.getScore(i);
-                if (Double.isNaN(s) ^ Double.isNaN(os))
+                if (Double.isNaN(s) ^ Double.isNaN(os)) {
                     return false;
-                else if (!Double.isNaN(s) && !Double.isNaN(os) && s != os)
+                } else if (!Double.isNaN(s) && !Double.isNaN(os) && s != os) {
                     return false;
+                }
             }
+            
             return true;
+            
         } else {
             return false;
         }
@@ -122,7 +126,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         b.append("<[");
         final int sz = size();
         for (int i = 0; i < sz; i++) {
-            if (i > 0) b.append(", ");
+            if (i > 0) {
+                b.append(", ");
+            }
             b.append(getLong(i));
             b.append(": ");
             b.append(getScore(i));
@@ -145,8 +151,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public ScoredLongListIterator listIterator(int index) {
         LongListIterator lit = items.listIterator(index);
         DoubleListIterator sit = null;
-        if (scores != null)
+        if (scores != null) {
             sit = scores.listIterator(index);
+        }
         return new Iter(lit, sit);
     }
 
@@ -159,8 +166,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public LongList subList(int from, int to) {
         LongList is = items.subList(from, to);
         DoubleList ss = null;
-        if (scores != null)
+        if (scores != null) {
             ss = scores.subList(from, to);
+        }
         return new ScoredLongArrayList(is, ss);
     }
 
@@ -172,8 +180,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             scores.size(size);
             if (ssz < size) {
                 // grew it, install new NaNs.
-                for (int i = ssz; i < size; i++)
+                for (int i = ssz; i < size; i++) {
                     scores.set(i, Double.NaN);
+                }
             }
         }
     }
@@ -499,20 +508,23 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public double getScore(int index) {
-        if (scores == null)
+        if (scores == null) {
             return Double.NaN;
-        else
+        } else {
             return scores.getDouble(index);
+        }
     }
 
     @Override
     public double setScore(int index, double score) {
-        if (scores == null && !Double.isNaN(score))
+        if (scores == null && !Double.isNaN(score)) {
             makeScoreList();
-        if (scores != null)
+        }
+        if (scores != null) {
             return scores.set(index, score);
-        else
+        } else {
             return Double.NaN;
+        }
     }
 
     @Override

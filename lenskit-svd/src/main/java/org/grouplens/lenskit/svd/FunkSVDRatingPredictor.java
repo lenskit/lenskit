@@ -95,23 +95,33 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         return featurePrefs;
     }*/
 
+    /**
+     * Predict for a user using their preference array and history vector.
+     * 
+     * @param user The user's rating vector.
+     * @param uprefs The user's preference array from the model.
+     * @param items The items to predict for.
+     * @return
+     */
     private MutableSparseVector predict(UserVector user, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
         final DoubleFunction clamp = model.clampingFunction;
 
         LongSortedSet iset;
-        if (items instanceof LongSortedSet)
+        if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;
-        else
+        } else {
             iset = new LongSortedArraySet(items);
+        }
 
         MutableSparseVector preds = model.baseline.predict(user, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
             final int idx = model.getItemIndex(item);
-            if (idx < 0)
+            if (idx < 0) {
                 continue;
+            }
 
             double score = preds.get(item);
             for (int f = 0; f < nf; f++) {
@@ -124,11 +134,19 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         return preds;
     }
 
-    private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
+    /**
+     * Predict from a user ID and preference array. Delegates to
+     * {@link #predict(UserVector, double[], Collection)}.
+     */
+    private MutableSparseVector predict(long user, double[] uprefs,
+                                        Collection<Long> items) {
         return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
                        uprefs, items);
     }
 
+    /**
+     * FunkSVD cannot currently user user history.
+     */
     @Override
     public boolean canUseHistory() {
         return false;
@@ -149,7 +167,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             }
             return predict(user, uprefs, items);
         } else {
-            // The user was not included in the model, so we fallback to the baseline
+            // The user was not included in the model, so just use the baseline
             UserVector ratings = UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
             return model.baseline.predict(ratings, items);
         }

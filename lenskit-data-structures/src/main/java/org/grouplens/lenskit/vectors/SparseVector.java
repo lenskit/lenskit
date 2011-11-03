@@ -101,9 +101,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
     public abstract double get(long key, double dft);
 
     /**
-     * Query whether the vector contains an entry for the key in question. If
-     * the vector contains an entry whose value is {@link Double#NaN},
-     * <tt>true</tt> is still returned.
+     * Query whether the vector contains an entry for the key in question.
      *
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.

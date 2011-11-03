@@ -304,7 +304,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             if (usedKeys.get(idx)) {
                 return values[idx] += value;
             } else {
-                return values[idx] = value;
+                values[idx] = value;
+                return Double.NaN;
             }
         } else {
             return Double.NaN;

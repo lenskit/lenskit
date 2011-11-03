@@ -52,10 +52,12 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
 
         LongSortedSet iset;
-        if (items instanceof LongSortedSet)
+        if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;
-        else
+        } else {
             iset = new LongSortedArraySet(items);
+        }
+        
         MutableSparseVector preds = new MutableSparseVector(iset);
         LongArrayList unpreds = new LongArrayList();
         for (long predicteeItem : items) {
@@ -70,21 +72,27 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
                         nitems++;
                     }
                 }
-                if (nitems == 0) unpreds.add(predicteeItem);
-                else {
+                if (nitems == 0) {
+                    unpreds.add(predicteeItem);
+                } else {
                     double predValue = total/nitems;
-                    if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
-                    else if (predValue < model.getMinRating()) predValue = model.getMinRating();
+                    if (predValue > model.getMaxRating()) {
+                        predValue = model.getMaxRating();
+                    } else if (predValue < model.getMinRating()) {
+                        predValue = model.getMinRating();
+                    }
                     preds.set(predicteeItem, predValue);
                 }
             }
         }
+        
         //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpreds.isEmpty()) {
             SparseVector basePreds = baseline.predict(user, unpreds);
             preds.set(basePreds);
         }
+        
         return preds;
     }
 

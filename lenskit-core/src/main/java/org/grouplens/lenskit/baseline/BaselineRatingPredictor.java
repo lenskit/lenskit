@@ -41,7 +41,8 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
 
     /**
      * Construct a new baseline rating predictor.
-     * @param baseline The scorer to delegate to
+     * 
+     * @param baseline The baseline predictor to use.
      * @param dao The DAO.
      */
     public BaselineRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
@@ -49,6 +50,9 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
         predictor = baseline;
     }
 
+    /**
+     * Delegate to {@link BaselinePredictor#predict(UserVector, Collection)}.
+     */
     @Override
     public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
         UserVector ratings = RatingVectorHistorySummarizer.makeRatingVector(profile);

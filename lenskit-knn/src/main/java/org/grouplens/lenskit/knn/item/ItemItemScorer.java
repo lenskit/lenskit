@@ -58,18 +58,16 @@ import org.grouplens.lenskit.vectors.SparseVector;
 public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     protected final ItemItemModel model;
-    protected @Nonnull
-    VectorNormalizer<? super UserVector> normalizer =
+    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
         new IdentityVectorNormalizer();
     protected final int neighborhoodSize;
     protected HistorySummarizer summarizer;
-    protected @Nonnull
-    NeighborhoodScorer scorer;
+    protected @Nonnull NeighborhoodScorer scorer;
 
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-            @NeighborhoodSize int nnbrs,
-            @UserHistorySummary HistorySummarizer sum,
-            NeighborhoodScorer scorer) {
+                          @NeighborhoodSize int nnbrs,
+                          @UserHistorySummary HistorySummarizer sum,
+                          NeighborhoodScorer scorer) {
         super(dao);
         model = m;
         neighborhoodSize = nnbrs;
@@ -100,6 +98,8 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Score items by computing predicted ratings.
+     * @see #scoreItems(SparseVector, LongSortedSet)
+     * @see #makeTransform(UserVector)
      */
     @Override
     public SparseVector score(UserHistory<? extends Event> history,
@@ -158,8 +158,9 @@ public class ItemItemScorer extends AbstractItemScorer implements
             while (niter.hasNext()) {
                 long oi = niter.nextLong();
                 double score = niter.getScore();
-                if (userData.containsKey(oi))
+                if (userData.containsKey(oi)) {
                     accum.put(oi, score);
+                }
             }
             neighbors = accum.finish();
 
@@ -179,12 +180,14 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * transformation is created from the user summary. It is then applied to
      * the user summary prior to scoring, and unapplied to the scores. Its
      * {@link VectorTransformation#unapply(MutableSparseVector)} method is
-     * expected also to populate missing scores (in the key domain but not key
-     * set) as appropriate from the baseline.
+     * expected also to populate missing scores as appropriate from the
+     * baseline. The vector passed to unapply the transformation will contain
+     * all items to be predicted in the key domain, and will have values for all
+     * predictable items.
      * 
      * <p>
-     * The default implementation delegates to the normalizer (
-     * {@link #setNormalizer(VectorNormalizer)}).
+     * The default implementation delegates to the normalizer
+     * ({@link #setNormalizer(VectorNormalizer)}).
      * 
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.

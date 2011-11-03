@@ -60,12 +60,15 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      */
     @Override
     protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
-        if (candidates == null)
+        if (candidates == null) {
             candidates = getPredictableItems(user);
-        if (exclude == null)
+        }
+        if (exclude == null) {
             exclude = getDefaultExcludes(user);
-        if (!exclude.isEmpty())
+        }
+        if (!exclude.isEmpty()) {
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
+        }
 
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
@@ -78,12 +81,15 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      */
     @Override
     protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
-        if (candidates == null)
+        if (candidates == null) {
             candidates = getPredictableItems(user);
-        if (exclude == null)
+        }
+        if (exclude == null) {
             exclude = getDefaultExcludes(user);
-        if (!exclude.isEmpty())
+        }
+        if (!exclude.isEmpty()) {
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
+        }
 
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
@@ -98,15 +104,18 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      *         order of score.
      */
     protected ScoredLongList recommend(int n, SparseVector scores) {
-        if (scores.isEmpty()) return new ScoredLongArrayList();
+        if (scores.isEmpty()) {
+            return new ScoredLongArrayList();
+        }
 
-        if (n < 0) n = scores.size();
+        if (n < 0) {
+            n = scores.size();
+        }
+        
         ScoredItemAccumulator accum = new ScoredItemAccumulator(n);
         for (Long2DoubleMap.Entry pred: scores.fast()) {
             final double v = pred.getDoubleValue();
-            if (!Double.isNaN(v)) {
-                accum.put(pred.getLongKey(), v);
-            }
+            accum.put(pred.getLongKey(), v);
         }
 
         return accum.finish();
