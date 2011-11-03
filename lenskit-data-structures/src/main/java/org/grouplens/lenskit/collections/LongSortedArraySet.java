@@ -113,47 +113,13 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
 
         if (!clean) {
             // check for sortedness first to avoid the actual sort
-            if (!isSorted(data, start, toIndex))
+            if (!MoreArrays.isSorted(data, start, toIndex))
                 Arrays.sort(data, start, toIndex);
-            end = deduplicate(data, start, toIndex);
+            end = MoreArrays.deduplicate(data, start, toIndex);
         } else {
             end = toIndex;
         }
         mask = used;
-    }
-
-    /**
-     * Check that the array is sorted.
-     * @return <code>true</code> iff the array is sorted.
-     */
-    static boolean isSorted(final long[] data, final int start, final int end) {
-        for (int i = start; i < end - 1; i++) {
-            if (data[i] > data[i+1]) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Remove duplicate elements in the backing store. The array should be
-     * unsorted.
-     * @return the new end index of the array
-     */
-    static int deduplicate(final long[] data, final int start, final int end) {
-        if (start == end) return end;   // special-case empty arrays
-
-        // Since we have a non-empty array, the nextPos will always be where the
-        // end is if we find no more unique elements.
-        int pos = start + 1;
-        for (int i = pos; i < end; i++) {
-            if (data[i] != data[i-1]) { // we have a non-duplicate item
-                if (i != pos)           // indices out of alignment, must copy
-                    data[pos] = data[i];
-                pos++;                  // increment nextPos since we have a new non-dup
-            }
-            // if data[i] is a duplicate, then i steps forward and nextPos doesn't,
-            // thereby arranging for data[i] to be elided.
-        }
-        return pos;
     }
 
     /**
@@ -370,7 +336,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      */
     public static LongSortedArraySet wrap(@Nonnull long[] data, int size,
                                           @Nullable BitSet used) {
-        assert isSorted(data, 0, size);
+        assert MoreArrays.isSorted(data, 0, size);
         return new LongSortedArraySet(data, 0, size, true, used);
     }
 

@@ -48,22 +48,25 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items using an item-item CF model.
- *
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
-public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelBackedScorer {
+public class ItemItemScorer extends AbstractItemScorer implements
+        ItemItemModelBackedScorer {
     protected final ItemItemModel model;
-    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
-            new IdentityVectorNormalizer();
+    protected @Nonnull
+    VectorNormalizer<? super UserVector> normalizer =
+        new IdentityVectorNormalizer();
     protected final int neighborhoodSize;
     protected HistorySummarizer summarizer;
-    protected @Nonnull NeighborhoodScorer scorer;
+    protected @Nonnull
+    NeighborhoodScorer scorer;
 
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-                          @NeighborhoodSize int nnbrs,
-                          @UserHistorySummary HistorySummarizer sum,
-                          NeighborhoodScorer scorer) {
+            @NeighborhoodSize int nnbrs,
+            @UserHistorySummary HistorySummarizer sum,
+            NeighborhoodScorer scorer) {
         super(dao);
         model = m;
         neighborhoodSize = nnbrs;
@@ -83,6 +86,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
 
     /**
      * Set the normalizer to apply to user summaries.
+     * 
      * @param norm The normalizer.
      * @see UserVectorNormalizer
      */
@@ -95,7 +99,8 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
      * Score items by computing predicted ratings.
      */
     @Override
-    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+    public SparseVector score(UserHistory<? extends Event> history,
+                              Collection<Long> items) {
         UserVector summary = summarizer.summarize(history);
         VectorTransformation transform = makeTransform(summary);
         MutableSparseVector normed = summary.mutableCopy();
@@ -111,21 +116,23 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
 
         // untransform the scores
         transform.unapply(preds);
-        return preds.freeze(true);
+        return preds.freeze();
     }
 
     /**
      * Compute item scores for a user.
-     *
+     * 
      * @param userData The user vector for which scores are to be computed.
      * @param items The items to score.
-     * @return The scores for the items. This vector contains all items as keys;
-     *         unscorable items have scores of {@link Double#NaN}.
+     * @return The scores for the items. The key domain contains all items; only
+     *         those items with scores are set.
      */
-    protected MutableSparseVector scoreItems(SparseVector userData, LongSortedSet items) {
-        MutableSparseVector scores = new MutableSparseVector(items, Double.NaN);
+    protected MutableSparseVector scoreItems(SparseVector userData,
+                                             LongSortedSet items) {
+        MutableSparseVector scores = new MutableSparseVector(items);
         // We ran reuse accumulators
-        ScoredItemAccumulator accum = new ScoredItemAccumulator(neighborhoodSize);
+        ScoredItemAccumulator accum =
+            new ScoredItemAccumulator(neighborhoodSize);
 
         // FIXME Make sure the direction on similarities is right for asym.
         // for each item, compute its prediction
@@ -166,20 +173,19 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
      * transformation is created from the user summary. It is then applied to
      * the user summary prior to scoring, and unapplied to the scores. Its
      * {@link VectorTransformation#unapply(MutableSparseVector)} method is
-     * expected also to populate missing scores (supplied in the vector as
-     * {@link Double#NaN} as appropriate (e.g. from a baseline).
-     *
+     * expected also to populate missing scores (in the key domain but not key
+     * set) as appropriate from the baseline.
+     * 
      * <p>
      * The default implementation delegates to the normalizer (
      * {@link #setNormalizer(VectorNormalizer)}).
-     *
+     * 
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */
     protected VectorTransformation makeTransform(final UserVector userData) {
         return normalizer.makeTransformation(userData);
     }
-
 
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Rating;
@@ -74,7 +75,7 @@ public class UserVector extends ImmutableSparseVector {
     public static UserVector wrap(long user, long[] keys, double[] values, int size) {
         if (values.length < size)
             throw new IllegalArgumentException("value array too short");
-        if (!isSorted(keys, size))
+        if (!MoreArrays.isSorted(keys, 0, size))
             throw new IllegalArgumentException("item array not sorted");
         return new UserVector(user, keys, values, size);
     }
@@ -174,9 +175,7 @@ public class UserVector extends ImmutableSparseVector {
             }
         }
 
-        UserVector v = new UserVector(userId, items, values, li+1);
-        assert v.isComplete();
-        return v;
+        return new UserVector(userId, items, values, li+1);
     }
 
 }

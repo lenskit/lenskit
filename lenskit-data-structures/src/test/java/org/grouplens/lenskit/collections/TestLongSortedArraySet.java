@@ -18,8 +18,6 @@
  */
 package org.grouplens.lenskit.collections;
 
-import static org.grouplens.lenskit.collections.LongSortedArraySet.deduplicate;
-import static org.grouplens.lenskit.collections.LongSortedArraySet.isSorted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -47,72 +45,6 @@ public class TestLongSortedArraySet {
     @SuppressWarnings("unchecked")
     private LongSortedArraySet emptySet() {
         return new LongSortedArraySet(Collections.EMPTY_LIST);
-    }
-
-    @Test
-    public void testIsSortedEmpty() {
-        assertTrue(isSorted(new long[]{}, 0, 0));
-    }
-
-    @Test
-    public void testIsSortedTrue() {
-        assertTrue(isSorted(new long[]{1,2,3}, 0, 3));
-    }
-
-    @Test
-    public void testIsSortedFalse() {
-        assertFalse(isSorted(new long[]{1,3,2}, 0, 3));
-    }
-
-    @Test
-    public void testIsSortedSubset() {
-        assertTrue(isSorted(new long[]{5,1,2,3,-4}, 1, 4));
-    }
-
-    @Test
-    public void testDeduplicateEmpty() {
-        long[] data = {};
-        int end = deduplicate(data, 0, 0);
-        assertEquals(0, end);
-    }
-
-    @Test
-    public void testDeduplicateNoChange() {
-        long[] data = {1, 2, 3};
-        int end = deduplicate(data, 0, 3);
-        assertEquals(3, end);
-        assertThat(data, equalTo(new long[]{1,2,3}));
-    }
-
-    @Test
-    public void testDeduplicateDups() {
-        long[] data = {1, 2, 2, 3};
-        int end = deduplicate(data, 0, 4);
-        assertEquals(3, end);
-        assertEquals(1, data[0]);
-        assertEquals(2, data[1]);
-        assertEquals(3, data[2]);
-    }
-
-    @Test
-    public void testDeduplicateDupsEnd() {
-        long[] data = {1, 2, 2, 3, 3};
-        int end = deduplicate(data, 0, 5);
-        assertEquals(3, end);
-        assertEquals(1, data[0]);
-        assertEquals(2, data[1]);
-        assertEquals(3, data[2]);
-    }
-    @
-    Test
-    public void testDeduplicateSubset() {
-        long[] data = {1, 1, 2, 2, 3, 3};
-        int end = deduplicate(data, 1, 6);
-        assertEquals(4, end);
-        assertEquals(1, data[0]);
-        assertEquals(1, data[1]);
-        assertEquals(2, data[2]);
-        assertEquals(3, data[3]);
     }
 
     @Test

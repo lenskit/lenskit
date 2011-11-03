@@ -18,15 +18,13 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -110,13 +108,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
                 norm.unapply(vector);
                 // apply the baseline if applicable
                 if (baseline != null) {
-                    LongList unpredItems = new LongArrayList();
-                    for (Long2DoubleMap.Entry pred: vector.fast()) {
-                        double p = pred.getDoubleValue();
-                        if (Double.isNaN(p)) {
-                            unpredItems.add(pred.getLongKey());
-                        }
-                    }
+                    LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
                     if (!unpredItems.isEmpty()) {
                         logger.trace("Filling {} items from baseline", unpredItems.size());
                         SparseVector basePreds = baseline.predict(ratings, unpredItems);

@@ -18,72 +18,220 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.doubles.DoubleLists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.MoreArrays;
+
 /**
- * Immutable sparse vectors.  These vectors cannot be changed, even by other code,
- * and are therefore safe to store and are thread-safe.
+ * Immutable sparse vectors. These vectors cannot be changed, even by other
+ * code, and are therefore safe to store and are thread-safe.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * 
  */
 @Immutable
-public class ImmutableSparseVector extends SparseVector {
+public class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -4740588973577998934L;
+    
+    protected final long[] keys;
+    protected double[] values;
+    protected final int size;
 
     /**
-     * @param ratings
+     * Create a new immutable sparse vector from a map of ratings.
+     * 
+     * @param ratings The ratings to make a vector from. Its key set is used as
+     *        the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
-        super(ratings);
+        keys = ratings.keySet().toLongArray();
+        size = keys.length;
+        Arrays.sort(keys);
+        assert keys.length == ratings.size();
+        assert MoreArrays.isSorted(keys, 0, size);
+        values = new double[keys.length];
+        final int len = keys.length;
+        for (int i = 0; i < len; i++) {
+            values[i] = ratings.get(keys[i]);
+        }
     }
-
-    protected ImmutableSparseVector(SparseVector v) {
-        super(v.keys,
-              (v instanceof ImmutableSparseVector ?
-                      v.values : Arrays.copyOf(v.values, v.size)),
-              v.size);
-    }
-
+    
     /**
-     * @param keys
-     * @param values
-     * @see SparseVector#SparseVector(long[], double[])
+     * Construct a new sparse vector from pre-existing arrays. These arrays must
+     * be sorted in key order and cannot contain duplicate keys; this condition
+     * is not checked.
+     * 
+     * @param keys The key array (will be the key domain).
+     * @param values The value array.
+     * @param size The length to actually use.
      */
-    protected ImmutableSparseVector(long[] keys, double[] values) {
-        super(keys, values);
+    protected ImmutableSparseVector(long[] keys, double[] values, int size) {    
+        this.keys = keys;
+        this.values = values;
+        this.size = size;
+        assert MoreArrays.isSorted(keys, 0, size);
     }
-
-    /**
-     * @param keys
-     * @param values
-     * @param size The number of entries to use for each array.
-     * @see SparseVector#SparseVector(long[], double[])
-     */
-    protected ImmutableSparseVector(long[] keys, double[] values, int size) {
-        super(keys, values, size);
-    }
-
-    /**
-     * Override {@link SparseVector#invalidate()} to prohibit immutable sparse
-     * vectors from being invalidated.
-     */
+    
     @Override
-    protected final void invalidate() {
-        throw new UnsupportedOperationException("Immutable vectors cannot be invalidated");
+    public final double get(long key, double dft) {
+        int idx = Arrays.binarySearch(keys, 0, size, key);
+        if (idx >= 0)
+            return values[idx];
+        else
+            return dft;
     }
-
+    
     @Override
-    public ImmutableSparseVector clone() {
-        return (ImmutableSparseVector) super.clone(false);
+    public final boolean containsKey(long key) {
+        return Arrays.binarySearch(keys, 0, size, key) >= 0;
+    }
+    
+    @Override
+    public Iterator<Long2DoubleMap.Entry> iterator() {
+        return new IterImpl();
+    }
+    
+    @Override
+    public Iterator<Long2DoubleMap.Entry> fastIterator() {
+        return new FastIterImpl();
+    }
+    
+    @Override
+    public LongSortedSet keySet() {
+        return LongSortedArraySet.wrap(keys, size);
+    }
+    
+    @Override
+    public LongSortedSet keyDomain() {
+        return keySet();
+    }
+    
+    @Override
+    public DoubleList values() {
+        return DoubleLists.unmodifiable(new DoubleArrayList(values, 0, size));
+    }
+    
+    @Override
+    public int size() {
+        return size;
+    }
+    
+    /**
+     * Count the common keys of two vectors.
+     * @param other The vector to count mutual keys with.
+     * @return The number of keys shared between this vector and <var>other</var>.
+     */
+    public int countCommonKeys(ImmutableSparseVector other) {
+        int n = 0;
+        int i = 0;
+        int j = 0;
+        final int sz1 = size;
+        final int sz2 = other.size;
+        while (i < sz1 && j < sz2) {
+            if (keys[i] == other.keys[j]) {
+                n++;
+                i++;
+                j++;
+            } else if (keys[i] < other.keys[j]) {
+                i++;
+            } else {
+                j++;
+            }
+        }
+        return n;
     }
 
     @Override
     public ImmutableSparseVector immutable() {
         return this;
+    }
+    
+    @Override
+    public MutableSparseVector mutableCopy() {
+        return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
+    }
+    
+    final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
+        int pos = 0;
+        @Override
+        public boolean hasNext() {
+            return pos < size;
+        }
+        @Override
+        public Entry next() {
+            if (hasNext())
+                return new Entry(pos++);
+            else
+                throw new NoSuchElementException();
+        }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    final class FastIterImpl implements Iterator<Long2DoubleMap.Entry> {
+        Entry entry = new Entry(-1);
+        @Override
+        public boolean hasNext() {
+            return entry.pos < size - 1;
+        }
+        @Override
+        public Entry next() {
+            if (hasNext()) {
+                entry.pos += 1;
+                return entry;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private final class Entry implements Long2DoubleMap.Entry {
+        int pos;
+        public Entry(int p) {
+            pos = p;
+        }
+        @Override
+        public double getDoubleValue() {
+            return values[pos];
+        }
+        @Override
+        public long getLongKey() {
+            return keys[pos];
+        }
+        @Override
+        public double setValue(double value) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Long getKey() {
+            return getLongKey();
+        }
+        @Override
+        public Double getValue() {
+            return getDoubleValue();
+        }
+        @Override
+        public Double setValue(Double value) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**

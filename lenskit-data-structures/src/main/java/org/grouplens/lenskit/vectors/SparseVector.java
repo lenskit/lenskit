@@ -18,107 +18,63 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
-import it.unimi.dsi.fastutil.doubles.DoubleCollections;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.codehaus.plexus.util.StringUtils;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.Pointer;
 
-import com.google.common.primitives.Doubles;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 
 /**
  * Read-only interface to sparse vectors.
+ * 
+ * <p>
+ * This vector class works a lot like a map, but it also caches some
+ * commonly-used statistics. The values are stored in parallel arrays sorted by
+ * key. This allows fast lookup and sorted iteration. All iterators access the
+ * items in key order.
+ * 
+ * <p>
+ * Vectors have a <i>key domain</i>, which is a set containing all valid keys in
+ * the vector. This key domain is fixed at construction; mutable vectors cannot
+ * set values for keys not in this domain. Thinking of the vector as a function
+ * from longs to doubles, the key domain would actually be the codomain, and the
+ * key set the algebraic domain, but that gets cumbersome to write in code. So
+ * think of the key domain as the domain from which valid keys are drawn.
+ * 
+ * <p>
+ * This class provides a <em>read-only</em> interface to sparse vectors. It may
+ * actually be a {@link MutableSparseVector}, so the data may be modified by
+ * code elsewhere that has access to the mutable representation. For sparse
+ * vectors that are guaranteed to be unchanging, see
+ * {@link ImmutableSparseVector}.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- * <p>This vector class works a lot like a map, but it also caches some
- * commonly-used statistics.  The values are stored in parallel arrays sorted
- * by ID.  This allows fast lookup and sorted iteration.  All iterators access
- * the items in key ID.
- *
- * <p>It is possible for vectors to contain NaN values, but be careful with this.
- * They will show up in enumeration and {@link #containsKey(long)} will return
- * <tt>true</tt>, but {@link #get(long)} will not distinguish between them and
- * missing entries ({@link #get(long, double)} will).
- *
- * <p>This class provides a <em>read-only</em> interface to sparse vectors. It
- * may actually be a {@link MutableSparseVector}, so the data may be modified
- * by code elsewhere that has access to the mutable representation. For sparse
- * vectors that are guaranteed to be unchanging, see {@link ImmutableSparseVector}.
- *
+ * 
  */
-public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Serializable, Cloneable {
-    private static final long serialVersionUID = 5097272716721395321L;
-    protected final long[] keys;
-    protected double[] values;
-    protected final int size;
+public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
     private volatile transient Double norm;
     private volatile transient Double sum;
     private volatile transient Double mean;
     private volatile transient Integer hashCode;
 
-    protected SparseVector(Long2DoubleMap ratings) {
-        keys = ratings.keySet().toLongArray();
-        size = keys.length;
-        Arrays.sort(keys);
-        assert keys.length == ratings.size();
-        assert isSorted(keys, size);
-        values = new double[keys.length];
-        final int len = keys.length;
-        for (int i = 0; i < len; i++) {
-            values[i] = ratings.get(keys[i]);
-        }
-    }
-
     /**
-     * Construct a new sparse vector from existing arrays.  The arrays must
-     * be sorted by key; no checking is done.
-     * @param keys The array of keys.
-     * @param values The keys' values.
+     * Clear all cached/memoized values. This must be called any time the vector
+     * is modified.
      */
-    protected SparseVector(long[] keys, double[] values) {
-        this.keys = keys;
-        this.values = values;
-        size = keys.length;
-        assert isSorted(keys, size);
-    }
-
-    /**
-     * Construct a new sparse vector from existing arrays.  The arrays must
-     * be sorted by key; no checking is done.
-     * @param keys The array of keys.
-     * @param values The keys' values.
-     * @param length The size of the vector. Only the first <var>length</var>
-     * elements are used.
-     */
-    protected SparseVector(long[] keys, double[] values, int length) {
-        this.keys = keys;
-        this.values = values;
-        size = length;
-        assert isSorted(keys, length);
-    }
-
-    public static boolean isSorted(long[] array, int length) {
-        for (int i = 1; i < length; i++) {
-            if (array[i] <= array[i-1])
-                return false;
-        }
-        return true;
-    }
-
     protected void clearCachedValues() {
         norm = null;
         sum = null;
@@ -127,43 +83,12 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
     }
 
     /**
-     * Invalidate the sparse vector. Any subsequent operation throws
-     * {@link IllegalStateException}.
-     * @see #isValid()
-     */
-    protected void invalidate() {
-        values = null;
-    }
-
-    /**
-     * Query whether this vector is valid.
-     *
-     * <p>
-     * Vectors are marked invalid by the {@link #invalidate()} method, which
-     * operates by clearing the {@link #values} vector. This method is final so
-     * it can be inlined aggressively.
-     *
-     * @return <tt>true</tt> iff the vector is valid.
-     */
-    public final boolean isValid() {
-        return values != null;
-    }
-
-    /**
-     * Check that this vector is valid, throwing {@link IllegalStateException}
-     * if it is not.
-     */
-    protected final void checkValid() {
-        if (!isValid())
-            throw new IllegalStateException("Invalid vector");
-    }
-
-    /**
      * Get the rating for <var>key</var>.
      * @param key the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
+     * @see #get(long, double)
      */
-    public final double get(long key) {
+    public double get(long key) {
         return get(key, Double.NaN);
     }
 
@@ -173,15 +98,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param dft The value to return if the key is not in the vector
      * @return the value (or <var>dft</var> if no such key exists)
      */
-    public final double get(long key, double dft) {
-        checkValid();
-
-        int idx = Arrays.binarySearch(keys, 0, size, key);
-        if (idx >= 0)
-            return values[idx];
-        else
-            return dft;
-    }
+    public abstract double get(long key, double dft);
 
     /**
      * Query whether the vector contains an entry for the key in question. If
@@ -191,27 +108,14 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @param key The key to search for.
      * @return <tt>true</tt> if the key exists.
      */
-    public final boolean containsKey(long key) {
-        checkValid();
-        return Arrays.binarySearch(keys, 0, size, key) >= 0;
-    }
-
-    /**
-     * Deprecated alias for {@link #containsKey(long)}.
-     */
-    @Deprecated
-    public final boolean containsId(long id) {
-        return containsKey(id);
-    }
+    public abstract boolean containsKey(long key);
 
     /**
      * Iterate over all entries.
      * @return an iterator over all key/value pairs.
      */
     @Override
-    public Iterator<Long2DoubleMap.Entry> iterator() {
-        return new IterImpl();
-    }
+    public abstract Iterator<Long2DoubleMap.Entry> iterator();
 
     /**
      * Fast iterator over all entries (it can reuse entry objects).
@@ -219,11 +123,13 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      *         Long2DoubleMap.FastEntrySet.fastIterator()
      * @return a fast iterator over all key/value pairs
      */
-    public Iterator<Long2DoubleMap.Entry> fastIterator() {
-        checkValid();
-        return new FastIterImpl();
-    }
+    public abstract Iterator<Long2DoubleMap.Entry> fastIterator(); 
 
+    /**
+     * Return an iterable view of this vector using a fast iterator.
+     * @return This object wrapped in an iterable that returns a fast iterator.
+     * @see #fastIterator()
+     */
     public Iterable<Long2DoubleMap.Entry> fast() {
         return new Iterable<Long2DoubleMap.Entry>() {
             @Override
@@ -233,10 +139,17 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         };
     }
 
-    public LongSortedSet keySet() {
-        checkValid();
-        return new LongSortedArraySet(keys, 0, size);
-    }
+    /**
+     * Get the set of keys of this vector. It is a subset of the key domain.
+     * @return The set of keys used in this vector.
+     */
+    public abstract LongSortedSet keySet();
+    
+    /**
+     * Get the key domain for this vector. All keys used are in this set.
+     * @return The key domain for this vector.
+     */
+    public abstract LongSortedSet keyDomain();
 
     /**
      * Return the keys of this vector sorted by value.
@@ -253,10 +166,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The sorted list of keys of this vector.
      */
     public LongArrayList keysByValue(boolean decreasing) {
-        checkValid();
-        if (!isComplete())
-            throw new IllegalStateException();
-        long[] skeys = Arrays.copyOf(keys, size);
+        long[] skeys = keySet().toLongArray();
 
         LongComparator cmp;
         // Set up the comparator. We use the key as a secondary comparison to get
@@ -289,19 +199,26 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
         return LongArrayList.wrap(skeys);
     }
 
-    public DoubleCollection values() {
-        checkValid();
-        return DoubleCollections.unmodifiable(new DoubleArrayList(values, 0, size));
-    }
+    /**
+     * Get the collection of values of this vector.
+     * @return The collection of all values in this vector.
+     */
+    public abstract DoubleCollection values();
 
-    public final int size() {
-        checkValid();
-        return size;
-    }
+    /**
+     * Get the size of this vector (the number of keys).
+     * 
+     * @return The number of keys in the vector. This is at most the size of the
+     *         key domain.
+     */
+    public abstract int size();
 
-    public final boolean isEmpty() {
-        checkValid();
-        return size == 0;
+    /**
+     * Query whether this vector is empty.
+     * @return <tt>true</tt> if the vector is empty.
+     */
+    public boolean isEmpty() {
+        return size() == 0;
     }
 
     /**
@@ -309,11 +226,11 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return The L2 norm of the vector
      */
     public double norm() {
-        checkValid();
         if (norm == null) {
             double ssq = 0;
-            for (int i = 0; i < size; i++) {
-                double v = values[i];
+            DoubleIterator iter = values().iterator();
+            while (iter.hasNext()) {
+                double v = iter.nextDouble();
                 ssq += v * v;
             }
             norm = Math.sqrt(ssq);
@@ -326,12 +243,11 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the sum of the vector's values
      */
     public double sum() {
-        checkValid();
         if (sum == null) {
             double s = 0;
-            for (int i = 0; i < size; i++) {
-                if (!Double.isNaN(values[i]))
-                    s += values[i];
+            DoubleIterator iter = values().iterator();
+            while (iter.hasNext()) {
+                s += iter.nextDouble();
             }
             sum = s;
         }
@@ -343,65 +259,68 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
      * @return the mean of the vector
      */
     public double mean() {
-        checkValid();
         if (mean == null) {
-            mean = size > 0 ? sum() / size : 0;
+            final int sz = size();
+            mean = sz > 0 ? sum() / sz: 0;
         }
         return mean;
     }
-
-    /**
-     * Compute the dot product of two vectors.
-     * @param other The vector to dot-product with.
-     * @return The dot product of this vector and <var>other</var>.
-     */
-    public double dot(SparseVector other) {
-        checkValid();
-        other.checkValid();
+    
+    public double dot(SparseVector o) {
         double dot = 0;
-        int i = 0;
-        int j = 0;
-        final int sz1 = size;
-        final int sz2 = other.size;
-        while (i < sz1 && j < sz2) {
-            if (keys[i] == other.keys[j]) {
-                dot += values[i] * other.values[j];
-                i++;
-                j++;
-            } else if (keys[i] < other.keys[j]) {
-                i++;
+        
+        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
+        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
+        
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            final long k1 = p1.get().getLongKey();
+            final long k2 = p2.get().getLongKey();
+            if (k1 == k2) {
+                dot += p1.get().getDoubleValue() * p2.get().getDoubleValue();
+                p1.advance();
+                p2.advance();
+            } else if (k1 < k2) {
+                p1.advance();
             } else {
-                j++;
+                p2.advance();
             }
         }
+        
         return dot;
     }
-
-    /**
-     * Count the common keys of two vectors.
-     * @param other The vector to count mutual keys with.
-     * @return The number of keys shared between this vector and <var>other</var>.
-     */
-    public int countCommonKeys(SparseVector other) {
-        checkValid();
-        other.checkValid();
+    
+    public int countCommonKeys(SparseVector o) {
         int n = 0;
-        int i = 0;
-        int j = 0;
-        final int sz1 = size;
-        final int sz2 = other.size;
-        while (i < sz1 && j < sz2) {
-            if (keys[i] == other.keys[j]) {
+        
+        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
+        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
+        
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            final long k1 = p1.get().getLongKey();
+            final long k2 = p2.get().getLongKey();
+            if (k1 == k2) {
                 n++;
-                i++;
-                j++;
-            } else if (keys[i] < other.keys[j]) {
-                i++;
+                p1.advance();
+                p2.advance();
+            } else if (k1 < k2) {
+                p1.advance();
             } else {
-                j++;
+                p2.advance();
             }
         }
+        
         return n;
+    }
+    
+    @Override
+    public String toString() {
+        Function<Long2DoubleMap.Entry, String> label = new Function<Long2DoubleMap.Entry, String>() {
+            @Override
+            public String apply(Long2DoubleMap.Entry e) {
+                return String.format("%d: %.3f", e.getLongKey(), e.getDoubleValue());
+            }
+        };
+        return "{" + StringUtils.join(Iterators.transform(fastIterator(), label), ", ") + "}";
     }
 
     @Override
@@ -410,25 +329,13 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
             return true;
         } else if (o instanceof SparseVector) {
             SparseVector vo = (SparseVector) o;
-            if (!isValid()) return false;
-            if (!vo.isValid()) return false;
 
             int sz = size();
             int osz = vo.size();
             if (sz != osz) {
                 return false;
             } else {
-                final long[] ks = keys;
-                final long[] kso = vo.keys;
-                final double[] vs = values;
-                final double[] vso = vo.values;
-                for (int i = 0; i < sz; i++) {
-                    if (ks[i] != kso[i])
-                        return false;
-                    if (vs[i] != vso[i])
-                        return false;
-                }
-                return true;
+                return keySet().equals(vo.keySet()) && values().equals(vo.values());
             }
         } else {
             return false;
@@ -437,151 +344,31 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry>, Se
 
     @Override
     public int hashCode() {
-        if (!isValid()) return 0;
         if (hashCode == null) {
-            int hash = 0;
-            final int sz = size();
-            for (int i = 0; i < sz; i++) {
-                hash ^= Longs.hashCode(keys[i]);
-                hash ^= Doubles.hashCode(values[i]);
-            }
-            hashCode = hash;
+            hashCode = keySet().hashCode() ^ values().hashCode();
         }
         return hashCode;
     }
 
     /**
-     * Clone the sparse vector. This implementation duplicates the value array
-     * so that the new sparse vector is disconnected; immutable implementations
-     * may leave them connected.
-     */
-    @Override
-    public SparseVector clone() {
-        return clone(true);
-    }
-
-    /**
-     * Clone method parameterized on whether to copy the value array.
-     * @param copyValues If <tt>true</tt>, make a copy of the value array in the
-     * new object.
-     * @return A clone of this sparse vector.
-     */
-    protected SparseVector clone(boolean copyValues) {
-        checkValid();
-        SparseVector v;
-        try {
-            v = (SparseVector) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-        if (copyValues)
-            v.values = DoubleArrays.copy(v.values);
-        return v;
-    }
-
-    public final boolean isComplete() {
-        if (!isValid()) return false;
-        final int sz = size;
-        for (int i = 0; i < sz; i++) {
-            if (Double.isNaN(values[i])) return false;
-        }
-        return true;
-    }
-
-    final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
-        int pos = 0;
-        @Override
-        public boolean hasNext() {
-            return pos < size;
-        }
-        @Override
-        public Entry next() {
-            if (!isValid()) throw new ConcurrentModificationException();
-            if (hasNext())
-                return new Entry(pos++);
-            else
-                throw new NoSuchElementException();
-        }
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    final class FastIterImpl implements Iterator<Long2DoubleMap.Entry> {
-        Entry entry = new Entry(-1);
-        @Override
-        public boolean hasNext() {
-            return entry.pos < size - 1;
-        }
-        @Override
-        public Entry next() {
-            if (!isValid()) throw new ConcurrentModificationException();
-            if (hasNext()) {
-                entry.pos += 1;
-                return entry;
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private final class Entry implements Long2DoubleMap.Entry {
-        int pos;
-        public Entry(int p) {
-            pos = p;
-        }
-        @Override
-        public double getDoubleValue() {
-            return values[pos];
-        }
-        @Override
-        public long getLongKey() {
-            return keys[pos];
-        }
-        @Override
-        public double setValue(double value) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public Long getKey() {
-            return getLongKey();
-        }
-        @Override
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        @Override
-        public Double setValue(Double value) {
-            return setValue(value.doubleValue());
-        }
-    }
-
-    /**
-     * Return an immutable snapshot of this sparse vector.
+     * Return an immutable snapshot of this sparse vector. The new vector's key
+     * domain will be equal to the {@link #keySet()} of this vector.
+     * 
      * @return An immutable sparse vector whose contents are the same as this
-     * vector. If the vector is already immutable, the returned object may be
-     * identical.
+     *         vector. If the vector is already immutable, the returned object
+     *         may be identical.
      */
-    public ImmutableSparseVector immutable() {
-        checkValid();
-        return new ImmutableSparseVector(keys, Arrays.copyOf(values, size), size);
-    }
+    public abstract ImmutableSparseVector immutable();
 
     /**
-     * Return a mutable copy of this sparse vector.
+     * Return a mutable copy of this sparse vector. The key domain of the
+     * mutable vector will be the same as this vector's key domain.
+     * 
      * @return A mutable sparse vector which can be modified without modifying
-     * this vector.
+     *         this vector.
      */
-    public MutableSparseVector mutableCopy() {
-        checkValid();
-        return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
-    }
-
+    public abstract MutableSparseVector mutableCopy();
+    
     /**
      * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
      */

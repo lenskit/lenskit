@@ -98,7 +98,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      *         order of score.
      */
     protected ScoredLongList recommend(int n, SparseVector scores) {
-        assert(scores.isComplete());
         if (scores.isEmpty()) return new ScoredLongArrayList();
 
         if (n < 0) n = scores.size();

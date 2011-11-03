@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn.user;
 import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -101,21 +102,23 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         logger.trace("Predicting for user {} with {} events",
                      history.getUserId(), history.size());
         LongSortedSet iset;
-        if (items == null)
+        if (items == null) {
             iset = null;
-        else if (items instanceof LongSortedSet)
+        } else if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;
-        else
+        } else {
             iset = new LongSortedArraySet(items);
+        }
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
             neighborhoodFinder.findNeighbors(history, iset);
         Reference2ObjectMap<UserVector, SparseVector> normedUsers =
             normalizeNeighborRatings(neighborhoods.values());
-        long[] keys = iset.toLongArray();
-        double[] preds = new double[keys.length];
+        
+        MutableSparseVector preds = new MutableSparseVector(iset);
         LongArrayList missing = new LongArrayList();
-        for (int i = 0; i < keys.length; i++) {
-            final long item = keys[i];
+        LongIterator iter = iset.iterator();
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
             double sum = 0;
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
@@ -128,9 +131,8 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
 
             if (weight >= MINIMUM_SIMILARITY) {
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
-                preds[i] = sum / weight;
+                preds.set(item, sum / weight);
             } else {
-                preds[i] = Double.NaN;
                 missing.add(item);
             }
         }
@@ -138,20 +140,16 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         // Denormalize and return the results
         UserVector urv = RatingVectorHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(urv);
-        MutableSparseVector v = MutableSparseVector.wrap(keys, preds, false);
-        vo.unapply(v);
+        vo.unapply(preds);
 
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
             logger.trace("Filling in {} missing predictions with baseline",
                          missing.size());
             MutableSparseVector basePreds = baseline.predict(urv, missing);
-            v.set(basePreds);
-            return v;
-        } else {
-            // Prune any NaNs since we didn't have a baseline to do it for us
-            SparseVector v2 = v.copy(true);
-            return v2;
+            preds.set(basePreds);
         }
+        
+        return preds;
     }
 }

@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
@@ -48,10 +47,11 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
 
         LongSortedSet iset;
-        if (items instanceof LongSortedSet)
+        if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;
-        else
+        } else {
             iset = new LongSortedArraySet(items);
+        }
         MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
         LongArrayList unpreds = new LongArrayList();
         for (long predicteeItem : items) {
@@ -69,21 +69,22 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
                 if (nusers == 0) unpreds.add(predicteeItem);
                 else {
                     double predValue = total/nusers;
-                    if (predValue > model.getMaxRating()) predValue = model.getMaxRating();
-                    else if (predValue < model.getMinRating()) predValue = model.getMinRating();
+                    if (predValue > model.getMaxRating()) {
+                        predValue = model.getMaxRating();
+                    } else if (predValue < model.getMinRating()) {
+                        predValue = model.getMinRating();
+                    }
                     preds.set(predicteeItem, predValue);
                 }
             }
         }
+        
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpreds.isEmpty()) {
             SparseVector basePreds = baseline.predict(user, unpreds);
-            for (Long2DoubleMap.Entry e: basePreds.fast()) {
-                assert Double.isNaN(preds.get(e.getLongKey()));
-                preds.set(e.getLongKey(), e.getDoubleValue());
-            }
-            return preds;
+            preds.set(basePreds);
         }
-        else return preds.copy(true);
+        
+        return preds;
     }
 }
