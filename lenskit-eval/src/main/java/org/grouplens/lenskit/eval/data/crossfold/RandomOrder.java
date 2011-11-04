@@ -16,23 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Partitioning algorithm for an ordered sequence of stuff. Partition
- * algorithms are typically used to hold out some items by putting
- * them into the second partition.
+ * Ordering that randomizes the list.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface PartitionAlgorithm<E> {
-	/**
-	 * Compute a partition of some data.
-	 * @param data The data to partition.
-	 * @return The index of the start of the second partition.
-	 */
-	int partition(List<E> data);
+public class RandomOrder<E> implements Order<E> {
+
+	@Override
+    public void apply(List<E> list) {
+	    Collections.shuffle(list);
+    }
+
 }

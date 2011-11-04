@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -47,6 +47,8 @@ import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;

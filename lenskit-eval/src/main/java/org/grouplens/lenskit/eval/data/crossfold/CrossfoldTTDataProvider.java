@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +30,8 @@ import org.grouplens.lenskit.dtree.Trees;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.DataSourceProvider;
+import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.kohsuke.MetaInfServices;
@@ -136,7 +138,7 @@ public class CrossfoldTTDataProvider implements TTDataProvider {
     	if (mstr.equalsIgnoreCase("random")) {
         	return new RandomOrder<Rating>();
         } else if (mstr.equalsIgnoreCase("timestamp")) {
-        	return new TimestampSort<Rating>();
+        	return new TimestampOrder<Rating>();
         } else {
         	throw new EvaluatorConfigurationException("Unknown holdout mode " + mstr);
         }

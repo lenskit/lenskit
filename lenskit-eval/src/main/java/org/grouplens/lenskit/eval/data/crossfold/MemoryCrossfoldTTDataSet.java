@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -39,6 +39,7 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

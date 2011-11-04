@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.event.Events;
  *
  * @param <E>
  */
-public class TimestampSort<E extends Event> implements Order<E> {
+public class TimestampOrder<E extends Event> implements Order<E> {
 
 	@Override
 	public void apply(List<E> list) {
