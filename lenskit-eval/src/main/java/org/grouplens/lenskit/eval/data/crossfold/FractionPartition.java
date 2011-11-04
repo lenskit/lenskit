@@ -16,34 +16,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
+
+import static java.lang.Math.max;
+import static java.lang.Math.round;
 
 import java.util.List;
 
-import org.grouplens.lenskit.data.event.Rating;
+/**
+ * Partition a list by fraction.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *
+ * @param <E>
+ */
+public class FractionPartition<E> implements PartitionAlgorithm<E> {
+	
+	private double fraction;
 
-public class Holdout {
-	private Order<Rating> order;
-	private PartitionAlgorithm<Rating> partition;
-	
-	public Order<Rating> getOrder() {
-    	return order;
-    }
-	public void setOrder(Order<Rating> order) {
-    	this.order = order;
-    }
-	public PartitionAlgorithm<Rating> getPartition() {
-    	return partition;
-    }
-	public void setPartition(PartitionAlgorithm<Rating> partition) {
-    	this.partition = partition;
-    }
-	
-	public int partition(List<Rating> ratings) {
-		if (order == null || partition == null) {
-			throw new IllegalStateException("Unconfigured holdout");
-		}
-		order.apply(ratings);
-		return partition.partition(ratings);
+	/**
+	 * The fraction to hold out (put in the second partition).
+	 * @param f
+	 */
+	public FractionPartition(double f) {
+		fraction = f;
+	}
+
+	@Override
+	public int partition(List<E> data) {
+		int n = (int) round(data.size() * fraction);
+		return max(0, data.size() - n);
 	}
 }

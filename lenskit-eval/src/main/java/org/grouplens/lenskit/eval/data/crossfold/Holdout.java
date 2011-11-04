@@ -16,22 +16,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.grouplens.lenskit.eval.data.crossfold;
 
-import java.util.Collections;
 import java.util.List;
 
-/**
- * Ordering that randomizes the list.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public class RandomOrder<E> implements Order<E> {
+import org.grouplens.lenskit.data.event.Rating;
 
-	@Override
-    public void apply(List<E> list) {
-	    Collections.shuffle(list);
+public class Holdout {
+	private Order<Rating> order;
+	private PartitionAlgorithm<Rating> partition;
+	
+	public Order<Rating> getOrder() {
+    	return order;
     }
-
+	public void setOrder(Order<Rating> order) {
+    	this.order = order;
+    }
+	public PartitionAlgorithm<Rating> getPartition() {
+    	return partition;
+    }
+	public void setPartition(PartitionAlgorithm<Rating> partition) {
+    	this.partition = partition;
+    }
+	
+	public int partition(List<Rating> ratings) {
+		if (order == null || partition == null) {
+			throw new IllegalStateException("Unconfigured holdout");
+		}
+		order.apply(ratings);
+		return partition.partition(ratings);
+	}
 }

@@ -16,34 +16,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
-
-import static java.lang.Math.max;
-import static java.lang.Math.round;
+package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.List;
 
 /**
- * Partition a list by fraction.
+ * Partitioning algorithm for an ordered sequence of stuff. Partition
+ * algorithms are typically used to hold out some items by putting
+ * them into the second partition.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * @param <E>
  */
-public class FractionPartition<E> implements PartitionAlgorithm<E> {
-	
-	private double fraction;
-
+public interface PartitionAlgorithm<E> {
 	/**
-	 * The fraction to hold out (put in the second partition).
-	 * @param f
+	 * Compute a partition of some data.
+	 * @param data The data to partition.
+	 * @return The index of the start of the second partition.
 	 */
-	public FractionPartition(double f) {
-		fraction = f;
-	}
-
-	@Override
-	public int partition(List<E> data) {
-		int n = (int) round(data.size() * fraction);
-		return max(0, data.size() - n);
-	}
+	int partition(List<E> data);
 }
