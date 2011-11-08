@@ -33,11 +33,21 @@
     <url>http://dev.grouplens.org/hg/lenskit</url>
   </scm>
 
+  <properties>
+    <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
+    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
+    <lenskit.web.path>file:///web/research01/lenskit.grouplens.org/</lenskit.web.path>
+    <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
+    <cite.database>${basedir}/etc/references.rdf</cite.database>
+  </properties>
+
   <distributionManagement>
     <site>
       <id>grouplens.org</id>
       <name>LensKit Website</name>
-      <url>file:///web/research01/lenskit.grouplens.org/</url>
+      <url>${lenskit.web.path}</url>
     </site>
     <snapshotRepository>
       <id>grouplens.org</id>
@@ -45,15 +55,6 @@
       <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
     </snapshotRepository>
   </distributionManagement>
-
-  <properties>
-    <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
-    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
-    <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
-    <cite.database>${basedir}/etc/references.rdf</cite.database>
-  </properties>
 
   <modules>
     <module>lenskit-api</module>
