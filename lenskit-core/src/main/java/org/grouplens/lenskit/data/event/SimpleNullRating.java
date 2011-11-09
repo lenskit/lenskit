@@ -77,7 +77,7 @@ public class SimpleNullRating implements Rating {
         return null;
     }
 
-    @Override
+    @Override @Deprecated
     public double getRating() {
         return Double.NaN;
     }
