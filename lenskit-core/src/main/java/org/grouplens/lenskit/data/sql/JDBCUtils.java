@@ -62,12 +62,14 @@ public class JDBCUtils {
                     s.close();
                 } catch (SQLException e) {
                     logger.error("Error closing statement: " + e.getMessage(), e);
-                    if (err == null || err instanceof RuntimeException)
+                    if (err == null || err instanceof RuntimeException) {
                         err = e;
+                    }
                 } catch (RuntimeException e) {
                     logger.error("Error closing statement: " + e.getMessage(), e);
-                    if (err == null || err instanceof RuntimeException)
+                    if (err == null || err instanceof RuntimeException) {
                         err = e;
+                    }
                 }
             }
         }

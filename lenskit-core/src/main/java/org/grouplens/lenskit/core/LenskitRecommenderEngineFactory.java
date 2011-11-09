@@ -56,6 +56,8 @@ import org.picocontainer.behaviors.Caching;
 import org.picocontainer.injectors.AbstractInjectionFactory;
 import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 
+import com.google.common.base.Throwables;
+
 /**
  * {@link RecommenderEngineFactory} that builds a LensKit recommender engine.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -548,7 +550,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             return buildType.getMethod("build").getReturnType();
         } catch (Exception e) {
             // This shouldn't happen
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

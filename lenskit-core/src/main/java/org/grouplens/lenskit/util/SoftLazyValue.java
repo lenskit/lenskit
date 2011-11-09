@@ -25,6 +25,8 @@ import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
+import com.google.common.base.Throwables;
+
 /**
  * A thread-safe lazy value class using soft references. Like {@link LazyValue},
  * but it recomputes its value if it is garbage collected.
@@ -59,7 +61,7 @@ public class SoftLazyValue<T> implements Provider<T> {
                 val = provider.call();
                 value = new SoftReference<T>(val);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
         

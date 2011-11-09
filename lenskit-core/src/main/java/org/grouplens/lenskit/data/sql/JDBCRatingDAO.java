@@ -185,12 +185,14 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         try {
             rs = s.executeQuery();
-            if (!rs.next())
+            if (!rs.next()) {
                 throw new RuntimeException("User count query returned no rows");
+            }
             return rs.getInt(1);
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 rs.close();
+            }
         }
     }
 
@@ -381,8 +383,9 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                 long ts = -1;
                 if (hasTimestampColumn) {
                     ts = resultSet.getLong(COL_TIMESTAMP);
-                    if (resultSet.wasNull())
+                    if (resultSet.wasNull()) {
                         ts = -1;
+                    }
                 }
                 rating.setTimestamp(ts);
             } catch (SQLException e) {

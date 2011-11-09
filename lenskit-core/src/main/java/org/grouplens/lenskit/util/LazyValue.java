@@ -23,6 +23,8 @@ import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
+import com.google.common.base.Throwables;
+
 /**
  * A thread-safe lazy value class.  It waits until its value is actually required
  * to compute it, then caches it.
@@ -55,7 +57,7 @@ public class LazyValue<T> implements Provider<T> {
             try {
                 value = provider.call();
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
         

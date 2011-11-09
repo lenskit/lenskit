@@ -26,6 +26,8 @@ import org.picocontainer.PicoContainer;
 import org.picocontainer.adapters.AbstractAdapter;
 import org.picocontainer.injectors.AbstractInjector.CyclicDependencyException;
 
+import com.google.common.base.Throwables;
+
 /**
  * BuilderAdapter is a ComponentAdapter that can use {@link Builder} classes or
  * instances to build instances of specific types. If a Builder class is
@@ -65,7 +67,7 @@ public class BuilderAdapter<T> extends AbstractAdapter<T> {
         try {
             return (Class<? extends T>) builderType.getMethod("build").getReturnType();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

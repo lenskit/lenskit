@@ -55,13 +55,17 @@ public class CSVWriter implements TableWriter {
 
     @Override
     public synchronized void writeRow(String[] row) throws IOException {
-        if (row.length > columns.length)
+        if (row.length > columns.length) {
             throw new RuntimeException("row too long");
+        }
 
         for (int i = 0; i < columns.length; i++) {
-            if (i > 0) writer.write(',');
-            if (i < row.length)
+            if (i > 0) {
+                writer.write(',');
+            }
+            if (i < row.length) {
                 writer.write(quote(row[i]));
+            }
         }
         writer.write('\n');
         writer.flush();
