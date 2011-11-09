@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 /**
  * Helper methods for working with futures and executor services.
@@ -62,13 +62,17 @@ public class ExecHelpers {
 
     /**
      * Wait for all futures to finish.
+     * 
      * @param results The futures to wait on.
-     * @throws ExecutionException if one or more futures failed.
+     * @throws ExecutionException if one or more futures failed. Remaining
+     *         futures are not waited for.
+     * @review Should we wait for all futures, then throw all the errors
+     *         together?
      */
     public static void waitAll(List<Future<?>> results)
             throws ExecutionException {
         for (Future<?> f: results) {
-            Futures.makeUninterruptible(f).get();
+            Uninterruptibles.getUninterruptibly(f);
         }
     }
 }

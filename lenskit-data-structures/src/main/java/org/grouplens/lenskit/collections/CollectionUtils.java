@@ -133,7 +133,7 @@ public class CollectionUtils {
         public Object[] toArray() {
             return base.toArray();
         }
-        @Override
+        @Override @Deprecated
         public LongIterator longIterator() {
             return iterator();
         }

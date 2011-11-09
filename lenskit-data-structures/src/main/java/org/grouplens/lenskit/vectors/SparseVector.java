@@ -366,28 +366,4 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
      *         this vector.
      */
     public abstract MutableSparseVector mutableCopy();
-    
-    /**
-     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
-     */
-    @Deprecated
-    public static SparseVector wrap(long[] keys, double[] values) {
-        return MutableSparseVector.wrap(keys, values);
-    }
-
-    /**
-     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[])}
-     */
-    @Deprecated
-    public static SparseVector wrap(long[] keys, double[] values, int length) {
-        return MutableSparseVector.wrap(keys, values, length);
-    }
-
-    /**
-     * @deprecated Use {@link MutableSparseVector#wrap(long[], double[], boolean)}
-     */
-    @Deprecated
-    public static SparseVector wrap(long[] keys, double[] values, boolean removeNaN) {
-        return MutableSparseVector.wrap(keys, values, removeNaN);
-    }
 }
