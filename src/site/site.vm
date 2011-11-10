@@ -30,6 +30,7 @@
 <link rel="stylesheet" type="text/css"
       href="http://kernest.com/fonts/inconsolata.css">
 <link rel="stylesheet" type="text/css" href="main.css">
+<link rel="icon" type="image/png" href="lenskit-mini.png">
 <script type="text/javascript" src="http://widgets.twimg.com/j/2/widget.js"></script>
 </head>
 <body>
