@@ -30,9 +30,7 @@ Running the Evaluator
   sample XML configuration that does a crossfold evaluation using the
   MovieLens data:
 
-+--------------------------------------------+
-%{snippet|file=lenskit-eval/src/integration-test/eval.xml
-+--------------------------------------------+
+%{snippet|file=lenskit-eval/src/integration-test/eval.xml}
 
   To run the evaluator, use the <<<lenskit-eval>>> script from the
   binary distribution or the

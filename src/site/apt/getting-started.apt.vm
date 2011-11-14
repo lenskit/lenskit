@@ -95,7 +95,7 @@ Configuring and Creating the Recommender
 
 +-----------------------------------------------------------------+
   LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory();
-  factory.setDAOManager(new SimpleFileDAO.Manager(fileName));
+  factory.setDAOManager(new SimpleFileRatingDAO.Manager(fileName));
   factory.setComponent(RatingPredictor, ItemItemRatingPredictor.class);
 
   /* configure a normalizer and baseline predictor */
