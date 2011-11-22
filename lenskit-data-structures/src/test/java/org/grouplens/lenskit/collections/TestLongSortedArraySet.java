@@ -262,7 +262,7 @@ public class TestLongSortedArraySet {
         }
     }
     
-    @Test @Ignore
+    @Test @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIterator() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);
@@ -274,7 +274,7 @@ public class TestLongSortedArraySet {
         assertThat(set.iterator(7).previousLong(), equalTo(7l));
     }
     
-    @Test @Ignore
+    @Test @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIteratorMid() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);
@@ -286,6 +286,4 @@ public class TestLongSortedArraySet {
         assertThat(set.iterator(8).nextLong(), equalTo(42l));
         assertThat(set.iterator(8).previousLong(), equalTo(7l));
     }
-    
-    
 }
