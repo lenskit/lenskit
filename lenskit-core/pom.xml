@@ -21,12 +21,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
     	<groupId>org.picocontainer</groupId>
     	<artifactId>picocontainer</artifactId>
     	<type>jar</type>
