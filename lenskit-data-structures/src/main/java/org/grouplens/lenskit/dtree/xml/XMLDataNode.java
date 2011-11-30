@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.dtree.DataNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

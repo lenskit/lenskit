@@ -30,7 +30,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Iterator;
 
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
 
