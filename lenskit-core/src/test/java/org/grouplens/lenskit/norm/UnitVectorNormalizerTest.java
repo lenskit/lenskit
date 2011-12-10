@@ -1,0 +1,56 @@
+package org.grouplens.lenskit.norm;
+
+import static java.lang.Math.sqrt;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Test;
+
+public class UnitVectorNormalizerTest {
+    UnitVectorNormalizer norm = new UnitVectorNormalizer();
+    long[] keys = {1, 3, 4, 6};
+    LongSortedSet keySet = LongSortedArraySet.wrap(keys);
+
+    @Test
+    public void testScale() {
+        MutableSparseVector v = new MutableSparseVector(keySet);
+        v.set(1, 1);
+        v.set(4, 1);
+        assertThat(norm.normalize(v.immutable(), v), sameInstance(v));
+        assertThat(v.norm(), closeTo(1, 1.0e-6));
+        assertThat(v.size(), equalTo(2));
+        assertThat(v.get(1), closeTo(1/sqrt(2), 1.0e-6));
+        assertThat(v.get(4), closeTo(1/sqrt(2), 1.0e-6));
+    }
+    
+    @Test
+    public void testScaleOther() {
+        MutableSparseVector v = new MutableSparseVector(keySet);
+        v.set(1, 1);
+        v.set(4, 1);
+        MutableSparseVector ref = new MutableSparseVector(keySet);
+        ref.set(1, 1);
+        ref.set(6, 1);
+        ref.set(3, 2);
+        
+        VectorTransformation tx = norm.makeTransformation(ref.immutable());
+        assertThat(tx.apply(v), sameInstance(v));
+        assertThat(v.norm(), closeTo(sqrt(2.0/6), 1.0e-6));
+        assertThat(v.size(), equalTo(2));
+        assertThat(v.get(1), closeTo(1/sqrt(6), 1.0e-6));
+        assertThat(v.get(4), closeTo(1/sqrt(6), 1.0e-6));
+        
+        assertThat(tx.unapply(v), sameInstance(v));
+        assertThat(v.size(), equalTo(2));
+        assertThat(v.get(1), closeTo(1, 1.0e-6));
+        assertThat(v.get(4), closeTo(1, 1.0e-6));
+        assertThat(v.sum(), closeTo(2, 1.0e-6));
+        assertThat(v.norm(), closeTo(sqrt(2), 1.0e-6));
+    }
+
+}

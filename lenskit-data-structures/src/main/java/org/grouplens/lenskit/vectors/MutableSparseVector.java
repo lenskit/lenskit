@@ -396,6 +396,20 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             } // otherwise, key is greater; advance outer 
         }
     }
+    
+    /**
+     * Multiply the vector by a scalar. This multiples every element in the
+     * vector by <var>s</var>.
+     * @param s The scalar to rescale the vector by.
+     */
+    public final void scale(double s) {
+        clearCachedValues();
+        BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
+        while (iter.hasNext()) {
+            int i = iter.nextInt();
+            values[i] *= s;
+        }
+    }
 
     /**
      * Copy the rating vector.
