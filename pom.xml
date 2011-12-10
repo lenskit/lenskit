@@ -464,7 +464,7 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-test</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.5</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
