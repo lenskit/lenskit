@@ -12,27 +12,49 @@ LensKit Release Notes
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
   the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.8}list
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.9}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
   * Clean up documentation, warnings, and documenting annotations in
-    several places.
+    several places. Also made many style fixes.
 
   * Fix the <<<ItemScorer>>> inheritance hierarchy by making
     <<<AbstractItemScorer>>> implement <<<ItemScorer>>> rather than
     <<<RatingPredictor>>>, and make subclasses implement
     <<<RatingPredictor>>> directly.
+  
+  * Revise <<<SparseVector>>> definition and implementations to have a
+    well-defined notion of "key domain" and "key set", where the key set
+    is the set of keys with values drawn from the key domain. This allows
+    <<<MutableSparseVector>>>s to be used to build up vectors in a well-defined
+    fashion without using NaN. With this update, the <<<keySet>>> method will
+    only return defined keys (use <<<keyDomain>>> to access the key domain), and
+    NaN will only show up due to mathematical error, never due to temporary slots
+    being unfilled.
+    
+  * Updated versions of several dependencies.
 
   []
 
 ** Evaluation runner
+
+   * Output separate data set and segment number fields.
+   
+   * Support fractional (e.g. 20%) holdouts in addition to remove-K.
+   
+   * Reinstate per-user MAE (MAE.ByUser).
 
    * Use <<<.eval-cache>>> as default cache directory.
 
    * Add evaluation listener framework for future evaluation monitor
      consoles.
   
+   * Rearrange evaluator code to the crossfolding logic is in its own package.
+   
+   * Renamed profile for running the evaluation demo - it is now activated with
+     <<<demo>>> (rather than <<<smoketest>>>).
+   
    []
 
 ** Cleanup
