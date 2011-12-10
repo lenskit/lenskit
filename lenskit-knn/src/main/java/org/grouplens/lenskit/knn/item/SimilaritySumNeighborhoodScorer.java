@@ -33,6 +33,9 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer {
         double sum = 0;
         ScoredLongListIterator nIter = neighbors.iterator();
         while (nIter.hasNext()) {
+            @SuppressWarnings("unused")
+            long i = nIter.nextLong();
+            
             double sim = nIter.getScore();
             sum += sim;
         }
