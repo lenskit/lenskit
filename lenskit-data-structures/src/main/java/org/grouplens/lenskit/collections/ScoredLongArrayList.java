@@ -554,6 +554,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         final LongListIterator bitems;
         final DoubleListIterator bscores;
         double score = Double.NaN;
+        boolean active = false;
 
         public Iter(LongListIterator bi, DoubleListIterator bs) {
             bitems = bi;
@@ -568,8 +569,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         @Override
         public void add(long k) {
             bitems.add(k);
-            if (bscores != null)
+            if (bscores != null) {
                 bscores.add(Double.NaN);
+            }
         }
 
         @Override
@@ -605,8 +607,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         @Override
         public void remove() {
             bitems.remove();
-            if (bscores != null)
+            if (bscores != null) {
                 bscores.remove();
+            }
         }
 
         @Override
@@ -621,8 +624,10 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
         @Override
         public long previousLong() {
-            if (bscores != null)
+            if (bscores != null) {
                 score = bscores.previousDouble();
+            }
+            active = true;
             return bitems.previousLong();
         }
 
@@ -636,8 +641,10 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
         @Override
         public long nextLong() {
-            if (bscores != null)
+            if (bscores != null) {
                 score = bscores.nextDouble();
+            }
+            active = true;
             return bitems.nextLong();
         }
 
@@ -651,15 +658,19 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
         @Override
         public double getScore() {
+            if (!active) {
+                throw new IllegalStateException("attempted to get score without next or previous");
+            }
             return score;
         }
 
         @Override
         public void setScore(double s) {
-            if (bscores != null)
+            if (bscores != null) {
                 bscores.set(s);
-            else
+            } else {
                 throw new IllegalStateException();
+            }
         }
 
     }
