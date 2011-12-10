@@ -4,8 +4,8 @@
 
 LensKit Documentation
 
-  * {{{./getting-started.html}Getting Started guide}}
-
+  * {{{http://dev.grouplens.org/trac/lenskit/wiki/GettingStarted}Getting Started guide}}
+                                       
   * {{{./evaluating.html}Evaluating Recommenders}}
 
   * {{{./apidocs}Combined API documentation}} (merged JavaDoc for all
