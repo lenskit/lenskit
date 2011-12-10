@@ -372,6 +372,28 @@
           </execution>
         </executions>
       </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>default-single</id>
+            <phase>site</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/site</outputDirectory>
+              <tarLongFileMode>gnu</tarLongFileMode>
+              <descriptors>
+                <descriptor>src/assemble/source-package.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -495,27 +517,6 @@
         </pluginManagement>
 
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <id>default-single</id>
-                <phase>site</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/site</outputDirectory>
-                  <tarLongFileMode>gnu</tarLongFileMode>
-                  <descriptors>
-                    <descriptor>src/assemble/source-package.xml</descriptor>
-                  </descriptors>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
