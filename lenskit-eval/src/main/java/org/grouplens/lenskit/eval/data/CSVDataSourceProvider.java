@@ -18,15 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.inject.Provider;
-
+import com.google.common.base.Supplier;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -41,6 +33,13 @@ import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.kohsuke.MetaInfServices;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Data source provider for CSV files.
@@ -153,7 +152,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
             }
             final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
             if (cache) {
-                factory = new EventCollectionDAO.SoftFactory(new Provider<List<Rating>>() {
+                factory = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
                     @Override
                     public List<Rating> get() {
                         DataAccessObject dao = csvFactory.create();

@@ -18,12 +18,11 @@
  */
 package org.grouplens.lenskit.util;
 
-import java.util.concurrent.Callable;
+import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
 
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
-
-import com.google.common.base.Throwables;
+import java.util.concurrent.Callable;
 
 /**
  * A thread-safe lazy value class.  It waits until its value is actually required
@@ -32,7 +31,7 @@ import com.google.common.base.Throwables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class LazyValue<T> implements Provider<T> {
+public class LazyValue<T> implements Supplier<T> {
     private volatile T value;
     private Callable<T> provider;
 

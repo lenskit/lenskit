@@ -18,12 +18,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Provider;
-
+import com.google.common.base.Supplier;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -43,6 +38,10 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Run a single train-test evaluation of a single algorithm.
  * 
@@ -55,8 +54,8 @@ public class TTPredictEvalJob implements Job {
     private AlgorithmInstance algorithm;
     private List<PredictionEvaluator> evaluators;
     private TTDataSet data;
-    private Provider<TableWriter> outputProvider;
-    private Provider<SharedRatingSnapshot> snapshot;
+    private Supplier<TableWriter> outputProvider;
+    private Supplier<SharedRatingSnapshot> snapshot;
     private int outputColumnCount;
 
     /**
@@ -70,8 +69,8 @@ public class TTPredictEvalJob implements Job {
      */
     public TTPredictEvalJob(AlgorithmInstance algo,
                             List<PredictionEvaluator> evals,
-                            TTDataSet ds, Provider<SharedRatingSnapshot> snap,
-                            Provider<TableWriter> out) {
+                            TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
+                            Supplier<TableWriter> out) {
         algorithm = algo;
         evaluators = evals;
         data = ds;

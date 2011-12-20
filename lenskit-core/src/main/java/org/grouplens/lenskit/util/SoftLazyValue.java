@@ -18,14 +18,13 @@
  */
 package org.grouplens.lenskit.util;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
+
+import javax.annotation.Nonnull;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.concurrent.Callable;
-
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
-
-import com.google.common.base.Throwables;
 
 /**
  * A thread-safe lazy value class using soft references. Like {@link LazyValue},
@@ -34,7 +33,7 @@ import com.google.common.base.Throwables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class SoftLazyValue<T> implements Provider<T> {
+public class SoftLazyValue<T> implements Supplier<T> {
     private volatile Reference<T> value;
     private Callable<T> provider;
 

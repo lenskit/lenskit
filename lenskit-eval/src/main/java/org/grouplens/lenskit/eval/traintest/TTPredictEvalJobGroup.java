@@ -18,21 +18,10 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import javax.inject.Provider;
-
+import com.google.common.base.Supplier;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.Job;
-import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
-import org.grouplens.lenskit.eval.SharedRatingSnapshot;
+import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.tablewriter.TableWriter;
@@ -41,6 +30,11 @@ import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
@@ -69,7 +63,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
         dataColIndexes = dcIndexes;
         algoColIndexes = acIndexes;
         
-        final Provider<SharedRatingSnapshot> snap =
+        final Supplier<SharedRatingSnapshot> snap =
                 new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
                     @Override
                     public SharedRatingSnapshot call() {
@@ -85,7 +79,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
         jobs = new ArrayList<Job>(algos.size());
         for (AlgorithmInstance algo: algos) {
             jobs.add(new TTPredictEvalJob(algo, evals, data, snap,
-                                          new OutputProvider(algo)));
+                                          new OutputSupplier(algo)));
         }
     }
 
@@ -128,10 +122,10 @@ public class TTPredictEvalJobGroup implements JobGroup {
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      *
      */
-    class OutputProvider implements Provider<TableWriter> {
+    class OutputSupplier implements Supplier<TableWriter> {
         private AlgorithmInstance algorithm;
 
-        public OutputProvider(AlgorithmInstance algo) {
+        public OutputSupplier(AlgorithmInstance algo) {
             algorithm = algo;
         }
         
