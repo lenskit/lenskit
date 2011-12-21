@@ -35,6 +35,11 @@ LensKit Release Notes
     
   * Updated versions of several dependencies.
 
+  * <<<EventCollectionDAO>>> factory updates - add <<<wrap>>> methods that wrap other
+    DAO factories in immediate or soft event collection DAO factories, making it easier
+    to use <<<EventCollectionDAO>>> for a cache of disk-backed DAOs.  Also made the
+    <<<SoftFactory>>> take a <<<Supplier>>> rather than <<<Provider>>>.
+
   []
 
 ** Evaluation runner
@@ -49,11 +54,11 @@ LensKit Release Notes
 
    * Add evaluation listener framework for future evaluation monitor
      consoles.
-  
-   * Rearrange evaluator code to the crossfolding logic is in its own package.
    
    * Renamed profile for running the evaluation demo - it is now activated with
      <<<demo>>> (rather than <<<smoketest>>>).
+
+   * Rearrange evaluator code to the crossfolding logic is in its own package.
    
    []
 
