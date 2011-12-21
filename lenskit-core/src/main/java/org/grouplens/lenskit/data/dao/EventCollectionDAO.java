@@ -80,6 +80,16 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         public EventCollectionDAO snapshot() {
             return create();
         }
+
+        public static Factory wrap(DAOFactory base) {
+            DataAccessObject dao = base.create();
+            try {
+                List<Event> events = Cursors.makeList(dao.getEvents());
+                return new Factory(events);
+            } finally {
+                dao.close();
+            }
+        }
     }
     
     /**
@@ -112,6 +122,21 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         @Override
         public DataAccessObject snapshot() {
             return create();
+        }
+
+        public static SoftFactory wrap(final DAOFactory base) {
+            Supplier<List<Event>> supplier = new Supplier<List<Event>>() {
+                @Override
+                public List<Event> get() {
+                    DataAccessObject dao = base.create();
+                    try {
+                        return Cursors.makeList(dao.getEvents());
+                    } finally {
+                        dao.close();
+                    }
+                }
+            };
+            return new SoftFactory(supplier);
         }
     }
 
