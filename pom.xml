@@ -564,9 +564,6 @@
             <configuration>
               <basedir>${basedir}</basedir>
               <header>${basedir}/etc/header.txt</header>
-              <validHeaders>
-                <validHeader>${basedir}/etc/mit-header.txt</validHeader>
-              </validHeaders>
               <aggregate>true</aggregate>
               <strictCheck>true</strictCheck>
               <includes>
