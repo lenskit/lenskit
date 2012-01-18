@@ -112,8 +112,11 @@
   <div class="footer">
     Copyright &copy; 2010-2012 Regents of the University of Minnesota. A project of
     <a href="http://www.grouplens.org">GroupLens Research</a>.<br>
-    This work has been
-    funded by NSF grants IIS 05-34939, IIS 08-08692, IIS 08-12148, and IIS 10-17697.
+    The views and opinions expressed in this page are strictly those of the page
+    author. The contents of this page have not been reviewed or approved by the
+    University of Minnesota.<br>
+    This work has been funded by NSF grants IIS 05-34939, IIS 08-08692, IIS 08-12148,
+    and IIS 10-17697.
   </div>
 </body>
 </html>
