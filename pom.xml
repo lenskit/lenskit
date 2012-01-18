@@ -38,7 +38,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
-    <lenskit.web.path>file:///web/research01/lenskit.grouplens.org/</lenskit.web.path>
+    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <cite.database>${basedir}/etc/references.rdf</cite.database>
   </properties>

@@ -1,6 +1,7 @@
 $title_font: "PT Sans", sans-serif;
 $text_font: "Liberation Serif", serif;
 $text_size: 16pt;
+$footer_size: 12pt;
 $box_size: $text_size - 4pt;
 $nav_size: 24px;
 
@@ -175,6 +176,13 @@ ul.navbar {
     }
 }
 
+@mixin leftcolumn {
+    margin: {
+        left: $margin;
+        right: $sidebar_width + 2 * $sidebar_margin;
+    }
+}
+
 #body {
     font: {
         size: $text_size;
@@ -190,13 +198,12 @@ ul.navbar {
     @include rounded($rounding);
     @include shadow;
 
+    @include leftcolumn;
+    
     margin: {
         top: $margin;
         bottom: $margin;
-        left: $margin;
-        right: $sidebar_width + 2 * $sidebar_margin;
     }
-
 }
 
 tt, code, pre, var {
@@ -245,4 +252,14 @@ h3 {
             margin-left: 0;
         }
     }
+}
+
+.footer {
+    font: {
+        size: $footer_size;
+        style: italic;
+    }
+    text-align: center;
+    padding: 1ex 1em;
+    @include leftcolumn;
 }
