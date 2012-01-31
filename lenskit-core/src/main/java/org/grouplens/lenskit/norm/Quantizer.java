@@ -22,6 +22,7 @@ public interface Quantizer {
      * @param i The quantized value number, in the range [0,n) where n is the number of
      *          possible discrete values (see {@link #getCount()}).
      * @return The value corresponding to quantum {@code i}.
+     * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
      */
     double getValue(int i);
 
