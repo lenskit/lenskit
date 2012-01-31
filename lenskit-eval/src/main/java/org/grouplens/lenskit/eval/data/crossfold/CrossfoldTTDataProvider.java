@@ -25,8 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.dtree.DataNode;
-import org.grouplens.lenskit.dtree.Trees;
+import org.grouplens.lenskit.util.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.Trees;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.DataSourceProvider;

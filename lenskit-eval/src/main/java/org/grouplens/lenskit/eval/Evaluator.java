@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval;
 
 import java.util.Properties;
 
-import org.grouplens.lenskit.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
 
 /**

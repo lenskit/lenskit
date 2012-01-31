@@ -22,4 +22,4 @@
  * It is intended to allow components to be configured by a variety of data
  * sources.
  */
-package org.grouplens.lenskit.dtree;
+package org.grouplens.lenskit.util.dtree;

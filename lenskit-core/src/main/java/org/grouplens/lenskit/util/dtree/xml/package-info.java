@@ -19,4 +19,4 @@
 /**
  * XML-backed implementation of {@link org.grouplens.lenskit.dtree data trees}.
  */
-package org.grouplens.lenskit.dtree.xml;
+package org.grouplens.lenskit.util.dtree.xml;

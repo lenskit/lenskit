@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.dtree.xml;
+package org.grouplens.lenskit.util.dtree.xml;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.grouplens.lenskit.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.DataNode;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Ignore;
