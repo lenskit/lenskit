@@ -29,22 +29,30 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public interface PredictionEvaluator {
     /**
-     * Create a result accumulator for a single row for this evaluation.
-     * @return The result accumulator for aggregating prediction results.
+     * Create a result accumulator for a single row for this evaluation. The accumulator
+     * will be passed the predictions for each user in turn, then asked for the results
+     * from the evaluation to insert into the results table.
+     * <p/>
+     * One accumulator is created and used per evaluation (data set × algorithm).
+     *
+     * @return The result accumulator for aggregating prediction results over a single
+     * evaluation.
      */
     Accumulator makeAccumulator();
     
     /**
      * Get labels for the columns output by this evaluator.
+     * @return The labels for this evaluator's output, used as column headers when
+     * outputting the results table.
      */
     String[] getColumnLabels();
 
     public static interface Accumulator {
         /**
          * Evaluate the predictions for a user.
-         * @param user
-         * @param ratings
-         * @param predictions
+         * @param user The ID of the user currenting being tested.
+         * @param ratings The user's rating vector over the test set.
+         * @param predictions The user's prediction vector over the test set.
          */
         void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
 
