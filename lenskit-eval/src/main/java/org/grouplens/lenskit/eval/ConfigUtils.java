@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.List;
 
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.grouplens.lenskit.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.DataNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

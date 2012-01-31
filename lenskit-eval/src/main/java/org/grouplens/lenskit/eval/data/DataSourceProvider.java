@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval.data;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 
 /**

@@ -8,6 +8,22 @@
 
 LensKit Release Notes
 
+* Release 0.10
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.10}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Cleanup and Refactoring
+
+    * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
+      <<<o.g.l.util.dtree>>>.
+
+    []
+
+  []
+
 * Release 0.9
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and

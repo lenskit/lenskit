@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.grouplens.lenskit.dtree.DataNode;
-import org.grouplens.lenskit.dtree.Trees;
+import org.grouplens.lenskit.util.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.Trees;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.ConfigUtils;
 import org.grouplens.lenskit.eval.Evaluation;
