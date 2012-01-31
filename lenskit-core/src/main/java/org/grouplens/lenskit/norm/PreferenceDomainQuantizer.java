@@ -18,19 +18,24 @@
  */
 package org.grouplens.lenskit.norm;
 
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+
 /**
  * Quantizer that uses a range and precision to determine discrete values.
  * Values are rounded to the closest discrete value.
  * @author Michael Ekstrand
  */
-public class StepRangeQuantizer extends ValueArrayQuantizer {
-    private final double minimum;
-    private final double maximum;
-    private final double precision;
+public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
+    private final PreferenceDomain domain;
 
-    static double[] makeValues(double min, double max, double prec) {
-        if (max < min) throw new IllegalArgumentException("max less than min");
-        double nv = (max - min) / prec;
+    static double[] makeValues(PreferenceDomain domain) {
+        final double min = domain.getMinimum();
+        final double max = domain.getMaximum();
+        final Double prec = domain.getPrecision();
+        if (prec == null) {
+            throw new IllegalArgumentException("domain is not discrete");
+        }
+        final double nv = (max - min) / prec;
         int n = (int) nv;
         if (Math.abs(nv - n) > 1.0e-6) {
             n += 1; // one more to cover everything...
@@ -46,34 +51,25 @@ public class StepRangeQuantizer extends ValueArrayQuantizer {
     }
 
     /**
-     * Create a new step range quantizer.
-     * <p/>
-     * For example, to quantize ratings to half-star values on a scale of 0.5-5,
-     * use min=0.5, max=5, and prec=0.5.
-     *
-     * @param min The minimum value.
-     * @param max The maximum value.
-     * @param prec The precision.
-     * @throws IllegalArgumentException if the range specifies no elements.
+     * Create a new quantizer from a discrete preference domain.
+     * @param dom The preference domain.
+     * @throws IllegalArgumentException if the domain is not discrete.
      */
-    public StepRangeQuantizer(double min, double max, double prec) {
-        super(makeValues(min, max, prec));
-        minimum = min;
-        maximum = max;
-        precision = prec;
+    public PreferenceDomainQuantizer(PreferenceDomain dom) {
+        super(makeValues(dom));
+        domain = dom;
     }
 
-    public double getMinimum() {
-        return minimum;
+    /**
+     * Create a new preference domain quantizer.
+     * 
+     * @see PreferenceDomain#PreferenceDomain(double, double, double)
+     */
+    public PreferenceDomainQuantizer(double min, double max, double prec) {
+        this(new PreferenceDomain(min, max, prec));
     }
 
-    public double getMaximum() {
-        return maximum;
+    public PreferenceDomain getPreferenceDomain() {
+        return domain;
     }
-
-    public double getPrecision() {
-        return precision;
-    }
-
-
 }
