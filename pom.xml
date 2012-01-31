@@ -82,29 +82,29 @@
           </configuration>
         </plugin>
 
-        <!-- JavaDoc -->
+        <!--JavaDoc-->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.8</version>
-          <configuration>
-            <quiet>true</quiet>
-            <tags>
-              <tag>
-                <name>todo</name>
-                <placement>a</placement>
-                <head>To Do:</head>
-              </tag>
-              <tag>
-                <name>review</name>
-                <placement>a</placement>
-                <head>Review:</head>
-              </tag>
-            </tags>
-            <footer><![CDATA[
-              <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
-            ]]></footer>
-          </configuration>
+          <version>2.8.1</version>
+          <!--<configuration>-->
+            <!--<quiet>true</quiet>-->
+            <!--<tags>-->
+              <!--<tag>-->
+                <!--<name>todo</name>-->
+                <!--<placement>a</placement>-->
+                <!--<head>To Do:</head>-->
+              <!--</tag>-->
+              <!--<tag>-->
+                <!--<name>review</name>-->
+                <!--<placement>a</placement>-->
+                <!--<head>Review:</head>-->
+              <!--</tag>-->
+            <!--</tags>-->
+            <!--<footer><![CDATA[-->
+              <!--<script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>-->
+            <!--]]></footer>-->
+          <!--</configuration>-->
         </plugin>
 
         <!-- Testing and verification -->
@@ -255,12 +255,6 @@
                     <link>http://fastutil.dsi.unimi.it/docs/</link>
                     <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
                   </links>
-                  <!-- <doclet>org.jboss.apiviz.APIviz</doclet> -->
-                  <!-- <docletArtifact> -->
-                  <!--   <groupId>org.jboss.apiviz</groupId> -->
-                  <!--   <artifactId>apiviz</artifactId> -->
-                  <!--   <version>1.3.1.GA</version> -->
-                  <!-- </docletArtifact> -->
                   <useStandardDocletOptions>true</useStandardDocletOptions>
                 </configuration>
               </plugin>
@@ -345,6 +339,35 @@
                 <aggregate>true</aggregate>
               </configuration>
             </plugin>
+
+            <!--<plugin>-->
+              <!--<groupId>org.apache.maven.plugins</groupId>-->
+              <!--<artifactId>maven-javadoc-plugin</artifactId>-->
+              <!--<configuration>-->
+                <!--<groups>-->
+                  <!--<group>-->
+                    <!--<title>Core API</title>-->
+                    <!--<packages>org.grouplens.lenskit:org.grouplens.lenskit.core</packages>-->
+                  <!--</group>-->
+                  <!--<group>-->
+                    <!--<title>Data Access</title>-->
+                    <!--<packages>org.grouplens.lenskit.data*:org.grouplens.lenskit.cursors</packages>-->
+                  <!--</group>-->
+                  <!--<group>-->
+                    <!--<title>Recommender Implementations</title>-->
+                    <!--<packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.svd*:org.grouplens.slopeone*</packages>-->
+                  <!--</group>-->
+                  <!--<group>-->
+                    <!--<title>Recommender Evaluation</title>-->
+                    <!--<packages>org.grouplens.lenskit.eval*</packages>-->
+                  <!--</group>-->
+                  <!--<group>-->
+                    <!--<title>Utility Classes</title>-->
+                    <!--<packages>org.grouplens.lenskit.util*</packages>-->
+                  <!--</group>-->
+                <!--</groups>-->
+              <!--</configuration>-->
+            <!--</plugin>-->
             
           </reportPlugins>
         </configuration>
