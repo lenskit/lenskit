@@ -83,6 +83,7 @@ LensKit Release Notes
    Several unused classes have been removed:
 
    * <<<IndexedItemScore>>>
+   
    * <<<IntSortedArraySet>>>
 
    []
