@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
@@ -42,7 +42,7 @@ public class CoverageEvaluator implements PredictionEvaluator {
     };
 
     @Override
-    public Accumulator makeAccumulator() {
+    public Accumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
     

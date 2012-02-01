@@ -110,7 +110,7 @@ public class TTPredictEvalJob implements Job {
             DataAccessObject testDao = data.getTestFactory().create();
             try {
                 for (PredictionEvaluator eval: evaluators) {
-                    evalAccums.add(eval.makeAccumulator());
+                    evalAccums.add(eval.makeAccumulator(data));
                 }
                 
                 Cursor<UserHistory<Rating>> userProfiles = testDao.getUserHistories(Rating.class);

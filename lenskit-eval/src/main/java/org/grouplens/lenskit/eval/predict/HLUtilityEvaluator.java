@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
@@ -44,7 +44,7 @@ public class HLUtilityEvaluator implements PredictionEvaluator {
     }
 
     @Override
-    public Accum makeAccumulator() {
+    public Accum makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
     

@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.predict;
 
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -35,10 +37,12 @@ public interface PredictionEvaluator {
      * <p/>
      * One accumulator is created and used per evaluation (data set × algorithm).
      *
+     * @param ds The data set being evaluated — used if the evaluator needs something
+     *           from it (such as the preference domain).
      * @return The result accumulator for aggregating prediction results over a single
      * evaluation.
      */
-    Accumulator makeAccumulator();
+    Accumulator makeAccumulator(TTDataSet ds);
     
     /**
      * Get labels for the columns output by this evaluator.

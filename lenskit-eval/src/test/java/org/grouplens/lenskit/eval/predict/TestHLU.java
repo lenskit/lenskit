@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.predict;
 
 import static org.junit.Assert.assertEquals;
 
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class TestHLU {
     @Test
     public void testAccumulator() {
         HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
-        HLUtilityEvaluator.Accum acc = eval.makeAccumulator();
+        HLUtilityEvaluator.Accum acc = eval.makeAccumulator(null);
 
         acc.evaluatePredictions(1, rv1, pv1);
         assertEquals(1, acc.nusers);

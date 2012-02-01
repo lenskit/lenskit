@@ -18,14 +18,15 @@
  */
 package org.grouplens.lenskit.eval.predict;
 
-import static java.lang.Math.abs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.lang.Math.abs;
 
 /**
  * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
@@ -46,7 +47,7 @@ public class MAEEvaluator implements PredictionEvaluator {
     private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
 
     @Override
-    public Accumulator makeAccumulator() {
+    public Accumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
 

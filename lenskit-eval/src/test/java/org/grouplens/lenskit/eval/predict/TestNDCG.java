@@ -72,7 +72,7 @@ public class TestNDCG {
 
     @Test
     public void testAccumulator() {
-        NDCGEvaluator.Accum acc = (new NDCGEvaluator()).makeAccumulator();
+        NDCGEvaluator.Accum acc = (new NDCGEvaluator()).makeAccumulator(null);
         acc.evaluatePredictions(1, rv1, pv1);
         assertEquals(1, acc.nusers);
         assertEquals(0.9533, acc.total, 0.0001);
