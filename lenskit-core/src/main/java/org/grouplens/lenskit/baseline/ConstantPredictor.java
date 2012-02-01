@@ -71,6 +71,11 @@ public class ConstantPredictor implements BaselinePredictor {
     public MutableSparseVector predict(UserVector ratings, Collection<Long> items) {
         return constantPredictions(items, value);
     }
+    
+    @Override
+    public MutableSparseVector predict(long queryItem, Collection<Long> items) {
+        return constantPredictions(items, value);
+    }
 
     /**
      * Construct a rating vector with the same rating for all items.

@@ -25,6 +25,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -36,9 +37,10 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * to {@link #score(UserHistory, Collection)}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author Steven Chang <schang@cs.umn.edu>		   
  *
  */
-public abstract class AbstractItemScorer implements ItemScorer {
+public abstract class AbstractItemScorer implements ItemScorer, GlobalItemScorer {
     /**
      * The DAO passed to the constructor.
      */
@@ -101,4 +103,14 @@ public abstract class AbstractItemScorer implements ItemScorer {
     public boolean canUseHistory() {
         return true;
     }
+    
+    /**
+     * Delegate to {@link #globalScore(long, Collection)}.
+     */
+    @Override
+	public double globalScore(long queryItem, long item){
+		SparseVector v = globalScore(queryItem, LongLists.singleton(item));
+		return v.get(item, Double.NaN);
+	}
+
 }

@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.lenskit.GlobalItemRecommender;
+import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
@@ -70,6 +72,11 @@ public class LenskitRecommender implements Recommender {
     public ItemScorer getItemScorer() {
         return container.getComponent(ItemScorer.class);
     }
+    
+    @Override
+    public GlobalItemScorer getGlobalItemScorer() {
+        return container.getComponent(GlobalItemScorer.class);
+    }
 
     @Override
     public RatingPredictor getRatingPredictor() {
@@ -105,5 +112,10 @@ public class LenskitRecommender implements Recommender {
     @Override
     public ItemRecommender getItemRecommender() {
         return container.getComponent(ItemRecommender.class);
+    }
+    
+    @Override
+    public GlobalItemRecommender getGlobalItemRecommender() {
+        return container.getComponent(GlobalItemRecommender.class);
     }
 }
