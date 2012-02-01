@@ -83,7 +83,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         String delimiter = Trees.childValue(config, "delimiter", "\t", false);
         boolean cache = Trees.childValueBool(config, "cache", true);
         
-        String domSpec = Trees.childValue(config, "domain");
+        String domSpec = Trees.childValue(config, "ratingDomain");
         PreferenceDomain domain = null;
         if (domSpec != null) {
             domain = PreferenceDomain.fromString(domSpec);
