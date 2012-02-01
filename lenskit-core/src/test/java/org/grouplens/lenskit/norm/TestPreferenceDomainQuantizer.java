@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.pref.TestPreferenceDomain;
 import org.junit.Before;
 import org.junit.Test;
 

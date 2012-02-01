@@ -3,6 +3,10 @@ package org.grouplens.lenskit.data.pref;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 
+import javax.annotation.Nonnull;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * An object describing the domain of preference data, used in ratings and predictions.
  *
@@ -64,6 +68,44 @@ public class PreferenceDomain {
             return null;
         } else {
             return precision;
+        }
+    }
+
+    @Override
+    public String toString() {
+        String str = String.format("[%f,%f]", minimum, maximum);
+        if (!Double.isNaN(precision)) {
+            str += String.format("/%f", precision);
+        }
+        return str;
+    }
+
+    private static Pattern specRE =
+            Pattern.compile("\\s*\\[\\s*((?:\\d*\\.)?\\d+)\\s*,\\s*((?:\\d*\\.)?\\d+)\\s*\\]\\s*(?:/\\s*((?:\\d*\\.)?\\d+))?\\s*");
+
+    /**
+     * Parse a preference domain from a string specification.
+     * <p/>
+     * Continuous preference domains are specified as {@code [min,max]}; discrete domains
+     * as {@code min:max[/prec/}.  For example, a 0.5-5.0 half-star rating scale is represented
+     * as {@code [0.5,5.0]/0.5}.
+     * @param spec The string specifying the preference domain.
+     * @return The preference domain represented by {@code spec}.
+     * @throws IllegalArgumentException if {@code spec} is not a valid domain specification.
+     */
+    public static @Nonnull PreferenceDomain fromString(@Nonnull String spec) {
+        Matcher m = specRE.matcher(spec);
+        if (!m.matches()) {
+            throw new IllegalArgumentException("invalid domain specification");
+        }
+        double min = Double.parseDouble(m.group(1));
+        double max = Double.parseDouble(m.group(2));
+        String precs = m.group(3);
+        if (precs != null) {
+            double prec = Double.parseDouble(precs);
+            return new PreferenceDomain(min, max, prec);
+        } else {
+            return new PreferenceDomain(min, max);
         }
     }
 }

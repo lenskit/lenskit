@@ -18,20 +18,11 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Random;
-import java.util.Scanner;
-
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -42,7 +33,10 @@ import org.grouplens.lenskit.eval.data.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.Files;
+import java.io.*;
+import java.net.URLEncoder;
+import java.util.Random;
+import java.util.Scanner;
 
 public class CrossfoldManager implements Preparable {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);

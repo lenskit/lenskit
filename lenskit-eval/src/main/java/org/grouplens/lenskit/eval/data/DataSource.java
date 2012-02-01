@@ -19,7 +19,10 @@
 package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Preparable;
+
+import javax.annotation.Nullable;
 
 /**
  * Data source for a single data set.
@@ -32,6 +35,13 @@ public interface DataSource extends Preparable {
      * @return The data sources's name.
      */
     String getName();
+
+    /**
+     * Get the preference domain of this data source.
+     * @return The data source preference domain.
+     */
+    @Nullable
+    PreferenceDomain getPreferenceDomain();
     
     /**
      * Get a DAO factory for this data source. The data source must be prepared

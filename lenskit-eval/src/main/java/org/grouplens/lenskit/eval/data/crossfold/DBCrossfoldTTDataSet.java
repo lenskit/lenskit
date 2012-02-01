@@ -42,6 +42,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.sql.BasicSQLStatementFactory;
 import org.grouplens.lenskit.data.sql.JDBCRatingDAO;
 import org.grouplens.lenskit.data.sql.JDBCUtils;
@@ -111,7 +112,7 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
         DAOFactory trainFact = makeDAOFactory("train");
         DAOFactory testFact = makeDAOFactory("test");
 
-        dataset = new GenericTTDataSet(getName(), trainFact, testFact);
+        dataset = new GenericTTDataSet(getName(), trainFact, testFact, getPreferenceDomain());
         context.prepare(dataset);
     }
     
@@ -290,6 +291,10 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
 	    dbFile = null;
     }
 
+    @Override
+    public PreferenceDomain getPreferenceDomain() {
+        return manager.getSource().getPreferenceDomain();
+    }
 	@Override
     public DAOFactory getTrainFactory() {
 	    if (dataset == null)

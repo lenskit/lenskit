@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -136,6 +137,11 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
                 return testEvents.contains(r.getId());
             }
         };
+    }
+
+    @Override
+    public PreferenceDomain getPreferenceDomain() {
+        return manager.getSource().getPreferenceDomain();
     }
 
     @Override
