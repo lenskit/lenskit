@@ -29,12 +29,12 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
     private final PreferenceDomain domain;
 
     static double[] makeValues(PreferenceDomain domain) {
-        final double min = domain.getMinimum();
-        final double max = domain.getMaximum();
-        final Double prec = domain.getPrecision();
-        if (prec == null) {
+        if (!domain.hasPrecision()) {
             throw new IllegalArgumentException("domain is not discrete");
         }
+        final double min = domain.getMinimum();
+        final double max = domain.getMaximum();
+        final double prec = domain.getPrecision();
         final double nv = (max - min) / prec;
         int n = (int) nv;
         if (Math.abs(nv - n) > 1.0e-6) {
