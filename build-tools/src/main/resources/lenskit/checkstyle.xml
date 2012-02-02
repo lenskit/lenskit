@@ -3,7 +3,6 @@
         "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
         "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
 <module name="Checker">
-  <property name="severity" value="warning"/>
   <module name="JavadocPackage">
     <property name="severity" value="warning"/>
   </module>
@@ -15,11 +14,11 @@
     <!-- TODO evaluate inserting SuppressWarnings -->
 
     <!-- Block checks -->
-    <property name="maxLineLength" value="100"/>
     <module name="EmptyBlock">
       <property name="severity" value="warning"/>
     </module>
     <module name="LeftCurly">
+      <property name="maxLineLength" value="100"/>
       <property name="option" value="nlow"/>
     </module>
     <module name="NeedBraces">
