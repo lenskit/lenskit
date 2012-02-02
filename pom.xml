@@ -678,10 +678,10 @@
             <artifactId>maven-checkstyle-plugin</artifactId>
             <executions>
               <execution>
-                <id>checkstyle</id>
+                <id>lint</id>
                 <phase>verify</phase>
                 <goals>
-                  <goal>checkstyle</goal>
+                  <goal>check</goal>
                 </goals>
               </execution>
             </executions>
