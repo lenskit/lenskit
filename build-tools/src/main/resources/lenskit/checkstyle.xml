@@ -65,7 +65,6 @@
     <module name="TypecastParenPad">
       <property name="severity" value="warning"/>
     </module>
-    <module name="FileTabCharacter"/>
     <module name="WhitespaceAfter">
       <property name="severity" value="warning"/>
     </module>
@@ -73,4 +72,6 @@
       <property name="severity" value="warning"/>
     </module>
   </module>
+
+  <module name="FileTabCharacter"/>
 </module>
