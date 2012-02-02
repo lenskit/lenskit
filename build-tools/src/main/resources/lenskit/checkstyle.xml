@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <module name="JavadocPackage">
+    <property name="severity" value="warning"/>
+  </module>
+  <module name="TreeWalker">
+    <!-- Whitespace checks -->
+    <module name="MissingDeprecated"/>
+    <module name="MissingOverride"/>
+    <module name="PackageAnnotation"/>
+    <!-- TODO evaluate inserting SuppressWarnings -->
+
+    <!-- Block checks -->
+    <module name="EmptyBlock">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="LeftCurly">
+      <property name="maxLineLength" value="100"/>
+      <property name="option" value="nlow"/>
+    </module>
+    <module name="NeedBraces">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="RightCurly"/>
+    <module name="AvoidNestedBlocks">
+      <property name="allowInSwitchCase" value="true"/>
+      <property name="severity" value="warning"/>
+    </module>
+
+    <!-- class design checks -->
+    <module name="VisibilityModifier">
+      <property name="protectedAllowed" value="true"/>
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="FinalClass"/>
+    <module name="InterfaceIsType"/>
+    <module name="HideUtilityClassConstructor"/>
+    <!-- TODO evaluate DesignForExtension -->
+    <module name="MutableException"/>
+    <module name="ThrowsCount">
+      <property name="severity" value="warning"/>
+    </module>
+
+    <!-- coding checks -->
+
+    <!-- size checks -->
+    <module name="ExecutableStatementCount">
+      <property name="severity" value="warning"/>
+    </module>
+
+    <!-- whitespace checks -->
+    <module name="GenericWhitespace">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="MethodParamPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <!-- TODO evaluate operator wrapping check -->
+    <module name="ParenPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="TypecastParenPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="WhitespaceAfter">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="WhitespaceAround">
+      <property name="severity" value="warning"/>
+    </module>
+  </module>
+
+  <module name="FileTabCharacter"/>
+</module>
