@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @todo Integrate this with {@link MinRating} and {@link MaxRating}.
  * @author Michael Ekstrand
  */
-public class PreferenceDomain {
+public final class PreferenceDomain {
     private final double minimum;
     private final double maximum;
     private final double precision;
@@ -23,7 +23,8 @@ public class PreferenceDomain {
      * Create a discrete bounded preference domain.
      * @param min The minimum preference value.
      * @param max The maximum preference value.
-     * @param prec The preference precision.
+     * @param prec The preference precision (if {@link Double#NaN}, the domain
+     *             is continuous).
      */
     public PreferenceDomain(double min, double max, double prec) {
         minimum = min;
@@ -73,7 +74,11 @@ public class PreferenceDomain {
      * @see #hasPrecision()
      */
     public double getPrecision() {
-        return precision;
+        if (hasPrecision()) {
+            return precision;
+        } else {
+            return Double.MIN_VALUE;
+        }
     }
 
     @Override
