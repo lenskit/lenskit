@@ -57,18 +57,23 @@ public class PreferenceDomain {
     }
 
     /**
+     * Query whether this preference domain has a precision.
+     * @return {@code true} if the domain has a precision for discrete rating values, {@code false}
+     *         if it is continuous.
+     */
+    public boolean hasPrecision() {
+        return !Double.isNaN(precision);
+    }
+
+    /**
      * The precision of preference values. This is the precision with which data is
      * collected from the user — in a 1-5, half-star rating system, it will be 0.5.
-     * @return The preference precision, or {@code null} if preferences should
-     * be considered continuous.
-     * @review Is null the correct return? Should we add hasPrecision()?
+     * @return The preference precision; the return value is undefined if the preference
+     * domain has no precision.
+     * @see #hasPrecision()
      */
-    public Double getPrecision() {
-        if (Double.isNaN(precision)) {
-            return null;
-        } else {
-            return precision;
-        }
+    public double getPrecision() {
+        return precision;
     }
 
     @Override
