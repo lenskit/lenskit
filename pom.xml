@@ -683,6 +683,10 @@
                 <goals>
                   <goal>check</goal>
                 </goals>
+                <configuration>
+                  <failOnViolation>false</failOnViolation>
+                  <failOnError>false</failOnError>
+                </configuration>
               </execution>
             </executions>
           </plugin>
