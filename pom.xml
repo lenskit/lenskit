@@ -28,9 +28,9 @@
     <url>http://dev.grouplens.org/trac/lenskit</url>
   </issueManagement>
   <scm>
-    <connection>scm:hg:http://dev.grouplens.org/hg/lenskit</connection>
-    <developerConnection>scm:hg:ssh://dev.grouplens.org//project/Grouplens/hg/lenskit</developerConnection>
-    <url>http://dev.grouplens.org/hg/lenskit</url>
+    <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
+    <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
+    <url>https://bitbucket.org/grouplens/lenskit</url>
   </scm>
 
   <properties>
@@ -678,10 +678,10 @@
             <artifactId>maven-checkstyle-plugin</artifactId>
             <executions>
               <execution>
-                <id>checkstyle</id>
+                <id>lint</id>
                 <phase>verify</phase>
                 <goals>
-                  <goal>checkstyle</goal>
+                  <goal>check</goal>
                 </goals>
               </execution>
             </executions>
