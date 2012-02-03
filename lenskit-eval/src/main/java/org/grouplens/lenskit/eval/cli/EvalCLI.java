@@ -18,37 +18,26 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.grouplens.lenskit.eval.EvalRunner;
+import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
+import org.grouplens.lenskit.eval.PreparationContext;
+import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
 import org.grouplens.lenskit.util.dtree.xml.XMLDataNode;
-import org.grouplens.lenskit.eval.EvalRunner;
-import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
-import org.grouplens.lenskit.eval.IsolationLevel;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
@@ -65,104 +54,15 @@ public class EvalCLI {
      * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
-        CommandLineParser parser = new GnuParser();
-        CommandLine line;
-        Options options = makeOptions();
-        try {
-            line = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-            return;
-        }
-        if (line.hasOption("h")) {
-            HelpFormatter fmt = new HelpFormatter();
-            fmt.printHelp("lenskit-eval [OPTIONS] CONFIGS...", options);
-            System.exit(1);
-        } else {
-            EvalCLI cli = new EvalCLI(line);
-            cli.run();
-        }
+        EvalOptions options = EvalOptions.parse(args);
+        EvalCLI cli = new EvalCLI(options);
+        cli.run();
     }
     
-    protected final Properties properties;
-    private boolean forcePrepare;
-    private int threadCount = 1;
-    private IsolationLevel isolation = IsolationLevel.NONE;
-    private File cacheDir = new File(".eval-cache");
-    private boolean prepareOnly;
-    private boolean throwErrors;
-    private List<File> configFiles;
-    private boolean printBacktraces;
+    EvalOptions options;
     
-    public EvalCLI(CommandLine cmd) {
-        properties = new Properties(System.getProperties());
-        Properties cliprops = cmd.getOptionProperties("D");
-        properties.putAll(cliprops);
-        
-        forcePrepare = cmd.hasOption("f");
-        if (cmd.hasOption("j")) {
-            threadCount = Integer.parseInt(cmd.getOptionValue("j"));
-        }
-        if (cmd.hasOption("isolate")) {
-            isolation = IsolationLevel.JOB_GROUP;
-        }
-        if (cmd.hasOption("C")) {
-            cacheDir = new File(cmd.getOptionValue("C"));
-        }
-        prepareOnly = cmd.hasOption("prepare-only");
-        throwErrors = Boolean.parseBoolean(properties.getProperty("lenskit.eval.throwErrors", "false"));
-        printBacktraces = cmd.hasOption("X");
-        
-        configFiles = new ArrayList<File>();
-        for (String s: cmd.getArgs()) {
-            configFiles.add(new File(s));
-        }
-    }
-    
-    @SuppressWarnings("static-access")
-    private static Options makeOptions() {
-        Options opts = new Options();
-        opts.addOption(OptionBuilder
-                       .withDescription("print this help")
-                       .withLongOpt("help")
-                       .create("h"));
-        opts.addOption(OptionBuilder
-                       .withDescription("re-prepare data sets even if up to date")
-                       .withLongOpt("force-prepare")
-                       .create("f"));
-        opts.addOption(OptionBuilder
-                       .withDescription("the number of threads to use (0 to use all)")
-                       .withLongOpt("threads")
-                       .hasArg().withArgName("N")
-                       .create("j"));
-        opts.addOption(OptionBuilder
-                       .withDescription("isolate job groups")
-                       .withLongOpt("isolate")
-                       .create());
-        opts.addOption(OptionBuilder
-                       .withDescription("directory for cache files")
-                       .withLongOpt("cache-dir")
-                       .hasArg().withArgName("DIR")
-                       .create("C"));
-        opts.addOption(OptionBuilder
-                       .withDescription("set a property")
-                       .withArgName("property=value")
-                       .hasArgs(2)
-                       .withValueSeparator()
-                       .create("D"));
-        opts.addOption(OptionBuilder
-                       .withDescription("only prepare eval, do not run")
-                       .withLongOpt("prepare-only")
-                       .create());
-        opts.addOption(OptionBuilder
-                       .withDescription("throw exceptions rather than exiting")
-                       .withLongOpt("throw-errors")
-                       .create());
-        opts.addOption("X", "print-backtraces", false,
-                       "print backtraces on exceptions");
-        
-        return opts;
+    public EvalCLI(EvalOptions opts) {
+        options = opts;
     }
     
     public void run() {
@@ -175,7 +75,7 @@ public class EvalCLI {
         }
         
         List<EvalRunner> runners = new LinkedList<EvalRunner>();
-        for (File f: configFiles) {
+        for (File f: options.getConfigFiles()) {
             Document doc;
             try {
                 doc = builder.parse(f);
@@ -187,7 +87,7 @@ public class EvalCLI {
                 return;
             }
             
-            DataNode node = XMLDataNode.wrap(properties, doc);
+            DataNode node = XMLDataNode.wrap(options.getProperties(), doc);
             if (!node.getName().equals("evaluation")) {
                 reportError("%s: root element must be 'evaluation'", f.getPath());
             }
@@ -207,11 +107,11 @@ public class EvalCLI {
         }
         
         PreparationContext context = new PreparationContext();
-        context.setUnconditional(forcePrepare);
-        context.setCacheDirectory(cacheDir);
+        context.setUnconditional(options.forcePrepare());
+        context.setCacheDirectory(options.getCacheDir());
         for (EvalRunner runner: runners) {
-            runner.setIsolationLevel(isolation);
-            runner.setThreadCount(threadCount);
+            runner.setIsolationLevel(options.getIsolation());
+            runner.setThreadCount(options.getThreadCount());
             try {
                 runner.prepare(context);
             } catch (PreparationException e) {
@@ -219,7 +119,7 @@ public class EvalCLI {
                 return;
             }
             
-            if (!prepareOnly) {
+            if (!options.isPrepareOnly()) {
                 try {
                     runner.run();
                 } catch (ExecutionException e) {
@@ -237,10 +137,10 @@ public class EvalCLI {
     protected void reportError(Exception e, String msg, Object... args) {
         String text = String.format(msg, args);
         System.err.println(text);
-        if (throwErrors) {
+        if (options.throwErrors()) {
             throw new RuntimeException(text, e);
         } else {
-            if (e != null && printBacktraces)
+            if (e != null && options.printBacktraces())
                 e.printStackTrace(System.err);
             System.exit(2);
         }
