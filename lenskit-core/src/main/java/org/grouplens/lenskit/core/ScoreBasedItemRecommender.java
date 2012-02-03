@@ -18,11 +18,11 @@
  */
 package org.grouplens.lenskit.core;
 
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -46,14 +46,12 @@ import com.google.common.collect.Iterables;
  * Recommendations are returned in descending order of score.
  *
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender {
+public class ScoreBasedItemRecommender extends AbstractItemRecommender{
     protected final ItemScorer scorer;
-    protected final GlobalItemScorer globalScorer;
 
-    public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer, GlobalItemScorer globalScorer) {
+    public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
-        this.globalScorer = globalScorer;
     }
 
     /**
@@ -97,25 +95,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         return recommend(n, scores);
     }
     
-    /**
-     * Implement the ID-based recommendation in terms of the scorer. This method
-     * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
-     */
-    @Override
-    protected ScoredLongList globalRecommend(long item, int n, LongSet candidates, LongSet exclude) {
-        if (candidates == null) {
-            candidates = getGlobalPredictableItems(item);
-        }
-        if (exclude == null) {
-            exclude = getGlobalDefaultExcludes(item);
-        }
-        if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
-        }
-
-        SparseVector scores = globalScorer.globalScore(item, candidates);
-        return recommend(n, scores);
-    }
 
     /**
      * Pick the top <var>n</var> items from a score vector.
@@ -170,31 +149,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     }
     
     /**
-     * Get the default exclude set for a item in the global recommendation.  The base implementation returns
-     * item itself.
-     *
-     * @param item The item to make recommendation
-     * @return The set of items to exclude.
-     */    
-    protected LongSet getGlobalDefaultExcludes(long item) {
-    	LongSet excludes = new LongOpenHashSet();
-    	excludes.add(item);
-    	return excludes;
-    }
-    
-    /**
-     * Determine the items for which predictions can be made for a certain item.
-     * This implementation is naive and asks the DAO for all items; subclasses
-     * should override it with something more efficient if practical.
-     *
-     * @param item The ID of the item.
-     * @return All items for which predictions can be generated for the user.
-     */
-    protected LongSet getGlobalPredictableItems(long item) {
-        return Cursors.makeSet(dao.getItems());
-    }
-
-    /**
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
@@ -205,6 +159,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(long user) {
         return Cursors.makeSet(dao.getItems());
     }
+  
 
     /**
      * Determine the items for which predictions can be made for a certain user.
@@ -217,4 +172,5 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return Cursors.makeSet(dao.getItems());
     }
+
 }

@@ -43,7 +43,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class ConstantPredictor implements BaselinePredictor {
+public class ConstantPredictor implements BaselinePredictor, BaselineGlobalPredictor {
     /**
      * Parameter: the value used by the constant scorer.
      */
@@ -71,6 +71,11 @@ public class ConstantPredictor implements BaselinePredictor {
     public MutableSparseVector predict(UserVector ratings, Collection<Long> items) {
         return constantPredictions(items, value);
     }
+    
+	@Override
+	public MutableSparseVector globalPredict(long queryItem, Collection<Long> items) {
+        return constantPredictions(items, value);
+	}
 
     /**
      * Construct a rating vector with the same rating for all items.
@@ -93,4 +98,6 @@ public class ConstantPredictor implements BaselinePredictor {
     public String toString() {
         return String.format("%s(%.3f)", getClass().getCanonicalName(), value);
     }
+
+
 }
