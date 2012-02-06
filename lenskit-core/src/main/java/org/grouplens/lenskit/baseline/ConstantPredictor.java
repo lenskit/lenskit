@@ -43,7 +43,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class ConstantPredictor implements BaselinePredictor, BaselineGlobalPredictor {
+public class ConstantPredictor implements BaselinePredictor {
     /**
      * Parameter: the value used by the constant scorer.
      */
@@ -73,7 +73,7 @@ public class ConstantPredictor implements BaselinePredictor, BaselineGlobalPredi
     }
     
 	@Override
-	public MutableSparseVector globalPredict(long queryItem, Collection<Long> items) {
+	public MutableSparseVector globalPredict(Collection<Long> queryItems, Collection<Long> items) {
         return constantPredictions(items, value);
 	}
 

@@ -1,6 +1,7 @@
 package org.grouplens.lenskit.core;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -27,18 +28,18 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
      * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
      */
     @Override
-    protected ScoredLongList globalRecommend(long item, int n, LongSet candidates, LongSet exclude) {
+    protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = getGlobalPredictableItems(item);
+            candidates = getGlobalPredictableItems(items);
         }
         if (exclude == null) {
-            exclude = getGlobalDefaultExcludes(item);
+            exclude = getGlobalDefaultExcludes(items);
         }
         if (!exclude.isEmpty()) {
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
         }
 
-        SparseVector scores = scorer.globalScore(item, candidates);
+        SparseVector scores = scorer.globalScore(items, candidates);
         return recommend(n, scores);
     }
 
@@ -49,9 +50,13 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
      * @param item The item to make recommendation
      * @return The set of items to exclude.
      */    
-    protected LongSet getGlobalDefaultExcludes(long item) {
+    protected LongSet getGlobalDefaultExcludes(LongSet items) {
     	LongSet excludes = new LongOpenHashSet();
-    	excludes.add(item);
+    	LongIterator it = items.iterator();
+    	while(it.hasNext()){
+    		long item = it.nextLong();
+        	excludes.add(item);
+    	}
     	return excludes;
     }
     
@@ -63,21 +68,10 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
      * @param item The ID of the item.
      * @return All items for which predictions can be generated for the user.
      */
-    protected LongSet getGlobalPredictableItems(long item) {
+    protected LongSet getGlobalPredictableItems(LongSet items) {
         return Cursors.makeSet(dao.getItems());
     }
 
-    /**
-     * Determine the items for which predictions can be made for a certain user.
-     * This implementation is naive and asks the DAO for all items; subclasses
-     * should override it with something more efficient if practical.
-     *
-     * @param user The user's ID.
-     * @return All items for which predictions can be generated for the user.
-     */
-    protected LongSet getPredictableItems(long user) {
-        return Cursors.makeSet(dao.getItems());
-    }
     
 
     /**

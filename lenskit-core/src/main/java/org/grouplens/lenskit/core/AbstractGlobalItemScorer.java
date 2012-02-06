@@ -33,12 +33,30 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer{
     }
     
 	/**
-     * Delegate to {@link #globalScore(long, Collection)}.
+     * Delegate to {@link #globalScore(Collection, Collection)}.
      */
     @Override
 	public double globalScore(long queryItem, long item){
 		SparseVector v = globalScore(queryItem, LongLists.singleton(item));
 		return v.get(item, Double.NaN);
 	}
+    
+    /**
+     * Delegate to {@link #globalScore(Collection, Collection)}
+     */
+    @Override
+	public double globalScore(Collection<Long> queryItems, long item){
+    	SparseVector v = globalScore(queryItems, LongLists.singleton(item));
+		return v.get(item, Double.NaN);
+    }
+
+    /**
+     * Delegate to {@link #globalScore(Collection, Collection)}
+     */
+    @Override
+	public SparseVector globalScore(long queryItem, Collection<Long> items){
+    	return globalScore(LongLists.singleton(queryItem), items);		
+    }
+
 
 }

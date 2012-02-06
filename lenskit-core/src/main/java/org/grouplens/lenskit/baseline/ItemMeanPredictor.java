@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Built
-public class ItemMeanPredictor implements BaselinePredictor, BaselineGlobalPredictor {
+public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      * @author Michael Ludwig <mludwig@cs.umn.edu>
@@ -175,7 +175,7 @@ public class ItemMeanPredictor implements BaselinePredictor, BaselineGlobalPredi
      * Delegate to {@link #predict(UserVector, Collection)}
      */
     @Override
-    public MutableSparseVector globalPredict(long queryItem, Collection<Long> items){
+    public MutableSparseVector globalPredict(Collection<Long> queryItem, Collection<Long> items){
     	return predict(null, items);
     }
 

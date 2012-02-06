@@ -93,5 +93,55 @@ public interface GlobalItemRecommender {
      */
     ScoredLongList globalRecommend(long item, int n, @Nullable Set<Long> candidates,
                              @Nullable Set<Long> exclude);
+    
+    /**
+     * Recommend all possible items for a basket of items using the default exclude set.
+     *
+     * @param items The items value.
+     * @return The sorted list of scored items.
+     * @see #globalRecommend(long, int, Set, Set)
+     */
+    ScoredLongList globalRecommend(Set<Long> items);
 
+    /**
+     * Recommend up to <var>n</var> items for a basket of items using the default exclude
+     * set.
+     *
+     * @param items The items value.
+     * @param n The number of recommendations to return.
+     * @return The sorted list of scored items.
+     * @see #globalRecommend(long, int, Set, Set)
+     */
+    ScoredLongList globalRecommend(Set<Long> items, int n); 
+
+    /**
+     * Recommend all possible items for a basket of items from a set of candidates using
+     * the default exclude set.
+     *
+     * @param items The items value.
+     * @param candidates The candidate set (can be null to represent the
+     *        universe).
+     * @return The sorted list of scored items.
+     * @see #globalRecommend(long, int, Set, Set)
+     */
+    ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates);
+    
+    /**
+     * See {@link #globalRecommend(long, int, Set, Set)}
+     *
+     * @param items The items value
+     * @param n The number of ratings to return. If negative, recommend all
+     *        possible items.
+     * @param candidates A set of candidate items which can be recommended. If
+     *        <tt>null</tt>, all items are considered candidates.
+     * @param exclude A set of items to be excluded. If <tt>null</tt>, a default
+     *        exclude set is used.
+     * @return A list of recommended items. If the recommender cannot assign
+     *         meaningful scores, the scores will be {@link Double#NaN}. For
+     *         most scoring recommenders, the items should be ordered in
+     *         decreasing order of score. This is not a hard requirement — e.g.
+     *         set recommenders are allowed to be more flexible.
+     */
+    ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
+                             @Nullable Set<Long> exclude);
 }

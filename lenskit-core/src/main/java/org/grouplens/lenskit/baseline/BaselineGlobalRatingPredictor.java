@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 public class BaselineGlobalRatingPredictor extends AbstractGlobalItemScorer implements GlobalRatingPredictor{
-	private BaselineGlobalPredictor predictor;
+	private BaselinePredictor predictor;
 	
     /**
      * Construct a new baseline rating predictor.
@@ -35,7 +35,7 @@ public class BaselineGlobalRatingPredictor extends AbstractGlobalItemScorer impl
      * @param baseline The baseline predictor to use.
      * @param dao The DAO.
      */
-    public BaselineGlobalRatingPredictor(BaselineGlobalPredictor baseline, DataAccessObject dao) {
+    public BaselineGlobalRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
         super(dao);
         predictor = baseline;
     }
@@ -44,8 +44,8 @@ public class BaselineGlobalRatingPredictor extends AbstractGlobalItemScorer impl
      * Delegate to {@link BaselineGlobalPredictor#predict(long, Collection)}.
      */
     @Override
-    public SparseVector globalScore(long queryItem, Collection<Long> items) {
-        return predictor.globalPredict(queryItem, items);
+    public SparseVector globalScore(Collection<Long> queryItems, Collection<Long> items) {
+        return predictor.globalPredict(queryItems, items);
     }
 
 }
