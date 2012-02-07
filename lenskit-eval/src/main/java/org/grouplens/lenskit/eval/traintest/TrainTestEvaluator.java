@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -39,7 +40,6 @@ import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.kohsuke.MetaInfServices;
@@ -76,7 +76,7 @@ public class TrainTestEvaluator implements Evaluator {
     public Evaluation configure(Properties properties, DataNode config)
             throws EvaluatorConfigurationException {
         logger.debug("Configuring evaluator from {}", config);
-        List<PredictionEvaluator> evals = configureEvaluators(properties, config);
+        List<PredictEvalMetric> evals = configureEvaluators(properties, config);
         logger.debug("Have {} evaluators", evals.size());
         List<AlgorithmInstance> algos = configureAlgorithms(properties, config);
         if (algos.isEmpty())
@@ -228,7 +228,7 @@ public class TrainTestEvaluator implements Evaluator {
      * @return
      * @throws EvaluatorConfigurationException 
      */
-    private List<PredictionEvaluator> configureEvaluators(Properties properties,
+    private List<PredictEvalMetric> configureEvaluators(Properties properties,
                                                           DataNode config) throws EvaluatorConfigurationException {
         DataNode evalsElt = Trees.child(config, "evaluators");
         List<String> evalNames;
@@ -240,10 +240,10 @@ public class TrainTestEvaluator implements Evaluator {
                 evalNames.add(node.getName());
             }
         }
-        ServiceFinder<PredictionEvaluator> finder = ServiceFinder.get(PredictionEvaluator.class);
-        List<PredictionEvaluator> evaluators = new ArrayList<PredictionEvaluator>(evalNames.size());
+        ServiceFinder<PredictEvalMetric> finder = ServiceFinder.get(PredictEvalMetric.class);
+        List<PredictEvalMetric> evaluators = new ArrayList<PredictEvalMetric>(evalNames.size());
         for (String name: evalNames) {
-            PredictionEvaluator eval = finder.findProvider(name);
+            PredictEvalMetric eval = finder.findProvider(name);
             if (eval == null) {
                 throw new EvaluatorConfigurationException("Unknown evaluator " + name);
             }

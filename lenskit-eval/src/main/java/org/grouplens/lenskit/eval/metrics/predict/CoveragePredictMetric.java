@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -26,67 +26,58 @@ import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.Math.abs;
-
 /**
- * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
- * RMSE ({@link RMSEEvaluator}) to MAE.
- *
- * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
- * where the absolute error is averaged over all predictions. The second is
- * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
- * over all users.
+ * Simple evaluator that records user, rating and prediction counts and computes
+ * recommender coverage over the queried items.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("MAE")
+@ConfigAlias("coverage")
 @MetaInfServices
-public class MAEEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(MAEEvaluator.class);
-    private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
+public class CoveragePredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
+    private static final String[] COLUMNS = {
+        "NUsers", "NAttempted", "NGood", "Coverage"
+    };
 
     @Override
     public Accumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
-
+    
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
     }
 
     class Accum implements Accumulator {
-        private double totalError = 0;
-        private double totalUserError = 0;
-        private int nratings = 0;
+        private int npreds = 0;
+        private int ngood = 0;
         private int nusers = 0;
 
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-            double err = 0;
-            int n = 0;
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
-
-                err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
-                n++;
+            for (Long2DoubleMap.Entry e: ratings.fast()) {
+                double pv = predictions.get(e.getLongKey());
+                npreds += 1;
+                if (!Double.isNaN(pv))
+                    ngood += 1;
             }
-            totalError += err;
-            nratings += n;
-            totalUserError += err / n;
             nusers += 1;
         }
 
         @Override
         public String[] results() {
-            double v = totalError / nratings;
-            double uv = totalUserError / nusers;
-            logger.info("MAE: {}", v);
+            double coverage = (double) ngood / npreds;
+            logger.info("Coverage: {}", coverage);
+            
             return new String[]{
-            		Double.toString(v),
-            		Double.toString(uv)
+                    Integer.toString(nusers), 
+                    Integer.toString(npreds),
+                    Integer.toString(ngood), 
+                    Double.toString(coverage) 
             };
         }
 

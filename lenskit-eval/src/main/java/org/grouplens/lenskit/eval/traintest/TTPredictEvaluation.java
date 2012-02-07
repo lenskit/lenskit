@@ -34,7 +34,7 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
@@ -63,7 +63,7 @@ public class TTPredictEvaluation implements Evaluation {
 
     public TTPredictEvaluation(File output,
                                List<AlgorithmInstance> algos,
-                               List<PredictionEvaluator> evals,
+                               List<PredictEvalMetric> evals,
                                List<TTDataSet> dataSources) {
         outputFile = output;
         
@@ -96,7 +96,7 @@ public class TTPredictEvaluation implements Evaluation {
         // Set up the columns & output builder
         outputBuilder = new CSVWriterBuilder();
         int evalColCount = 0;
-        for (PredictionEvaluator ev: evals) {
+        for (PredictEvalMetric ev: evals) {
             evalColCount += ev.getColumnLabels().length;
         }
         final int dacc = dsColumns.size() + aiColumns.size();
@@ -108,7 +108,7 @@ public class TTPredictEvaluation implements Evaluation {
         int index = dacc + 1;
         headers[index++] = "BuildTime";
         headers[index++] = "TestTime";
-        for (PredictionEvaluator ev: evals) {
+        for (PredictEvalMetric ev: evals) {
             for (String c: ev.getColumnLabels()) {
                 headers[index++] = c;
             }

@@ -23,7 +23,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.tablewriter.TableWriters;
 import org.grouplens.lenskit.util.LazyValue;
@@ -54,7 +54,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
 
     public TTPredictEvalJobGroup(TTPredictEvaluation eval,
                                  List<AlgorithmInstance> algos,
-                                 List<PredictionEvaluator> evals,
+                                 List<PredictEvalMetric> evals,
                                  Map<String,Integer> dcIndexes,
                                  Map<String,Integer> acIndexes,
                                  TTDataSet data) {

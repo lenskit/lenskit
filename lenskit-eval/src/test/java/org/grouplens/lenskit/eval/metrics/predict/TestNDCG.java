@@ -16,13 +16,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
-
-import static org.junit.Assert.assertEquals;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestNDCG {
     long[] items = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -47,32 +47,32 @@ public class TestNDCG {
     public void testComputeDCG() {
         // score rating vectors
         assertEquals(22.0418,
-                     NDCGEvaluator.computeDCG(rv1.keysByValue(true), rv1),
+                     NDCGPredictMetric.computeDCG(rv1.keysByValue(true), rv1),
                      0.0001);
         assertEquals(21.0954,
-                     NDCGEvaluator.computeDCG(rv2.keysByValue(true), rv2),
+                     NDCGPredictMetric.computeDCG(rv2.keysByValue(true), rv2),
                      0.0001);
         assertEquals(20.0742,
-                     NDCGEvaluator.computeDCG(rv3.keysByValue(true), rv3),
+                     NDCGPredictMetric.computeDCG(rv3.keysByValue(true), rv3),
                      0.0001);
 
         // score prediction vectors
         // note that the correctness of these tests depends on keysByValue using
         // a stable sort.
         assertEquals(21.0116,
-                     NDCGEvaluator.computeDCG(pv1.keysByValue(true), rv1),
+                     NDCGPredictMetric.computeDCG(pv1.keysByValue(true), rv1),
                      0.0001);
         assertEquals(20.2048,
-                     NDCGEvaluator.computeDCG(pv2.keysByValue(true), rv2),
+                     NDCGPredictMetric.computeDCG(pv2.keysByValue(true), rv2),
                      0.0001);
         assertEquals(17.9835,
-                     NDCGEvaluator.computeDCG(pv3.keysByValue(true), rv3),
+                     NDCGPredictMetric.computeDCG(pv3.keysByValue(true), rv3),
                      0.0001);
     }
 
     @Test
     public void testAccumulator() {
-        NDCGEvaluator.Accum acc = (new NDCGEvaluator()).makeAccumulator(null);
+        NDCGPredictMetric.Accum acc = (new NDCGPredictMetric()).makeAccumulator(null);
         acc.evaluatePredictions(1, rv1, pv1);
         assertEquals(1, acc.nusers);
         assertEquals(0.9533, acc.total, 0.0001);

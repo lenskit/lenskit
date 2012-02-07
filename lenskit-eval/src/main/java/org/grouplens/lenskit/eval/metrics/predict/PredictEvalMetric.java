@@ -16,9 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -29,7 +28,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface PredictionEvaluator {
+public interface PredictEvalMetric {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results

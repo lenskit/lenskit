@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -26,18 +26,25 @@ import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.Math.sqrt;
+import static java.lang.Math.abs;
 
 /**
- * Evaluate a recommender's prediction accuracy with RMSE.
+ * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
+ * RMSE ({@link RMSEPredictMetric}) to MAE.
+ *
+ * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
+ * where the absolute error is averaged over all predictions. The second is
+ * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
+ * over all users.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("RMSE")
+@ConfigAlias("MAE")
 @MetaInfServices
-public class RMSEEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(RMSEEvaluator.class);
-    private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
+public class MAEPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
+    private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
 
     @Override
     public Accumulator makeAccumulator(TTDataSet ds) {
@@ -50,39 +57,36 @@ public class RMSEEvaluator implements PredictionEvaluator {
     }
 
     class Accum implements Accumulator {
-        private double sse = 0;
-        private double totalRMSE = 0;
+        private double totalError = 0;
+        private double totalUserError = 0;
         private int nratings = 0;
         private int nusers = 0;
 
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-
-            double usse = 0;
+            double err = 0;
             int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
 
-                double err = e.getDoubleValue() - ratings.get(e.getLongKey());
-                usse += err * err;
+                err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
                 n++;
             }
-            sse += usse;
+            totalError += err;
             nratings += n;
-            if (n > 0) {
-                totalRMSE += sqrt(usse / n);
-                nusers ++;
-            }
+            totalUserError += err / n;
+            nusers += 1;
         }
 
         @Override
         public String[] results() {
-            double v = sqrt(sse / nratings);
-            logger.info("RMSE: {}", v);
-            return new String[] {
-                    Double.toString(v),
-                    Double.toString(totalRMSE / nusers)
+            double v = totalError / nratings;
+            double uv = totalUserError / nusers;
+            logger.info("MAE: {}", v);
+            return new String[]{
+            		Double.toString(v),
+            		Double.toString(uv)
             };
         }
 

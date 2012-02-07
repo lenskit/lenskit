@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -26,58 +26,63 @@ import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.Math.sqrt;
+
 /**
- * Simple evaluator that records user, rating and prediction counts and computes
- * recommender coverage over the queried items.
- *
+ * Evaluate a recommender's prediction accuracy with RMSE.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("coverage")
+@ConfigAlias("RMSE")
 @MetaInfServices
-public class CoverageEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(CoverageEvaluator.class);
-    private static final String[] COLUMNS = {
-        "NUsers", "NAttempted", "NGood", "Coverage"
-    };
+public class RMSEPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
+    private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
 
     @Override
     public Accumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
     }
 
     class Accum implements Accumulator {
-        private int npreds = 0;
-        private int ngood = 0;
+        private double sse = 0;
+        private double totalRMSE = 0;
+        private int nratings = 0;
         private int nusers = 0;
 
         @Override
         public void evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
-            for (Long2DoubleMap.Entry e: ratings.fast()) {
-                double pv = predictions.get(e.getLongKey());
-                npreds += 1;
-                if (!Double.isNaN(pv))
-                    ngood += 1;
+
+            double usse = 0;
+            int n = 0;
+            for (Long2DoubleMap.Entry e: predictions.fast()) {
+                if (Double.isNaN(e.getDoubleValue())) continue;
+
+                double err = e.getDoubleValue() - ratings.get(e.getLongKey());
+                usse += err * err;
+                n++;
             }
-            nusers += 1;
+            sse += usse;
+            nratings += n;
+            if (n > 0) {
+                totalRMSE += sqrt(usse / n);
+                nusers ++;
+            }
         }
 
         @Override
         public String[] results() {
-            double coverage = (double) ngood / npreds;
-            logger.info("Coverage: {}", coverage);
-            
-            return new String[]{
-                    Integer.toString(nusers), 
-                    Integer.toString(npreds),
-                    Integer.toString(ngood), 
-                    Double.toString(coverage) 
+            double v = sqrt(sse / nratings);
+            logger.info("RMSE: {}", v);
+            return new String[] {
+                    Double.toString(v),
+                    Double.toString(totalRMSE / nusers)
             };
         }
 

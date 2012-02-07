@@ -30,8 +30,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator;
-import org.grouplens.lenskit.eval.predict.PredictionEvaluator.Accumulator;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric.Accumulator;
 import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -52,7 +52,7 @@ import java.util.List;
 public class TTPredictEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
     private AlgorithmInstance algorithm;
-    private List<PredictionEvaluator> evaluators;
+    private List<PredictEvalMetric> evaluators;
     private TTDataSet data;
     private Supplier<TableWriter> outputProvider;
     private Supplier<SharedRatingSnapshot> snapshot;
@@ -68,7 +68,7 @@ public class TTPredictEvalJob implements Job {
      *        and eval outputProvider needs to be written.
      */
     public TTPredictEvalJob(AlgorithmInstance algo,
-                            List<PredictionEvaluator> evals,
+                            List<PredictEvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
                             Supplier<TableWriter> out) {
         algorithm = algo;
@@ -78,7 +78,7 @@ public class TTPredictEvalJob implements Job {
         outputProvider = out;
         
         int ncols = 2;
-        for (PredictionEvaluator eval: evals) {
+        for (PredictEvalMetric eval: evals) {
             ncols += eval.getColumnLabels().length;
         }
         outputColumnCount = ncols;
@@ -109,7 +109,7 @@ public class TTPredictEvalJob implements Job {
             
             DataAccessObject testDao = data.getTestFactory().create();
             try {
-                for (PredictionEvaluator eval: evaluators) {
+                for (PredictEvalMetric eval: evaluators) {
                     evalAccums.add(eval.makeAccumulator(data));
                 }
                 

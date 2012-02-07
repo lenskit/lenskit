@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -47,8 +47,8 @@ import static java.lang.Math.log;
  */
 @ConfigAlias("nDCG")
 @MetaInfServices
-public class NDCGEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
+public class NDCGPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     private static final String[] COLUMNS = { "nDCG" };
 
     @Override

@@ -16,14 +16,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
-import static org.junit.Assert.assertEquals;
-
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestHLU {
     long[] items = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -46,7 +45,7 @@ public class TestHLU {
 
     @Test
     public void testComputeHLU() {
-        HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
+        HLUtilityPredictMetric eval = new HLUtilityPredictMetric(5);
 
         // evaluate rating scores
         assertEquals(21.9232, eval.computeHLU(rv1.keysByValue(true), rv1), 0.0001);
@@ -61,8 +60,8 @@ public class TestHLU {
 
     @Test
     public void testAccumulator() {
-        HLUtilityEvaluator eval = new HLUtilityEvaluator(5);
-        HLUtilityEvaluator.Accum acc = eval.makeAccumulator(null);
+        HLUtilityPredictMetric eval = new HLUtilityPredictMetric(5);
+        HLUtilityPredictMetric.Accum acc = eval.makeAccumulator(null);
 
         acc.evaluatePredictions(1, rv1, pv1);
         assertEquals(1, acc.nusers);
