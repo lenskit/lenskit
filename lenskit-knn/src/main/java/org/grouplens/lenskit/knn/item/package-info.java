@@ -37,13 +37,13 @@
  * larger than {@link NeighborhoodSize} to improve the ability of the recommender to find
  * neighbors.
  * <p/>
- * When the similarity function is asymmetric (\[s(i,j)=s(j,i)\] does not hold), some care
+ * When the similarity function is asymmetric (\(s(i,j)=s(j,i)\) does not hold), some care
  * is needed to make sure that the function is used in the correct direction. Following
- * Deshpande and Karypis, we use the similarity function as \[s(i,j)\], where \[i\] is the
- * item the user has purchased or rated and \[j\] is the item that is going to be scored. This
- * function is then stored in row \[j\] and column \[i\] of the matrix — yes, the order is
+ * Deshpande and Karypis, we use the similarity function as \(s(i,j)\), where \(i\) is the
+ * item the user has purchased or rated and \(j\) is the item that is going to be scored. This
+ * function is then stored in row \(j\) and column \(i\) of the matrix — yes, the order is
  * is flipped from normal. Columns are then truncated (so we retain the {@link ModelSize} most
- * similar items for each \[i\]). Computation against a particular item the user has rated
+ * similar items for each \(i\)). Computation against a particular item the user has rated
  * is done down that item's column.
  *
  * @cite Sarwar et al. 2001.
