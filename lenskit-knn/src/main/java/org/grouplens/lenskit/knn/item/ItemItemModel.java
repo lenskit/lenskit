@@ -30,7 +30,10 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
 
 /**
  * Item-item similarity model. It stores and makes available the similarities
- * between items. These similarities are post-normalization, so code using them
+ * between items.
+ *
+ * <p/>
+ * These similarities are post-normalization, so code using them
  * should use the same normalizations used by the builder to make use of the
  * similarity scores.
  *

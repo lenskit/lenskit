@@ -50,8 +50,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
  * 
- * @review Should user ratings be supplied? Optionally?
- * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */

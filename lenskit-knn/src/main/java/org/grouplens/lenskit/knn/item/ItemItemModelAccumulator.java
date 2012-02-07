@@ -31,9 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ItemItemModelAccumulator creates SimilarityMatrices where rows
- * are truncated to a specific size, so only the top N similar items are stored
- * in each row. The created matrices are Serializable.
+ * Accumulator for item similarities that go into the item-item CF model.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
