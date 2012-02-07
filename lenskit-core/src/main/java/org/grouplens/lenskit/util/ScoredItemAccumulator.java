@@ -30,7 +30,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class ScoredItemAccumulator {
+final public class ScoredItemAccumulator {
     private final int count;
     private double[] scores;
     private long[] items;
