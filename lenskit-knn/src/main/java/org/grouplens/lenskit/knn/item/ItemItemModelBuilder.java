@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -58,6 +59,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@SuppressWarnings("UnusedDeclaration")
 @NotThreadSafe
 public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
@@ -116,9 +118,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings =
                 new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
-        ObjectIterator<Long2ObjectMap.Entry<Long2DoubleMap>> iter = itemData.long2ObjectEntrySet().iterator();
-        while (iter.hasNext()) {
-            Long2ObjectMap.Entry<Long2DoubleMap> entry = iter.next();
+        for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
             Long2DoubleMap ratings = entry.getValue();
             SparseVector v = new ImmutableSparseVector(ratings);
             assert v.size() == ratings.size();
@@ -144,7 +144,6 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
      */
     private Long2ObjectMap<Long2DoubleMap>
     buildItemRatings(LongSortedSet items, Long2ObjectMap<LongSortedSet> userItemSets) {
-        final boolean collectItems = userItemSets != null;
         final int nitems = items.size();
 
         // Create and initialize the transposed array to collect user
@@ -170,7 +169,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                 // allocate the array ourselves to avoid an array copy
                 long[] userItemArr = null;
                 LongCollection userItems = null;
-                if (collectItems) {
+                if (userItemSets != null) {
+                    // we are collecting user item sets
                     userItemArr = new long[nratings];
                     userItems = LongArrayList.wrap(userItemArr, 0);
                 }
@@ -183,7 +183,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                     if (userItems != null)
                         userItems.add(item);
                 }
-                if (collectItems) {
+                if (userItems != null) {
+                    // collected user item sets, finalize that
                     LongSortedSet itemSet = new LongSortedArraySet(userItemArr, 0, userItems.size());
                     userItemSets.put(uid, itemSet);
                 }
