@@ -35,24 +35,27 @@ public interface EvaluationListener {
     /**
      * Notify that the evaluation has finished.
      * 
-     * @param err <tt>null</tt> if the evaluation completed successfully, or the
+     * @param err {@code null} if the evaluation completed successfully, or the
      *        exception thrown if it failed.
      */
     void evaluationFinished(Exception err);
     
     /**
      * Notify that a job group is starting.
+     * @param group The job group that is starting.
      */
     void jobGroupStarting(JobGroup group);
     
     /**
      * Notify that a job group has finished executing.
+     * @param group The group that just finished.
      */
     void jobGroupFinished(JobGroup group);
 
     /**
      * Notify that a job is starting. The executor will invoke this method on
      * the thread which is running the job.
+     * @param job The job that is starting.
      */
     void jobStarting(Job job);
 
