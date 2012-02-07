@@ -28,6 +28,9 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 /**
  * Item-item similarity model. It stores and makes available the similarities
  * between items.
@@ -50,19 +53,39 @@ public class ItemItemModel implements Serializable {
     private final Long2ObjectMap<ScoredLongList> similarityMatrix;
     private final LongSortedSet itemUniverse;
 
+    /**
+     * Construct a new item-item model.
+     * @param universe The set of item IDs. This should be equal to the key set
+     *                 of the matrix.
+     * @param matrix The similarity matrix columns (maps item ID to column)
+     */
+    @Inject
     public ItemItemModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
         itemUniverse = universe;
         similarityMatrix = matrix;
     }
 
+    /**
+     * Get the set of all items in the model.
+     * @return The set of item IDs for all items in the model.
+     */
     public LongSortedSet getItemUniverse() {
         return itemUniverse;
     }
 
+    /**
+     * Get the neighbors of an item scored by similarity. This is the corresponding
+     * <em>column</em> of the item-item similarity matrix.
+     * @param item The item to get the neighborhood for.
+     * @return The column of the similarity matrix. If the item is unknown, an empty
+     * list is returned.
+     */
+    @Nonnull
     public ScoredLongList getNeighbors(long item) {
         ScoredLongList nbrs = similarityMatrix.get(item);
-        if (nbrs == null)
+        if (nbrs == null) {
             nbrs = EMPTY_LIST;
+        }
         return nbrs;
 
     }
