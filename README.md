@@ -69,7 +69,7 @@ and the [MercurialEclipse][HGE] plugin. Then do the following:
 
 * Check out the LensKit source tree by selecting “Mercurial” / “Clone existing repository”
   from the Import dialog.
-* Once the project is imported, right-click it and select “Maven” → “Convert to Maven project”
+* Once the project is imported, right-click it and select “Configure” → “Convert to Maven project”
   to activate Maven support on the LensKit parent project.
 * Finally, right-click the `lenskit` project, choose “Import”, and select “Maven” / “Existing
   Maven Projects”. Choose all sub-projects of `lenskit` and import them.
