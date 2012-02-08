@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
+import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
@@ -55,67 +58,128 @@ import com.google.common.io.Files;
  */
 public class TTPredictEvaluation implements Evaluation {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
-    
+
     private File outputFile;
+    private File predictOutFile;
+    private List<AlgorithmInstance> algorithms;
+    private List<PredictEvalMetric> metrics;
+    private List<TTDataSet> dataSources;
     private TableWriterBuilder outputBuilder;
+    private TableWriterBuilder predictBuilder;
+    
     private TableWriter output;
+    private TableWriter predictOutput;
+
     private List<JobGroup> jobGroups;
 
-    public TTPredictEvaluation(File output,
-                               List<AlgorithmInstance> algos,
-                               List<PredictEvalMetric> evals,
-                               List<TTDataSet> dataSources) {
-        outputFile = output;
-        
+    public File getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(File outf) {
+        outputFile = outf;
+    }
+
+    public File getPredictionOutputFile() {
+        return predictOutFile;
+    }
+
+    /**
+     * Set a file to which to write individual predictions produced by the algorithms.
+     * @param outf The file to write predictions to, or {@code null} to disable prediction
+     *             output.
+     */
+    public void setPredictionOutputFile(File outf) {
+        predictOutFile = outf;
+    }
+
+    public List<AlgorithmInstance> getAlgorithms() {
+        return algorithms;
+    }
+
+    public void setAlgorithms(List<AlgorithmInstance> algorithms) {
+        this.algorithms = algorithms;
+    }
+
+    public List<PredictEvalMetric> getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(List<PredictEvalMetric> metrics) {
+        this.metrics = metrics;
+    }
+
+    public List<TTDataSet> getDataSources() {
+        return dataSources;
+    }
+
+    public void setDataSources(List<TTDataSet> sources) {
+        dataSources = sources;
+    }
+
+    protected void setupJobs() {
+        Preconditions.checkState(dataSources != null, "data sources not configured");
+        Preconditions.checkState(algorithms != null, "algorithms not configured");
+        Preconditions.checkState(metrics != null, "metrics not configured");
+
         Map<String,Integer> dsColumns =
                 indexColumns(1,
                              Lists.transform(dataSources,
-                                             new Function<TTDataSet, Map<String,?>>() {
-                                 @Override
-                                 public Map<String,?> apply(TTDataSet ds) {
-                                     return ds.getAttributes();
-                                 }
-                             }));
+                                             new Function<TTDataSet, Map<String, ?>>() {
+                                                 @Override
+                                                 public Map<String, ?> apply(TTDataSet ds) {
+                                                     return ds.getAttributes();
+                                                 }
+                                             }));
         Map<String,Integer> aiColumns =
                 indexColumns(1 + dsColumns.size(),
-                             Lists.transform(algos,
+                             Lists.transform(algorithms,
                                              new Function<AlgorithmInstance, Map<String,?>>() {
                                  @Override
                                  public Map<String,?> apply(AlgorithmInstance ai) {
                                      return ai.getAttributes();
                                  }
                              }));
-        
+
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet ds: dataSources) {
             TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algos, evals, dsColumns, aiColumns, ds);
+            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dsColumns, aiColumns, ds);
             jobGroups.add(group);
         }
-        
+
         // Set up the columns & output builder
-        outputBuilder = new CSVWriterBuilder();
         int evalColCount = 0;
-        for (PredictEvalMetric ev: evals) {
+        for (PredictEvalMetric ev: metrics) {
             evalColCount += ev.getColumnLabels().length;
         }
         final int dacc = dsColumns.size() + aiColumns.size();
         String[] headers = new String[3 + dacc + evalColCount];
-        headers[0] = "Algorithm";
+        String[] predHeaders = new String[1 + dacc + 4];
+        predHeaders[0] = headers[0] = "Algorithm";
         for (Map.Entry<String,Integer> col: concat(dsColumns.entrySet(), aiColumns.entrySet())) {
             headers[col.getValue()] = col.getKey();
+            predHeaders[col.getValue()] = col.getKey();
         }
         int index = dacc + 1;
         headers[index++] = "BuildTime";
         headers[index++] = "TestTime";
-        for (PredictEvalMetric ev: evals) {
+        for (PredictEvalMetric ev: metrics) {
             for (String c: ev.getColumnLabels()) {
                 headers[index++] = c;
             }
         }
+        predHeaders[dacc + 1] = "User";
+        predHeaders[dacc + 2] = "Item";
+        predHeaders[dacc + 3] = "Rating";
+        predHeaders[dacc + 4] = "Prediction";
+
+        outputBuilder = new CSVWriterBuilder();
         outputBuilder.setColumns(headers);
+        predictBuilder = new CSVWriterBuilder();
+        predictBuilder.setColumns(predHeaders);
     }
-    
+
     static Map<String,Integer> indexColumns(int startIndex, Iterable<Map<String,?>> maps) {
         int idx = startIndex;
         Map<String,Integer> columns = new LinkedHashMap<String, Integer>();
@@ -132,12 +196,24 @@ public class TTPredictEvaluation implements Evaluation {
 
     @Override
     public void start() {
+        Preconditions.checkState(outputFile != null, "output file not configured");
+        setupJobs();
+
         logger.info("Starting evaluation");
         try {
             Files.createParentDirs(outputFile);
             output = outputBuilder.makeWriter(new FileWriter(outputFile));
         } catch (IOException e) {
             throw new RuntimeException("Error opening output " + outputFile, e);
+        }
+        if (predictOutFile != null) {
+            try {
+                Files.createParentDirs(predictOutFile);
+                predictOutput = predictBuilder.makeWriter(new FileWriter(predictOutFile));
+            } catch (IOException e) {
+                Closeables.closeQuietly(output);
+                throw new RuntimeException("Error opening output " + predictOutFile, e);
+            }
         }
     }
 
@@ -146,6 +222,9 @@ public class TTPredictEvaluation implements Evaluation {
         logger.info("Evaluation finished");
         try {
             output.close();
+            if (predictOutput != null) {
+                predictOutput.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException("Error closing output", e);
         } finally {
@@ -163,14 +242,27 @@ public class TTPredictEvaluation implements Evaluation {
      */
     @Nonnull
     TableWriter getOutputTable() {
-        if (output == null)
+        if (output == null) {
             throw new IllegalStateException("Evaluation not running");
-        return output;
+        } else {
+            return output;
+        }
+    }
+
+    /**
+     * Get the prediction output table.
+     * @return The table writer for the prediction output.
+     */
+    @Nullable
+    TableWriter getPredictionTable() {
+        return predictOutput;
     }
 
     @Override
     public List<JobGroup> getJobGroups() {
+        if (jobGroups == null) {
+            throw new IllegalStateException("evaluation not started");
+        }
         return jobGroups;
     }
-
 }

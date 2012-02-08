@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -34,7 +35,9 @@ public interface Evaluation {
     /**
      * Start the evaluation.  The evaluation runner calls this method before
      * starting to run any jobs.  It is responsible for getting ready for
-     * job groups to run.
+     * job groups to run.  It is called <strong>before</strong> the evaluation
+     * runner calls {@link #getJobGroups()}, so the job groups can depend on
+     * setup done in this method.
      */
     void start();
     
@@ -46,9 +49,10 @@ public interface Evaluation {
     void finish();
     
     /**
-     * Get the job groups comprising this evaluation.
+     * Get the job groups comprising this evaluation.  {@link #start()} is called
+     * before this method is called.
      * 
      * @return A list of the job groups to run for this evaluation.
      */
-    List<JobGroup> getJobGroups();
+    @Nonnull List<JobGroup> getJobGroups();
 }

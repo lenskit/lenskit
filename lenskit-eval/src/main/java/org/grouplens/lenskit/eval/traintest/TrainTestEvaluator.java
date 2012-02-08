@@ -18,28 +18,14 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.Lists;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.ConfigUtils;
-import org.grouplens.lenskit.eval.Evaluation;
-import org.grouplens.lenskit.eval.Evaluator;
-import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
-import org.grouplens.lenskit.eval.InvalidRecommenderException;
-import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.kohsuke.MetaInfServices;
@@ -50,7 +36,15 @@ import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Train-test evaluator that builds on a training set and runs on a test set.
@@ -76,24 +70,40 @@ public class TrainTestEvaluator implements Evaluator {
     public Evaluation configure(Properties properties, DataNode config)
             throws EvaluatorConfigurationException {
         logger.debug("Configuring evaluator from {}", config);
-        List<PredictEvalMetric> evals = configureEvaluators(properties, config);
-        logger.debug("Have {} evaluators", evals.size());
+
+        TTPredictEvaluation eval = new TTPredictEvaluation();
+
+        eval.setMetrics(configureMetrics(properties, config));
+        logger.debug("Have {} evaluators", eval.getMetrics().size());
+
         List<AlgorithmInstance> algos = configureAlgorithms(properties, config);
-        if (algos.isEmpty())
+        if (algos.isEmpty()) {
             throw new EvaluatorConfigurationException("No algorithms configured");
-        File output = configureOutput(properties, config);
+        }
+        eval.setAlgorithms(algos);
+
+        File outFile = configureFile(properties, config, "output");
+        if (outFile == null) {
+            throw new EvaluatorConfigurationException("No output file configured");
+        } else {
+            logger.debug("output to {}", outFile);
+            eval.setOutputFile(outFile);
+        }
+        File predFile = configureFile(properties, config, "predictionOutput");
+        if (predFile != null) {
+            logger.debug("writing predictions to {}", predFile);
+            eval.setPredictionOutputFile(predFile);
+        }
+
         List<TTDataSet> data = configureDataSources(properties, config);
-        if (data.isEmpty())
+        if (data.isEmpty()) {
             throw new EvaluatorConfigurationException("No data sources configured");
-        return new TTPredictEvaluation(output, algos, evals, data);
+        }
+        eval.setDataSources(data);
+
+        return eval;
     }
 
-    /**
-     * @param properties
-     * @param config
-     * @return
-     * @throws EvaluatorConfigurationException 
-     */
     private List<TTDataSet> configureDataSources(Properties properties,
                                                  DataNode config) throws EvaluatorConfigurationException {
         List<TTDataSet> sources = new ArrayList<TTDataSet>();
@@ -116,27 +126,16 @@ public class TrainTestEvaluator implements Evaluator {
         return sources;
     }
 
-    /**
-     * @param properties
-     * @param config
-     * @return
-     * @throws EvaluatorConfigurationException 
-     */
-    private File configureOutput(Properties properties, DataNode config) 
+    private File configureFile(Properties properties, DataNode config, String name)
             throws EvaluatorConfigurationException {
-        String out = Trees.childValue(config, "output");
-        if (out == null)
-            throw new EvaluatorConfigurationException("No output file specified");
-        logger.debug("Output to {}", out);
-        return new File(out);
+        String fn = Trees.childValue(config, name);
+        if (fn == null) {
+            return null;
+        } else {
+            return new File(fn);
+        }
     }
 
-    /**
-     * @param properties
-     * @param config
-     * @return
-     * @throws EvaluatorConfigurationException 
-     */
     private List<AlgorithmInstance> configureAlgorithms(Properties properties,
                                                         DataNode config) throws EvaluatorConfigurationException {
         DataNode algosElt = Trees.child(config, "algorithms");
@@ -156,11 +155,6 @@ public class TrainTestEvaluator implements Evaluator {
         return algos;
     }
 
-    /**
-     * @param properties
-     * @param config
-     * @throws EvaluatorConfigurationException
-     */
     private List<AlgorithmInstance> loadScript(Properties properties, DataNode config) throws EvaluatorConfigurationException {
         String fn = config.getValue();
         try {
@@ -170,11 +164,6 @@ public class TrainTestEvaluator implements Evaluator {
         }
     }
     
-    /**
-     * @param properties
-     * @param config
-     * @throws EvaluatorConfigurationException
-     */
     private List<AlgorithmInstance> loadScriptSet(Properties properties,
                                                   DataNode config) throws EvaluatorConfigurationException {
         DirectoryScanner ds = ConfigUtils.configureScanner(config);
@@ -222,14 +211,8 @@ public class TrainTestEvaluator implements Evaluator {
         }
     }
 
-    /**
-     * @param properties
-     * @param config
-     * @return
-     * @throws EvaluatorConfigurationException 
-     */
-    private List<PredictEvalMetric> configureEvaluators(Properties properties,
-                                                          DataNode config) throws EvaluatorConfigurationException {
+    private List<PredictEvalMetric> configureMetrics(Properties properties,
+                                                     DataNode config) throws EvaluatorConfigurationException {
         DataNode evalsElt = Trees.child(config, "evaluators");
         List<String> evalNames;
         if (evalsElt == null) {
