@@ -28,7 +28,7 @@
     <site>
       <id>grouplens.org</id>
       <name>LensKit Website</name>
-      <url>${lenskit.web.path}</url>
+      <url>${lenskit.web.path}/build-tools</url>
     </site>
     <snapshotRepository>
       <id>grouplens.org</id>
