@@ -16,18 +16,32 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.util.tablewriter;
+
+import java.io.IOException;
+import java.io.Writer;
+
 /**
- * Utilities for formatting and writing tabular output.
+ * Write tables as CSV files.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * <p>This package provides the Table Writer framework, a mechanism for writing
- * tabular output such as CSV files.  It's used by the benchmarking code to
- * provide its output.</p>
- *
- * The table writer framework consists of two primary interfaces:
- * {@link org.grouplens.lenskit.tablewriter.TableWriterBuilder TableWriterBuilder}
- * is used to set up the format of a table (e.g. the number and titles of the columns).
- * Once the table is set up, the client code obtains a
- * {@link org.grouplens.lenskit.tablewriter.TableWriter TableWriter} which it
- * then uses to write the actual table data.
  */
-package org.grouplens.lenskit.tablewriter;
+public class CSVWriterBuilder implements TableWriterBuilder {
+    private String[] columns;
+
+    @Override
+    public void setColumns(String[] names) {
+        columns = names;
+    }
+
+    @Override
+    public TableWriter makeWriter(Writer output) throws IOException {
+        try {
+            return new CSVWriter(output, columns);
+        } catch (RuntimeException e) {
+            output.close();
+            throw e;
+        }
+    }
+
+}

@@ -35,9 +35,9 @@ import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.tablewriter.CSVWriterBuilder;
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,7 +161,8 @@ public class TTPredictEvaluation implements Evaluation {
      * @throws IllegalStateException if the job has not been started or is
      *         finished.
      */
-    @Nonnull TableWriter getOutputTable() {
+    @Nonnull
+    TableWriter getOutputTable() {
         if (output == null)
             throw new IllegalStateException("Evaluation not running");
         return output;

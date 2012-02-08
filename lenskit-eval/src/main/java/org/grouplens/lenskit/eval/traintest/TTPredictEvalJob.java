@@ -32,7 +32,7 @@ import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric.Accumulator;
-import org.grouplens.lenskit.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
