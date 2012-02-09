@@ -36,7 +36,6 @@
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <docbook.xsl.custom>${basedir}/etc/dbstyles</docbook.xsl.custom>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
@@ -198,13 +197,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.0</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.doxia</groupId>
-              <artifactId>doxia-module-docbook-simple</artifactId>
-              <version>1.2</version>
-            </dependency>
-          </dependencies>
           <configuration>
             <reportPlugins>
               <plugin>
@@ -306,26 +298,6 @@
           <rules>
             <requireJavaVersion><version>[1.6.0,)</version></requireJavaVersion>
           </rules>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>com.agilejava.docbkx</groupId>
-        <artifactId>docbkx-maven-plugin</artifactId>
-        <version>2.0.11</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.docbook</groupId>
-            <artifactId>docbook-xml</artifactId>
-            <version>4.4</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <sourceDirectory>${basedir}/src/site/docbook</sourceDirectory>
-          <htmlCustomization>${docbook.xsl.custom}/common.xsl</htmlCustomization>
-          <xhtmlCustomization>${docbook.xsl.custom}/common.xsl</xhtmlCustomization>
-          <foCustomization>${docbook.xsl.custom}/fo.xsl</foCustomization>
         </configuration>
       </plugin>
 
