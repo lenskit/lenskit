@@ -45,6 +45,7 @@ public interface TableWriterBuilder {
      * Get a {@link TableWriter} so you can start writing rows.  Table writers
      * will automatically start writing their header when this method is called.
      * @return The writer to write table rows.
+     * @throws IOException if an I/O error occurs.
      */
-    TableWriter makeWriter(@WillClose Writer output) throws IOException;
+    TableWriter open() throws IOException;
 }

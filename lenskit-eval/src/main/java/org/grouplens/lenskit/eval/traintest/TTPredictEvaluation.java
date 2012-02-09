@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -175,10 +174,12 @@ public class TTPredictEvaluation implements Evaluation {
         predHeaders[dacc + 3] = "Rating";
         predHeaders[dacc + 4] = "Prediction";
 
-        outputBuilder = new CSVWriterBuilder();
+        outputBuilder = new CSVWriterBuilder(outputFile);
         outputBuilder.setColumns(headers);
-        predictBuilder = new CSVWriterBuilder();
-        predictBuilder.setColumns(predHeaders);
+        if (predictOutFile != null) {
+            predictBuilder = new CSVWriterBuilder(predictOutFile);
+            predictBuilder.setColumns(predHeaders);
+        }
     }
 
     static Map<String,Integer> indexColumns(int startIndex, Iterable<Map<String,?>> maps) {
@@ -202,15 +203,13 @@ public class TTPredictEvaluation implements Evaluation {
 
         logger.info("Starting evaluation");
         try {
-            Files.createParentDirs(outputFile);
-            output = outputBuilder.makeWriter(new FileWriter(outputFile));
+            output = outputBuilder.open();
         } catch (IOException e) {
             throw new RuntimeException("Error opening output " + outputFile, e);
         }
-        if (predictOutFile != null) {
+        if (predictOutput != null) {
             try {
-                Files.createParentDirs(predictOutFile);
-                predictOutput = predictBuilder.makeWriter(new FileWriter(predictOutFile));
+                predictOutput = predictBuilder.open();
             } catch (IOException e) {
                 Closeables.closeQuietly(output);
                 throw new RuntimeException("Error opening output " + predictOutFile, e);
