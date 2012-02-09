@@ -18,10 +18,13 @@
  */
 package org.grouplens.lenskit.util;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @deprecated Use {@link StopWatch} instead.
  */
+@Deprecated
 public class TaskTimer {
     private long startTime;
     private long stopTime;
