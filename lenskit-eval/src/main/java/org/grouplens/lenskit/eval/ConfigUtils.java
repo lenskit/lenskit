@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.util.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.Trees;
+import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,16 @@ public class ConfigUtils {
         ds.setExcludes(excludes);
         
         return ds;
+    }
+    
+    public static TableWriterBuilder configureTableOutput(DataNode node) {
+        CSVWriterBuilder bld = new CSVWriterBuilder();
+        File file = new File(node.getValue());
+        bld.setFile(file);
+        if (Trees.stringToBool(node.getAttribute("compress", "no"))) {
+            bld.setCompressed(true);
+        }
+        return bld;
     }
     
     static String[] getPatterns(List<DataNode> nodes) {

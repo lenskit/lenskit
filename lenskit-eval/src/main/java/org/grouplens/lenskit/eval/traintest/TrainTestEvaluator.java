@@ -82,17 +82,16 @@ public class TrainTestEvaluator implements Evaluator {
         }
         eval.setAlgorithms(algos);
 
-        File outFile = configureFile(properties, config, "output");
-        if (outFile == null) {
+        DataNode out = Trees.child(config, "output");
+        if (out == null) {
             throw new EvaluatorConfigurationException("No output file configured");
         } else {
-            logger.debug("output to {}", outFile);
-            eval.setOutputFile(outFile);
+            ConfigUtils.configureTableOutput(out);
         }
-        File predFile = configureFile(properties, config, "predictionOutput");
-        if (predFile != null) {
-            logger.debug("writing predictions to {}", predFile);
-            eval.setPredictionOutputFile(predFile);
+        
+        DataNode predOut = Trees.child(config, "predictionOutput");
+        if (predOut != null) {
+            eval.setPredictOutputBuilder(ConfigUtils.configureTableOutput(predOut));
         }
 
         List<TTDataSet> data = configureDataSources(properties, config);
@@ -124,16 +123,6 @@ public class TrainTestEvaluator implements Evaluator {
         }
         
         return sources;
-    }
-
-    private File configureFile(Properties properties, DataNode config, String name)
-            throws EvaluatorConfigurationException {
-        String fn = Trees.childValue(config, name);
-        if (fn == null) {
-            return null;
-        } else {
-            return new File(fn);
-        }
     }
 
     private List<AlgorithmInstance> configureAlgorithms(Properties properties,

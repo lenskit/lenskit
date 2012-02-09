@@ -18,35 +18,30 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import static com.google.common.collect.Iterables.concat;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.tablewriter.TableWriterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.collect.Iterables.concat;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -59,8 +54,6 @@ import com.google.common.io.Files;
 public class TTPredictEvaluation implements Evaluation {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
 
-    private File outputFile;
-    private File predictOutFile;
     private List<AlgorithmInstance> algorithms;
     private List<PredictEvalMetric> metrics;
     private List<TTDataSet> dataSources;
@@ -72,25 +65,21 @@ public class TTPredictEvaluation implements Evaluation {
 
     private List<JobGroup> jobGroups;
 
-    public File getOutputFile() {
-        return outputFile;
-    }
-
-    public void setOutputFile(File outf) {
-        outputFile = outf;
-    }
-
-    public File getPredictionOutputFile() {
-        return predictOutFile;
+    /**
+     * Set the table writer builder to use for evaluation output.
+     * @param builder A table writer builder to use for output.
+     */
+    public void setOutputBuilder(TableWriterBuilder builder) {
+        outputBuilder = builder;
     }
 
     /**
-     * Set a file to which to write individual predictions produced by the algorithms.
-     * @param outf The file to write predictions to, or {@code null} to disable prediction
-     *             output.
+     * Set the table writer builder to use for prediction output.
+     * @param builder A table writer builder to use for writing predictions, or
+     *                {@code null} to not write predictions.
      */
-    public void setPredictionOutputFile(File outf) {
-        predictOutFile = outf;
+    public void setPredictOutputBuilder(@Nullable TableWriterBuilder builder) {
+        predictBuilder = builder;
     }
 
     public List<AlgorithmInstance> getAlgorithms() {
@@ -174,10 +163,8 @@ public class TTPredictEvaluation implements Evaluation {
         predHeaders[dacc + 3] = "Rating";
         predHeaders[dacc + 4] = "Prediction";
 
-        outputBuilder = new CSVWriterBuilder(outputFile);
         outputBuilder.setColumns(headers);
-        if (predictOutFile != null) {
-            predictBuilder = new CSVWriterBuilder(predictOutFile);
+        if (predictBuilder != null) {
             predictBuilder.setColumns(predHeaders);
         }
     }
@@ -198,21 +185,21 @@ public class TTPredictEvaluation implements Evaluation {
 
     @Override
     public void start() {
-        Preconditions.checkState(outputFile != null, "output file not configured");
+        Preconditions.checkState(outputBuilder != null, "output not configured");
         setupJobs();
 
         logger.info("Starting evaluation");
         try {
             output = outputBuilder.open();
         } catch (IOException e) {
-            throw new RuntimeException("Error opening output " + outputFile, e);
+            throw new RuntimeException("Error opening output table", e);
         }
         if (predictOutput != null) {
             try {
                 predictOutput = predictBuilder.open();
             } catch (IOException e) {
                 Closeables.closeQuietly(output);
-                throw new RuntimeException("Error opening output " + predictOutFile, e);
+                throw new RuntimeException("Error opening prediction table", e);
             }
         }
     }
