@@ -32,6 +32,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Evaluation;
@@ -236,29 +237,38 @@ public class TTPredictEvaluation implements Evaluation {
      * Get the evaluation's output table. Used by job groups to set up the
      * output for their jobs.
      * 
-     * @return The table writer for this evaluation.
+     * @return A supplier for the table writer for this evaluation.
      * @throws IllegalStateException if the job has not been started or is
      *         finished.
      */
     @Nonnull
-    TableWriter getOutputTable() {
-        if (output == null) {
-            throw new IllegalStateException("Evaluation not running");
-        } else {
-            return output;
-        }
+    Supplier<TableWriter> outputTableSupplier() {
+        return new Supplier<TableWriter>() {
+            @Override
+            public TableWriter get() {
+                if (output == null) {
+                    throw new IllegalStateException("Evaluation not running");
+                } else {
+                    return output;
+                }
+            }
+        };
     }
 
     /**
      * Get the prediction output table.
      * @return The table writer for the prediction output.
      */
-    @Nullable
-    TableWriter getPredictionTable() {
-        return predictOutput;
+    @Nonnull
+    Supplier<TableWriter> predictTableSupplier() {
+        return new Supplier<TableWriter>() {
+            @Override public TableWriter get() {
+                return predictOutput;
+            }
+        };
     }
 
-    @Override
+    @Override @Nonnull
     public List<JobGroup> getJobGroups() {
         if (jobGroups == null) {
             throw new IllegalStateException("evaluation not started");
