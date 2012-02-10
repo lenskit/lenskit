@@ -8,7 +8,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * Scored item accumulator with no upper bound.
  * @author Michael Ekstrand
  */
-public final class UnlimitedStoredItemAccumulator implements ScoredItemAccumulator {
+public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
     private ScoredLongArrayList scores;
 
     @Override
@@ -31,6 +31,10 @@ public final class UnlimitedStoredItemAccumulator implements ScoredItemAccumulat
 
     @Override
     public ScoredLongList finish() {
+        if (scores == null) {
+            return new ScoredLongArrayList();
+        }
+
         scores.sort(DoubleComparators.OPPOSITE_COMPARATOR);
         ScoredLongList r = scores;
         scores = null;
