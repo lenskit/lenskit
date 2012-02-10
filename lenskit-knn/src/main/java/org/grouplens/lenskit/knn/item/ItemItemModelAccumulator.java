@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class ItemItemModelAccumulator {
         rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
         LongIterator it = entities.iterator();
         while (it.hasNext()) {
-            rows.put(it.nextLong(), new ScoredItemAccumulator(size));
+            rows.put(it.nextLong(), new TopNScoredItemAccumulator(size));
         }
     }
 

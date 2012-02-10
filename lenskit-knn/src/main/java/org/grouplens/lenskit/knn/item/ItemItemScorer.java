@@ -43,6 +43,8 @@ import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedStoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -133,8 +135,12 @@ public class ItemItemScorer extends AbstractItemScorer implements
                                              LongSortedSet items) {
         MutableSparseVector scores = new MutableSparseVector(items);
         // We ran reuse accumulators
-        ScoredItemAccumulator accum =
-            new ScoredItemAccumulator(neighborhoodSize);
+        ScoredItemAccumulator accum;
+        if (neighborhoodSize > 0) {
+            accum = new TopNScoredItemAccumulator(neighborhoodSize);
+        } else {
+            accum = new UnlimitedStoredItemAccumulator();
+        }
 
         // FIXME Make sure the direction on similarities is right for asym.
         // for each item, compute its prediction
