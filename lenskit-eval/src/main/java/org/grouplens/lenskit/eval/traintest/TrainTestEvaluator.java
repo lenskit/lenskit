@@ -86,7 +86,7 @@ public class TrainTestEvaluator implements Evaluator {
         if (out == null) {
             throw new EvaluatorConfigurationException("No output file configured");
         } else {
-            ConfigUtils.configureTableOutput(out);
+            eval.setOutputBuilder(ConfigUtils.configureTableOutput(out));
         }
         
         DataNode predOut = Trees.child(config, "predictionOutput");
@@ -100,6 +100,7 @@ public class TrainTestEvaluator implements Evaluator {
         }
         eval.setDataSources(data);
 
+        eval.initialize();
         return eval;
     }
 

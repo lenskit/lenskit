@@ -186,11 +186,11 @@ public class TTPredictEvalJob implements Job {
             } else {
                 row[3] = null;
             }
-        }
-        try {
-            predictTable.writeRow(row);
-        } catch (IOException e) {
-            throw new RuntimeException("error writing predictions", e);
+            try {
+                predictTable.writeRow(row);
+            } catch (IOException x) {
+                throw new RuntimeException("error writing predictions", x);
+            }
         }
     }
 

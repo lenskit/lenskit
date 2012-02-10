@@ -70,6 +70,7 @@ public class TTPredictEvaluation implements Evaluation {
      * @param builder A table writer builder to use for output.
      */
     public void setOutputBuilder(TableWriterBuilder builder) {
+        checkNotInitialized();
         outputBuilder = builder;
     }
 
@@ -79,6 +80,7 @@ public class TTPredictEvaluation implements Evaluation {
      *                {@code null} to not write predictions.
      */
     public void setPredictOutputBuilder(@Nullable TableWriterBuilder builder) {
+        checkNotInitialized();
         predictBuilder = builder;
     }
 
@@ -87,6 +89,7 @@ public class TTPredictEvaluation implements Evaluation {
     }
 
     public void setAlgorithms(List<AlgorithmInstance> algorithms) {
+        checkNotInitialized();
         this.algorithms = algorithms;
     }
 
@@ -95,6 +98,7 @@ public class TTPredictEvaluation implements Evaluation {
     }
 
     public void setMetrics(List<PredictEvalMetric> metrics) {
+        checkNotInitialized();
         this.metrics = metrics;
     }
 
@@ -103,10 +107,12 @@ public class TTPredictEvaluation implements Evaluation {
     }
 
     public void setDataSources(List<TTDataSet> sources) {
+        checkNotInitialized();
         dataSources = sources;
     }
 
     protected void setupJobs() {
+        // FIXME this line is too long
         Preconditions.checkState(dataSources != null, "data sources not configured");
         Preconditions.checkState(algorithms != null, "algorithms not configured");
         Preconditions.checkState(metrics != null, "metrics not configured");
@@ -183,18 +189,48 @@ public class TTPredictEvaluation implements Evaluation {
         return columns;
     }
 
+    /**
+     * Verify that the evaluation has not been initialized.
+     * @throws IllegalStateException if the evaluation has been initialized.
+     * @see #initialize()
+     */
+    protected void checkNotInitialized() {
+        if (jobGroups != null) {
+            throw new IllegalStateException("evaluation already initialized");
+        }
+    }
+
+    /**
+     * Verify that the evaluation is initialized.
+     * @throws IllegalStateException if the evaluation is not initialized.
+     * @see #initialize()
+     */
+    protected void checkInitialized() {
+        if (jobGroups == null) {
+            throw new IllegalStateException("evaluation not initialized");
+        }
+    }
+
+    /**
+     * Initialize the evaluation, setting up all the job groups. Any calls to setters
+     * after initializing the evaluation are invalid.
+     * @since 0.10
+     */
+    public void initialize() {
+        checkNotInitialized();
+        setupJobs();
+    }
+
     @Override
     public void start() {
-        Preconditions.checkState(outputBuilder != null, "output not configured");
-        setupJobs();
-
+        checkInitialized();
         logger.info("Starting evaluation");
         try {
             output = outputBuilder.open();
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
-        if (predictOutput != null) {
+        if (predictBuilder != null) {
             try {
                 predictOutput = predictBuilder.open();
             } catch (IOException e) {
@@ -206,6 +242,9 @@ public class TTPredictEvaluation implements Evaluation {
 
     @Override
     public void finish() {
+        if (output == null) {
+            throw new IllegalStateException("evaluation not running");
+        }
         logger.info("Evaluation finished");
         try {
             output.close();
@@ -256,9 +295,7 @@ public class TTPredictEvaluation implements Evaluation {
 
     @Override @Nonnull
     public List<JobGroup> getJobGroups() {
-        if (jobGroups == null) {
-            throw new IllegalStateException("evaluation not started");
-        }
+        checkInitialized();
         return jobGroups;
     }
 }
