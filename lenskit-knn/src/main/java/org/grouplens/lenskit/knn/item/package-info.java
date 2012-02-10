@@ -39,12 +39,11 @@
  * <p/>
  * When the similarity function is asymmetric (\(s(i,j)=s(j,i)\) does not hold), some care
  * is needed to make sure that the function is used in the correct direction. Following
- * Deshpande and Karypis, we use the similarity function as \(s(i,j)\), where \(i\) is the
- * item the user has purchased or rated and \(j\) is the item that is going to be scored. This
- * function is then stored in row \(j\) and column \(i\) of the matrix — yes, the order is
- * is flipped from normal. Columns are then truncated (so we retain the {@link ModelSize} most
- * similar items for each \(i\)). Computation against a particular item the user has rated
- * is done down that item's column.
+ * Deshpande and Karypis, we use the similarity function as \(s(j,i)\), where \(j\) is the
+ * item the user has purchased or rated and \(i\) is the item that is going to be scored. This
+ * function is then stored in row \(i\) and column \(j\) of the matrix. Columns are then truncated
+ * (so we retain the {@link ModelSize} most similar items for each \(j\)). Computation against
+ * a particular item the user has rated is done down that item's column.
  *
  * @cite Sarwar et al. 2001.
  * @cite Deshpande and Karypis 2004

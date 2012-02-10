@@ -40,18 +40,16 @@ public class ItemItemModelAccumulator {
 
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private final LongSortedSet itemUniverse;
-    private final int maxNeighbors;
 
     public ItemItemModelAccumulator(@ModelSize int size,
             LongSortedSet entities) {
         logger.debug("Using neighborhood size of {} for {} items",
                      size, entities.size());
-        maxNeighbors = size;
         itemUniverse = entities;
         rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
         LongIterator it = entities.iterator();
         while (it.hasNext()) {
-            rows.put(it.nextLong(), new ScoredItemAccumulator(maxNeighbors));
+            rows.put(it.nextLong(), new ScoredItemAccumulator(size));
         }
     }
 
@@ -65,15 +63,23 @@ public class ItemItemModelAccumulator {
         return model;
     }
 
-    public void put(long i1, long i2, double sim) {
+    /**
+     * Store an entry in the similarity matrix.
+     * @param i The matrix row (an item ID).
+     * @param j The matrix column (an item ID).
+     * @param sim The similarity between items {@code j} and {@code i}. As documented in the
+     *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
+     */
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    public void put(long i, long j, double sim) {
         // We only accept nonnegative similarities
         if (sim <= 0.0) return;
 
         // concurrent read-only array access permitted
-        ScoredItemAccumulator q = rows.get(i1);
+        ScoredItemAccumulator q = rows.get(i);
         // synchronize on this row to add item
         synchronized (q) {
-            q.put(i2, sim);
+            q.put(j, sim);
         }
     }
 }
