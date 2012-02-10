@@ -18,16 +18,16 @@
  */
 package org.grouplens.lenskit.norm;
 
-import static java.lang.Math.sqrt;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+
+import static java.lang.Math.sqrt;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class UnitVectorNormalizerTest {
     UnitVectorNormalizer norm = new UnitVectorNormalizer();
