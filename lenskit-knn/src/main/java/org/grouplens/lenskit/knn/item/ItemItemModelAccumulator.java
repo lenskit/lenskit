@@ -44,7 +44,7 @@ public class ItemItemModelAccumulator {
 
     public ItemItemModelAccumulator(@ModelSize int size,
             LongSortedSet entities) {
-        logger.debug("Using neighborhood size of {} for {} items",
+        logger.debug("Using model size of {} for {} items",
                      size, entities.size());
         itemUniverse = entities;
         rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
