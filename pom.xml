@@ -40,6 +40,8 @@
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <cite.database>${basedir}/etc/references.rdf</cite.database>
+    <groovy.version>1.8.6</groovy.version>
+    <gmaven.runtime>1.8</gmaven.runtime>
   </properties>
 
   <distributionManagement>
@@ -80,6 +82,30 @@
             <source>1.6</source>
             <target>1.6</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.gmaven</groupId>
+          <artifactId>gmaven-plugin</artifactId>
+          <version>1.4</version>
+          <!-- force the Groovy version we want -->
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy.maven.runtime</groupId>
+              <artifactId>gmaven-runtime-${gmaven.runtime}</artifactId>
+              <version>1.4</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>org.codehaus.groovy</groupId>
+                  <artifactId>groovy-all</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+            <dependency>
+              <artifactId>org.codehaus.groovy</artifactId>
+              <groupId>groovy-all</groupId>
+              <version>${groovy.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <!--JavaDoc-->
@@ -468,6 +494,18 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.1</version>
+      </dependency>
+
+      <!-- Groovy -->
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        <version>${groovy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>${groovy.version}</version>
       </dependency>
 
       <!-- test libraries -->
