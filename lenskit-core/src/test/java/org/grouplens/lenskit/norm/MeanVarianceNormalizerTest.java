@@ -21,12 +21,10 @@ package org.grouplens.lenskit.norm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.After;
@@ -41,7 +39,6 @@ import org.junit.Test;
  */
 public class MeanVarianceNormalizerTest {
     DataAccessObject dao;
-    RatingSnapshot rs;
     ImmutableSparseVector userRatings;
     ImmutableSparseVector uniformUserRatings;
     MeanVarianceNormalizer.Builder builder;
@@ -78,13 +75,11 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
         dao = new EventCollectionDAO.Factory(ratings).create();
-        rs = new PackedRatingSnapshot.Builder(dao).build();
-        builder.setRatingSnapshot(rs);
+        builder.setDataAccessObject(dao);
     }
 
     @After
     public void close() {
-        rs.close();
         dao.close();
     }
 

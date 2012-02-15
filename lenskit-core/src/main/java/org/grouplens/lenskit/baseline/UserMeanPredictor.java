@@ -22,7 +22,7 @@ import static java.lang.Math.abs;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
@@ -49,9 +49,14 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
+    public static class Builder implements org.grouplens.lenskit.core.Builder<UserMeanPredictor> {
         private double smoothing = 0;
-
+        private DataAccessObject dao;
+        
+        public Builder(DataAccessObject dao) {
+            this.dao = dao;
+        }
+        
         @MeanSmoothing
         public void setSmoothing(double damping) {
             this.smoothing = damping;
@@ -62,7 +67,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
             logger.debug("Building new user mean scorer");
 
             logger.debug("smoothing = {}", smoothing);
-            double mean = computeMeanRating(snapshot);
+            double mean = GlobalMeanPredictor.computeMeanRating(dao);
             logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
         }

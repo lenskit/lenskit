@@ -18,10 +18,9 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.params.meta.Built;
 
 /**
@@ -37,10 +36,16 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<GlobalMeanPredictor> {
+    public static class Builder implements org.grouplens.lenskit.core.Builder<GlobalMeanPredictor> {
+        private DataAccessObject dao;
+        
+        public Builder(DataAccessObject dao) {
+            this.dao = dao;
+        }
+        
         @Override
         public GlobalMeanPredictor build() {
-            double avg = computeMeanRating(snapshot);
+            double avg = computeMeanRating(dao);
             return new GlobalMeanPredictor(avg);
         }
     }
@@ -63,14 +68,18 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * @param ratings
      * @return The average of the rating values stored in <var>ratings</var>.
      */
-    public static double computeMeanRating(RatingSnapshot ratings) {
+    public static double computeMeanRating(DataAccessObject dao) {
         double total = 0;
         long count = 0;
 
-        for (Preference r: CollectionUtils.fast(ratings.getRatings())) {
-            total += r.getValue();
-            count += 1;
+        Cursor<Rating> ratings = dao.getEvents(Rating.class);
+        for (Rating r: ratings.fast()) {
+            if (r.getPreference() != null) {
+                total += r.getPreference().getValue();
+                count += 1;
+            }
         }
+        ratings.close();
 
         double avg = 0;
         if (count > 0)

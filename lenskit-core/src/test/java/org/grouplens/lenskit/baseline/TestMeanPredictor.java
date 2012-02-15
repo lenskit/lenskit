@@ -32,14 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.After;
 import org.junit.Before;
@@ -53,7 +51,6 @@ import org.junit.Test;
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
     private DataAccessObject dao;
-    private RatingSnapshot ratingSnapshot;
 
     @Before
     public void createRatingSource() {
@@ -64,12 +61,10 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(4, 8, 5, 4));
 
         dao = new EventCollectionDAO.Factory(rs).create();
-        ratingSnapshot = new PackedRatingSnapshot.Builder(dao).build();
     }
 
     @After
     public void closeRatingSession() {
-        ratingSnapshot.close();
         dao.close();
     }
 
@@ -79,7 +74,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testMeanBaseline() {
-        BaselinePredictor pred = build(new GlobalMeanPredictor.Builder());
+        BaselinePredictor pred = build(new GlobalMeanPredictor.Builder(dao));
         UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(map, itemSet(2l));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2l), 0.00001);
@@ -87,7 +82,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserMeanBaseline() {
-        BaselinePredictor pred = build(new UserMeanPredictor.Builder());
+        BaselinePredictor pred = build(new UserMeanPredictor.Builder(dao));
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         UserVector map = UserVector.wrap(10l, items, ratings);
@@ -104,7 +99,7 @@ public class TestMeanPredictor {
      */
     @Test
     public void testUserMeanBaselineFallback() {
-        BaselinePredictor pred = build(new UserMeanPredictor.Builder());
+        BaselinePredictor pred = build(new UserMeanPredictor.Builder(dao));
         UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
@@ -112,7 +107,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testItemMeanBaseline() {
-        BaselinePredictor pred = build(new ItemMeanPredictor.Builder());
+        BaselinePredictor pred = build(new ItemMeanPredictor.Builder(dao));
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
         UserVector map = UserVector.wrap(10l, items, values);
@@ -134,7 +129,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserItemMeanBaseline() {
-        BaselinePredictor pred = build(new ItemUserMeanPredictor.Builder());
+        BaselinePredictor pred = build(new ItemUserMeanPredictor.Builder(dao));
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         UserVector map = UserVector.wrap(10l, items, ratings);
@@ -156,8 +151,7 @@ public class TestMeanPredictor {
         assertEquals(3.0 + avgOffset, preds.get(5l), 0.001);
     }
 
-    private <T extends BaselinePredictor> T build(RecommenderComponentBuilder<T> builder) {
-        builder.setRatingSnapshot(ratingSnapshot);
+    private <T extends BaselinePredictor> T build(Builder<T> builder) {
         return builder.build();
     }
 

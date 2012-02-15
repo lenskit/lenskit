@@ -45,7 +45,7 @@ public class TestSlopeOneModelBuilder {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
         PackedRatingSnapshot snapshot = snapBuilder.build();
         SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
-        builder1.setRatingSnapshot(snapshot);
+        builder1.setSnapshot(snapshot);
         builder1.setDamping(0);
         SlopeOneModel model1 = builder1.build();
         assertEquals(2, model1.getCoratings(5, 3));
@@ -71,7 +71,7 @@ public class TestSlopeOneModelBuilder {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
         PackedRatingSnapshot snapshot = snapBuilder.build();
         SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
-        builder2.setRatingSnapshot(snapshot);
+        builder2.setSnapshot(snapshot);
         builder2.setDamping(0);
         SlopeOneModel model2 = builder2.build();
         assertEquals(3, model2.getCoratings(4, 5));
@@ -110,7 +110,7 @@ public class TestSlopeOneModelBuilder {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
         PackedRatingSnapshot snapshot = snapBuilder.build();
         SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
-        builder3.setRatingSnapshot(snapshot);
+        builder3.setSnapshot(snapshot);
         builder3.setDamping(0);
         SlopeOneModel model3 = builder3.build();
         assertEquals(2, model3.getCoratings(6, 7));
@@ -153,7 +153,7 @@ public class TestSlopeOneModelBuilder {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
         PackedRatingSnapshot snap = snapBuilder.build();
         SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();
-        builder4.setRatingSnapshot(snap);
+        builder4.setSnapshot(snap);
         builder4.setDamping(0);
         SlopeOneModel model4 = builder4.build();
         assertEquals(0, model4.getCoratings(4, 5));

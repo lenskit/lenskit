@@ -31,7 +31,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("UnusedDeclaration")
 @NotThreadSafe
-public class ItemItemModelBuilder extends RecommenderComponentBuilder<SimilarityMatrixModel> {
+public class ItemItemModelBuilder implements Builder<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private Similarity<? super ItemVector> itemSimilarity;

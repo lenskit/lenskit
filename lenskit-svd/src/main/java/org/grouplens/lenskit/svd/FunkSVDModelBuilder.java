@@ -23,7 +23,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDModel> {
+public class FunkSVDModelBuilder implements Builder<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
     // The default value for feature values - isn't supposed to matter much
@@ -68,6 +68,12 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
     private int iterationCount;
 
     private BaselinePredictor baseline;
+    
+    private RatingSnapshot snapshot;
+    
+    public void setRatingSnapshot(RatingSnapshot snapshot) {
+        this.snapshot = snapshot;
+    }
 
     @FeatureCount
     public void setFeatureCount(int count) {

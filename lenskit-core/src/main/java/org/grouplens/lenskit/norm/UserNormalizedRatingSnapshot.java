@@ -26,7 +26,6 @@ import java.util.Iterator;
 
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
@@ -65,9 +64,14 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<UserNormalizedRatingSnapshot> {
+    public static class Builder implements org.grouplens.lenskit.core.Builder<UserNormalizedRatingSnapshot> {
         private VectorNormalizer<? super UserVector>normalizer;
+        private RatingSnapshot snapshot;
 
+        public void setSnapshot(RatingSnapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+        
         /**
          * Set the normalizer to use.
          * @param normalizer
@@ -76,7 +80,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
         public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
             this.normalizer = normalizer;
         }
-
+        
         @Override
         public UserNormalizedRatingSnapshot build() {
             return new UserNormalizedRatingSnapshot(snapshot, normalizer);

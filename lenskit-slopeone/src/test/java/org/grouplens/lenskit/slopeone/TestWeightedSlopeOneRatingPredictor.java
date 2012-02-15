@@ -56,7 +56,7 @@ public class TestWeightedSlopeOneRatingPredictor {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
         PackedRatingSnapshot snapshot = snapBuilder.build();
         SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
-        builder.setRatingSnapshot(snapshot);
+        builder.setSnapshot(snapshot);
         builder.setDamping(0);
         builder.setMinRating(1);
         builder.setMaxRating(5);
@@ -89,7 +89,7 @@ public class TestWeightedSlopeOneRatingPredictor {
         PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
         PackedRatingSnapshot snap = snapBuilder.build();
         SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
-        builder.setRatingSnapshot(snap);
+        builder.setSnapshot(snap);
         builder.setDamping(0);
         builder.setMinRating(1);
         builder.setMaxRating(5);

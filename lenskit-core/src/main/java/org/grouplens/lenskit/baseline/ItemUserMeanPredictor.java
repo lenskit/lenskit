@@ -27,7 +27,9 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
@@ -55,9 +57,14 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<ItemUserMeanPredictor> {
+    public static class Builder implements org.grouplens.lenskit.core.Builder<ItemUserMeanPredictor> {
         private double damping = 0;
-
+        private DataAccessObject dao;
+        
+        public Builder(DataAccessObject dao) {
+            this.dao = dao;
+        }
+        
         @MeanSmoothing
         public void setDamping(double d) {
             damping = d;
@@ -66,7 +73,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         @Override
         public ItemUserMeanPredictor build() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(snapshot.getRatings().fastIterator(), damping, itemMeans);
+            Cursor<Rating> ratings = dao.getEvents(Rating.class);
+            double globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);
+            ratings.close();
 
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }

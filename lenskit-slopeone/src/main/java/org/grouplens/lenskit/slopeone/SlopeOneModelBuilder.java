@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
@@ -36,14 +36,15 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *  <tt>CoratingMatrix</tt>. These matrices are later used by a
  *  <tt>SlopeOneRatingPredictor</tt>.
  */
-public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneModel> {
-
+public class SlopeOneModelBuilder implements Builder<SlopeOneModel> {
     private SlopeOneModelDataAccumulator accumulator;
     private BaselinePredictor baseline;
     private double minRating;
     private double maxRating;
     private double damping;
+    
     private RatingSnapshot normalizedData;
+    private RatingSnapshot snapshot;
 
     /**
      * Constructs a {@link SlopeOneModel} and the necessary matrices from
@@ -108,5 +109,12 @@ public class SlopeOneModelBuilder extends RecommenderComponentBuilder<SlopeOneMo
     @NormalizedSnapshot
     public void setNormalizedData(RatingSnapshot data) {
         normalizedData = data;
+    }
+
+    /**
+     * @param data data The original RatingSnapshot
+     */
+    public void setSnapshot(RatingSnapshot data) {
+        snapshot = data;
     }
 }

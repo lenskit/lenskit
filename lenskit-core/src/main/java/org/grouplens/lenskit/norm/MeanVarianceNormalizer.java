@@ -23,10 +23,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.params.MeanSmoothing;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -61,8 +60,13 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
      *
      * @author Michael Ludwig
      */
-    public static class Builder extends RecommenderComponentBuilder<MeanVarianceNormalizer> {
+    public static class Builder implements org.grouplens.lenskit.core.Builder<MeanVarianceNormalizer> {
         private double smoothing;
+        private DataAccessObject dao;
+        
+        public void setDataAccessObject(DataAccessObject dao) {
+            this.dao = dao;
+        }
 
         // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
         @MeanSmoothing
@@ -77,17 +81,28 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
             if (smoothing != 0) {
                 double mean = 0;
                 double sum = 0;
-                FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-                int numRatings = ratings.size();
-                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
-                    sum += rating.getValue();
+                
+                Cursor<Rating> ratings = dao.getEvents(Rating.class);
+                int numRatings = 0;
+                for (Rating r: ratings.fast()) {
+                    if (r.getPreference() != null) {
+                        sum += r.getPreference().getValue();
+                        numRatings++;
+                    }
                 }
+                ratings.close();
                 mean = sum / numRatings;
+                
+                ratings = dao.getEvents(Rating.class);
                 sum = 0;
-                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
-                    double delta = mean - rating.getValue();
-                    sum += delta * delta;
+
+                for (Rating r: ratings.fast()) {
+                    if (r.getPreference() != null) {
+                        double delta = mean - r.getPreference().getValue();
+                        sum += delta * delta;
+                    }
                 }
+                ratings.close();
                 variance = sum / numRatings;
             }
 
