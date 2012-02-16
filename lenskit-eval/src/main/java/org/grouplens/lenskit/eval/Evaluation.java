@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * A set of job groups comprising an evaluation. Evaluations are configured and
- * set up by {@link Evaluator}s. They contain {@link JobGroup}s that the runner
+ * set up by {@link EvalBuilder}s. They contain {@link JobGroup}s that the runner
  * should run in order to complete the evaluation.
  * 
  * @since 0.8

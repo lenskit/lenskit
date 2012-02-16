@@ -57,12 +57,12 @@ public class EvalRunner {
      * Construct an evaluation runner from an evaluator name and configuration.
      * 
      * @param name The name of the evaluator to use. This can be a class name or
-     *        a {@link ConfigAlias} for a registered {@link Evaluator}
+     *        a {@link ConfigAlias} for a registered {@link EvalBuilder}
      *        implementation. {@link ServiceFinder#get(Class)} is used to look
      *        up the evaluator.  If this parameter is <tt>null</tt>, then the
      *        <tt>evaluator</tt> parameter from <var>config</var> is used.
      * @param config The evaluator's configuration. This is passed to
-     *        {@link Evaluator#configure(Properties,DataNode)}.
+     *        {@link EvalBuilder#configure(Properties,DataNode)}.
      * @throws EvaluatorNotFoundException if the named evaluator cannot be found.
      * @throws EvaluatorConfigurationException if there is an error configuring
      *         the evaluator.
@@ -70,7 +70,7 @@ public class EvalRunner {
     public EvalRunner(@Nullable String name, Properties properties,
                       @Nonnull DataNode config)
             throws EvaluatorConfigurationException {
-        ServiceFinder<Evaluator> finder = ServiceFinder.get(Evaluator.class);
+        ServiceFinder<EvalBuilder> finder = ServiceFinder.get(EvalBuilder.class);
         
         if (name == null) {
             logger.debug("Reading evaluator from configuration");
@@ -82,7 +82,7 @@ public class EvalRunner {
         }
         
         logger.debug("Looking up evaluator {}", name);
-        Evaluator eval = finder.findProvider(name);
+        EvalBuilder eval = finder.findProvider(name);
         if (eval == null) {
             throw new EvaluatorConfigurationException("Evaluator " + name + " not found");
         }

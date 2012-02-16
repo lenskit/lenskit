@@ -55,8 +55,8 @@ import java.util.Properties;
  */
 @ConfigAlias("train-test")
 @MetaInfServices
-public class TrainTestEvaluator implements Evaluator {
-    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvaluator.class);
+public class TrainTestEvalBuilder implements EvalBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalBuilder.class);
     private static final String[] DEFAULT_EVALUATORS = {
         "coverage", "MAE", "RMSE", "nDCG"
     };

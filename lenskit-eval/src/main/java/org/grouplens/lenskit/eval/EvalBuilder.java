@@ -36,7 +36,7 @@ import org.grouplens.lenskit.util.spi.ServiceFinder;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public interface Evaluator {
+public interface EvalBuilder {
     /**
      * Get a human-readable name for this evaluator. This name shouldn't be
      * long, but should be suitable for display in user interfaces.
