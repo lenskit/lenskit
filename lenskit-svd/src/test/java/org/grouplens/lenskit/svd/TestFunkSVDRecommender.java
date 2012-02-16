@@ -37,6 +37,8 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -70,6 +72,7 @@ public class TestFunkSVDRecommender {
 
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        factory.setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
         factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
         factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
         factory.setComponent(ItemRecommender.class, FunkSVDRecommender.class);
