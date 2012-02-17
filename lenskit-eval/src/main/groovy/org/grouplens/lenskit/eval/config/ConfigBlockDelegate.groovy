@@ -3,6 +3,7 @@ package org.grouplens.lenskit.eval.config
 /**
  * Base delegate for processing configuration blocks.
  * @author Michael Ekstrand
+ * @since 0.10
  */
 abstract class ConfigBlockDelegate {
     /**

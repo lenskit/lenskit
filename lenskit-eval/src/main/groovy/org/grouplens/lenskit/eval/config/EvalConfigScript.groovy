@@ -5,7 +5,10 @@ import org.grouplens.lenskit.eval.EvalProvider
 import org.slf4j.LoggerFactory
 
 /**
+ * Base class for evaluator configuration scripts. It contains the metaclass
+ * machinery to set up evaluation tasks.
  * @author Michael Ekstrand
+ * @since 0.10
  */
 abstract class EvalConfigScript extends Script {
     private List<Evaluation> evaluations = new ArrayList<Evaluation>()

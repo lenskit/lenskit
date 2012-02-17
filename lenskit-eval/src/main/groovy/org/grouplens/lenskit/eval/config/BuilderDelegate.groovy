@@ -3,12 +3,19 @@ package org.grouplens.lenskit.eval.config
 import org.grouplens.lenskit.eval.EvalBuilder
 
 /**
- * Basic builder delegate, configures an evaluation builder.
+ * Basic builder delegate, configures an evaluation builder. It pretends methods
+ * based on the methods provided by a particular {@link EvalBuilder}.
+ *
  * @author Michael Ekstrand
+ * @since 0.10
  */
 class BuilderDelegate extends ConfigBlockDelegate {
     private EvalBuilder builder
 
+    /**
+     * Construct a new builder delegate.
+     * @param builder The builder to use when pretending methods.
+     */
     BuilderDelegate(EvalBuilder builder) {
         this.builder = builder
     }

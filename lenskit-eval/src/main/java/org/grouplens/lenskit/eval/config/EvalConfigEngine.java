@@ -32,7 +32,9 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
+ * Load and process configuration files.
  * @author Michael Ekstrand
+ * @since 0.10
  */
 public class EvalConfigEngine {
     private static Logger logger = LoggerFactory.getLogger(EvalConfigEngine.class);
