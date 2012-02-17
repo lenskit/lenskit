@@ -26,8 +26,8 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
-import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
+import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
 import org.kohsuke.MetaInfServices;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
@@ -41,10 +41,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Train-test evaluator that builds on a training set and runs on a test set.
@@ -53,7 +50,6 @@ import java.util.Properties;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("train-test")
 @MetaInfServices
 public class TrainTestEvalBuilder implements EvalBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalBuilder.class);
@@ -61,13 +57,70 @@ public class TrainTestEvalBuilder implements EvalBuilder {
         "coverage", "MAE", "RMSE", "nDCG"
     };
 
-    @Override
-    public String getName() {
-        return "Train-Test";
+    private List<TTDataSet> dataSources;
+    private List<AlgorithmInstance> algorithms;
+    private List<PredictEvalMetric> metrics;
+    private File outputFile;
+    private File predictOutputFile;
+
+    public TrainTestEvalBuilder() {
+        dataSources = new LinkedList<TTDataSet>();
+        algorithms = new LinkedList<AlgorithmInstance>();
+        metrics = new LinkedList<PredictEvalMetric>();
+        outputFile = new File("train-test-results.csv");
     }
 
     @Override
-    public Evaluation configure(Properties properties, DataNode config)
+    public String getName() {
+        return "TrainTest";
+    }
+
+    @Override
+    public TTPredictEvaluation build() {
+        CSVWriterBuilder outBuilder = new CSVWriterBuilder(outputFile);
+        CSVWriterBuilder predBuilder = null;
+        if (predictOutputFile != null) {
+            predBuilder = new CSVWriterBuilder(predictOutputFile);
+        }
+        return new TTPredictEvaluation(dataSources, algorithms, metrics,
+                                       outBuilder, predBuilder);
+    }
+
+    public void addDataSource(TTDataSet source) {
+        dataSources.add(source);
+    }
+
+    public void addAlgorithm(AlgorithmInstance algorithm) {
+        algorithms.add(algorithm);
+    }
+
+    public void addMetric(PredictEvalMetric metric) {
+        metrics.add(metric);
+    }
+
+    public void setOutput(File file) {
+        outputFile = file;
+    }
+
+    public void setPredictOutput(File file) {
+        predictOutputFile = file;
+    }
+
+    List<TTDataSet> dataSources() {
+        return dataSources;
+    }
+
+    List<AlgorithmInstance> getAlgorithms() {
+        return algorithms;
+    }
+
+    List<PredictEvalMetric> getMetrics() {
+        return metrics;
+    }
+
+
+
+    /*public Evaluation configure(Properties properties, DataNode config)
             throws EvaluatorConfigurationException {
         logger.debug("Configuring evaluator from {}", config);
 
@@ -102,7 +155,7 @@ public class TrainTestEvalBuilder implements EvalBuilder {
 
         eval.initialize();
         return eval;
-    }
+    }*/
 
     private List<TTDataSet> configureDataSources(Properties properties,
                                                  DataNode config) throws EvaluatorConfigurationException {

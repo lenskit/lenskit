@@ -18,32 +18,25 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.Properties;
-
-import org.grouplens.lenskit.util.dtree.DataNode;
-import org.grouplens.lenskit.util.spi.ServiceFinder;
-
 /**
- * Primary interface for evaluators — methods for evaluating recommenders.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * Interface for providing types of evaluations. Individual evaluation strategies
+ * will implement this interface to make available evaluation builders.
+ * @author Michael Ekstrand
+ * @since 0.10
  */
-public interface EvalBuilder {
+public interface EvalProvider {
     /**
-     * Get a human-readable name for this evaluator. This name shouldn't be
-     * long, but should be suitable for display in user interfaces.
-     * 
-     * @return A name for the evaluator.
+     * Get the name of this provider, used in configuration to detect which
+     * provider has been selected.
+     * @return The name by which this evaluation strategy can be selected in
+     * evaluation scripts.
      */
     String getName();
 
     /**
-     * Build the evaluation. Takes the configuration built up in this evaluator's
-     * configuration and builds a new evaluation from it.
-     * @return The evaluation task.
-     * @since 0.10
+     * Create a new evaluation builder, suitable for constructing an evaluation
+     * of this type.
+     * @return A new builder to build evaluations.
      */
-    Evaluation build();
+    EvalBuilder newBuilder();
 }

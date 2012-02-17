@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
@@ -30,11 +29,11 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.tablewriter.TableWriterBuilder;
+import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -54,9 +53,6 @@ import static com.google.common.collect.Iterables.concat;
 public class TTPredictEvaluation implements Evaluation {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
 
-    private List<AlgorithmInstance> algorithms;
-    private List<PredictEvalMetric> metrics;
-    private List<TTDataSet> dataSources;
     private TableWriterBuilder outputBuilder;
     private TableWriterBuilder predictBuilder;
     
@@ -65,58 +61,21 @@ public class TTPredictEvaluation implements Evaluation {
 
     private List<JobGroup> jobGroups;
 
-    /**
-     * Set the table writer builder to use for evaluation output.
-     * @param builder A table writer builder to use for output.
-     */
-    public void setOutputBuilder(TableWriterBuilder builder) {
-        checkNotInitialized();
-        outputBuilder = builder;
+    public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
+                               @Nonnull List<AlgorithmInstance> algos,
+                               @Nonnull List<PredictEvalMetric> metrics,
+                               @Nonnull TableWriterBuilder output,
+                               @Nullable TableWriterBuilder predictOutput) {
+        outputBuilder = output;
+        predictBuilder = predictOutput;
+
+        setupJobs(sources, algos, metrics);
     }
 
-    /**
-     * Set the table writer builder to use for prediction output.
-     * @param builder A table writer builder to use for writing predictions, or
-     *                {@code null} to not write predictions.
-     */
-    public void setPredictOutputBuilder(@Nullable TableWriterBuilder builder) {
-        checkNotInitialized();
-        predictBuilder = builder;
-    }
-
-    public List<AlgorithmInstance> getAlgorithms() {
-        return algorithms;
-    }
-
-    public void setAlgorithms(List<AlgorithmInstance> algorithms) {
-        checkNotInitialized();
-        this.algorithms = algorithms;
-    }
-
-    public List<PredictEvalMetric> getMetrics() {
-        return metrics;
-    }
-
-    public void setMetrics(List<PredictEvalMetric> metrics) {
-        checkNotInitialized();
-        this.metrics = metrics;
-    }
-
-    public List<TTDataSet> getDataSources() {
-        return dataSources;
-    }
-
-    public void setDataSources(List<TTDataSet> sources) {
-        checkNotInitialized();
-        dataSources = sources;
-    }
-
-    protected void setupJobs() {
+    protected void setupJobs(List<TTDataSet> dataSources,
+                             List<AlgorithmInstance> algorithms,
+                             List<PredictEvalMetric> metrics) {
         // FIXME this line is too long
-        Preconditions.checkState(dataSources != null, "data sources not configured");
-        Preconditions.checkState(algorithms != null, "algorithms not configured");
-        Preconditions.checkState(metrics != null, "metrics not configured");
-
         Map<String,Integer> dsColumns =
                 indexColumns(1,
                              Lists.transform(dataSources,
@@ -189,41 +148,8 @@ public class TTPredictEvaluation implements Evaluation {
         return columns;
     }
 
-    /**
-     * Verify that the evaluation has not been initialized.
-     * @throws IllegalStateException if the evaluation has been initialized.
-     * @see #initialize()
-     */
-    protected void checkNotInitialized() {
-        if (jobGroups != null) {
-            throw new IllegalStateException("evaluation already initialized");
-        }
-    }
-
-    /**
-     * Verify that the evaluation is initialized.
-     * @throws IllegalStateException if the evaluation is not initialized.
-     * @see #initialize()
-     */
-    protected void checkInitialized() {
-        if (jobGroups == null) {
-            throw new IllegalStateException("evaluation not initialized");
-        }
-    }
-
-    /**
-     * Initialize the evaluation, setting up all the job groups. Any calls to setters
-     * after initializing the evaluation are invalid.
-     * @since 0.10
-     */
-    public void initialize() {
-        checkNotInitialized();
-        setupJobs();
-    }
-
     @Override
     public void start() {
-        checkInitialized();
         logger.info("Starting evaluation");
         try {
             output = outputBuilder.open();
@@ -295,7 +221,6 @@ public class TTPredictEvaluation implements Evaluation {
 
     @Override @Nonnull
     public List<JobGroup> getJobGroups() {
-        checkInitialized();
         return jobGroups;
     }
 }

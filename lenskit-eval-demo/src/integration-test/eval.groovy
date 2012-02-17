@@ -39,10 +39,12 @@ trainTest {
     }
 
     output "eval-out.csv"
-    writePredictions "eval-preds.csv.gz", compressed: true
+    predictionOutput("eval-preds.csv.gz") {
+        compressed true
+    }
 
     for (bl: baselines) {
-        algorithm(bl.simpleName) {
+        algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {
             setComponent(RatingPredictor, BaselineRatingPredictor)
             setComponent(BaselinePredictor, bl)
         }

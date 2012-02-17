@@ -88,7 +88,7 @@ public class EvalRunner {
         }
         logger.info("Using evaluator {}", eval.getName());
         
-        evaluation = eval.configure(properties, config);
+        // evaluation = eval.configure(properties, config);
     }
     
     /**

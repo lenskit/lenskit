@@ -90,7 +90,7 @@
           <!-- force the Groovy version we want -->
           <dependencies>
             <dependency>
-              <groupId>org.codehaus.groovy.maven.runtime</groupId>
+              <groupId>org.codehaus.gmaven.runtime</groupId>
               <artifactId>gmaven-runtime-${gmaven.runtime}</artifactId>
               <version>1.4</version>
               <exclusions>
@@ -101,8 +101,8 @@
               </exclusions>
             </dependency>
             <dependency>
-              <artifactId>org.codehaus.groovy</artifactId>
-              <groupId>groovy-all</groupId>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-all</artifactId>
               <version>${groovy.version}</version>
             </dependency>
           </dependencies>

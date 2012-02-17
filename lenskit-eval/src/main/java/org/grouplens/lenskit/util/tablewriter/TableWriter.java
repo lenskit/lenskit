@@ -45,7 +45,7 @@ public interface TableWriter extends Closeable {
     /**
      * Write a row to the table. This method is thread-safe.
      * @param row A row of values.  If the table requires more columns, the
-     * remaining columns are empty.
+     * remaining columns are org.grouplens.lenskit.eval.config.empty.
      * @throws RuntimeException if {@code row} has more items than the table has
      * columns.
      */
