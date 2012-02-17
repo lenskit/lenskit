@@ -8,7 +8,7 @@ import org.junit.Before
 import org.grouplens.lenskit.eval.config.BuilderDelegate
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.grouplens.lenskit.eval.config.AbstractDelegate
+import org.grouplens.lenskit.eval.config.ConfigBlockDelegate
 
 /**
  * Tests for train-test configurations; they also serve to test the builder delegate
@@ -17,7 +17,7 @@ import org.grouplens.lenskit.eval.config.AbstractDelegate
  */
 class TestTrainTestConfig {
     TrainTestEvalBuilder builder
-    AbstractDelegate delegate
+    ConfigBlockDelegate delegate
 
     @Before
     void setupDelegate() {

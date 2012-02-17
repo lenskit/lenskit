@@ -6,7 +6,7 @@ import org.grouplens.lenskit.eval.EvalBuilder
  * Basic builder delegate, configures an evaluation builder.
  * @author Michael Ekstrand
  */
-class BuilderDelegate extends AbstractDelegate {
+class BuilderDelegate extends ConfigBlockDelegate {
     private EvalBuilder builder
 
     BuilderDelegate(EvalBuilder builder) {
