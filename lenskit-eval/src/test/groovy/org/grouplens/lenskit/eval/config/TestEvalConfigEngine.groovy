@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
+ * Test the eval config engine and make sure it can actually load tests.
  * @author Michael Ekstrand
  */
 class TestEvalConfigEngine {
