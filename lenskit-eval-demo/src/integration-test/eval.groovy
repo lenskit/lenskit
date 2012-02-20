@@ -23,20 +23,22 @@ import sun.text.normalizer.NormalizerBase
 
 baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
-trainTest {
-    crossfold("ml-100k") {
-        textfile("ml-100k/u.data") {
-            delimiter "\t"
-        }
-        order "random"
-        holdout 10
-
-        domain {
-            minimimum 1.0
-            maximum 5.0
-            precision 1.0
-        }
+ml100k = crossfold("ml-100k") {
+    input textfile("ml-100k/u.data") {
+        delimiter "\t"
     }
+    order "random"
+    holdout 10
+
+    domain {
+        minimimum 1.0
+        maximum 5.0
+        precision 1.0
+    }
+}
+
+trainTest {
+    dataset ml100k
 
     output "eval-out.csv"
     predictionOutput("eval-preds.csv.gz") {

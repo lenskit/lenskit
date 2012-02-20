@@ -19,8 +19,12 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.ConfigUtils;
+import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
+import org.grouplens.lenskit.eval.InvalidRecommenderException;
 import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
@@ -51,7 +55,7 @@ import java.util.*;
  *
  */
 @MetaInfServices
-public class TrainTestEvalBuilder implements EvalBuilder {
+public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalBuilder.class);
     private static final String[] DEFAULT_EVALUATORS = {
         "coverage", "MAE", "RMSE", "nDCG"
@@ -68,11 +72,6 @@ public class TrainTestEvalBuilder implements EvalBuilder {
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<PredictEvalMetric>();
         outputFile = new File("train-test-results.csv");
-    }
-
-    @Override
-    public String getName() {
-        return "TrainTest";
     }
 
     @Override

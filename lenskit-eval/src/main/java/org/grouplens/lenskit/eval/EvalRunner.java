@@ -70,24 +70,24 @@ public class EvalRunner {
     public EvalRunner(@Nullable String name, Properties properties,
                       @Nonnull DataNode config)
             throws EvaluatorConfigurationException {
-        ServiceFinder<EvalBuilder> finder = ServiceFinder.get(EvalBuilder.class);
-        
-        if (name == null) {
-            logger.debug("Reading evaluator from configuration");
-            name = Trees.childValue(config, "evaluator");
-        }
-        
-        if (name == null) {
-            throw new EvaluatorConfigurationException("No evaluator selected");
-        }
-        
-        logger.debug("Looking up evaluator {}", name);
-        EvalBuilder eval = finder.findProvider(name);
-        if (eval == null) {
-            throw new EvaluatorConfigurationException("Evaluator " + name + " not found");
-        }
-        logger.info("Using evaluator {}", eval.getName());
-        
+//        ServiceFinder<EvalBuilder> finder = ServiceFinder.get(EvalBuilder.class);
+//
+//        if (name == null) {
+//            logger.debug("Reading evaluator from configuration");
+//            name = Trees.childValue(config, "evaluator");
+//        }
+//
+//        if (name == null) {
+//            throw new EvaluatorConfigurationException("No evaluator selected");
+//        }
+//
+//        logger.debug("Looking up evaluator {}", name);
+//        EvalBuilder eval = finder.findProvider(name);
+//        if (eval == null) {
+//            throw new EvaluatorConfigurationException("Evaluator " + name + " not found");
+//        }
+//        logger.info("Using evaluator {}", eval.getName());
+
         // evaluation = eval.configure(properties, config);
     }
     
