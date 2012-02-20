@@ -31,10 +31,10 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
     @Override
     protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = getGlobalPredictableItems(items);
+            candidates = getPredictableItems(items);
         }
         if (exclude == null) {
-            exclude = getGlobalDefaultExcludes(items);
+            exclude = getDefaultExcludes(items);
         }
         if (!exclude.isEmpty()) {
             candidates = LongSortedArraySet.setDifference(candidates, exclude);
@@ -51,7 +51,7 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
      * @param item The item to make recommendation
      * @return The set of items to exclude.
      */    
-    protected LongSet getGlobalDefaultExcludes(LongSet items) {
+    protected LongSet getDefaultExcludes(LongSet items) {
     	LongSet excludes = new LongOpenHashSet();
     	LongIterator it = items.iterator();
     	while(it.hasNext()){
@@ -69,7 +69,7 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
      * @param item The ID of the item.
      * @return All items for which predictions can be generated for the user.
      */
-    protected LongSet getGlobalPredictableItems(LongSet items) {
+    protected LongSet getPredictableItems(LongSet items) {
         return Cursors.makeSet(dao.getItems());
     }
 

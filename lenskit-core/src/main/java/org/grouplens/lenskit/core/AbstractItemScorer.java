@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * to {@link #score(UserHistory, Collection)}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Steven Chang <schang@cs.umn.edu>		   
+ * 	   
  *
  */
 public abstract class AbstractItemScorer implements ItemScorer {
