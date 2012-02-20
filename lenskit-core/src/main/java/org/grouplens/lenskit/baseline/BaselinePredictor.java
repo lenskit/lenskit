@@ -48,9 +48,4 @@ public interface BaselinePredictor extends Serializable {
      */
     MutableSparseVector predict(UserVector ratings, Collection<Long> items);
    
-    /**
-     * Predict method that returns mutable sparse vectors.
-     * @see GlobalRatingPredictor#globalScore(long, Collection)
-     */
-    MutableSparseVector globalPredict(Collection<Long> queryItems, Collection<Long> items);
 }

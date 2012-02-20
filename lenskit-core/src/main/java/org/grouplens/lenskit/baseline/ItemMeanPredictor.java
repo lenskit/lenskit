@@ -171,13 +171,6 @@ public class ItemMeanPredictor implements BaselinePredictor {
         return MutableSparseVector.wrap(keys, preds);
     }
     
-    /**
-     * Delegate to {@link #predict(UserVector, Collection)}
-     */
-    @Override
-    public MutableSparseVector globalPredict(Collection<Long> queryItem, Collection<Long> items){
-    	return predict(null, items);
-    }
 
     
     protected double getItemMean(long id) {
