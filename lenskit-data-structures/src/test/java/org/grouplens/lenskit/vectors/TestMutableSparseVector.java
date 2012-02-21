@@ -23,11 +23,8 @@ import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.Matchers.array;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import java.util.Set;
@@ -217,8 +214,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(3), closeTo(Math.PI));
         v.clear(3);
         assertThat(v.size(), equalTo(1));
-        assertThat(v.keySet().toArray(new Long[0]),
-                   array(equalTo(7l)));
+        assertArrayEquals(new Long[]{7L}, v.keySet().toArray(new Long[0]));
         assertThat(v.get(7), closeTo(Math.E));
         assertThat(v.set(9, 1.0), notANumber());
         assertThat(v.get(9), notANumber());

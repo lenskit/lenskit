@@ -32,7 +32,7 @@ class TestTrainTestConfig {
             metric new RMSEPredictMetric()
         }
         def metrics = builder.getMetrics()
-        assertThat(metrics, hasSize(2))
+        assertThat(metrics.size(), equalTo(2))
     }
 
     @Test
@@ -42,6 +42,6 @@ class TestTrainTestConfig {
             metric RMSEPredictMetric
         }
         def metrics = builder.getMetrics()
-        assertThat(metrics, hasSize(2))
+        assertThat(metrics.size(), equalTo(2))
     }
 }

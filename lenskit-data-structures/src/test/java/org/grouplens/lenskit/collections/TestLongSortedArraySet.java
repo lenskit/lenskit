@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -198,7 +197,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 8, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{8, 42, 639}));
-        assertThat(set.headSet(42), hasSize(2));
+        assertThat(set.headSet(42).size(), equalTo(2));
     }
     
     @Test
@@ -220,7 +219,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{42, 639}));
-        assertThat(set.headSet(42), hasSize(2));
+        assertThat(set.headSet(42).size(), equalTo(2));
         assertThat(set.toLongArray(),
                    equalTo(new long[]{2, 7, 42, 639}));
     }

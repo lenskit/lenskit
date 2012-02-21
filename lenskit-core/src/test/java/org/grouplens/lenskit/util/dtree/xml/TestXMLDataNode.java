@@ -21,7 +21,7 @@ package org.grouplens.lenskit.util.dtree.xml;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -57,7 +57,7 @@ public class TestXMLDataNode extends XMLTestCase {
         DataNode node = XMLDataNode.wrap(simpleDoc.getDocumentElement());
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("config"));
-        assertThat(node.getChildren(), Matchers.<DataNode>empty());
+        assertTrue(node.getChildren().isEmpty());
         assertThat(node.getValue(), equalTo(""));
     }
     
@@ -74,7 +74,7 @@ public class TestXMLDataNode extends XMLTestCase {
         DataNode node = XMLDataNode.wrap(simpleDoc);
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("config"));
-        assertThat(node.getChildren(), Matchers.<DataNode>empty());
+        assertTrue(node.getChildren().isEmpty());
         assertThat(node.getValue(), equalTo(""));
     }
     
@@ -83,7 +83,7 @@ public class TestXMLDataNode extends XMLTestCase {
         DataNode node = parse("<content>READ ME</content>");
         assertThat(node, notNullValue());
         assertThat(node.getName(), equalTo("content"));
-        assertThat( node.getChildren(), Matchers.<DataNode>empty());
+        assertTrue(node.getChildren().isEmpty());
         assertThat(node.getValue(), equalTo("READ ME"));
     }
     
@@ -98,7 +98,7 @@ public class TestXMLDataNode extends XMLTestCase {
         assertThat(node.getValue(), equalTo(""));
         
         assertThat(node.getChildren().size(), equalTo(2));
-        assertThat(node.getChildren("foo"), Matchers.<DataNode>empty());
+        assertTrue(node.getChildren("foo").isEmpty());
         assertThat(node.getChildren().get(0).getName(), equalTo("name"));
         assertThat(node.getChildren().get(0).getValue(), equalTo("HACKEM MUCHE"));
         assertThat(node.getChildren().get(1).getName(), equalTo("type"));
