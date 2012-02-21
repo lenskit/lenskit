@@ -103,7 +103,7 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         return sources;
     }
     
-    CSVSource configureURLSource(String delim, DataNode config) throws EvaluatorConfigurationException {
+    CSVDataSource configureURLSource(String delim, DataNode config) throws EvaluatorConfigurationException {
         URL url;
         try {
             url = new URL(config.getValue());
@@ -116,10 +116,10 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         }
         // TODO Implement URL sources
         throw new UnsupportedOperationException();
-        //return new CSVSource(name, new SimpleFileRatingDAO.Factory(url, delim));
+        //return new CSVDataSource(name, new SimpleFileRatingDAO.Factory(url, delim));
     }
     
-    CSVSource configureFileSource(String delim, DataNode config, boolean cache, PreferenceDomain domain) throws EvaluatorConfigurationException {
+    CSVDataSource configureFileSource(String delim, DataNode config, boolean cache, PreferenceDomain domain) throws EvaluatorConfigurationException {
         String fn = config.getValue();
         String bdir = config.getAttribute("dir");
         File file;
@@ -132,81 +132,20 @@ public class CSVDataSourceProvider implements DataSourceProvider {
         if (name == null) {
             name = file.getName();
         }
-        return new CSVSource(name, file, delim, cache, domain);
+        return new CSVDataSource(name, file, delim, cache, domain);
     }
     
-    List<CSVSource> configureGlobSource(String delim, DataNode config, boolean cache, PreferenceDomain domain) throws EvaluatorConfigurationException {
+    List<CSVDataSource> configureGlobSource(String delim, DataNode config, boolean cache, PreferenceDomain domain) throws EvaluatorConfigurationException {
         DirectoryScanner ds = ConfigUtils.configureScanner(config);
         File base = ds.getBasedir();
         ds.scan();
         
-        List<CSVSource> sources = new ArrayList<CSVSource>();
+        List<CSVDataSource> sources = new ArrayList<CSVDataSource>();
         for (String fn: ds.getIncludedFiles()) {
             File file = new File(base, fn);
-            sources.add(new CSVSource(fn, file, delim, cache, domain));
+            sources.add(new CSVDataSource(fn, file, delim, cache, domain));
         }
         
         return sources;
     }
-    
-    static class CSVSource implements DataSource {
-        private final String name;
-        private final DAOFactory factory;
-        private final File sourceFile;
-        private final PreferenceDomain domain;
-        
-        public CSVSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
-            this.name = name;
-            sourceFile = file;
-            domain = pdom;
-            URL url;
-            try {
-                url = file.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-            final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
-            if (cache) {
-                factory = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
-                    @Override
-                    public List<Rating> get() {
-                        DataAccessObject dao = csvFactory.create();
-                        try {
-                            return Cursors.makeList(dao.getEvents(Rating.class));
-                        } finally {
-                            dao.close();
-                        }
-                    }
-                });
-            } else {
-                factory = csvFactory;
-            }
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public PreferenceDomain getPreferenceDomain() {
-            return domain;
-        }
-        
-        @Override
-        public long lastUpdated(PreparationContext context) {
-            return sourceFile.exists() ? sourceFile.lastModified() : -1L;
-        }
-
-        @Override
-        public void prepare(PreparationContext context) {
-            /* no-op */
-        }
-
-        @Override
-        public DAOFactory getDAOFactory() {
-            return factory;
-        }
-    }
-
 }

@@ -102,6 +102,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
             this.delimiter = delimiter;
         }
 
+        public String getDelimiter() {
+            return delimiter;
+        }
+
         @Override
         public SimpleFileRatingDAO create() {
             return new SimpleFileRatingDAO(file, url, delimiter);

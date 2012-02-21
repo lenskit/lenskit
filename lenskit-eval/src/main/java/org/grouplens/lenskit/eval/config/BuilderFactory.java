@@ -2,6 +2,9 @@ package org.grouplens.lenskit.eval.config;
 
 import org.apache.commons.lang3.builder.Builder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Factort to create builders of particular evaluator components.  Builder factories
  * are registered with the SPI and used to create builders which are then actually
@@ -20,8 +23,10 @@ public interface BuilderFactory<T> {
 
     /**
      * Create a new builder.
+     * @param arg An argument passed when creating the builder.
      * @return A new builder to build objects of the type this factory is attached
      * to.
      */
-    Builder<T> newBuilder();
+    @Nonnull
+    Builder<T> newBuilder(@Nullable String arg);
 }

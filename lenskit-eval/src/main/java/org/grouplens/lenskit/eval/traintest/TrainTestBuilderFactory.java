@@ -35,8 +35,8 @@ public class TrainTestBuilderFactory implements BuilderFactory<TTPredictEvaluati
         return "trainTest";
     }
 
-    @Override
-    public TrainTestEvalBuilder newBuilder() {
+    @Override @Nonnull
+    public TrainTestEvalBuilder newBuilder(@Nullable String arg) {
         return new TrainTestEvalBuilder();
     }
 }
