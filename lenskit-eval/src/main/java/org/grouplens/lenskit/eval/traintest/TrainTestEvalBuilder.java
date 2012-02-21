@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.ConfigUtils;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
@@ -32,7 +33,6 @@ import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
-import org.kohsuke.MetaInfServices;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
@@ -54,7 +54,7 @@ import java.util.*;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@MetaInfServices
+@ServiceProvider
 public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalBuilder.class);
     private static final String[] DEFAULT_EVALUATORS = {

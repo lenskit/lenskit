@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.base.Supplier;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -33,7 +34,6 @@ import org.grouplens.lenskit.eval.ConfigUtils;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
-import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +73,7 @@ import java.util.List;
  * 
  */
 @ConfigAlias("csvfile")
-@MetaInfServices
+@ServiceProvider
 public class CSVDataSourceProvider implements DataSourceProvider {
     private final Logger logger = LoggerFactory.getLogger(CSVDataSourceProvider.class);
 

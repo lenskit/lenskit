@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.dtree.DataNode;
 import org.grouplens.lenskit.util.dtree.Trees;
@@ -34,7 +35,6 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataProvider;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.util.spi.ServiceFinder;
-import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @ConfigAlias("crossfold")
-@MetaInfServices
+@ServiceProvider
 public class CrossfoldTTDataProvider implements TTDataProvider {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldTTDataProvider.class);
 

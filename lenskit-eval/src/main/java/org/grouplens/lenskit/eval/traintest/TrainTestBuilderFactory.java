@@ -18,14 +18,17 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
-import org.kohsuke.MetaInfServices;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Eval provider for train-test evaluations. Name is “TrainTest”.
  * @author Michael Ekstrand
  */
-@MetaInfServices
+@ServiceProvider
 public class TrainTestBuilderFactory implements BuilderFactory<TTPredictEvaluation> {
     @Override
     public String getName() {

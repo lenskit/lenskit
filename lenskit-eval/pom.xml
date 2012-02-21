@@ -81,9 +81,10 @@
     </dependency>
 
     <dependency>
-      <groupId>org.kohsuke.metainf-services</groupId>
-      <artifactId>metainf-services</artifactId>
-      <version>1.2</version>
+      <groupId>org.grouplens.common</groupId>
+      <artifactId>common-spi</artifactId>
+      <version>0.6-SNAPSHOT</version>
+      <scope>compile</scope>
       <optional>true</optional>
     </dependency>
   </dependencies>
