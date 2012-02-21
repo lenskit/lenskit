@@ -50,7 +50,7 @@ public class GlobalItemItemScorer extends AbstractGlobalItemScorer implements
 		// create the unary rating for the items
 		double[] ratings = new double[queryItems.size()];
 		for(int i = 0; i < ratings.length; i++)
-			ratings[i] = 0.0;
+			ratings[i] = 1.0;
 		long[] ids = new long[queryItems.size()];
 		int i = 0;
 		for(Long id:queryItems)
