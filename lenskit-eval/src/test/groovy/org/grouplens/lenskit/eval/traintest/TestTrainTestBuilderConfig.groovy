@@ -15,7 +15,7 @@ import org.grouplens.lenskit.eval.config.ConfigBlockDelegate
  * framework.
  * @author Michael Ekstrand
  */
-class TestTrainTestConfig {
+class TestTrainTestBuilderConfig {
     TrainTestEvalBuilder builder
     ConfigBlockDelegate delegate
 
@@ -43,5 +43,21 @@ class TestTrainTestConfig {
         }
         def metrics = builder.getMetrics()
         assertThat(metrics.size(), equalTo(2))
+    }
+
+    @Test
+    void testSetOutput() {
+        delegate.apply {
+            output "eval-out.csv"
+        }
+        assertThat(builder.getOutput(), equalTo(new File("eval-out.csv")))
+    }
+
+    @Test
+    void testPredictOutput() {
+        delegate.apply {
+            predictOutput "predictions.csv"
+        }
+        assertThat(builder.getPredictOutput(), equalTo(new File("predictions.csv")))
     }
 }

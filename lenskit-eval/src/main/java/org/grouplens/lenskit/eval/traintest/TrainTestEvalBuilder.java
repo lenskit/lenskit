@@ -117,7 +117,13 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
         return metrics;
     }
 
+    File getOutput() {
+        return outputFile;
+    }
 
+    File getPredictOutput() {
+        return predictOutputFile;
+    }
 
     /*public Evaluation configure(Properties properties, DataNode config)
             throws EvaluatorConfigurationException {
