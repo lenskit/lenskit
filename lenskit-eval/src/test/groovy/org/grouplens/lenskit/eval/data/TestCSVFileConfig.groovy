@@ -25,4 +25,28 @@ class TestCSVFileConfig extends ConfigTestBase {
         assertThat(source.file, equalTo(new File("ml-100k/u.data")))
         assertThat(source.delimiter, equalTo("\t"))
     }
+
+    @Test
+    void testFileDelim() {
+        def source = eval {
+            csvfile("ml-100k") {
+                file "ml-100k/u.data"
+                delimiter "::"
+            }
+        }
+        assertThat(source.name, equalTo("ml-100k"))
+        assertThat(source.file, equalTo(new File("ml-100k/u.data")))
+        assertThat(source.delimiter, equalTo("::"))
+    }
+
+    @Test
+    void testFileNoName() {
+        def source = eval {
+            csvfile {
+                file "ml-100k/u.data"
+            }
+        }
+        assertThat(source.name, equalTo("ml-100k/u.data"))
+        assertThat(source.file, equalTo(new File("ml-100k/u.data")))
+    }
 }

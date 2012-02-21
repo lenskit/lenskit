@@ -84,7 +84,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         @Override public CSVDataSourceBuilder newBuilder(String arg) {
             CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
             if (arg != null) {
-                bld.setFile(new File(arg));
+                bld.setName(arg);
             }
             return bld;
         }

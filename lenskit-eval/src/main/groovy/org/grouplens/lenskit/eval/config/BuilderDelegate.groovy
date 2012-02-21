@@ -12,6 +12,7 @@ import org.apache.commons.lang3.builder.Builder
  */
 class BuilderDelegate<T> extends ConfigBlockDelegate {
     private Builder<T> builder
+    private MethodFinder finder
 
     /**
      * Construct a new builder delegate.
@@ -19,36 +20,20 @@ class BuilderDelegate<T> extends ConfigBlockDelegate {
      */
     BuilderDelegate(Builder<T> builder) {
         this.builder = builder
+        finder = new MethodFinder(builder.class)
     }
 
     def methodMissing(String name, args) {
         def adder = "add" + name.capitalize()
         def transforms = new Closure[args.length]
-        for (m in builder.class.methods) {
-            Class[] atypes = m.parameterTypes
-            if (m.name == adder && atypes.length == args.length) {
-                boolean good = true;
-                for (int i = 0; good && i < atypes.length; i++) {
-                    def arg = args[i]
-                    if (atypes[i].isAssignableFrom(arg.class)) {
-                        transforms[i] = null
-                    } else if (arg instanceof Class && atypes[i].isAssignableFrom(arg)) {
-                        transforms[i] = {cls -> cls.newInstance()}
-                    } else {
-                        good = false;
-                    }
-                }
-                if (good) {
-                    for (int i = 0; i < args.length; i++) {
-                        if (transforms[i] != null) {
-                            args[i] = transforms[i](args[i]);
-                        }
-                    }
-                    return m.invoke(builder, args);
-                }
-            }
+        
+        def candidates = finder.find(name, args)
+        if (candidates.isEmpty()) {
+            throw new MissingMethodException(name, this.class, args)
+        } else if (candidates.size() > 1) {
+            throw new RuntimeException("too many candidate methods")
+        } else {
+            return candidates.get(0).invoke(builder, args)
         }
-        // if we got this far, we found nothing
-        throw new MissingMethodException(name, this.class, args);
     }
 }
