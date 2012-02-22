@@ -33,7 +33,7 @@ class BuilderDelegate<T> extends ConfigBlockDelegate {
         } else if (candidates.size() > 1) {
             throw new RuntimeException("too many candidate methods")
         } else {
-            return candidates.get(0).invoke(builder, args)
+            return candidates.get(0).invoke(builder)
         }
     }
 }

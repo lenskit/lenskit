@@ -6,6 +6,7 @@ import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
@@ -81,6 +82,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         @Override public String getName() {
             return "csvfile";
         }
+        @Nonnull
         @Override public CSVDataSourceBuilder newBuilder(String arg) {
             CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
             if (arg != null) {

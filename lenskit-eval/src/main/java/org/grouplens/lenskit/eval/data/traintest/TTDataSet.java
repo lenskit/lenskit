@@ -24,6 +24,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.Preparable;
+import org.grouplens.lenskit.eval.config.DefaultBuilder;
 
 import javax.annotation.Nullable;
 
@@ -34,6 +35,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultBuilder(GenericTTDataBuilder.class)
 public interface TTDataSet extends Preparable {
     /**
      * Get the data set name.

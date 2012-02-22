@@ -1,6 +1,5 @@
 package org.grouplens.lenskit.eval.config
 
-import groovy.transform.PackageScope
 import java.lang.reflect.Method
 
 /**
@@ -9,30 +8,32 @@ import java.lang.reflect.Method
  * @since 0.10
  * @see MethodFinder
  */
-@PackageScope
-class MethodCandidate {
+class MethodCandidate implements SettingCandidate {
     Method method;
-    Closure[] transforms;
+    Closure[] transforms
+    Object[] arguments
 
-    public MethodCandidate(Method m) {
+    public MethodCandidate(Method m, Object[] args) {
         method = m
         transforms = null
+        arguments = args
     }
 
-    public MethodCandidate(Method m, Closure... tf) {
+    public MethodCandidate(Method m, Object[] args, Closure[] tf) {
         method = m
+        arguments = args
         transforms = tf
     }
 
-    def invoke(Object tgt, Object... args) {
+    void invoke(Object tgt) {
         if (transforms != null) {
-            def n = Math.min(transforms.length, args.length)
+            def n = Math.min(transforms.length, arguments.length)
             for (int i = 0; i < n; i++) {
                 if (transforms[i] != null) {
-                    args[i] = transforms[i](args[i])
+                    arguments[i] = transforms[i](arguments[i])
                 }
             }
         }
-        method.invoke(tgt, args)
+        method.invoke(tgt, arguments)
     }
 }
