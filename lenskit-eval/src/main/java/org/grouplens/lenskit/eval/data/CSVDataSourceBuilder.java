@@ -20,6 +20,14 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     boolean cache = true;
     PreferenceDomain domain;
 
+    public CSVDataSourceBuilder() {}
+
+    public CSVDataSourceBuilder(String name) {
+        if (name != null) {
+            setName(name);
+        }
+    }
+
     /**
      * Set the data source name. If unspecified, a name is derived from the file.
      * @param name The name of the data source.

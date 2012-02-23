@@ -83,4 +83,23 @@ class TestTrainTestBuilderConfig {
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
+
+    @Test
+    void testGenericDefaults() {
+        assertTrue(true)
+        delegate.apply {
+            dataSource {
+                train "train.csv"
+                test "test.csv"
+            }
+        }
+        def data = builder.dataSources()
+        assertThat(data.size(), equalTo(1))
+        assertThat(data.get(0), instanceOf(GenericTTDataSet))
+        GenericTTDataSet ds = data.get(0) as GenericTTDataSet
+        assertThat(ds.trainData, instanceOf(CSVDataSource))
+        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.testData, instanceOf(CSVDataSource))
+        assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
+    }
 }
