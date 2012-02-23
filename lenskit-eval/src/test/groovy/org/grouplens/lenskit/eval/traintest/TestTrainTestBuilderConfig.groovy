@@ -78,9 +78,9 @@ class TestTrainTestBuilderConfig {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.getTrainData(), instanceOf(CSVDataSource))
-        assertThat(ds.getTrainData().sourceFile, equalTo(new File("train.csv")))
-        assertThat(ds.getTrainData(), instanceOf(CSVDataSource))
-        assertThat(ds.getTestData().sourceFile, equalTo(new File("test.csv")))
+        assertThat(ds.trainData, instanceOf(CSVDataSource))
+        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.testData, instanceOf(CSVDataSource))
+        assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
 }
