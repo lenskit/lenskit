@@ -11,6 +11,7 @@ import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.eval.config.ConfigBlockDelegate
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.data.CSVDataSource
+import org.grouplens.lenskit.eval.config.EvalConfigEngine
 
 /**
  * Tests for train-test configurations; they also serve to test the builder delegate
@@ -18,13 +19,15 @@ import org.grouplens.lenskit.eval.data.CSVDataSource
  * @author Michael Ekstrand
  */
 class TestTrainTestBuilderConfig {
+    EvalConfigEngine engine
     TrainTestEvalBuilder builder
     ConfigBlockDelegate delegate
 
     @Before
     void setupDelegate() {
+        engine = new EvalConfigEngine()
         builder = new TrainTestEvalBuilder()
-        delegate = new BuilderDelegate(builder)
+        delegate = new BuilderDelegate(engine, builder)
     }
 
     @Test
@@ -75,9 +78,9 @@ class TestTrainTestBuilderConfig {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.getTestData(), instanceOf(CSVDataSource))
-        assertThat(ds.getTestData().getSourceFile(), equalTo(new File("train.csv")))
         assertThat(ds.getTrainData(), instanceOf(CSVDataSource))
-        assertThat(ds.getTestData().getSourceFile(), equalTo(new File("test.csv")))
+        assertThat(ds.getTrainData().sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.getTrainData(), instanceOf(CSVDataSource))
+        assertThat(ds.getTestData().sourceFile, equalTo(new File("test.csv")))
     }
 }

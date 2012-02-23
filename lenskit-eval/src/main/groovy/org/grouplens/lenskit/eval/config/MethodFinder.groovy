@@ -15,9 +15,11 @@ import org.apache.commons.lang3.builder.Builder
  */
 class MethodFinder {
     private static final Logger logger = LoggerFactory.getLogger(MethodFinder)
+    EvalConfigEngine engine
     Class clazz
 
-    MethodFinder(Class cls) {
+    MethodFinder(EvalConfigEngine engine, Class cls) {
+        this.engine = engine
         clazz = cls
     }
 
@@ -25,9 +27,11 @@ class MethodFinder {
      * Search for methods based on an invocation.
      * @param name The builder element name.
      * @param types The types of the parameters passed.
+     * @return A list of candidate closures. The closures expect to be invoked with the
+     * delegate set to the builder instance.
      */
-    List<MethodCandidate> find(String name, Object[] args) {
-        def candidates = new LinkedList<MethodCandidate>()
+    List<Closure> find(String name, Object[] args) {
+        def candidates = new LinkedList<Closure>()
         def setter = "set" + name.capitalize()
         def adder = "add" + name.capitalize()
         for (m in clazz.methods) {
@@ -48,10 +52,9 @@ class MethodFinder {
      * Set if we can directly invoke this method.
      * @param m The method to try to invoke.
      * @param args The arguments
-     * @return A {@link SetterMethodCandidate} encapsulating this method with any applicable
-     * transformations, or {@code null} if the method can't be used.
+     * @return A closure encapsulating this method with any applicable transformations.
      */
-    private MethodCandidate maybeMakeCandidate(Method m, Object[] args) {
+    private Closure maybeMakeCandidate(Method m, Object[] args) {
         Class[] formals = m.parameterTypes
         if (formals.length != args.length) return null
 
@@ -73,7 +76,17 @@ class MethodFinder {
                 return null;
             }
         }
-        return new SetterMethodCandidate(m, args, transforms)
+        return {
+            if (transforms != null) {
+                def n = Math.min(transforms.length, args.length)
+                for (int i = 0; i < n; i++) {
+                    if (transforms[i] != null) {
+                        args[i] = transforms[i](args[i])
+                    }
+                }
+            }
+            m.invoke(delegate, args)
+        }
     }
 
     /**
@@ -83,7 +96,7 @@ class MethodFinder {
      * @return A candidate that uses a builder to build the object to assign to
      * the method, or {@code null} if it can't be built with a builder.
      */
-    private MethodCandidate maybeMakeBuilder(Method m, Object[] args) {
+    private Closure maybeMakeBuilder(Method m, Object[] args) {
         // check args & extract closure
         if (args.length == 0) return null
         Closure closure = null
@@ -125,7 +138,10 @@ class MethodFinder {
         if (ctor == null) return null
 
         // OK, we can build.
-        Builder builder = ctor.newInstance(args)
-        return new BuilderCandidate(m, builder, closure)
+        return {
+            def builder = ctor.newInstance(args)
+            def obj = ConfigHelpers.invokeBuilder(engine, builder, closure)
+            m.invoke(delegate, obj)
+        }
     }
 }

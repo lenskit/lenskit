@@ -32,22 +32,15 @@ abstract class EvalConfigScript extends Script {
 
     def methodMissing(String name, args) {
         logger.debug("searching for eval task {}", name)
-        Closure cl = null
-        if (args.length >= 0 && args[args.length - 1] instanceof Closure) {
-            cl = (Closure) args[args.length - 1]
+        def method = ConfigHelpers.findBuilderMethod(engine, name, args)
+        if (method != null) {
+            def obj = method()
+            // FIXME Should we really add this evaluation? Or how do we want to handle that?
+            evaluations.add(obj)
+            return obj
+        } else {
+            throw new MissingMethodException(name, this.class, args)
         }
-        String val = null
-        if (args.length >= 0 && !(args[0] instanceof Closure)) {
-            val = args[0].toString()
-        }
-
-        def svc = engine.getBuilderFactory(name)
-        if (svc == null) throw new MissingMethodException(name, this.class, args)
-
-        def obj = ConfigHelpers.invokeBuilderFromFactory(svc, val, cl)
-        // FIXME Should we really add this evaluation? Or how do we want to handle that?
-        evaluations.add(obj)
-        return obj
     }
 
     List<Evaluation> getEvaluations() {

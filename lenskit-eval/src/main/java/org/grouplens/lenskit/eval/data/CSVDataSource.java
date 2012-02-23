@@ -24,11 +24,11 @@ import java.util.List;
  * @author Michael Ekstrand
  */
 public class CSVDataSource implements DataSource {
-    private final String name;
-    private final DAOFactory factory;
-    private final File sourceFile;
-    private final PreferenceDomain domain;
-    private final String delimiter;
+    final String name;
+    final DAOFactory factory;
+    final File sourceFile;
+    final PreferenceDomain domain;
+    final String delimiter;
 
     CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
         this.name = name;
