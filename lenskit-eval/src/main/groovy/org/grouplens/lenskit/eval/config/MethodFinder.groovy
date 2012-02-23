@@ -131,7 +131,7 @@ class MethodFinder {
             // if we got here, then all the args are good!
             if (ctor != null) {
                 // whoops, we have too many constructors. we're confused.
-                logger.warning("too many constructors for {}, using the first", builderCls)
+                logger.warn("too many constructors for {}, using the first", builderCls)
             }
             ctor = c
         }
