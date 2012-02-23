@@ -6,9 +6,11 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 /**
+ * Method candidate that invokes a builder, then passes its result to the resulting
+ * method.
  * @author Michael Ekstrand
  */
-class BuilderCandidate implements SettingCandidate {
+class BuilderCandidate implements MethodCandidate {
     private static final Logger logger = LoggerFactory.getLogger(BuilderCandidate)
     Method method
     Builder builder
@@ -22,15 +24,7 @@ class BuilderCandidate implements SettingCandidate {
 
     @Override
     void invoke(tgt) {
-        logger.debug("invoking {} with builder {}", method, builder)
-        def obj
-        if (closure != null) {
-            logger.debug("invoking closure")
-            def delegate = new BuilderDelegate(builder)
-            obj = delegate.apply(closure)
-        } else {
-            obj = builder.build()
-        }
+        def obj = ConfigHelpers.invokeBuilder(builder, closure)
         method.invoke(tgt, obj)
     }
 }

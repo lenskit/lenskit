@@ -2,7 +2,6 @@ package org.grouplens.lenskit.eval.config
 
 import org.grouplens.lenskit.eval.Evaluation
 import org.slf4j.LoggerFactory
-import com.google.common.base.Preconditions
 
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
@@ -45,13 +44,7 @@ abstract class EvalConfigScript extends Script {
         def svc = engine.getBuilderFactory(name)
         if (svc == null) throw new MissingMethodException(name, this.class, args)
 
-        logger.info("configuring evaluation with provider {}", svc.name)
-        def builder = svc.newBuilder(val)
-        if (cl != null) {
-            BuilderDelegate delegate = new BuilderDelegate(builder)
-            delegate.apply(cl)
-        }
-        def obj = builder.build()
+        def obj = ConfigHelpers.invokeBuilderFromFactory(svc, val, cl)
         // FIXME Should we really add this evaluation? Or how do we want to handle that?
         evaluations.add(obj)
         return obj

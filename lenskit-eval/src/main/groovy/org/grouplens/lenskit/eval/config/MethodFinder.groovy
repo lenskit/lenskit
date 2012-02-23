@@ -26,8 +26,8 @@ class MethodFinder {
      * @param name The builder element name.
      * @param types The types of the parameters passed.
      */
-    List<SettingCandidate> find(String name, Object[] args) {
-        def candidates = new LinkedList<SettingCandidate>()
+    List<MethodCandidate> find(String name, Object[] args) {
+        def candidates = new LinkedList<MethodCandidate>()
         def setter = "set" + name.capitalize()
         def adder = "add" + name.capitalize()
         for (m in clazz.methods) {
@@ -48,10 +48,10 @@ class MethodFinder {
      * Set if we can directly invoke this method.
      * @param m The method to try to invoke.
      * @param args The arguments
-     * @return A {@link MethodCandidate} encapsulating this method with any applicable
+     * @return A {@link SetterMethodCandidate} encapsulating this method with any applicable
      * transformations, or {@code null} if the method can't be used.
      */
-    private SettingCandidate maybeMakeCandidate(Method m, Object[] args) {
+    private MethodCandidate maybeMakeCandidate(Method m, Object[] args) {
         Class[] formals = m.parameterTypes
         if (formals.length != args.length) return null
 
@@ -73,7 +73,7 @@ class MethodFinder {
                 return null;
             }
         }
-        return new MethodCandidate(m, args, transforms)
+        return new SetterMethodCandidate(m, args, transforms)
     }
 
     /**
@@ -83,7 +83,7 @@ class MethodFinder {
      * @return A candidate that uses a builder to build the object to assign to
      * the method, or {@code null} if it can't be built with a builder.
      */
-    private SettingCandidate maybeMakeBuilder(Method m, Object[] args) {
+    private MethodCandidate maybeMakeBuilder(Method m, Object[] args) {
         // check args & extract closure
         if (args.length == 0) return null
         Closure closure = null
