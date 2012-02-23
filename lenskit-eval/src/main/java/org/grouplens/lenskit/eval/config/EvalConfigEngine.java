@@ -35,7 +35,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * Load and process configuration files.
+ * Load and process configuration files. Also provides helper methods used by the
+ * configuration scripts to locate & invoke methods.
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -44,6 +45,8 @@ public class EvalConfigEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
+
+    private Map<String,BuilderFactory<?>> factories = null;
 
     public EvalConfigEngine() {
         this(Thread.currentThread().getContextClassLoader());
@@ -86,13 +89,23 @@ public class EvalConfigEngine {
         return runScript(loadScript(in));
     }
 
-    public Map<String,BuilderFactory> loadFactories() {
-        ServiceLoader<BuilderFactory> loader = ServiceLoader.load(BuilderFactory.class, classLoader);
-        Map<String,BuilderFactory> factories = new HashMap<String,BuilderFactory>();
-        for (BuilderFactory f: loader) {
-            logger.debug("Found factory {}", f.getName());
-            factories.put(f.getName(), f);
+    synchronized Map<String,BuilderFactory<?>> getFactories() {
+        if (factories == null) {
+            ServiceLoader<BuilderFactory> loader = ServiceLoader.load(BuilderFactory.class, classLoader);
+            factories = new HashMap<String,BuilderFactory<?>>();
+            for (BuilderFactory f: loader) {
+                logger.debug("Found factory {}", f.getName());
+                factories.put(f.getName(), f);
+            }
         }
         return factories;
+    }
+
+    /**
+     * Find a builder factory with a particular name if it exists.
+     * @param name The builder factory or {@code null} if no such factory exists.
+     */
+    public BuilderFactory<?> getBuilderFactory(String name) {
+        return getFactories().get(name);
     }
 }

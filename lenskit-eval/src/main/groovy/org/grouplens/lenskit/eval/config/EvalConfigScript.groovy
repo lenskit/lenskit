@@ -14,7 +14,6 @@ abstract class EvalConfigScript extends Script {
     private List<Evaluation> evaluations = new ArrayList<Evaluation>()
     protected final def logger = LoggerFactory.getLogger(getClass())
     private EvalConfigEngine engine
-    private Map<String,BuilderFactory> factoryCache
 
     EvalConfigScript() {
         engine = null
@@ -32,14 +31,6 @@ abstract class EvalConfigScript extends Script {
         return engine
     }
 
-    Map<String,BuilderFactory> getFactories() {
-        if (factoryCache == null) {
-            Preconditions.checkState(engine != null, "no engine configured")
-            factoryCache = engine.loadFactories()
-        }
-        return factoryCache
-    }
-
     def methodMissing(String name, args) {
         logger.debug("searching for eval task {}", name)
         Closure cl = null
@@ -51,7 +42,7 @@ abstract class EvalConfigScript extends Script {
             val = args[0].toString()
         }
 
-        def svc = factories.get(name)
+        def svc = engine.getBuilderFactory(name)
         if (svc == null) throw new MissingMethodException(name, this.class, args)
 
         logger.info("configuring evaluation with provider {}", svc.name)

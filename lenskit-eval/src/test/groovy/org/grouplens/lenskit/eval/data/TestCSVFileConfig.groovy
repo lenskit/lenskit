@@ -12,7 +12,7 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 class TestCSVFileConfig extends ConfigTestBase {
     @Test
     void testBuilderAvailable() {
-        def factories = engine.loadFactories()
+        def factories = engine.getFactories()
         assertThat(factories.get("csvfile"), notNullValue())
     }
     @Test
