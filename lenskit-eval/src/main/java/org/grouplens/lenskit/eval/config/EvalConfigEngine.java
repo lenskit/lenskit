@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.config;
 
 import groovy.lang.Binding;
+import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.grouplens.lenskit.eval.Evaluation;
@@ -26,6 +27,9 @@ import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,9 +107,11 @@ public class EvalConfigEngine {
 
     /**
      * Find a builder factory with a particular name if it exists.
-     * @param name The builder factory or {@code null} if no such factory exists.
+     * @param name The name of the builder
+     * @return The builder factory or {@code null} if no such factory exists.
      */
-    public BuilderFactory<?> getBuilderFactory(String name) {
+    @CheckForNull
+    public BuilderFactory<?> getBuilderFactory(@Nonnull String name) {
         return getFactories().get(name);
     }
 }
