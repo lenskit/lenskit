@@ -10,7 +10,7 @@ import org.apache.commons.lang3.builder.Builder
  * @author Michael Ekstrand
  * @since 0.10
  */
-class BuilderDelegate<T> extends ConfigBlockDelegate {
+class BuilderDelegate<T> {
     private EvalConfigEngine engine
     private Builder<T> builder
 

@@ -1,7 +1,6 @@
 package org.grouplens.lenskit.eval.traintest
 
 import org.grouplens.lenskit.eval.config.BuilderDelegate
-import org.grouplens.lenskit.eval.config.ConfigBlockDelegate
 import org.grouplens.lenskit.eval.config.EvalConfigEngine
 import org.grouplens.lenskit.eval.data.CSVDataSource
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
@@ -23,7 +22,7 @@ import static org.junit.Assert.assertTrue
 class TestTrainTestBuilderConfig {
     EvalConfigEngine engine
     TrainTestEvalBuilder builder
-    ConfigBlockDelegate delegate
+    BuilderDelegate delegate
 
     @Before
     void setupDelegate() {
@@ -31,10 +30,16 @@ class TestTrainTestBuilderConfig {
         builder = new TrainTestEvalBuilder()
         delegate = new BuilderDelegate(engine, builder)
     }
+    
+    def eval(Closure cl) {
+        cl.setDelegate(delegate)
+        cl.setResolveStrategy(Closure.DELEGATE_FIRST)
+        cl.call()
+    }
 
     @Test
     void testAddMetric() {
-        delegate.apply {
+        eval {
             metric new CoveragePredictMetric()
             metric new RMSEPredictMetric()
         }
@@ -44,7 +49,7 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testAddMetricsByClass() {
-        delegate.apply {
+        eval {
             metric CoveragePredictMetric
             metric RMSEPredictMetric
         }
@@ -54,7 +59,7 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testSetOutput() {
-        delegate.apply {
+        eval {
             output "eval-out.csv"
         }
         assertThat(builder.getOutput(), equalTo(new File("eval-out.csv")))
@@ -62,7 +67,7 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testPredictOutput() {
-        delegate.apply {
+        eval {
             predictOutput "predictions.csv"
         }
         assertThat(builder.getPredictOutput(), equalTo(new File("predictions.csv")))
@@ -71,7 +76,7 @@ class TestTrainTestBuilderConfig {
     @Test
     void testGenericInput() {
         boolean closureInvoked = false
-        delegate.apply {
+        eval {
             dataSource {
                 // check some things about our strategy...
                 assertThat(delegate, instanceOf(BuilderDelegate))
@@ -101,7 +106,7 @@ class TestTrainTestBuilderConfig {
     @Test
     void testGenericDefaults() {
         boolean closureInvoked = false
-        delegate.apply {
+        eval {
             dataSource {
                 closureInvoked = true
                 train "train.csv"

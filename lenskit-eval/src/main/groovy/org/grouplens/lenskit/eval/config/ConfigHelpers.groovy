@@ -18,7 +18,9 @@ class ConfigHelpers {
     static <T> T invokeBuilder(EvalConfigEngine engine, Builder<T> builder, Closure closure) {
         if (closure != null) {
             def delegate = new BuilderDelegate<T>(engine, builder)
-            delegate.apply(closure)
+            closure.setDelegate(delegate)
+            closure.setResolveStrategy(Closure.DELEGATE_FIRST)
+            closure.run()
         }
         builder.build()
     }
