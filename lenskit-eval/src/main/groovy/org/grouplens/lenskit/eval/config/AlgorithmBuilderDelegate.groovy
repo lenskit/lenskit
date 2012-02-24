@@ -5,7 +5,9 @@ import org.codehaus.groovy.runtime.MetaClassHelper
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
 
 /**
+ * Groovy delegate for configuring {@code AlgorithmBuilder}s.
  * @author Michael Ekstrand
+ * @since 0.10
  */
 class AlgorithmBuilderDelegate {
     private AlgorithmBuilder builder
