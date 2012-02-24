@@ -13,7 +13,6 @@ import org.apache.commons.lang3.builder.Builder
 class BuilderDelegate<T> extends ConfigBlockDelegate {
     private EvalConfigEngine engine
     private Builder<T> builder
-    private MethodFinder finder
 
     /**
      * Construct a new builder delegate.
@@ -22,29 +21,27 @@ class BuilderDelegate<T> extends ConfigBlockDelegate {
     BuilderDelegate(EvalConfigEngine engine, Builder<T> builder) {
         this.engine = engine
         this.builder = builder
-        finder = new MethodFinder(engine, builder.class)
     }
 
     def methodMissing(String name, args) {
-        def adder = "add" + name.capitalize()
-        def transforms = new Closure[args.length]
-        
-        def candidates = finder.find(name, args)
-        Closure method
+        Closure method = null
+        use (BuilderExtensions) {
+            method = builder.findSetter(engine, name, args)
 
-        if (candidates.isEmpty()) {
-            method = ConfigHelpers.findBuilderMethod(engine, name, args)
-        } else if (candidates.size() > 1) {
-            throw new RuntimeException("too many candidate methods")
-        } else {
-            method = candidates.get(0)
+            if (method == null) {
+                method = builder.findAdder(engine, name, args)
+            }
         }
 
         if (method == null) {
-            throw new MissingMethodException(name, this.class, args)
+            method = ConfigHelpers.findBuilderMethod(engine, name, args)
+        }
+
+        if (method == null) {
+            // if we got this far we failed
+            throw new MissingMethodException(name, builder.class, args)
         } else {
-            method.setDelegate(builder)
-            method.call()
+            return method.call()
         }
     }
 }
