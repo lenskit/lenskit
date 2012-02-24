@@ -24,12 +24,6 @@ class TestEvalConfigEngine {
     }
 
     @Test
-    void testEmptyScript() {
-        List<Evaluation> evals = engine.load(script("empty.groovy"))
-        assertTrue(evals.isEmpty())
-    }
-
-    @Test
     void testSingleEmptyEval() {
         List<Evaluation> evals = engine.load(script("emptyTrainTest.groovy"))
         assertThat(evals.size(), equalTo(1))

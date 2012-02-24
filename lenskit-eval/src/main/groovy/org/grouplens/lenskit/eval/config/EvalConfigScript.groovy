@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
  * @since 0.10
  */
 abstract class EvalConfigScript extends Script {
-    private List<Evaluation> evaluations = new ArrayList<Evaluation>()
     protected final def logger = LoggerFactory.getLogger(getClass())
     private EvalConfigEngine engine
 
@@ -35,15 +34,9 @@ abstract class EvalConfigScript extends Script {
         def method = ConfigHelpers.findBuilderMethod(engine, name, args)
         if (method != null) {
             def obj = method()
-            // FIXME Should we really add this evaluation? Or how do we want to handle that?
-            evaluations.add(obj)
             return obj
         } else {
             throw new MissingMethodException(name, this.class, args)
         }
-    }
-
-    List<Evaluation> getEvaluations() {
-        return evaluations
     }
 }

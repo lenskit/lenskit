@@ -33,10 +33,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 
 /**
  * Load and process configuration files. Also provides helper methods used by the
@@ -76,12 +73,18 @@ public class EvalConfigEngine {
     }
 
     protected List<Evaluation> runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
+        List<Evaluation> evals = new LinkedList<Evaluation>();
         try {
-            script.run();
+            Object obj = script.run();
+            if (obj instanceof Evaluation) {
+                evals.add((Evaluation) obj);
+            } else {
+                throw new EvaluatorConfigurationException("configuration script did not yield an evaluation");
+            }
         } catch (RuntimeException e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
         }
-        return script.getEvaluations();
+        return evals;
     }
 
     public List<Evaluation> load(File file) throws EvaluatorConfigurationException, IOException {
