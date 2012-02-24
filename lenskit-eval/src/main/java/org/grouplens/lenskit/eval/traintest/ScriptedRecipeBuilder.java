@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.traintest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grouplens.lenskit.eval.AlgorithmBuilder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.mozilla.javascript.Scriptable;
 
@@ -30,7 +31,7 @@ import org.mozilla.javascript.Scriptable;
  *
  */
 public class ScriptedRecipeBuilder {
-    private List<AlgorithmInstance> algorithms = new ArrayList<AlgorithmInstance>();
+    private List<AlgorithmBuilder> builders = new ArrayList<AlgorithmBuilder>();
     @SuppressWarnings("unused")
     private Scriptable scope;
 
@@ -43,13 +44,17 @@ public class ScriptedRecipeBuilder {
      * should then fill in the algorithm's details.
      * @return An <tt>AlgorithmInstance</tt> object for the new algorithm.
      */
-    public AlgorithmInstance addAlgorithm() {
-        AlgorithmInstance a = new AlgorithmInstance();
-        algorithms.add(a);
+    public AlgorithmBuilder addAlgorithm() {
+        AlgorithmBuilder a = new AlgorithmBuilder();
+        builders.add(a);
         return a;
     }
 
     public List<AlgorithmInstance> getAlgorithms() {
-        return algorithms;
+        List<AlgorithmInstance> algos = new ArrayList<AlgorithmInstance>(builders.size());
+        for (AlgorithmBuilder b: builders) {
+            algos.add(b.build());
+        }
+        return algos;
     }
 }

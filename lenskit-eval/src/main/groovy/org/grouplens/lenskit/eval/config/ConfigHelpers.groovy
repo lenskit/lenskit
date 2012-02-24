@@ -8,6 +8,34 @@ import org.apache.commons.lang3.builder.Builder
  * @since 0.10
  */
 class ConfigHelpers {
+    static <T> Object makeBuilderDelegate(EvalConfigEngine engine, Builder<T> builder) {
+        def annot = builder.class.getAnnotation(ConfigDelegate)
+        if (annot == null) {
+            return new BuilderDelegate<T>(engine, builder)
+        } else {
+            Class<?> dlgClass = annot.value()
+            // try two-arg constructor
+            Class[] classes = [EvalConfigEngine, builder.class]
+            def ctor = dlgClass.constructors.find {
+                def formals = it.parameterTypes
+                formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(builder)
+            }
+            if (ctor != null) {
+                return ctor.newInstance(engine, builder)
+            } else {
+                ctor = dlgClass.constructors.find {
+                    def formals = it.parameterTypes
+                    formals.length == 1 && formals[0].isInstance(builder)
+                }
+            }
+            if (ctor != null) {
+                return ctor.newInstance(builder)
+            } else {
+                return dlgClass.newInstance()
+            }
+        }
+    }
+
     /**
      * Invoke a builder to configure an object.
      * @param builder The builder to use.
@@ -17,7 +45,7 @@ class ConfigHelpers {
      */
     static <T> T invokeBuilder(EvalConfigEngine engine, Builder<T> builder, Closure closure) {
         if (closure != null) {
-            def delegate = new BuilderDelegate<T>(engine, builder)
+            def delegate = makeBuilderDelegate(engine, builder)
             closure.setDelegate(delegate)
             closure.setResolveStrategy(Closure.DELEGATE_FIRST)
             closure.run()

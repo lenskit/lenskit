@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,39 +39,31 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.eval.config.DefaultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
+@DefaultBuilder(AlgorithmBuilder.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-    private @Nonnull String algoName;
-    private @Nullable LenskitRecommenderEngineFactory factory;
-    private @Nonnull Map<String,Object> attributes;
-    private boolean preload = false;
+    private final @Nullable String algoName;
+    private final @Nonnull LenskitRecommenderEngineFactory factory;
+    private final @Nonnull Map<String,Object> attributes;
+    private final boolean preload;
 
-    public AlgorithmInstance() {
-        attributes = new HashMap<String,Object>();
-        factory = new LenskitRecommenderEngineFactory();
+    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
+        this(name, factory, Collections.<String,Object>emptyMap(), false);
     }
 
-    /**
-     * Helper method to extract the basename for a file with an expected extension.
-     * @param f The file
-     * @param xtn The extension (or NULL, if no extension is to be stripped).
-     * @return The basename of the file, with <var>xtn</var> stripped if it is
-     * the file's extension.
-     */
-    static String fileBaseName(File f, String xtn) {
-        String name = f.getName();
-        if (xtn != null && name.endsWith("." + xtn)) {
-            name = name.substring(0, name.length() - xtn.length() - 1);
-        }
-        return name;
+    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String,Object> attributes, boolean preload) {
+        algoName = name;
+        this.factory = factory;
+        this.attributes = attributes;
+        this.preload = preload;
     }
 
     /**
@@ -83,14 +76,6 @@ public class AlgorithmInstance {
     }
 
     /**
-     * Set the instance's name.
-     * @param name The instance name
-     */
-    public void setName(String name) {
-        algoName = name;
-    }
-
-    /**
      * Query whether this algorithm is to operate on in-memory data.
      * @return <tt>true</tt> if the ratings database should be loaded in-memory
      * prior to running.
@@ -99,83 +84,27 @@ public class AlgorithmInstance {
         return preload;
     }
 
-    public void setPreload(boolean pl) {
-        preload = pl;
-    }
-
+    @Nonnull
     public Map<String,Object> getAttributes() {
         return attributes;
     }
 
+    @Nonnull
     public RecommenderEngineFactory getFactory() {
         return factory;
     }
 
-    public void setFactory(LenskitRecommenderEngineFactory factory) {
-        this.factory = factory;
-    }
-
-    public Recommender buildRecommender(DataAccessObject dao, RatingSnapshot sharedSnapshot) {
-        if (factory == null)
-            throw new IllegalStateException("no factory set");
-
+    public Recommender buildRecommender(DataAccessObject dao, @Nullable RatingSnapshot sharedSnapshot) {
         // Copy the factory & set up a shared rating snapshot
-        LenskitRecommenderEngineFactory fac2 = factory.clone();
-        fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
+        LenskitRecommenderEngineFactory fac2 = factory;
+
+        if (sharedSnapshot != null) {
+            fac2 = factory.clone();
+            fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
+        }
 
         LenskitRecommenderEngine engine = fac2.create(dao);
 
         return engine.open(dao, false);
-    }
-
-    public static AlgorithmInstance load(File f) throws InvalidRecommenderException {
-        return load(f, null);
-    }
-
-    public static AlgorithmInstance load(File f, @Nullable ClassLoader classLoader) throws InvalidRecommenderException {
-        logger.info("Loading recommender definition from {}", f);
-        String xtn = fileExtension(f);
-        logger.debug("Loading recommender from {} with extension {}", f, xtn);
-        if (classLoader == null)
-            classLoader = Thread.currentThread().getContextClassLoader();
-        ScriptEngineManager mgr = new ScriptEngineManager(classLoader);
-        ScriptEngine engine = mgr.getEngineByExtension(xtn);
-        if (engine == null)
-            throw new InvalidRecommenderException(f.toURI(), "Cannot find engine for extension " + xtn);
-
-        ScriptEngineFactory factory = engine.getFactory();
-        logger.debug("Using {} {}", factory.getEngineName(), factory.getEngineVersion());
-        AlgorithmInstance algo = new AlgorithmInstance();
-        mgr.put("rec", algo);
-        try {
-            Reader r = new FileReader(f);
-            try {
-                engine.eval(r);
-                // FIXME: The factory is always instantiated, we don't know if the build fails
-                // until later when create() is called
-                if (algo.getFactory() != null)
-                    return algo;
-                else
-                    throw new InvalidRecommenderException(f.toURI(), "No recommender factory configured");
-            } finally {
-                r.close();
-            }
-        } catch (ScriptException e) {
-            throw new InvalidRecommenderException(f.toURI(), e);
-        } catch (IOException e) {
-            throw new InvalidRecommenderException(f.toURI(), e);
-        }
-    }
-
-    static String fileExtension(File f) {
-        return fileExtension(f.getName());
-    }
-    static String fileExtension(String fn) {
-        int idx = fn.lastIndexOf('.');
-        if (idx >= 0) {
-            return fn.substring(idx+1);
-        } else {
-            return "";
-        }
     }
 }
