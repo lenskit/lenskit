@@ -35,7 +35,7 @@ public class FractionPartition<E> implements PartitionAlgorithm<E> {
 
 	/**
 	 * The fraction to hold out (put in the second partition).
-	 * @param f
+	 * @param f The fraction of users to hold out.
 	 */
 	public FractionPartition(double f) {
 		fraction = f;

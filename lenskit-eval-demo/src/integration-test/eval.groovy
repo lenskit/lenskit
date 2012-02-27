@@ -24,11 +24,12 @@ import sun.text.normalizer.NormalizerBase
 baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
 ml100k = crossfold("ml-100k") {
-    input textfile("ml-100k/u.data") {
+    source csvfile("ml-100k/u.data") {
         delimiter "\t"
     }
     order "random"
     holdout 10
+    partitions 5
 
     domain {
         minimimum 1.0

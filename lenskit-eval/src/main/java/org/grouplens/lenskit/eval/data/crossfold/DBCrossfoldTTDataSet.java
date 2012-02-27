@@ -18,25 +18,11 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Properties;
-
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -54,7 +40,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
 
-import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Database-backed crossfold data set.  This data set gets the split from a
@@ -67,7 +56,7 @@ import com.google.common.io.Files;
 public class DBCrossfoldTTDataSet implements TTDataSet {
     private Logger logger = LoggerFactory.getLogger(DBCrossfoldTTDataSet.class);
     
-    private CrossfoldManager manager;
+    private CrossfoldSplit manager;
     private final int foldNumber;
     private final String stampName;
     private final String dbName;
@@ -75,7 +64,7 @@ public class DBCrossfoldTTDataSet implements TTDataSet {
     private boolean useTimestamp = true;
     private GenericTTDataSet dataset;
 
-    public DBCrossfoldTTDataSet(CrossfoldManager mgr, int fold) {
+    public DBCrossfoldTTDataSet(CrossfoldSplit mgr, int fold) {
 	    manager = mgr;
 	    foldNumber = fold;
 	    stampName = String.format("data.%d.stamp", fold);

@@ -54,7 +54,7 @@ import java.util.Map;
 public class MemoryCrossfoldTTDataSet implements TTDataSet {
     private static final Logger logger = LoggerFactory.getLogger(MemoryCrossfoldTTDataSet.class);
     
-    private CrossfoldManager manager;
+    private CrossfoldSplit manager;
     private int foldNumber;
     private LongSet testEvents;
     private DAOFactory trainFactory;
@@ -65,7 +65,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
      * @param mgr The crossfold manager
      * @param n The fold number.
      */
-    public MemoryCrossfoldTTDataSet(CrossfoldManager mgr, int n) {
+    public MemoryCrossfoldTTDataSet(CrossfoldSplit mgr, int n) {
         manager = mgr;
         foldNumber = n;
     }
@@ -83,7 +83,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         DAOFactory factory = manager.getSource().getDAOFactory();
         
         Holdout mode = manager.getHoldout();
-        
+
         testEvents = new LongOpenHashSet();
         
         DataAccessObject dao = factory.snapshot();

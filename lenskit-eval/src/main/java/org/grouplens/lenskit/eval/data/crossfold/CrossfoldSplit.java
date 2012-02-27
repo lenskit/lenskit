@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Supplier;
 import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -30,29 +31,55 @@ import org.grouplens.lenskit.eval.Preparable;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class CrossfoldManager implements Preparable {
-    private static final Logger logger = LoggerFactory.getLogger(CrossfoldManager.class);
+/**
+ * A crossfold split, taking a data set and splitting it into multiple train-test sets.
+ * The users in the input data set are first partitioned into \(N\) disjoint sets; for
+ * each set of users, a train-test set is built. The user profile is split according to
+ * the holdout into a train set and a test set; for each partition, a training set is
+ * built from the training sets of its users combined with the ratings from all other
+ * users, and the test set is the test sets of its users.
+ */
+public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
+    private static final Logger logger = LoggerFactory.getLogger(CrossfoldSplit.class);
     
     private static final String SPLIT_FILE = "split.dat";
     
     private static final Random random = new Random();
-    
-	private DataSource source;
-	private final int foldCount;
-	private final Holdout holdout;
 
-	public CrossfoldManager(DataSource src, int folds, Holdout hout) {
-	    source = src;
-	    foldCount = folds;
-	    holdout = hout;
+    private final String name;
+	private final DataSource source;
+	private final int partitionCount;
+    private final Holdout holdout;
+    private transient List<TTDataSet> dataSets;
+
+	public CrossfoldSplit(String name, DataSource src, int folds, Holdout hold) {
+	    this.name = name;
+        source = src;
+	    partitionCount = folds;
+        holdout = hold;
+    }
+
+    /**
+     * Get the visible name of this crossfold split.
+     * @return The name of the crossfold split.
+     */
+    public String getName() {
+        if (name == null) {
+            return source.getName();
+        } else {
+            return name;
+        }
     }
 	
 	/**
@@ -67,14 +94,10 @@ public class CrossfoldManager implements Preparable {
      * Get the number of folds.
      * @return The number of folds in this crossfold.
      */
-    public int getFoldCount() {
-        return foldCount;
+    public int getPartitionCount() {
+        return partitionCount;
     }
 
-    /**
-     * Get the holdout mode.
-     * @return The holdout mode.
-     */
     public Holdout getHoldout() {
         return holdout;
     }
@@ -87,7 +110,7 @@ public class CrossfoldManager implements Preparable {
      *         this directory will exist.
      */
     public File cacheDir(PreparationContext context) {
-	    String name = "crossfold-" + source.getName();
+	    String name = "crossfold-" + getName();
 	    try {
             name = URLEncoder.encode(name, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -133,7 +156,7 @@ public class CrossfoldManager implements Preparable {
             // put users[j] in a fold
             long u = j;
             userMap.put(u, fold+1);
-            fold = (fold + 1) % foldCount;
+            fold = (fold + 1) % partitionCount;
             // replace users[j] with users[i] to remove used user
             if (i != j) {
                 users.set(j, users.get(i));
@@ -173,7 +196,7 @@ public class CrossfoldManager implements Preparable {
 	    logger.debug("Writing to {}", tmpFile);
 	    PrintWriter writer = new PrintWriter(tmpFile);
 	    try {
-	        writer.println(foldCount);
+	        writer.println(partitionCount);
 	        for (Long2IntMap.Entry entry: splits.long2IntEntrySet()) {
 	            writer.print(entry.getLongKey());
 	            writer.print('\t');
@@ -219,6 +242,17 @@ public class CrossfoldManager implements Preparable {
 	    
         return users;
 	}
+
+    @Override
+    public synchronized List<TTDataSet> get() {
+        if (dataSets == null) {
+            dataSets = new ArrayList<TTDataSet>(partitionCount);
+            for (int i = 1; i <= partitionCount; i++) {
+                dataSets.add(new MemoryCrossfoldTTDataSet(this, i));
+            }
+        }
+        return dataSets;
+    }
 	
 	@Override
 	public String toString() {
