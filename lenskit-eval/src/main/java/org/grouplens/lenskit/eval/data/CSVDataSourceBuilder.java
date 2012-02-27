@@ -33,8 +33,9 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * @param name The name of the data source.
      * @see #setFile(File)
      */
-    public void setName(String name) {
+    public CSVDataSourceBuilder setName(String name) {
         sourceName = name;
+        return this;
     }
 
     /**
@@ -42,24 +43,32 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * as the file name.
      * @param file The file to read ratings from.
      */
-    public void setFile(File file) {
+    public CSVDataSourceBuilder setFile(File file) {
         inputFile = file;
+        return this;
     }
 
     /**
      * Set the input field delimiter. The default is the tab character.
      * @param delim The input delimiter.
      */
-    public void setDelimiter(String delim) {
+    public CSVDataSourceBuilder setDelimiter(String delim) {
         delimiter = delim;
+        return this;
     }
 
     /**
      * Specify whether to cache ratings in memory. Caching is enabled by default.
      * @param on {@code false} to disable caching.
      */
-    public void setCache(boolean on) {
+    public CSVDataSourceBuilder setCache(boolean on) {
         cache = on;
+        return this;
+    }
+
+    public CSVDataSourceBuilder setDomain(PreferenceDomain dom) {
+        domain = dom;
+        return this;
     }
 
     /**

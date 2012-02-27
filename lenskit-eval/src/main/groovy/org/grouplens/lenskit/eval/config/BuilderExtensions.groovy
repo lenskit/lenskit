@@ -5,6 +5,7 @@ import java.lang.reflect.Method
 import java.util.concurrent.Callable
 import org.apache.commons.lang3.builder.Builder
 import org.slf4j.LoggerFactory
+import org.codehaus.plexus.util.StringUtils
 
 /**
  * @author Michael Ekstrand
@@ -61,8 +62,9 @@ class BuilderExtensions {
         // try to just get a matching method
         MetaMethod mm = self.metaClass.pickMethod(name, atypes)
         if (mm != null) {
+            logger.debug("found method {}", mm)
             return {
-                mm.invoke(self, args)
+                mm.doMethodInvoke(self, args)
             }
         }
 
@@ -88,9 +90,11 @@ class BuilderExtensions {
             invoker = methods.collect({ m ->
                 def formals = m.parameterTypes
                 if (formals.length == 1) {
-                    def annot = formals[0].getAnnotation(DefaultBuilder)
-                    if (annot != null) {
-                        def bld = annot.value()
+                    def type = formals[0]
+                    logger.debug("looking for builder of type {}", type)
+                    def bld = engine.getBuilderForType(type)
+                    if (bld != null) {
+                        logger.debug("using builder {}", bld)
                         Object[] cargs = args
                         Closure block = null
                         if (cargs.length > 0 && cargs[cargs.length-1] instanceof Closure) {

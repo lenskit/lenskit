@@ -21,7 +21,9 @@ package org.grouplens.lenskit.eval.config;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
+import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ public class EvalConfigEngine {
     protected GroovyShell shell;
 
     private Map<String,BuilderFactory<?>> factories = null;
+    private Map<Class, Class> builders = new HashMap<Class, Class>();
 
     public EvalConfigEngine() {
         this(Thread.currentThread().getContextClassLoader());
@@ -59,6 +62,8 @@ public class EvalConfigEngine {
         config.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
         shell = new GroovyShell(loader, new Binding(), config);
         classLoader = loader;
+
+        registerDefaultBuilders();
     }
 
     /**
@@ -151,5 +156,42 @@ public class EvalConfigEngine {
     @CheckForNull
     public BuilderFactory<?> getBuilderFactory(@Nonnull String name) {
         return getFactories().get(name);
+    }
+
+    /**
+     * Get a builder for a type. It consults registered builders and looks for the
+     * {@link DefaultBuilder} annotation.
+     * @param type A type that needs to be built.
+     * @return A builder class to build {@code type}, or {@code null} if none can be found.
+     * @see #registerBuilder(Class, Class)
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Class<? extends Builder<? extends T>> getBuilderForType(Class<T> type) {
+        Class builder = builders.get(type);
+        if (builder == null) {
+            DefaultBuilder annot = type.getAnnotation(DefaultBuilder.class);
+            if (annot != null) {
+                builder = annot.value();
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * Register a builder class for a type. Used to allow builders to be found for types where
+     * the type cannot be augmented with the {@code DefaultBuilder} annotation.
+     * @param type The type to build.
+     * @param builder A class that can build instances of {@code type}.
+     * @param <T> The type to build (type parameter).
+     */
+    public <T> void registerBuilder(Class<T> type, Class<? extends Builder<? extends T>> builder) {
+        builders.put(type, builder);
+    }
+
+    /**
+     * Register a default set of builders.
+     */
+    protected void registerDefaultBuilders() {
+        registerBuilder(PreferenceDomain.class, PreferenceDomainBuilder.class);
     }
 }
