@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.*;
 
 /**
@@ -60,18 +61,35 @@ public class EvalConfigEngine {
         classLoader = loader;
     }
 
+    /**
+     * Load a script from a file.
+     * @param file The file to read.
+     * @return The script as parsed and compiled by Groovy.
+     * @throws IOException if the file cannot be read.
+     */
     protected EvalConfigScript loadScript(File file) throws IOException {
         EvalConfigScript script =  (EvalConfigScript) shell.parse(file);
         script.setEngine(this);
         return script;
     }
 
-    protected EvalConfigScript loadScript(InputStream in) {
+    /**
+     * Load a script from a reader.
+     * @param in The reader to read.
+     * @return The script as parsed and compiled by Groovy.
+     */
+    protected EvalConfigScript loadScript(Reader in) {
         EvalConfigScript script = (EvalConfigScript) shell.parse(in);
         script.setEngine(this);
         return script;
     }
 
+    /**
+     * Run an evaluation config script and get the evaluations it produces.
+     * @param script The script to run (as loaded by Groovy)
+     * @return A list of evaluations produced by {@code script}.
+     * @throws EvaluatorConfigurationException if the script is invalid or produces an error.
+     */
     protected List<Evaluation> runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
         List<Evaluation> evals = new LinkedList<Evaluation>();
         try {
@@ -87,15 +105,32 @@ public class EvalConfigEngine {
         return evals;
     }
 
+    /**
+     * Load a set of evaluations from a script file.
+     * @param file A Groovy script to configure the evaluator.
+     * @return A list of evaluations to run.
+     * @throws EvaluatorConfigurationException if there is a configuration error
+     * @throws IOException if there is an error reading the file
+     */
     public List<Evaluation> load(File file) throws EvaluatorConfigurationException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
 
-    public List<Evaluation> load(InputStream in) throws EvaluatorConfigurationException {
+    /**
+     * Load a set of evaluations from an input stream.
+     * @param in The input stream
+     * @return A list of evaluations
+     * @throws EvaluatorConfigurationException if there is a configuration error
+     */
+    public List<Evaluation> load(Reader in) throws EvaluatorConfigurationException {
         return runScript(loadScript(in));
     }
 
+    /**
+     * Get the map of names to builder factories.
+     * @return The mapping of builder factory names.
+     */
     synchronized Map<String,BuilderFactory<?>> getFactories() {
         if (factories == null) {
             ServiceLoader<BuilderFactory> loader = ServiceLoader.load(BuilderFactory.class, classLoader);

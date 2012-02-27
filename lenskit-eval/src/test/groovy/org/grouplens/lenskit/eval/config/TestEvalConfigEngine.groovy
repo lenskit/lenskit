@@ -20,7 +20,7 @@ class TestEvalConfigEngine {
     }
 
     private def script(name) {
-        return getClass().getResourceAsStream(name)
+        return new InputStreamReader(getClass().getResourceAsStream(name), "UTF-8")
     }
 
     @Test
