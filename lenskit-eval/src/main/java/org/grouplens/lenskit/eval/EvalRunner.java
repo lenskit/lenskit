@@ -18,18 +18,10 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.grouplens.lenskit.util.dtree.DataNode;
-import org.grouplens.lenskit.util.dtree.Trees;
-import org.grouplens.lenskit.util.spi.ConfigAlias;
-import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Configure and run evaluations.

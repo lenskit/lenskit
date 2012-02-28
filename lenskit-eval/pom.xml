@@ -72,13 +72,6 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy</artifactId>
     </dependency>
-    <dependency>
-    	<groupId>rhino</groupId>
-    	<artifactId>js</artifactId>
-    	<version>1.7R2</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
-    </dependency>
 
     <dependency>
       <groupId>org.grouplens.common</groupId>
