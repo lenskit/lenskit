@@ -64,8 +64,9 @@ and dependencies.  The other modules are as follows:
 ## Notes for Eclipse
 
 If you want to work with the LensKit sources in Eclipse, the checkout is complicated a bit
-by limitations in M2e's integration with Mercurial. You'll need the Maven support ([m2e][])
-and the [MercurialEclipse][HGE] plugin. Then do the following:
+by limitations in M2e's integration with Mercurial. You'll need the Maven support ([m2e][]),
+[MercurialEclipse][HGE] plugin, and the Groovy development tools (at least to work with the
+evaluator code). Then do the following:
 
 * Check out the LensKit source tree by selecting “Mercurial” / “Clone existing repository”
   from the Import dialog.
