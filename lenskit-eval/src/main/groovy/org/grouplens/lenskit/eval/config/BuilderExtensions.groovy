@@ -1,58 +1,17 @@
 package org.grouplens.lenskit.eval.config
 
-import com.google.common.base.Preconditions
 import java.lang.reflect.Method
-import java.util.concurrent.Callable
 import org.apache.commons.lang3.builder.Builder
+import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.slf4j.LoggerFactory
-import org.codehaus.plexus.util.StringUtils
+import static ParameterTransforms.pickInvokable
 
 /**
+ * Utilities for searching for methods of {@link Builder}s.
  * @author Michael Ekstrand
  */
 class BuilderExtensions {
     private static final def logger = LoggerFactory.getLogger(BuilderExtensions)
-
-    /**
-     * Transform arguments, returning an array of callables yielding the converted
-     * arguments. Callables are used to defer argument conversion until it is needed.
-     * @param actuals The actual parameters to a method call.
-     * @param formals The types of the method's formal parameters.
-     * @return An array of argument thunks
-     */
-    static Callable[] transformArgs(Object[] actuals, Class[] formals) {
-        Preconditions.checkArgument(actuals.length == formals.length)
-        def tforms = new Callable[actuals.length]
-        for (i in 0..<formals.length) {
-            final def type = formals[i]
-            final def arg = actuals[i]
-            if (type.isInstance(arg)) {
-                tforms[i] = {arg}
-            } else if (type.isAssignableFrom(File) && arg instanceof String) {
-                tforms[i] = {new File(arg as String)}
-            } else if (type.isAssignableFrom(File) && arg instanceof GString) {
-                tforms[i] = {new File(arg.toString())}
-            } else if (arg instanceof Class && type.isAssignableFrom(arg)) {
-                tforms[i] = {(arg as Class).newInstance()}
-            } else {
-                return null
-            }
-        }
-        tforms
-    }
-
-    static def withTransform(Object[] args, Class[] formals, Closure cont) {
-        if (formals.length == args.length) {
-            def xform = transformArgs(args, formals)
-            if (xform != null) {
-                return {
-                    Object[] xargs = xform*.call()
-                    cont(xargs)
-                }
-            }
-        }
-        return null
-    }
 
     static def findMethod(Builder self, EvalConfigEngine engine, String name, Object[] args) {
         logger.debug("searching for method {}", name)
@@ -70,58 +29,58 @@ class BuilderExtensions {
             }
         }
 
-        // scan the methods for string or file conversions
+        // check whether any methods exist with this name
         List<Method> methods = self.class.methods.findAll {it.name == name}
         if (methods.isEmpty()) return null
 
-        // FIXME detect & fail on multiple valid methods
-        Closure invoker = methods.collect({ m ->
-            def formals = m.parameterTypes
-            if (m.varArgs) {
-                null
-            } else {
-                withTransform(args, formals) {
-                    m.invoke(self, it)
-                }
+        // try to pick a method based on basic transformations
+        def inv = pickInvokable(args) {self.metaClass.pickMethod(name, it)}
+        if (inv != null) {
+            return {
+                Object[] txargs = inv.right.collect({it.get()})
+                inv.left.invoke(self, txargs)
             }
-        }).find()
+        }
 
-        if (invoker == null) {
-            // search for a single-argument method with a buildable parameter
-            // FIXME this is messy and unreadable
-            invoker = methods.collect({ m ->
-                def formals = m.parameterTypes
-                if (formals.length == 1) {
-                    def type = formals[0]
-                    logger.debug("looking for builder of type {}", type)
-                    def bld = engine.getBuilderForType(type)
-                    if (bld != null) {
-                        logger.debug("using builder {}", bld)
-                        Object[] cargs = args
-                        Closure block = null
-                        if (cargs.length > 0 && cargs[cargs.length-1] instanceof Closure) {
-                            block = cargs[cargs.length-1] as Closure
-                            cargs = Arrays.copyOf(cargs, cargs.length-1)
-                        }
-                        def invoke = bld.constructors.collect({ ctor ->
-                            ctor.varArgs ? null : (withTransform(cargs, ctor.parameterTypes) {
-                                ctor.newInstance(it)
-                            })
-                        }).find()
-                        if (invoke != null) {
-                            return {
-                                def builder = invoke()
-                                def obj = ConfigHelpers.invokeBuilder(engine, builder, block)
-                                m.invoke(self, obj)
-                            }
+        // search for a single-argument method with a buildable parameter
+        // FIXME this is messy and unreadable
+        def buildables = methods.collect({ method ->
+            def formals = method.parameterTypes
+            if (formals.length == 1) {
+                def type = formals[0]
+                logger.debug("looking for builder of type {}", type)
+                Class bld = engine.getBuilderForType(type)
+                if (bld != null) {
+                    logger.debug("using builder {}", bld)
+                    Closure block = null
+                    Object[] trimmedArgs
+                    if (args.length > 0 && args[args.length-1] instanceof Closure) {
+                        block = args[args.length-1] as Closure
+                        trimmedArgs = Arrays.copyOf(args, args.length-1)
+                    } else {
+                        trimmedArgs = args
+                    }
+                    def bestCtor = pickInvokable(trimmedArgs) {
+                        ConstructorUtils.getMatchingAccessibleConstructor(bld, it)
+                    }
+                    if (bestCtor != null) {
+                        return {
+                            Object[] txargs = bestCtor.right.collect({it.get()})
+                            def builder = bestCtor.left.newInstance(txargs)
+                            def obj = ConfigHelpers.invokeBuilder(engine, builder, block)
+                            method.invoke(self, obj)
                         }
                     }
                 }
-                return null
-            }).find()
-        }
+            }
+            return null
+        }).findAll()
 
-        if (invoker != null) return invoker
+        if (buildables.size() == 1) {
+            return buildables.get(0)
+        } else if (buildables.size() > 1) {
+            throw new RuntimeException("too many buildable options for method ${name}")
+        }
 
         return {
             throw new IllegalArgumentException("illegal arguments for ${self.class.name}.${name}")
