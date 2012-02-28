@@ -21,7 +21,6 @@ package org.grouplens.lenskit.eval.data;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

@@ -19,11 +19,11 @@
 package org.grouplens.lenskit.eval;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.config.AlgorithmBuilderDelegate;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
+import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -120,7 +120,7 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
         return new AlgorithmInstance(name, factory, attributes, preload);
     }
 
-    @ServiceProvider
+    @MetaInfServices
     public static class Factory implements BuilderFactory<AlgorithmInstance> {
         public String getName() {
             return "algorithm";

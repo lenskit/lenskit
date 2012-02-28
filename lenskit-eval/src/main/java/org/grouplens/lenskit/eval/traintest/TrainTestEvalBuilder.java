@@ -19,13 +19,10 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -38,10 +35,7 @@ import java.util.List;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ServiceProvider
 public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
-    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalBuilder.class);
-
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<PredictEvalMetric> metrics;

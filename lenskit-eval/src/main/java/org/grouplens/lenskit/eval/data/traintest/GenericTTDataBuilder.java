@@ -19,10 +19,10 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.kohsuke.MetaInfServices;
 
 /**
  * @author Michael Ekstrand
@@ -53,7 +53,7 @@ public class GenericTTDataBuilder implements Builder<TTDataSet> {
         return new GenericTTDataSet(name, trainingData, testData, domain);
     }
 
-    @ServiceProvider
+    @MetaInfServices
     public static class Factory implements BuilderFactory<TTDataSet> {
         public String getName() {
             return "generic";

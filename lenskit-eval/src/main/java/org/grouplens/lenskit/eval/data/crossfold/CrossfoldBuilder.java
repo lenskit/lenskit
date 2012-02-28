@@ -19,10 +19,10 @@
 package org.grouplens.lenskit.eval.data.crossfold;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
 
@@ -103,7 +103,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
         return new CrossfoldSplit(name, source, folds, new Holdout(order, partition));
     }
 
-    @ServiceProvider
+    @MetaInfServices
     public static class Factory implements BuilderFactory<CrossfoldSplit> {
         @Override
         public String getName() {

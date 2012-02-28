@@ -20,9 +20,9 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
+import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -112,7 +112,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     /**
      * Factory for building CSV data sources. It is registered under the name “csvfile”.
      */
-    @ServiceProvider
+    @MetaInfServices
     public static class Factory implements BuilderFactory<CSVDataSource> {
         @Override public String getName() {
             return "csvfile";

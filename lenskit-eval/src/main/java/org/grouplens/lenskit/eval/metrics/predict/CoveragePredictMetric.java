@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.common.spi.ServiceProvider;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -33,8 +32,6 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("coverage")
-@ServiceProvider
 public class CoveragePredictMetric implements PredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final String[] COLUMNS = {
