@@ -23,7 +23,7 @@ import sun.text.normalizer.NormalizerBase
 
 baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
-ml100k = crossfold("ml-100k") {
+def ml100k = crossfold("ml-100k") {
     source csvfile("ml-100k/u.data") {
         delimiter "\t"
     }
