@@ -123,4 +123,16 @@ class TestTrainTestBuilderConfig {
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
+
+    @Test
+    void testCrossfoldDataSource() {
+        eval {
+            dataSource crossfold("ml-100k") {
+                source "ml-100k.csv"
+                partitions 7
+            }
+        }
+        def data = builder.dataSources()
+        assertThat(data.size(), equalTo(7))
+    }
 }

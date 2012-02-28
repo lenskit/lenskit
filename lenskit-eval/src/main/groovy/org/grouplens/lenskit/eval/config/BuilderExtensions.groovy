@@ -5,6 +5,8 @@ import org.apache.commons.lang3.builder.Builder
 import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
+import com.google.common.base.Supplier
+import org.apache.commons.lang3.reflect.TypeUtils
 
 /**
  * Utilities for searching for methods of {@link Builder}s.
@@ -13,7 +15,14 @@ import static ParameterTransforms.pickInvokable
 class BuilderExtensions {
     private static final def logger = LoggerFactory.getLogger(BuilderExtensions)
 
-    static def findMethod(Builder self, EvalConfigEngine engine, String name, Object[] args) {
+    /**
+     * Find a method compatible with some arguments.
+     * @param self The builder.
+     * @param name The method name.
+     * @param args The arguments.
+     * @return A closure invoking the method, or {@code null}.
+     */
+    static def findMethod(Builder self, String name, Object[] args) {
         logger.debug("searching for method {}", name)
         def atypes = new Class[args.length]
         for (i in 0..<args.length) {
@@ -29,20 +38,29 @@ class BuilderExtensions {
             }
         }
 
-        // check whether any methods exist with this name
-        List<Method> methods = self.class.methods.findAll {it.name == name}
-        if (methods.isEmpty()) return null
-
         // try to pick a method based on basic transformations
         def inv = pickInvokable(args) {self.metaClass.pickMethod(name, it)}
-        if (inv != null) {
+        if (inv == null) {
+            return null
+        } else {
             return {
                 Object[] txargs = inv.right.collect({it.get()})
                 inv.left.invoke(self, txargs)
             }
         }
+    }
 
-        // search for a single-argument method with a buildable parameter
+    /**
+     * Search for a single-argument method with a parameter that can be built.
+     * @param self The builder to search.
+     * @param engine The config engine.
+     * @param name The method name.
+     * @param args The arguments.
+     * @return A closure using a builder to build an object and then pass it to a single-parameter
+     * method, or {@code null} if no such method can be found.
+     * @see EvalConfigEngine#getBuilderForType(Class)
+     */
+    static def findBuildableMethod(Builder self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
         // FIXME this is messy and unreadable
         def buildables = methods.collect({ method ->
             def formals = method.parameterTypes
@@ -79,21 +97,73 @@ class BuilderExtensions {
         if (buildables.size() == 1) {
             return buildables.get(0)
         } else if (buildables.size() > 1) {
-            throw new RuntimeException("too many buildable options for method ${name}")
+            throw new RuntimeException("too many buildable options")
+        } else {
+            return null
         }
+    }
 
-        return {
-            throw new IllegalArgumentException("illegal arguments for ${self.class.name}.${name}")
+    static def findMultiMethod(Builder self, String name, Object[] args) {
+        if (args.length != 1) return null
+        if (!(args[0] instanceof Supplier)) return null
+        def arg = args[0] as Supplier
+
+        // unpack the type
+        def type = arg.class
+        // get the type arguments for Supplier to instantiate this type
+        def asn = TypeUtils.getTypeArguments(type, Supplier)
+        def lstType = asn?.get(Supplier.typeParameters[0])
+        if (lstType == null) return null // we can't resolve the list type
+        // Does the supplier supply a list?
+        if (List.class.isAssignableFrom(TypeUtils.getRawType(lstType, null))) {
+            // Unpack the type of element in the list
+            def lstAsn = TypeUtils.getTypeArguments(lstType, List)
+            def eltType = lstAsn?.get(List.typeParameters[0])
+            assert eltType != null
+            Class[] atypes = [eltType]
+            MetaMethod mm = self.metaClass.pickMethod(name, atypes)
+            if (mm != null) {
+                return {
+                    for (elt in arg.get()) {
+                        mm.doMethodInvoke(self, elt)
+                    }
+                }
+            }
         }
+    }
+
+    static List<Method> getMethods(Builder self, String name) {
+        self.class.methods.findAll {it.name == name}
     }
 
     static def findSetter(Builder self, EvalConfigEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
-        return findMethod(self, engine, name, args)
+        def method = findMethod(self, name, args)
+        if (method == null) {
+            def methods = getMethods(self, name)
+            method = findBuildableMethod(self, engine, methods, args)
+            if (method == null && !methods.isEmpty()) {
+                return {
+                    throw new IllegalArgumentException("no compatible method ${name} found")
+                }
+            }
+        }
+        return method
     }
 
     static def findAdder(Builder self, EvalConfigEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
-        return findMethod(self, engine, name, args)
+        def method = findMethod(self, name, args)
+        if (method == null) method = findMultiMethod(self, name, args)
+        if (method == null) {
+            def methods = getMethods(self, name)
+            method = findBuildableMethod(self, engine, methods, args)
+            if (method == null && !methods.isEmpty()) {
+                return {
+                    throw new IllegalArgumentException("no compatible method ${name} found")
+                }
+            }
+        }
+        return method
     }
 }
