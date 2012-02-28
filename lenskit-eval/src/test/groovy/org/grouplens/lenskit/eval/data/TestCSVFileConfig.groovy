@@ -64,4 +64,19 @@ class TestCSVFileConfig extends ConfigTestBase {
         }
         assertThat(source.domain, equalTo(new PreferenceDomain(1.0, 5.0, 1.0)))
     }
+
+    /**
+     * Can we use {@link GString}s?
+     */
+    @Test
+    void testGString() {
+        def name = "ml-100k"
+        def source = eval {
+            csvfile(name) {
+                file "${name}.csv"
+            }
+        }
+        assertThat(source.name, equalTo("ml-100k"))
+        assertThat(source.file, equalTo(new File("ml-100k.csv")))
+    }
 }

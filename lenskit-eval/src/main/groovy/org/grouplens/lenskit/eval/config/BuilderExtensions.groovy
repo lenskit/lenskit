@@ -30,6 +30,8 @@ class BuilderExtensions {
                 tforms[i] = {arg}
             } else if (type.isAssignableFrom(File) && arg instanceof String) {
                 tforms[i] = {new File(arg as String)}
+            } else if (type.isAssignableFrom(File) && arg instanceof GString) {
+                tforms[i] = {new File(arg.toString())}
             } else if (arg instanceof Class && type.isAssignableFrom(arg)) {
                 tforms[i] = {(arg as Class).newInstance()}
             } else {
