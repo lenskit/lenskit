@@ -1,4 +1,9 @@
 import org.grouplens.lenskit.RatingPredictor
+import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
+import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.knn.CosineSimilarity
 import org.grouplens.lenskit.knn.Similarity
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
@@ -19,34 +24,37 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
-import sun.text.normalizer.NormalizerBase
 
-baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
+def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
+
+def buildDir = System.getProperty("project.build.directory", ".")
 
 def ml100k = crossfold("ml-100k") {
-    source csvfile("ml-100k/u.data") {
+    source csvfile("${buildDir}/ml-100k/u.data") {
         delimiter "\t"
+        domain {
+            minimum 1.0
+            maximum 5.0
+            precision 1.0
+        }
     }
-    order "random"
+    order RandomOrder
     holdout 10
     partitions 5
-
-    domain {
-        minimimum 1.0
-        maximum 5.0
-        precision 1.0
-    }
 }
 
 trainTest {
     dataset ml100k
 
     output "eval-out.csv"
-    predictionOutput("eval-preds.csv.gz") {
-        compressed true
-    }
+    predictOutput "eval-preds.csv.gz"
 
-    for (bl: baselines) {
+    metric CoveragePredictMetric
+    metric MAEPredictMetric
+    metric RMSEPredictMetric
+    metric NDCGPredictMetric
+
+    for (bl in baselines) {
         algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {
             setComponent(RatingPredictor, BaselineRatingPredictor)
             setComponent(BaselinePredictor, bl)
@@ -73,19 +81,19 @@ trainTest {
     }
 
     algorithm("SlopeOne") {
-        setComponent(NormalizerBase, BaselinePredictor, GlobalMeanPredictor)
+        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
         setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
         setComponent(RatingPredictor, SlopeOneRatingPredictor)
         setComponent(BaselinePredictor, ItemUserMeanPredictor)
-        setComponent(DeviationDamping, 0)
+        set(DeviationDamping, 0)
     }
 
     algorithm("WeightedSlopeOne") {
-        setComponent(NormalizerBase, BaselinePredictor, GlobalMeanPredictor)
+        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
         setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
         setComponent(RatingPredictor, WeightedSlopeOneRatingPredictor)
         setComponent(BaselinePredictor, ItemUserMeanPredictor)
-        setComponent(DeviationDamping, 0)
+        set(DeviationDamping, 0)
     }
 
     algorithm("FunkSVD") {

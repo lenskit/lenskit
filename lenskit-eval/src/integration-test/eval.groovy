@@ -15,7 +15,7 @@ def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, Item
 
 trainTest {
     output "${buildDir}/eval-output/baselines.csv"
-    dataSource crossfold {
+    dataset crossfold {
         source csvfile("ml-100k") {
             file "${buildDir}/ml-100k/u.data"
             delimiter "\t"

@@ -85,7 +85,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
                                        outBuilder, predBuilder);
     }
 
-    public void addDataSource(TTDataSet source) {
+    public void addDataset(TTDataSet source) {
         dataSources.add(source);
     }
 

@@ -77,7 +77,7 @@ class TestTrainTestBuilderConfig {
     void testGenericInput() {
         boolean closureInvoked = false
         eval {
-            dataSource {
+            dataset {
                 // check some things about our strategy...
                 assertThat(delegate, instanceOf(BuilderDelegate))
                 assertThat(resolveStrategy, equalTo(Closure.DELEGATE_FIRST))
@@ -107,7 +107,7 @@ class TestTrainTestBuilderConfig {
     void testGenericDefaults() {
         boolean closureInvoked = false
         eval {
-            dataSource {
+            dataset {
                 closureInvoked = true
                 train "train.csv"
                 test "test.csv"
@@ -127,7 +127,7 @@ class TestTrainTestBuilderConfig {
     @Test
     void testCrossfoldDataSource() {
         eval {
-            dataSource crossfold("ml-100k") {
+            dataset crossfold("ml-100k") {
                 source "ml-100k.csv"
                 partitions 7
             }
