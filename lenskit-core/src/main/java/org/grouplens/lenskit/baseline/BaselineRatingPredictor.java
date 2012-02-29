@@ -58,12 +58,4 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
         UserVector ratings = RatingVectorHistorySummarizer.makeRatingVector(profile);
         return predictor.predict(ratings, items);
     }
-
-    /**
-     * Delegate to {@link BaselinePredictor#predict(long, Collection)}.
-     */
-	@Override
-	public SparseVector globalScore(long queryItem, Collection<Long> items) {
-		return predictor.predict(queryItem, items);
-	}
 }

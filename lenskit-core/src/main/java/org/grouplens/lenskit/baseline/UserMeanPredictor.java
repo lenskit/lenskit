@@ -98,15 +98,6 @@ public class UserMeanPredictor implements BaselinePredictor {
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         return ConstantPredictor.constantPredictions(items, mean);
     }
-    
-    /**
-     * The global recommendation doesn't have user mean prediction. Delegate to {@link ItemMeanPredictor#predict(long, Collection)}
-     */
-    @Override
-    public MutableSparseVector predict(long queryItem,
-                                       Collection<Long> items) {
-        return ItemMeanPredictor.predict(queryItem, items);
-    }
 
     @Override
     public String toString() {

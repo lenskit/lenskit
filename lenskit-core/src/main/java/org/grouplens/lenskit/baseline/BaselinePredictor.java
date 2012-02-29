@@ -47,6 +47,4 @@ public interface BaselinePredictor extends Serializable {
      * @see RatingPredictor#score(UserHistory, Collection)
      */
     MutableSparseVector predict(UserVector ratings, Collection<Long> items);
-    
-    MutableSparseVector predict(long item, Collection<Long> items);
 }

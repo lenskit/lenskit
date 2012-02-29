@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.data.Event;
@@ -38,7 +37,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * {@link ItemRecommender} by delegating them to general methods with
  * fastutil-based interfaces.
  */
-public abstract class AbstractItemRecommender implements ItemRecommender, GlobalItemRecommender {
+public abstract class AbstractItemRecommender implements ItemRecommender {
     protected final DataAccessObject dao;
 
     protected AbstractItemRecommender(DataAccessObject dao) {
@@ -131,24 +130,6 @@ public abstract class AbstractItemRecommender implements ItemRecommender, Global
     	return globalRecommend(item, n, null, null);
     }
 
-    /**
-     * Delegate to {@link #globalRecommend(long, int, LongSet, LongSet)}.
-     */
-    @Override 
-    public ScoredLongList globalRecommend(long item, @Nullable Set<Long> candidates) {
-    	return globalRecommend(item, -1, candidates, null);
-    }
-
-    /**
-     * Delegate to {@link #globalRecommend(long, int, LongSet, LongSet)}.
-     */
-    @Override 
-    public ScoredLongList globalRecommend(long item, int n, @Nullable Set<Long> candidates,
-                             @Nullable Set<Long> exclude) {
-    	LongSet cs = CollectionUtils.fastSet(candidates);
-    	LongSet es = CollectionUtils.fastSet(exclude);
-    	return globalRecommend(item, n, cs, es);
-    }
     
 
     /**

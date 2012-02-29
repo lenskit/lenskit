@@ -1,5 +1,5 @@
 /*
- * LensKit, an open source recommender systems toolkit.
+ * LensKit, a reference implementation of recommender algorithms.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -77,7 +77,7 @@ public interface Recommender {
      */
     @Nullable
     ItemRecommender getItemRecommender();
-    
+        
     /**
      * Get the recommender's global item recommender.
      *
@@ -86,8 +86,7 @@ public interface Recommender {
      */
     @Nullable
     GlobalItemRecommender getGlobalItemRecommender();
-
-    /**
+/**
      * @deprecated Use {@link #getItemRecommender()} instead.
      */
     @Nullable @Deprecated

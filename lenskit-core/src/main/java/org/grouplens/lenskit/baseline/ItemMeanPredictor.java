@@ -159,7 +159,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long queryItem,
+    public MutableSparseVector predict(UserVector ratings,
                                        Collection<Long> items) {
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();
         if (!(items instanceof LongSortedSet))
@@ -169,14 +169,6 @@ public class ItemMeanPredictor implements BaselinePredictor {
             preds[i] = getItemMean(keys[i]);
         }
         return MutableSparseVector.wrap(keys, preds);
-    }
-    /**
-     * Delegate to {@link #predict(long, Collection)}
-     */
-    @Override
-    public MutableSparseVector predict(UserVector ratings,
-                                       Collection<Long> items) {
-        return predict(0, items);
     }
 
 
