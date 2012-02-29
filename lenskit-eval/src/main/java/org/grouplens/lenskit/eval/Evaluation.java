@@ -40,7 +40,7 @@ public interface Evaluation {
     
     /**
      * Finalize the evaluation.  This method is called after all jobs have
-     * finished.  It is responsible for closing any otuput files, freeing
+     * finished.  It is responsible for closing any output files, freeing
      * remaining resources, etc.
      */
     void finish();

@@ -86,11 +86,12 @@ public class UserVector extends ImmutableSparseVector {
 
     /**
      * Build a user rating vector from a collection of preferences.
-     * @param userId
+     * @param userId The ID of the user.
      * @param prefs The preference list.  It should not contain duplicates; if
      * it does, the last occurrences (in iteration order) take precedence.
      * @return The user rating vector.
      */
+    @SuppressWarnings("unchecked")
     public static UserVector fromPreferences(long userId, Collection<? extends Preference> prefs) {
         Long2DoubleMap m = new Long2DoubleOpenHashMap(prefs.size());
         Iterator<? extends Preference> iter;

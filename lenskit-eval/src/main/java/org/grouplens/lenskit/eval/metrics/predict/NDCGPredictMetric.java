@@ -16,17 +16,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
-import static java.lang.Math.log;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.lang.Math.log;
 
 /**
  * Evaluate a recommender's predictions with normalized discounted cumulative gain.
@@ -46,12 +47,12 @@ import org.slf4j.LoggerFactory;
  */
 @ConfigAlias("nDCG")
 @MetaInfServices
-public class NDCGEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(NDCGEvaluator.class);
+public class NDCGPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     private static final String[] COLUMNS = { "nDCG" };
 
     @Override
-    public Accum makeAccumulator() {
+    public Accum makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
 

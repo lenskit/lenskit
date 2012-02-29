@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 
@@ -37,17 +38,20 @@ public class GenericTTDataSet implements TTDataSet {
     private final DAOFactory trainFactory;
     private final DAOFactory testFactory;
     private long lastUpdated = 0L;
-    
+    private final PreferenceDomain preferenceDomain;
+
     /**
      * Create a new generic data set.
      * @param name The data set name.
      * @param train The training DAO factory.
      * @param test The test DAO factory.
+     * @param domain The preference domain.
      */
-    public GenericTTDataSet(String name, DAOFactory train, DAOFactory test) {
+    public GenericTTDataSet(String name, DAOFactory train, DAOFactory test, PreferenceDomain domain) {
         this.name = name;
         trainFactory = train;
         testFactory = test;
+        preferenceDomain = domain;
     }
     
     @Override
@@ -81,6 +85,11 @@ public class GenericTTDataSet implements TTDataSet {
     @Override
     public void release() {
         /* Do nothing */
+    }
+
+    @Override
+    public PreferenceDomain getPreferenceDomain() {
+        return preferenceDomain;
     }
 
     @Override

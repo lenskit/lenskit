@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.grouplens.lenskit</groupId>
+  <artifactId>build-tools</artifactId>
+  <version>0.10-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>LensKit Build Tools</name>
+  <description>Files &amp; utilities used in LensKit build.</description>
+  <url>${lenskit.web.url}/build-tools</url>
+
+  <properties>
+    <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
+    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
+    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
+  </properties>
+
+  <distributionManagement>
+    <site>
+      <id>grouplens.org</id>
+      <name>LensKit Website</name>
+      <url>${lenskit.web.path}/build-tools</url>
+    </site>
+    <snapshotRepository>
+      <id>grouplens.org</id>
+      <name>GroupLens Maven repository</name>
+      <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+</project>

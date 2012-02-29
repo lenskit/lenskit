@@ -26,6 +26,8 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
+ * Recommend items using item-item collaborative filtering.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

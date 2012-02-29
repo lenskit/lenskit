@@ -26,12 +26,16 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
 import com.google.common.collect.Iterators;
+
+import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
 
 /**
  * Various helper methods for working with collections (particularly Fastutil
@@ -40,6 +44,36 @@ import com.google.common.collect.Iterators;
  *
  */
 public class CollectionUtils {
+    /**
+     * Use the fast iterator of an iterable, if available.
+     * @param iter An iterable to wrap
+     * @return An iterable using the underlying iterable's fast iterator, if present,
+     * to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
+     * method, like is present in {@link FastEntrySet}.
+     * @review Is this how we want to do this, or should it go interface-hunting?
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> Iterable<E> fast(final Iterable<E> iter) {
+        Class<?> cls = iter.getClass();
+        try {
+            final Method fastMethod = cls.getMethod("fastIterator");
+            return new Iterable<E>() {
+                @Override
+                public Iterator<E> iterator() {
+                    try {
+                        return (Iterator<E>) fastMethod.invoke(iter);
+                    } catch (IllegalAccessException e) {
+                        return iter.iterator();
+                    } catch (InvocationTargetException e) {
+                        return iter.iterator();
+                    }
+                }
+            };
+        } catch (NoSuchMethodException e) {
+            return iter;
+        }
+    }
+
     /**
      * Get a Fastutil {@link LongCollection} from a {@link Collection} of longs.
      * This method simply casts the collection, if possible, and returns a

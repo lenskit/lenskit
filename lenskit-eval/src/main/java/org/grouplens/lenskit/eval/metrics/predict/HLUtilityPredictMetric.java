@@ -16,11 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.predict;
+package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
@@ -29,22 +29,22 @@ import org.slf4j.LoggerFactory;
 
 @ConfigAlias("HLUtility")
 @MetaInfServices
-public class HLUtilityEvaluator implements PredictionEvaluator {
-    private static final Logger logger = LoggerFactory.getLogger(HLUtilityEvaluator.class);
+public class HLUtilityPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
     private static final String[] COLUMNS = { "HLUtility" };
     
     private double alpha;
 
-    public HLUtilityEvaluator(double newAlpha) {
+    public HLUtilityPredictMetric(double newAlpha) {
         alpha = newAlpha;
     }
 
-    public HLUtilityEvaluator() {
+    public HLUtilityPredictMetric() {
         alpha = 5;
     }
 
     @Override
-    public Accum makeAccumulator() {
+    public Accum makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
     

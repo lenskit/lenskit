@@ -21,8 +21,11 @@ package org.grouplens.lenskit.eval.data.traintest;
 import java.util.Map;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.Preparable;
+
+import javax.annotation.Nullable;
 
 /**
  * Interface for train-test data sets.  This is a single train-test pair.
@@ -38,6 +41,13 @@ public interface TTDataSet extends Preparable {
      * @see JobGroup#getName()
      */
     String getName();
+
+    /**
+     * Get the preference domain for this data set.
+     * @return The data set preference domain.
+     */
+    @Nullable
+    PreferenceDomain getPreferenceDomain();
     
     /**
      * Get the data set attributes (used for identification in output).

@@ -38,7 +38,7 @@ public interface ScoredLongList extends LongList {
      * @param index The position for the new item.
      * @param item The item value.
      * @param score The item score.
-     * @see #add(int, Long)
+     * @see #add(int, long)
      */
     void add(int index, long item, double score);
 
@@ -48,7 +48,7 @@ public interface ScoredLongList extends LongList {
      * @param item The item to add.
      * @param score The item's score.
      * @return <tt>true</tt> if the collection was modified.
-     * @see #add(Long)
+     * @see #add(long)
      */
     boolean add(long item, double score);
 
@@ -100,7 +100,7 @@ public interface ScoredLongList extends LongList {
 
     /**
      * Set the score for the item at a position.
-     * @param The index.
+     * @param index The index.
      * @param score The new score.
      * @return The old score.
      */

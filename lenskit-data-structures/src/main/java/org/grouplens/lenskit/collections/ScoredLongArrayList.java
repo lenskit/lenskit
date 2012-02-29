@@ -18,10 +18,11 @@
  */
 package org.grouplens.lenskit.collections;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
+import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.doubles.*;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -34,6 +35,8 @@ import java.util.List;
 
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.Nonnull;
 
 /**
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
@@ -56,6 +59,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Create a new list with a specified initial capacity.
+     * @param capacity the initial capacity of the list.
      */
     public ScoredLongArrayList(int capacity) {
         items = new LongArrayList(capacity);
@@ -460,19 +464,21 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public void add(int index, long item, double score) {
-        if (scores == null && !Double.isNaN(score)) {
-            makeScoreList();
+        if (!Double.isNaN(score)) {
+            ensureScoreList();
         }
         items.add(index, item);
         if (scores != null)
             scores.add(index, score);
     }
 
-    private void makeScoreList() {
-        final int sz = size();
-        scores = new DoubleArrayList(sz);
-        for (int i = 0; i < sz; i++) {
-            scores.add(Double.NaN);
+    private void ensureScoreList() {
+        if (scores == null) {
+            final int sz = size();
+            scores = new DoubleArrayList(sz);
+            for (int i = 0; i < sz; i++) {
+                scores.add(Double.NaN);
+            }
         }
     }
 
@@ -483,20 +489,25 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     }
 
     @Override
-    public void addElements(int index, long[] items, double[] scores) {
+    public void addElements(int index, @Nonnull long[] items, @Nonnull double[] scores) {
         addElements(index, items, scores, 0, items.length);
     }
 
     @Override
-    public void addElements(int index, long[] items, double[] scores,
+    public void addElements(int index, @Nonnull long[] items, @Nonnull double[] scores,
                             int offset, int length) {
-        if (this.scores == null)
-            makeScoreList(); // FIXME don't need to always do this
-        if (scores.length < offset + length)
+        // FIXME don't need to always do this
+        ensureScoreList();
+
+        if (scores.length < offset + length) {
             throw new ArrayIndexOutOfBoundsException(offset + length);
+        }
+
         this.items.addElements(index, items, offset, length);
-        if (this.scores != null)
+
+        if (this.scores != null) {
             this.scores.addElements(index, scores, offset, length);
+        }
     }
 
     @Override
@@ -517,8 +528,8 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public double setScore(int index, double score) {
-        if (scores == null && !Double.isNaN(score)) {
-            makeScoreList();
+        if (!Double.isNaN(score)) {
+            ensureScoreList();
         }
         if (scores != null) {
             return scores.set(index, score);
@@ -548,6 +559,35 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             }
         }
         return v;
+    }
+
+    /**
+     * Sort the entries of this list by score.
+     * @param comp The comparator for odering by score.
+     */
+    public void sort(final DoubleComparator comp) {
+        if (scores == null) {
+            return; // no scores, no order
+        }
+
+        IntComparator idxc = new AbstractIntComparator() {
+            @Override
+            public int compare(int k1, int k2) {
+                return comp.compare(scores.get(k1), scores.get(k2));
+            }
+        };
+
+        Arrays.quickSort(0, size(), idxc, new Swap());
+    }
+    
+    class Swap implements Swapper {
+        @Override
+        public void swap(int a, int b) {
+            long old = items.set(a, items.getLong(b));
+            items.set(b, old);
+            double olds = scores.set(a, scores.getDouble(b));
+            scores.set(b, olds);
+        }
     }
 
     class Iter implements ScoredLongListIterator {

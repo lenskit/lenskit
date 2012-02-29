@@ -8,6 +8,7 @@
         <csvfile>
           <file displayName="ml-100k">${project.build.directory}/ml-100k/u.data</file>
           <delimiter>&#x9;</delimiter> <!-- tab character -->
+          <ratingDomain>[1.0,5.0]/1.0</ratingDomain>
         </csvfile>
       </sources>
     </crossfold>
