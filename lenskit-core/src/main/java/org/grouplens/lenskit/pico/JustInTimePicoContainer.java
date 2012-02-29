@@ -177,8 +177,10 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
         List<Object> all = super.getComponents();
         List<Object> withJIT = new ArrayList<Object>(all);
 
-        for (ComponentAdapter<?> adapter: jitAdapters.values())
-            withJIT.add(adapter.getComponentInstance(this, null));
+        if (jitAdapters != null) {
+            for (ComponentAdapter<?> adapter: jitAdapters.values())
+                withJIT.add(adapter.getComponentInstance(this, null));
+        }
         return withJIT;
     }
 
@@ -188,9 +190,11 @@ public class JustInTimePicoContainer extends DefaultPicoContainer {
         List<T> all = super.getComponents(type);
         List<T> withJIT = new ArrayList<T>(all);
 
-        for (ComponentAdapter<?> adapter: jitAdapters.values()) {
-            if (type.isAssignableFrom(adapter.getComponentImplementation()))
-                withJIT.add((T) adapter.getComponentInstance(this, null));
+        if (jitAdapters != null) {
+            for (ComponentAdapter<?> adapter: jitAdapters.values()) {
+                if (type.isAssignableFrom(adapter.getComponentImplementation()))
+                    withJIT.add((T) adapter.getComponentInstance(this, null));
+            }
         }
         return withJIT;
     }
