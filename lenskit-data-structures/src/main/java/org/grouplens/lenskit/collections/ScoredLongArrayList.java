@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.collections;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.*;
@@ -37,6 +38,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
@@ -87,7 +89,10 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         this.scores = new DoubleArrayList(scores);
     }
 
-    protected ScoredLongArrayList(LongList items, DoubleList scores) {
+    protected ScoredLongArrayList(@Nonnull LongList items,
+                                  @Nullable DoubleList scores) {
+        Preconditions.checkArgument(scores == null || scores.size() == items.size(),
+                                    "list size mismatch");
         this.items = items;
         this.scores = scores;
     }
@@ -578,6 +583,15 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         };
 
         Arrays.quickSort(0, size(), idxc, new Swap());
+    }
+
+    public void trim() {
+        if (items instanceof LongArrayList) {
+            ((LongArrayList) items).trim();
+        }
+        if (scores instanceof DoubleArrayList) {
+            ((DoubleArrayList) scores).trim();
+        }
     }
     
     class Swap implements Swapper {
