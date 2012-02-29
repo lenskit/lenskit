@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 package org.grouplens.lenskit.core;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;

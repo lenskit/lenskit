@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,9 +37,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.grouplens.lenskit.dtree.DataNode;
-import org.grouplens.lenskit.dtree.Trees;
-import org.grouplens.lenskit.dtree.xml.XMLDataNode;
+import org.grouplens.lenskit.util.dtree.DataNode;
+import org.grouplens.lenskit.util.dtree.Trees;
+import org.grouplens.lenskit.util.dtree.xml.XMLDataNode;
 import org.grouplens.lenskit.eval.EvalRunner;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.eval.IsolationLevel;
@@ -62,7 +62,7 @@ public class EvalCLI {
     
     /**
      * Run the evaluator from the command line.
-     * @param args
+     * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
         CommandLineParser parser = new GnuParser();

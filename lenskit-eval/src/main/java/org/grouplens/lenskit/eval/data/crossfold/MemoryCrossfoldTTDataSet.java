@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,18 +18,13 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Provider;
-
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.UserHistory;
@@ -43,8 +38,10 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Crossfold data set that caches data in-memory.
@@ -107,8 +104,8 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         
         logger.debug("Found {} test events");
         
-        EventProvider trainP = new EventProvider(factory, Predicates.not(testRatingPredicate()));
-        EventProvider testP = new EventProvider(factory, testRatingPredicate());
+        EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate()));
+        EventSupplier testP = new EventSupplier(factory, testRatingPredicate());
         trainFactory = new EventCollectionDAO.SoftFactory(trainP);
         testFactory = new EventCollectionDAO.SoftFactory(testP);
     }
@@ -157,11 +154,11 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         return testFactory;
     }
     
-    static class EventProvider implements Provider<List<Rating>> {
+    static class EventSupplier implements Supplier<List<Rating>> {
         final Predicate<? super Rating> predicate;
         final DAOFactory baseFactory;
         
-        public EventProvider(DAOFactory base, Predicate<? super Rating> pred) {
+        public EventSupplier(DAOFactory base, Predicate<? super Rating> pred) {
             baseFactory = base;
             predicate = pred;
         }

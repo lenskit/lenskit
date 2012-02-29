@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * Simple DOM-like trees. Data trees operate much like the XML DOM, but are
- * simpler and can be backed by other sources, such as Plexus configurations.
- * It is intended to allow components to be configured by a variety of data
- * sources.
+ * XML-backed implementation of {@link org.grouplens.lenskit.dtree data trees}.
  */
-package org.grouplens.lenskit.dtree;
+package org.grouplens.lenskit.util.dtree.xml;

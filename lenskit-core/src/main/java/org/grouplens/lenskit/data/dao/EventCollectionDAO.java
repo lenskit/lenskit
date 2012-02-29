@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,20 +21,12 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import static com.google.common.collect.Iterables.filter;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.concurrent.ThreadSafe;
-import javax.inject.Provider;
-
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.cursors.LongCursor;
@@ -44,9 +36,11 @@ import org.grouplens.lenskit.data.event.Events;
 import org.grouplens.lenskit.data.history.BasicUserHistory;
 import org.grouplens.lenskit.util.TypeUtils;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import javax.annotation.concurrent.ThreadSafe;
+import java.lang.ref.SoftReference;
+import java.util.*;
+
+import static com.google.common.collect.Iterables.filter;
 
 /**
  * Data source backed by a collection of events.
@@ -86,6 +80,16 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         public EventCollectionDAO snapshot() {
             return create();
         }
+
+        public static Factory wrap(DAOFactory base) {
+            DataAccessObject dao = base.create();
+            try {
+                List<Event> events = Cursors.makeList(dao.getEvents());
+                return new Factory(events);
+            } finally {
+                dao.close();
+            }
+        }
     }
     
     /**
@@ -93,10 +97,10 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      * @since 0.8
      */
     public static class SoftFactory implements DAOFactory {
-        private final Provider<? extends Collection<? extends Event>> provider;
+        private final Supplier<? extends Collection<? extends Event>> provider;
         private transient volatile SoftReference<DataAccessObject> instance;
         
-        public SoftFactory(Provider<? extends Collection<? extends Event>> p) {
+        public SoftFactory(Supplier<? extends Collection<? extends Event>> p) {
             provider = p;
         }
         
@@ -118,6 +122,21 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         @Override
         public DataAccessObject snapshot() {
             return create();
+        }
+
+        public static SoftFactory wrap(final DAOFactory base) {
+            Supplier<List<Event>> supplier = new Supplier<List<Event>>() {
+                @Override
+                public List<Event> get() {
+                    DataAccessObject dao = base.create();
+                    try {
+                        return Cursors.makeList(dao.getEvents());
+                    } finally {
+                        dao.close();
+                    }
+                }
+            };
+            return new SoftFactory(supplier);
         }
     }
 
@@ -201,8 +220,9 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<E> getUserEvents(long user, Class<E> type) {
-        if (!containsType(type))
+        if (!containsType(type)) {
             return Cursors.empty();
+        }
 
         requireUserCache();
         Collection<? extends Event> ratings = users.get(user);

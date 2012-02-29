@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -394,6 +394,20 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 values[i] = oe.getDoubleValue();
                 usedKeys.set(i);
             } // otherwise, key is greater; advance outer 
+        }
+    }
+    
+    /**
+     * Multiply the vector by a scalar. This multiples every element in the
+     * vector by <var>s</var>.
+     * @param s The scalar to rescale the vector by.
+     */
+    public final void scale(double s) {
+        clearCachedValues();
+        BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
+        while (iter.hasNext()) {
+            int i = iter.nextInt();
+            values[i] *= s;
         }
     }
 

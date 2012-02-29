@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,9 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer {
         double sum = 0;
         ScoredLongListIterator nIter = neighbors.iterator();
         while (nIter.hasNext()) {
+            @SuppressWarnings("unused")
+            long i = nIter.nextLong();
+            
             double sim = nIter.getScore();
             sum += sim;
         }

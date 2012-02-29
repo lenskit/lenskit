@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.dtree.xml;
+package org.grouplens.lenskit.util.dtree.xml;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -28,8 +28,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.codehaus.plexus.util.StringUtils;
-import org.grouplens.lenskit.dtree.DataNode;
+import org.apache.commons.lang3.StringUtils;
+import org.grouplens.lenskit.util.dtree.DataNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.dtree;
+package org.grouplens.lenskit.util.dtree;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
-import org.grouplens.lenskit.dtree.xml.XMLTestCase;
+import org.grouplens.lenskit.util.dtree.xml.XMLTestCase;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
