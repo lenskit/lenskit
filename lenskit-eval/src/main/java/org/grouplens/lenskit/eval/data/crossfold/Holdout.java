@@ -22,28 +22,30 @@ import java.util.List;
 
 import org.grouplens.lenskit.data.event.Rating;
 
+/**
+ * A train-test holdout method.
+ */
 public class Holdout {
-	private Order<Rating> order;
-	private PartitionAlgorithm<Rating> partition;
+	private final Order<Rating> order;
+	private final PartitionAlgorithm<Rating> partitionMethod;
+
+    public Holdout(Order<Rating> ord, PartitionAlgorithm<Rating> part) {
+        order = ord;
+        partitionMethod = part;
+    }
 	
 	public Order<Rating> getOrder() {
     	return order;
     }
-	public void setOrder(Order<Rating> order) {
-    	this.order = order;
+	public PartitionAlgorithm<Rating> getPartitionMethod() {
+    	return partitionMethod;
     }
-	public PartitionAlgorithm<Rating> getPartition() {
-    	return partition;
-    }
-	public void setPartition(PartitionAlgorithm<Rating> partition) {
-    	this.partition = partition;
-    }
-	
+
 	public int partition(List<Rating> ratings) {
-		if (order == null || partition == null) {
+		if (order == null || partitionMethod == null) {
 			throw new IllegalStateException("Unconfigured holdout");
 		}
 		order.apply(ratings);
-		return partition.partition(ratings);
+		return partitionMethod.partition(ratings);
 	}
 }

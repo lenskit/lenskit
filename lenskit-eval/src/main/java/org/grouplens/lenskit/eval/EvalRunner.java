@@ -18,18 +18,10 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.grouplens.lenskit.util.dtree.DataNode;
-import org.grouplens.lenskit.util.dtree.Trees;
-import org.grouplens.lenskit.util.spi.ConfigAlias;
-import org.grouplens.lenskit.util.spi.ServiceFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Configure and run evaluations.
@@ -56,39 +48,10 @@ public class EvalRunner {
     /**
      * Construct an evaluation runner from an evaluator name and configuration.
      * 
-     * @param name The name of the evaluator to use. This can be a class name or
-     *        a {@link ConfigAlias} for a registered {@link Evaluator}
-     *        implementation. {@link ServiceFinder#get(Class)} is used to look
-     *        up the evaluator.  If this parameter is <tt>null</tt>, then the
-     *        <tt>evaluator</tt> parameter from <var>config</var> is used.
-     * @param config The evaluator's configuration. This is passed to
-     *        {@link Evaluator#configure(Properties,DataNode)}.
-     * @throws EvaluatorNotFoundException if the named evaluator cannot be found.
-     * @throws EvaluatorConfigurationException if there is an error configuring
-     *         the evaluator.
+     * @param eval The evaluation to run.
      */
-    public EvalRunner(@Nullable String name, Properties properties,
-                      @Nonnull DataNode config)
-            throws EvaluatorConfigurationException {
-        ServiceFinder<Evaluator> finder = ServiceFinder.get(Evaluator.class);
-        
-        if (name == null) {
-            logger.debug("Reading evaluator from configuration");
-            name = Trees.childValue(config, "evaluator");
-        }
-        
-        if (name == null) {
-            throw new EvaluatorConfigurationException("No evaluator selected");
-        }
-        
-        logger.debug("Looking up evaluator {}", name);
-        Evaluator eval = finder.findProvider(name);
-        if (eval == null) {
-            throw new EvaluatorConfigurationException("Evaluator " + name + " not found");
-        }
-        logger.info("Using evaluator {}", eval.getName());
-        
-        evaluation = eval.configure(properties, config);
+    public EvalRunner(Evaluation eval) {
+        evaluation = eval;
     }
     
     /**

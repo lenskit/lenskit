@@ -24,10 +24,10 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.tablewriter.TableWriter;
-import org.grouplens.lenskit.tablewriter.TableWriters;
 import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.TaskTimer;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +78,11 @@ public class TTPredictEvalJobGroup implements JobGroup {
         
         jobs = new ArrayList<Job>(algos.size());
         for (AlgorithmInstance algo: algos) {
-            jobs.add(new TTPredictEvalJob(algo, evals, data, snap,
-                                          new OutputSupplier(algo)));
+            TTPredictEvalJob job = new TTPredictEvalJob(
+                    algo, evals, data, snap,
+                    new PrefixedTableSupplier(algo, evaluation.outputTableSupplier()));
+            job.setPredictOutput(new PrefixedTableSupplier(algo, evaluation.predictTableSupplier()));
+            jobs.add(job);
         }
     }
 
@@ -122,27 +125,33 @@ public class TTPredictEvalJobGroup implements JobGroup {
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      *
      */
-    class OutputSupplier implements Supplier<TableWriter> {
+    class PrefixedTableSupplier implements Supplier<TableWriter> {
         private AlgorithmInstance algorithm;
+        private Supplier<TableWriter> baseTableS;
 
-        public OutputSupplier(AlgorithmInstance algo) {
+        public PrefixedTableSupplier(AlgorithmInstance algo, Supplier<TableWriter> base) {
             algorithm = algo;
+            baseTableS = base;
         }
         
         @Override
         public TableWriter get() {
-            TableWriter output = evaluation.getOutputTable();
-            final int d_ncols = dataColIndexes.size();
-            final int a_ncols = algoColIndexes.size();
-            String[] cols = new String[1 + d_ncols + a_ncols];
-            cols[0] = algorithm.getName();
-            for (Map.Entry<String, Object> entry: dataSet.getAttributes().entrySet()) {
-                cols[dataColIndexes.get(entry.getKey())] = entry.getValue().toString();
+            TableWriter output = baseTableS.get();
+            if (output == null) {
+                return null;
+            } else {
+                final int d_ncols = dataColIndexes.size();
+                final int a_ncols = algoColIndexes.size();
+                String[] cols = new String[1 + d_ncols + a_ncols];
+                cols[0] = algorithm.getName();
+                for (Map.Entry<String, Object> entry: dataSet.getAttributes().entrySet()) {
+                    cols[dataColIndexes.get(entry.getKey())] = entry.getValue().toString();
+                }
+                for (Map.Entry<String, Object> entry: algorithm.getAttributes().entrySet()) {
+                    cols[algoColIndexes.get(entry.getKey())] = entry.getValue().toString();
+                }
+                return TableWriters.prefixed(output, cols);
             }
-            for (Map.Entry<String, Object> entry: algorithm.getAttributes().entrySet()) {
-                cols[algoColIndexes.get(entry.getKey())] = entry.getValue().toString();
-            }
-            return TableWriters.prefixed(output, cols);
         }
     }
 
@@ -150,5 +159,4 @@ public class TTPredictEvalJobGroup implements JobGroup {
     public long lastUpdated(PreparationContext context) {
         return dataSet.lastUpdated(context);
     }
-
 }

@@ -17,7 +17,8 @@
       <excludes>
         <exclude>**/*.log</exclude>
         <exclude>**/*~</exclude>
-        <exclude>.hg</exclude>
+        <exclude>.*</exclude>
+        <exclude>**/*.iml</exclude>
         <exclude>**/target/**</exclude>
       </excludes>
     </fileSet>

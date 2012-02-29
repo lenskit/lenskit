@@ -21,14 +21,14 @@ package org.grouplens.lenskit.eval.data.crossfold;
 import java.util.List;
 
 /**
- * An order for a collection.
+ * An order for a list.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
 public interface Order<E> {
 	/**
 	 * Apply the ordering.
-	 * @param list
+	 * @param list The list to order.
 	 */
 	void apply(List<E> list);
 }

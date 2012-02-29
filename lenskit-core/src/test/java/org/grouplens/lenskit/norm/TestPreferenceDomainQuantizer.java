@@ -18,13 +18,14 @@
  */
 package org.grouplens.lenskit.norm;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
-
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.pref.TestPreferenceDomain;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Michael Ekstrand

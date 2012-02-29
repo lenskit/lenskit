@@ -18,11 +18,12 @@
  */
 package org.grouplens.lenskit.eval;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * A set of job groups comprising an evaluation. Evaluations are configured and
- * set up by {@link Evaluator}s. They contain {@link JobGroup}s that the runner
+ * set up by {@link EvalBuilder}s. They contain {@link JobGroup}s that the runner
  * should run in order to complete the evaluation.
  * 
  * @since 0.8
@@ -50,5 +51,5 @@ public interface Evaluation {
      * 
      * @return A list of the job groups to run for this evaluation.
      */
-    List<JobGroup> getJobGroups();
+    @Nonnull List<JobGroup> getJobGroups();
 }

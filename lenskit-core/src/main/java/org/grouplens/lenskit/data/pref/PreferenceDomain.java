@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import com.google.common.primitives.Doubles;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 
@@ -106,6 +109,35 @@ public final class PreferenceDomain {
             str += String.format("/%f", precision);
         }
         return str;
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(minimum).append(maximum);
+        if (hasPrecision()) {
+            hcb.append(precision);
+        }
+        return hcb.toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        } else if (o instanceof PreferenceDomain) {
+            PreferenceDomain od = (PreferenceDomain) o;
+            EqualsBuilder eqb = new EqualsBuilder();
+            eqb.append(minimum, od.getMinimum());
+            eqb.append(maximum, od.getMaximum());
+            eqb.append(hasPrecision(), od.hasPrecision());
+            if (eqb.isEquals() && hasPrecision() && od.hasPrecision()) {
+                eqb.append(precision, od.getPrecision());
+            }
+            return eqb.isEquals();
+        } else {
+            return false;
+        }
     }
 
     private static Pattern specRE =

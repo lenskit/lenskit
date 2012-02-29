@@ -21,9 +21,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +43,6 @@ import static java.lang.Math.log;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@ConfigAlias("nDCG")
-@MetaInfServices
 public class NDCGPredictMetric implements PredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     private static final String[] COLUMNS = { "nDCG" };

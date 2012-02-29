@@ -18,21 +18,11 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
-import org.grouplens.lenskit.eval.EvalRunner;
-import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
-import org.grouplens.lenskit.util.dtree.DataNode;
-import org.grouplens.lenskit.util.dtree.Trees;
-import org.grouplens.lenskit.util.dtree.xml.XMLDataNode;
+import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.config.EvalConfigEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -66,43 +56,23 @@ public class EvalCLI {
     }
     
     public void run() {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        }
+        EvalConfigEngine config = new EvalConfigEngine();
         
         List<EvalRunner> runners = new LinkedList<EvalRunner>();
         for (File f: options.getConfigFiles()) {
-            Document doc;
+            logger.info("loading evaluation from {}", f);
+            List<Evaluation> evals;
             try {
-                doc = builder.parse(f);
-            } catch (SAXException e) {
-                reportError(e, "%s: %s", f.getPath(), e.getMessage());
+                evals = config.load(f);
+            } catch (EvaluatorConfigurationException e) {
+                reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
                 return;
             } catch (IOException e) {
                 reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
                 return;
             }
-            
-            DataNode node = XMLDataNode.wrap(options.getProperties(), doc);
-            if (!node.getName().equals("evaluation")) {
-                reportError("%s: root element must be 'evaluation'", f.getPath());
-            }
-            
-            String name = Trees.childValue(node, "type");
-            if (name == null) {
-                reportError("%s: no evaluation type specified\n", f.getPath());
-            }
-            
-            logger.info("Configuring evaluation type {} from {}", name, f);
-            try {
-                runners.add(new EvalRunner(name, System.getProperties(), node));
-            } catch (EvaluatorConfigurationException e) {
-                reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
-                return;
+            for (Evaluation e: evals) {
+                runners.add(new EvalRunner(e));
             }
         }
         

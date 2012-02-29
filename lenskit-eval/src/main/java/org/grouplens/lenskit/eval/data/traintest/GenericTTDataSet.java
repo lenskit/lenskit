@@ -21,10 +21,16 @@ package org.grouplens.lenskit.eval.data.traintest;
 import java.util.Collections;
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.GenericDataSource;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A train-test data set backed by a pair of factories.
@@ -34,11 +40,20 @@ import org.grouplens.lenskit.eval.PreparationException;
  * 
  */
 public class GenericTTDataSet implements TTDataSet {
-    private final String name;
-    private final DAOFactory trainFactory;
-    private final DAOFactory testFactory;
-    private long lastUpdated = 0L;
-    private final PreferenceDomain preferenceDomain;
+    private final @Nonnull String name;
+    private final @Nonnull DataSource trainData;
+    private final @Nonnull DataSource testData;
+    private final @Nullable PreferenceDomain preferenceDomain;
+    
+    public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
+                            @Nullable PreferenceDomain dom) {
+        Preconditions.checkNotNull(train, "no training data");
+        Preconditions.checkNotNull(test, "no test data");
+        this.name = name;
+        trainData = train;
+        testData = test;
+        preferenceDomain = dom;
+    }
 
     /**
      * Create a new generic data set.
@@ -47,14 +62,18 @@ public class GenericTTDataSet implements TTDataSet {
      * @param test The test DAO factory.
      * @param domain The preference domain.
      */
-    public GenericTTDataSet(String name, DAOFactory train, DAOFactory test, PreferenceDomain domain) {
+    public GenericTTDataSet(@Nonnull String name, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
+                            @Nullable PreferenceDomain domain) {
+        Preconditions.checkNotNull(name);
+        Preconditions.checkNotNull(train);
+        Preconditions.checkNotNull(test);
         this.name = name;
-        trainFactory = train;
-        testFactory = test;
+        trainData = new GenericDataSource(name + ".train", train, domain);
+        testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
     }
-    
-    @Override
+
+    @Override @Nonnull
     public String getName() {
         return name;
     }
@@ -64,42 +83,46 @@ public class GenericTTDataSet implements TTDataSet {
         return Collections.<String,Object>singletonMap("DataSet", getName());
     }
     
-    /**
-     * Set the last update time of the data set.
-     * @param upd The last update time.  Defaults to 0L.
-     */
-    public void setLastUpdated(long upd) {
-        lastUpdated = upd;
-    }
-    
     @Override
     public long lastUpdated(PreparationContext context) {
-        return lastUpdated ;
+        return Math.max(trainData.lastUpdated(context),
+                        testData.lastUpdated(context));
     }
 
     @Override
     public void prepare(PreparationContext context) throws PreparationException {
-        /* do nothing */
+        context.prepare(trainData);
+        context.prepare(testData);
     }
 
     @Override
     public void release() {
-        /* Do nothing */
+        /* no-op */
     }
 
-    @Override
+    @Override @Nullable
     public PreferenceDomain getPreferenceDomain() {
         return preferenceDomain;
     }
 
     @Override
     public DAOFactory getTrainFactory() {
-        return trainFactory;
+        return trainData.getDAOFactory();
     }
 
     @Override
     public DAOFactory getTestFactory() {
-        return testFactory;
+        return testData.getDAOFactory();
+    }
+
+    @Nonnull
+    public DataSource getTestData() {
+        return testData;
+    }
+
+    @Nonnull
+    public DataSource getTrainData() {
+        return trainData;
     }
     
     @Override

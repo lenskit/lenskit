@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.data;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Preparable;
+import org.grouplens.lenskit.eval.config.DefaultBuilder;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultBuilder(CSVDataSourceBuilder.class)
 public interface DataSource extends Preparable {
     /**
      * Get the data source name.

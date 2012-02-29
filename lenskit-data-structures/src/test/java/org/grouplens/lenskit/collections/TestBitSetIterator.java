@@ -19,10 +19,7 @@
 package org.grouplens.lenskit.collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.array;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.BitSet;
 
@@ -87,8 +84,8 @@ public class TestBitSetIterator {
         assertFalse(iter.hasNext());
         
         iter = new BitSetIterator(s);
-        assertThat(Iterators.toArray(iter, Integer.class),
-                   array(equalTo(0), equalTo(1)));
+        assertArrayEquals(new Integer[]{0, 1},
+                          Iterators.toArray(iter, Integer.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -129,8 +126,8 @@ public class TestBitSetIterator {
         assertThat(iter.nextInt(), equalTo(5));
        
         iter = new BitSetIterator(s);
-        assertThat(Iterators.toArray(iter, Integer.class),
-                   array(equalTo(2), equalTo(5), equalTo(7)));
+        assertArrayEquals(new Integer[]{2, 5, 7},
+                          Iterators.toArray(iter, Integer.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -140,12 +137,12 @@ public class TestBitSetIterator {
         s.set(2);
         s.set(5);
         BitSetIterator iter = new BitSetIterator(s, 2);
-        assertThat(Iterators.toArray(iter, Integer.class),
-                   array(equalTo(2), equalTo(5)));
+        assertArrayEquals(new Integer[]{2, 5},
+                          Iterators.toArray(iter, Integer.class));
         
         iter = new BitSetIterator(s, 3);
-        assertThat(Iterators.toArray(iter, Integer.class),
-                   array(equalTo(5)));        
+        assertArrayEquals(new Integer[]{5},
+                          Iterators.toArray(iter, Integer.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -156,9 +153,9 @@ public class TestBitSetIterator {
         s.set(2);
         s.set(5);
         BitSetIterator iter = new BitSetIterator(s, 1, 5);
-        assertThat(Iterators.toArray(iter, Integer.class),
-                   array(equalTo(2)));
-        
+        assertArrayEquals(new Integer[]{2},
+                          Iterators.toArray(iter, Integer.class));
+
         s.set(4);
         iter = new BitSetIterator(s, 1, 5);
         assertFalse(iter.hasPrevious());
