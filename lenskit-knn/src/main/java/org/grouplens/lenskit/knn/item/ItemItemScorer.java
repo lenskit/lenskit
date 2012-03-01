@@ -28,8 +28,6 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -42,15 +40,12 @@ import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
- * 
- * @review Should user ratings be supplied? Optionally?
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
@@ -116,63 +111,15 @@ public class ItemItemScorer extends AbstractItemScorer implements
             iset = new LongSortedArraySet(items);
         }
 
-        MutableSparseVector preds = scoreItems(normed, iset);
+		MutableSparseVector preds = model.scoreItems(normed, iset, scorer,
+													neighborhoodSize);
 
-        // untransform the scores
+		// untransform the scores
         transform.unapply(preds);
         return preds.freeze();
     }
 
-    /**
-     * Compute item scores for a user.
-     * 
-     * @param userData The user vector for which scores are to be computed.
-     * @param items The items to score.
-     * @return The scores for the items. The key domain contains all items; only
-     *         those items with scores are set.
-     */
-    protected MutableSparseVector scoreItems(SparseVector userData,
-                                             LongSortedSet items) {
-        MutableSparseVector scores = new MutableSparseVector(items);
-        // We ran reuse accumulators
-        ScoredItemAccumulator accum =
-            new ScoredItemAccumulator(neighborhoodSize);
 
-        // FIXME Make sure the direction on similarities is right for asym.
-        // for each item, compute its prediction
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-
-            // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
-
-            if (neighbors == null) {
-                /* we cannot predict this item */
-                continue;
-            }
-
-            // filter and truncate the neighborhood
-            ScoredLongListIterator niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
-                if (userData.containsKey(oi)) {
-                    accum.put(oi, score);
-                }
-            }
-            neighbors = accum.finish();
-
-            // compute score & place in vector
-            final double score = scorer.score(neighbors, userData);
-            if (!Double.isNaN(score)) {
-                scores.set(item, score);
-            }
-        }
-
-        return scores;
-    }
 
     /**
      * Construct a transformation that is used to pre- and post-process

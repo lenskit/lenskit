@@ -18,10 +18,14 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
+import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Encapsulation of data needed during an item-item model build.  This class
@@ -35,27 +39,68 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  */
 public class ItemItemBuildContext {
-    private LongSortedSet items;
-    private Long2ObjectMap<SparseVector> itemVectors;
-    private Long2ObjectMap<LongSortedSet> userItemSets;
+    private @Nonnull LongSortedSet items;
+    private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
+    private @Nullable Long2ObjectMap<LongSortedSet> userItemSets;
 
-    public ItemItemBuildContext(LongSortedSet universe,
-                                Long2ObjectMap<SparseVector> vectors,
-                                Long2ObjectMap<LongSortedSet> userSets) {
+
+
+    /**
+     * Set up a new item build context.
+     * @param universe The set of items for the model.
+     * @param vectors Map of item IDs to item rating vectors.
+     * @param userSets Optional map of users to rated item sets.
+     */
+    public ItemItemBuildContext(@Nonnull LongSortedSet universe,
+                                @Nonnull Long2ObjectMap<SparseVector> vectors,
+                                @Nullable Long2ObjectMap<LongSortedSet> userSets) {
         items = universe;
         itemVectors = vectors;
         userItemSets = userSets;
     }
 
+    /**
+     * Get the set of items.
+     * @return The set of all items to build a model over.
+     */
+    @Nonnull
     public LongSortedSet getItems() {
         return items;
     }
 
+    /**
+     * Get the rating vector for an item. Rating vectors contain normalized ratings,
+     * using the applicable {@link VectorNormalizer} on the user rating vectors.
+     * @param item The item to query.
+     * @return The rating vector for {@code item}.
+     * @throws IllegalArgumentException if {@code item} is not a valid item.
+     */
+    @Nonnull
     public SparseVector itemVector(long item) {
+        Preconditions.checkArgument(items.contains(item), "unknown item");
+        assert itemVectors.containsKey(item);
         return itemVectors.get(item);
     }
 
+    /**
+     * Get the set of items rated by a user.
+     * @param user The user to query.
+     * @return The set of items rated by {@code user}.
+     * @throws IllegalArgumentException if {@code user} is unknown.
+     * @throws IllegalStateException if the build context did not collect user item sets.
+     * @see ItemItemModelBuildStrategy#needsUserItemSets()
+     */
+    @Nonnull
     public LongSortedSet userItems(long user) {
-        return userItemSets.get(user);
+        if (userItemSets == null) {
+            throw new IllegalStateException("build context doesn't have user item sets");
+        } else {
+            LongSortedSet set = userItemSets.get(user);
+            if (set == null) {
+                throw new IllegalArgumentException("unknown user");
+            } else {
+                return set;
+            }
+        }
     }
 }

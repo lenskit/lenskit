@@ -54,23 +54,28 @@ class SparseModelBuildStrategy implements
             final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
-                final long user = uiter.next();
+                final long user = uiter.nextLong();
                 LongSortedSet uitems = context.userItems(user);
-                if (symmetric)
+                if (symmetric) {
                     uitems = uitems.headSet(i);
+                }
                 candidates.addAll(uitems);
             }
 
             final LongIterator iter = candidates.iterator();
             while (iter.hasNext()) {
                 final long j = iter.nextLong();
-                if (i == j) continue;
+
+                if (i == j) {
+                    continue;
+                }
 
                 final double sim =
-                        similarityFunction.similarity(v, context.itemVector(j));
+                        similarityFunction.similarity(context.itemVector(j), v);
                 accum.put(i, j, sim);
-                if (symmetric)
+                if (symmetric) {
                     accum.put(j, i, sim);
+                }
             }
         }
     }

@@ -114,6 +114,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
         return recommend(ratings, n, cs, es);
     }
 
+
     /**
      * Return <tt>true</tt>, indicating this recommender can use histories.
      * Override this if the recommender actually doesn't.
@@ -170,4 +171,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     protected abstract ScoredLongList recommend(UserHistory<? extends Event> ratings, int n,
                                                 @Nullable LongSet candidates,
                                                 @Nullable LongSet exclude);
+    
+
+    
 }
