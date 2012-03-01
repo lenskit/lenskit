@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.tablewriter;
+package org.grouplens.lenskit.util.tablewriter;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -45,6 +45,7 @@ public interface TableWriterBuilder {
      * Get a {@link TableWriter} so you can start writing rows.  Table writers
      * will automatically start writing their header when this method is called.
      * @return The writer to write table rows.
+     * @throws IOException if an I/O error occurs.
      */
-    TableWriter makeWriter(@WillClose Writer output) throws IOException;
+    TableWriter open() throws IOException;
 }

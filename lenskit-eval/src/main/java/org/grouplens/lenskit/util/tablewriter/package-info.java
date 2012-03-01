@@ -16,32 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.tablewriter;
-
-import java.io.IOException;
-import java.io.Writer;
-
 /**
- * Write tables as CSV files.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * Utilities for writing two-dimensional tables of data.
  */
-public class CSVWriterBuilder implements TableWriterBuilder {
-    private String[] columns;
-
-    @Override
-    public void setColumns(String[] names) {
-        columns = names;
-    }
-
-    @Override
-    public TableWriter makeWriter(Writer output) throws IOException {
-        try {
-            return new CSVWriter(output, columns);
-        } catch (RuntimeException e) {
-            output.close();
-            throw e;
-        }
-    }
-
-}
+package org.grouplens.lenskit.util.tablewriter;

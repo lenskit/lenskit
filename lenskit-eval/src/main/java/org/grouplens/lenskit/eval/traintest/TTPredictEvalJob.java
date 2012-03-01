@@ -19,6 +19,8 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
+import com.google.common.io.Closeables;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -32,12 +34,13 @@ import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric.Accumulator;
-import org.grouplens.lenskit.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.TaskTimer;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,10 +54,17 @@ import java.util.List;
  */
 public class TTPredictEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
+    @Nonnull
     private AlgorithmInstance algorithm;
+    @Nonnull
     private List<PredictEvalMetric> evaluators;
+    @Nonnull
     private TTDataSet data;
+    @Nonnull
     private Supplier<TableWriter> outputProvider;
+    @Nonnull
+    private Supplier<TableWriter> predictOutputSupplier;
+
     private Supplier<SharedRatingSnapshot> snapshot;
     private int outputColumnCount;
 
@@ -63,6 +73,8 @@ public class TTPredictEvalJob implements Job {
      * @param algo The algorithm to test.
      * @param evals The evaluators to use.
      * @param ds The data set to use.
+     * @param snap Supplier providing access to a shared rating snapshot to use in the
+     *             build process.
      * @param out The table writer to receive outputProvider. This writer is expected to
      *        be prefixed with algorithm and group ID data, so only the times
      *        and eval outputProvider needs to be written.
@@ -84,6 +96,16 @@ public class TTPredictEvalJob implements Job {
         outputColumnCount = ncols;
     }
 
+    /**
+     * Set a supplier for the prediction output table. The writer is expected to be
+     * prefixed with algorithm and group ID data; the job will only write user, item,
+     * rating, and prediction.
+     * @param out The table writer supplier.
+     */
+    public void setPredictOutput(Supplier<TableWriter> out) {
+        predictOutputSupplier = out;
+    }
+
     @Override
     public String getName() {
         return algorithm.getName();
@@ -92,8 +114,11 @@ public class TTPredictEvalJob implements Job {
     @Override
     public void run() {
         DataAccessObject dao = data.getTrainFactory().snapshot();
+        TableWriter predictTable = null;
 
         try {
+            predictTable = predictOutputSupplier.get();
+
             logger.info("Building {}", algorithm.getName());
             TaskTimer buildTimer = new TaskTimer();
             Recommender rec = algorithm.buildRecommender(dao, snapshot.get());
@@ -123,6 +148,9 @@ public class TTPredictEvalJob implements Job {
                         for (Accumulator accum: evalAccums) {
                             accum.evaluatePredictions(uid, ratings, predictions);
                         }
+                        if (predictTable != null) {
+                            writePredictions(predictTable, uid, ratings, predictions);
+                        }
                     }
                 } finally {
                     userProfiles.close();
@@ -139,7 +167,30 @@ public class TTPredictEvalJob implements Job {
                 logger.error("Error writing outputProvider", e);
             }
         } finally {
+            if (predictTable != null) {
+                Closeables.closeQuietly(predictTable);
+            }
             dao.close();
+        }
+    }
+
+    private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
+        String[] row = new String[4];
+        row[0] = Long.toString(uid);
+        for (Long2DoubleMap.Entry e: ratings.fast()) {
+            long iid = e.getLongKey();
+            row[1] = Long.toString(iid);
+            row[2] = Double.toString(e.getDoubleValue());
+            if (predictions.containsKey(iid)) {
+                row[3] = Double.toString(predictions.get(iid));
+            } else {
+                row[3] = null;
+            }
+            try {
+                predictTable.writeRow(row);
+            } catch (IOException x) {
+                throw new RuntimeException("error writing predictions", x);
+            }
         }
     }
 

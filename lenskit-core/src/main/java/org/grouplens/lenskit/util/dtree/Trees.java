@@ -65,12 +65,8 @@ public class Trees {
         return pat.matcher(st).find();
     }
     
-    static boolean stringToBool(String s) {
-        if (reMatches(truePattern, s)) {
-            return true;
-        } else {
-            return false;
-        }
+    public static boolean stringToBool(String s) {
+        return reMatches(truePattern, s);
     }
     
     public static boolean childValueBool(DataNode node, String name, boolean dft) {

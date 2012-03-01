@@ -16,8 +16,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.tablewriter;
+package org.grouplens.lenskit.util.tablewriter;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -35,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * 
  */
 @ThreadSafe
-public interface TableWriter {
+public interface TableWriter extends Closeable {
     /**
      * @return The number of columns in the table.
      */

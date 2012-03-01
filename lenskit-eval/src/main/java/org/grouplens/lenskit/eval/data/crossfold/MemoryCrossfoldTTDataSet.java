@@ -103,7 +103,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
             dao.close();
         }
         
-        logger.debug("Found {} test events");
+        logger.debug("Found {} test events", testEvents.size());
         
         EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate()));
         EventSupplier testP = new EventSupplier(factory, testRatingPredicate());

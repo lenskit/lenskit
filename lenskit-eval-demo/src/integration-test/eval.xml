@@ -2,6 +2,7 @@
 <evaluation>
   <type>train-test</type>
   <output>${project.build.directory}/eval-output.csv</output>
+  <predictionOutput compress="yes">${project.build.directory}/eval-preds.csv.gz</predictionOutput>
   <datasets>
     <crossfold>
       <sources>
@@ -11,6 +12,8 @@
           <ratingDomain>[1.0,5.0]/1.0</ratingDomain>
         </csvfile>
       </sources>
+      <order>random</order>
+      <holdout>10</holdout>
     </crossfold>
   </datasets>
 

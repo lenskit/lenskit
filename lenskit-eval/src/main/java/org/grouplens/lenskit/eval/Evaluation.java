@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -50,5 +51,5 @@ public interface Evaluation {
      * 
      * @return A list of the job groups to run for this evaluation.
      */
-    List<JobGroup> getJobGroups();
+    @Nonnull List<JobGroup> getJobGroups();
 }
