@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Model build strategy that avoids computing similarities between items with
@@ -35,9 +35,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
+    private final OptimizableVectorSimilarity<ItemVector> similarityFunction;
 
-    SparseModelBuildStrategy(OptimizableVectorSimilarity<SparseVector> sim) {
+    SparseModelBuildStrategy(OptimizableVectorSimilarity<ItemVector> sim) {
         similarityFunction = sim;
     }
 
@@ -50,7 +50,7 @@ class SparseModelBuildStrategy implements
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
-            final SparseVector v = context.itemVector(i);
+            final ItemVector v = context.itemVector(i);
             final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {

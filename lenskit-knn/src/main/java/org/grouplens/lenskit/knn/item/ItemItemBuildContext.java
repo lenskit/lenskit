@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.data.history.ItemVector;
 
 /**
  * Encapsulation of data needed during an item-item model build.  This class
@@ -36,11 +36,11 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public class ItemItemBuildContext {
     private LongSortedSet items;
-    private Long2ObjectMap<SparseVector> itemVectors;
+    private Long2ObjectMap<ItemVector> itemVectors;
     private Long2ObjectMap<LongSortedSet> userItemSets;
 
     public ItemItemBuildContext(LongSortedSet universe,
-                                Long2ObjectMap<SparseVector> vectors,
+                                Long2ObjectMap<ItemVector> vectors,
                                 Long2ObjectMap<LongSortedSet> userSets) {
         items = universe;
         itemVectors = vectors;
@@ -51,7 +51,7 @@ public class ItemItemBuildContext {
         return items;
     }
 
-    public SparseVector itemVector(long item) {
+    public ItemVector itemVector(long item) {
         return itemVectors.get(item);
     }
 
