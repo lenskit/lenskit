@@ -24,7 +24,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.norm.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.norm.Quantizer;
-import org.grouplens.lenskit.util.spi.ConfigAlias;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
@@ -37,10 +36,8 @@ import org.slf4j.LoggerFactory;
  * @author Daniel Kluver <kluver@cs.umn.edu>
  *
  */
-@ConfigAlias("entropy")
-@MetaInfServices
-public class EntropyEvaluator implements PredictEvalMetric {
-    private static final Logger logger = LoggerFactory.getLogger(EntropyEvaluator.class);
+public class EntropyPredictMetric implements PredictEvalMetric {
+    private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
     private static final String[] COLUMNS = {"Entropy.ofRating.ByUser","Entropy.ofPredictions.byUser", "Information.ByUser"};
 
     @Override
