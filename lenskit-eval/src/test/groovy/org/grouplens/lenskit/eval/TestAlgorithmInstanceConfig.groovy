@@ -37,7 +37,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             algorithm("GlobalMean") {
                 setComponent(RatingPredictor, BaselineRatingPredictor)
                 setComponent(BaselinePredictor, GlobalMeanPredictor)
-                wombat = "global"
+                attributes["wombat"] = "global"
             }
         }
         assertThat(obj, instanceOf(AlgorithmInstance))

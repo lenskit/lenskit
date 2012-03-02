@@ -38,7 +38,7 @@ class AlgorithmBuilderDelegate {
         return builder.getFactory()
     }
 
-    Map<String,Object> getAttributes() {
+    def getAttributes() {
         return builder.attributes
     }
 
@@ -56,10 +56,6 @@ class AlgorithmBuilderDelegate {
 
     void setName(String name) {
         builder.setName(name)
-    }
-
-    void propertyMissing(String name, value) {
-        builder.setAttribute(name, value)
     }
 
     def methodMissing(String name, args) {

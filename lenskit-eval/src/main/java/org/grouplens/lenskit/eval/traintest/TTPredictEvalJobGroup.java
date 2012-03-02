@@ -148,6 +148,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
                     cols[dataColIndexes.get(entry.getKey())] = entry.getValue().toString();
                 }
                 for (Map.Entry<String, Object> entry: algorithm.getAttributes().entrySet()) {
+                    assert entry.getValue() != null;
                     cols[algoColIndexes.get(entry.getKey())] = entry.getValue().toString();
                 }
                 return TableWriters.prefixed(output, cols);

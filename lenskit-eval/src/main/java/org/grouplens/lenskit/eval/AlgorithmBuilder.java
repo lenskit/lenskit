@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.config.AlgorithmBuilderDelegate;
@@ -93,7 +94,9 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
      * @param value The attribute value.
      * @return The builder for chaining.
      */
-    public AlgorithmBuilder setAttribute(String attr, Object value) {
+    public AlgorithmBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
+        Preconditions.checkNotNull(attr, "attribute names cannot be null");
+        Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
         return this;
     }
