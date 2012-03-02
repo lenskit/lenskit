@@ -18,15 +18,15 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
-
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Michael Ekstrand
@@ -60,11 +60,11 @@ public class TestItemItemModelAccumulator {
         accum.put(7, 3, Math.E);
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs, hasSize(1));
+        assertThat(nbrs.size(), equalTo(1));
         assertThat(nbrs.get(0), equalTo(2L));
         assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
-        assertThat(nbrs, hasSize(1));
+        assertThat(nbrs.size(), equalTo(1));
         assertThat(nbrs.get(0), equalTo(3L));
         assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
     }
@@ -78,9 +78,9 @@ public class TestItemItemModelAccumulator {
         }
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs, hasSize(5));
+        assertThat(nbrs.size(), equalTo(5));
         nbrs = model.getNeighbors(4);
-        assertThat(nbrs, hasSize(5));
+        assertThat(nbrs.size(), equalTo(5));
         ScoredLongListIterator iter = nbrs.iterator();
         while (iter.hasNext()) {
             long j = iter.nextLong();
