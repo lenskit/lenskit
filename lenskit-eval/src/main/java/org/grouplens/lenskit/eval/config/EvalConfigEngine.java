@@ -23,6 +23,7 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
@@ -60,6 +61,15 @@ public class EvalConfigEngine {
     public EvalConfigEngine(ClassLoader loader) {
         CompilerConfiguration config = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
         config.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
+
+        ImportCustomizer imports = new ImportCustomizer();
+        imports.addStarImports("org.grouplens.lenskit",
+                               "org.grouplens.lenskit.params",
+                               "org.grouplens.lenskit.baseline",
+                               "org.grouplens.lenskit.norm");
+        imports.addStarImports("org.grouplens.lenskit.eval.metrics.predict");
+        config.addCompilationCustomizers(imports);
+
         shell = new GroovyShell(loader, new Binding(), config);
         classLoader = loader;
 
