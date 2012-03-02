@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.config.EvalConfigEngine;
 import org.slf4j.Logger;
@@ -65,7 +67,10 @@ public class EvalCLI {
             try {
                 evals = config.load(f);
             } catch (EvaluatorConfigurationException e) {
-                reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
+                // we handle these specially
+                System.err.format("%s: %s\n", f.getPath(), e.getMessage());
+                StackTraceUtils.sanitize(e.getCause()).printStackTrace(System.err);
+                System.exit(2);
                 return;
             } catch (IOException e) {
                 reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
@@ -100,18 +105,15 @@ public class EvalCLI {
         }
     }
     
-    protected void reportError(String msg, Object... args) {
-        reportError(null, msg, args);
-    }
-    
     protected void reportError(Exception e, String msg, Object... args) {
         String text = String.format(msg, args);
         System.err.println(text);
         if (options.throwErrors()) {
             throw new RuntimeException(text, e);
         } else {
-            if (e != null && options.printBacktraces())
+            if (e != null && options.printBacktraces()) {
                 e.printStackTrace(System.err);
+            }
             System.exit(2);
         }
     }
