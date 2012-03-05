@@ -156,7 +156,7 @@ public class TTPredictEvalJob implements Job {
                             pred.score(p.getUserId(), ratings.keySet());
                         for (PredictEvalAccumulator accum: evalAccums) {
                             String[] res = accum.evaluatePredictions(uid, ratings, predictions);
-                            if (userTable != null) {
+                            if (res != null && userTable != null) {
                                 try {
                                     userTable.writeRow(res);
                                 } catch (IOException e) {
