@@ -18,7 +18,9 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.*;
@@ -27,7 +29,6 @@ import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,10 +79,12 @@ public class TTPredictEvalJobGroup implements JobGroup {
         
         jobs = new ArrayList<Job>(algos.size());
         for (AlgorithmInstance algo: algos) {
+            Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TTPredictEvalJob job = new TTPredictEvalJob(
                     algo, evals, data, snap,
-                    new PrefixedTableSupplier(algo, evaluation.outputTableSupplier()));
-            job.setPredictOutput(new PrefixedTableSupplier(algo, evaluation.predictTableSupplier()));
+                    Suppliers.compose(prefix, evaluation.outputTableSupplier()));
+            job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
+            job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
         }
     }
@@ -117,42 +120,6 @@ public class TTPredictEvalJobGroup implements JobGroup {
             return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
         } finally {
             dao.close();
-        }
-    }
-    
-    /**
-     * Provide a table writer for the evaluation of a particular algorithm.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     *
-     */
-    class PrefixedTableSupplier implements Supplier<TableWriter> {
-        private AlgorithmInstance algorithm;
-        private Supplier<TableWriter> baseTableS;
-
-        public PrefixedTableSupplier(AlgorithmInstance algo, Supplier<TableWriter> base) {
-            algorithm = algo;
-            baseTableS = base;
-        }
-        
-        @Override
-        public TableWriter get() {
-            TableWriter output = baseTableS.get();
-            if (output == null) {
-                return null;
-            } else {
-                final int d_ncols = dataColIndexes.size();
-                final int a_ncols = algoColIndexes.size();
-                String[] cols = new String[1 + d_ncols + a_ncols];
-                cols[0] = algorithm.getName();
-                for (Map.Entry<String, Object> entry: dataSet.getAttributes().entrySet()) {
-                    cols[dataColIndexes.get(entry.getKey())] = entry.getValue().toString();
-                }
-                for (Map.Entry<String, Object> entry: algorithm.getAttributes().entrySet()) {
-                    assert entry.getValue() != null;
-                    cols[algoColIndexes.get(entry.getKey())] = entry.getValue().toString();
-                }
-                return TableWriters.prefixed(output, cols);
-            }
         }
     }
 

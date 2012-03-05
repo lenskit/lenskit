@@ -18,6 +18,10 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import com.google.common.io.Files;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -28,12 +32,18 @@ import java.io.Writer;
  */
 public class CSVWriter implements TableWriter {
     private Writer writer;
-    private String[] columns;
+    private TableLayout layout;
 
-    CSVWriter(Writer w, String[] cnames) throws IOException {
-        columns = cnames;
+    /**
+     * Construct a new CSV writer.
+     * @param w The underlying writer to output to.
+     * @param l The table layout.
+     * @throws IOException if there is an error writing the column headers.
+     */
+    public CSVWriter(Writer w, TableLayout l) throws IOException {
+        layout = l;
         writer = w;
-        writeRow(cnames);
+        writeRow(layout.getColumnHeaders().toArray(new String[l.getColumnCount()]));
     }
 
     @Override
@@ -55,11 +65,12 @@ public class CSVWriter implements TableWriter {
 
     @Override
     public synchronized void writeRow(String[] row) throws IOException {
-        if (row.length > columns.length) {
-            throw new RuntimeException("row too long");
+        if (row.length > layout.getColumnCount()) {
+            throw new IllegalArgumentException("row too long");
         }
 
-        for (int i = 0; i < columns.length; i++) {
+        final int n = layout.getColumnCount();
+        for (int i = 0; i < n; i++) {
             if (i > 0) {
                 writer.write(',');
             }
@@ -72,8 +83,19 @@ public class CSVWriter implements TableWriter {
     }
 
     @Override
-    public int getColumnCount() {
-        return columns.length;
+    public TableLayout getLayout() {
+        return layout;
     }
 
+    /**
+     * Open a CSV writer on a file.
+     * @param file The file to write to.
+     * @param layout The layout of the table.
+     * @return A CSV writer outputting to {@code file}.
+     * @throws IOException if there is an error opening the file or writing the column header.
+     */
+    public static CSVWriter open(File file, TableLayout layout) throws IOException {
+        Files.createParentDirs(file);
+        return new CSVWriter(new FileWriter(file), layout);
+    }
 }

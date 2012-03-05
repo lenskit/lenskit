@@ -38,22 +38,24 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface TableWriter extends Closeable {
     /**
-     * @return The number of columns in the table.
+     * Get the layout of this table.
+     * @return The table's layout.
      */
-    int getColumnCount();
+    TableLayout getLayout();
 
     /**
      * Write a row to the table. This method is thread-safe.
      * @param row A row of values.  If the table requires more columns, the
      * remaining columns are org.grouplens.lenskit.eval.config.empty.
-     * @throws RuntimeException if {@code row} has more items than the table has
+     * @throws IOException if an error occurs writing the row.
+     * @throws IllegalArgumentException if {@code row} has more items than the table has
      * columns.
      */
     void writeRow(String[] row) throws IOException;
 
     /**
      * Finish the table.  Depending on how it was constructed, some underlying
-     * device may be closed.
+     * resource may be closed.
      */
     void close() throws IOException;
 }

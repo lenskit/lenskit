@@ -61,7 +61,9 @@ public class TTPredictEvalJob implements Job {
     @Nonnull
     private TTDataSet data;
     @Nonnull
-    private Supplier<TableWriter> outputProvider;
+    private Supplier<TableWriter> outputSupplier;
+    @Nonnull
+    private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
 
@@ -87,13 +89,17 @@ public class TTPredictEvalJob implements Job {
         evaluators = evals;
         data = ds;
         snapshot = snap;
-        outputProvider = out;
+        outputSupplier = out;
         
         int ncols = 2;
         for (PredictEvalMetric eval: evals) {
             ncols += eval.getColumnLabels().length;
         }
         outputColumnCount = ncols;
+    }
+
+    public void setUserOutput(Supplier<TableWriter> out) {
+        userOutputSupplier = out;
     }
 
     /**
@@ -114,10 +120,13 @@ public class TTPredictEvalJob implements Job {
     @Override
     public void run() {
         DataAccessObject dao = data.getTrainFactory().snapshot();
+        TableWriter userTable = null;
         TableWriter predictTable = null;
 
         try {
+            userTable = userOutputSupplier.get();
             predictTable = predictOutputSupplier.get();
+
 
             logger.info("Building {}", algorithm.getName());
             TaskTimer buildTimer = new TaskTimer();
@@ -146,7 +155,14 @@ public class TTPredictEvalJob implements Job {
                         SparseVector predictions =
                             pred.score(p.getUserId(), ratings.keySet());
                         for (PredictEvalAccumulator accum: evalAccums) {
-                            accum.evaluatePredictions(uid, ratings, predictions);
+                            String[] res = accum.evaluatePredictions(uid, ratings, predictions);
+                            if (userTable != null) {
+                                try {
+                                    userTable.writeRow(res);
+                                } catch (IOException e) {
+                                    throw new RuntimeException("error writing user output", e);
+                                }
+                            }
                         }
                         if (predictTable != null) {
                             writePredictions(predictTable, uid, ratings, predictions);
@@ -164,9 +180,12 @@ public class TTPredictEvalJob implements Job {
             try {
                 writeOutput(buildTimer, testTimer, evalAccums);
             } catch (IOException e) {
-                logger.error("Error writing outputProvider", e);
+                logger.error("Error writing output", e);
             }
         } finally {
+            if (userTable != null) {
+                Closeables.closeQuietly(userTable);
+            }
             if (predictTable != null) {
                 Closeables.closeQuietly(predictTable);
             }
@@ -205,7 +224,7 @@ public class TTPredictEvalJob implements Job {
             System.arraycopy(ar, 0, row, col, n);
             col += n;
         }
-        TableWriter output = outputProvider.get();
+        TableWriter output = outputSupplier.get();
         try {
             output.writeRow(row);
         } finally {

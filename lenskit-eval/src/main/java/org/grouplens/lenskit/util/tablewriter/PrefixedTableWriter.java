@@ -20,6 +20,7 @@ package org.grouplens.lenskit.util.tablewriter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A table writer that has the initial column values fixed.  It wraps a table
@@ -32,6 +33,7 @@ import java.util.Arrays;
 class PrefixedTableWriter implements TableWriter {
     private String[] rowData; // contains fixed values; other columns re-used
     private int fixedColumns;
+    private TableLayout layout;
     private TableWriter baseWriter;
     
     /**
@@ -43,23 +45,32 @@ class PrefixedTableWriter implements TableWriter {
      */
     public PrefixedTableWriter(TableWriter writer, String[] values) {
         baseWriter = writer;
-        if (values.length > writer.getColumnCount()) {
+        TableLayout baseLayout = writer.getLayout();
+        if (values.length > baseLayout.getColumnCount()) {
             throw new IllegalArgumentException("Value array too wide");
         }
         
-        rowData = Arrays.copyOf(values, writer.getColumnCount());
+        rowData = Arrays.copyOf(values, baseLayout.getColumnCount());
         fixedColumns = values.length;
+
+        TableLayoutBuilder bld = new TableLayoutBuilder();
+        List<String> bheaders = baseLayout.getColumnHeaders();
+        for (String h: bheaders.subList(fixedColumns, bheaders.size())) {
+            bld.addColumn(h);
+        }
+        layout = bld.build();
     }
 
     @Override
-    public int getColumnCount() {
-        return baseWriter.getColumnCount() - fixedColumns;
+    public TableLayout getLayout() {
+        return layout;
     }
 
     @Override
     public synchronized void writeRow(String[] row) throws IOException {
-        if (row.length > getColumnCount())
+        if (row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("Row too wide");
+        }
         
         // blit row data to end of re-used array
         System.arraycopy(row, 0, rowData, fixedColumns, row.length);
@@ -73,5 +84,4 @@ class PrefixedTableWriter implements TableWriter {
     public void close() throws IOException {
         /* no-op */
     }
-
 }

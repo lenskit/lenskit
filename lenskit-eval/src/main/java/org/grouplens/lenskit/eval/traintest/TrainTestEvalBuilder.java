@@ -22,7 +22,6 @@ import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.util.tablewriter.CSVWriterBuilder;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -40,6 +39,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     private List<AlgorithmInstance> algorithms;
     private List<PredictEvalMetric> metrics;
     private File outputFile;
+    private File userOutputFile;
     private File predictOutputFile;
 
     public TrainTestEvalBuilder() {
@@ -51,13 +51,8 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
 
     @Override
     public TTPredictEvaluation build() {
-        CSVWriterBuilder outBuilder = new CSVWriterBuilder(outputFile);
-        CSVWriterBuilder predBuilder = null;
-        if (predictOutputFile != null) {
-            predBuilder = new CSVWriterBuilder(predictOutputFile);
-        }
         return new TTPredictEvaluation(dataSources, algorithms, metrics,
-                                       outBuilder, predBuilder);
+                                       outputFile, userOutputFile, predictOutputFile);
     }
 
     public void addDataset(TTDataSet source) {
@@ -74,6 +69,10 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
 
     public void setOutput(File file) {
         outputFile = file;
+    }
+
+    public void setUserOutput(File file) {
+        userOutputFile = file;
     }
 
     public void setPredictOutput(File file) {

@@ -19,28 +19,31 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
+import com.google.common.base.Suppliers;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriterBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriters;
 import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.google.common.collect.Iterables.concat;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -53,21 +56,31 @@ import static com.google.common.collect.Iterables.concat;
 public class TTPredictEvaluation implements Evaluation {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
 
-    private TableWriterBuilder outputBuilder;
-    private TableWriterBuilder predictBuilder;
+    private File outputFile;
+    private File userOutputFile;
+    private File predictOutputFile;
+    private int commonColumnCount;
+    private TableLayout outputLayout;
+    private TableLayout userLayout;
+    private TableLayout predictLayout;
     
     private TableWriter output;
+    private TableWriter userOutput;
     private TableWriter predictOutput;
 
     private List<JobGroup> jobGroups;
+    private Map<String, Integer> dataColumns;
+    private Map<String, Integer> algoColumns;
 
     public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
                                @Nonnull List<AlgorithmInstance> algos,
                                @Nonnull List<PredictEvalMetric> metrics,
-                               @Nonnull TableWriterBuilder output,
-                               @Nullable TableWriterBuilder predictOutput) {
-        outputBuilder = output;
-        predictBuilder = predictOutput;
+                               @Nonnull File output,
+                               @Nullable File userOutput,
+                               @Nullable File predictOutput) {
+        outputFile = output;
+        userOutputFile = userOutput;
+        predictOutputFile = predictOutput;
 
         setupJobs(sources, algos, metrics);
     }
@@ -75,91 +88,84 @@ public class TTPredictEvaluation implements Evaluation {
     protected void setupJobs(List<TTDataSet> dataSources,
                              List<AlgorithmInstance> algorithms,
                              List<PredictEvalMetric> metrics) {
-        // FIXME this line is too long
-        Map<String,Integer> dsColumns =
-                indexColumns(1,
-                             Lists.transform(dataSources,
-                                             new Function<TTDataSet, Map<String, ?>>() {
-                                                 @Override
-                                                 public Map<String, ?> apply(TTDataSet ds) {
-                                                     return ds.getAttributes();
-                                                 }
-                                             }));
-        Map<String,Integer> aiColumns =
-                indexColumns(1 + dsColumns.size(),
-                             Lists.transform(algorithms,
-                                             new Function<AlgorithmInstance, Map<String,?>>() {
-                                 @Override
-                                 public Map<String,?> apply(AlgorithmInstance ai) {
-                                     return ai.getAttributes();
-                                 }
-                             }));
+        TableLayoutBuilder master = new TableLayoutBuilder();
 
-        jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        master.addColumn("Algorithm");
+        dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds: dataSources) {
-            TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dsColumns, aiColumns, ds);
-            jobGroups.add(group);
-        }
-
-        // Set up the columns & output builder
-        int evalColCount = 0;
-        for (PredictEvalMetric ev: metrics) {
-            evalColCount += ev.getColumnLabels().length;
-        }
-        final int dacc = dsColumns.size() + aiColumns.size();
-        String[] headers = new String[3 + dacc + evalColCount];
-        String[] predHeaders = new String[1 + dacc + 4];
-        predHeaders[0] = headers[0] = "Algorithm";
-        for (Map.Entry<String,Integer> col: concat(dsColumns.entrySet(), aiColumns.entrySet())) {
-            headers[col.getValue()] = col.getKey();
-            predHeaders[col.getValue()] = col.getKey();
-        }
-        int index = dacc + 1;
-        headers[index++] = "BuildTime";
-        headers[index++] = "TestTime";
-        for (PredictEvalMetric ev: metrics) {
-            for (String c: ev.getColumnLabels()) {
-                headers[index++] = c;
-            }
-        }
-        predHeaders[dacc + 1] = "User";
-        predHeaders[dacc + 2] = "Item";
-        predHeaders[dacc + 3] = "Rating";
-        predHeaders[dacc + 4] = "Prediction";
-
-        outputBuilder.setColumns(headers);
-        if (predictBuilder != null) {
-            predictBuilder.setColumns(predHeaders);
-        }
-    }
-
-    static Map<String,Integer> indexColumns(int startIndex, Iterable<Map<String,?>> maps) {
-        int idx = startIndex;
-        Map<String,Integer> columns = new LinkedHashMap<String, Integer>();
-        for (Map<String,?> map: maps) {
-            for (String k: map.keySet()) {
-                if (!columns.containsKey(k)) {
-                    columns.put(k, idx++);
+            for (String attr: ds.getAttributes().keySet()) {
+                if (!dataColumns.containsKey(attr)) {
+                    dataColumns.put(attr, master.addColumn(attr));
                 }
             }
         }
-        assert startIndex + columns.size() == idx;
-        return columns;
+
+        algoColumns = new HashMap<String, Integer>();
+        for (AlgorithmInstance algo: algorithms) {
+            for (String attr: algo.getAttributes().keySet()) {
+                if (!algoColumns.containsKey(attr)) {
+                    algoColumns.put(attr, master.addColumn(attr));
+                }
+            }
+        }
+
+        jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        for (TTDataSet dataset: dataSources) {
+            TTPredictEvalJobGroup group;
+            group = new TTPredictEvalJobGroup(this, algorithms, metrics,
+                                              dataColumns, algoColumns, dataset);
+            jobGroups.add(group);
+        }
+
+        commonColumnCount = master.getColumnCount();
+
+        TableLayoutBuilder output = master.clone();
+        output.addColumn("BuildTime");
+        output.addColumn("TestTime");
+        TableLayoutBuilder userOutput = master.clone();
+
+        for (PredictEvalMetric ev: metrics) {
+            for (String c: ev.getColumnLabels()) {
+                output.addColumn(c);
+            }
+            for (String c: ev.getUserColumnLabels()) {
+                userOutput.addColumn(c);
+            }
+        }
+
+        outputLayout = output.build();
+        userLayout = userOutput.build();
+
+        TableLayoutBuilder predOutput = master.clone();
+        predOutput.addColumn("User");
+        predOutput.addColumn("Item");
+        predOutput.addColumn("Rating");
+        predOutput.addColumn("Prediction");
+
+        predictLayout = predOutput.build();
     }
 
     @Override
     public void start() {
         logger.info("Starting evaluation");
         try {
-            output = outputBuilder.open();
+            output = CSVWriter.open(outputFile, outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
-        if (predictBuilder != null) {
+        if (userOutputFile != null) {
             try {
-                predictOutput = predictBuilder.open();
+                userOutput = CSVWriter.open(userOutputFile, userLayout);
             } catch (IOException e) {
+                Closeables.closeQuietly(output);
+                throw new RuntimeException("Error opening user output table", e);
+            }
+        }
+        if (predictOutputFile != null) {
+            try {
+                predictOutput = CSVWriter.open(predictOutputFile, predictLayout);
+            } catch (IOException e) {
+                Closeables.closeQuietly(userOutput);
                 Closeables.closeQuietly(output);
                 throw new RuntimeException("Error opening prediction table", e);
             }
@@ -173,7 +179,11 @@ public class TTPredictEvaluation implements Evaluation {
         }
         logger.info("Evaluation finished");
         try {
+            // FIXME Catch all exceptions closing output
             output.close();
+            if (userOutput != null) {
+                userOutput.close();
+            }
             if (predictOutput != null) {
                 predictOutput.close();
             }
@@ -197,11 +207,8 @@ public class TTPredictEvaluation implements Evaluation {
         return new Supplier<TableWriter>() {
             @Override
             public TableWriter get() {
-                if (output == null) {
-                    throw new IllegalStateException("Evaluation not running");
-                } else {
-                    return output;
-                }
+                Preconditions.checkState(output != null, "evaluation not running");
+                return output;
             }
         };
     }
@@ -219,8 +226,61 @@ public class TTPredictEvaluation implements Evaluation {
         };
     }
 
+    /**
+     * Get the user output table.
+     * @return The table writer for the prediction output.
+     */
+    @Nonnull
+    Supplier<TableWriter> userTableSupplier() {
+        return new Supplier<TableWriter>() {
+            @Override public TableWriter get() {
+                return userOutput;
+            }
+        };
+    }
+
     @Override @Nonnull
     public List<JobGroup> getJobGroups() {
         return jobGroups;
+    }
+
+    /**
+     * Function version of {@link #prefixTable(TableWriter, AlgorithmInstance, TTDataSet)}. Intended
+     * for use with {@link Suppliers#compose(Function,Supplier)}.
+     */
+    public Function<TableWriter,TableWriter> prefixFunction(
+            final AlgorithmInstance algorithm,
+            final TTDataSet dataSet) {
+        return new Function<TableWriter,TableWriter>() {
+            @Override
+            public TableWriter apply(TableWriter base) {
+                return prefixTable(base, algorithm, dataSet);
+            }
+        };
+    }
+
+    /**
+     * Prefix a table for a particular algorithm and data set.
+     * @param base The table to prefix.
+     * @param algorithm The algorithm to prefix for.
+     * @param dataSet The data set to prefix for.
+     * @return A prefixed table, suitable for outputting the results of evaluating
+     * {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
+     */
+    public TableWriter prefixTable(TableWriter base,
+                                   AlgorithmInstance algorithm, TTDataSet dataSet) {
+        if (base == null) return null;
+
+        String[] prefix = new String[commonColumnCount];
+        prefix[0] = algorithm.getName();
+        for (Map.Entry<String,Object> attr: dataSet.getAttributes().entrySet()) {
+            int idx = dataColumns.get(attr.getKey());
+            prefix[idx] = attr.getValue().toString();
+        }
+        for (Map.Entry<String,Object> attr: algorithm.getAttributes().entrySet()) {
+            int idx = algoColumns.get(attr.getKey());
+            prefix[idx] = attr.getValue().toString();
+        }
+        return TableWriters.prefixed(base, prefix);
     }
 }
