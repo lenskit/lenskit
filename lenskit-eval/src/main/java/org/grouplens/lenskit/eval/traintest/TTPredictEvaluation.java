@@ -71,6 +71,7 @@ public class TTPredictEvaluation implements Evaluation {
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
+    private List<PredictEvalMetric> predictMetrics;
 
     public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
                                @Nonnull List<AlgorithmInstance> algos,
@@ -143,6 +144,8 @@ public class TTPredictEvaluation implements Evaluation {
         predOutput.addColumn("Prediction");
 
         predictLayout = predOutput.build();
+
+        predictMetrics = metrics;
     }
 
     @Override
@@ -170,10 +173,16 @@ public class TTPredictEvaluation implements Evaluation {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
+        for (PredictEvalMetric metric: predictMetrics) {
+            metric.startEvaluation(this);
+        }
     }
 
     @Override
     public void finish() {
+        for (PredictEvalMetric metric: predictMetrics) {
+            metric.finishEvaluation();
+        }
         if (output == null) {
             throw new IllegalStateException("evaluation not running");
         }

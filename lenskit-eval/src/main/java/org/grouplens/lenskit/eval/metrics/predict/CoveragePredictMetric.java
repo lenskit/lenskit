@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CoveragePredictMetric implements PredictEvalMetric {
+public class CoveragePredictMetric extends AbstractPredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final String[] COLUMNS = {
         "NUsers", "NAttempted", "NGood", "Coverage"
@@ -41,7 +42,7 @@ public class CoveragePredictMetric implements PredictEvalMetric {
     };
 
     @Override
-    public PredictEvalAccumulator makeAccumulator(TTDataSet ds) {
+    public PredictEvalAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
     

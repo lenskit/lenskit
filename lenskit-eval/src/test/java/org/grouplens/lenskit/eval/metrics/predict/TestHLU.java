@@ -61,7 +61,7 @@ public class TestHLU {
     @Test
     public void testAccumulator() {
         HLUtilityPredictMetric eval = new HLUtilityPredictMetric(5);
-        HLUtilityPredictMetric.Accum acc = eval.makeAccumulator(null);
+        HLUtilityPredictMetric.Accum acc = eval.makeAccumulator(null, null);
 
         acc.evaluatePredictions(1, rv1, pv1);
         assertEquals(1, acc.nusers);

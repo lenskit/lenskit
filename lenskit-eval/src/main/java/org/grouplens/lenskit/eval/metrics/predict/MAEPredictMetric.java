@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -38,13 +39,13 @@ import static java.lang.Math.abs;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MAEPredictMetric implements PredictEvalMetric {
+public class MAEPredictMetric extends AbstractPredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
     private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
     private static final String[] USER_COLUMNS = {"MAE"};
 
     @Override
-    public PredictEvalAccumulator makeAccumulator(TTDataSet ds) {
+    public PredictEvalAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 

@@ -18,7 +18,10 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
+import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -28,25 +31,30 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface PredictEvalMetric {
+public interface PredictEvalMetric extends Metric<TTPredictEvaluation> {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results
      * from the evaluation to insert into the results table.
      * <p/>
      * One accumulator is created and used per evaluation (data set × algorithm).
+     * <p/>
+     * Individual accumulators do not need to be thread-safe, but it must
+     * be possible to have multiple accumulators in separate threads in use concurrently.
      *
-     * @param ds The data set being evaluated — used if the evaluator needs something
+     * @param algorithm The algorithm to be evaluated.
+     * @param dataSet The data set being evaluated — used if the evaluator needs something
      *           from it (such as the preference domain).
      * @return The result accumulator for aggregating prediction results over a single
      * evaluation.
      */
-    PredictEvalAccumulator makeAccumulator(TTDataSet ds);
+    PredictEvalAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
     
     /**
      * Get labels for the aggregate columns output by this evaluator.
      * @return The labels for this evaluator's output, used as column headers when
      * outputting the results table.
+     * @todo Move this method to a superinterface
      */
     String[] getColumnLabels();
 
@@ -55,6 +63,7 @@ public interface PredictEvalMetric {
      * @return The labels for this evaluator's per-user output, used as column headers
      * when outputting the results table.
      * @see PredictEvalAccumulator#evaluatePredictions(long, SparseVector, SparseVector)
+     * @review Move this method to a superinterface
      */
     String[] getUserColumnLabels();
 }

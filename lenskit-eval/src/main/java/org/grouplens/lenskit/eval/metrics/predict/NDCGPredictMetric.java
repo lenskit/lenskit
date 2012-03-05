@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -43,12 +44,12 @@ import static java.lang.Math.log;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class NDCGPredictMetric implements PredictEvalMetric {
+public class NDCGPredictMetric extends AbstractPredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     private static final String[] COLUMNS = { "nDCG" };
 
     @Override
-    public Accum makeAccumulator(TTDataSet ds) {
+    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 
