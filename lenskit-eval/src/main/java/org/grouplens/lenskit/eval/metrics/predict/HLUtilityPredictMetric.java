@@ -49,13 +49,16 @@ public class HLUtilityPredictMetric implements PredictEvalMetric {
         return COLUMNS;
     }
 
-    double computeHLU(LongList items, SparseVector values) {
+    @Override
+    public String[] getUserColumnLabels() {
+        return COLUMNS;
+    }
 
+    double computeHLU(LongList items, SparseVector values) {
         double utility = 0;
         int rank = 0;
         LongIterator itemIterator = items.iterator();
         while (itemIterator.hasNext()) {
-
             final double v = values.get(itemIterator.nextLong());
             rank++;
             utility += v/Math.pow(2,(rank-1)/(alpha-1));
@@ -63,24 +66,25 @@ public class HLUtilityPredictMetric implements PredictEvalMetric {
         return utility;
     }
 
-    public class Accum implements Accumulator {
+    public class Accum implements PredictEvalAccumulator {
 
         double total = 0;
         int nusers = 0;
 
         @Override
-        public void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions) {
-
+        public String[] evaluatePredictions(long user, SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);
             double actualUtility = computeHLU(actual, ratings);
-            total += actualUtility/idealUtility;
+            double u = actualUtility/idealUtility;
+            total += u;
             nusers++;
+            return new String[]{Double.toString(u)};
         }
 
         @Override
-        public String[] results() {
+        public String[] finalResults() {
             double v = total/nusers;
             logger.info("HLU: {}", v);
             return new String[]{Double.toString(v)};

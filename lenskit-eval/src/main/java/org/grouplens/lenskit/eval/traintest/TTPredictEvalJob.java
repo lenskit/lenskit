@@ -32,8 +32,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric.Accumulator;
 import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -129,8 +129,8 @@ public class TTPredictEvalJob implements Job {
             logger.info("Testing {}", algorithm.getName());
             TaskTimer testTimer = new TaskTimer();
 
-            List<Accumulator> evalAccums =
-                    new ArrayList<Accumulator>(evaluators.size());
+            List<PredictEvalAccumulator> evalAccums =
+                    new ArrayList<PredictEvalAccumulator>(evaluators.size());
             
             DataAccessObject testDao = data.getTestFactory().create();
             try {
@@ -145,7 +145,7 @@ public class TTPredictEvalJob implements Job {
                         SparseVector ratings = RatingVectorHistorySummarizer.makeRatingVector(p);
                         SparseVector predictions =
                             pred.score(p.getUserId(), ratings.keySet());
-                        for (Accumulator accum: evalAccums) {
+                        for (PredictEvalAccumulator accum: evalAccums) {
                             accum.evaluatePredictions(uid, ratings, predictions);
                         }
                         if (predictTable != null) {
@@ -194,13 +194,13 @@ public class TTPredictEvalJob implements Job {
         }
     }
 
-    private void writeOutput(TaskTimer build, TaskTimer test, List<Accumulator> accums) throws IOException {
+    private void writeOutput(TaskTimer build, TaskTimer test, List<PredictEvalAccumulator> accums) throws IOException {
         String[] row = new String[outputColumnCount];
         row[0] = Double.toString(build.elapsed());
         row[1] = Double.toString(test.elapsed());
         int col = 2;
-        for (Accumulator acc: accums) {
-            String[] ar = acc.results();
+        for (PredictEvalAccumulator acc: accums) {
+            String[] ar = acc.finalResults();
             int n = ar.length;
             System.arraycopy(ar, 0, row, col, n);
             col += n;

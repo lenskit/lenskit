@@ -36,9 +36,12 @@ public class CoveragePredictMetric implements PredictEvalMetric {
     private static final String[] COLUMNS = {
         "NUsers", "NAttempted", "NGood", "Coverage"
     };
+    private static final String[] USER_COLUMNS = {
+            "NAttempted", "NGood", "Coverage"
+    };
 
     @Override
-    public Accumulator makeAccumulator(TTDataSet ds) {
+    public PredictEvalAccumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
     
@@ -47,25 +50,40 @@ public class CoveragePredictMetric implements PredictEvalMetric {
         return COLUMNS;
     }
 
-    class Accum implements Accumulator {
+    @Override
+    public String[] getUserColumnLabels() {
+        return USER_COLUMNS;
+    }
+
+    class Accum implements PredictEvalAccumulator {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;
 
         @Override
-        public void evaluatePredictions(long user, SparseVector ratings,
+        public String[] evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
+            int n = 0;
+            int good = 0;
             for (Long2DoubleMap.Entry e: ratings.fast()) {
                 double pv = predictions.get(e.getLongKey());
-                npreds += 1;
-                if (!Double.isNaN(pv))
-                    ngood += 1;
+                n += 1;
+                if (!Double.isNaN(pv)) {
+                    good += 1;
+                }
             }
+            npreds += n;
+            ngood += good;
             nusers += 1;
+            return new String[]{
+                    Integer.toString(n),
+                    Integer.toString(good),
+                    n > 0 ? Double.toString(((double) good) / n) : null
+            };
         }
 
         @Override
-        public String[] results() {
+        public String[] finalResults() {
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
             

@@ -41,9 +41,10 @@ import static java.lang.Math.abs;
 public class MAEPredictMetric implements PredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
     private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
+    private static final String[] USER_COLUMNS = {"MAE"};
 
     @Override
-    public Accumulator makeAccumulator(TTDataSet ds) {
+    public PredictEvalAccumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
 
@@ -52,14 +53,19 @@ public class MAEPredictMetric implements PredictEvalMetric {
         return COLUMNS;
     }
 
-    class Accum implements Accumulator {
+    @Override
+    public String[] getUserColumnLabels() {
+        return USER_COLUMNS;
+    }
+
+    class Accum implements PredictEvalAccumulator {
         private double totalError = 0;
         private double totalUserError = 0;
         private int nratings = 0;
         private int nusers = 0;
 
         @Override
-        public void evaluatePredictions(long user, SparseVector ratings,
+        public String[] evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
             double err = 0;
             int n = 0;
@@ -69,14 +75,21 @@ public class MAEPredictMetric implements PredictEvalMetric {
                 err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
                 n++;
             }
-            totalError += err;
-            nratings += n;
-            totalUserError += err / n;
-            nusers += 1;
+
+            if (n > 0) {
+                totalError += err;
+                nratings += n;
+                double errRate = err / n;
+                totalUserError += errRate;
+                nusers += 1;
+                return new String[]{Double.toString(errRate)};
+            } else {
+                return null;
+            }
         }
 
         @Override
-        public String[] results() {
+        public String[] finalResults() {
             double v = totalError / nratings;
             double uv = totalUserError / nusers;
             logger.info("MAE: {}", v);

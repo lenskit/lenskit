@@ -34,9 +34,10 @@ import static java.lang.Math.sqrt;
 public class RMSEPredictMetric implements PredictEvalMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
     private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
+    private static final String[] USER_COLUMNS = {"RMSE"};
 
     @Override
-    public Accumulator makeAccumulator(TTDataSet ds) {
+    public PredictEvalAccumulator makeAccumulator(TTDataSet ds) {
         return new Accum();
     }
 
@@ -44,15 +45,20 @@ public class RMSEPredictMetric implements PredictEvalMetric {
     public String[] getColumnLabels() {
         return COLUMNS;
     }
+    
+    @Override
+    public String[] getUserColumnLabels() {
+        return USER_COLUMNS;
+    }
 
-    class Accum implements Accumulator {
+    class Accum implements PredictEvalAccumulator {
         private double sse = 0;
         private double totalRMSE = 0;
         private int nratings = 0;
         private int nusers = 0;
 
         @Override
-        public void evaluatePredictions(long user, SparseVector ratings,
+        public String[] evaluatePredictions(long user, SparseVector ratings,
                                         SparseVector predictions) {
 
             double usse = 0;
@@ -67,13 +73,17 @@ public class RMSEPredictMetric implements PredictEvalMetric {
             sse += usse;
             nratings += n;
             if (n > 0) {
-                totalRMSE += sqrt(usse / n);
+                double rmse = sqrt(usse / n);
+                totalRMSE += rmse;
                 nusers ++;
+                return new String[]{Double.toString(rmse)};
+            } else {
+                return null;
             }
         }
 
         @Override
-        public String[] results() {
+        public String[] finalResults() {
             double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
             return new String[] {

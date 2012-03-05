@@ -24,7 +24,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 /**
  * Interface for prediction accuracy evaluators. Evaluators produce accumulators
  * which in turn accumulate prediction accuracy, returning aggregate error
- * information in the {@link Accumulator#results()} method.
+ * information in the {@link PredictEvalAccumulator#finalResults()} method.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -41,28 +41,20 @@ public interface PredictEvalMetric {
      * @return The result accumulator for aggregating prediction results over a single
      * evaluation.
      */
-    Accumulator makeAccumulator(TTDataSet ds);
+    PredictEvalAccumulator makeAccumulator(TTDataSet ds);
     
     /**
-     * Get labels for the columns output by this evaluator.
+     * Get labels for the aggregate columns output by this evaluator.
      * @return The labels for this evaluator's output, used as column headers when
      * outputting the results table.
      */
     String[] getColumnLabels();
 
-    public static interface Accumulator {
-        /**
-         * Evaluate the predictions for a user.
-         * @param user The ID of the user currenting being tested.
-         * @param ratings The user's rating vector over the test set.
-         * @param predictions The user's prediction vector over the test set.
-         */
-        void evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
-
-        /**
-         * Finalize the evaluation and return the final values.
-         * @return The column values for the final evaluation.
-         */
-        String[] results();
-    }
+    /**
+     * Get labels for the per-user columns output by this evaluator.
+     * @return The labels for this evaluator's per-user output, used as column headers
+     * when outputting the results table.
+     * @see PredictEvalAccumulator#evaluatePredictions(long, SparseVector, SparseVector)
+     */
+    String[] getUserColumnLabels();
 }
