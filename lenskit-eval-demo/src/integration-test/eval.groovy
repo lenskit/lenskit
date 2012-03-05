@@ -64,8 +64,8 @@ def ml100k = crossfold("ml-100k") {
 trainTest {
     dataset ml100k
 
-    output "eval-out.csv"
-    predictOutput "eval-preds.csv.gz"
+    output "${buildDir}/eval-out.csv"
+    predictOutput "${buildDir}/eval-preds.csv"
 
     metric CoveragePredictMetric
     metric MAEPredictMetric
