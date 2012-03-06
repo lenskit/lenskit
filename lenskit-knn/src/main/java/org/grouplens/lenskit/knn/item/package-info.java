@@ -41,9 +41,13 @@
  * is needed to make sure that the function is used in the correct direction. Following
  * Deshpande and Karypis, we use the similarity function as \(s(j,i)\), where \(j\) is the
  * item the user has purchased or rated and \(i\) is the item that is going to be scored. This
- * function is then stored in row \(i\) and column \(j\) of the matrix. Columns are then truncated
- * (so we retain the {@link ModelSize} most similar items for each \(j\)). Computation against
- * a particular item the user has rated is done down that item's column.
+ * function is then stored in row \(i\) and column \(j\) of the matrix. Rows are then truncated
+ * (so we retain the {@link ModelSize} most similar items for each \(i\)); this direction differs
+ * from Deshpande & Karypis, as row truncation is more efficient & simplier to write within
+ * LensKit's item-item algorithm structure, and performs better in offline tests against the
+ * MovieLens 1M data set
+ * (see <a href="http://dev.grouplens.org/trac/lenskit/wiki/ItemItemTruncateDirection">writeup</a>).
+ * Computation against a particular item the user has rated is done down that item's column.
  *
  * @cite Sarwar et al. 2001.
  * @cite Deshpande and Karypis 2004

@@ -1,7 +1,22 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2011 Regents of the University of Minnesota
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.grouplens.lenskit.knn.item;
-
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -9,6 +24,9 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Michael Ekstrand
@@ -42,11 +60,11 @@ public class TestItemItemModelAccumulator {
         accum.put(7, 3, Math.E);
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs, hasSize(1));
+        assertThat(nbrs.size(), equalTo(1));
         assertThat(nbrs.get(0), equalTo(2L));
         assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
-        assertThat(nbrs, hasSize(1));
+        assertThat(nbrs.size(), equalTo(1));
         assertThat(nbrs.get(0), equalTo(3L));
         assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
     }
@@ -60,9 +78,9 @@ public class TestItemItemModelAccumulator {
         }
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs, hasSize(5));
+        assertThat(nbrs.size(), equalTo(5));
         nbrs = model.getNeighbors(4);
-        assertThat(nbrs, hasSize(5));
+        assertThat(nbrs.size(), equalTo(5));
         ScoredLongListIterator iter = nbrs.iterator();
         while (iter.hasNext()) {
             long j = iter.nextLong();
