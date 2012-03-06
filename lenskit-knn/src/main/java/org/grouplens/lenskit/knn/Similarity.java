@@ -19,8 +19,15 @@
 package org.grouplens.lenskit.knn;
 
 
+import org.grouplens.lenskit.knn.params.ItemSimilarity;
+import org.grouplens.lenskit.knn.params.UserSimilarity;
+
 /**
- * Compute the similarity between two objects (typically rating vectors).
+ * Compute the similarity between two objects (typically rating vectors). Similarity
+ * is not necessarily symmetric (if it is, it should also implement the
+ * {@link org.grouplens.lenskit.util.SymmetricBinaryFunction} tag interface). See
+ * the specific annotations {@link ItemSimilarity} and {@link UserSimilarity} for the
+ * exact interpretation of the similarity function when comparing items and users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -28,8 +35,8 @@ package org.grouplens.lenskit.knn;
 public interface Similarity<V> {
     /**
      * Compute the similarity between two vectors.
-     * @param vec1
-     * @param vec2
+     * @param vec1 The left vector to compare.
+     * @param vec2 The right vector to compare.
      * @return The similarity, in the range [-1,1].
      */
     double similarity(V vec1, V vec2);
