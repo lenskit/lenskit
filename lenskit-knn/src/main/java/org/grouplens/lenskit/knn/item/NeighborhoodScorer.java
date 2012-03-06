@@ -24,6 +24,12 @@ import org.grouplens.lenskit.vectors.SparseVector;
 /**
  * Compute scores from neighborhoods and score vectors.
  *
+ * <p/>
+ * This interface encapsulates aggregating user scores and item similarities into a final
+ * score. The neighborhood is pre-filtered to only contain items for which
+ * scores are available, and truncated to the neighborhood size, so all functions
+ * implementing this interface need to do is accumulate scores.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

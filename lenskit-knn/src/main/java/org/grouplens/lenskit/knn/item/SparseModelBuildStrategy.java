@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Model build strategy that avoids computing similarities between items with
@@ -35,9 +35,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private final OptimizableVectorSimilarity<SparseVector> similarityFunction;
+    private final OptimizableVectorSimilarity<ItemVector> similarityFunction;
 
-    SparseModelBuildStrategy(OptimizableVectorSimilarity<SparseVector> sim) {
+    SparseModelBuildStrategy(OptimizableVectorSimilarity<ItemVector> sim) {
         similarityFunction = sim;
     }
 
@@ -50,27 +50,32 @@ class SparseModelBuildStrategy implements
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
-            final SparseVector v = context.itemVector(i);
+            final ItemVector v = context.itemVector(i);
             final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
-                final long user = uiter.next();
+                final long user = uiter.nextLong();
                 LongSortedSet uitems = context.userItems(user);
-                if (symmetric)
+                if (symmetric) {
                     uitems = uitems.headSet(i);
+                }
                 candidates.addAll(uitems);
             }
 
             final LongIterator iter = candidates.iterator();
             while (iter.hasNext()) {
                 final long j = iter.nextLong();
-                if (i == j) continue;
+
+                if (i == j) {
+                    continue;
+                }
 
                 final double sim =
-                        similarityFunction.similarity(v, context.itemVector(j));
+                        similarityFunction.similarity(context.itemVector(j), v);
                 accum.put(i, j, sim);
-                if (symmetric)
+                if (symmetric) {
                     accum.put(j, i, sim);
+                }
             }
         }
     }

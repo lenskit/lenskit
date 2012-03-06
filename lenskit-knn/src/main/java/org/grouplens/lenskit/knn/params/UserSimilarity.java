@@ -31,6 +31,8 @@ import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Similarity function for users in user-user CF.
+ *
+ * @todo Document the interpretation of user similarity in asymmetric cases
  */
 @Documented
 @DefaultClass(PearsonCorrelation.class)

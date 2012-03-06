@@ -43,7 +43,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Generate predictions with item-item collaborative filtering. This configures
  * {@link ItemItemScorer} to predict ratings, and can supply baseline
- * predictions if so configured.
+ * predictions if so configured. The user's ratings are not supplied; if they have
+ * rated an item, the predictor still attempts to predict their rating for that
+ * item based on their other ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemModelBuilder
