@@ -18,29 +18,19 @@
  */
 package org.grouplens.lenskit.collections;
 
-import static java.lang.Double.isNaN;
-import static java.lang.Math.E;
-import static java.lang.Math.PI;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongListIterator;
+import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
-import org.junit.Test;
+import static java.lang.Double.isNaN;
+import static java.lang.Math.E;
+import static java.lang.Math.PI;
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link ScoredLongArrayList}.
@@ -479,5 +469,24 @@ public class TestScoredLongArrayList {
         assertEquals(1, l.size());
         assertEquals(5, l.getLong(0));
         assertEquals(7.9, l.getScore(0), 1.0e-5);
+    }
+
+    @Test
+    public void sort() {
+        ScoredLongArrayList l = new ScoredLongArrayList();
+        l.add(39L, 4.2);
+        l.add(42L, 3.9);
+        l.add(1L, 6.4);
+        l.add(2L, 1.0);
+        l.sort(DoubleComparators.OPPOSITE_COMPARATOR);
+        assertEquals(4, l.size());
+        assertEquals(1L, l.getLong(0));
+        assertEquals(39L, l.getLong(1));
+        assertEquals(42L, l.getLong(2));
+        assertEquals(2L, l.getLong(3));
+        assertEquals(6.4, l.getScore(0), 1.0e-6);
+        assertEquals(4.2, l.getScore(1), 1.0e-6);
+        assertEquals(3.9, l.getScore(2), 1.0e-6);
+        assertEquals(1.0, l.getScore(3), 1.0e-6);
     }
 }

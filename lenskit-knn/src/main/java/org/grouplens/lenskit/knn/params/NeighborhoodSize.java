@@ -29,7 +29,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both
- * user-user and item-item CF.
+ * user-user and item-item CF. If 0, then all neighbors are used.
  */
 @Documented
 @DefaultInt(30)

@@ -30,7 +30,11 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
- * Similarity function for items (used by item-item CF).
+ * Similarity function for items (used by item-item CF). The similarity function
+ * \(s(i,j)\) is computed such that \(i\) is the item to be scored and \(j\) is
+ * the item the user has purchased or rated.
+ *
+ * @see org.grouplens.lenskit.knn.item
  */
 @Documented
 @DefaultClass(CosineSimilarity.class)

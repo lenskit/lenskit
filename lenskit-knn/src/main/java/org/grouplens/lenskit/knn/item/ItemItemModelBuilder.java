@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -38,6 +39,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
+import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
@@ -46,9 +48,7 @@ import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,11 +58,12 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@SuppressWarnings("UnusedDeclaration")
 @NotThreadSafe
 public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
-    private Similarity<? super SparseVector> itemSimilarity;
+    private Similarity<? super ItemVector> itemSimilarity;
 
     private VectorNormalizer<? super UserVector> normalizer;
     private HistorySummarizer userSummarizer;
@@ -75,7 +76,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     }
 
     @ItemSimilarity
-    public void setSimilarity(Similarity<? super SparseVector> similarity) {
+    public void setSimilarity(Similarity<? super ItemVector> similarity) {
         itemSimilarity = similarity;
     }
 
@@ -114,13 +115,11 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
         Long2ObjectMap<Long2DoubleMap> itemData =
                 buildItemRatings(items, userItemSets);
         // finalize the item data into vectors
-        Long2ObjectMap<SparseVector> itemRatings =
-                new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
-        ObjectIterator<Long2ObjectMap.Entry<Long2DoubleMap>> iter = itemData.long2ObjectEntrySet().iterator();
-        while (iter.hasNext()) {
-            Long2ObjectMap.Entry<Long2DoubleMap> entry = iter.next();
+        Long2ObjectMap<ItemVector> itemRatings =
+                new Long2ObjectOpenHashMap<ItemVector>(itemData.size());
+        for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
             Long2DoubleMap ratings = entry.getValue();
-            SparseVector v = new ImmutableSparseVector(ratings);
+            ItemVector v = new ItemVector(entry.getKey(), ratings);
             assert v.size() == ratings.size();
             itemRatings.put(entry.getLongKey(), v);
             entry.setValue(null);          // clear the array so GC can free
@@ -144,7 +143,6 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
      */
     private Long2ObjectMap<Long2DoubleMap>
     buildItemRatings(LongSortedSet items, Long2ObjectMap<LongSortedSet> userItemSets) {
-        final boolean collectItems = userItemSets != null;
         final int nitems = items.size();
 
         // Create and initialize the transposed array to collect user
@@ -170,7 +168,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                 // allocate the array ourselves to avoid an array copy
                 long[] userItemArr = null;
                 LongCollection userItems = null;
-                if (collectItems) {
+                if (userItemSets != null) {
+                    // we are collecting user item sets
                     userItemArr = new long[nratings];
                     userItems = LongArrayList.wrap(userItemArr, 0);
                 }
@@ -183,7 +182,8 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
                     if (userItems != null)
                         userItems.add(item);
                 }
-                if (collectItems) {
+                if (userItems != null) {
+                    // collected user item sets, finalize that
                     LongSortedSet itemSet = new LongSortedArraySet(userItemArr, 0, userItems.size());
                     userItemSets.put(uid, itemSet);
                 }
@@ -196,7 +196,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(Similarity<? super SparseVector> similarity) {
+    protected ItemItemModelBuildStrategy createBuildStrategy(Similarity<? super ItemVector> similarity) {
         if (similarity instanceof OptimizableVectorSimilarity) {
             return new SparseModelBuildStrategy((OptimizableVectorSimilarity) similarity);
         } else {

@@ -43,14 +43,14 @@ import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
- * 
- * @review Should user ratings be supplied? Optionally?
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
@@ -135,8 +135,12 @@ public class ItemItemScorer extends AbstractItemScorer implements
                                              LongSortedSet items) {
         MutableSparseVector scores = new MutableSparseVector(items);
         // We ran reuse accumulators
-        ScoredItemAccumulator accum =
-            new ScoredItemAccumulator(neighborhoodSize);
+        ScoredItemAccumulator accum;
+        if (neighborhoodSize > 0) {
+            accum = new TopNScoredItemAccumulator(neighborhoodSize);
+        } else {
+            accum = new UnlimitedScoredItemAccumulator();
+        }
 
         // FIXME Make sure the direction on similarities is right for asym.
         // for each item, compute its prediction

@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import com.google.common.collect.Iterables;
@@ -111,7 +112,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
             n = scores.size();
         }
         
-        ScoredItemAccumulator accum = new ScoredItemAccumulator(n);
+        ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
         for (Long2DoubleMap.Entry pred: scores.fast()) {
             final double v = pred.getDoubleValue();
             accum.put(pred.getLongKey(), v);
