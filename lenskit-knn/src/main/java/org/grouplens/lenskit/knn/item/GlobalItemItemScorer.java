@@ -1,3 +1,21 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2011 Regents of the University of Minnesota
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -49,12 +67,14 @@ public class GlobalItemItemScorer extends AbstractGlobalItemScorer implements
 			Collection<Long> items) {
 		// create the unary rating for the items
 		double[] ratings = new double[queryItems.size()];
-		for(int i = 0; i < ratings.length; i++)
+		for(int i = 0; i < ratings.length; i++) {
 			ratings[i] = 1.0;
+		}
 		long[] ids = new long[queryItems.size()];
 		int i = 0;
-		for(Long id:queryItems)
+		for(Long id:queryItems) {
 			ids[i++] = id.longValue();
+		}
 		// create a dummy user vector with user id = 0
 		UserVector basket = new UserVector(0, ids, ratings, queryItems.size());
 		

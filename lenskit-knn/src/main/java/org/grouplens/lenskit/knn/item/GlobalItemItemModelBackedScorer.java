@@ -25,10 +25,11 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemScorer;
 
 /**
- * The corresponding global scorer for the global recommendation. 
- * See{@link ItemItemModelBackedScorer}
+ * The  global scorer for the global recommendation backed by a item-item model. 
+ * 
  * 
  * @author Shuo Chang <schang@cs.umn.edu>
+ * @see{@link ItemItemModelBackedScorer}
  *
  */
 public interface GlobalItemItemModelBackedScorer extends GlobalItemScorer{

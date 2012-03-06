@@ -120,7 +120,6 @@ public class ItemItemModel implements Serializable {
             accum = new UnlimitedScoredItemAccumulator();
         }
 
-        // FIXME Make sure the direction on similarities is right for asym.
         // for each item, compute its prediction
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {

@@ -1,5 +1,5 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
+ * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2011 Regents of the University of Minnesota
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,7 +16,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 package org.grouplens.lenskit;
 
 import java.util.Set;
@@ -72,11 +71,7 @@ public interface GlobalItemRecommender {
     ScoredLongList globalRecommend(long item, @Nullable Set<Long> candidates);
 
     /**
-     * Produce a set of recommendations for the item. This is the most general
-     * recommendation method, allowing the recommendations to be constrained by
-     * both a candidate set and an exclude set. The exclude set is applied to
-     * the candidate set, so the final effective candidate set is
-     * <var>canditates</var> minus <var>exclude</var>.
+     * Produce a list of items recommended to one user
      *
      * @param item The item value
      * @param n The number of ratings to return. If negative, recommend all
@@ -88,7 +83,7 @@ public interface GlobalItemRecommender {
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For
      *         most scoring recommenders, the items should be ordered in
-     *         decreasing order of score. This is not a hard requirement — e.g.
+     *         decreasing order of score. This is not a hard requirement ??? e.g.
      *         set recommenders are allowed to be more flexible.
      */
     ScoredLongList globalRecommend(long item, int n, @Nullable Set<Long> candidates,
@@ -127,7 +122,11 @@ public interface GlobalItemRecommender {
     ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates);
     
     /**
-     * See {@link #globalRecommend(long, int, Set, Set)}
+     * Produce a set of recommendations for the item. This is the most general
+     * recommendation method, allowing the recommendations to be constrained by
+     * both a candidate set and an exclude set. The exclude set is applied to
+     * the candidate set, so the final effective candidate set is
+     * <var>canditates</var> minus <var>exclude</var>.
      *
      * @param items The items value
      * @param n The number of ratings to return. If negative, recommend all
@@ -139,7 +138,7 @@ public interface GlobalItemRecommender {
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For
      *         most scoring recommenders, the items should be ordered in
-     *         decreasing order of score. This is not a hard requirement — e.g.
+     *         decreasing order of score. This is not a hard requirement ??? e.g.
      *         set recommenders are allowed to be more flexible.
      */
     ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
