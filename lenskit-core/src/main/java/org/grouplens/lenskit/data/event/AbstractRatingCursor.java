@@ -18,33 +18,18 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import java.util.NoSuchElementException;
-
-import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
+import org.grouplens.lenskit.data.Event;
 
 /**
- * Polling-based cursor implementation for ratings with fast poll methods.
- *
- * <p>This is only for cursors which support mutating rating objects.  The ratings
- * are cloned to implement {@link #next()}.  If your {@link #poll()} method returns
- * fresh rating objects for each rating, extend {@link AbstractPollingCursor} instead.
+ * Polling-based cursor implementation for events with fast poll methods. This class
+ * assumes that {@link #poll()} reuses objects, and overrides {@link #copy(E)} to copy
+ * them using {@link Event#clone()}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingCursor<R extends Rating> extends AbstractCursor<R> {
-    /**
-     * Poll for the next rating. This implementation should mutate and re-use
-     * the same rating object if possible.
-     *
-     * @return The rating, or <tt>null</tt> if at the end of the cursor.
-     */
-    protected abstract R poll();
-
-    private boolean hasNextCalled;
-    private R polled;
-
+public abstract class AbstractRatingCursor<E extends Event> extends AbstractPollingCursor<E> {
     public AbstractRatingCursor() {
         super();
     }
@@ -53,32 +38,13 @@ public abstract class AbstractRatingCursor<R extends Rating> extends AbstractCur
         super(rowCount);
     }
 
-    @Override
-    public boolean hasNext() {
-        if (!hasNextCalled) {
-            polled = poll();
-            hasNextCalled = true;
-        }
-
-        return polled != null;
-    }
-
-    @Override
-    public R fastNext() {
-        if (!hasNextCalled)
-            polled = poll();
-        if (polled == null)
-            throw new NoSuchElementException();
-
-        R n = polled;
-        polled = null;
-        hasNextCalled = false;
-        return n;
-    }
-
+    /**
+     * Copy an event using {@link Event#clone()}.
+     * @param event The event to copy.
+     * @return A copy of {@code event}.
+     */
     @SuppressWarnings("unchecked")
-    @Override
-    public R next() {
-        return (R) fastNext().clone();
+    protected E copy(E event) {
+        return (E) event.clone();
     }
 }

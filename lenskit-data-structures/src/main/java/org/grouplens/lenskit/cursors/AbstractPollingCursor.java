@@ -50,16 +50,23 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     }
 
     @Override
-    public T next() {
-        if (!hasNextCalled)
+    public T fastNext() {
+        if (!hasNextCalled) {
             polled = poll();
-        if (polled == null)
+        }
+        if (polled == null) {
             throw new NoSuchElementException();
+        }
         
         T n = polled;
         polled = null;
         hasNextCalled = false;
         return n;
+    }
+
+    @Override
+    public T next() {
+        return copy(fastNext());
     }
 
     /**
@@ -70,4 +77,18 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
      * @return The next element, or null
      */
     protected abstract T poll();
+
+    /**
+     * Construct a copy of an object. The default does not copy; it just returns
+     * its parameter. If a subclass wants to fast iteration to actually be fast
+     * (mutate and reuse the same object), it should do so in its {@link #poll()}
+     * method, and override this method to create a new copy of an object for when
+     * {@link #next()} is called. Subclasses which return fresh objects on each
+     * call to {@link #poll()} do not need to override this method.
+     * @param obj The object to copy.
+     * @return A copy of {@code obj}.
+     */
+    protected T copy(T obj) {
+        return obj;
+    }
 }
