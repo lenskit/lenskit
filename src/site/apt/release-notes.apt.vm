@@ -15,6 +15,15 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Made item-item CF use <<<ItemVector>>> rather than just <<<ImmutableSparseVector>>> for
+    representing item vectors and querying for their similarities.
+
+  * Defined the direction similarities are used in the item-item recommender and made it
+    consistent and correct in the face of asymmetric similarity functions such as conditional
+    probability (#issue(131)). The similarity functions are now better-documented.
+
+  * Support unlimited neighborhood sizes (but not yet model sizes) in item-item recommender.
+
   * Cleanup and Refactoring
 
     * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
@@ -22,6 +31,12 @@ LensKit Release Notes
 
     * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
       interface to <<<PredictEvalMetric>>>.
+
+    * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
+      any event.
+
+    * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
+      extend it.
 
     []
 
