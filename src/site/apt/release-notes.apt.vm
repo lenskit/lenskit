@@ -15,8 +15,14 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
-  * Make item-item CF use <<<ItemVector>>> rather than just <<<ImmutableSparseVector>>> for
+  * Made item-item CF use <<<ItemVector>>> rather than just <<<ImmutableSparseVector>>> for
     representing item vectors and querying for their similarities.
+
+  * Defined the direction similarities are used in the item-item recommender and made it
+    consistent and correct in the face of asymmetric similarity functions such as conditional
+    probability (#issue(131)). The similarity functions are now better-documented.
+
+  * Support unlimited neighborhood sizes (but not yet model sizes) in item-item recommender.
 
   * Cleanup and Refactoring
 
