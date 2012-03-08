@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.event.AbstractRatingCursor;
+import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.MoreFunctions;
@@ -334,7 +334,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         }
     }
 
-    static class RatingCursor extends AbstractRatingCursor<Rating> {
+    static class RatingCursor extends AbstractEventCursor<Rating> {
         private ResultSet resultSet;
         private boolean hasTimestampColumn;
         private MutableRating rating;

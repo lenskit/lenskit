@@ -23,13 +23,13 @@ import java.util.regex.Pattern;
 
 import javax.annotation.WillCloseWhenClosed;
 
-import org.grouplens.lenskit.data.event.AbstractRatingCursor;
+import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ScannerRatingCursor extends AbstractRatingCursor<Rating> {
+public class ScannerRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private Scanner scanner;
     private final String fileName;
