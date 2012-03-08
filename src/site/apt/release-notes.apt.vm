@@ -15,6 +15,9 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Make item-item CF use <<<ItemVector>>> rather than just <<<ImmutableSparseVector>>> for
+    representing item vectors and querying for their similarities.
+
   * Cleanup and Refactoring
 
     * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
