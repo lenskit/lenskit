@@ -18,60 +18,58 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 
+import com.google.common.base.Preconditions;
+import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.util.DelimitedTextCursor;
+import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ScannerRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
-    private Scanner scanner;
     private final String fileName;
-    private final Pattern splitter;
-    private int lineno;
     private MutableRating rating;
+    private DelimitedTextCursor rowCursor;
 
-    public ScannerRatingCursor(@WillCloseWhenClosed Scanner s) {
+    public ScannerRatingCursor(@WillCloseWhenClosed @Nonnull Scanner s) {
         this(s, null, System.getProperty("lenskit.delimiter", "\t"));
     }
 
-    public ScannerRatingCursor(@WillCloseWhenClosed Scanner s, String name,
-                               String delimiter) {
+    public ScannerRatingCursor(@WillCloseWhenClosed @Nonnull Scanner s,
+                               @Nullable String name,
+                               @Nonnull String delimiter) {
         fileName = name;
-        lineno = 0;
-        scanner = s;
         rating = new MutableRating();
-        splitter = Pattern.compile(Pattern.quote(delimiter));
+        rowCursor = new DelimitedTextCursor(s, delimiter);
     }
 
     @Override
     public void close() {
-        if (scanner != null)
-            scanner.close();
-        scanner = null;
+        rowCursor.close();
         rating = null;
     }
 
     @Override
-    protected Rating poll() {
-        if (scanner == null) return null;
-
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            lineno += 1;
-            String[] fields = splitter.split(line);
+    public Rating poll() {
+        Preconditions.checkState(rating != null, "cursor is closed");
+        while (rowCursor.hasNext()) {
+            String[] fields = rowCursor.next();
             if (fields.length < 3) {
-                logger.error("Invalid input at {} line {}, skipping",
-                             fileName, lineno);
+                logger.error("{}:{}: invalid input, skipping line",
+                             fileName, rowCursor.getLineNumber());
                 continue;
             }
-            rating.setId(lineno);
+
+            rating.setId(rowCursor.getLineNumber());
             rating.setUserId(Long.parseLong(fields[0]));
             rating.setItemId(Long.parseLong(fields[1]));
             rating.setRating(Double.parseDouble(fields[2]));
