@@ -29,12 +29,12 @@ import org.grouplens.lenskit.data.Event;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractRatingCursor<E extends Event> extends AbstractPollingCursor<E> {
-    public AbstractRatingCursor() {
+public abstract class AbstractEventCursor<E extends Event> extends AbstractPollingCursor<E> {
+    public AbstractEventCursor() {
         super();
     }
 
-    public AbstractRatingCursor(int rowCount) {
+    public AbstractEventCursor(int rowCount) {
         super(rowCount);
     }
 
