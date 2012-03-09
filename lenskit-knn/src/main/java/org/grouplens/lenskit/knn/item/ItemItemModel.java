@@ -19,14 +19,21 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.params.meta.DefaultBuilder;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -88,5 +95,63 @@ public class ItemItemModel implements Serializable {
         }
         return nbrs;
 
+    }
+    
+    /**
+     * Compute item scores for a user.
+     * 
+     * @param userData The user vector for which scores are to be computed.
+     * @param items The items to score.
+     * @param scorer The neighborhood scorer used to score items.
+     * @param neighborhoodSize The size of the neighborhood used to compute the score
+     * @return The scores for the items. The key domain contains all items; only
+     *         those items with scores are set.
+     */
+    public MutableSparseVector scoreItems(SparseVector userData,
+                                             LongSortedSet items,
+                                             NeighborhoodScorer scorer,
+                                             int neighborhoodSize) {
+        MutableSparseVector scores = new MutableSparseVector(items);
+        // We ran reuse accumulators
+        ScoredItemAccumulator accum;
+        if (neighborhoodSize > 0) {
+            accum = new TopNScoredItemAccumulator(neighborhoodSize);
+        } else {
+            accum = new UnlimitedScoredItemAccumulator();
+        }
+
+        // for each item, compute its prediction
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
+
+            // find all potential neighbors
+            // FIXME: Take advantage of the fact that the neighborhood is sorted
+            ScoredLongList neighbors = this.getNeighbors(item);
+
+            if (neighbors == null) {
+                /* we cannot predict this item */
+                continue;
+            }
+
+            // filter and truncate the neighborhood
+            ScoredLongListIterator niter = neighbors.iterator();
+            while (niter.hasNext()) {
+                long oi = niter.nextLong();
+                double score = niter.getScore();
+                if (userData.containsKey(oi)) {
+                    accum.put(oi, score);
+                }
+            }
+            neighbors = accum.finish();
+
+            // compute score & place in vector
+            final double score = scorer.score(neighbors, userData);
+            if (!Double.isNaN(score)) {
+                scores.set(item, score);
+            }
+        }
+
+        return scores;
     }
 }

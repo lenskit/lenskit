@@ -26,6 +26,16 @@ LensKit Release Notes
 
   * Support unlimited neighborhood sizes (but not yet model sizes) in item-item recommender.
 
+  * Added global recommenders and scorers that compute for items with respect to other items
+    but independent of particular users, useful for creating “more like this” or “related items”
+    views (#issue(125)).
+
+    * General API — see the <<<GlobalItemScorer>>> and <<<GlobalItemRecommender>>> classes.
+
+    * Implementation of global recommenders for item-item CF.
+
+    []
+
   * Cleanup and Refactoring
 
     * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
@@ -34,14 +44,20 @@ LensKit Release Notes
     * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
       interface to <<<PredictEvalMetric>>>.
 
-    * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
-      any event.
+    * Refactored cursor implementations:
 
-    * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
-      extend it.
+      * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
+        any event.
 
-    * Renamed <<<ScannerRatingCursor>>> to <<<DelimitedTextRatingCursor>>>, as it now uses
-      buffered readers instead of scanners.
+      * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
+        extend it.
+
+      * <<Incompatible change>>>: renamed <<<ScannerRatingCursor>>> to
+        <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
+        <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
+        the scanner rating cursor directly.
+
+      []
 
     []
 

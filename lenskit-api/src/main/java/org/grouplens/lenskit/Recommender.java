@@ -44,6 +44,15 @@ public interface Recommender {
      */
     @Nullable
     ItemScorer getItemScorer();
+    
+    /**
+     * Get the recommender's global item scorer.
+     *
+     * @return The global item scorer for this recommender configuration, or
+     *         <tt>null</tt> if item scoring is not supported.
+     */
+    @Nullable
+    GlobalItemScorer getGlobalItemScorer();
 
     /**
      * Get the recommender's rating scorer.
@@ -68,8 +77,16 @@ public interface Recommender {
      */
     @Nullable
     ItemRecommender getItemRecommender();
-
+        
     /**
+     * Get the recommender's global item recommender.
+     *
+     * @return The item recommender for this recommender configuration, or
+     *         <tt>null</tt> if item recommendation is not supported.
+     */
+    @Nullable
+    GlobalItemRecommender getGlobalItemRecommender();
+/**
      * @deprecated Use {@link #getItemRecommender()} instead.
      */
     @Nullable @Deprecated

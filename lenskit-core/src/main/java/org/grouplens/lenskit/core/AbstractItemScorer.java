@@ -36,6 +36,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * to {@link #score(UserHistory, Collection)}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * 	   
  *
  */
 public abstract class AbstractItemScorer implements ItemScorer {
@@ -101,4 +102,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
     public boolean canUseHistory() {
         return true;
     }
+    
+
+
 }
