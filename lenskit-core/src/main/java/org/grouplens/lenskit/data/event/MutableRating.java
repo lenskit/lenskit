@@ -18,13 +18,12 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import org.grouplens.lenskit.data.dao.ScannerRatingCursor;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * Rating implementation for mutation by fast iterators. It is used in
- * {@link ScannerRatingCursor} and similar places.
+ * {@link org.grouplens.lenskit.data.dao.DelimitedTextRatingCursor} and similar places.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

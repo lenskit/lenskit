@@ -18,14 +18,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-
-import javax.annotation.Nonnull;
-import javax.annotation.WillCloseWhenClosed;
-
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
@@ -34,19 +27,23 @@ import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ScannerRatingCursor extends AbstractEventCursor<Rating> {
+import javax.annotation.Nonnull;
+import javax.annotation.WillCloseWhenClosed;
+import java.io.BufferedReader;
+
+public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;
     private MutableRating rating;
     private DelimitedTextCursor rowCursor;
 
-    public ScannerRatingCursor(@WillCloseWhenClosed @Nonnull Scanner s) {
+    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s) {
         this(s, null, System.getProperty("lenskit.delimiter", "\t"));
     }
 
-    public ScannerRatingCursor(@WillCloseWhenClosed @Nonnull Scanner s,
-                               @Nullable String name,
-                               @Nonnull String delimiter) {
+    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
+                                     @Nullable String name,
+                                     @Nonnull String delimiter) {
         fileName = name;
         rating = new MutableRating();
         rowCursor = new DelimitedTextCursor(s, delimiter);

@@ -21,21 +21,18 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Comparator;
-import java.util.Scanner;
-
+import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Comparator;
 
 /**
  * Rating-only data source backed by a simple delimited file.
@@ -154,27 +151,41 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         @SuppressWarnings("rawtypes")
         Comparator comp = getComparator(order);
 
-        Scanner scanner;
+        Reader input;
         String name = null;
         try {
             if (file != null) {
                 logger.debug("Opening {}", file.getPath());
                 name = file.getPath();
-                scanner = new Scanner(file);
+                input = new FileReader(file);
             } else {
                 logger.debug("Opening {}", url.toString());
                 name = url.toString();
                 InputStream instr = url.openStream();
-                scanner = new Scanner(instr);
+                input = new InputStreamReader(instr);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Cursor<Rating> cursor = new ScannerRatingCursor(scanner, name, delimiter);
-        if (comp == null)
+        BufferedReader buf;
+        try {
+            buf = new BufferedReader(input);
+        } catch (RuntimeException e) {
+            Closeables.closeQuietly(input);
+            throw e;
+        }
+        Cursor<Rating> cursor;
+        try {
+            cursor = new DelimitedTextRatingCursor(buf, name, delimiter);
+        } catch (RuntimeException e) {
+            Closeables.closeQuietly(buf);
+            throw e;
+        }
+        if (comp == null) {
             return (Cursor<E>) cursor;
-        else
+        } else {
             return Cursors.sort(cursor, comp);
+        }
     }
 
     @Override

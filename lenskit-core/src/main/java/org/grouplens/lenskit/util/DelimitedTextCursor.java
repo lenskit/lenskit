@@ -18,11 +18,13 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.cursors.AbstractCursor;
+import com.google.common.io.Closeables;
+import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
@@ -30,8 +32,8 @@ import java.util.regex.Pattern;
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class DelimitedTextCursor extends AbstractCursor<String[]> {
-    private Scanner input;
+public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
+    private BufferedReader input;
     private Pattern delimiter;
     private int lineNumber = 0;
 
@@ -40,7 +42,7 @@ public class DelimitedTextCursor extends AbstractCursor<String[]> {
      * @param in The input scanner.
      * @param delim The delimiter.
      */
-    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull Scanner in,
+    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
                                @Nonnull Pattern delim) {
         input = in;
         delimiter = delim;
@@ -51,20 +53,24 @@ public class DelimitedTextCursor extends AbstractCursor<String[]> {
      * @param in The scanner to read from.
      * @param delim The delimiter string.
      */
-    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull Scanner in,
+    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
                                @Nonnull String delim) {
         this(in, Pattern.compile(Pattern.quote(delim)));
     }
 
-    public boolean hasNext() {
-        return input.hasNextLine();
-    }
-
-    @Nonnull
-    public String[] next() {
-        String line = input.nextLine();
-        lineNumber++;
-        return delimiter.split(line);
+    public String[] poll() {
+        String line;
+        try {
+            line = input.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException("error reading line", e);
+        }
+        if (line == null) {
+            return null;
+        } else {
+            lineNumber++;
+            return delimiter.split(line);
+        }
     }
 
     /**
@@ -77,6 +83,6 @@ public class DelimitedTextCursor extends AbstractCursor<String[]> {
 
     @Override
     public void close() {
-        input.close();
+        Closeables.closeQuietly(input);
     }
 }
