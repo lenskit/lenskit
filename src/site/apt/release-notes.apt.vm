@@ -44,14 +44,20 @@ LensKit Release Notes
     * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
       interface to <<<PredictEvalMetric>>>.
 
-    * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
-      any event.
+    * Refactored cursor implementations:
 
-    * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
-      extend it.
+      * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
+        any event.
 
-    * Renamed <<<ScannerRatingCursor>>> to <<<DelimitedTextRatingCursor>>>, as it now uses
-      buffered readers instead of scanners.
+      * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
+        extend it.
+
+      * <<Incompatible change>>>: renamed <<<ScannerRatingCursor>>> to
+        <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
+        <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
+        the scanner rating cursor directly.
+
+      []
 
     []
 
