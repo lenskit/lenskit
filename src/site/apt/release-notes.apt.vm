@@ -40,6 +40,9 @@ LensKit Release Notes
     * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
       extend it.
 
+    * Renamed <<<ScannerRatingCursor>>> to <<<DelimitedTextRatingCursor>>>, as it now uses
+      buffered readers instead of scanners.
+
     []
 
   []
