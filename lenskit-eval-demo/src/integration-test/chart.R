@@ -3,7 +3,7 @@
 library("doBy")
 library("lattice")
 
-all.data <- read.csv("eval-output.csv")
+all.data <- read.csv("eval-results.csv")
 
 all.agg <- summaryBy(MAE + RMSE.ByRating + RMSE.ByUser
                      + nDCG ~ Algorithm,
