@@ -26,6 +26,10 @@ LensKit Release Notes
 
   * Support unlimited neighborhood sizes (but not yet model sizes) in item-item recommender.
 
+  * Added global recommenders and scorers that compute for items with respect to other items
+    but independent of particular users, useful for creating “more like this” or “related items”
+    views (#issue(125)). See the <<<GlobalItemScorer>>> and <<<GlobalItemRecommender>>> classes.
+
   * Cleanup and Refactoring
 
     * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
