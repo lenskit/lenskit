@@ -28,7 +28,13 @@ LensKit Release Notes
 
   * Added global recommenders and scorers that compute for items with respect to other items
     but independent of particular users, useful for creating “more like this” or “related items”
-    views (#issue(125)). See the <<<GlobalItemScorer>>> and <<<GlobalItemRecommender>>> classes.
+    views (#issue(125)).
+
+    * General API — see the <<<GlobalItemScorer>>> and <<<GlobalItemRecommender>>> classes.
+
+    * Implementation of global recommenders for item-item CF.
+
+    []
 
   * Cleanup and Refactoring
 
