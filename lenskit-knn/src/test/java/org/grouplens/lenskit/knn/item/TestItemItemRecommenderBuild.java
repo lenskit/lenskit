@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -52,6 +54,8 @@ public class TestItemItemRecommenderBuild {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
         factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
+        factory.setComponent(GlobalItemRecommender.class, GlobalItemItemRecommender.class);
+        factory.setComponent(GlobalItemScorer.class, GlobalItemItemScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //                             IdentityVectorNormalizer.class);
@@ -67,5 +71,7 @@ public class TestItemItemRecommenderBuild {
         assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
         assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
         assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
+        assertTrue(rec.getGlobalItemRecommender() instanceof GlobalItemItemRecommender);
+        assertTrue(rec.getGlobalItemScorer() instanceof GlobalItemItemScorer);
     }
 }

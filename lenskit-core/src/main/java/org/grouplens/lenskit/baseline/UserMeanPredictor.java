@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Built
-public class UserMeanPredictor implements BaselinePredictor {
+public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**
      * A builder that creates UserMeanPredictors.
@@ -62,7 +62,7 @@ public class UserMeanPredictor implements BaselinePredictor {
             logger.debug("Building new user mean scorer");
 
             logger.debug("smoothing = {}", smoothing);
-            double mean = GlobalMeanPredictor.computeMeanRating(snapshot);
+            double mean = computeMeanRating(snapshot);
             logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
         }
@@ -79,7 +79,8 @@ public class UserMeanPredictor implements BaselinePredictor {
         * @param damping A damping term for the calculations.
      */
     public UserMeanPredictor(double globalMean, double damping) {
-        this.globalMean = globalMean;
+        super(globalMean);
+    	this.globalMean = globalMean;
         this.smoothing = damping;
     }
 
@@ -103,4 +104,5 @@ public class UserMeanPredictor implements BaselinePredictor {
     public String toString() {
         return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
     }
+
 }

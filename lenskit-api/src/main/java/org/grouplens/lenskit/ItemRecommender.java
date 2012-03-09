@@ -174,4 +174,5 @@ public interface ItemRecommender {
      */
     public ScoredLongList recommend(UserHistory<? extends Event> profile, int n,
             @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
+
 }

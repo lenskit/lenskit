@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.core;
 
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -46,7 +47,7 @@ import com.google.common.collect.Iterables;
  * Recommendations are returned in descending order of score.
  *
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender {
+public class ScoreBasedItemRecommender extends AbstractItemRecommender{
     protected final ItemScorer scorer;
 
     public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
@@ -94,6 +95,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
     }
+    
 
     /**
      * Pick the top <var>n</var> items from a score vector.
@@ -146,7 +148,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         }
         return excludes;
     }
-
+    
     /**
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
@@ -158,6 +160,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(long user) {
         return Cursors.makeSet(dao.getItems());
     }
+  
 
     /**
      * Determine the items for which predictions can be made for a certain user.
@@ -170,4 +173,5 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return Cursors.makeSet(dao.getItems());
     }
+
 }
