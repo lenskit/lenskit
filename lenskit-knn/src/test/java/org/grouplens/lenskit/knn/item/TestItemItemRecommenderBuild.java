@@ -54,8 +54,8 @@ public class TestItemItemRecommenderBuild {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
         factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
-        factory.setComponent(GlobalItemRecommender.class, GlobalItemItemRecommender.class);
-        factory.setComponent(GlobalItemScorer.class, GlobalItemItemScorer.class);
+        factory.setComponent(GlobalItemRecommender.class, ItemItemGlobalRecommender.class);
+        factory.setComponent(GlobalItemScorer.class, ItemItemGlobalScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //                             IdentityVectorNormalizer.class);
@@ -71,7 +71,7 @@ public class TestItemItemRecommenderBuild {
         assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
         assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
         assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
-        assertTrue(rec.getGlobalItemRecommender() instanceof GlobalItemItemRecommender);
-        assertTrue(rec.getGlobalItemScorer() instanceof GlobalItemItemScorer);
+        assertTrue(rec.getGlobalItemRecommender() instanceof ItemItemGlobalRecommender);
+        assertTrue(rec.getGlobalItemScorer() instanceof ItemItemGlobalScorer);
     }
 }

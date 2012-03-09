@@ -41,14 +41,14 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Shuo Chang <schang@cs.umn.edu>
  * 
  */
-public class GlobalItemItemScorer extends AbstractGlobalItemScorer implements
-		GlobalItemItemModelBackedScorer {
+public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
+        ItemItemModelBackedGlobalScorer {
 	protected final ItemItemModel model;
 	protected final int neighborhoodSize;
 	protected @Nonnull NeighborhoodScorer scorer;
 
-	public GlobalItemItemScorer(DataAccessObject dao, ItemItemModel m,
-			@NeighborhoodSize int nnbrs) {
+	public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
+                                @NeighborhoodSize int nnbrs) {
 		super(dao);
 		model = m;
 		neighborhoodSize = nnbrs;

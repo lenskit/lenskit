@@ -32,7 +32,7 @@ import org.grouplens.lenskit.GlobalItemScorer;
  * @see{@link ItemItemModelBackedScorer}
  *
  */
-public interface GlobalItemItemModelBackedScorer extends GlobalItemScorer{
+public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer{
 	/**
 	 *  Get the item-item model backing this scorer.
      *

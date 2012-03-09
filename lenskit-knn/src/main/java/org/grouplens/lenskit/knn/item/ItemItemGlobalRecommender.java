@@ -11,11 +11,11 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @author Shuo Chang <schang@cs.umn.edu>
  * 
  */
-public class GlobalItemItemRecommender extends ScoreBasedGlobalItemRecommender {
-	protected final GlobalItemItemModelBackedScorer scorer;
+public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
+	protected final ItemItemModelBackedGlobalScorer scorer;
 
-	public GlobalItemItemRecommender(DataAccessObject dao,
-			GlobalItemItemModelBackedScorer scorer) {
+	public ItemItemGlobalRecommender(DataAccessObject dao,
+                                     ItemItemModelBackedGlobalScorer scorer) {
 		super(dao, scorer);
 		this.scorer = scorer;
 	}
