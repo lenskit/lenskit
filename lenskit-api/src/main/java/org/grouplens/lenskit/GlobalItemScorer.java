@@ -39,15 +39,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public interface GlobalItemScorer {
 
-    /**
-     * Score a single item.
-     *
-     * @param queryItem The objective item ID used as the query
-     * @param item The item ID to score.
-     * @return The preference, or {@link Double#NaN} if no preference can be
-     *         predicted.
-     */
-	double globalScore(long queryItem, long item);
 	
     /**
      * Score a single item based on a collection of items(a shopping basket).
@@ -58,17 +49,6 @@ public interface GlobalItemScorer {
      *         predicted.
      */
 	double globalScore(Collection<Long> queryItems, long item);
-
-    /**
-     * Score a collection of items.
-     *
-     * @param queryItem The objective item ID used as the query
-     * @param items The list of items to score.
-     * @return A mapping from item IDs to predicted preference. This mapping may
-     *         not contain all requested items.
-     */
-	SparseVector globalScore(long queryItem, Collection<Long> items);
-
 
     /**
      * Score a collection of items based on a collection of items(a shopping basket).

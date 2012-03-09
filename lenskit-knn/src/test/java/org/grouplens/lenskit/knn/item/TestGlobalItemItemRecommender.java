@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongSets;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,15 +78,15 @@ public class TestGlobalItemItemRecommender {
      */
     @Test
     public void testGlobalItemItemRecommender1() {
-        LongList recs = gRecommender.globalRecommend(1);
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1));
         assertThat(recs.size(),notNullValue());
-        recs = gRecommender.globalRecommend(2);
+        recs = gRecommender.globalRecommend(LongSets.singleton(2));
         assertTrue(recs.isEmpty());
-        recs = gRecommender.globalRecommend(5);
+        recs = gRecommender.globalRecommend(LongSets.singleton(5));
         assertThat(recs.size(),notNullValue());
-        recs = gRecommender.globalRecommend(7);
+        recs = gRecommender.globalRecommend(LongSets.singleton(1));
         assertThat(recs.size(),notNullValue());
-        recs = gRecommender.globalRecommend(10);
+        recs = gRecommender.globalRecommend(LongSets.singleton(10));
         assertThat(recs.size(),notNullValue());
 
     }
@@ -95,11 +96,11 @@ public class TestGlobalItemItemRecommender {
      */
     @Test
     public void testGlobalItemItemRecommender2() {
-        LongList recs = gRecommender.globalRecommend(1,2);
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1),2);
         assertEquals(recs.size(),2);
-        recs = gRecommender.globalRecommend(2,1);
+        recs = gRecommender.globalRecommend(LongSets.singleton(2),1);
         assertTrue(recs.isEmpty());
-        recs = gRecommender.globalRecommend(5,3);
+        recs = gRecommender.globalRecommend(LongSets.singleton(5),3);
         assertEquals(recs.size(),3);
 
     }
@@ -110,11 +111,11 @@ public class TestGlobalItemItemRecommender {
     @Test
     public void testGlobalItemItemRecommender3() {
     	HashSet<Long> candidates = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(1,candidates);
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1),candidates);
         assertEquals(recs.size(),0);
         candidates.add(new Long(1));
     	candidates.add(new Long(5));
-        recs = gRecommender.globalRecommend(1,candidates);
+        recs = gRecommender.globalRecommend(LongSets.singleton(1),candidates);
         assertEquals(recs.size(),1);
         assertTrue(recs.contains(5));
 
@@ -127,14 +128,14 @@ public class TestGlobalItemItemRecommender {
     public void testGlobalItemItemRecommender4() {
     	HashSet<Long> candidates = new HashSet<Long>();
     	HashSet<Long> excludes = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(1, 1, candidates, excludes);
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
         assertEquals(recs.size(),0);
         candidates.add(new Long(1));
         candidates.add(new Long(5));
         excludes.add(new Long(5));
-        recs = gRecommender.globalRecommend(1, 2, candidates, excludes);
+        recs = gRecommender.globalRecommend(LongSets.singleton(1), 2, candidates, excludes);
         assertEquals(recs.size(),1);
-        recs = gRecommender.globalRecommend(1, -1, candidates, excludes);
+        recs = gRecommender.globalRecommend(LongSets.singleton(1), -1, candidates, excludes);
         assertEquals(recs.size(),1);
 
     }

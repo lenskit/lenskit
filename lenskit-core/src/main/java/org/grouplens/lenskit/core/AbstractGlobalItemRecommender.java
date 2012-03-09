@@ -32,43 +32,6 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     /**
      * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
-    @Override    
-    public ScoredLongList globalRecommend(long item) {
-    	return globalRecommend(item, -1, null, null);
-    }
-
-    /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
-     */
-    @Override 
-    public ScoredLongList globalRecommend(long item, int n) {
-    	return globalRecommend(item, n, null, null);
-    }
-    
-    /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
-     */
-    @Override 
-    public ScoredLongList globalRecommend(long item, Set<Long> candidates) {
-    	return globalRecommend(item, -1, candidates, null);
-    }
-    
-    /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
-     */
-    @Override 
-    public ScoredLongList globalRecommend(long item, int n, Set<Long> candidates, Set<Long> exclude) {
-        Set<Long> it = new HashSet<Long>();
-        it.add(item);
-    	LongSet cs = CollectionUtils.fastSet(candidates);
-        LongSet es = CollectionUtils.fastSet(exclude);
-        return globalRecommend(it, n, cs, es);
-
-    }
-    
-    /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
-     */
     @Override
 	public ScoredLongList globalRecommend(Set<Long> items){
     	return globalRecommend(items, -1, null, null);
