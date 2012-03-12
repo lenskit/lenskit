@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -149,7 +150,12 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         if (trainFactory == null) {
             throw new IllegalStateException("data set not prepared");
         }
-        return trainFactory;
+        Function<DAOFactory, DAOFactory> wrapper = manager.getDAOWrapper();
+        if (wrapper != null) {
+            return wrapper.apply(trainFactory);
+        } else {
+            return trainFactory;
+        }
     }
 
     @Override
@@ -157,7 +163,12 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         if (testFactory == null) {
             throw new IllegalStateException("data set not prepared");
         }
-        return testFactory;
+        Function<DAOFactory, DAOFactory> wrapper = manager.getDAOWrapper();
+        if (wrapper != null) {
+            return wrapper.apply(testFactory);
+        } else {
+            return testFactory;
+        }
     }
     
     static class EventSupplier implements Supplier<List<Rating>> {

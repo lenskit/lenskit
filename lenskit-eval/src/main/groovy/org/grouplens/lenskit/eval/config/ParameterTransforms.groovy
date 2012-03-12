@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.config
 
 import org.apache.commons.lang3.tuple.Pair
+import com.google.common.base.Function
 
 /**
  * Helper methods for transforming parameters.
@@ -70,6 +71,15 @@ class ParameterTransforms {
         if (!(arg instanceof String)) {
             res.add transform(String) {
                 arg.toString()
+            }
+        }
+        if (arg instanceof Closure) {
+            res.add transform(Function) {
+                new Function() {
+                    def apply(x) {
+                        arg(x)
+                    }
+                }
             }
         }
 

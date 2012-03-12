@@ -47,4 +47,20 @@ class TestCrossfoldConfig extends ConfigTestBase {
         assertThat(cf.holdout.partitionMethod, instanceOf(FractionPartition))
         assertThat(cf.holdout.partitionMethod.fraction, closeTo(0.5, 1.0e-6))
     }
+
+    @Test
+    void testWrapperFunction() {
+        def obj = eval {
+            crossfold("ml-100k") {
+                source "ml-100k.csv"
+                wrapper {
+                    it
+                }
+            }
+        }
+        def cf = obj as CrossfoldSplit
+        assertThat(cf.name, equalTo("ml-100k"))
+        assertThat(cf.source, instanceOf(CSVDataSource))
+        assertThat(cf.getDAOWrapper(), notNullValue())
+    }
 }

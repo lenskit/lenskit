@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -62,12 +63,15 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
 	private final int partitionCount;
     private final Holdout holdout;
     private transient List<TTDataSet> dataSets;
+    private final Function<DAOFactory,DAOFactory> wrapper;
 
-	public CrossfoldSplit(String name, DataSource src, int folds, Holdout hold) {
+	public CrossfoldSplit(String name, DataSource src, int folds, Holdout hold,
+                          Function<DAOFactory, DAOFactory> wrap) {
 	    this.name = name;
         source = src;
 	    partitionCount = folds;
         holdout = hold;
+        wrapper = wrap;
     }
 
     /**
@@ -81,7 +85,7 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
             return name;
         }
     }
-	
+
 	/**
 	 * Get the data source backing this crossfold manager.
      * @return The underlying data source.
@@ -100,6 +104,15 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
 
     public Holdout getHoldout() {
         return holdout;
+    }
+
+    /**
+     * Get the function used to wrap DAOs.
+     * @return The DAO wrapper function, or {@code null} if no such function is set.
+     * @see CrossfoldBuilder#setWrapper(Function)
+     */
+    public Function<DAOFactory, DAOFactory> getDAOWrapper() {
+        return wrapper;
     }
 
     /**

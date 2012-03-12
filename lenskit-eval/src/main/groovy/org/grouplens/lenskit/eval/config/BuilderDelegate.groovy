@@ -42,8 +42,8 @@ import org.apache.commons.lang3.builder.Builder
  * @since 0.10
  */
 class BuilderDelegate<T> {
-    private EvalConfigEngine engine
-    private Builder<T> builder
+    protected final EvalConfigEngine engine
+    protected final Builder<T> builder
 
     /**
      * Construct a new builder delegate.

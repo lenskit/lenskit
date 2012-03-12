@@ -18,7 +18,9 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
@@ -37,6 +39,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
     private DataSource source;
     private String name;
+    private Function<DAOFactory,DAOFactory> wrapper;
 
     public CrossfoldBuilder() {}
 
@@ -99,8 +102,27 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
         return this;
     }
 
+    /**
+     * Specify a function that will wrap the DAO factories created by the crossfold. Used
+     * to e.g. associate a text index with the split rating data. Note that the
+     * Groovy configuration subsystem allows you to use a closure for the function,
+     * so you can do this:
+     * {@code
+     * wrapper {
+     *     return new WrappedDao(it)
+     * }
+     * }
+     * @param f The function to wrap DAOs.
+     * @return The builder (for chaining)
+     */
+    public CrossfoldBuilder setWrapper(Function<DAOFactory,DAOFactory> f) {
+        wrapper = f;
+        return this;
+    }
+
     public CrossfoldSplit build() {
-        return new CrossfoldSplit(name, source, folds, new Holdout(order, partition));
+        CrossfoldSplit split = new CrossfoldSplit(name, source, folds, new Holdout(order, partition), wrapper);
+        return split;
     }
 
     @MetaInfServices
