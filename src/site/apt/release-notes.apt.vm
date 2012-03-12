@@ -15,7 +15,22 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+** Evaluation
+
+  * Rewrote evaluator configuration to use Groovy rather than XML+JavaScript. The result is
+    much more readable & easier to extend.  See the
+    {{{http://medusa.cs.umn.edu/trac/lenskit/wiki/Manual/Evaluator}manual entry}} for
+    documentation of the evaluator.
+
+  * Enhance train-test predict metrics to support per-user results (written to a separate
+    table), and to have knowledge of starting and stopping the evaluation (to support
+    additional accumulation of results that doesn't fit in the per-user or per-run paradigm).
+
   * Allow demo & smoke-test to use a local copy of the ML-100K data set.
+
+  []
+
+** Algorithms
 
   * Made item-item CF use <<<ItemVector>>> rather than just <<<ImmutableSparseVector>>> for
     representing item vectors and querying for their similarities.
@@ -36,32 +51,30 @@ LensKit Release Notes
 
     []
 
-  * Cleanup and Refactoring
+** Cleanup and Refactoring
 
-    * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
-      <<<o.g.l.util.dtree>>>.
+  * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
+    <<<o.g.l.util.dtree>>>.
 
-    * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
-      interface to <<<PredictEvalMetric>>>.
+  * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
+    interface to <<<PredictEvalMetric>>>.
 
-    * Refactored cursor implementations:
+  * Refactored cursor implementations:
 
-      * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
-        any event.
+    * Renamed <<<AbstractRatingCursor>>> to <<<AbstractEventCursor>>> and made it handle
+      any event.
 
-      * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
-        extend it.
+    * Made <<<AbstractPollingCursor>>> support fast polling, and make <<<AbstractEventCursor>>>
+      extend it.
 
-      * <<Incompatible change>>>: renamed <<<ScannerRatingCursor>>> to
-        <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
-        <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
-        the scanner rating cursor directly.
-
-      * <<Incompatible change>>>: replaced <<TaskTimer>> by commons-lang3 <<StopWatch>>.
-
-      []
+    * <<Incompatible change>>: renamed <<<ScannerRatingCursor>>> to
+      <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
+      <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
+      the scanner rating cursor directly.
 
     []
+
+  * <<Incompatible change>>: replaced <<<TaskTimer>>> by commons-lang3 <<<StopWatch>>>.
 
   []
 
