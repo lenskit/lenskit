@@ -20,6 +20,7 @@ package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
@@ -33,7 +34,6 @@ import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
-import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,7 +174,8 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
         // Initialize our counters and error tracking
         double rmse = Double.MAX_VALUE, oldRmse = 0.0;
         int epoch;
-        TaskTimer timer = new TaskTimer();
+        StopWatch timer = new StopWatch();
+        timer.start();
 
         for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
             logger.trace("Running epoch {} of feature {}", epoch, feature);
@@ -185,8 +186,9 @@ public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDMode
             logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
         }
 
+        timer.stop();
         logger.debug("Finished feature {} in {} epochs (took {}), rmse={}",
-                new Object[]{feature, epoch, timer.elapsedPretty(), rmse});
+                new Object[]{feature, epoch, timer, rmse});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.

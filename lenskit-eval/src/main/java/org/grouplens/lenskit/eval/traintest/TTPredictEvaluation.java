@@ -28,11 +28,7 @@ import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.util.tablewriter.CSVWriter;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
-import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriters;
+import org.grouplens.lenskit.util.tablewriter.*;
 import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,8 +109,7 @@ public class TTPredictEvaluation implements Evaluation {
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet dataset: dataSources) {
             TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algorithms, metrics,
-                                              dataColumns, algoColumns, dataset);
+            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dataset);
             jobGroups.add(group);
         }
 

@@ -21,20 +21,19 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
 import org.grouplens.lenskit.util.LazyValue;
-import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -49,28 +48,25 @@ public class TTPredictEvalJobGroup implements JobGroup {
     
     private TTDataSet dataSet;
     private List<Job> jobs;
-    private Map<String,Integer> dataColIndexes, algoColIndexes;
 
     private TTPredictEvaluation evaluation;
 
     public TTPredictEvalJobGroup(TTPredictEvaluation eval,
                                  List<AlgorithmInstance> algos,
                                  List<PredictEvalMetric> evals,
-                                 Map<String,Integer> dcIndexes,
-                                 Map<String,Integer> acIndexes,
                                  TTDataSet data) {
         evaluation = eval;
         dataSet = data;
-        dataColIndexes = dcIndexes;
-        algoColIndexes = acIndexes;
-        
+
         final Supplier<SharedRatingSnapshot> snap =
                 new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
                     @Override
                     public SharedRatingSnapshot call() {
                         logger.info("Loading snapshot for {}", getName());
-                        TaskTimer timer = new TaskTimer();
+                        StopWatch timer = new StopWatch();
+                        timer.start();
                         SharedRatingSnapshot snap = loadSnapshot();
+                        timer.stop();
                         logger.info("Rating snapshot for {} loaded in {}",
                                     getName(), timer);
                         return snap;

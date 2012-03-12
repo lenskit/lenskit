@@ -57,6 +57,8 @@ LensKit Release Notes
         <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
         the scanner rating cursor directly.
 
+      * <<Incompatible change>>>: replaced <<TaskTimer>> by commons-lang3 <<StopWatch>>.
+
       []
 
     []

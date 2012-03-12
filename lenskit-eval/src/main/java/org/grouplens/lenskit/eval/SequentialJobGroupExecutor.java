@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.grouplens.lenskit.util.TaskTimer;
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.util.parallel.ExecHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +43,10 @@ import com.google.common.collect.Lists;
 public class SequentialJobGroupExecutor implements JobGroupExecutor {
     private static final Logger logger = LoggerFactory.getLogger(SequentialJobGroupExecutor.class);
     
-    private List<JobGroup> groups;
-    private int threadCount;
+    private final List<JobGroup> groups;
+    private final int threadCount;
 
-    private EvalListenerManager listeners;
+    private final EvalListenerManager listeners;
     
     public SequentialJobGroupExecutor(int nthreads, EvalListenerManager lm) {
         groups = new ArrayList<JobGroup>();
@@ -83,7 +83,9 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
         try {
             listeners.evaluationStarting();
             for (JobGroup group: groups) {
-                TaskTimer timer = new TaskTimer();
+                StopWatch timer = new StopWatch();
+                timer.start();
+
                 logger.info("Running job group {}", group.getName());
                 listeners.jobGroupStarting(group);
                 group.start();
@@ -93,8 +95,10 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
                     listeners.jobGroupFinished(group);
                     group.finish();
                 }
+                
+                timer.stop();
                 logger.info("Job group {} finished in {}",
-                            group.getName(), timer.elapsedPretty());
+                            group.getName(), timer);
             }
             listeners.evaluationFinished(null);
         } catch (ExecutionException err) {

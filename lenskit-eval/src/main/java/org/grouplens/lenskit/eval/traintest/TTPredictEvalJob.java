@@ -18,9 +18,15 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Supplier;
-import com.google.common.io.Closeables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -34,16 +40,13 @@ import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.util.TaskTimer;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.base.Supplier;
+import com.google.common.io.Closeables;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
@@ -129,15 +132,16 @@ public class TTPredictEvalJob implements Job {
 
 
             logger.info("Building {}", algorithm.getName());
-            TaskTimer buildTimer = new TaskTimer();
+            StopWatch buildTimer = new StopWatch();
+            buildTimer.start();
             Recommender rec = algorithm.buildRecommender(dao, snapshot.get());
             RatingPredictor pred = rec.getRatingPredictor();
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
             logger.info("Testing {}", algorithm.getName());
-            TaskTimer testTimer = new TaskTimer();
-
+            StopWatch testTimer = new StopWatch();
+            testTimer.start();
             List<PredictEvalAccumulator> evalAccums =
                     new ArrayList<PredictEvalAccumulator>(evaluators.size());
             
@@ -213,10 +217,10 @@ public class TTPredictEvalJob implements Job {
         }
     }
 
-    private void writeOutput(TaskTimer build, TaskTimer test, List<PredictEvalAccumulator> accums) throws IOException {
+    private void writeOutput(StopWatch build, StopWatch test, List<PredictEvalAccumulator> accums) throws IOException {
         String[] row = new String[outputColumnCount];
-        row[0] = Double.toString(build.elapsed());
-        row[1] = Double.toString(test.elapsed());
+        row[0] = Long.toString(build.getTime());
+        row[1] = Long.toString(test.getTime());
         int col = 2;
         for (PredictEvalAccumulator acc: accums) {
             String[] ar = acc.finalResults();
