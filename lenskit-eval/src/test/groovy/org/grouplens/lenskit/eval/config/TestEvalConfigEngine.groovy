@@ -49,4 +49,10 @@ class TestEvalConfigEngine {
         assertThat(eval, instanceOf(TTPredictEvaluation))
         assertTrue(eval.getJobGroups().isEmpty())
     }
+
+    @Test
+    void testDefaultImports() {
+        List<Evaluation> evals = engine.load(script("import.groovy"))
+        assertThat(evals.size(), equalTo(1))
+    }
 }
