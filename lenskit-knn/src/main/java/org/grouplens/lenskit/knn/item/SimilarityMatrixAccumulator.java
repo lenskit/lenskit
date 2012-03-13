@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -36,14 +37,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class ItemItemModelAccumulator {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelAccumulator.class);
+public class SimilarityMatrixAccumulator {
+    private static final Logger logger = LoggerFactory.getLogger(SimilarityMatrixAccumulator.class);
 
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private final LongSortedSet itemUniverse;
 
-    public ItemItemModelAccumulator(@ModelSize int size,
-            LongSortedSet entities) {
+    public SimilarityMatrixAccumulator(@ModelSize int size,
+                                       LongSortedSet entities) {
         logger.debug("Using model size of {} for {} items",
                      size, entities.size());
         itemUniverse = entities;
@@ -54,12 +55,12 @@ public class ItemItemModelAccumulator {
         }
     }
 
-    public ItemItemModel build() {
+    public SimilarityMatrixModel build() {
         Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
         for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
             data.put(row.getLongKey(), row.getValue().finish());
         }
-        ItemItemModel model = new ItemItemModel(itemUniverse, data);
+        SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
         rows = null;
         return model;
     }
@@ -73,6 +74,7 @@ public class ItemItemModelAccumulator {
      */
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
+        Preconditions.checkState(rows != null, "model already built");
         // We only accept nonnegative similarities
         if (sim <= 0.0) return;
 

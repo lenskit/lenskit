@@ -43,7 +43,7 @@ class SparseModelBuildStrategy implements
 
     @Override
     public void buildMatrix(ItemItemBuildContext context,
-                            ItemItemModelAccumulator accum) {
+                            SimilarityMatrixAccumulator accum) {
         final LongSortedSet items = context.getItems();
         final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
 

@@ -41,5 +41,5 @@ public interface ItemItemModelBuildStrategy {
      * @param context The data to be used to compute similarities.
      * @param accum The accumulator into which similarities should be stored.
      */
-    void buildMatrix(ItemItemBuildContext context, ItemItemModelAccumulator accum);
+    void buildMatrix(ItemItemBuildContext context, SimilarityMatrixAccumulator accum);
 }

@@ -44,7 +44,7 @@ class SimpleModelBuildStrategy implements
 
     @Override
     public void buildMatrix(ItemItemBuildContext context,
-                            ItemItemModelAccumulator accum) {
+                            SimilarityMatrixAccumulator accum) {
         final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
         logger.debug("Building {} model", symmetric ? "symmetric" : "asymmetric");
         LongSortedSet items = context.getItems();

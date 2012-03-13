@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -60,7 +59,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("UnusedDeclaration")
 @NotThreadSafe
-public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemModel> {
+public class ItemItemModelBuilder extends RecommenderComponentBuilder<SimilarityMatrixModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private Similarity<? super ItemVector> itemSimilarity;
@@ -99,7 +98,7 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
     }
 
     @Override
-    public ItemItemModel build() {
+    public SimilarityMatrixModel build() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
 
         LongArrayList ilist = Cursors.makeList(dao.getItems());
@@ -128,11 +127,11 @@ public class ItemItemModelBuilder extends RecommenderComponentBuilder<ItemItemMo
 
         ItemItemBuildContext context =
                 new ItemItemBuildContext(items, itemRatings, userItemSets);
-        ItemItemModelAccumulator accum =
-                new ItemItemModelAccumulator(modelSize, items);
+        SimilarityMatrixAccumulator accum =
+                new SimilarityMatrixAccumulator(modelSize, items);
         similarityStrategy.buildMatrix(context, accum);
 
-        return accum.build();
+        return (SimilarityMatrixModel) accum.build();
     }
 
     /**

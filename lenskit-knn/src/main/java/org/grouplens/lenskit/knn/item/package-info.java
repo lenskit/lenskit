@@ -23,7 +23,7 @@
  * {@linkplain ItemItemModelBuilder model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain Similarity similarity function} and {@linkplain ModelSize model size},
- * and computes the {@linkplain ItemItemModel similarity matrix}. The
+ * and computes the {@linkplain SimilarityMatrixModel similarity matrix}. The
  * {@linkplain ItemItemScorer scorer} (or {@linkplain ItemItemRatingPredictor predictor})
  * use this model to score items, and the {@linkplain ItemItemRecommender} uses a scorer
  * to recommend items.
@@ -48,6 +48,10 @@
  * MovieLens 1M data set
  * (see <a href="http://dev.grouplens.org/trac/lenskit/wiki/ItemItemTruncateDirection">writeup</a>).
  * Computation against a particular item the user has rated is done down that item's column.
+ * <p/>
+ * The scorers and recommenders actually operate on a generic {@link ItemItemModel}, so the
+ * item-based scoring algorithm can be used against other sources of similarity, such as
+ * similarities stored in a database or text index.
  *
  * @cite Sarwar et al. 2001.
  * @cite Deshpande and Karypis 2004

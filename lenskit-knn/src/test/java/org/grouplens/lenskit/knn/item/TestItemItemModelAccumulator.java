@@ -36,7 +36,7 @@ public class TestItemItemModelAccumulator {
     /**
      * An accumulator with a size of 5 and universe of [1,10].
      */
-    ItemItemModelAccumulator accum;
+    SimilarityMatrixAccumulator accum;
 
     @Before
     public void newAccumulator() {
@@ -44,7 +44,7 @@ public class TestItemItemModelAccumulator {
         for (long i = 1; i <= 10; i++) {
             universe.add(i);
         }
-        accum = new ItemItemModelAccumulator(5, universe);
+        accum = new SimilarityMatrixAccumulator(5, universe);
     }
 
     @Test
