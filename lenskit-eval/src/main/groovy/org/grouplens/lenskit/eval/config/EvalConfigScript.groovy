@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.grouplens.lenskit.eval.Evaluation
 import org.slf4j.LoggerFactory
 
 /**
@@ -55,6 +54,15 @@ abstract class EvalConfigScript extends Script {
             return obj
         } else {
             throw new MissingMethodException(name, this.class, args)
+        }
+    }
+
+    def run() {
+        try {
+            return super.run()
+        } catch (MissingPropertyException mpe) {
+            def msg = "Could not resolve property ${mpe.property}; maybe an import is missing?"
+            throw new RuntimeException(msg, mpe);
         }
     }
 }
