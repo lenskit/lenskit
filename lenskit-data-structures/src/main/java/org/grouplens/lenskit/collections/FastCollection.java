@@ -53,6 +53,8 @@ public interface FastCollection<E> extends Collection<E> {
      * for-each loops.
      * @return An {@link Iterable} whose {@link Iterable#iterator()} method calls
      * {@link #fastIterator()}.
+     * @deprecated Use {@link CollectionUtils#fast(Iterable)} instead.
      */
+    @Deprecated
     Iterable<E> fast();
 }
