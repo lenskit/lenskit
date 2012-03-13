@@ -66,8 +66,8 @@ public class EvalConfigEngine {
         imports.addStarImports("org.grouplens.lenskit",
                                "org.grouplens.lenskit.params",
                                "org.grouplens.lenskit.baseline",
-                               "org.grouplens.lenskit.norm");
-        imports.addStarImports("org.grouplens.lenskit.eval.metrics.predict");
+                               "org.grouplens.lenskit.norm",
+                               "org.grouplens.lenskit.eval.metrics.predict");
         config.addCompilationCustomizers(imports);
 
         shell = new GroovyShell(loader, new Binding(), config);
