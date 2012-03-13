@@ -236,6 +236,20 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         updateBindings(defaultBindings, superType, builderType);
     }
 
+    @SuppressWarnings("unchecked")
+    public <M> void setBuilder(Class<M> superType, Builder<? extends M> builder) {
+        if (superType == null)
+            throw new NullPointerException("Super-type cannot be null");
+        if (builder != null) {
+            // Verify that the builder generates a proper subtype
+            Class<?> builtType = getBuiltType((Class) builder.getClass());
+            if (!superType.isAssignableFrom(builtType))
+                throw new IllegalArgumentException(builder + " creates instances of " + builtType
+                                                           + ", which are not subclasses of " + superType);
+        }
+        updateBindings(defaultBindings, superType, builder);
+    }
+
     /**
      * Clone the recommender engine factory.  The only connection retained to
      * the original factory is that the DAO factory is shared.  The component

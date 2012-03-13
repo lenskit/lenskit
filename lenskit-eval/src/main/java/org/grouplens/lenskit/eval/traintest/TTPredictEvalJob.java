@@ -134,7 +134,7 @@ public class TTPredictEvalJob implements Job {
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            Recommender rec = algorithm.buildRecommender(dao, snapshot.get());
+            Recommender rec = algorithm.buildRecommender(dao, snapshot);
             RatingPredictor pred = rec.getRatingPredictor();
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);

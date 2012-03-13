@@ -33,8 +33,10 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.google.common.base.Supplier;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -92,6 +94,27 @@ public class AlgorithmInstance {
     @Nonnull
     public RecommenderEngineFactory getFactory() {
         return factory;
+    }
+
+    public Recommender buildRecommender(DataAccessObject dao,
+                                        final @Nullable Supplier<? extends RatingSnapshot> sharedSnapshot) {
+        // Copy the factory & set up a shared rating snapshot
+        LenskitRecommenderEngineFactory fac2 = factory;
+
+        if (sharedSnapshot != null) {
+            fac2 = factory.clone();
+            Builder<RatingSnapshot> bld = new Builder<RatingSnapshot>() {
+                @Override
+                public RatingSnapshot build() {
+                    return sharedSnapshot.get();
+                }
+            };
+            fac2.setBuilder(RatingSnapshot.class, bld);
+        }
+
+        LenskitRecommenderEngine engine = fac2.create(dao);
+
+        return engine.open(dao, false);
     }
 
     public Recommender buildRecommender(DataAccessObject dao, @Nullable RatingSnapshot sharedSnapshot) {
