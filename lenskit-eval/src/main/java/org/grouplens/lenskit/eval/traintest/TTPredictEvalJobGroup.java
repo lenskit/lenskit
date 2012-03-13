@@ -18,23 +18,29 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Job;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.PreparationContext;
+import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
@@ -53,7 +59,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
 
     public TTPredictEvalJobGroup(TTPredictEvaluation eval,
                                  List<AlgorithmInstance> algos,
-                                 List<PredictEvalMetric> evals,
+                                 List<EvalMetric> evals,
                                  TTDataSet data) {
         evaluation = eval;
         dataSet = data;

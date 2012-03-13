@@ -16,15 +16,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
+package org.grouplens.lenskit.eval.metrics.recommend;
 
+import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
-* @author Michael Ekstrand
-*/
-public interface PredictEvalAccumulator extends EvalAccumulator {
+ * 
+ * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
+ * @since 0.10
+ * 
+ */
+public interface RecommendEvalAccumulator extends EvalAccumulator {
+
     /**
      * Evaluate the predictions for a user.
      * 
@@ -35,6 +40,6 @@ public interface PredictEvalAccumulator extends EvalAccumulator {
      *         per-user table (if one is configured). The output can be
      *         {@code null} if the user could not be evaluated.
      */
-    String[] evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
-
+    String[] evaluateRecommendations(long user, SparseVector ratings,
+                                     ScoredLongList recommendations);
 }

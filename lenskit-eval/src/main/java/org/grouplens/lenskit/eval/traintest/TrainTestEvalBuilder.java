@@ -18,14 +18,14 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
 
 /**
  * Train-test evaluator that builds on a training set and runs on a test set.
@@ -35,9 +35,9 @@ import java.util.List;
  *
  */
 public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
-    private List<TTDataSet> dataSources;
-    private List<AlgorithmInstance> algorithms;
-    private List<PredictEvalMetric> metrics;
+    private final List<TTDataSet> dataSources;
+    private final List<AlgorithmInstance> algorithms;
+    private final List<EvalMetric> metrics;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -45,7 +45,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     public TrainTestEvalBuilder() {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
-        metrics = new LinkedList<PredictEvalMetric>();
+        metrics = new LinkedList<EvalMetric>();
         outputFile = new File("train-test-results.csv");
     }
 
@@ -63,7 +63,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
         algorithms.add(algorithm);
     }
 
-    public void addMetric(PredictEvalMetric metric) {
+    public void addMetric(EvalMetric metric) {
         metrics.add(metric);
     }
 
@@ -87,7 +87,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
         return algorithms;
     }
 
-    List<PredictEvalMetric> getMetrics() {
+    List<EvalMetric> getMetrics() {
         return metrics;
     }
 
