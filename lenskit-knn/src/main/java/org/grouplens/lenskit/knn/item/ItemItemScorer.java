@@ -22,11 +22,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -34,7 +29,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
@@ -42,6 +36,9 @@ import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -55,19 +52,19 @@ public class ItemItemScorer extends AbstractItemScorer implements
     protected final ItemItemModel model;
     protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
         new IdentityVectorNormalizer();
-    protected final int neighborhoodSize;
     protected HistorySummarizer summarizer;
     protected @Nonnull NeighborhoodScorer scorer;
+    protected @Nonnull ItemScoreAlgorithm algorithm;
 
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-                          @NeighborhoodSize int nnbrs,
                           @UserHistorySummary HistorySummarizer sum,
-                          NeighborhoodScorer scorer) {
+                          NeighborhoodScorer scorer,
+                          ItemScoreAlgorithm algo) {
         super(dao);
         model = m;
-        neighborhoodSize = nnbrs;
         summarizer = sum;
         this.scorer = scorer;
+        algorithm = algo;
     }
 
     @Override
@@ -93,7 +90,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Score items by computing predicted ratings.
-     * @see #scoreItems(SparseVector, LongSortedSet)
+     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
      * @see #makeTransform(UserVector)
      */
     @Override
@@ -111,15 +108,12 @@ public class ItemItemScorer extends AbstractItemScorer implements
             iset = new LongSortedArraySet(items);
         }
 
-		MutableSparseVector preds = model.scoreItems(normed, iset, scorer,
-													neighborhoodSize);
+		MutableSparseVector preds = algorithm.scoreItems(model, normed, iset, scorer);
 
 		// untransform the scores
         transform.unapply(preds);
         return preds.freeze();
     }
-
-
 
     /**
      * Construct a transformation that is used to pre- and post-process

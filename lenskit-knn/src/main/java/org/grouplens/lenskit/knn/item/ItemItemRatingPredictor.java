@@ -56,10 +56,9 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
     protected @Nullable BaselinePredictor baseline;
 
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
-                                   @NeighborhoodSize int nnbrs,
-                                   @UserHistorySummary HistorySummarizer summarizer) {
-        super(dao, model, nnbrs, summarizer, new WeightedAverageNeighborhoodScorer());
-        logger.debug("Creating rating scorer with neighborhood size {}", neighborhoodSize);
+                                   @UserHistorySummary HistorySummarizer summarizer,
+                                   ItemScoreAlgorithm algo) {
+        super(dao, model, summarizer, new WeightedAverageNeighborhoodScorer(), algo);
     }
 
     @Nullable
