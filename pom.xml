@@ -19,7 +19,7 @@
   <licenses>
     <license>
       <name>LGPLv2+</name>
-      <url>COPYING</url>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
