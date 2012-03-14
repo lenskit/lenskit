@@ -27,8 +27,10 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -38,8 +40,10 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
+import org.grouplens.lenskit.eval.metrics.recommend.RecommendEvalAccumulator;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -57,21 +61,25 @@ import com.google.common.io.Closeables;
  */
 public class TTPredictEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
+
+    // FIXME balke: make configurable
+    private static final int recSetSize = 5;
+    
     @Nonnull
-    private AlgorithmInstance algorithm;
+    private final AlgorithmInstance algorithm;
     @Nonnull
-    private List<PredictEvalMetric> evaluators;
+    private final List<EvalMetric> evaluators;
     @Nonnull
-    private TTDataSet data;
+    private final TTDataSet data;
     @Nonnull
-    private Supplier<TableWriter> outputSupplier;
+    private final Supplier<TableWriter> outputSupplier;
     @Nonnull
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
 
-    private Supplier<SharedRatingSnapshot> snapshot;
-    private int outputColumnCount;
+    private final Supplier<SharedRatingSnapshot> snapshot;
+    private final int outputColumnCount;
 
     /**
      * Create a new train-test eval job.
@@ -85,7 +93,7 @@ public class TTPredictEvalJob implements Job {
      *        and eval outputProvider needs to be written.
      */
     public TTPredictEvalJob(AlgorithmInstance algo,
-                            List<PredictEvalMetric> evals,
+                            List<EvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
                             Supplier<TableWriter> out) {
         algorithm = algo;
@@ -95,7 +103,7 @@ public class TTPredictEvalJob implements Job {
         outputSupplier = out;
         
         int ncols = 2;
-        for (PredictEvalMetric eval: evals) {
+        for (EvalMetric eval: evals) {
             ncols += eval.getColumnLabels().length;
         }
         outputColumnCount = ncols;
@@ -134,42 +142,102 @@ public class TTPredictEvalJob implements Job {
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
+
             Recommender rec = algorithm.buildRecommender(dao, snapshot.get());
-            RatingPredictor pred = rec.getRatingPredictor();
+            RatingPredictor predictor = rec.getRatingPredictor();
+            ItemRecommender recommender = rec.getItemRecommender();
+
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
             logger.info("Testing {}", algorithm.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
-            List<PredictEvalAccumulator> evalAccums =
-                    new ArrayList<PredictEvalAccumulator>(evaluators.size());
+            List<EvalAccumulator> evalAccums =
+                    new ArrayList<EvalAccumulator>(evaluators.size());
             
             DataAccessObject testDao = data.getTestFactory().create();
             try {
-                for (PredictEvalMetric eval: evaluators) {
-                    evalAccums.add(eval.makeAccumulator(algorithm, data));
+                for (EvalMetric eval: evaluators) {
+
+                    EvalAccumulator accum =
+                        eval.makeAccumulator(algorithm, data);
+
+                    if (accum instanceof PredictEvalAccumulator) {
+                        if (predictor != null) {
+                            evalAccums.add(accum);
+                        } else {
+                            logger
+                                .error("predict metric configured, but no predictor defined! Skipping metric...");
+                        }
+                    } else if (accum instanceof RecommendEvalAccumulator) {
+                        if (recommender != null) {
+                            evalAccums.add(accum);
+                        } else {
+                            logger
+                                .error("recommend metric configured, but no recommender defined! Skipping metric...");
+                        }
+                    }
+
                 }
-                
-                Cursor<UserHistory<Rating>> userProfiles = testDao.getUserHistories(Rating.class);
+
+                Cursor<UserHistory<Rating>> userProfiles =
+                    testDao.getUserHistories(Rating.class);
                 try {
                     for (UserHistory<Rating> p: userProfiles) {
                         long uid = p.getUserId();
-                        SparseVector ratings = RatingVectorHistorySummarizer.makeRatingVector(p);
-                        SparseVector predictions =
-                            pred.score(p.getUserId(), ratings.keySet());
-                        for (PredictEvalAccumulator accum: evalAccums) {
-                            String[] res = accum.evaluatePredictions(uid, ratings, predictions);
-                            if (res != null && userTable != null) {
+                        SparseVector ratings =
+                            RatingVectorHistorySummarizer.makeRatingVector(p);
+
+                        // check metric type
+                        SparseVector predictions = null;
+                        ScoredLongList recommendations = null;
+
+                        for (EvalAccumulator accum: evalAccums) {
+
+                            String[] perUserResults = null;
+                            if (accum instanceof PredictEvalAccumulator) {
+                                if (predictions == null) {
+                                    predictions =
+                                        predictor.score(p.getUserId(),
+                                                        ratings.keySet());
+                                }
+                                perUserResults =
+                                    ((PredictEvalAccumulator) accum)
+                                        .evaluatePredictions(uid, ratings,
+                                                             predictions);
+
+                            } else if (accum instanceof RecommendEvalAccumulator) {
+
+                                if (recommendations == null) {
+                                    recommendations =
+                                        recommender
+                                            .recommend(p.getUserId(),
+                                                       recSetSize,
+                                                       ratings.keySet(),
+                                                       null);
+                                }
+                                perUserResults =
+                                    ((RecommendEvalAccumulator) accum)
+                                        .evaluateRecommendations(p.getUserId(),
+                                                                 ratings,
+                                                                 recommendations);
+
+                            }
+
+                            if (perUserResults != null && userTable != null) {
                                 try {
-                                    userTable.writeRow(res);
+                                    userTable.writeRow(perUserResults);
                                 } catch (IOException e) {
-                                    throw new RuntimeException("error writing user output", e);
+                                    throw new RuntimeException(
+                                            "error writing user output", e);
                                 }
                             }
                         }
+
                         if (predictTable != null) {
-                            writePredictions(predictTable, uid, ratings, predictions);
+                            writePredictions(predictTable, uid, ratings,
+                                             predictions);
                         }
                     }
                 } finally {
@@ -217,12 +285,12 @@ public class TTPredictEvalJob implements Job {
         }
     }
 
-    private void writeOutput(StopWatch build, StopWatch test, List<PredictEvalAccumulator> accums) throws IOException {
+    private void writeOutput(StopWatch build, StopWatch test, List<EvalAccumulator> accums) throws IOException {
         String[] row = new String[outputColumnCount];
         row[0] = Long.toString(build.getTime());
         row[1] = Long.toString(test.getTime());
         int col = 2;
-        for (PredictEvalAccumulator acc: accums) {
+        for (EvalAccumulator acc: accums) {
             String[] ar = acc.finalResults();
             int n = ar.length;
             System.arraycopy(ar, 0, row, col, n);
