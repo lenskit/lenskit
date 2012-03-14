@@ -234,7 +234,7 @@ public class TTPredictEvalJob implements Job {
                             }
                         }
 
-                        if (predictTable != null) {
+                        if (predictTable != null && predictions != null) {
                             writePredictions(predictTable, uid, ratings,
                                              predictions);
                         }
