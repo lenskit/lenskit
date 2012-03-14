@@ -126,12 +126,22 @@ public class TTPredictEvaluation implements Evaluation {
         output.addColumn("TestTime");
         TableLayoutBuilder userOutput = master.clone();
 
+        String[] columnLabels;
+        String[] userColumnLabels;
+        
         for (EvalMetric ev: metrics) {
-            for (String c: ev.getColumnLabels()) {
-                output.addColumn(c);
+            columnLabels = ev.getColumnLabels();
+            if (columnLabels != null){
+                for (String c: columnLabels) {
+                    output.addColumn(c);
+                }
             }
-            for (String c: ev.getUserColumnLabels()) {
-                userOutput.addColumn(c);
+            
+            userColumnLabels = ev.getUserColumnLabels();
+            if (userColumnLabels != null){
+                for (String c: userColumnLabels) {
+                    userOutput.addColumn(c);
+                }
             }
         }
 

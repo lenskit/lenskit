@@ -104,7 +104,9 @@ public class TTPredictEvalJob implements Job {
         
         int ncols = 2;
         for (EvalMetric eval: evals) {
-            ncols += eval.getColumnLabels().length;
+            if (eval.getColumnLabels() != null) {
+                ncols += eval.getColumnLabels().length;
+            }
         }
         outputColumnCount = ncols;
     }
@@ -291,9 +293,12 @@ public class TTPredictEvalJob implements Job {
         int col = 2;
         for (EvalAccumulator acc: accums) {
             String[] ar = acc.finalResults();
-            int n = ar.length;
-            System.arraycopy(ar, 0, row, col, n);
-            col += n;
+            if (ar != null) {
+                // no aggregated output is generated
+                int n = ar.length;
+                System.arraycopy(ar, 0, row, col, n);
+                col += n;
+            }
         }
         TableWriter output = outputSupplier.get();
         try {
