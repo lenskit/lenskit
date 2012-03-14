@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,26 +18,23 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
 * @author Michael Ekstrand
 */
-public interface PredictEvalAccumulator {
+public interface PredictEvalAccumulator extends EvalAccumulator {
     /**
      * Evaluate the predictions for a user.
-     * @param user The ID of the user currenting being tested.
+     * 
+     * @param user The ID of the user currently being tested.
      * @param ratings The user's rating vector over the test set.
      * @param predictions The user's prediction vector over the test set.
-     * @return The results of this user's evaluation, to be emitted in the per-user table
-     * (if one is configured). The output can be {@code null} if the user could not be
-     * evaluated.
+     * @return The results of this user's evaluation, to be emitted in the
+     *         per-user table (if one is configured). The output can be
+     *         {@code null} if the user could not be evaluated.
      */
     String[] evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
 
-    /**
-     * Finalize the evaluation and return the final values.
-     * @return The column values for the final evaluation.
-     */
-    String[] finalResults();
 }

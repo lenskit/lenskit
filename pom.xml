@@ -19,7 +19,7 @@
   <licenses>
     <license>
       <name>LGPLv2+</name>
-      <url>COPYING</url>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -619,35 +619,6 @@
             </configuration>
           </plugin>
 
-          <plugin>
-            <groupId>com.mycila.maven-license-plugin</groupId>
-            <artifactId>maven-license-plugin</artifactId>
-            <version>1.9.0</version>
-            <inherited>false</inherited>
-            <configuration>
-              <basedir>${basedir}</basedir>
-              <header>${basedir}/etc/header.txt</header>
-              <aggregate>true</aggregate>
-              <strictCheck>true</strictCheck>
-              <includes>
-                <include>*/src/**/*.java</include>
-                <include>*/src/**/*.groovy</include>
-              </includes>
-              <mapping>
-                <java>SLASHSTAR_STYLE</java>
-                <groovy>SLASHSTAR_STYLE</groovy>
-              </mapping>
-            </configuration>
-            <executions>
-              <execution>
-                <id>check-headers</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -720,6 +691,36 @@
                   <failOnViolation>false</failOnViolation>
                   <failOnError>false</failOnError>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.mycila.maven-license-plugin</groupId>
+            <artifactId>maven-license-plugin</artifactId>
+            <version>1.9.0</version>
+            <inherited>false</inherited>
+            <configuration>
+              <basedir>${basedir}</basedir>
+              <header>${basedir}/etc/header.txt</header>
+              <aggregate>true</aggregate>
+              <strictCheck>true</strictCheck>
+              <includes>
+                <include>*/src/**/*.java</include>
+                <include>*/src/**/*.groovy</include>
+              </includes>
+              <mapping>
+                <java>SLASHSTAR_STYLE</java>
+                <groovy>SLASHSTAR_STYLE</groovy>
+              </mapping>
+            </configuration>
+            <executions>
+              <execution>
+                <id>check-headers</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

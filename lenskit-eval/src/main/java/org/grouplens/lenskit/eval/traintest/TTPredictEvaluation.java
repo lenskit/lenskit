@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,28 +18,34 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.io.Closeables;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.Evaluation;
-import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalMetric;
-import org.grouplens.lenskit.util.tablewriter.*;
-import org.picocontainer.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
+
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Evaluation;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriters;
+import org.picocontainer.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.io.Closeables;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -52,9 +58,9 @@ import java.util.Map;
 public class TTPredictEvaluation implements Evaluation {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
 
-    private File outputFile;
-    private File userOutputFile;
-    private File predictOutputFile;
+    private final File outputFile;
+    private final File userOutputFile;
+    private final File predictOutputFile;
     private int commonColumnCount;
     private TableLayout outputLayout;
     private TableLayout userLayout;
@@ -67,11 +73,11 @@ public class TTPredictEvaluation implements Evaluation {
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
-    private List<PredictEvalMetric> predictMetrics;
+    private List<EvalMetric> predictMetrics;
 
     public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
                                @Nonnull List<AlgorithmInstance> algos,
-                               @Nonnull List<PredictEvalMetric> metrics,
+                               @Nonnull List<EvalMetric> metrics,
                                @Nonnull File output,
                                @Nullable File userOutput,
                                @Nullable File predictOutput) {
@@ -84,7 +90,7 @@ public class TTPredictEvaluation implements Evaluation {
 
     protected void setupJobs(List<TTDataSet> dataSources,
                              List<AlgorithmInstance> algorithms,
-                             List<PredictEvalMetric> metrics) {
+                             List<EvalMetric> metrics) {
         TableLayoutBuilder master = new TableLayoutBuilder();
 
         master.addColumn("Algorithm");
@@ -120,7 +126,7 @@ public class TTPredictEvaluation implements Evaluation {
         output.addColumn("TestTime");
         TableLayoutBuilder userOutput = master.clone();
 
-        for (PredictEvalMetric ev: metrics) {
+        for (EvalMetric ev: metrics) {
             for (String c: ev.getColumnLabels()) {
                 output.addColumn(c);
             }
@@ -168,14 +174,14 @@ public class TTPredictEvaluation implements Evaluation {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (PredictEvalMetric metric: predictMetrics) {
+        for (EvalMetric metric: predictMetrics) {
             metric.startEvaluation(this);
         }
     }
 
     @Override
     public void finish() {
-        for (PredictEvalMetric metric: predictMetrics) {
+        for (EvalMetric metric: predictMetrics) {
             metric.finishEvaluation();
         }
         if (output == null) {

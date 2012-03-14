@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,20 @@
 package org.grouplens.lenskit.eval.config;
 
 import groovy.lang.Binding;
-import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -29,15 +41,6 @@ import org.grouplens.lenskit.eval.Evaluation;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.*;
 
 /**
  * Load and process configuration files. Also provides helper methods used by the
@@ -52,7 +55,7 @@ public class EvalConfigEngine {
     protected GroovyShell shell;
 
     private Map<String,BuilderFactory<?>> factories = null;
-    private Map<Class, Class> builders = new HashMap<Class, Class>();
+    private final Map<Class, Class> builders = new HashMap<Class, Class>();
 
     public EvalConfigEngine() {
         this(Thread.currentThread().getContextClassLoader());
@@ -66,8 +69,9 @@ public class EvalConfigEngine {
         imports.addStarImports("org.grouplens.lenskit",
                                "org.grouplens.lenskit.params",
                                "org.grouplens.lenskit.baseline",
-                               "org.grouplens.lenskit.norm");
-        imports.addStarImports("org.grouplens.lenskit.eval.metrics.predict");
+                               "org.grouplens.lenskit.norm",
+                               "org.grouplens.lenskit.eval.metrics.predict",
+                               "org.grouplens.lenskit.eval.metrics.recommend");
         config.addCompilationCustomizers(imports);
 
         shell = new GroovyShell(loader, new Binding(), config);

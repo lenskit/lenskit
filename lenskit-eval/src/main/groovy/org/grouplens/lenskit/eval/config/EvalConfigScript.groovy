@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.grouplens.lenskit.eval.Evaluation
 import org.slf4j.LoggerFactory
 
 /**
@@ -55,6 +54,15 @@ abstract class EvalConfigScript extends Script {
             return obj
         } else {
             throw new MissingMethodException(name, this.class, args)
+        }
+    }
+
+    def run() {
+        try {
+            return super.run()
+        } catch (MissingPropertyException mpe) {
+            def msg = "Could not resolve property ${mpe.property}; maybe an import is missing?"
+            throw new RuntimeException(msg, mpe);
         }
     }
 }
