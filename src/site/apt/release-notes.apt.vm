@@ -41,6 +41,9 @@ LensKit Release Notes
 
   * Support unlimited neighborhood sizes (but not yet model sizes) in item-item recommender.
 
+  * Made <<<ItemItemModel>>> an interface, so alternative sources of neighborhoods with similarity
+    scores can be used. The default implementation uses a similarity matrix as before.
+
   * Added global recommenders and scorers that compute for items with respect to other items
     but independent of particular users, useful for creating “more like this” or “related items”
     views (#issue(125)).
