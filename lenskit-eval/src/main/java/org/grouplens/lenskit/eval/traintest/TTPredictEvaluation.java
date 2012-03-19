@@ -18,34 +18,29 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.io.Closeables;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Evaluation;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.util.LKFileUtils;
+import org.grouplens.lenskit.util.tablewriter.*;
+import org.picocontainer.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
-
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.Evaluation;
-import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
-import org.grouplens.lenskit.util.tablewriter.CSVWriter;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
-import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriters;
-import org.picocontainer.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.io.Closeables;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -124,7 +119,7 @@ public class TTPredictEvaluation implements Evaluation {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
-        TableLayoutBuilder userOutput = master.clone();
+        TableLayoutBuilder perUser = master.clone();
 
         String[] columnLabels;
         String[] userColumnLabels;
@@ -140,21 +135,21 @@ public class TTPredictEvaluation implements Evaluation {
             userColumnLabels = ev.getUserColumnLabels();
             if (userColumnLabels != null){
                 for (String c: userColumnLabels) {
-                    userOutput.addColumn(c);
+                    perUser.addColumn(c);
                 }
             }
         }
 
         outputLayout = output.build();
-        userLayout = userOutput.build();
+        userLayout = perUser.build();
 
-        TableLayoutBuilder predOutput = master.clone();
-        predOutput.addColumn("User");
-        predOutput.addColumn("Item");
-        predOutput.addColumn("Rating");
-        predOutput.addColumn("Prediction");
+        TableLayoutBuilder eachPred = master.clone();
+        eachPred.addColumn("User");
+        eachPred.addColumn("Item");
+        eachPred.addColumn("Rating");
+        eachPred.addColumn("Prediction");
 
-        predictLayout = predOutput.build();
+        predictLayout = eachPred.build();
 
         predictMetrics = metrics;
     }
@@ -163,13 +158,15 @@ public class TTPredictEvaluation implements Evaluation {
     public void start() {
         logger.info("Starting evaluation");
         try {
-            output = CSVWriter.open(outputFile, outputLayout);
+            output = CSVWriter.open(outputFile, outputLayout,
+                                    LKFileUtils.isCompressed(outputFile));
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
         if (userOutputFile != null) {
             try {
-                userOutput = CSVWriter.open(userOutputFile, userLayout);
+                userOutput = CSVWriter.open(userOutputFile, userLayout,
+                                            LKFileUtils.isCompressed(userOutputFile));
             } catch (IOException e) {
                 Closeables.closeQuietly(output);
                 throw new RuntimeException("Error opening user output table", e);
@@ -177,7 +174,8 @@ public class TTPredictEvaluation implements Evaluation {
         }
         if (predictOutputFile != null) {
             try {
-                predictOutput = CSVWriter.open(predictOutputFile, predictLayout);
+                predictOutput = CSVWriter.open(predictOutputFile, predictLayout,
+                                               LKFileUtils.isCompressed(predictOutputFile));
             } catch (IOException e) {
                 Closeables.closeQuietly(userOutput);
                 Closeables.closeQuietly(output);
