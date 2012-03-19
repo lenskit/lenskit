@@ -46,6 +46,7 @@ and dependencies.  The other modules are as follows:
   of its actual implementations.
 * `lenskit-data-structures` — common data structures used by LensKit.
   These are split from `-core` so the API can depend on them.
+* `build-tools` — configuration & support files for building LensKit
 * `lenskit-core` — the core support code and configuration facilities for
   the rest of LensKit. It is the entry point for most of what you want to do with
   LensKit, providing support for configuring and building recommenders.
