@@ -28,8 +28,6 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;

@@ -27,8 +27,6 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 
@@ -92,8 +90,10 @@ public class GenericTTDataSet extends AbstractEvalTask implements TTDataSet {
     }                   
     
     public Void call() throws Exception{
-        for( EvalTask e : this.getDependency()) {
-            e.call();
+        if(!dependency.isEmpty()) {
+            for (EvalTask e : this.getDependency()) {
+                e.call();
+            }
         }
         return null;
     }

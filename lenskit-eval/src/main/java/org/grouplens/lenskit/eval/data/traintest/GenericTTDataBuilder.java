@@ -53,6 +53,7 @@ public class GenericTTDataBuilder extends AbstractEvalTaskBuilder implements Bui
     }
 
     public GenericTTDataSet build() {
+        // all DataSource are also EvalTask
         addDependency((EvalTask)trainingData);
         addDependency((EvalTask)testData);
         return new GenericTTDataSet(name, dependency, trainingData, testData, domain);

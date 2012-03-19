@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.config.EvalConfigEngine;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -59,11 +57,10 @@ public class EvalCLI {
     
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
-        
-        List<EvalRunner> runners = new LinkedList<EvalRunner>();
+
         for (File f: options.getConfigFiles()) {
             logger.info("loading evaluation from {}", f);
-            List<Evaluation> evals;
+            List<EvalTask> evals;
             try {
                 evals = config.load(f);
             } catch (EvaluatorConfigurationException e) {
@@ -75,9 +72,6 @@ public class EvalCLI {
             } catch (IOException e) {
                 reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
                 return;
-            }
-            for (Evaluation e: evals) {
-                runners.add(new EvalRunner(e));
             }
         }
         

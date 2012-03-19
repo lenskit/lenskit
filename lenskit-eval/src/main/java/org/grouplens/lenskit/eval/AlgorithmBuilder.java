@@ -24,6 +24,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.config.AlgorithmBuilderDelegate;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;

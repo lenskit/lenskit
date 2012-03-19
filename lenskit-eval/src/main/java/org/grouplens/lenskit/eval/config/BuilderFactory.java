@@ -19,6 +19,8 @@
 package org.grouplens.lenskit.eval.config;
 
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.eval.data.crossfold.CrossfoldBuilder;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,6 +43,8 @@ public interface BuilderFactory<T> {
 
     /**
      * Create a new builder.
+     *
+     *
      * @param arg An argument passed when creating the builder.
      * @return A new builder to build objects of the type this factory is attached
      * to.

@@ -46,7 +46,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Bui
     private File userOutputFile;
     private File predictOutputFile;
 
-    private EvalTaskHelper taskHelper;
+    private EvalTaskHelper taskHelper = new EvalTaskHelper();
 
 
     public TrainTestEvalBuilder() {

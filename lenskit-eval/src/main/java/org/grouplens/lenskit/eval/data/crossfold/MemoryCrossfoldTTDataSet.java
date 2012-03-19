@@ -34,16 +34,13 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Crossfold data set that caches data in-memory.
@@ -52,7 +49,7 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class MemoryCrossfoldTTDataSet implements TTDataSet {
+public class MemoryCrossfoldTTDataSet extends AbstractEvalTask implements TTDataSet {
     private static final Logger logger = LoggerFactory.getLogger(MemoryCrossfoldTTDataSet.class);
     
     private CrossfoldSplit manager;
@@ -67,7 +64,9 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
      * @param n The fold number.
      */
     public MemoryCrossfoldTTDataSet(CrossfoldSplit mgr, int n) {
+        super("Memory TTDataSet", new HashSet<EvalTask>());
         manager = mgr;
+        dependency.add(mgr);
         foldNumber = n;
     }
 
@@ -76,21 +75,61 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         return manager.lastUpdated();
     }
 
-    public void prepare() throws Exception {
-        try{
-            manager.call();
-        } catch(Exception e) {
-            //FIXME: what to do with the exception?
-            throw e;
+//    public void prepare() throws Exception {
+//        try{
+//            manager.call();
+//        } catch(Exception e) {
+//            //FIXME: what to do with the exception?
+//            throw e;
+//        }
+//
+//        logger.debug("Preparing data source {}", getName());
+//        DAOFactory factory = manager.getSource().getDAOFactory();
+//
+//        Holdout mode = manager.getHoldout();
+//
+//        testEvents = new LongOpenHashSet();
+//
+//        DataAccessObject dao = factory.snapshot();
+//        try {
+//            LongList testUsers = manager.getFoldUsers( foldNumber);
+//            LongIterator iter = testUsers.iterator();
+//            while (iter.hasNext()) {
+//                UserHistory<Rating> history = dao.getUserHistory(iter.nextLong(), Rating.class);
+//                List<Rating> ratings = new ArrayList<Rating>(history);
+//                final int p = mode.partition(ratings);
+//                final int n = ratings.size();
+//                for (int i = p; i < n; i++) {
+//                    testEvents.add(ratings.get(i).getId());
+//                }
+//            }
+//        } finally {
+//            dao.close();
+//        }
+//
+//        logger.debug("Found {} test events", testEvents.size());
+//
+//        EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate()));
+//        EventSupplier testP = new EventSupplier(factory, testRatingPredicate());
+//        trainFactory = new EventCollectionDAO.SoftFactory(trainP);
+//        testFactory = new EventCollectionDAO.SoftFactory(testP);
+//    }
+    
+    @Override
+    public Void call() throws Exception{
+        if(!dependency.isEmpty()) {
+            for(EvalTask e : dependency) {
+                e.call();
+            }
         }
 
         logger.debug("Preparing data source {}", getName());
         DAOFactory factory = manager.getSource().getDAOFactory();
-        
+
         Holdout mode = manager.getHoldout();
 
         testEvents = new LongOpenHashSet();
-        
+
         DataAccessObject dao = factory.snapshot();
         try {
             LongList testUsers = manager.getFoldUsers( foldNumber);
@@ -107,13 +146,15 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         } finally {
             dao.close();
         }
-        
+
         logger.debug("Found {} test events", testEvents.size());
-        
+
         EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate()));
         EventSupplier testP = new EventSupplier(factory, testRatingPredicate());
         trainFactory = new EventCollectionDAO.SoftFactory(trainP);
         testFactory = new EventCollectionDAO.SoftFactory(testP);
+
+        return null;
     }
 
     @Override

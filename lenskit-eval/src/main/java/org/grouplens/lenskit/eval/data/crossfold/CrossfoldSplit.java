@@ -139,11 +139,11 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
     public Void call() throws Exception {
         assert(source != null);
         //Resolove dependencies if any
-//        if(!dependency.isEmpty()) {
-//            for(EvalTask e : dependency) {
-//                e.call();
-//            }
-//        }
+        if(!dependency.isEmpty()) {
+            for(EvalTask e : dependency) {
+                e.call();
+            }
+        }
         if(lastUpdated() >= source.lastUpdated()) {
             logger.debug("Crossfold {} up to date", this);
             return null; 

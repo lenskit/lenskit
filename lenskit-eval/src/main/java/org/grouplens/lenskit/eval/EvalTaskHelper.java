@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
  * To change this template use File | Settings | File Templates.
  */
 public class EvalTaskHelper {
-    private static final Logger logger = LoggerFactory.getLogger(EvalRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(EvalTaskHelper.class);
 
     private int threadCount = 1;
     private IsolationLevel isolationLevel = IsolationLevel.NONE;

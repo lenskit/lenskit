@@ -20,7 +20,6 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.Preparable;
 import org.grouplens.lenskit.eval.config.DefaultBuilder;
 
 import javax.annotation.Nullable;

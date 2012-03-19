@@ -18,9 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -30,13 +28,10 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Provider;
 import java.util.List;
 import java.util.Set;
 

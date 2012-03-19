@@ -22,10 +22,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**

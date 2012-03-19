@@ -98,6 +98,7 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds: dataSources) {
+            dependency.add((EvalTask)ds);
             for (String attr: ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
                     dataColumns.put(attr, master.addColumn(attr));
@@ -209,7 +210,13 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
      * prepared — call to do that.
      */
     @Override
-    public Void call() throws ExecutionException {
+    public Void call() throws Exception {
+        if(!dependency.isEmpty()) {
+            for(EvalTask e : dependency) {
+                e.call();
+            }
+        }
+        
         this.start();
 
         for (JobGroup group: this.getJobGroups()) {
