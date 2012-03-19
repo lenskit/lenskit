@@ -21,7 +21,9 @@ package org.grouplens.lenskit.eval.data;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
@@ -31,7 +33,7 @@ import java.io.File;
  * Build a CSV data source.
  * @author Michael Ekstrand
  */
-public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
+public class CSVDataSourceBuilder extends AbstractEvalTaskBuilder implements Builder<CSVDataSource> {
     String delimiter = "\t";
     String sourceName;
     File inputFile;
@@ -106,7 +108,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName, inputFile, delimiter, cache, domain);
+        return new CSVDataSource(sourceName, dependency,inputFile, delimiter, cache, domain);
     }
 
     /**

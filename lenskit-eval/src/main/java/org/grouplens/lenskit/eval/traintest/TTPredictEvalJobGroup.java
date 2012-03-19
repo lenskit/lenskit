@@ -92,11 +92,6 @@ public class TTPredictEvalJobGroup implements JobGroup {
     }
 
     @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        context.prepare(dataSet);
-    }
-
-    @Override
     public String getName() {
         return dataSet.getName();
     }
@@ -125,8 +120,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
         }
     }
 
-    @Override
-    public long lastUpdated(PreparationContext context) {
-        return dataSet.lastUpdated(context);
+    public long lastUpdated() {
+        return dataSet.lastUpdated();
     }
 }

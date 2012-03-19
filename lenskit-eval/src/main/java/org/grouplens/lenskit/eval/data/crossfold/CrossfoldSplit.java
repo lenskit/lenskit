@@ -28,9 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.eval.Preparable;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.slf4j.Logger;
@@ -38,10 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * A crossfold split, taking a data set and splitting it into multiple train-test sets.
@@ -51,26 +46,27 @@ import java.util.Scanner;
  * built from the training sets of its users combined with the ratings from all other
  * users, and the test set is the test sets of its users.
  */
-public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
+public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldSplit.class);
     
     private static final String SPLIT_FILE = "split.dat";
     
     private static final Random random = new Random();
 
-    private final String name;
 	private final DataSource source;
 	private final int partitionCount;
     private final Holdout holdout;
+    private File cacheDirectory;
     private transient List<TTDataSet> dataSets;
     private final Function<DAOFactory,DAOFactory> wrapper;
 
-	public CrossfoldSplit(String name, DataSource src, int folds, Holdout hold,
-                          Function<DAOFactory, DAOFactory> wrap) {
-	    this.name = name;
+	public CrossfoldSplit(String name, Set<EvalTask> dependency, DataSource src, int folds, Holdout hold,
+                          File directory,Function<DAOFactory, DAOFactory> wrap) {
+	    super(name, dependency);
         source = src;
 	    partitionCount = folds;
         holdout = hold;
+        cacheDirectory = directory;
         wrapper = wrap;
     }
 
@@ -107,6 +103,14 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
     }
 
     /**
+     * Get the directory used for caching data.
+     * @return The directory storing cached data.
+     */
+    public File getCacheDirectory() {
+        return cacheDirectory;
+    }
+
+    /**
      * Get the function used to wrap DAOs.
      * @return The DAO wrapper function, or {@code null} if no such function is set.
      * @see CrossfoldBuilder#setWrapper(Function)
@@ -117,47 +121,72 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
 
     /**
      * Get the cache directory for this crossfolder.
-     * 
-     * @param context The preparation context.
+     *
      * @return The directory in which to cache data. If the manager is prepared,
      *         this directory will exist.
      */
-    public File cacheDir(PreparationContext context) {
+    public File cacheDir() {
 	    String name = "crossfold-" + getName();
 	    try {
             name = URLEncoder.encode(name, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Java is broken", e);
         }
-	    return new File(context.getCacheDirectory(), name);
+	    return new File(cacheDirectory, name);
 	}
 
-	@Override
-	public long lastUpdated(PreparationContext context) {
-	    File split = new File(cacheDir(context), SPLIT_FILE);
+    @Override
+    public Void call() throws Exception {
+        assert(source != null);
+        //Resolove dependencies if any
+//        if(!dependency.isEmpty()) {
+//            for(EvalTask e : dependency) {
+//                e.call();
+//            }
+//        }
+        if(lastUpdated() >= source.lastUpdated()) {
+            logger.debug("Crossfold {} up to date", this);
+            return null; 
+        }    
+        
+        DAOFactory factory = source.getDAOFactory();
+        DataAccessObject dao = factory.create();
+        try{
+            Long2IntMap splits = splitUsers(dao);
+            writeSplits(splits);
+        } catch (IOException e) {
+            throw new Exception("Error writing partitions to disk", e);
+        } finally {
+            dao.close();
+        }
+        return null;
+    }
+
+	public long lastUpdated() {
+	    File split = new File(cacheDir(), SPLIT_FILE);
 	    return split.exists() ? split.lastModified() : -1L;
 	}
 
-	@Override
-	public void prepare(PreparationContext context) throws PreparationException {
-	    context.prepare(source);
-	    
-	    if (!context.isUnconditional() && lastUpdated(context) >= source.lastUpdated(context)) {
-	        logger.debug("Crossfold {} up to date", this);
-	        return;
-	    }
-	    
-	    DAOFactory factory = source.getDAOFactory();
-	    DataAccessObject dao = factory.create();
-	    try {
-	        Long2IntMap splits = splitUsers(dao);
-	        writeSplits(context, splits);
-	    } catch (IOException e) {
-	        throw new PreparationException("Error writing partitions to disk", e);
-        } finally {
-	        dao.close();
-	    }
-	}
+//	@Override
+//	public void prepare(PreparationContext context) throws PreparationException {
+//	    context.prepare(source);
+//	    
+//	    if (!context.isUnconditional() && lastUpdated(context) >= source.lastUpdated(context)) {
+//	        logger.debug("Crossfold {} up to date", this);
+//	        return;
+//	    }
+//	    
+//	    DAOFactory factory = source.getDAOFactory();
+//	    DataAccessObject dao = factory.create();
+//	    try {
+//	        Long2IntMap splits = splitUsers(dao);
+//	        writeSplits(context, splits);
+//	    } catch (IOException e) {
+//	        throw new PreparationException("Error writing partitions to disk", e);
+//        } finally {
+//	        dao.close();
+//	    }
+//	}
 	
 	protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
@@ -189,14 +218,13 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
 	 * and finally the temp file is renamed to the real file.  This should be
 	 * safe so long as there aren't two processes trying to prepare with the
 	 * same cache directory. 
-	 * 
-	 * @param context The preparation context.
+	 *
 	 * @param splits The user partition data.
 	 * @throws IOException if there is an error writing the partitions to disk.
 	 */
-	protected void writeSplits(PreparationContext context, Long2IntMap splits) throws IOException {
-	    File splitFile = new File(cacheDir(context), SPLIT_FILE);
-	    File tmpFile = new File(cacheDir(context), SPLIT_FILE + ".tmp");
+	protected void writeSplits( Long2IntMap splits) throws IOException {
+	    File splitFile = new File(cacheDir(), SPLIT_FILE);
+	    File tmpFile = new File(cacheDir(), SPLIT_FILE + ".tmp");
 	    Files.createParentDirs(splitFile);
 	    
 	    logger.info("Writing user partitions to {}", splitFile);
@@ -226,8 +254,8 @@ public class CrossfoldSplit implements Preparable, Supplier<List<TTDataSet>> {
 	    }
 	}
 	
-	public LongList getFoldUsers(PreparationContext context, int fold) {
-	    File split = new File(cacheDir(context), SPLIT_FILE);
+	public LongList getFoldUsers(int fold) {
+	    File split = new File(cacheDir(), SPLIT_FILE);
 	    
 	    LongList users = new LongArrayList();
 	    

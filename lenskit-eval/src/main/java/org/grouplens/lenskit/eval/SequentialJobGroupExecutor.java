@@ -53,6 +53,11 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
         threadCount = nthreads;
         listeners = lm;
     }
+
+    @Override
+    public int getThreadCount() {
+        return threadCount;
+    }
     
     @Override
     public void add(JobGroup group) {

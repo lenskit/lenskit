@@ -10,10 +10,10 @@ import java.util.Set;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractEvalTask implements EvalTask<Void>{
-    private final String name;
-    private Set<EvalTask> dependency;
+    protected final String name;
+    protected Set<EvalTask> dependency;
 
-    public AbstractEvalTask(String name, Set<EvalTask> dependency) {
+    protected AbstractEvalTask(String name, Set<EvalTask> dependency) {
         this.name = name;
         this.dependency = dependency;
     }
@@ -26,6 +26,6 @@ public abstract class AbstractEvalTask implements EvalTask<Void>{
         return dependency;
     }
 
-    public abstract Void call();
+    public abstract Void call() throws Exception;
     
 }

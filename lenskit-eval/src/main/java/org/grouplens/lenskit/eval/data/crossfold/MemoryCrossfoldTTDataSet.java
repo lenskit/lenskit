@@ -72,14 +72,18 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
     }
 
     @Override
-    public long lastUpdated(PreparationContext context) {
-        return manager.lastUpdated(context);
+    public long lastUpdated() {
+        return manager.lastUpdated();
     }
 
-    @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        context.prepare(manager);
-        
+    public void prepare() throws Exception {
+        try{
+            manager.call();
+        } catch(Exception e) {
+            //FIXME: what to do with the exception?
+            throw e;
+        }
+
         logger.debug("Preparing data source {}", getName());
         DAOFactory factory = manager.getSource().getDAOFactory();
         
@@ -89,7 +93,7 @@ public class MemoryCrossfoldTTDataSet implements TTDataSet {
         
         DataAccessObject dao = factory.snapshot();
         try {
-            LongList testUsers = manager.getFoldUsers(context, foldNumber);
+            LongList testUsers = manager.getFoldUsers( foldNumber);
             LongIterator iter = testUsers.iterator();
             while (iter.hasNext()) {
                 UserHistory<Rating> history = dao.getUserHistory(iter.nextLong(), Rating.class);

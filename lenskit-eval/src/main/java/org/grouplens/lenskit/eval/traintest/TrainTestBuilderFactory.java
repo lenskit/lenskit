@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.eval.config.BuilderFactory;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;

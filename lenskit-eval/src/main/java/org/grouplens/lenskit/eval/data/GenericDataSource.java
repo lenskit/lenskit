@@ -20,23 +20,27 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Michael Ekstrand
  */
-public class GenericDataSource implements DataSource {
-    private String name;
+public class GenericDataSource extends AbstractEvalTask implements DataSource {
     private DAOFactory daoFactory;
     private PreferenceDomain domain;
 
     public GenericDataSource(String name, DAOFactory factory) {
-        this(name, factory, null);
+        this(name, null, factory, null);
     }
 
-    public GenericDataSource(String name, DAOFactory factory, PreferenceDomain dom) {
-        this.name = name;
+    public GenericDataSource(String name, Set<EvalTask> dependency, DAOFactory factory, PreferenceDomain dom) {
+        super(name,dependency);
         daoFactory = factory;
         domain = dom;
     }
@@ -57,12 +61,18 @@ public class GenericDataSource implements DataSource {
     }
 
     @Override
-    public long lastUpdated(PreparationContext context) {
+    public long lastUpdated() {
         return 0;
     }
 
     @Override
-    public void prepare(PreparationContext context) throws PreparationException {
+    public Void call() {
         /* no-op */
+        return null;
     }
+//
+//    @Override
+//    public void prepare(PreparationContext context) throws PreparationException {
+//        /* no-op */
+//    }
 }

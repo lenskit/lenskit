@@ -20,16 +20,12 @@ package org.grouplens.lenskit.eval.traintest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.Evaluation;
-import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.util.tablewriter.CSVWriter;
@@ -55,7 +51,7 @@ import com.google.common.io.Closeables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class TTPredictEvaluation implements Evaluation {
+public class TTPredictEvaluation extends AbstractEvalTask  {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
 
     private final File outputFile;
@@ -75,15 +71,21 @@ public class TTPredictEvaluation implements Evaluation {
     private Map<String, Integer> algoColumns;
     private List<EvalMetric> predictMetrics;
 
-    public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
+    private EvalTaskHelper taskHelper;
+
+    public TTPredictEvaluation(String name, Set<EvalTask> dependency,
+                               @Nonnull List<TTDataSet> sources,
                                @Nonnull List<AlgorithmInstance> algos,
                                @Nonnull List<EvalMetric> metrics,
                                @Nonnull File output,
                                @Nullable File userOutput,
-                               @Nullable File predictOutput) {
+                               @Nullable File predictOutput,
+                               EvalTaskHelper helper) {
+        super(name, dependency);
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
+        taskHelper = helper;
 
         setupJobs(sources, algos, metrics);
     }
@@ -149,7 +151,6 @@ public class TTPredictEvaluation implements Evaluation {
         predictMetrics = metrics;
     }
 
-    @Override
     public void start() {
         logger.info("Starting evaluation");
         try {
@@ -179,7 +180,6 @@ public class TTPredictEvaluation implements Evaluation {
         }
     }
 
-    @Override
     public void finish() {
         for (EvalMetric metric: predictMetrics) {
             metric.finishEvaluation();
@@ -202,6 +202,26 @@ public class TTPredictEvaluation implements Evaluation {
         } finally {
             output = null;
         }
+    }
+
+    /**
+     * Run the evaluation.  This method assumes that the evaluation is already
+     * prepared — call to do that.
+     */
+    @Override
+    public Void call() throws ExecutionException {
+        this.start();
+
+        for (JobGroup group: this.getJobGroups()) {
+            taskHelper.getExecutor().add(group);
+        }
+        try {
+            taskHelper.getExecutor().run();
+        } finally {
+            logger.info("Finishing evaluation");
+            this.finish();
+        }
+        return null;
     }
     
     /**
@@ -249,7 +269,7 @@ public class TTPredictEvaluation implements Evaluation {
         };
     }
 
-    @Override @Nonnull
+    @Nonnull
     public List<JobGroup> getJobGroups() {
         return jobGroups;
     }

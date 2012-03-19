@@ -22,26 +22,35 @@ import com.google.common.base.Function;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.util.Set;
 
 /**
  * Builder for crossfold data sources (used to do cross-validation).
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
+public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder<CrossfoldSplit> {
     private int folds = 5;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
     private DataSource source;
     private String name;
+    private Set<EvalTask> dependency;
+    private File cacheDirectory;
     private Function<DAOFactory,DAOFactory> wrapper;
 
-    public CrossfoldBuilder() {}
+    public CrossfoldBuilder() {
+        super();
+    }
 
     public CrossfoldBuilder(String name) {
         this.name = name;
@@ -102,6 +111,14 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
         return this;
     }
 
+    
+    public CrossfoldBuilder setCacheDir(File file) {
+        this.cacheDirectory = file;
+        return this;
+    }
+    
+    
+
     /**
      * Specify a function that will wrap the DAO factories created by the crossfold. Used
      * to e.g. associate a text index with the split rating data. Note that the
@@ -121,7 +138,8 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
     }
 
     public CrossfoldSplit build() {
-        CrossfoldSplit split = new CrossfoldSplit(name, source, folds, new Holdout(order, partition), wrapper);
+        CrossfoldSplit split = new CrossfoldSplit(name, dependency, source, folds, new Holdout(order, partition),
+                cacheDirectory, wrapper);
         return split;
     }
 

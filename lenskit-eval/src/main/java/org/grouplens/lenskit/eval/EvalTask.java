@@ -26,6 +26,6 @@ public interface EvalTask<T> extends Callable {
     Set<EvalTask> getDependency();
 
     @Override
-    T call();
+    T call() throws Exception;
 
 }

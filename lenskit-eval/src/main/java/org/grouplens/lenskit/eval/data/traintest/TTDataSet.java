@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
  *
  */
 @DefaultBuilder(GenericTTDataBuilder.class)
-public interface TTDataSet extends Preparable {
+public interface TTDataSet {
     /**
      * Get the data set name.
      * @return A name for the data set.  Used as the job group name.
@@ -77,4 +77,6 @@ public interface TTDataSet extends Preparable {
      * @return A DAO factory returning the test data.
      */
     DAOFactory getTestFactory();
+
+    long lastUpdated();
 }

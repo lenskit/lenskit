@@ -2,7 +2,6 @@ package org.grouplens.lenskit.eval;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
-import org.kohsuke.MetaInfServices;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,11 +14,13 @@ import java.util.Set;
  * To change this template use File | Settings | File Templates.
  *
  */
-public abstract class AbstractEvalTaskBuilder implements Builder<AbstractEvalTask> {
-    private String name;
-    private Set<EvalTask> dependency = new HashSet<EvalTask>();
+public abstract class AbstractEvalTaskBuilder {
+    protected String name;
+    protected Set<EvalTask> dependency = new HashSet<EvalTask>();
 
-    public AbstractEvalTaskBuilder(String name) {
+    protected AbstractEvalTaskBuilder() {}
+
+    protected AbstractEvalTaskBuilder(String name) {
         this.name = name;
     }
 
@@ -44,16 +45,20 @@ public abstract class AbstractEvalTaskBuilder implements Builder<AbstractEvalTas
     public Set<EvalTask> getDependency() {
         return dependency;
     }
-    
+
     public AbstractEvalTaskBuilder addDependency(EvalTask task) {
         dependency.add(task);
         return this;
     }
 
-    @Override
-    public abstract AbstractEvalTask build();
+//    @Override
+//    public abstract AbstractEvalTask build();
+//
+//    public abstract static class Factory implements BuilderFactory<AbstractEvalTask>{
+//        public String getName() {
+//            return "abstract";
+//        }
+//    }
 
-  //  @MetaInfServices
-  //  public abstract static class Factory implements BuilderFactory<AbstractEvalTask>{}
 
 }

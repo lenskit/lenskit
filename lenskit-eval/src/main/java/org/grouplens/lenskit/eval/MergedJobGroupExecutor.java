@@ -61,6 +61,11 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     }
 
     @Override
+    public int getThreadCount() {
+        return threadCount;
+    }
+
+    @Override
     public void add(JobGroup group) {
         final int num = groups.size();
         groups.add(group);

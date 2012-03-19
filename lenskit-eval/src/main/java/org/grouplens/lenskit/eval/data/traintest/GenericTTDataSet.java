@@ -20,10 +20,13 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.data.DataSource;
@@ -39,17 +42,16 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class GenericTTDataSet implements TTDataSet {
-    private final @Nonnull String name;
+public class GenericTTDataSet extends AbstractEvalTask implements TTDataSet {
     private final @Nonnull DataSource trainData;
     private final @Nonnull DataSource testData;
     private final @Nullable PreferenceDomain preferenceDomain;
     
-    public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
+    public GenericTTDataSet(@Nonnull String name, Set<EvalTask> dependency, @Nonnull DataSource train, @Nonnull DataSource test,
                             @Nullable PreferenceDomain dom) {
+        super(name, dependency);
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
-        this.name = name;
         trainData = train;
         testData = test;
         preferenceDomain = dom;
@@ -62,14 +64,14 @@ public class GenericTTDataSet implements TTDataSet {
      * @param test The test DAO factory.
      * @param domain The preference domain.
      */
-    public GenericTTDataSet(@Nonnull String name, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
+    public GenericTTDataSet(@Nonnull String name, Set<EvalTask> dependency, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
                             @Nullable PreferenceDomain domain) {
+        super(name, dependency);
         Preconditions.checkNotNull(name);
         Preconditions.checkNotNull(train);
         Preconditions.checkNotNull(test);
-        this.name = name;
-        trainData = new GenericDataSource(name + ".train", train, domain);
-        testData = new GenericDataSource(name + ".test", test, domain);
+        trainData = new GenericDataSource(name + ".train", null, train, domain);
+        testData = new GenericDataSource(name + ".test", null, test, domain);
         preferenceDomain = domain;
     }
 
@@ -84,16 +86,24 @@ public class GenericTTDataSet implements TTDataSet {
     }
     
     @Override
-    public long lastUpdated(PreparationContext context) {
-        return Math.max(trainData.lastUpdated(context),
-                        testData.lastUpdated(context));
+    public long lastUpdated() {
+        return Math.max(trainData.lastUpdated(),
+                        testData.lastUpdated());
+    }                   
+    
+    public Void call() throws Exception{
+        for( EvalTask e : this.getDependency()) {
+            e.call();
+        }
+        return null;
     }
 
-    @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        context.prepare(trainData);
-        context.prepare(testData);
-    }
+//    @Override
+//    public void prepare(PreparationContext context) throws PreparationException {
+//        context.prepare(trainData);
+//        context.prepare(testData);
+//    }
+
 
     @Override
     public void release() {

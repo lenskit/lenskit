@@ -28,6 +28,8 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.PreparationContext;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 
@@ -36,19 +38,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Provider;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Michael Ekstrand
  */
-public class CSVDataSource implements DataSource {
-    final String name;
+public class CSVDataSource extends AbstractEvalTask implements DataSource {
     final DAOFactory factory;
     final File sourceFile;
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
-        this.name = name;
+    CSVDataSource(String name, Set<EvalTask> dependency, File file, String delim, boolean cache, PreferenceDomain pdom) {
+        super(name, dependency);
         sourceFile = file;
         domain = pdom;
         delimiter = delim;
@@ -95,13 +97,20 @@ public class CSVDataSource implements DataSource {
     }
 
     @Override
-    public long lastUpdated(PreparationContext context) {
+    public long lastUpdated() {
         return sourceFile.exists() ? sourceFile.lastModified() : -1L;
     }
+//
+//    @Override
+//    public void prepare(PreparationContext context) {
+//        /* no-op */
+//    }
+
 
     @Override
-    public void prepare(PreparationContext context) {
+    public Void call() {
         /* no-op */
+        return null;
     }
 
     @Override
