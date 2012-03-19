@@ -78,7 +78,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
         return indices.size();
     }
 
-    @Override
+    @Override @Deprecated
     public Iterable<IndexedPreference> fast() {
         return new Iterable<IndexedPreference>() {
             @Override

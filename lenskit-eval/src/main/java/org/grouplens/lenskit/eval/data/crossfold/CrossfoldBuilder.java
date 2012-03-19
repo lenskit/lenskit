@@ -67,7 +67,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @see #setHoldout(double)
      * @see #setHoldout(int)
      */
-    public CrossfoldBuilder setOrder(Order o) {
+    public CrossfoldBuilder setOrder(Order<Rating> o) {
         order = o;
         return this;
     }

@@ -231,7 +231,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
             }
         }
 
-        @Override
+        @Override @Deprecated
         public Iterable<IndexedPreference> fast() {
             return new Iterable<IndexedPreference>() {
                 @Override public Iterator<IndexedPreference> iterator() {
