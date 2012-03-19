@@ -182,7 +182,7 @@ public class TTPredictEvaluation implements Evaluation {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (EvalMetric metric: predictMetrics) {
+        for (EvalMetric<?> metric: predictMetrics) {
             metric.startEvaluation(this);
         }
     }
