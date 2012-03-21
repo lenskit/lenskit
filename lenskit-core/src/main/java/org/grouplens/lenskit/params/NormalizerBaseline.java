@@ -24,7 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+
+import javax.inject.Qualifier;
+
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.params.meta.Parameter;
 
@@ -34,7 +36,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * baseline can be set to a different baseline from the other baselines.
  */
 @Documented
-@Parameter(BaselinePredictor.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NormalizerBaseline { }

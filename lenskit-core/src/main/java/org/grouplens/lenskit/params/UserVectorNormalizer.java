@@ -24,11 +24,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
+import org.grouplens.inject.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Normalizer applied to user history summary vectors prior to processing data.
@@ -37,8 +37,8 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * <p>This normalizer is applied to {@link UserVector}s.
  */
 @Documented
-@DefaultClass(IdentityVectorNormalizer.class)
-@Parameter(VectorNormalizer.class)
+@DefaultImplementation(IdentityVectorNormalizer.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserVectorNormalizer { }

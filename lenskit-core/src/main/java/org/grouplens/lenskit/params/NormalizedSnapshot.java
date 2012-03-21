@@ -24,10 +24,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
+import org.grouplens.inject.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Normalized version of the rating snapshot.  This annotation is applied to
@@ -35,8 +36,8 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * of the raw version.  By default, that is supplied by {@link UserNormalizedRatingSnapshot}.
  */
 @Documented
-@DefaultClass(UserNormalizedRatingSnapshot.class)
-@Parameter(RatingSnapshot.class)
+@DefaultImplementation(UserNormalizedRatingSnapshot.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NormalizedSnapshot { }

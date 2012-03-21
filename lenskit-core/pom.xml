@@ -21,12 +21,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>org.picocontainer</groupId>
-    	<artifactId>picocontainer</artifactId>
-    	<type>jar</type>
-    	<scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-data-structures</artifactId>
       <version>${project.version}</version>
@@ -37,8 +31,14 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>config-injector</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

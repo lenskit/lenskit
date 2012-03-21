@@ -24,8 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
+import javax.inject.Qualifier;
+
+import org.grouplens.inject.annotation.DefaultDouble;
 
 /**
  * Smoothing parameter for mean baselines.
@@ -39,7 +40,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  */
 @Documented
 @DefaultDouble(0.0)
-@Parameter(Double.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MeanSmoothing { }
