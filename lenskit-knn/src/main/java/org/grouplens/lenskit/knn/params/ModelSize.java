@@ -24,15 +24,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultInt;
-import org.grouplens.lenskit.params.meta.Parameter;
+import org.grouplens.inject.annotation.DefaultInteger;
+import org.grouplens.inject.annotation.Parameter;
 
 /**
  * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
  * similar neighbors are retained for each item in model build.
  */
 @Documented
-@DefaultInt(250)
+@DefaultInteger(250)
 @Parameter(Integer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
