@@ -19,584 +19,243 @@
 package org.grouplens.lenskit.core;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.inject.Binding;
+import org.grouplens.inject.Context;
+import org.grouplens.inject.InjectorConfigurationBuilder;
+import org.grouplens.inject.graph.Edge;
+import org.grouplens.inject.graph.Graph;
+import org.grouplens.inject.graph.Node;
+import org.grouplens.inject.solver.DependencySolver;
+import org.grouplens.inject.spi.Desire;
+import org.grouplens.inject.spi.Satisfaction;
+import org.grouplens.inject.util.InstanceProvider;
+import org.grouplens.lenskit.GlobalItemRecommender;
+import org.grouplens.lenskit.GlobalItemScorer;
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.params.meta.DefaultBuilder;
-import org.grouplens.lenskit.params.meta.Parameters;
-import org.grouplens.lenskit.pico.BuilderAdapter;
-import org.grouplens.lenskit.pico.DependencyMonitor;
-import org.grouplens.lenskit.pico.JustInTimePicoContainer;
-import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
-import org.grouplens.lenskit.util.PrimitiveUtils;
-import org.picocontainer.BindKey;
-import org.picocontainer.ComponentAdapter;
-import org.picocontainer.ComponentMonitor;
-import org.picocontainer.InjectionFactory;
-import org.picocontainer.LifecycleStrategy;
-import org.picocontainer.MutablePicoContainer;
-import org.picocontainer.Parameter;
-import org.picocontainer.PicoCompositionException;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.behaviors.Caching;
-import org.picocontainer.injectors.AbstractInjectionFactory;
-import org.picocontainer.lifecycle.StartableLifecycleStrategy;
 
-import com.google.common.base.Throwables;
+import com.google.common.base.Function;
 
 /**
- * {@link RecommenderEngineFactory} that builds a LensKit recommender engine.
+ * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
+ * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable {
-    private HashMap<Class<? extends Annotation>, Object> annotationBindings;
-    private HashMap<Class<?>, Object> defaultBindings;
-    private DAOFactory daoFactory;
-
-    /**
-     * Create a new engine factory with no DAO factory.
-     *
-     * <p>
-     * Unless a DAO manager is provided by
-     * {@link #setDAOFactory(DAOFactory)}, the factory and all
-     * resulting engines cannot open DAOs themselves, so the {@link #create()}
-     * and {@link RecommenderEngine#open()} methods will not work. In that case,
-     * the {@link #create(DataAccessObject)} and
-     * {@link LenskitRecommenderEngine#open(DataAccessObject, boolean)} methods
-     * must be used instead.
-     */
-    public LenskitRecommenderEngineFactory() {
-        this(null);
+public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
+    private final InjectorConfigurationBuilder config;
+    private final DAOFactory factory;
+    
+    public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
+        this.factory = factory;
+        config = new InjectorConfigurationBuilder();
     }
-
-    /**
-     * Construct a new engine factory that will get DAOs from the specified
-     * DAO factory.
-     * @param daom The DAO factory for obtaining data access.
-     */
-    public LenskitRecommenderEngineFactory(@Nullable DAOFactory daom) {
-        annotationBindings = new HashMap<Class<? extends Annotation>, Object>();
-        defaultBindings = new HashMap<Class<?>, Object>();
-        daoFactory = daom;
-
-        setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
-
-        // Technically this isn't needed since the default type is configured,
-        // but it's nice to show explicit bindings for these snapshots
-        // Disabled 2011-05-25 by MDE to avoid pulling in normalizers unnecessarily
-        // bind(NormalizedSnapshot.class, UserNormalizedRatingSnapshot.class);
-    }
-
-    /**
-     * Get the DAO manager configured for this factory.
-     * @return The DAO manager, or <tt>null</tt> if no DAO manager is configured.
-     */
-    public @Nullable DAOFactory getDAOFactory() {
-        return daoFactory;
-    }
-
-    /**
-     * Set the DAO manager.
-     * @param daom
-     */
-    public void setDAOFactory(@Nullable DAOFactory daom) {
-        daoFactory = daom;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void set(Class<? extends Annotation> param, Number instance) {
-        Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-        if (Number.class.isAssignableFrom(paramType))
-            instance = PrimitiveUtils.cast((Class<? extends Number>) paramType, instance);
-        else
-            throw new IllegalArgumentException("Parameter type not Number-compatible");
-        updateBindings(annotationBindings, param, instance);
-    }
-
-    /**
-     * Set the instance to be used for a particular component.
-     *
-     * <p><b>Note:</b> LensKit does not currently support multiple component
-     * types with the same annotation.</p>
-     * @param <T>
-     * @param annot The annotation for the component.
-     * @param type The component's type.
-     * @param instance The component instance.
-     */
-    public <T> void setComponent(Class<? extends Annotation> annot, Class<T> type, T instance) {
-        // Proceed with normal instance binding
-        validateAnnotation(annot);
-
-        if (instance != null) {
-            // TODO Review to deal with types specified on parameter annotations
-        }
-        // TODO Actually use the class type in bindings
-        updateBindings(annotationBindings, annot, instance);
-    }
-
-    /**
-     * Set the implementation to be used for a particular component.
-     *
-     * <p><b>Note:</b> LensKit does not currently support multiple component
-     * types with the same annotation.</p>
-     *
-     * @param param The component annotation.
-     * @param instanceType The type to use for this component.
-     */
-    public <T> void setComponent(Class<? extends Annotation> param, Class<T> type, Class<? extends T> instanceType) {
-        // FIXME: Actually use the type
-        // FIXME: validate type hierarchy, people can break it with raw types
-        validateAnnotation(param);
-        // Verify that the types match
-        Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-        if (instanceType != null && !paramType.isAssignableFrom(type))
-            throw new IllegalArgumentException(instanceType + " is incompatible with the type expected by parameter " + param.getClass()
-                                               + ", expected " + paramType);
-
-        if (instanceType.getAnnotation(Built.class) != null) {
-            setBuilder(param, type, findBuilder(instanceType));
-        } else {
-            // This class can be created on its own
-            updateBindings(annotationBindings, param, instanceType);
-        }
-    }
-
-    /**
-     * Set the builder to use for a particular component.
-     * @param param The annotation class specifying the role for the parameter
-     * (must be annotated with {@link Parameter}).
-     * @param type The type of component to be built.
-     */
-    public <T> void setBuilder(Class<? extends Annotation> param, Class<T> type, Class<? extends Builder<? extends T>> builderType) {
-        validateAnnotation(param);
-        if (builderType != null) {
-            // Verify that the builder generates the appropriate type
-            Class<?> paramType = PrimitiveUtils.box(Parameters.getParameterType(param));
-            Class<?> builtType = getBuiltType(builderType);
-            if (!paramType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builderType + " creates instances incompatible with the type expected by parameter " + param.getClass()
-                                                   + ", expected " + paramType + ", but was " + builtType);
-        }
-        updateBindings(annotationBindings, param, builderType);
-    }
-
-    public <M> void setComponent(Class<M> type, Class<? extends M> instanceType) {
-        if (type == null)
-            throw new NullPointerException("Super-type cannot be null");
-        // Verify that the instanceType is actually a subtype
-        if (instanceType != null && !type.isAssignableFrom(instanceType))
-            throw new IllegalArgumentException(instanceType + " is not a subclass of " + type);
-
-        if (instanceType != null && instanceType.getAnnotation(Built.class) != null) {
-            // Bind a builder instead
-            setBuilder(type, findBuilder(instanceType));
-        } else {
-            // Type can be created on its own
-            updateBindings(defaultBindings, type, instanceType);
-        }
-    }
-
-    public <M> void setComponent(Class<M> type, M instance) {
-        if (type == null)
-            throw new NullPointerException("Super-type cannot be null");
-        // Verify instance is actually a subtype
-        if (instance != null && !type.isInstance(instance))
-            throw new IllegalArgumentException(instance + " is not a subclass of " + type);
-
-        // Since we have an instance, there is no distinction between if it
-        // uses a builder or not (it's already been built)
-        updateBindings(defaultBindings, type, instance);
-    }
-
-    public <M> void setBuilder(Class<M> superType, Class<? extends Builder<? extends M>> builderType) {
-        if (superType == null)
-            throw new NullPointerException("Super-type cannot be null");
-        if (builderType != null) {
-            // Verify that the builder generates a proper subtype
-            Class<?> builtType = getBuiltType(builderType);
-            if (!superType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builderType + " creates instances of " + builtType
-                                                   + ", which are not subclasses of " + superType);
-        }
-        updateBindings(defaultBindings, superType, builderType);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <M> void setBuilder(Class<M> superType, Builder<? extends M> builder) {
-        if (superType == null)
-            throw new NullPointerException("Super-type cannot be null");
-        if (builder != null) {
-            // Verify that the builder generates a proper subtype
-            Class<?> builtType = getBuiltType((Class) builder.getClass());
-            if (!superType.isAssignableFrom(builtType))
-                throw new IllegalArgumentException(builder + " creates instances of " + builtType
-                                                           + ", which are not subclasses of " + superType);
-        }
-        updateBindings(defaultBindings, superType, builder);
-    }
-
-    /**
-     * Clone the recommender engine factory.  The only connection retained to
-     * the original factory is that the DAO factory is shared.  The component
-     * and parameter settings are entirely independent.
-     * @return A clone of this recommender engine factory.
-     */
+    
     @Override
-    @SuppressWarnings("unchecked")
-    public synchronized LenskitRecommenderEngineFactory clone() {
-        LenskitRecommenderEngineFactory dup;
-        try {
-            dup = (LenskitRecommenderEngineFactory) super.clone();
-        } catch (CloneNotSupportedException e) {
-            /* should never happen - we are cloneable. */
-            throw new RuntimeException(e);
-        }
-        dup.annotationBindings = (HashMap<Class<? extends Annotation>, Object>) annotationBindings.clone();
-        dup.defaultBindings = (HashMap<Class<?>, Object>) defaultBindings.clone();
-        return dup;
-    }
-
-    private static void validateAnnotation(Class<? extends Annotation> param) {
-        if (param == null)
-            throw new NullPointerException("Annotation cannot be null");
-
-        if (!Parameters.isParameter(param))
-            throw new IllegalArgumentException("Annotation must be annotated with Parameter");
-    }
-
-    private <K, V> void updateBindings(Map<K, ? super V> bindings, K key, V value) {
-        synchronized(this) {
-            if (value == null)
-                bindings.remove(key);
-            else
-                bindings.put(key, value);
-        }
+    public <T> Binding<T> bind(Class<T> type) {
+        return config.getRootContext().bind(type);
     }
 
     @Override
-    public LenskitRecommenderEngine create() {
-        if (daoFactory == null)
-            throw new IllegalStateException("create() called with no DAO factory");
-        DataAccessObject dao = daoFactory.snapshot();
+    public void bind(Class<? extends Annotation> param, Object value) {
+        config.getRootContext().bind(param, value);
+    }
+
+    @Override
+    public Context in(Class<?> type) {
+        return config.getRootContext().in(type);
+    }
+
+    @Override
+    public Context in(Class<? extends Annotation> qualifier, Class<?> type) {
+        return config.getRootContext().in(qualifier, type);
+    }
+
+    @Override
+    public Context in(String name, Class<?> type) {
+        return config.getRootContext().in(name, type);
+    }
+    
+    @Override
+    public RecommenderEngine create() {
+        if (factory == null)
+            throw new IllegalStateException("create() called with no DAOFactory");
+        DataAccessObject dao = factory.snapshot();
         try {
-            return create(dao, null, true);
+            return create(dao);
         } finally {
             dao.close();
         }
     }
+    
+    public RecommenderEngine create(DataAccessObject dao) {
+        // FIXME: we really ought to clone the config before we modify it here
+        config.getRootContext().bind(DataAccessObject.class).to(dao);
+        
+        DependencySolver solver = new DependencySolver(config.build(), 100);
+        
+        // Resolve all required types to complete a Recommender
+        solver.resolve(config.getSPI().desire(null, RatingPredictor.class));
+        solver.resolve(config.getSPI().desire(null, ItemScorer.class));
+        solver.resolve(config.getSPI().desire(null, GlobalItemScorer.class));
+        solver.resolve(config.getSPI().desire(null, ItemRecommender.class));
+        solver.resolve(config.getSPI().desire(null, GlobalItemRecommender.class));
 
-    /**
-     * Create a new recommender engine using a particular DAO. The factory's DAO
-     * manager, if set, is still used by the resulting engine to open sessions.
-     * The DAO is assumed to be backed by immutable data, as with
-     * {@link DAOFactory#snapshot()}.
-     *
-     * @review If the user provides a DAO and has set a DAO Factory, do we use
-     *         or ignore the DAO Factory?
-     * @param dao The DAO to user for building the recommender.
-     * @return A new recommender engine. The engine does <b>not</b> depend on
-     *         the DAO, but will use DAOs obtained when recommenders are opened.
-     */
-    public LenskitRecommenderEngine create(DataAccessObject dao) {
-        return create(dao, null, false);
-    }
-
-    protected LenskitRecommenderEngine create(DataAccessObject dao, PicoContainer parent, boolean useFactory) {
-        Map<Class<? extends Annotation>, Object> annotationBindings;
-        Map<Class<?>, Object> defaultBindings;
-
-        synchronized(this) {
-            // Clone configuration so that this build is thread safe
-            annotationBindings = new HashMap<Class<? extends Annotation>, Object>(this.annotationBindings);
-            defaultBindings = new HashMap<Class<?>, Object>(this.defaultBindings);
-        }
-
-        DependencyMonitor daoMonitor = new DependencyMonitor(DataAccessObject.class);
-        BuilderTrackingAdapterFactory jitBuilderFactory = new BuilderTrackingAdapterFactory(new ParameterAnnotationInjector.Factory());
-        MutablePicoContainer buildContainer = new JustInTimePicoContainer(new Caching().wrap(jitBuilderFactory),
-                                                                          new StartableLifecycleStrategy(daoMonitor),
-                                                                          parent, daoMonitor);
-
-        // We assume that these generated bindings include configurations for a build context
-        // and recommender type
-        Map<Object, Object> keyBindings = generateBindings(annotationBindings, defaultBindings);
-
-        // Push all bindings into the build container
-        for (Entry<Object, Object> binding: keyBindings.entrySet()) {
-            if (binding.getValue() instanceof ComponentAdapter)
-                buildContainer.addAdapter((ComponentAdapter<?>) binding.getValue());
-            else
-                buildContainer.addComponent(binding.getKey(), binding.getValue());
-        }
-
-        // Stash a dao into the container for the build
-        buildContainer.addComponent(dao);
-        // Construct all known objects to discover dependencies and to build things made by builders
-        buildContainer.getComponents();
-
-        // Must make sure to close all RatingSnapshots
-        for (RatingSnapshot snapshot: buildContainer.getComponents(RatingSnapshot.class))
-            snapshot.close();
-
-        Set<Object> daoDependentKeys = daoMonitor.getDependentKeys();
-
-        // Create a new container that will be used by the RecommenderEngine.
-        // This container will not contain builders or any of the components depending on a dao
-        //  - built instances will be stored instead
-        //  - dao dependencies are placed in a separate child container created per-session
-        MutablePicoContainer recommenderContainer = new JustInTimePicoContainer(new ParameterAnnotationInjector.Factory(), parent);
-        Map<Object, Object> sessionBindings = new HashMap<Object, Object>();
-
-        // Configure recommender container with all bindings that don't depend on a dao
-        // FIXME: we really ought to configure the JIT bound objects too in-case parameters/defaults
-        //   change what gets bound
-        for (Entry<Object, Object> binding: keyBindings.entrySet()) {
-            if (!isBindingValidAfterBuild(binding.getValue()))
-                continue;
-
-            Object key = binding.getKey();
-            if (daoDependentKeys.contains(key)) {
-                // This key (or some of its dependencies) depends on a dao session,
-                // so it can only be constructed at the session container level
-                if (binding.getValue() instanceof BuilderAdapter)
-                    throw new IllegalStateException("Binding relying on a Builder cannot depend on a DAO");
-
-                sessionBindings.put(key, binding.getValue());
-            } else {
-                // This key does not depend on a dao session so it can be
-                // configured at the recommender container level
-                if (binding.getValue() instanceof BuilderAdapter) {
-                    // This was a built type, so bind to the built instance
-                    // The buildContainer caches instances so this is a cheap lookup
-                    recommenderContainer.addComponent(key, buildContainer.getComponent(key));
-                } else {
-                    // This wasn't meant to be built so configure binding again
-                    recommenderContainer.addComponent(key, binding.getValue());
+        // At this point the graph contains the dependency state to build a
+        // recommender with the current DAO. Any extra bind rules don't matter
+        // because they could not have created any Nodes.
+        Graph<Satisfaction, Desire> buildGraph = solver.getGraph();
+        
+        // Instantiate all nodes, and remove transient edges
+        Queue<Node<Satisfaction>> removeQueue = new LinkedList<Node<Satisfaction>>();
+        Map<Node<Satisfaction>, Object> instances = instantiate(buildGraph, removeQueue);
+        
+        // Remove all subgraphs that have been detached by the transient edge removal
+        pruneGraph(buildGraph, removeQueue);
+        
+        Iterator<Entry<Node<Satisfaction>, Object>> i = instances.entrySet().iterator();
+        while(i.hasNext()) {
+            Node<Satisfaction> n = i.next().getKey();
+            if (n.getLabel() != null) {
+                // Remove this instance if it is a DAO, or depends on a DAO,
+                // or if no other node depends on it
+                if (DataAccessObject.class.isAssignableFrom(n.getLabel().getErasedType())) {
+                    // This is the DAO instance node specific to the build phase,
+                    // we replace it with a special satisfaction so it can be replaced
+                    // per-session by the LenskitRecommenderEngine
+                    Node<Satisfaction> newDAONode = new Node<Satisfaction>(new DAOSatisfaction());
+                    buildGraph.replaceNode(n, newDAONode);
+                } else if (buildGraph.getIncomingEdges(n).isEmpty()
+                           || requiresDAO(n, buildGraph)) {
+                    // This instance either requires a session DAO, or is no
+                    // longer part of the graph
+                    i.remove();
                 }
             }
         }
-
-        // Add additional configuration for the built instances that were JIT bound
-        for (Entry<Object, BuilderAdapter<?>> jitBinding: jitBuilderFactory.jitBuilderAdapters.entrySet()) {
-            if (!isBindingValidAfterBuild(jitBinding.getValue()))
-                continue;
-
-            if (daoDependentKeys.contains(jitBinding.getKey()))
-                throw new IllegalStateException("Binding relying on a Builder cannot depend on a DAO");
-            // As above, the built instance should be memoized so this is very fast
-            recommenderContainer.addComponent(jitBinding.getKey(), buildContainer.getComponent(jitBinding.getKey()));
-        }
-
-        DAOFactory factory =
-            useFactory ? daoFactory : null;
-        LenskitRecommenderEngine engine = new LenskitRecommenderEngine(factory, recommenderContainer, sessionBindings);
-        Recommender testOpen;
-        if (useFactory)
-            testOpen = engine.open();
-        else
-            testOpen = engine.open(dao, false);
-        testOpen.close();
-
-        return engine;
+        
+        return new LenskitRecommenderEngine(factory, buildGraph, 
+                                            instances, config.getSPI());
     }
-
-    private boolean isBindingValidAfterBuild(Object value) {
-        Class<?> implType = null;
-        if (value instanceof BuilderAdapter) {
-            implType = ((BuilderAdapter<?>) value).getComponentImplementation();
-        } else if (value instanceof Class) {
-            implType = (Class<?>) value;
-        } else {
-            implType = value.getClass();
+    
+    private boolean requiresDAO(Node<Satisfaction> n, Graph<Satisfaction, Desire> graph) {
+        for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(n)) {
+            Node<Satisfaction> tail = e.getTail();
+            if (DataAccessObject.class.isAssignableFrom(tail.getLabel().getErasedType())) {
+                // The node, n, has a direct dependency on a DAO
+                return true;
+            } else {
+                // Check if it has an indirect dependency on a DAO
+                return requiresDAO(tail, graph);
+            }
         }
-
-        // Do not configure any builders, snapshots or daos
-        if (RatingSnapshot.class.isAssignableFrom(implType) || DataAccessObject.class.isAssignableFrom(implType)
-            || Builder.class.isAssignableFrom(implType)) {
-            return false;
-        }
-
-        // Also check if it is a built type declared as ephemeral
-        Built built = implType.getAnnotation(Built.class);
-        if (built != null && built.ephemeral())
-            return false;
-
-        return true;
+        
+        // The node does not have any dependencies on a DAO
+        return false;
     }
-
+    
+    private void pruneGraph(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
+        while(!removeQueue.isEmpty()) {
+            Node<Satisfaction> candidate = removeQueue.poll();
+            if (graph.getIncomingEdges(candidate).isEmpty()) {
+                // No other node depends on this node, so we can remove it,
+                // we must also flag its dependencies as removal candidates
+                for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(candidate)) {
+                    removeQueue.add(e.getTail());
+                }
+                graph.removeNode(candidate);
+            }
+        }
+    }
+    
+    private Map<Node<Satisfaction>, Object> instantiate(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
+        Map<Node<Satisfaction>, Object> instanceMap = new HashMap<Node<Satisfaction>, Object>();
+        Set<Node<Satisfaction>> leaves = new HashSet<Node<Satisfaction>>();
+        for (Node<Satisfaction> n: graph.getNodes()) {
+            if (graph.getOutgoingEdges(n).isEmpty()) {
+                leaves.add(n);
+            }
+        }
+        
+        instantiate(leaves, instanceMap, graph, removeQueue);
+        return instanceMap;
+    }
+    
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Map<Object, Object> generateBindings(Map<Class<? extends Annotation>, Object> annotationBindings,
-                                                 Map<Class<?>, Object> defaultBindings) {
-        Map<Object, Object> keyBindings = new HashMap<Object, Object>();
-
-        // Configure annotation bound types
-        for (Entry<Class<? extends Annotation>, Object> paramBinding: annotationBindings.entrySet()) {
-            Object value = paramBinding.getValue();
-            Class implType = null;
-            boolean usesBuilder = false;
-
-            if (value instanceof Class) {
-                if (Builder.class.isAssignableFrom((Class) value)) {
-                    implType = getBuiltType((Class) value);
-                    usesBuilder = true;
-                } else {
-                    implType = (Class) value;
+    private void instantiate(Set<Node<Satisfaction>> nodes, final Map<Node<Satisfaction>, Object> instanceMap, 
+                             Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
+        // End condition is when nodes has a single node with a null satisfaction
+        if (nodes.size() == 1) {
+            Node<Satisfaction> root = nodes.iterator().next();
+            if (root.getLabel() == null) {
+                // This is the root node, so stop recursing
+                return;
+            }
+        }
+        
+        // Instantiate all nodes at this level. Since recursion starts at the
+        // leaves, we know that all dependencies have already been instantiated
+        Set<Node<Satisfaction>> nextLevel = new HashSet<Node<Satisfaction>>();
+        for (Node<Satisfaction> n: nodes) {
+            if (!instanceMap.containsKey(n)) {
+                // need to instantiate this node in the graph
+                final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
+                Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
+                    @Override
+                    public Provider<?> apply(Desire desire) {
+                        for (Edge<Satisfaction, Desire> e: outgoing) {
+                            if (e.getLabel().equals(desire)) {
+                                // Return the cached instance based on the tail node
+                                Object instance = instanceMap.get(e.getTail());
+                                return new InstanceProvider(instance);
+                            }
+                        }
+                        
+                        // Should not happen
+                        throw new RuntimeException("Could not find instantiated dependency");
+                    }
+                });
+                
+                // Store created instance into the map
+                instanceMap.put(n, provider.get());
+                
+                // Remove all transient outgoing edges from the graph
+                for (Edge<Satisfaction, Desire> e: outgoing) {
+                    if (e.getLabel().isTransient()) {
+                        graph.removeEdge(e);
+                        
+                        // Push the tail node of the transient edge into the queue,
+                        // there's a chance that it can be removed if it has no more
+                        // incoming edges
+                        removeQueue.add(e.getTail());
+                    }
                 }
-            } else {
-                if (value instanceof Builder) {
-                    implType = getBuiltType((Class) value.getClass());
-                    usesBuilder = true;
-                } else {
-                    implType = value.getClass();
+                
+                // Determine nodes that depend on this instance and set them
+                // up for instantiation on the next recursion
+                for (Edge<Satisfaction, Desire> e: graph.getIncomingEdges(n)) {
+                    nextLevel.add(e.getHead());
                 }
             }
-
-            implType = PrimitiveUtils.box(implType);
-
-            // Walk up the type tree, creating bindings for every intermediate type
-            // to allow for more specific injection points
-            // FIXME: I don't think that this loop is sufficient for tree hierarchies that
-            // involve subinterfaces (i.e. RatingPredictor and DynamicRatingPredictor)
-            Class interfaceType = PrimitiveUtils.box(Parameters.getParameterType(paramBinding.getKey()));
-            while(implType != null && interfaceType.isAssignableFrom(implType)) {
-                BindKey key = new BindKey(implType, paramBinding.getKey());
-                if (!usesBuilder) {
-                    keyBindings.put(key, value);
-                } else if (value instanceof Class) {
-                    keyBindings.put(key, new BuilderAdapter(key, (Class) value));
-                } else {
-                    keyBindings.put(key, new BuilderAdapter(key, (Builder) value));
-                }
-
-                implType = implType.getSuperclass();
-                if (implType != null && implType.equals(Object.class))
-                    implType = interfaceType;
-            }
         }
-
-        // Configure type-to-type bindings
-        for (Entry<Class<?>, Object> dfltBinding: defaultBindings.entrySet()) {
-            Object key = dfltBinding.getKey();
-            Object value = dfltBinding.getValue();
-
-            if (value instanceof Class) {
-                if (Builder.class.isAssignableFrom((Class) value))
-                    keyBindings.put(key, new BuilderAdapter(key, (Class) value));
-                else
-                    keyBindings.put(key, value);
-            } else {
-                if (value instanceof Builder)
-                    keyBindings.put(key, new BuilderAdapter(key, (Builder) value));
-                else
-                    keyBindings.put(key, value);
-            }
-        }
-
-// FIXME: log configured bindings (maybe super-type tree at a finer level)
-// FIXME: log warnings if bound types aren't serializable
-//        for (Entry<Object, Object> b: keyBindings.entrySet()) {
-//            Class annot = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getAnnotation() : null);
-//            Class type = (b.getKey() instanceof BindKey ? ((BindKey) b.getKey()).getType() : (Class) b.getKey());
-//            if (type.isInterface() || type.getSuperclass().equals(Object.class)) {
-//                String key = (annot == null ? type.getSimpleName() : annot.getSimpleName() + ":" + type.getSimpleName());
-//                String value = (b.getValue() instanceof Class ? ((Class) b.getValue()).getSimpleName() : b.getValue().toString());
-//                System.out.println("Bind " + key + " -> " + value);
-//            }
-//        }
-        return keyBindings;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> Class<? extends Builder<? extends T>> findBuilder(Class<? extends T> type) {
-        // Special handling for null types, must return a null builder so binding is still removed
-        if (type == null)
-            return null;
-
-        // Convention #1: Type has been annotated with DefaultBuilder
-        DefaultBuilder dfltBuilder = type.getAnnotation(DefaultBuilder.class);
-        if (dfltBuilder != null) {
-            // Type has been annotated with a default builder, so use that
-            return (Class<? extends Builder<? extends T>>) dfltBuilder.value();
-        }
-
-        // Convention #2: Type has an static inner class that is a Builder of the appropriate type
-        for (Class<?> cls: type.getClasses()) {
-            if (Modifier.isStatic(cls.getModifiers()) && Builder.class.isAssignableFrom(cls)) {
-                // cls is a static Builder, but make sure its built type is compatible
-                if (type.isAssignableFrom(getBuiltType((Class<? extends Builder<?>>) cls)))
-                    return (Class<? extends Builder<? extends T>>) cls;
-            }
-        }
-
-        // Convention #3: There is a type named XBuilder in the same package as X
-        String builderName = type.getName() + "Builder";
-        try {
-            Class<?> builderType = type.getClassLoader().loadClass(builderName);
-            if (Builder.class.isAssignableFrom(builderType)
-                && type.isAssignableFrom(getBuiltType((Class<? extends Builder<?>>) builderType)))
-                return (Class<? extends Builder<? extends T>>) builderType;
-        } catch (ClassNotFoundException e) {
-            // do nothing, a Builder wasn't found so throw an exception after leaving this block
-        }
-
-        throw new IllegalArgumentException("Unable to find a Builder for type: " + type);
-    }
-
-    private static Class<?> getBuiltType(Class<? extends Builder<?>> buildType) {
-        try {
-            // Builders are expected to update the return type of their build()
-            // so we can get the actual built type by looking at the method
-            return buildType.getMethod("build").getReturnType();
-        } catch (Exception e) {
-            // This shouldn't happen
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private static class BuilderTrackingAdapterFactory extends AbstractInjectionFactory {
-        private static final long serialVersionUID = 1L;
-
-        transient Map<Object, BuilderAdapter<?>> jitBuilderAdapters;
-        transient InjectionFactory delegate;
-
-        public BuilderTrackingAdapterFactory(InjectionFactory delegate) {
-            this.delegate = delegate;
-            jitBuilderAdapters = new HashMap<Object, BuilderAdapter<?>>();
-        }
-
-        @Override
-        public <T> ComponentAdapter<T> createComponentAdapter(ComponentMonitor componentMonitor,
-                                                              LifecycleStrategy lifecycleStrategy,
-                                                              Properties componentProperties, Object componentKey,
-                                                              Class<T> componentImplementation, Parameter... parameters) throws PicoCompositionException {
-            // Check to see if the type must be built
-            if (componentImplementation.getAnnotation(Built.class) != null) {
-                // Yes, so find a builder implementation and create an adapter for it
-                Class<? extends Builder<? extends T>> builderType = findBuilder(componentImplementation);
-                BuilderAdapter<T> adapter = new BuilderAdapter<T>(componentKey, builderType);
-
-                jitBuilderAdapters.put(componentKey, adapter);
-                return adapter;
-            } else {
-                // A regular jit binding so use the delegate
-                return delegate.createComponentAdapter(componentMonitor, lifecycleStrategy, componentProperties,
-                                                       componentKey, componentImplementation, parameters);
-            }
-        }
+        
+        // Move up the dependency hierarchy
+        instantiate(nextLevel, instanceMap, graph, removeQueue);
     }
 }

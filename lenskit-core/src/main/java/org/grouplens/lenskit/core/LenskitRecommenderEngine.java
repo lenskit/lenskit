@@ -24,21 +24,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 
+import org.grouplens.inject.Injector;
+import org.grouplens.inject.graph.Edge;
+import org.grouplens.inject.graph.Graph;
+import org.grouplens.inject.graph.Node;
+import org.grouplens.inject.spi.Desire;
+import org.grouplens.inject.spi.InjectSPI;
+import org.grouplens.inject.spi.Satisfaction;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.pico.JustInTimePicoContainer;
-import org.grouplens.lenskit.pico.ParameterAnnotationInjector;
-import org.picocontainer.ComponentFactory;
-import org.picocontainer.MutablePicoContainer;
-import org.picocontainer.PicoContainer;
-import org.picocontainer.behaviors.Caching;
+
+import com.google.common.base.Function;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
@@ -50,17 +54,28 @@ import org.picocontainer.behaviors.Caching;
  * @see LenskitRecommender
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
-    private final PicoContainer recommenderContainer;
-    private final Map<Object, Object> sessionBindings;
+    private final Graph<Satisfaction, Desire> dependencies;
+    private final Node<Satisfaction> rootNode;
+    private final Node<Satisfaction> daoNode;
+    
+    private final InjectSPI spi;
+    private final Map<Node<Satisfaction>, Object> sharedInstances;
+    
     private final DAOFactory factory;
 
-    public LenskitRecommenderEngine(DAOFactory factory,
-                                    PicoContainer recommenderContainer, Map<Object, Object> sessionBindings) {
+    LenskitRecommenderEngine(DAOFactory factory,
+                             Graph<Satisfaction, Desire> dependencies,
+                             Map<Node<Satisfaction>, Object> sharedInstances,
+                             InjectSPI spi) {
         this.factory = factory;
-        this.recommenderContainer = recommenderContainer;
+        this.dependencies = dependencies;
+        this.spi = spi;
 
         // clone session binding into a HashMap so that we know its Serializable
-        this.sessionBindings = new HashMap<Object, Object>(sessionBindings);
+        this.sharedInstances = new HashMap<Node<Satisfaction>, Object>(sharedInstances);
+        
+        rootNode = dependencies.getNode(null);
+        daoNode = dependencies.getNode(new DAOSatisfaction());
     }
 
     /**
@@ -80,8 +95,11 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         this.factory = factory;
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
         try {
-            recommenderContainer = (PicoContainer) in.readObject();
-            sessionBindings = (Map<Object, Object>) in.readObject();
+            spi = (InjectSPI) in.readObject();
+            dependencies = (Graph<Satisfaction, Desire>) in.readObject();
+            sharedInstances = (Map<Node<Satisfaction>, Object>) in.readObject();
+            rootNode = dependencies.getNode(null);
+            daoNode = dependencies.getNode(new DAOSatisfaction());
         } finally {
             in.close();
         }
@@ -100,8 +118,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public void write(@Nonnull File file) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
         try {
-            out.writeObject(recommenderContainer);
-            out.writeObject(sessionBindings);
+            out.writeObject(spi);
+            out.writeObject(dependencies);
+            out.writeObject(sharedInstances);
         } finally {
             out.close();
         }
@@ -132,20 +151,67 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         if (dao == null)
             throw new IllegalArgumentException("Cannot open with null DAO");
-        return new LenskitRecommender(createSessionContainer(dao), dao, shouldClose);
+        return new LenskitRecommender(new RecommenderInjector(dao), dao, shouldClose);
     }
 
-    private PicoContainer createSessionContainer(DataAccessObject dao) {
-        ComponentFactory factory = new Caching().wrap(new ParameterAnnotationInjector.Factory());
-        MutablePicoContainer sessionContainer = new JustInTimePicoContainer(factory,
-                                                                            recommenderContainer);
-        // Configure session container
-        for (Entry<Object, Object> binding: sessionBindings.entrySet()) {
-            sessionContainer.addComponent(binding.getKey(), binding.getValue());
+    private class RecommenderInjector implements Injector {
+        private final Map<Node<Satisfaction>, Object> newInstances;
+        
+        public RecommenderInjector(DataAccessObject dao) {
+            newInstances = new HashMap<Node<Satisfaction>, Object>();
+            newInstances.put(daoNode, dao);
+        }
+        
+        @Override
+        public <T> T getInstance(Class<T> type) {
+            Desire d = spi.desire(null, type);
+            Edge<Satisfaction, Desire> e = dependencies.getOutgoingEdge(rootNode, d);
+            
+            if (e != null) {
+                // The type is one of the configured roots
+                return getInstance(e.getTail());
+            } else {
+                // The type is hopefully embedded in the graph
+                for (Node<Satisfaction> n: dependencies.getNodes()) {
+                    if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getErasedType())) {
+                        // found a node capable of creating instances of type
+                        return getInstance(n);
+                    }
+                }
+                return null;
+            }
+        }
+        
+        @SuppressWarnings("unchecked")
+        private <T> T getInstance(final Node<Satisfaction> n) {
+            Object session = newInstances.get(n);
+            if (session != null) {
+                return (T) session;
+            }
+            
+            Object shared = sharedInstances.get(n);
+            if (shared != null) {
+                return (T) shared;
+            }
+            
+            Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
+                @Override
+                public Provider<?> apply(Desire desire) {
+                    Node<Satisfaction> d = dependencies.getOutgoingEdge(n, desire).getTail();
+                    return getInstance(d);
+                }
+            });
+            return (T) provider.get();
         }
 
-        // Add in the dao
-        sessionContainer.addComponent(dao);
-        return sessionContainer;
+        @Override
+        public <T> T getInstance(Class<? extends Annotation> qualifier, Class<T> type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T getInstance(String name, Class<T> type) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

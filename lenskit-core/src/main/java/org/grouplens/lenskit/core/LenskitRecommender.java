@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.inject.Injector;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.ItemRecommender;
@@ -25,7 +26,6 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.picocontainer.PicoContainer;
 
 /**
  * Recommender implementation built on LensKit containers.  Recommenders built
@@ -41,46 +41,43 @@ import org.picocontainer.PicoContainer;
  *
  */
 public class LenskitRecommender implements Recommender {
-    private final PicoContainer container;
+    private final Injector injector;
     private final DataAccessObject dao;
     private final boolean shouldCloseDao;
 
-    // An alternate to this LenskitRecommender where it asks for the components as needed
-    // is to see if there is an actual Recommender that can be built from the container
-    // and then delegate to that.  The wrapper recommender would still handle the closing
-    // logic, this would give us a single configuration point if people chose to use it.
-    public LenskitRecommender(PicoContainer container, DataAccessObject dao, boolean shouldCloseDao) {
-        this.container = container;
+    public LenskitRecommender(Injector injector, DataAccessObject dao, boolean shouldCloseDao) {
+        this.injector = injector;
         this.dao = dao;
         this.shouldCloseDao = shouldCloseDao;
     }
 
     /**
-     * Get a particular component from the recommender session.  Generally
-     * you want to use one of the type-specific getters; this method only exists
-     * for specialized applications which need deep access to the recommender
+     * Get a particular component from the recommender session. Generally you
+     * want to use one of the type-specific getters; this method only exists for
+     * specialized applications which need deep access to the recommender
      * components.
+     * 
      * @param <T>
      * @param cls The component class to get.
      * @return The instance of the specified component.
      */
-    public <T> T getComponent(Class<T> cls) {
-        return container.getComponent(cls);
+    public <T> T get(Class<T> cls) {
+        return injector.getInstance(cls);
     }
 
     @Override
     public ItemScorer getItemScorer() {
-        return container.getComponent(ItemScorer.class);
+        return get(ItemScorer.class);
     }
     
     @Override
     public GlobalItemScorer getGlobalItemScorer() {
-        return container.getComponent(GlobalItemScorer.class);
+        return get(GlobalItemScorer.class);
     }
 
     @Override
     public RatingPredictor getRatingPredictor() {
-        return container.getComponent(RatingPredictor.class);
+        return get(RatingPredictor.class);
     }
 
     @Override @Deprecated
@@ -111,11 +108,11 @@ public class LenskitRecommender implements Recommender {
 
     @Override
     public ItemRecommender getItemRecommender() {
-        return container.getComponent(ItemRecommender.class);
+        return get(ItemRecommender.class);
     }
     
     @Override
     public GlobalItemRecommender getGlobalItemRecommender() {
-        return container.getComponent(GlobalItemRecommender.class);
+        return get(GlobalItemRecommender.class);
     }
 }
