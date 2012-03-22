@@ -54,11 +54,11 @@ public class TestSlopeOneItemRecommender {
         manager = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
-        factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, SlopeOneRecommender.class);
+        factory.bind(RatingSnapshot.class).to(PackedRatingSnapshot.class);
+        factory.bind(RatingPredictor.class).to(SlopeOneRatingPredictor.class);
+        factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
-        factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
+        factory.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
         engine = factory.create();
     }
 

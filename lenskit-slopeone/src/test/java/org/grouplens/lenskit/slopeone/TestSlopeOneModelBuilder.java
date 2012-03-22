@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -32,6 +33,13 @@ import org.junit.Test;
 public class TestSlopeOneModelBuilder {
 
     public static final double EPSILON = 1.0e-6;
+    
+    private SlopeOneModel getModel(DAOFactory factory) {
+        PackedRatingSnapshot snapshot = new PackedRatingSnapshot.Provider(factory.create()).get();
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null, 0, 0, 0);
+        SlopeOneModel model = builder.get();
+        return model;
+    }
 
     @Test
     public void testBuild1() {
@@ -41,13 +49,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(2, 5, 4));
         rs.add(Ratings.make(1, 3, 5));
         rs.add(Ratings.make(2, 3, 4));
+        
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-        PackedRatingSnapshot snapshot = snapBuilder.build();
-        SlopeOneModelBuilder builder1 = new SlopeOneModelBuilder();
-        builder1.setSnapshot(snapshot);
-        builder1.setDamping(0);
-        SlopeOneModel model1 = builder1.build();
+        SlopeOneModel model1 = getModel(manager);
+        
         assertEquals(2, model1.getCoratings(5, 3));
         assertEquals(2, model1.getCoratings(3, 5));
         assertEquals(-1.5, model1.getDeviation(5, 3),EPSILON);
@@ -67,13 +72,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(1, 6, 1));
         rs.add(Ratings.make(2, 6, 5));
         rs.add(Ratings.make(3, 6, 3));
+        
         EventCollectionDAO.Factory factory = new EventCollectionDAO.Factory(rs);
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(factory.create());
-        PackedRatingSnapshot snapshot = snapBuilder.build();
-        SlopeOneModelBuilder builder2 = new SlopeOneModelBuilder();
-        builder2.setSnapshot(snapshot);
-        builder2.setDamping(0);
-        SlopeOneModel model2 = builder2.build();
+        SlopeOneModel model2 = getModel(factory);
+        
         assertEquals(3, model2.getCoratings(4, 5));
         assertEquals(3, model2.getCoratings(5, 4));
         assertEquals(3, model2.getCoratings(4, 6));
@@ -106,13 +108,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
+        
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-        PackedRatingSnapshot snapshot = snapBuilder.build();
-        SlopeOneModelBuilder builder3 = new SlopeOneModelBuilder();
-        builder3.setSnapshot(snapshot);
-        builder3.setDamping(0);
-        SlopeOneModel model3 = builder3.build();
+        SlopeOneModel model3 = getModel(manager);
+        
         assertEquals(2, model3.getCoratings(6, 7));
         assertEquals(2, model3.getCoratings(7, 6));
         assertEquals(2, model3.getCoratings(6, 8));
@@ -149,13 +148,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
+        
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(manager.create());
-        PackedRatingSnapshot snap = snapBuilder.build();
-        SlopeOneModelBuilder builder4 = new SlopeOneModelBuilder();
-        builder4.setSnapshot(snap);
-        builder4.setDamping(0);
-        SlopeOneModel model4 = builder4.build();
+        SlopeOneModel model4 = getModel(manager);
+        
         assertEquals(0, model4.getCoratings(4, 5));
         assertEquals(0, model4.getCoratings(5, 4));
         assertEquals(1, model4.getCoratings(4, 6));

@@ -20,14 +20,17 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
-import org.grouplens.lenskit.slopeone.params.DeviationDamping;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -36,27 +39,43 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *  <tt>CoratingMatrix</tt>. These matrices are later used by a
  *  <tt>SlopeOneRatingPredictor</tt>.
  */
-public class SlopeOneModelBuilder implements Builder<SlopeOneModel> {
-    private SlopeOneModelDataAccumulator accumulator;
-    private BaselinePredictor baseline;
-    private double minRating;
-    private double maxRating;
-    private double damping;
+public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
+    private final SlopeOneModelDataAccumulator accumulator;
     
-    private RatingSnapshot normalizedData;
-    private RatingSnapshot snapshot;
+    private final BaselinePredictor baseline;
+    private final double minRating;
+    private final double maxRating;
+    
+    private final RatingSnapshot snapshot;
+    
+    @Inject
+    public SlopeOneModelProvider(@Transient RatingSnapshot snapshot,
+                                // FIXME: can this be nullable? Why have two snapshots?
+                                @Transient @NormalizedSnapshot RatingSnapshot normalized,
+                                BaselinePredictor predictor,
+                                @MinRating double min,
+                                @MaxRating double max,
+                                @Damping double damping) {
+        if (normalized != null) {
+            this.snapshot = normalized;
+        } else {
+            this.snapshot = snapshot;
+        }
+        
+        minRating = min;
+        maxRating = max;
+        baseline = predictor;
+        accumulator = new SlopeOneModelDataAccumulator(damping, this.snapshot);
+    }
 
     /**
      * Constructs a {@link SlopeOneModel} and the necessary matrices from
      * a {@link RatingSnapshot}.
      */
     @Override
-    public SlopeOneModel build() {
-        RatingSnapshot snap = snapshot;
-        if (normalizedData != null) snap = normalizedData;
-        accumulator = new SlopeOneModelDataAccumulator(damping, snap);
-        for (long currentUser : snap.getUserIds()) {
-            SparseVector ratings = snap.userRatingVector(currentUser);
+    public SlopeOneModel get() {
+        for (long currentUser : snapshot.getUserIds()) {
+            SparseVector ratings = snapshot.userRatingVector(currentUser);
             LongIterator iter = ratings.keySet().iterator();
             while (iter.hasNext()) {
                 long item1 = iter.next();
@@ -68,47 +87,9 @@ public class SlopeOneModelBuilder implements Builder<SlopeOneModel> {
                 }
             }
         }
-        LongSortedArraySet items = new LongSortedArraySet(snap.getItemIds());
-        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), baseline, items, minRating, maxRating);
-    }
-
-    /**
-     * Set the model's baseline predictor.
-     * 
-     * @param predictor The baseline predictor to be used with the resulting
-     *        model.
-     */
-    public void setBaselinePredictor(BaselinePredictor predictor) {
-        baseline = predictor;
-    }
-
-    /**
-     * @param min The lowest valid rating in a system.
-     */
-    public void setMinRating(@MinRating double min) {
-        minRating = min;
-    }
-
-    /**
-     * @param max The highest valid rating in a system.
-     */
-    public void setMaxRating(@MaxRating double max) {
-        maxRating = max;
-    }
-
-    /**
-     * @param damping A damping turn to use for deviation calculations.
-     */
-    public void setDamping(@DeviationDamping double damping) {
-        this.damping = damping;
-    }
-
-    /**
-     * @param data A {@link RatingSnapshot} containing normalized data.
-     */
-    @NormalizedSnapshot
-    public void setNormalizedData(RatingSnapshot data) {
-        normalizedData = data;
+        LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
+        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
+                                 baseline, items, minRating, maxRating);
     }
 
     /**

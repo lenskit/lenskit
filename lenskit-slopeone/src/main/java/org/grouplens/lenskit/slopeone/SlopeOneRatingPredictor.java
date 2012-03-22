@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -42,6 +44,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
 
     protected SlopeOneModel model;
 
+    @Inject
     public SlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
         super(dao);
         this.model = model;

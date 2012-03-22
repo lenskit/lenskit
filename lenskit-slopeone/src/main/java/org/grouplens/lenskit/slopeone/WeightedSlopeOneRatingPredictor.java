@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.Event;
@@ -37,7 +39,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
-
+    @Inject
     public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
         super(dao, model);
     }

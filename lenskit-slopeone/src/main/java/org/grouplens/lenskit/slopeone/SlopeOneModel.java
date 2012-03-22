@@ -23,9 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import org.grouplens.inject.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.params.meta.DefaultBuilder;
 
 /**
  * A model for a <tt>SlopeOneRatingPredictor</tt> or <tt>WeightedSlopeOneRatingPredictor</tt>.
@@ -33,8 +32,7 @@ import org.grouplens.lenskit.params.meta.DefaultBuilder;
  * Also contains a <tt>BaselinePredictor</tt> and the minimum and maximum rating values
  * for use by a scorer.
  */
-@Built
-@DefaultBuilder (SlopeOneModelBuilder.class)
+@DefaultProvider(SlopeOneModelProvider.class)
 public class SlopeOneModel {
 
     private final Long2ObjectOpenHashMap<Long2IntOpenHashMap> coMatrix;
