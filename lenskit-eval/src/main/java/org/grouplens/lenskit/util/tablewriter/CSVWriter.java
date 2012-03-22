@@ -20,7 +20,9 @@ package org.grouplens.lenskit.util.tablewriter;
 
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
+import org.picocontainer.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.zip.GZIPOutputStream;
 
@@ -36,13 +38,15 @@ public class CSVWriter implements TableWriter {
     /**
      * Construct a new CSV writer.
      * @param w The underlying writer to output to.
-     * @param l The table layout.
+     * @param l The table layout, or {@code null} if the table has no headers.
      * @throws IOException if there is an error writing the column headers.
      */
-    public CSVWriter(Writer w, TableLayout l) throws IOException {
+    public CSVWriter(@Nonnull Writer w, @Nullable TableLayout l) throws IOException {
         layout = l;
         writer = w;
-        writeRow(layout.getColumnHeaders().toArray(new String[l.getColumnCount()]));
+        if (layout != null) {
+            writeRow(layout.getColumnHeaders().toArray(new String[l.getColumnCount()]));
+        }
     }
 
     @Override
@@ -64,11 +68,11 @@ public class CSVWriter implements TableWriter {
 
     @Override
     public synchronized void writeRow(String[] row) throws IOException {
-        if (row.length > layout.getColumnCount()) {
+        if (layout != null && row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("row too long");
         }
 
-        final int n = layout.getColumnCount();
+        final int n = layout == null ? row.length : layout.getColumnCount();
         for (int i = 0; i < n; i++) {
             if (i > 0) {
                 writer.write(',');
@@ -120,7 +124,7 @@ public class CSVWriter implements TableWriter {
      * @throws IOException if there is an error opening the file or writing the column header.
      * @see #open(File,TableLayout,boolean)
      */
-    public static CSVWriter open(File file, TableLayout layout) throws IOException {
+    public static CSVWriter open(File file, @Nullable TableLayout layout) throws IOException {
         return open(file, layout, false);
     }
 }
