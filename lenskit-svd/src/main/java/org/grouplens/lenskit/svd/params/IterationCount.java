@@ -24,19 +24,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
 import org.grouplens.inject.annotation.DefaultInteger;
-import org.grouplens.inject.annotation.Parameter;
-import org.grouplens.lenskit.svd.FunkSVDModelBuilder;
+import org.grouplens.lenskit.svd.FunkSVDModelProvider;
 
 /**
  * The number of iterations to use per feature.  If 0, then each feature is
  * trained to convergence (defined by {@link TrainingThreshold}).
  *
- * @see FunkSVDModelBuilder
+ * @see FunkSVDModelProvider
  */
 @Documented
 @DefaultInteger(0)
-@Parameter(Integer.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IterationCount { }

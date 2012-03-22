@@ -20,6 +20,8 @@ package org.grouplens.lenskit.svd;
 
 import java.io.Serializable;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.util.DoubleFunction;
@@ -33,6 +35,7 @@ public final class RatingRangeClamp implements DoubleFunction, Serializable {
         this(1, 5);
     }
 
+    @Inject
     public RatingRangeClamp(@MinRating double min, @MaxRating double max) {
         minRating = min;
         maxRating = max;

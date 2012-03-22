@@ -55,11 +55,11 @@ public class TestFunkSVDRecommenderBuild {
         manager = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingSnapshot.class, PackedRatingSnapshot.class);
-        factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, FunkSVDRecommender.class);
-        factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
-        factory.set(IterationCount.class, 10);
+        factory.bind(RatingSnapshot.class).to(PackedRatingSnapshot.class);
+        factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
+        factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
+        factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
+        factory.bind(IterationCount.class, 10);
 
         engine = factory.create();
     }
