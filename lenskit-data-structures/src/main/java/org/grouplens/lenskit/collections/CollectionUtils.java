@@ -51,7 +51,7 @@ public class CollectionUtils {
      * to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
      * method, like is present in {@link FastEntrySet}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <E> Iterable<E> fast(final Iterable<E> iter) {
         if (iter instanceof FastCollection) {
             return new Iterable<E>() {
