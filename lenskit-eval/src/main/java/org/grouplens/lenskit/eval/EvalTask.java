@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
  * Time: 11:09 AM
  * To change this template use File | Settings | File Templates.
  */
-public interface EvalTask<T> extends Callable {
+public interface EvalTask  {
 
     /**
      * Get a descriptive name for this job.  The name is displayed in UI to let
@@ -23,9 +23,9 @@ public interface EvalTask<T> extends Callable {
     String getName();
 
 
-    Set<EvalTask> getDependency();
+    Set<EvalTask> getDependencies();
 
-    @Override
-    T call() throws Exception;
+
+    void call(EvalTaskOptions options) throws EvalExecuteException;
 
 }

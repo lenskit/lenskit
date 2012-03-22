@@ -54,11 +54,14 @@ public class EvalCLI {
     public EvalCLI(EvalOptions opts) {
         options = opts;
     }
-    
+
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
 
-        for (File f: options.getConfigFiles()) {
+        EvalTaskOptions taskOptions = new EvalTaskOptions(options);
+        EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
+
+        for (File f : options.getConfigFiles()) {
             logger.info("loading evaluation from {}", f);
             List<EvalTask> evals;
             try {
@@ -73,31 +76,17 @@ public class EvalCLI {
                 reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
                 return;
             }
+            for (EvalTask task : evals) {
+                runner.addTask(task);
+            }
         }
-        
-        PreparationContext context = new PreparationContext();
-        context.setUnconditional(options.forcePrepare());
-        context.setCacheDirectory(options.getCacheDir());
-        for (EvalRunner runner: runners) {
-            runner.setIsolationLevel(options.getIsolation());
-            runner.setThreadCount(options.getThreadCount());
-            try {
-                runner.prepare(context);
-            } catch (PreparationException e) {
-                reportError(e, "Preparation error: " + e.getMessage());
-                return;
-            }
-            
-            if (!options.isPrepareOnly()) {
-                try {
-                    runner.run();
-                } catch (ExecutionException e) {
-                    reportError(e, "Error running evaluation: %s", e.getMessage());
-                    return;
-                }
-            }
+        try {
+            runner.run();
+        } catch (EvalExecuteException e) {
+            reportError(e, "Execution error: " + e.getMessage());
         }
     }
+
     
     protected void reportError(Exception e, String msg, Object... args) {
         String text = String.format(msg, args);

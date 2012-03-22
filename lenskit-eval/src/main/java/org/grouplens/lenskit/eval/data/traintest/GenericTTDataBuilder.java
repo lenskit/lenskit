@@ -30,7 +30,7 @@ import org.kohsuke.MetaInfServices;
 /**
  * @author Michael Ekstrand
  */
-public class GenericTTDataBuilder extends AbstractEvalTaskBuilder implements Builder<TTDataSet> {
+public class GenericTTDataBuilder implements Builder<TTDataSet> {
     private String name;
     private PreferenceDomain domain;
     private DataSource trainingData;
@@ -44,19 +44,18 @@ public class GenericTTDataBuilder extends AbstractEvalTaskBuilder implements Bui
         this.name = name;
     }
 
-    public void setTrain(DataSource ds) {
+    public GenericTTDataBuilder setTrain(DataSource ds) {
         trainingData = ds;
+        return this;
     }
 
-    public void setTest(DataSource ds) {
+    public GenericTTDataBuilder setTest(DataSource ds) {
         testData = ds;
+        return this;
     }
 
     public GenericTTDataSet build() {
-        // all DataSource are also EvalTask
-        addDependency((EvalTask)trainingData);
-        addDependency((EvalTask)testData);
-        return new GenericTTDataSet(name, dependency, trainingData, testData, domain);
+        return new GenericTTDataSet(name, trainingData, testData, domain);
     }
 
     @MetaInfServices

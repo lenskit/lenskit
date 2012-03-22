@@ -40,16 +40,17 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class GenericTTDataSet extends AbstractEvalTask implements TTDataSet {
+public class GenericTTDataSet implements TTDataSet {
+    private final @Nonnull String name;
     private final @Nonnull DataSource trainData;
     private final @Nonnull DataSource testData;
     private final @Nullable PreferenceDomain preferenceDomain;
     
-    public GenericTTDataSet(@Nonnull String name, Set<EvalTask> dependency, @Nonnull DataSource train, @Nonnull DataSource test,
+    public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
                             @Nullable PreferenceDomain dom) {
-        super(name, dependency);
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
+        this.name = name;
         trainData = train;
         testData = test;
         preferenceDomain = dom;
@@ -62,14 +63,14 @@ public class GenericTTDataSet extends AbstractEvalTask implements TTDataSet {
      * @param test The test DAO factory.
      * @param domain The preference domain.
      */
-    public GenericTTDataSet(@Nonnull String name, Set<EvalTask> dependency, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
+    public GenericTTDataSet(@Nonnull String name, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
                             @Nullable PreferenceDomain domain) {
-        super(name, dependency);
         Preconditions.checkNotNull(name);
         Preconditions.checkNotNull(train);
         Preconditions.checkNotNull(test);
-        trainData = new GenericDataSource(name + ".train", null, train, domain);
-        testData = new GenericDataSource(name + ".test", null, test, domain);
+        this.name = name;
+        trainData = new GenericDataSource(name + ".train", train, domain);
+        testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
     }
 
@@ -87,23 +88,7 @@ public class GenericTTDataSet extends AbstractEvalTask implements TTDataSet {
     public long lastUpdated() {
         return Math.max(trainData.lastUpdated(),
                         testData.lastUpdated());
-    }                   
-    
-    public Void call() throws Exception{
-        if(!dependency.isEmpty()) {
-            for (EvalTask e : this.getDependency()) {
-                e.call();
-            }
-        }
-        return null;
     }
-
-//    @Override
-//    public void prepare(PreparationContext context) throws PreparationException {
-//        context.prepare(trainData);
-//        context.prepare(testData);
-//    }
-
 
     @Override
     public void release() {

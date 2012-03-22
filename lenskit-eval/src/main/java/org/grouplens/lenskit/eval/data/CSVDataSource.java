@@ -38,14 +38,15 @@ import java.util.Set;
 /**
  * @author Michael Ekstrand
  */
-public class CSVDataSource extends AbstractEvalTask implements DataSource {
+public class CSVDataSource implements DataSource {
+    final String name;
     final DAOFactory factory;
     final File sourceFile;
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, Set<EvalTask> dependency, File file, String delim, boolean cache, PreferenceDomain pdom) {
-        super(name, dependency);
+    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
+        this.name = name;
         sourceFile = file;
         domain = pdom;
         delimiter = delim;
@@ -94,18 +95,6 @@ public class CSVDataSource extends AbstractEvalTask implements DataSource {
     @Override
     public long lastUpdated() {
         return sourceFile.exists() ? sourceFile.lastModified() : -1L;
-    }
-//
-//    @Override
-//    public void prepare(PreparationContext context) {
-//        /* no-op */
-//    }
-
-
-    @Override
-    public Void call() {
-        /* no-op */
-        return null;
     }
 
     @Override

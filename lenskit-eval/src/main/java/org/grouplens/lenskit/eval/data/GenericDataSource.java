@@ -28,16 +28,17 @@ import java.util.Set;
 /**
  * @author Michael Ekstrand
  */
-public class GenericDataSource extends AbstractEvalTask implements DataSource {
+public class GenericDataSource implements DataSource {
+    private String name;
     private DAOFactory daoFactory;
     private PreferenceDomain domain;
 
     public GenericDataSource(String name, DAOFactory factory) {
-        this(name, null, factory, null);
+        this(name, factory, null);
     }
 
-    public GenericDataSource(String name, Set<EvalTask> dependency, DAOFactory factory, PreferenceDomain dom) {
-        super(name,dependency);
+    public GenericDataSource(String name, DAOFactory factory, PreferenceDomain dom) {
+        this.name = name;
         daoFactory = factory;
         domain = dom;
     }
@@ -62,14 +63,6 @@ public class GenericDataSource extends AbstractEvalTask implements DataSource {
         return 0;
     }
 
-    @Override
-    public Void call() {
-        /* no-op */
-        return null;
-    }
-//
-//    @Override
-//    public void prepare(PreparationContext context) throws PreparationException {
-//        /* no-op */
-//    }
+
+
 }

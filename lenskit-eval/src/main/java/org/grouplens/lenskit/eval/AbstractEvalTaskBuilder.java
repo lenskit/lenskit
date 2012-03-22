@@ -51,14 +51,8 @@ public abstract class AbstractEvalTaskBuilder {
         return this;
     }
 
-//    @Override
-//    public abstract AbstractEvalTask build();
-//
-//    public abstract static class Factory implements BuilderFactory<AbstractEvalTask>{
-//        public String getName() {
-//            return "abstract";
-//        }
-//    }
-
-
+    public AbstractEvalTaskBuilder addDepend(EvalTask task) {
+        dependency.add(task);
+        return this;
+    }
 }

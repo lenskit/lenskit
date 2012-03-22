@@ -71,7 +71,7 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
     private Map<String, Integer> algoColumns;
     private List<EvalMetric> predictMetrics;
 
-    private EvalTaskHelper taskHelper;
+    private EvalListenerManager listeners = new EvalListenerManager();
 
     public TTPredictEvaluation(String name, Set<EvalTask> dependency,
                                @Nonnull List<TTDataSet> sources,
@@ -79,14 +79,11 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
                                @Nonnull List<EvalMetric> metrics,
                                @Nonnull File output,
                                @Nullable File userOutput,
-                               @Nullable File predictOutput,
-                               EvalTaskHelper helper) {
+                               @Nullable File predictOutput) {
         super(name, dependency);
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
-        taskHelper = helper;
-
         setupJobs(sources, algos, metrics);
     }
 
@@ -152,6 +149,14 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
         predictMetrics = metrics;
     }
 
+    public void addListener(EvaluationListener listener) {
+        listeners.addListener(listener);
+    }
+
+    public void removeListener(EvaluationListener listener) {
+        listeners.removeListener(listener);
+    }
+
     public void start() {
         logger.info("Starting evaluation");
         try {
@@ -210,25 +215,37 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
      * prepared — call to do that.
      */
     @Override
-    public Void call() throws Exception {
-        if(!dependency.isEmpty()) {
-            for(EvalTask e : dependency) {
-                e.call();
-            }
+    public void call(EvalTaskOptions options) throws EvalExecuteException {
+        int nthreads = options.getThreadCount();
+        if (nthreads <= 0) {
+            nthreads = Runtime.getRuntime().availableProcessors();
         }
-        
+        logger.info("Starting evaluation");
         this.start();
+        logger.info("Running evaluator with {} threads", nthreads);
+        JobGroupExecutor exec;
+        switch (options.getIsolation()) {
+            case NONE:
+                exec = new MergedJobGroupExecutor(nthreads, listeners);
+                break;
+            case JOB_GROUP:
+                exec = new SequentialJobGroupExecutor(nthreads, listeners);
+                break;
+            default:
+                throw new RuntimeException("Invalid isolation level " + options.getIsolation());
+        }
 
         for (JobGroup group: this.getJobGroups()) {
-            taskHelper.getExecutor().add(group);
+            exec.add(group);
         }
         try {
-            taskHelper.getExecutor().run();
+            exec.run();
+        } catch (ExecutionException e) {
+            throw new EvalExecuteException("Error running the evaluation", e);
         } finally {
             logger.info("Finishing evaluation");
             this.finish();
         }
-        return null;
     }
     
     /**

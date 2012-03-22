@@ -21,13 +21,10 @@ package org.grouplens.lenskit.eval.traintest;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.EvalTaskHelper;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 
@@ -46,7 +43,6 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Bui
     private File userOutputFile;
     private File predictOutputFile;
 
-    private EvalTaskHelper taskHelper = new EvalTaskHelper();
 
 
     public TrainTestEvalBuilder() {
@@ -59,7 +55,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Bui
     @Override
     public TTPredictEvaluation build() {
         return new TTPredictEvaluation(name, dependency, dataSources, algorithms, metrics,
-                                       outputFile, userOutputFile, predictOutputFile, taskHelper);
+                                       outputFile, userOutputFile, predictOutputFile);
     }
 
     public void addDataset(TTDataSet source) {

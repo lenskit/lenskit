@@ -33,8 +33,8 @@ import java.io.File;
  * Build a CSV data source.
  * @author Michael Ekstrand
  */
-public class CSVDataSourceBuilder extends AbstractEvalTaskBuilder implements Builder<CSVDataSource> {
-    String delimiter = "\t";
+public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
+    String delimiter = ",";
     String sourceName;
     File inputFile;
     boolean cache = true;
@@ -108,7 +108,7 @@ public class CSVDataSourceBuilder extends AbstractEvalTaskBuilder implements Bui
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName, dependency,inputFile, delimiter, cache, domain);
+        return new CSVDataSource(sourceName,inputFile, delimiter, cache, domain);
     }
 
     /**

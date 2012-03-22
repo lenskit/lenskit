@@ -19,18 +19,26 @@
 package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +56,8 @@ import java.util.*;
  */
 public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldSplit.class);
-    
+
+
     private static final String SPLIT_FILE = "split.dat";
     
     private static final Random random = new Random();
@@ -56,18 +65,25 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
 	private final DataSource source;
 	private final int partitionCount;
     private final Holdout holdout;
-    private File cacheDirectory;
-    private transient List<TTDataSet> dataSets;
+    private List<TTDataSet> dataSets;
     private final Function<DAOFactory,DAOFactory> wrapper;
 
+    private TableLayout outPutLayout;
+
 	public CrossfoldSplit(String name, Set<EvalTask> dependency, DataSource src, int folds, Holdout hold,
-                          File directory,Function<DAOFactory, DAOFactory> wrap) {
+                          String filename, Function<DAOFactory, DAOFactory> wrap) {
 	    super(name, dependency);
         source = src;
 	    partitionCount = folds;
         holdout = hold;
-        cacheDirectory = directory;
         wrapper = wrap;
+        dataSets = new ArrayList<TTDataSet>(partitionCount);
+        TableLayoutBuilder builder = new TableLayoutBuilder();
+        builder.addColumn("User ID");
+        builder.addColumn("Item ID");
+        builder.addColumn("Rating");
+        builder.addColumn("Timestamp");
+        outPutLayout = builder.build();
     }
 
     /**
@@ -102,13 +118,6 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         return holdout;
     }
 
-    /**
-     * Get the directory used for caching data.
-     * @return The directory storing cached data.
-     */
-    public File getCacheDirectory() {
-        return cacheDirectory;
-    }
 
     /**
      * Get the function used to wrap DAOs.
@@ -132,21 +141,15 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Java is broken", e);
         }
-	    return new File(cacheDirectory, name);
+	    return new File(name);
 	}
 
     @Override
-    public Void call() throws Exception {
-        assert(source != null);
-        //Resolove dependencies if any
-        if(!dependency.isEmpty()) {
-            for(EvalTask e : dependency) {
-                e.call();
-            }
-        }
-        if(lastUpdated() >= source.lastUpdated()) {
+    public void call(EvalTaskOptions options) throws EvalExecuteException {
+
+        if(!options.isForce() && lastUpdated() >= source.lastUpdated()) {
             logger.debug("Crossfold {} up to date", this);
-            return null; 
+            return;
         }    
         
         DAOFactory factory = source.getDAOFactory();
@@ -155,38 +158,82 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
             Long2IntMap splits = splitUsers(dao);
             writeSplits(splits);
         } catch (IOException e) {
-            throw new Exception("Error writing partitions to disk", e);
+            throw new EvalExecuteException("Error writing partitions to disk", e);
         } finally {
             dao.close();
         }
-        return null;
+        Holdout mode = this.getHoldout();
+        DataAccessObject daoSnap = factory.snapshot();
+        for (int i = 1; i <= partitionCount; i++) {
+            logger.debug("Preparing data source {}", getName());
+            logger.debug("Writing {} train test files...", i);
+            File train = new File(getName() + "train-" + i);
+            File test = new File(getName() + "test-" + i);
+            LongOpenHashSet testEvents = new LongOpenHashSet();
+            try {
+                LongList testUsers = this.getFoldUsers(i);
+                LongIterator iter = testUsers.iterator();
+                while (iter.hasNext()) {
+                    UserHistory<Rating> history = dao.getUserHistory(iter.nextLong(), Rating.class);
+                    List<Rating> ratings = new ArrayList<Rating>(history);
+                    final int p = mode.partition(ratings);
+                    final int n = ratings.size();
+                    for (int j = p; j < n; j++) {
+                        testEvents.add(ratings.get(j).getId());
+                    }
+                }
+            } catch (Exception e) {
+                throw new EvalExecuteException("Error partition the user data", e);
+            }
+            finally {
+                dao.close();
+            }
+
+            EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate(testEvents)));
+            EventSupplier testP = new EventSupplier(factory, testRatingPredicate(testEvents));
+            writeFile(train, trainP);
+            writeFile(test, testP);
+            CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
+            CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
+            GenericTTDataBuilder TTbuilder = new GenericTTDataBuilder();
+
+            dataSets.add(TTbuilder
+                        .setTest(testBuilder.setFile(test).build())
+                        .setTrain(trainBuilder.setFile(train).build())
+                        .build());
+        }
+
     }
 
 	public long lastUpdated() {
 	    File split = new File(cacheDir(), SPLIT_FILE);
 	    return split.exists() ? split.lastModified() : -1L;
 	}
-
-//	@Override
-//	public void prepare(PreparationContext context) throws PreparationException {
-//	    context.prepare(source);
-//	    
-//	    if (!context.isUnconditional() && lastUpdated(context) >= source.lastUpdated(context)) {
-//	        logger.debug("Crossfold {} up to date", this);
-//	        return;
-//	    }
-//	    
-//	    DAOFactory factory = source.getDAOFactory();
-//	    DataAccessObject dao = factory.create();
-//	    try {
-//	        Long2IntMap splits = splitUsers(dao);
-//	        writeSplits(context, splits);
-//	    } catch (IOException e) {
-//	        throw new PreparationException("Error writing partitions to disk", e);
-//        } finally {
-//	        dao.close();
-//	    }
-//	}
+    
+    protected void writeFile(File file, EventSupplier supplier) throws RuntimeException{
+        try{
+            TableWriter outPut = CSVWriter.open(file, outPutLayout);
+            for(Rating r :supplier.get()) {
+                String[] row = new String[4];
+                row[0] = Long.toString(r.getUserId());
+                row[1] = Long.toString(r.getItemId());
+                row[2] = r.getPreference()!=null ? Double.toString(r.getPreference().getValue()) : "NaN";
+                row[3] = Long.toString(r.getTimestamp());
+                try{
+                    outPut.writeRow(row);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error writing to the file", e);
+                }
+            }
+            try{
+                outPut.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Error closing the file", e);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error opening output table", e);
+        }
+    }
 	
 	protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
@@ -285,18 +332,44 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
 	}
 
     @Override
-    public synchronized List<TTDataSet> get() {
-        if (dataSets == null) {
-            dataSets = new ArrayList<TTDataSet>(partitionCount);
-            for (int i = 1; i <= partitionCount; i++) {
-                dataSets.add(new MemoryCrossfoldTTDataSet(this, i));
-            }
-        }
+    public List<TTDataSet> get() {
         return dataSets;
+    }
+
+    protected Predicate<Rating> testRatingPredicate(final Set set) {
+        return new Predicate<Rating>() {
+            @Override public boolean apply(Rating r) {
+                return set.contains(r.getId());
+            }
+        };
     }
 	
 	@Override
 	public String toString() {
 	    return String.format("{CXManager %s}", source);
 	}
+
+    static class EventSupplier implements Supplier<List<Rating>> {
+        final Predicate<? super Rating> predicate;
+        final DAOFactory baseFactory;
+
+        public EventSupplier(DAOFactory base, Predicate<? super Rating> pred) {
+            baseFactory = base;
+            predicate = pred;
+        }
+
+        @Override
+        public List<Rating> get() {
+            DataAccessObject bdao = baseFactory.create();
+            List<Rating> ratings;
+            try {
+                Cursor<Rating> cursor =
+                        Cursors.filter(bdao.getEvents(Rating.class), predicate);
+                ratings = Cursors.makeList(cursor);
+            } finally {
+                bdao.close();
+            }
+            return ratings;
+        }
+    }
 }
