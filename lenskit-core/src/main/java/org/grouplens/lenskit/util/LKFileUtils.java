@@ -16,20 +16,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics;
+package org.grouplens.lenskit.util;
+
+import java.io.File;
 
 /**
- * 
- * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
- * @since 0.10
+ * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
+ * classes that may be imported from other packages such as Guava, Plexus, or Commons.
  *
+ * @author Michael Ekstrand
+ * @since 0.10
  */
-public interface EvalAccumulator {
+public final class LKFileUtils {
+    private LKFileUtils() {}
 
     /**
-     * Finalize the evaluation and return the final values.
-     * 
-     * @return The column values for the final evaluation.
+     * Query whether this filename represents a compressed file. It just looks at
+     * the name to see if it ends in “.gz”.
+     * @param file The file to query.
+     * @return {@code true} if the file name ends in “.gz”.
      */
-    String[] finalResults();
+    public static boolean isCompressed(File file) {
+        return file.getName().endsWith(".gz");
+    }
 }

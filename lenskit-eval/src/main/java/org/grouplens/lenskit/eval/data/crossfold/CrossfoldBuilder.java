@@ -47,6 +47,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
     private Set<EvalTask> dependency;
     private File cacheDirectory;
     private Function<DAOFactory,DAOFactory> wrapper;
+    private String fileName;
 
     public CrossfoldBuilder() {
         super();
@@ -76,7 +77,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @see #setHoldout(double)
      * @see #setHoldout(int)
      */
-    public CrossfoldBuilder setOrder(Order o) {
+    public CrossfoldBuilder setOrder(Order<Rating> o) {
         order = o;
         return this;
     }
@@ -139,7 +140,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
 
     public CrossfoldSplit build() {
         CrossfoldSplit split = new CrossfoldSplit(name, dependency, source, folds, new Holdout(order, partition),
-                cacheDirectory, wrapper);
+                fileName, wrapper);
         return split;
     }
 

@@ -111,11 +111,17 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get the user history for a user.
+     * @param user The user whose history is needed.
+     * @return The history of {@code user}.
      */
     UserHistory<Event> getUserHistory(long user);
 
     /**
      * Get the user history for a user filtered by type.
+     * @param user The user whose history is needed.
+     * @param type The type of events to retrieve.
+     * @return The history of {@code user}, filtered to only contain events of the specified
+     * type.
      */
     <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type);
 
@@ -135,9 +141,8 @@ public interface DataAccessObject extends Closeable {
      *
      * @param type The type of event to retrieve.
      * @return A cursor iterating the event history for each user.
-     * @review Should this return Cursor<UserHistory<? extends E>>?
      */
-    <E extends Event> Cursor<UserHistory<E>> getUserHistories(Class<E> events);
+    <E extends Event> Cursor<UserHistory<E>> getUserHistories(Class<E> type);
 
     /**
      * Get all events for the specified user.
@@ -163,6 +168,7 @@ public interface DataAccessObject extends Closeable {
      * @param itemId The ID of the item whose events are requested. The events
      *        are first sorted by user, then by timestamp.
      * @see #getItemEvents(long, Class)
+     * @return The events involving the specified item.
      */
     Cursor<? extends Event> getItemEvents(long itemId);
 

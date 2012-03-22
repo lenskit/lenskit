@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -28,6 +28,8 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -36,6 +38,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand
  */
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
+    private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
     private int neighborhoodSize;
 
     @NeighborhoodSize
@@ -74,11 +77,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
             // find all potential neighbors
             // FIXME: Take advantage of the fact that the neighborhood is sorted
             ScoredLongList neighbors = model.getNeighbors(item);
-
-            if (neighbors == null) {
-                /* we cannot predict this item */
-                continue;
-            }
+            final int nnbrs = neighbors.size();
 
             // filter and truncate the neighborhood
             ScoredLongListIterator niter = neighbors.iterator();
@@ -90,6 +89,10 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 }
             }
             neighbors = accum.finish();
+            if (logger.isTraceEnabled()) { // conditional to avoid alloc
+                logger.trace("using {} of {} neighbors for {}",
+                             new Object[]{neighbors.size(), nnbrs, item});
+            }
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);

@@ -62,11 +62,11 @@ class TestCSVFileConfig extends ConfigTestBase {
     void testFileNoName() {
         def source = eval {
             csvfile {
-                file "ml-100k/u.data"
+                file "ml-100k.dat"
             }
         }
-        assertThat(source.name, equalTo("ml-100k/u.data"))
-        assertThat(source.file, equalTo(new File("ml-100k/u.data")))
+        assertThat(source.name, equalTo("ml-100k.dat"))
+        assertThat(source.file, equalTo(new File("ml-100k.dat")))
     }
 
     @Test

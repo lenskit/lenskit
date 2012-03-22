@@ -287,7 +287,7 @@ public class CollectionUtils {
             return Iterators.emptyIterator();
         }
 
-        @Override
+        @Override @Deprecated
         public Iterable<E> fast() {
             return this;
         }
