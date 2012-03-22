@@ -24,9 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
 import org.grouplens.lenskit.knn.SignificanceWeight;
-import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * The inner similarity function to be used when using {@link SignificanceWeight}
@@ -37,8 +37,10 @@ import org.grouplens.lenskit.params.meta.Parameter;
  *  @see SignificanceWeight
  *  @see WeightThreshold
  */
+// FIXME: keep this? if we do, it will not inherit from the default qualifier
+// But we can also just say in(SignificanceWeight).bind(Similarity).to(asd)
 @Documented
-@Parameter(Similarity.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WeightedSimilarity { }

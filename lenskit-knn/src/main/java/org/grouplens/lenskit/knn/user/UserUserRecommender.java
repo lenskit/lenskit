@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.knn.user;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
@@ -30,6 +32,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 public class UserUserRecommender extends ScoreBasedItemRecommender {
     protected final UserUserRatingPredictor predictor;
 
+    @Inject
     public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
         super(dao, pred);
         predictor = pred;

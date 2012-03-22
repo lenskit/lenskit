@@ -19,10 +19,11 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.params.meta.DefaultClass;
 
 import javax.annotation.Nonnull;
+
+import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.lenskit.collections.ScoredLongList;
 
 /**
  * Item-item similarity model. It makes available the similarities
@@ -35,7 +36,7 @@ import javax.annotation.Nonnull;
  * @author Michael Ekstrand
  * @since 0.10 as an interface.
  */
-@DefaultClass(SimilarityMatrixModel.class)
+@DefaultImplementation(SimilarityMatrixModel.class)
 public interface ItemItemModel {
     /**
      * Get the set of all items in the model.

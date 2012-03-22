@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -93,6 +95,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @param nnbrs The number of neighbors to consider for each item.
      * @param sim The similarity function to use.
      */
+    @Inject
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs,
                                     @UserSimilarity Similarity<? super SparseVector> sim,

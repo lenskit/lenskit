@@ -22,6 +22,8 @@ import static java.lang.Math.max;
 
 import java.io.Serializable;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.knn.params.WeightThreshold;
 import org.grouplens.lenskit.knn.params.WeightedSimilarity;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
@@ -55,6 +57,7 @@ public class SignificanceWeight implements
     private final int threshold;
     private final Similarity<? super SparseVector> similarity;
 
+    @Inject
     public SignificanceWeight(@WeightThreshold int thresh,
                               @WeightedSimilarity Similarity<? super SparseVector> sim) {
         if (!(sim instanceof SymmetricBinaryFunction))

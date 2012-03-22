@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Collection;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -60,6 +61,8 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
     protected final VectorNormalizer<? super UserVector> normalizer;
     protected final BaselinePredictor baseline;
 
+    // FIXME: @Nullable BaselinePredictor is not supported
+    @Inject
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
                                    @PredictNormalizer VectorNormalizer<? super UserVector> norm,
                                    @Nullable BaselinePredictor baseline) {

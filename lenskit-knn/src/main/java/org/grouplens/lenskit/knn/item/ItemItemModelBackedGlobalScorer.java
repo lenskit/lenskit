@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import org.grouplens.inject.annotation.DefaultImplementation;
 import org.grouplens.lenskit.GlobalItemScorer;
 
 /**
@@ -32,7 +33,8 @@ import org.grouplens.lenskit.GlobalItemScorer;
  * @see{@link ItemItemModelBackedScorer}
  *
  */
-public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer{
+@DefaultImplementation(ItemItemGlobalScorer.class)
+public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer {
 	/**
 	 *  Get the item-item model backing this scorer.
      *
@@ -46,6 +48,4 @@ public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer{
      * @return The set of items for which scores can be generated.
      */
     LongSet getScoreableItems(Collection<Long> queryItems);
-	
-
 }

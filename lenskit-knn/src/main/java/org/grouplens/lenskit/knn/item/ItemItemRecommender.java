@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import javax.inject.Inject;
+
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
@@ -38,6 +40,7 @@ public class ItemItemRecommender extends ScoreBasedItemRecommender {
      * Construct a new item-item recommender from a scorer.
      * @param scorer The scorer to use.
      */
+    @Inject
     public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
         super(dao, scorer);
         this.scorer = scorer;

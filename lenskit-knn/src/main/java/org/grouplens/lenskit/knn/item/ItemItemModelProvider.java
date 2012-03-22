@@ -28,10 +28,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -57,48 +59,33 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@SuppressWarnings("UnusedDeclaration")
 @NotThreadSafe
-public class ItemItemModelBuilder implements Builder<ItemItemModel> {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
+public class ItemItemModelProvider implements Provider<ItemItemModel> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
 
-    private Similarity<? super ItemVector> itemSimilarity;
+    private final Similarity<? super ItemVector> itemSimilarity;
 
-    private VectorNormalizer<? super UserVector> normalizer;
-    private HistorySummarizer userSummarizer;
-    private int modelSize;
+    private final VectorNormalizer<? super UserVector> normalizer;
+    private final HistorySummarizer userSummarizer;
+    private final int modelSize;
 
-    private DataAccessObject dao;
+    private final DataAccessObject dao;
 
-    public ItemItemModelBuilder(DataAccessObject dao) {
+    @Inject
+    public ItemItemModelProvider(@Transient DataAccessObject dao,
+                                 @ItemSimilarity Similarity<? super ItemVector> similarity,
+                                 @UserVectorNormalizer VectorNormalizer<? super UserVector> normalizer,
+                                 @UserHistorySummary HistorySummarizer sum,
+                                 @ModelSize int size) {
         this.dao = dao;
-    }
-
-    @ItemSimilarity
-    public void setSimilarity(Similarity<? super ItemVector> similarity) {
-        itemSimilarity = similarity;
-    }
-
-    @UserVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
         this.normalizer = normalizer;
-    }
-
-    @UserHistorySummary
-    public void setSummarizer(HistorySummarizer sum) {
+        itemSimilarity = similarity;
         userSummarizer = sum;
-    }
-
-    public int getModelSize() {
-        return modelSize;
-    }
-    @ModelSize
-    public void setModelSize(int size) {
         modelSize = size;
     }
 
     @Override
-    public SimilarityMatrixModel build() {
+    public SimilarityMatrixModel get() {
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
 
         LongArrayList ilist = Cursors.makeList(dao.getItems());
@@ -131,7 +118,7 @@ public class ItemItemModelBuilder implements Builder<ItemItemModel> {
                 new SimilarityMatrixAccumulator(modelSize, items);
         similarityStrategy.buildMatrix(context, accum);
 
-        return (SimilarityMatrixModel) accum.build();
+        return accum.build();
     }
 
     /**

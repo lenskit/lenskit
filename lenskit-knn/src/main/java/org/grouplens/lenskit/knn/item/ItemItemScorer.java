@@ -22,6 +22,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import java.util.Collection;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -36,9 +42,6 @@ import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.annotation.Nonnull;
-import java.util.Collection;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -56,6 +59,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
     protected @Nonnull NeighborhoodScorer scorer;
     protected @Nonnull ItemScoreAlgorithm algorithm;
 
+    @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
                           @UserHistorySummary HistorySummarizer sum,
                           NeighborhoodScorer scorer,

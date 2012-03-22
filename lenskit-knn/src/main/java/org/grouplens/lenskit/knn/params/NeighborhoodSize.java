@@ -24,8 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
 import org.grouplens.inject.annotation.DefaultInteger;
-import org.grouplens.inject.annotation.Parameter;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both
@@ -33,7 +34,7 @@ import org.grouplens.inject.annotation.Parameter;
  */
 @Documented
 @DefaultInteger(30)
-@Parameter(Integer.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NeighborhoodSize { }

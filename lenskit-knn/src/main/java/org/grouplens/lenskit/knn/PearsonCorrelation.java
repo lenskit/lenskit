@@ -24,7 +24,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import java.io.Serializable;
 import java.util.Iterator;
 
-import org.grouplens.lenskit.knn.params.SimilarityDamping;
+import javax.inject.Inject;
+
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -52,7 +54,8 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
         this(0);
     }
 
-    public PearsonCorrelation(@SimilarityDamping double s) {
+    @Inject
+    public PearsonCorrelation(@Damping double s) {
         shrinkage = s;
     }
 

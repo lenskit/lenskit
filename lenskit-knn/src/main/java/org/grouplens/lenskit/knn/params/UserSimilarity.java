@@ -24,10 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+
+import javax.inject.Qualifier;
+
+import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.inject.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.knn.PearsonCorrelation;
-import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Similarity function for users in user-user CF.
@@ -35,8 +37,9 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * @todo Document the interpretation of user similarity in asymmetric cases
  */
 @Documented
-@DefaultClass(PearsonCorrelation.class)
-@Parameter(Similarity.class)
+@DefaultImplementation(PearsonCorrelation.class)
+@InheritsDefaultQualifier
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserSimilarity { }

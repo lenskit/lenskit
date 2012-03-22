@@ -24,8 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
 import org.grouplens.inject.annotation.DefaultInteger;
-import org.grouplens.inject.annotation.Parameter;
 import org.grouplens.lenskit.knn.SignificanceWeight;
 import org.grouplens.lenskit.params.meta.DefaultInt;
 import org.grouplens.lenskit.params.meta.Parameter;
@@ -39,7 +40,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  */
 @Documented
 @DefaultInteger(0)
-@Parameter(Integer.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WeightThreshold { }

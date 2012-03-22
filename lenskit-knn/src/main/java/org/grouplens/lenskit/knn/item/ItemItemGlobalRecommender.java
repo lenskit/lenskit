@@ -36,6 +36,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import javax.inject.Inject;
+
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.lenskit.core.ScoreBasedGlobalItemRecommender;
@@ -50,6 +52,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
 	protected final ItemItemModelBackedGlobalScorer scorer;
 
+	@Inject
 	public ItemItemGlobalRecommender(DataAccessObject dao,
                                      ItemItemModelBackedGlobalScorer scorer) {
 		super(dao, scorer);
@@ -60,5 +63,4 @@ public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
     public LongSet getPredictableItems(LongSet items) {
         return scorer.getScoreableItems(items);
     }
-
 }

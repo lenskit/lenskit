@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn.item;
 /**
  * A strategy for computing similarity matrices.
  *
- * {@link ItemItemModelBuilder} uses the Strategy pattern to optimize its
+ * {@link ItemItemModelProvider} uses the Strategy pattern to optimize its
  * build algorithm based on what kind of similarity function is in use.  This is
  * the interface which makes that possible.
  *
