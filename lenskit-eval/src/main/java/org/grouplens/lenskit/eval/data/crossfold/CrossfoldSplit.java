@@ -26,6 +26,7 @@ import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -56,9 +57,6 @@ import java.util.*;
  */
 public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldSplit.class);
-
-
-    private static final String SPLIT_FILE = "split.dat";
     
     private static final Random random = new Random();
 
@@ -67,23 +65,20 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
     private final Holdout holdout;
     private List<TTDataSet> dataSets;
     private final Function<DAOFactory,DAOFactory> wrapper;
+    private String fileName = "fold-%d";
 
-    private TableLayout outPutLayout;
 
-	public CrossfoldSplit(String name, Set<EvalTask> dependency, DataSource src, int folds, Holdout hold,
-                          String filename, Function<DAOFactory, DAOFactory> wrap) {
-	    super(name, dependency);
+	public CrossfoldSplit(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
+                          String fname, Function<DAOFactory, DAOFactory> wrap) {
+	    super(name, dependencies);
         source = src;
 	    partitionCount = folds;
         holdout = hold;
+        fileName = fname;
         wrapper = wrap;
         dataSets = new ArrayList<TTDataSet>(partitionCount);
-        TableLayoutBuilder builder = new TableLayoutBuilder();
-        builder.addColumn("User ID");
-        builder.addColumn("Item ID");
-        builder.addColumn("Rating");
-        builder.addColumn("Timestamp");
-        outPutLayout = builder.build();
+
+        
     }
 
     /**
@@ -96,6 +91,10 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         } else {
             return name;
         }
+    }
+    
+    public String getFileName() {
+        return fileName;
     }
 
 	/**
@@ -128,110 +127,100 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         return wrapper;
     }
 
-    /**
-     * Get the cache directory for this crossfolder.
-     *
-     * @return The directory in which to cache data. If the manager is prepared,
-     *         this directory will exist.
-     */
-    public File cacheDir() {
-	    String name = "crossfold-" + getName();
-	    try {
-            name = URLEncoder.encode(name, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Java is broken", e);
-        }
-	    return new File(name);
-	}
-
     @Override
     public void call(EvalTaskOptions options) throws EvalExecuteException {
 
-        if(!options.isForce() && lastUpdated() >= source.lastUpdated()) {
+        if(!options.isForce() && lastModified() >= source.lastUpdated()) {
             logger.debug("Crossfold {} up to date", this);
             return;
         }    
         
         DAOFactory factory = source.getDAOFactory();
         DataAccessObject dao = factory.create();
-        try{
-            Long2IntMap splits = splitUsers(dao);
-            writeSplits(splits);
-        } catch (IOException e) {
-            throw new EvalExecuteException("Error writing partitions to disk", e);
-        } finally {
-            dao.close();
-        }
+        Long2IntMap splits = splitUsers(dao);
+        dao.close();
         Holdout mode = this.getHoldout();
         DataAccessObject daoSnap = factory.snapshot();
-        for (int i = 1; i <= partitionCount; i++) {
-            logger.debug("Preparing data source {}", getName());
-            logger.debug("Writing {} train test files...", i);
-            File train = new File(getName() + "train-" + i);
-            File test = new File(getName() + "test-" + i);
-            LongOpenHashSet testEvents = new LongOpenHashSet();
-            try {
-                LongList testUsers = this.getFoldUsers(i);
-                LongIterator iter = testUsers.iterator();
-                while (iter.hasNext()) {
-                    UserHistory<Rating> history = dao.getUserHistory(iter.nextLong(), Rating.class);
-                    List<Rating> ratings = new ArrayList<Rating>(history);
-                    final int p = mode.partition(ratings);
-                    final int n = ratings.size();
-                    for (int j = p; j < n; j++) {
-                        testEvents.add(ratings.get(j).getId());
+        logger.debug("Preparing data source {}", getName());
+        logger.debug("Writing train test files...");
+        File[] trainFiles = new File[partitionCount];
+        File[] testFiles = new File[partitionCount];
+        TableWriter[] trainWriters = new TableWriter[partitionCount];
+        TableWriter[] testWriters = new TableWriter[partitionCount];
+        for (int i = 0; i < partitionCount; i++) {
+            File train = new File(String.format(getFileName(), i) + "-train");
+            File test = new File(String.format(getFileName(), i) + "-test");
+            trainFiles[i] = train;
+            testFiles[i] = test;
+            try{
+                trainWriters[i] = CSVWriter.open(train, null);
+                testWriters[i] = CSVWriter.open(test, null);
+            } catch (IOException e) {
+                throw new EvalExecuteException("Error creating train test file writer", e);
+            }
+        }
+        try {
+            for(UserHistory<Event> userHist : daoSnap.getUserHistories()) {
+                int foldNum = splits.get(userHist.getUserId());
+                List<Rating> ratings = new ArrayList<Rating>(userHist.filter(Rating.class));
+                final int p = mode.partition(ratings);
+                final int n = ratings.size();
+
+                for (int f = 1; f <= partitionCount; f++) {
+                    if(f == foldNum) {
+                        for (int j = p; j < n; j++) {
+                            writeFile(testWriters[foldNum - 1], ratings.get(j));
+                        }
+                        for (int j = 0; j < p; j++) {
+                            writeFile(trainWriters[foldNum - 1], ratings.get(j));
+                        }
+                    }
+                    else {
+                        for (Rating rating : ratings) {
+                            writeFile(trainWriters[f - 1], rating);
+                        }
                     }
                 }
-            } catch (Exception e) {
-                throw new EvalExecuteException("Error partition the user data", e);
-            }
-            finally {
-                dao.close();
-            }
 
-            EventSupplier trainP = new EventSupplier(factory, Predicates.not(testRatingPredicate(testEvents)));
-            EventSupplier testP = new EventSupplier(factory, testRatingPredicate(testEvents));
-            writeFile(train, trainP);
-            writeFile(test, testP);
+            }
+            for(int i = 0; i < partitionCount; i++) {
+                trainWriters[i].close();
+                testWriters[i].close();
+            }
+        } catch (IOException e) {
+            throw new EvalExecuteException("Error writing to the train test files", e);
+        } finally {
+            daoSnap.close();
+        }
+        for(int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
             CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
             GenericTTDataBuilder TTbuilder = new GenericTTDataBuilder();
 
             dataSets.add(TTbuilder
-                        .setTest(testBuilder.setFile(test).build())
-                        .setTrain(trainBuilder.setFile(train).build())
-                        .build());
+                    .setTest(testBuilder.setFile(testFiles[i]).build())
+                    .setTrain(trainBuilder.setFile(trainFiles[i]).build())
+                    .build());
         }
-
     }
 
-	public long lastUpdated() {
-	    File split = new File(cacheDir(), SPLIT_FILE);
+    
+
+	public long lastModified() {
+	    File split = new File(String.format(getFileName(), 1) + "-train");
 	    return split.exists() ? split.lastModified() : -1L;
 	}
     
-    protected void writeFile(File file, EventSupplier supplier) throws RuntimeException{
+    protected void writeFile(TableWriter writer, Rating rating) throws IOException{
+        String[] row = new String[4];
+        row[0] = Long.toString(rating.getUserId());
+        row[1] = Long.toString(rating.getItemId());
+        row[2] = rating.getPreference()!=null ? Double.toString(rating.getPreference().getValue()) : "NaN";
+        row[3] = Long.toString(rating.getTimestamp());
         try{
-            TableWriter outPut = CSVWriter.open(file, outPutLayout);
-            for(Rating r :supplier.get()) {
-                String[] row = new String[4];
-                row[0] = Long.toString(r.getUserId());
-                row[1] = Long.toString(r.getItemId());
-                row[2] = r.getPreference()!=null ? Double.toString(r.getPreference().getValue()) : "NaN";
-                row[3] = Long.toString(r.getTimestamp());
-                try{
-                    outPut.writeRow(row);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error writing to the file", e);
-                }
-            }
-            try{
-                outPut.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Error closing the file", e);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error opening output table", e);
+            writer.writeRow(row);
+        } finally {
+            writer.close();
         }
     }
 	
@@ -255,81 +244,22 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         logger.info("Partitioned {} users", userMap.size());
         return userMap;
     }
-	
-	/**
-	 * Write the user partitions out into a data file.
-	 * 
-	 * <p>This method uses a strategy based on the POSIX rename() pattern, but
-	 * it does not have the safety guarantees of POSIX rename().  The file is
-	 * deleted first if it exists, a temp file is then created and written to,
-	 * and finally the temp file is renamed to the real file.  This should be
-	 * safe so long as there aren't two processes trying to prepare with the
-	 * same cache directory. 
-	 *
-	 * @param splits The user partition data.
-	 * @throws IOException if there is an error writing the partitions to disk.
-	 */
-	protected void writeSplits( Long2IntMap splits) throws IOException {
-	    File splitFile = new File(cacheDir(), SPLIT_FILE);
-	    File tmpFile = new File(cacheDir(), SPLIT_FILE + ".tmp");
-	    Files.createParentDirs(splitFile);
-	    
-	    logger.info("Writing user partitions to {}", splitFile);
-	    
-	    if (splitFile.exists()) {
-	        logger.debug("Deleting {}", splitFile);
-	        splitFile.delete();
-	    }
-	    
-	    logger.debug("Writing to {}", tmpFile);
-	    PrintWriter writer = new PrintWriter(tmpFile);
-	    try {
-	        writer.println(partitionCount);
-	        for (Long2IntMap.Entry entry: splits.long2IntEntrySet()) {
-	            writer.print(entry.getLongKey());
-	            writer.print('\t');
-	            writer.print(entry.getIntValue());
-	            writer.println();
-	        }
-	    } finally {
-	        writer.close();
-	    }
-	    
-	    logger.debug("Renaming temp file");
-	    if (!tmpFile.renameTo(splitFile)) {
-	        throw new IOException("Failed to rename temp file");
-	    }
-	}
-	
-	public LongList getFoldUsers(int fold) {
-	    File split = new File(cacheDir(), SPLIT_FILE);
-	    
-	    LongList users = new LongArrayList();
-	    
-	    Scanner input;
-        try {
-            input = new Scanner(split);
-            try {
-                int nfolds = input.nextInt();
-                if (fold < 1 || fold > nfolds) {
-                    throw new IllegalArgumentException("Invalid fold number " + fold);
-                }
-                while (input.hasNextLong()) {
-                    long uid = input.nextLong();
-                    int f = input.nextInt();
-                    if (f == fold) {
-                        users.add(uid);
-                    }
-                }
-            } finally {
-                input.close();
-            }
-        } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Crossfold manager not prepared", e);
+
+
+    public LongSet getFoldUsers(int fold,  Long2IntMap splits) {
+        LongSet users = new LongArraySet();
+       if (fold < 1 || fold > partitionCount) {
+            throw new IllegalArgumentException("Invalid fold number " + fold);
         }
-	    
+        for (Long2IntMap.Entry entry : splits.long2IntEntrySet()){
+            long uid = entry.getLongKey();
+            int f = entry.getIntValue();
+            if (f == fold) {
+                users.add(uid);
+            }
+        }
         return users;
-	}
+    }
 
     @Override
     public List<TTDataSet> get() {
