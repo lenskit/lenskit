@@ -26,6 +26,8 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
  * @author Michael Ekstrand
  */
 public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
+    private static final long serialVersionUID = 8258336921679357985L;
+    
     private final PreferenceDomain domain;
 
     static double[] makeValues(PreferenceDomain domain) {

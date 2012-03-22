@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -56,44 +55,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@Built(ephemeral=true)
 public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
-    /**
-     * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
-     * with a specific {@link VectorNormalizer} applied to the user ratings.
-     *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<UserNormalizedRatingSnapshot> {
-        private VectorNormalizer<? super UserVector>normalizer;
-        private RatingSnapshot snapshot;
-
-        public void setSnapshot(RatingSnapshot snapshot) {
-            this.snapshot = snapshot;
-        }
-        
-        /**
-         * Set the normalizer to use.
-         * @param normalizer
-         */
-        @UserVectorNormalizer
-        public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
-            this.normalizer = normalizer;
-        }
-        
-        @Override
-        public UserNormalizedRatingSnapshot build() {
-            return new UserNormalizedRatingSnapshot(snapshot, normalizer);
-        }
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
     private final RatingSnapshot snapshot;
     private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
 
     public UserNormalizedRatingSnapshot(RatingSnapshot snapshot,
-                                        VectorNormalizer<? super UserVector> norm) {
+                                        @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         super();
         this.snapshot = snapshot;
         normalizer = norm;

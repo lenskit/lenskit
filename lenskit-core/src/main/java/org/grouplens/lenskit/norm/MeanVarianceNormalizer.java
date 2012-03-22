@@ -23,11 +23,12 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
+import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -50,7 +51,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
-@Built
+@DefaultProvider(MeanVarianceNormalizer.Provider.class)
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
 
@@ -60,22 +61,18 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
      *
      * @author Michael Ludwig
      */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<MeanVarianceNormalizer> {
-        private double smoothing;
-        private DataAccessObject dao;
+    public static class Provider implements javax.inject.Provider<MeanVarianceNormalizer> {
+        private final double smoothing;
+        private final DataAccessObject dao;
         
-        public void setDataAccessObject(DataAccessObject dao) {
+        public Provider(@Transient DataAccessObject dao,
+                        @MeanSmoothing double d) {
             this.dao = dao;
+            smoothing = d;
         }
-
-        // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
-        @MeanSmoothing
-        public void setSmoothing(double smoothing) {
-            this.smoothing = smoothing;
-        }
-
+        
         @Override
-        public MeanVarianceNormalizer build() {
+        public MeanVarianceNormalizer get() {
             double variance = 0;
 
             if (smoothing != 0) {
