@@ -61,6 +61,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     private final InjectorConfigurationBuilder config;
     private final DAOFactory factory;
     
+    public LenskitRecommenderEngineFactory() {
+        this(null);
+    }
+    
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
         config = new InjectorConfigurationBuilder();
@@ -89,6 +93,15 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     @Override
     public Context in(String name, Class<?> type) {
         return config.getRootContext().in(name, type);
+    }
+    
+    @Override
+    public LenskitRecommenderEngineFactory clone() {
+        try {
+            return (LenskitRecommenderEngineFactory) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     @Override
