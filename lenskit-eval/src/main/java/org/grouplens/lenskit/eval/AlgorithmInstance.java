@@ -18,25 +18,15 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.inject.Provider;
 
-import com.google.common.base.Supplier;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngineFactory;
-import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -44,6 +34,8 @@ import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.eval.config.DefaultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Supplier;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -103,13 +95,13 @@ public class AlgorithmInstance {
 
         if (sharedSnapshot != null) {
             fac2 = factory.clone();
-            Builder<RatingSnapshot> bld = new Builder<RatingSnapshot>() {
+            Provider<RatingSnapshot> prv = new Provider<RatingSnapshot>() {
                 @Override
-                public RatingSnapshot build() {
+                public RatingSnapshot get() {
                     return sharedSnapshot.get();
                 }
             };
-            fac2.setBuilder(RatingSnapshot.class, bld);
+            fac2.bind(RatingSnapshot.class).toProvider(prv);
         }
 
         LenskitRecommenderEngine engine = fac2.create(dao);
@@ -123,7 +115,7 @@ public class AlgorithmInstance {
 
         if (sharedSnapshot != null) {
             fac2 = factory.clone();
-            fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
+            fac2.bind(RatingSnapshot.class).to(sharedSnapshot);
         }
 
         LenskitRecommenderEngine engine = fac2.create(dao);

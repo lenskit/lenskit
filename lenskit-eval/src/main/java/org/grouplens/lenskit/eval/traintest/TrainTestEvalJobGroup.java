@@ -113,7 +113,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     private SharedRatingSnapshot loadSnapshot() {
         DataAccessObject dao = dataSet.getTrainFactory().create();
         try {
-            return new SharedRatingSnapshot(new PackedRatingSnapshot.Builder(dao).build());
+            return new SharedRatingSnapshot(new PackedRatingSnapshot.Provider(dao).get());
         } finally {
             dao.close();
         }
