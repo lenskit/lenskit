@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.grouplens.inject.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -52,85 +53,23 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@Built(ephemeral = true)
+@DefaultProvider(PackedRatingSnapshot.Provider.class)
 public class PackedRatingSnapshot extends AbstractRatingSnapshot {
-
-    private static final Logger logger = LoggerFactory
-            .getLogger(PackedRatingSnapshot.class);
-    private PackedRatingData data;
-    private List<? extends IntList> userIndices;
-
-    protected PackedRatingSnapshot(PackedRatingData data,
-            List<? extends IntList> userIndices) {
-        super();
-        this.data = data;
-        this.userIndices = userIndices;
-    }
-
-    private void requireValid() {
-        if (data == null)
-            throw new IllegalStateException("build context closed");
-    }
-
-    @Override
-    public LongCollection getUserIds() {
-        requireValid();
-        return data.userIndex.getIds();
-    }
-
-    @Override
-    public LongCollection getItemIds() {
-        requireValid();
-        return data.itemIndex.getIds();
-    }
-
-    @Override
-    public Index userIndex() {
-        requireValid();
-        return data.userIndex;
-    }
-
-    @Override
-    public Index itemIndex() {
-        requireValid();
-        return data.itemIndex;
-    }
-
-    @Override
-    public FastCollection<IndexedPreference> getRatings() {
-        return new PackedRatingCollection(data);
-    }
-
-    @Override
-    public FastCollection<IndexedPreference> getUserRatings(long userId) {
-        requireValid();
-        int uidx = data.userIndex.getIndex(userId);
-        if (uidx < 0 || uidx >= userIndices.size())
-            return CollectionUtils.emptyFastCollection();
-        else
-            return new PackedRatingCollection(data, userIndices.get(uidx));
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        data = null;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(PackedRatingSnapshot.class);
 
     /**
      * A Factory that creates PackedRatingBuildSnapshots from an opened
      * DataAccessObject.
      */
-    public static class Builder implements
-            org.grouplens.lenskit.core.Builder<PackedRatingSnapshot> {
+    public static class Provider implements javax.inject.Provider<PackedRatingSnapshot> {
         private final DataAccessObject dao;
 
-        public Builder(DataAccessObject dao) {
+        public Provider(DataAccessObject dao) {
             this.dao = dao;
         }
 
         @Override
-        public PackedRatingSnapshot build() {
+        public PackedRatingSnapshot get() {
             logger.debug("Packing build context");
             Cursor<Rating> ratings = null;
 
@@ -364,5 +303,65 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
             lst[i] = lst[j];
             lst[j] = tmp;
         }
+    }
+    
+    private PackedRatingData data;
+    private List<? extends IntList> userIndices;
+
+    protected PackedRatingSnapshot(PackedRatingData data,
+            List<? extends IntList> userIndices) {
+        super();
+        this.data = data;
+        this.userIndices = userIndices;
+    }
+
+    private void requireValid() {
+        if (data == null)
+            throw new IllegalStateException("build context closed");
+    }
+
+    @Override
+    public LongCollection getUserIds() {
+        requireValid();
+        return data.userIndex.getIds();
+    }
+
+    @Override
+    public LongCollection getItemIds() {
+        requireValid();
+        return data.itemIndex.getIds();
+    }
+
+    @Override
+    public Index userIndex() {
+        requireValid();
+        return data.userIndex;
+    }
+
+    @Override
+    public Index itemIndex() {
+        requireValid();
+        return data.itemIndex;
+    }
+
+    @Override
+    public FastCollection<IndexedPreference> getRatings() {
+        return new PackedRatingCollection(data);
+    }
+
+    @Override
+    public FastCollection<IndexedPreference> getUserRatings(long userId) {
+        requireValid();
+        int uidx = data.userIndex.getIndex(userId);
+        if (uidx < 0 || uidx >= userIndices.size())
+            return CollectionUtils.emptyFastCollection();
+        else
+            return new PackedRatingCollection(data, userIndices.get(uidx));
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        data = null;
     }
 }
