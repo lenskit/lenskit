@@ -46,7 +46,6 @@ import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -93,7 +92,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     @Override
-    public RecommenderEngine create() {
+    public LenskitRecommenderEngine create() {
         if (factory == null)
             throw new IllegalStateException("create() called with no DAOFactory");
         DataAccessObject dao = factory.snapshot();
@@ -104,7 +103,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
-    public RecommenderEngine create(DataAccessObject dao) {
+    public LenskitRecommenderEngine create(DataAccessObject dao) {
         // FIXME: we really ought to clone the config before we modify it here
         config.getRootContext().bind(DataAccessObject.class).to(dao);
         
