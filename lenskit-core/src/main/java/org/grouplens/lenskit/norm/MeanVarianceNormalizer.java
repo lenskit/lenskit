@@ -28,7 +28,7 @@ import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.params.MeanSmoothing;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -66,7 +66,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
         private final DataAccessObject dao;
         
         public Provider(@Transient DataAccessObject dao,
-                        @MeanSmoothing double d) {
+                        @Damping double d) {
             this.dao = dao;
             smoothing = d;
         }

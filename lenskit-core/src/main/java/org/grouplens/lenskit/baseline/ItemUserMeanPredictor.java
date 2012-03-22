@@ -31,8 +31,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -45,7 +44,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  *
- * <p>It supports mean smoothing (see {@link MeanSmoothing}).
+ * <p>It supports mean smoothing (see {@link Damping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
@@ -61,7 +60,8 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         private double damping = 0;
         private DataAccessObject dao;
         
-        public Builder(DataAccessObject dao) {
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double d) {
             this.dao = dao;
         }
         

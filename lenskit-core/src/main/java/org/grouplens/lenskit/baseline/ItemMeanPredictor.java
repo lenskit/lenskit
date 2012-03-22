@@ -39,8 +39,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +68,9 @@ public class ItemMeanPredictor implements BaselinePredictor {
         private double damping = 0;
         private DataAccessObject dao;
         
-        public Builder(DataAccessObject dao) {
+        @Inject
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double damping) {
             this.dao = dao;
         }
         

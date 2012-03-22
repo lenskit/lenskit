@@ -43,4 +43,4 @@ import org.grouplens.inject.annotation.DefaultDouble;
 @Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MeanSmoothing { }
+public @interface Damping { }

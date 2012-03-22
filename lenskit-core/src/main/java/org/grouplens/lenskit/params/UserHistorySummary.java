@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.inject.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 
 /**
@@ -38,6 +39,7 @@ import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
  */
 @Documented
 @Qualifier
+@InheritsDefaultQualifier
 @DefaultImplementation(RatingVectorHistorySummarizer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

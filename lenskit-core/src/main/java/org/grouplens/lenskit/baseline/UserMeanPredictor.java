@@ -24,8 +24,7 @@ import java.util.Collection;
 
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -53,7 +52,9 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         private double smoothing = 0;
         private DataAccessObject dao;
         
-        public Builder(DataAccessObject dao) {
+        @Inject
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double damping) {
             this.dao = dao;
         }
         
@@ -77,6 +78,12 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     private final double globalMean;
     private final double smoothing;
+
+    @Inject
+    public UserMeanPredictor(@Transient DataAccessObject dao,
+                             @Damping double damping) {
+        this(computeMeanRating(dao), damping);
+    }
 
     /**
      * Construct a scorer that computes user means offset by the global mean.

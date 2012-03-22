@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
+import org.grouplens.inject.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
 import org.grouplens.lenskit.params.meta.Parameter;
 
@@ -37,6 +38,7 @@ import org.grouplens.lenskit.params.meta.Parameter;
  */
 @Documented
 @Qualifier
+@InheritsDefaultQualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NormalizerBaseline { }

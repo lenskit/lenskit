@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.inject.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 
@@ -38,6 +39,7 @@ import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
  */
 @Documented
 @DefaultImplementation(IdentityVectorNormalizer.class)
+@InheritsDefaultQualifier
 @Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
