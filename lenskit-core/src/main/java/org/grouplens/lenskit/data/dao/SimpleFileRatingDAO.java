@@ -70,7 +70,9 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         /**
          * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
          * property (defaults to "\t" if not found).
+         * @param file The file to read.
          * @see #Factory(File,String)
+         * @throws java.io.FileNotFoundException if {@code file} is not found.
          */
         public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
@@ -79,6 +81,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         /**
          * Create a new DAO factory bound to a URL.  The delimiter is read from
          * the property <tt>lenskit.delimiter</tt>, defaulting to "\t".
+         * @param url The URL to read.
          * @see #Factory(URL,String)
          */
         public Factory(URL url) {
@@ -124,7 +127,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
      * Create a URL reading from the specified file/URL and delimiter.
      * @param file The file (if <tt>null</tt>, the URL is used).
      * @param url The URL (ignored if <var>file</var> is not <tt>null</tt>).
-     * @param delimiter
+     * @param delimiter The delimiter to look for in the file.
      */
     public SimpleFileRatingDAO(File file, URL url, String delimiter) {
         this.file = file;
@@ -188,7 +191,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         if (comp == null) {
             return (Cursor<E>) cursor;
         } else {
-            return Cursors.sort(cursor, comp);
+            return (Cursor) Cursors.sort(cursor, comp);
         }
     }
 

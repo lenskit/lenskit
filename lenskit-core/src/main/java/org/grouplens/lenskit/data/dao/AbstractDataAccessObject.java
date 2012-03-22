@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 
 import org.grouplens.lenskit.cursors.AbstractCursor;
@@ -291,7 +292,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
             return cursor != null && (lastEvent != null || cursor.hasNext());
         }
 
-        @Override
+        @Override @Nonnull
         public UserHistory<E> next() {
             if (cursor == null) throw new NoSuchElementException();
             long uid;

@@ -18,32 +18,24 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-
 import org.grouplens.lenskit.cursors.AbstractLongCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.dao.AbstractDataAccessObject;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.SortOrder;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.MoreFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 
 /**
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
@@ -99,6 +91,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
          *
          * @param take Whether to take an in-memory snapshot of the database in
          *            the {@link #snapshot()} method.
+         * @return The factory (for chaining)
          */
         public Factory setSnapshotting(boolean take) {
             takeSnapshot = take;

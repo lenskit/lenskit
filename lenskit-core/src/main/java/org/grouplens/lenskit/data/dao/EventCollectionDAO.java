@@ -204,7 +204,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      * Query whether there may be any events of the specified type in this DAO.
      * This does not guarantee that there are, but only
      *
-     * @param type
+     * @param type The type of of event to query.
      * @return <tt>true</tt> if the data set contains some objects which are
      *         compatible with <var>type</var>.
      */
