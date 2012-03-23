@@ -41,6 +41,8 @@ def ml100k = crossfold("ml-100k") {
             precision 1.0
         }
     }
+    train "${buildDir}/ml-100k.train.%d.csv"
+    test "${buildDir}/ml-100k.test.%d.csv"
 }
 
 trainTest {
