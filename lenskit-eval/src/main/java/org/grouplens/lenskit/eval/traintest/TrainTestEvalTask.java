@@ -18,24 +18,12 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nonnull;
-
-import org.grouplens.lenskit.eval.*;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Closeables;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.JobGroup;
-
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
+import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.util.LKFileUtils;
@@ -44,10 +32,11 @@ import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -95,6 +84,8 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         dataSources = sources;
         algorithms = algos;
         metrics = metrics1;
+
+        setupJobs();
     }
 
     protected void setupJobs() {
@@ -102,14 +93,6 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
 
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
-        if(dataSources.isEmpty() && getDependencies().isEmpty()) {
-            throw new RuntimeException("Either input source file or CrossfoldTask should be specified");
-        }
-        if(!getDependencies().isEmpty()) {
-            for(EvalTask task: getDependencies()) {
-                dataSources.addAll(((CrossfoldTask)task).get());
-            }
-        }
         for (TTDataSet ds: dataSources) {
             for (String attr: ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
@@ -176,7 +159,6 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
 
 
     public void start() {
-        setupJobs();
         logger.info("Starting evaluation");
         try {
             output = CSVWriter.open(outputFile, outputLayout,

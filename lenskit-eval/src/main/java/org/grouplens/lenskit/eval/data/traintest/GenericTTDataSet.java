@@ -86,8 +86,8 @@ public class GenericTTDataSet implements TTDataSet {
     
     @Override
     public long lastUpdated() {
-        return Math.max(trainData.lastUpdated(),
-                        testData.lastUpdated());
+        return Math.max(trainData.lastModified(),
+                        testData.lastModified());
     }
 
     @Override

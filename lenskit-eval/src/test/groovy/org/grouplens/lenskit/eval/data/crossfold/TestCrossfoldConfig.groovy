@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.*
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.CSVDataSource
+import org.junit.Ignore
 
 /**
  * Test crossfold configuration
@@ -48,7 +49,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
         assertThat(cf.holdout.partitionMethod.fraction, closeTo(0.5, 1.0e-6))
     }
 
-    @Test
+    @Test @Ignore("wrapper functions not supported")
     void testWrapperFunction() {
         def obj = eval {
             crossfold("ml-100k") {

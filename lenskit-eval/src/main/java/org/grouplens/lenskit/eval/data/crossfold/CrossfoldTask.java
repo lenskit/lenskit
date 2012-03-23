@@ -18,18 +18,20 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
-import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.cursors.Cursor;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
+import org.grouplens.lenskit.eval.EvalTaskFailedException;
+import org.grouplens.lenskit.eval.GlobalEvalOptions;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
@@ -40,8 +42,12 @@ import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * A crossfold split, taking a data set and splitting it into multiple train-test sets.
@@ -59,19 +65,17 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 	private final DataSource source;
 	private final int partitionCount;
     private final Holdout holdout;
-    private List<TTDataSet> dataSets;
-    private final Function<DAOFactory,DAOFactory> wrapper;
-    private String fileName = "fold-%d";
+    private final String trainFilePattern;
+    private final String testFilePattern;
 
 	public CrossfoldTask(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
-                         String fname, Function<DAOFactory, DAOFactory> wrap) {
+                         String trainPattern, String testPattern) {
 	    super(name, dependencies);
         source = src;
 	    partitionCount = folds;
         holdout = hold;
-        fileName = fname;
-        wrapper = wrap;
-        dataSets = new ArrayList<TTDataSet>(partitionCount);
+        trainFilePattern = trainPattern;
+        testFilePattern = testPattern;
     }
 
     /**
@@ -85,9 +89,13 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
             return name;
         }
     }
-    
-    public String getFileName() {
-        return fileName;
+
+    public String getTrainPattern() {
+        return trainFilePattern;
+    }
+
+    public String getTestPattern() {
+        return testFilePattern;
     }
 
 	/**
@@ -108,15 +116,6 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 
     public Holdout getHoldout() {
         return holdout;
-    }
-
-    /**
-     * Get the function used to wrap DAOs.
-     * @return The DAO wrapper function, or {@code null} if no such function is set.
-     * @see CrossfoldTaskBuilder#setWrapper(Function)
-     */
-    public Function<DAOFactory, DAOFactory> getDAOWrapper() {
-        return wrapper;
     }
 
     @Override
@@ -145,22 +144,51 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         }
     }
 
+    protected File[] getFiles(String pattern) {
+        File[] files = new File[partitionCount];
+        for (int i = 0; i < partitionCount; i++) {
+            files[i] = new File(String.format(pattern, i));
+        }
+        return files;
+    }
+
 	public long lastModified() {
-	    File split = new File(String.format(getFileName(), 1) + "-train");
-	    return split.exists() ? split.lastModified() : -1L;
+        File[] trainFiles = getFiles(trainFilePattern);
+        File[] testFiles = getFiles(testFilePattern);
+        Long mtime = null;
+        for (File f: trainFiles) {
+            if (!f.exists()) {
+                mtime = -1L;
+            } else if (mtime == null) {
+                mtime = f.lastModified();
+            } else {
+                mtime = Math.min(mtime, f.lastModified());
+            }
+        }
+        for (File f: testFiles) {
+            if (!f.exists()) {
+                mtime = -1L;
+            } else if (mtime == null) {
+                mtime = f.lastModified();
+            } else {
+                mtime = Math.min(mtime, f.lastModified());
+            }
+        }
+        if (mtime == null) {
+            mtime = -1L;
+        }
+	    return mtime;
 	}
 
     protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws EvalTaskFailedException {
-        File[] trainFiles = new File[partitionCount];
-        File[] testFiles = new File[partitionCount];
+        File[] trainFiles = getFiles(trainFilePattern);
+        File[] testFiles = getFiles(testFilePattern);
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
         try {
         for (int i = 0; i < partitionCount; i++) {
-            File train = new File(String.format(getFileName(), i) + "-train");
-            File test = new File(String.format(getFileName(), i) + "-test");
-            trainFiles[i] = train;
-            testFiles[i] = test;
+            File train = trainFiles[i];
+            File test = testFiles[i];
             try{
                 trainWriters[i] = CSVWriter.open(train, null);
                 testWriters[i] = CSVWriter.open(test, null);
@@ -175,18 +203,18 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
                 final int p = mode.partition(ratings);
                 final int n = ratings.size();
 
-                for (int f = 1; f <= partitionCount; f++) {
+                for (int f = 0; f < partitionCount; f++) {
                     if(f == foldNum) {
                         for (int j = p; j < n; j++) {
-                            writeRating(testWriters[foldNum - 1], ratings.get(j));
+                            writeRating(testWriters[f], ratings.get(j));
                         }
                         for (int j = 0; j < p; j++) {
-                            writeRating(trainWriters[foldNum - 1], ratings.get(j));
+                            writeRating(trainWriters[f], ratings.get(j));
                         }
                     }
                     else {
                         for (Rating rating : ratings) {
-                            writeRating(trainWriters[f - 1], rating);
+                            writeRating(trainWriters[f], rating);
                         }
                     }
                 }
@@ -199,17 +227,6 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
             LKFileUtils.close(logger, trainWriters);
             LKFileUtils.close(logger, testWriters);
         }
-        for(int i = 0; i < partitionCount; i++) {
-            CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
-            CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
-            GenericTTDataBuilder TTbuilder = new GenericTTDataBuilder();
-
-            dataSets.add(TTbuilder
-                    .setTest(testBuilder.setFile(testFiles[i]).build())
-                    .setTrain(trainBuilder.setFile(trainFiles[i]).build())
-                    .build());
-        }
-
     }
 
     protected void writeRating(TableWriter writer, Rating rating) throws IOException{
@@ -231,7 +248,7 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
             int j = random.nextInt(i+1);
             // put users[j] in a fold
             long u = j;
-            userMap.put(u, fold+1);
+            userMap.put(u, fold);
             fold = (fold + 1) % partitionCount;
             // replace users[j] with users[i] to remove used user
             if (i != j) {
@@ -245,6 +262,18 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 
     @Override
     public List<TTDataSet> get() {
+        List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
+        File[] trainFiles = getFiles(trainFilePattern);
+        File[] testFiles = getFiles(testFilePattern);
+        for(int i = 0; i < partitionCount; i++) {
+            CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
+            CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
+            GenericTTDataBuilder TTbuilder = new GenericTTDataBuilder();
+
+            dataSets.add(TTbuilder.setTest(testBuilder.setFile(testFiles[i]).build())
+                                  .setTrain(trainBuilder.setFile(trainFiles[i]).build())
+                                  .build());
+        }
         return dataSets;
     }
 	
@@ -252,28 +281,4 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 	public String toString() {
 	    return String.format("{CXManager %s}", source);
 	}
-
-    static class EventSupplier implements Supplier<List<Rating>> {
-        final Predicate<? super Rating> predicate;
-        final DAOFactory baseFactory;
-
-        public EventSupplier(DAOFactory base, Predicate<? super Rating> pred) {
-            baseFactory = base;
-            predicate = pred;
-        }
-
-        @Override
-        public List<Rating> get() {
-            DataAccessObject bdao = baseFactory.create();
-            List<Rating> ratings;
-            try {
-                Cursor<Rating> cursor =
-                        Cursors.filter(bdao.getEvents(Rating.class), predicate);
-                ratings = Cursors.makeList(cursor);
-            } finally {
-                bdao.close();
-            }
-            return ratings;
-        }
-    }
 }
