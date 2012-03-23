@@ -160,6 +160,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                     // per-session by the LenskitRecommenderEngine
                     Node<Satisfaction> newDAONode = new Node<Satisfaction>(new DAOSatisfaction());
                     buildGraph.replaceNode(n, newDAONode);
+                    i.remove();
                 } else if (incoming == null || incoming.isEmpty() || requiresDAO(n, buildGraph)) {
                     // This instance either requires a session DAO, or is no
                     // longer part of the graph
@@ -180,7 +181,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 return true;
             } else {
                 // Check if it has an indirect dependency on a DAO
-                return requiresDAO(tail, graph);
+                if (requiresDAO(tail, graph)) {
+                    return true;
+                }
             }
         }
         
