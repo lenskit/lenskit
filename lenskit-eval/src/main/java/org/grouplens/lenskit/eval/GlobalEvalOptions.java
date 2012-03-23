@@ -9,12 +9,12 @@ import org.grouplens.lenskit.eval.cli.EvalOptions;
  * Time: 2:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EvalTaskOptions {
+public class GlobalEvalOptions {
     private final boolean force;
     private int threadCount = 1;
     private IsolationLevel isolation = IsolationLevel.NONE;
 
-    public EvalTaskOptions(EvalOptions opt) {
+    public GlobalEvalOptions(EvalOptions opt) {
         force = opt.forcePrepare();
         threadCount = opt.getThreadCount();
         isolation = opt.getIsolation();

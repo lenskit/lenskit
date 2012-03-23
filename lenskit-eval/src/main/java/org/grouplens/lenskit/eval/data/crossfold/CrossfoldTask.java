@@ -20,9 +20,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
-import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -37,14 +35,11 @@ import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.tablewriter.CSVWriter;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
-import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -55,8 +50,8 @@ import java.util.*;
  * built from the training sets of its users combined with the ratings from all other
  * users, and the test set is the test sets of its users.
  */
-public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TTDataSet>> {
-    private static final Logger logger = LoggerFactory.getLogger(CrossfoldSplit.class);
+public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTDataSet>> {
+    private static final Logger logger = LoggerFactory.getLogger(CrossfoldTask.class);
     
     private static final Random random = new Random();
 
@@ -68,8 +63,8 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
     private String fileName = "fold-%d";
 
 
-	public CrossfoldSplit(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
-                          String fname, Function<DAOFactory, DAOFactory> wrap) {
+	public CrossfoldTask(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
+                         String fname, Function<DAOFactory, DAOFactory> wrap) {
 	    super(name, dependencies);
         source = src;
 	    partitionCount = folds;
@@ -121,16 +116,16 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
     /**
      * Get the function used to wrap DAOs.
      * @return The DAO wrapper function, or {@code null} if no such function is set.
-     * @see CrossfoldBuilder#setWrapper(Function)
+     * @see CrossfoldTaskBuilder#setWrapper(Function)
      */
     public Function<DAOFactory, DAOFactory> getDAOWrapper() {
         return wrapper;
     }
 
     @Override
-    public void call(EvalTaskOptions options) throws EvalExecuteException {
+    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
 
-        if(!options.isForce() && lastModified() >= source.lastUpdated()) {
+        if(!options.isForce() && lastModified() >= source.lastModified()) {
             logger.debug("Crossfold {} up to date", this);
             return;
         }    
@@ -143,6 +138,19 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         DataAccessObject daoSnap = factory.snapshot();
         logger.debug("Preparing data source {}", getName());
         logger.debug("Writing train test files...");
+        createTTFiles(daoSnap, mode, splits);
+        daoSnap.close();
+
+    }
+
+    
+
+	public long lastModified() {
+	    File split = new File(String.format(getFileName(), 1) + "-train");
+	    return split.exists() ? split.lastModified() : -1L;
+	}
+
+    protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws EvalTaskFailedException {
         File[] trainFiles = new File[partitionCount];
         File[] testFiles = new File[partitionCount];
         TableWriter[] trainWriters = new TableWriter[partitionCount];
@@ -156,11 +164,11 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
                 trainWriters[i] = CSVWriter.open(train, null);
                 testWriters[i] = CSVWriter.open(test, null);
             } catch (IOException e) {
-                throw new EvalExecuteException("Error creating train test file writer", e);
+                throw new EvalTaskFailedException("Error creating train test file writer", e);
             }
         }
         try {
-            for(UserHistory<Event> userHist : daoSnap.getUserHistories()) {
+            for(UserHistory<Event> userHist : dao.getUserHistories()) {
                 int foldNum = splits.get(userHist.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(userHist.filter(Rating.class));
                 final int p = mode.partition(ratings);
@@ -188,9 +196,7 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
                 testWriters[i].close();
             }
         } catch (IOException e) {
-            throw new EvalExecuteException("Error writing to the train test files", e);
-        } finally {
-            daoSnap.close();
+            throw new EvalTaskFailedException("Error writing to the train test files", e);
         }
         for(int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
@@ -202,15 +208,8 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
                     .setTrain(trainBuilder.setFile(trainFiles[i]).build())
                     .build());
         }
+
     }
-
-    
-
-	public long lastModified() {
-	    File split = new File(String.format(getFileName(), 1) + "-train");
-	    return split.exists() ? split.lastModified() : -1L;
-	}
-    
     protected void writeFile(TableWriter writer, Rating rating) throws IOException{
         String[] row = new String[4];
         row[0] = Long.toString(rating.getUserId());
@@ -245,33 +244,9 @@ public class CrossfoldSplit extends AbstractEvalTask implements Supplier<List<TT
         return userMap;
     }
 
-
-    public LongSet getFoldUsers(int fold,  Long2IntMap splits) {
-        LongSet users = new LongArraySet();
-       if (fold < 1 || fold > partitionCount) {
-            throw new IllegalArgumentException("Invalid fold number " + fold);
-        }
-        for (Long2IntMap.Entry entry : splits.long2IntEntrySet()){
-            long uid = entry.getLongKey();
-            int f = entry.getIntValue();
-            if (f == fold) {
-                users.add(uid);
-            }
-        }
-        return users;
-    }
-
     @Override
     public List<TTDataSet> get() {
         return dataSets;
-    }
-
-    protected Predicate<Rating> testRatingPredicate(final Set set) {
-        return new Predicate<Rating>() {
-            @Override public boolean apply(Rating r) {
-                return set.contains(r.getId());
-            }
-        };
     }
 	
 	@Override

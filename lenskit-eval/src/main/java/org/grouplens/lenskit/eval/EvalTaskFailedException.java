@@ -7,22 +7,22 @@ package org.grouplens.lenskit.eval;
  * Time: 1:22 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EvalExecuteException extends Exception{
+public class EvalTaskFailedException extends Exception{
 
     private static final long serialVersionUID = -9073424874249517829L;
 
-    public EvalExecuteException() {
+    public EvalTaskFailedException() {
     }
 
-    public EvalExecuteException(String message) {
+    public EvalTaskFailedException(String message) {
         super(message);
     }
 
-    public EvalExecuteException(Throwable cause) {
+    public EvalTaskFailedException(Throwable cause) {
         super(cause);
     }
 
-    public EvalExecuteException(String message, Throwable cause) {
+    public EvalTaskFailedException(String message, Throwable cause) {
         super(message, cause);
     }
 }

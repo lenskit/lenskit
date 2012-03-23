@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.eval.metrics.recommend;
 
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 /**
  * 
@@ -28,5 +28,5 @@ import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation;
  * 
  */
 public abstract class AbstractRecommendEvalMetric extends
-		AbstractMetric<TTPredictEvaluation> implements RecommendEvalMetric {
+		AbstractMetric<TrainTestEvalTask> implements RecommendEvalMetric {
 }

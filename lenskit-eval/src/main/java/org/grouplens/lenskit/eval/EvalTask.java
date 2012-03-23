@@ -1,7 +1,6 @@
 package org.grouplens.lenskit.eval;
 
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,6 +25,6 @@ public interface EvalTask  {
     Set<EvalTask> getDependencies();
 
 
-    void call(EvalTaskOptions options) throws EvalExecuteException;
+    void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
 
 }

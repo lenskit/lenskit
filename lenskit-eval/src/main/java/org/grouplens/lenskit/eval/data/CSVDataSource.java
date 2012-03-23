@@ -93,7 +93,7 @@ public class CSVDataSource implements DataSource {
     }
 
     @Override
-    public long lastUpdated() {
+    public long lastModified() {
         return sourceFile.exists() ? sourceFile.lastModified() : -1L;
     }
 

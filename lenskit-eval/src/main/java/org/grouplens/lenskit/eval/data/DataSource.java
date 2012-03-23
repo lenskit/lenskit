@@ -52,5 +52,5 @@ public interface DataSource {
      */
     DAOFactory getDAOFactory();
 
-    long lastUpdated();
+    long lastModified();
 }

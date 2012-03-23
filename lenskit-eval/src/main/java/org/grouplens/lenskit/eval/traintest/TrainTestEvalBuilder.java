@@ -35,7 +35,7 @@ import org.grouplens.lenskit.eval.metrics.EvalMetric;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Builder<TTPredictEvaluation> {
+public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Builder<TrainTestEvalTask> {
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
     private final List<EvalMetric> metrics;
@@ -53,13 +53,14 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Bui
     }
 
     @Override
-    public TTPredictEvaluation build() {
-        return new TTPredictEvaluation(name, dependency, dataSources, algorithms, metrics,
+    public TrainTestEvalTask build() {
+        return new TrainTestEvalTask(name, dependencies, dataSources, algorithms, metrics,
                                        outputFile, userOutputFile, predictOutputFile);
     }
 
     public void addDataset(TTDataSet source) {
         dataSources.add(source);
+
     }
 
     public void addAlgorithm(AlgorithmInstance algorithm) {

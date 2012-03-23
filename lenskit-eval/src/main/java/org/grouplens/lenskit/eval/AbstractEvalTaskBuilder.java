@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public abstract class AbstractEvalTaskBuilder {
     protected String name;
-    protected Set<EvalTask> dependency = new HashSet<EvalTask>();
+    protected Set<EvalTask> dependencies = new HashSet<EvalTask>();
 
     protected AbstractEvalTaskBuilder() {}
 
@@ -42,17 +42,17 @@ public abstract class AbstractEvalTaskBuilder {
         return this;
     }
     
-    public Set<EvalTask> getDependency() {
-        return dependency;
+    public Set<EvalTask> getDependencies() {
+        return dependencies;
     }
 
     public AbstractEvalTaskBuilder addDependency(EvalTask task) {
-        dependency.add(task);
+        dependencies.add(task);
         return this;
     }
 
     public AbstractEvalTaskBuilder addDepend(EvalTask task) {
-        dependency.add(task);
+        dependencies.add(task);
         return this;
     }
 }

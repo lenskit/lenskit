@@ -23,37 +23,31 @@ import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
-import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.util.Set;
 
 /**
  * Builder for crossfold data sources (used to do cross-validation).
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder<CrossfoldSplit> {
+public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Builder<CrossfoldTask> {
     private int folds = 5;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
     private DataSource source;
     private String name;
-    private Set<EvalTask> dependency;
-    private File cacheDirectory;
     private Function<DAOFactory,DAOFactory> wrapper;
     private String fileName;
 
-    public CrossfoldBuilder() {
+    public CrossfoldTaskBuilder() {
         super();
     }
 
-    public CrossfoldBuilder(String name) {
+    public CrossfoldTaskBuilder(String name) {
         this.name = name;
     }
 
@@ -62,8 +56,13 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @param n The number of partitions to generate.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setPartitions(int n) {
+    public CrossfoldTaskBuilder setPartitions(int n) {
         folds = n;
+        return this;
+    }
+    
+    public CrossfoldTaskBuilder setfileName(String name) {
+        fileName = name;
         return this;
     }
 
@@ -77,7 +76,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @see #setHoldout(double)
      * @see #setHoldout(int)
      */
-    public CrossfoldBuilder setOrder(Order<Rating> o) {
+    public CrossfoldTaskBuilder setOrder(Order<Rating> o) {
         order = o;
         return this;
     }
@@ -87,7 +86,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @param n The number of items to hold out from each user's profile.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setHoldout(int n) {
+    public CrossfoldTaskBuilder setHoldout(int n) {
         partition = new CountPartition<Rating>(n);
         return this;
     }
@@ -97,7 +96,7 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @param f The fraction of a user's ratings to hold out.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setHoldout(double f) {
+    public CrossfoldTaskBuilder setHoldout(double f) {
         partition = new FractionPartition<Rating>(f);
         return this;
     }
@@ -107,18 +106,11 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @param source The data source to use.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setSource(DataSource source) {
+    public CrossfoldTaskBuilder setSource(DataSource source) {
         this.source = source;
         return this;
     }
-
-    
-    public CrossfoldBuilder setCacheDir(File file) {
-        this.cacheDirectory = file;
-        return this;
-    }
-    
-    
+ 
 
     /**
      * Specify a function that will wrap the DAO factories created by the crossfold. Used
@@ -133,27 +125,27 @@ public class CrossfoldBuilder extends AbstractEvalTaskBuilder implements Builder
      * @param f The function to wrap DAOs.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setWrapper(Function<DAOFactory,DAOFactory> f) {
+    public CrossfoldTaskBuilder setWrapper(Function<DAOFactory,DAOFactory> f) {
         wrapper = f;
         return this;
     }
 
-    public CrossfoldSplit build() {
-        CrossfoldSplit split = new CrossfoldSplit(name, dependency, source, folds, new Holdout(order, partition),
+    public CrossfoldTask build() {
+        CrossfoldTask task = new CrossfoldTask(name, dependencies, source, folds, new Holdout(order, partition),
                 fileName, wrapper);
-        return split;
+        return task;
     }
 
     @MetaInfServices
-    public static class Factory implements BuilderFactory<CrossfoldSplit> {
+    public static class Factory implements BuilderFactory<CrossfoldTask> {
         @Override
         public String getName() {
             return "crossfold";
         }
 
         @Nonnull @Override
-        public CrossfoldBuilder newBuilder(String arg) {
-            return new CrossfoldBuilder(arg);
+        public CrossfoldTaskBuilder newBuilder(String arg) {
+            return new CrossfoldTaskBuilder(arg);
         }
     }
 }

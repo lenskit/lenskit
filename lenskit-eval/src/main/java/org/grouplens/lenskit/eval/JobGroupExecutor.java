@@ -34,8 +34,6 @@ public interface JobGroupExecutor {
      * @param group The job group to execute.
      */
     void add(JobGroup group);
-
-    int getThreadCount();
     
     /**
      * Run the job groups.

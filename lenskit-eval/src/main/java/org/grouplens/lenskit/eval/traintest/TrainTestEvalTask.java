@@ -35,6 +35,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.JobGroup;
 
+import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.util.LKFileUtils;
@@ -43,9 +44,6 @@ import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +57,8 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class TTPredictEvaluation extends AbstractEvalTask  {
-    private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
+public class TrainTestEvalTask extends AbstractEvalTask  {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private final File outputFile;
     private final File userOutputFile;
@@ -78,32 +76,41 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<EvalMetric> predictMetrics;
+    
+    private List<TTDataSet> dataSources;
+    private List<AlgorithmInstance> algorithms;
+    private List<EvalMetric> metrics;
 
-    private EvalListenerManager listeners = new EvalListenerManager();
-
-    public TTPredictEvaluation(String name, Set<EvalTask> dependency,
-                               @Nonnull List<TTDataSet> sources,
-                               @Nonnull List<AlgorithmInstance> algos,
-                               @Nonnull List<EvalMetric> metrics,
-                               @Nonnull File output,
-                               @Nullable File userOutput,
-                               @Nullable File predictOutput) {
-        super(name, dependency);
+    public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
+                             @Nonnull List<TTDataSet> sources,
+                             @Nonnull List<AlgorithmInstance> algos,
+                             @Nonnull List<EvalMetric> metrics1,
+                             @Nonnull File output,
+                             @Nullable File userOutput,
+                             @Nullable File predictOutput) {
+        super(name, dependencies);
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
-        setupJobs(sources, algos, metrics);
+        dataSources = sources;
+        algorithms = algos;
+        metrics = metrics1;
     }
 
-    protected void setupJobs(List<TTDataSet> dataSources,
-                             List<AlgorithmInstance> algorithms,
-                             List<EvalMetric> metrics) {
+    protected void setupJobs() {
         TableLayoutBuilder master = new TableLayoutBuilder();
 
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
+        if(dataSources.isEmpty() && getDependencies().isEmpty()) {
+            throw new RuntimeException("Either input source file or CrossfoldTask should be specified");
+        }
+        if(!getDependencies().isEmpty()) {
+            for(EvalTask task: getDependencies()) {
+                dataSources.addAll(((CrossfoldTask)task).get());
+            }
+        }
         for (TTDataSet ds: dataSources) {
-            dependency.add((EvalTask)ds);
             for (String attr: ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
                     dataColumns.put(attr, master.addColumn(attr));
@@ -122,8 +129,8 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
 
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet dataset: dataSources) {
-            TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dataset);
+            TrainTestEvalJobGroup group;
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset);
             jobGroups.add(group);
         }
 
@@ -167,15 +174,9 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
         predictMetrics = metrics;
     }
 
-    public void addListener(EvaluationListener listener) {
-        listeners.addListener(listener);
-    }
-
-    public void removeListener(EvaluationListener listener) {
-        listeners.removeListener(listener);
-    }
 
     public void start() {
+        setupJobs();
         logger.info("Starting evaluation");
         try {
             output = CSVWriter.open(outputFile, outputLayout,
@@ -236,7 +237,7 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
      * prepared — call to do that.
      */
     @Override
-    public void call(EvalTaskOptions options) throws EvalExecuteException {
+    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
         int nthreads = options.getThreadCount();
         if (nthreads <= 0) {
             nthreads = Runtime.getRuntime().availableProcessors();
@@ -247,10 +248,10 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
         JobGroupExecutor exec;
         switch (options.getIsolation()) {
             case NONE:
-                exec = new MergedJobGroupExecutor(nthreads, listeners);
+                exec = new MergedJobGroupExecutor(nthreads);
                 break;
             case JOB_GROUP:
-                exec = new SequentialJobGroupExecutor(nthreads, listeners);
+                exec = new SequentialJobGroupExecutor(nthreads);
                 break;
             default:
                 throw new RuntimeException("Invalid isolation level " + options.getIsolation());
@@ -262,7 +263,7 @@ public class TTPredictEvaluation extends AbstractEvalTask  {
         try {
             exec.run();
         } catch (ExecutionException e) {
-            throw new EvalExecuteException("Error running the evaluation", e);
+            throw new EvalTaskFailedException("Error running the evaluation", e);
         } finally {
             logger.info("Finishing evaluation");
             this.finish();

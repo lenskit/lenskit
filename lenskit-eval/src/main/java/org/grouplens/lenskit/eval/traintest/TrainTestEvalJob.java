@@ -59,8 +59,8 @@ import com.google.common.io.Closeables;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TTPredictEvalJob implements Job {
-    private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
+public class TrainTestEvalJob implements Job {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     // FIXME balke: make configurable
     private static final int recSetSize = 5;
@@ -92,7 +92,7 @@ public class TTPredictEvalJob implements Job {
      *        be prefixed with algorithm and group ID data, so only the times
      *        and eval outputProvider needs to be written.
      */
-    public TTPredictEvalJob(AlgorithmInstance algo,
+    public TrainTestEvalJob(AlgorithmInstance algo,
                             List<EvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
                             Supplier<TableWriter> out) {

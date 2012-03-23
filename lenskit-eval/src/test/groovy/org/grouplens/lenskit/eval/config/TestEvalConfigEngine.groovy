@@ -18,12 +18,12 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation
 import org.junit.Before
 import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 import org.grouplens.lenskit.eval.EvalTask
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask
 
 /**
  * Test the eval config engine and make sure it can actually load tests.
@@ -46,7 +46,7 @@ class TestEvalConfigEngine {
         List<EvalTask> evals = engine.load(script("emptyTrainTest.groovy"))
         assertThat(evals.size(), equalTo(1))
         def eval = evals.get(0)
-        assertThat(eval, instanceOf(TTPredictEvaluation))
+        assertThat(eval, instanceOf(TrainTestEvalTask))
         assertTrue(eval.getJobGroups().isEmpty())
     }
 

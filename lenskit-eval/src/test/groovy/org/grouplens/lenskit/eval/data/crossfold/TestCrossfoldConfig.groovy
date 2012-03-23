@@ -39,7 +39,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 order RandomOrder
             }
         }
-        def cf = obj as CrossfoldSplit
+        def cf = obj as CrossfoldTask
         assertThat(cf.name, equalTo("ml-100k"))
         assertThat(cf.source, instanceOf(CSVDataSource))
         assertThat(cf.partitionCount, equalTo(10))
@@ -58,7 +58,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 }
             }
         }
-        def cf = obj as CrossfoldSplit
+        def cf = obj as CrossfoldTask
         assertThat(cf.name, equalTo("ml-100k"))
         assertThat(cf.source, instanceOf(CSVDataSource))
         assertThat(cf.getDAOWrapper(), notNullValue())

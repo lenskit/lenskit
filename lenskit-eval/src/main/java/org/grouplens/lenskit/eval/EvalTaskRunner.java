@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -19,42 +18,25 @@ public class EvalTaskRunner {
     private static final Logger logger = LoggerFactory.getLogger(EvalTaskRunner.class);
 
     private int threadCount = 1;
-    private EvalTaskOptions options;
+    private GlobalEvalOptions options;
     private Set<EvalTask> completed;
-    private Set<EvalTask> pending;
+
     
-    public EvalTaskRunner(EvalTaskOptions opt) {
+    public EvalTaskRunner(GlobalEvalOptions opt) {
         options = opt;
         completed = new HashSet<EvalTask>();
-        pending = new HashSet<EvalTask>();
     }
 
-    public void addTask(EvalTask task) {
-        pending.add(task);
-    }
 
-    public void run() throws EvalExecuteException {
-        while (!pending.isEmpty()) {
-            for(EvalTask t : pending) {
-                if(checkDependencies(t)) {
-                    t.call(options);
-                }
+    public void execute(EvalTask task) throws EvalTaskFailedException {
+        if(!completed.contains(task)) {
+            Set<EvalTask> depends = task.getDependencies();
+            for(EvalTask t: depends) {
+                execute(t);
             }
-
+            task.execute(options);
+            completed.add(task);
         }
     }
-
-    protected boolean checkDependencies(EvalTask task) {
-        Set<EvalTask> depends = task.getDependencies();
-        boolean result = true;
-        if(!depends.isEmpty()) {
-            for(EvalTask t : depends) {
-                result = result & completed.contains(t);
-            }
-        }
-        return result;
-    }
-    
-    
 
 }

@@ -59,7 +59,7 @@ public class GenericDataSource implements DataSource {
     }
 
     @Override
-    public long lastUpdated() {
+    public long lastModified() {
         return 0;
     }
 

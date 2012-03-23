@@ -19,11 +19,11 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 /**
  * @author Michael Ekstrand
  */
-public abstract class AbstractPredictEvalMetric extends AbstractMetric<TTPredictEvaluation>
+public abstract class AbstractPredictEvalMetric extends AbstractMetric<TrainTestEvalTask>
         implements PredictEvalMetric {
 }

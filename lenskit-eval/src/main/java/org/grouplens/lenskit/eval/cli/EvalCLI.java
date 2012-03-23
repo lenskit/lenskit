@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
@@ -58,7 +57,7 @@ public class EvalCLI {
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
 
-        EvalTaskOptions taskOptions = new EvalTaskOptions(options);
+        GlobalEvalOptions taskOptions = new GlobalEvalOptions(options);
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
         for (File f : options.getConfigFiles()) {
@@ -77,14 +76,14 @@ public class EvalCLI {
                 return;
             }
             for (EvalTask task : evals) {
-                runner.addTask(task);
+                try{
+                    runner.execute(task);
+                } catch (EvalTaskFailedException e) {
+                    reportError(e, "Execution error: " + e.getMessage());
+                }
             }
         }
-        try {
-            runner.run();
-        } catch (EvalExecuteException e) {
-            reportError(e, "Execution error: " + e.getMessage());
-        }
+
     }
 
     

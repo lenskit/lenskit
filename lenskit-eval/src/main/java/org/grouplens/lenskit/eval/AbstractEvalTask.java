@@ -11,11 +11,11 @@ import java.util.Set;
  */
 public abstract class AbstractEvalTask implements EvalTask{
     protected final String name;
-    protected Set<EvalTask> dependency;
+    protected Set<EvalTask> dependencies;
 
-    protected AbstractEvalTask(String name, Set<EvalTask> dependency) {
+    protected AbstractEvalTask(String name, Set<EvalTask> dependencies) {
         this.name = name;
-        this.dependency = dependency;
+        this.dependencies = dependencies;
     }
 
     public String getName() {
@@ -23,9 +23,9 @@ public abstract class AbstractEvalTask implements EvalTask{
     }
     
     public Set<EvalTask> getDependencies() {
-        return dependency;
+        return dependencies;
     }
 
-    public abstract void call(EvalTaskOptions options) throws EvalExecuteException;
+    public abstract void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
     
 }
