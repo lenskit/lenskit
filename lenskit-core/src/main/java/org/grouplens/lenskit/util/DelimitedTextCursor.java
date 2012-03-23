@@ -84,6 +84,5 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
     @Override
     public void close() {
         LKFileUtils.close(input);
-        Closeables.closeQuietly(input);
     }
 }
