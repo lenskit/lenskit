@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.history.UserVector;
@@ -61,6 +63,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
     private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
 
+    @Inject
     public UserNormalizedRatingSnapshot(RatingSnapshot snapshot,
                                         @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         super();

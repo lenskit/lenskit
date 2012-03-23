@@ -61,7 +61,6 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
     protected final VectorNormalizer<? super UserVector> normalizer;
     protected final BaselinePredictor baseline;
 
-    // FIXME: @Nullable BaselinePredictor is not supported
     @Inject
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
                                    @PredictNormalizer VectorNormalizer<? super UserVector> norm,

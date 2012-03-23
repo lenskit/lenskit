@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
+import javax.inject.Inject;
+
 import org.grouplens.inject.annotation.DefaultProvider;
 import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -65,6 +67,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
         private final double smoothing;
         private final DataAccessObject dao;
         
+        @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
             this.dao = dao;

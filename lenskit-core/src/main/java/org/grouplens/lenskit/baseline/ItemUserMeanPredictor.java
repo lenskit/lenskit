@@ -26,6 +26,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.inject.Inject;
+
+import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -60,6 +64,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         private double damping = 0;
         private DataAccessObject dao;
         
+        @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
             this.dao = dao;

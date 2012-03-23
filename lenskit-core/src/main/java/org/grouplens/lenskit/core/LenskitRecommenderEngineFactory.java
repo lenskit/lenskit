@@ -20,9 +20,9 @@ package org.grouplens.lenskit.core;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -38,6 +38,7 @@ import org.grouplens.inject.graph.Edge;
 import org.grouplens.inject.graph.Graph;
 import org.grouplens.inject.graph.Node;
 import org.grouplens.inject.solver.DependencySolver;
+import org.grouplens.inject.solver.ResolverException;
 import org.grouplens.inject.spi.Desire;
 import org.grouplens.inject.spi.Satisfaction;
 import org.grouplens.inject.util.InstanceProvider;
@@ -116,18 +117,27 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
+    private boolean attemptResolve(Class<?> type, DependencySolver solver) {
+        try {
+            solver.resolve(solver.getSPI().desire(null, type));
+            return true;
+        } catch(ResolverException e) {
+            return false;
+        }
+    }
+    
     public LenskitRecommenderEngine create(DataAccessObject dao) {
-        // FIXME: we really ought to clone the config before we modify it here
+        InjectorConfigurationBuilder config = this.config.clone();
         config.getRootContext().bind(DataAccessObject.class).to(dao);
         
         DependencySolver solver = new DependencySolver(config.build(), 100);
         
         // Resolve all required types to complete a Recommender
-        solver.resolve(config.getSPI().desire(null, RatingPredictor.class));
-        solver.resolve(config.getSPI().desire(null, ItemScorer.class));
-        solver.resolve(config.getSPI().desire(null, GlobalItemScorer.class));
-        solver.resolve(config.getSPI().desire(null, ItemRecommender.class));
-        solver.resolve(config.getSPI().desire(null, GlobalItemRecommender.class));
+        attemptResolve(RatingPredictor.class, solver);
+        attemptResolve(ItemScorer.class, solver);
+        attemptResolve(GlobalItemScorer.class, solver);
+        attemptResolve(ItemRecommender.class, solver);
+        attemptResolve(GlobalItemRecommender.class, solver);
 
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
@@ -196,37 +206,14 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Map<Node<Satisfaction>, Object> instantiate(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
-        Map<Node<Satisfaction>, Object> instanceMap = new HashMap<Node<Satisfaction>, Object>();
-        Set<Node<Satisfaction>> leaves = new HashSet<Node<Satisfaction>>();
-        for (Node<Satisfaction> n: graph.getNodes()) {
-            if (graph.getOutgoingEdges(n).isEmpty()) {
-                leaves.add(n);
-            }
-        }
-        
-        instantiate(leaves, instanceMap, graph, removeQueue);
-        return instanceMap;
-    }
-    
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void instantiate(Set<Node<Satisfaction>> nodes, final Map<Node<Satisfaction>, Object> instanceMap, 
-                             Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
-        // End condition is when nodes has a single node with a null satisfaction
-        if (nodes.size() == 1) {
-            Node<Satisfaction> root = nodes.iterator().next();
-            if (root.getLabel() == null) {
-                // This is the root node, so stop recursing
-                return;
-            }
-        }
-        
-        // Instantiate all nodes at this level. Since recursion starts at the
-        // leaves, we know that all dependencies have already been instantiated
-        Set<Node<Satisfaction>> nextLevel = new HashSet<Node<Satisfaction>>();
-        for (Node<Satisfaction> n: nodes) {
-            if (!instanceMap.containsKey(n)) {
-                // need to instantiate this node in the graph
+        List<Node<Satisfaction>> sorted = graph.sort(graph.getNode(null));
+        final Map<Node<Satisfaction>, Object> instanceMap = new HashMap<Node<Satisfaction>, Object>();
+
+        for (Node<Satisfaction> n: sorted) {
+            if (n.getLabel() != null && !instanceMap.containsKey(n)) {
+                // instantiate this node
                 final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
                 Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
                     @Override
@@ -258,16 +245,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                         removeQueue.add(e.getTail());
                     }
                 }
-                
-                // Determine nodes that depend on this instance and set them
-                // up for instantiation on the next recursion
-                for (Edge<Satisfaction, Desire> e: graph.getIncomingEdges(n)) {
-                    nextLevel.add(e.getHead());
-                }
             }
         }
         
-        // Move up the dependency hierarchy
-        instantiate(nextLevel, instanceMap, graph, removeQueue);
+        return instanceMap;
     }
 }

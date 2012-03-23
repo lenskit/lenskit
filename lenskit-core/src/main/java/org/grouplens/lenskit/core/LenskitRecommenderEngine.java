@@ -38,6 +38,7 @@ import org.grouplens.inject.graph.Node;
 import org.grouplens.inject.spi.Desire;
 import org.grouplens.inject.spi.InjectSPI;
 import org.grouplens.inject.spi.Satisfaction;
+import org.grouplens.inject.util.InstanceProvider;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -182,7 +183,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             }
         }
         
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         private <T> T getInstance(final Node<Satisfaction> n) {
             Object session = newInstances.get(n);
             if (session != null) {
@@ -198,7 +199,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
                 @Override
                 public Provider<?> apply(Desire desire) {
                     Node<Satisfaction> d = dependencies.getOutgoingEdge(n, desire).getTail();
-                    return getInstance(d);
+                    return new InstanceProvider(getInstance(d));
                 }
             });
             return (T) provider.get();

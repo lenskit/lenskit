@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.inject.Inject;
+
 import org.grouplens.inject.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
@@ -64,6 +66,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
     public static class Provider implements javax.inject.Provider<PackedRatingSnapshot> {
         private final DataAccessObject dao;
 
+        @Inject
         public Provider(DataAccessObject dao) {
             this.dao = dao;
         }

@@ -77,7 +77,6 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
      */
     @Inject
-    // FIXME: nullable is not supported
     public void setBaseline(@Nullable BaselinePredictor pred) {
         baseline = pred;
     }

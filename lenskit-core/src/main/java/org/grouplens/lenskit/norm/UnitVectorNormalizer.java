@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.norm;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -35,6 +37,7 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer<ImmutableSpar
     /**
      * Create a unit vector normalizer with a tolerance of 1.0e-6.
      */
+    @Inject
     public UnitVectorNormalizer() {
         this(1.0e-6);
     }
