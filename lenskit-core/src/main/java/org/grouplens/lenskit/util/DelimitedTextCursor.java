@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.util;
 
-import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 import javax.annotation.Nonnull;
