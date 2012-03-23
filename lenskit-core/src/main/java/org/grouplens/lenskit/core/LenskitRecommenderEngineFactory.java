@@ -157,14 +157,15 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             if (n.getLabel() != null) {
                 // Remove this instance if it is a DAO, or depends on a DAO,
                 // or if no other node depends on it
+                Set<Edge<Satisfaction, Desire>> incoming = buildGraph.getIncomingEdges(n);
+                
                 if (DataAccessObject.class.isAssignableFrom(n.getLabel().getErasedType())) {
                     // This is the DAO instance node specific to the build phase,
                     // we replace it with a special satisfaction so it can be replaced
                     // per-session by the LenskitRecommenderEngine
                     Node<Satisfaction> newDAONode = new Node<Satisfaction>(new DAOSatisfaction());
                     buildGraph.replaceNode(n, newDAONode);
-                } else if (buildGraph.getIncomingEdges(n).isEmpty()
-                           || requiresDAO(n, buildGraph)) {
+                } else if (incoming == null || incoming.isEmpty() || requiresDAO(n, buildGraph)) {
                     // This instance either requires a session DAO, or is no
                     // longer part of the graph
                     i.remove();
@@ -195,7 +196,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     private void pruneGraph(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
         while(!removeQueue.isEmpty()) {
             Node<Satisfaction> candidate = removeQueue.poll();
-            if (graph.getIncomingEdges(candidate).isEmpty()) {
+            Set<Edge<Satisfaction, Desire>> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
+            if (incoming != null && incoming.isEmpty()) {
                 // No other node depends on this node, so we can remove it,
                 // we must also flag its dependencies as removal candidates
                 for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(candidate)) {
