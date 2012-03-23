@@ -62,6 +62,7 @@ def ml100k = crossfold("ml-100k") {
 }
 
 trainTest {
+    depends ml100k
     dataset ml100k
 
     output "${buildDir}/eval-results.csv"
