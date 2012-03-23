@@ -18,7 +18,12 @@
  */
 package org.grouplens.lenskit.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
@@ -28,6 +33,7 @@ import java.io.File;
  * @since 0.10
  */
 public final class LKFileUtils {
+    private static final Logger logger = LoggerFactory.getLogger(LKFileUtils.class);
     private LKFileUtils() {}
 
     /**
@@ -38,5 +44,43 @@ public final class LKFileUtils {
      */
     public static boolean isCompressed(File file) {
         return file.getName().endsWith(".gz");
+    }
+
+    /**
+     * Close a set of closeable objects, swallowing and logging all exceptions.
+     * @param log The logger to which to report errors.
+     * @param toClose The objects to close.
+     * @return {@code true} if all objects closed cleanly; {@code false} if some objects
+     * failed when closing.
+     */
+    public static boolean close(Logger log, Closeable... toClose) {
+        boolean success = true;
+        for (Closeable c: toClose) {
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (IOException e) {
+                    String msg = String.format("error closing %s: %s", c, e);
+                    logger.error(msg, e);
+                    success = false;
+                } catch (RuntimeException e) {
+                    String msg = String.format("error closing %s: %s", c, e);
+                    logger.error(msg, e);
+                    success = false;
+                }
+            }
+        }
+
+        return success;
+    }
+
+    /**
+     * Close a group of objects, using a default logger.
+     * @param toClose The objects to close.
+     * @return {@code true} if all objects closed successfully.
+     * @see #close(Logger, Closeable...)
+     */
+    public static boolean close(Closeable... toClose) {
+        return close(logger, toClose);
     }
 }

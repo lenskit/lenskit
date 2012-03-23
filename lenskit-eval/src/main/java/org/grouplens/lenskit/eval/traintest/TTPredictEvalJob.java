@@ -18,14 +18,8 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
@@ -44,13 +38,16 @@ import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.recommend.RecommendEvalAccumulator;
+import org.grouplens.lenskit.util.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Supplier;
-import com.google.common.io.Closeables;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
@@ -256,12 +253,7 @@ public class TTPredictEvalJob implements Job {
                 logger.error("Error writing output", e);
             }
         } finally {
-            if (userTable != null) {
-                Closeables.closeQuietly(userTable);
-            }
-            if (predictTable != null) {
-                Closeables.closeQuietly(predictTable);
-            }
+            LKFileUtils.close(userTable, predictTable);
             dao.close();
         }
     }
