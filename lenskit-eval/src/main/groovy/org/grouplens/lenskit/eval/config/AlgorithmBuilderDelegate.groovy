@@ -59,7 +59,8 @@ class AlgorithmBuilderDelegate {
     }
 
     def methodMissing(String name, args) {
-        if (name in ["set", "setBuilder", "setComponent"]) {
+//        if (name in ["set", "setBuilder", "setComponent"]) {
+        if (name in ["bind"]) {
             factory.metaClass.invokeMethod(factory, name, args)
         } else {
             null
