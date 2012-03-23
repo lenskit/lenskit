@@ -51,7 +51,7 @@ public abstract class AbstractEvalTaskBuilder {
         return this;
     }
 
-    public AbstractEvalTaskBuilder addDepend(EvalTask task) {
+    public AbstractEvalTaskBuilder addDepends(EvalTask task) {
         dependencies.add(task);
         return this;
     }
