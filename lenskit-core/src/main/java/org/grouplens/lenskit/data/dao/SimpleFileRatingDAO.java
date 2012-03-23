@@ -21,11 +21,11 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.util.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,14 +178,14 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         try {
             buf = new BufferedReader(input);
         } catch (RuntimeException e) {
-            Closeables.closeQuietly(input);
+            LKFileUtils.close(logger, input);
             throw e;
         }
         Cursor<Rating> cursor;
         try {
             cursor = new DelimitedTextRatingCursor(buf, name, delimiter);
         } catch (RuntimeException e) {
-            Closeables.closeQuietly(buf);
+            LKFileUtils.close(logger, buf);
             throw e;
         }
         if (comp == null) {

@@ -18,8 +18,8 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
+import org.grouplens.lenskit.util.LKFileUtils;
 import org.picocontainer.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -108,10 +108,10 @@ public class CSVWriter implements TableWriter {
             Writer writer = new OutputStreamWriter(out);
             return new CSVWriter(writer, layout);
         } catch (RuntimeException e) {
-            Closeables.closeQuietly(out);
+            LKFileUtils.close(out);
             throw e;
         } catch (IOException e) {
-            Closeables.closeQuietly(out);
+            LKFileUtils.close(out);
             throw e;
         }
     }
