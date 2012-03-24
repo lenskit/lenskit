@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -42,6 +43,7 @@ import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,15 +69,19 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
     private final Holdout holdout;
     private final String trainFilePattern;
     private final String testFilePattern;
+    @Nullable
+    private Function<DAOFactory, DAOFactory> wrapper;
 
-	public CrossfoldTask(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
-                         String trainPattern, String testPattern) {
+    public CrossfoldTask(String name, Set<EvalTask> dependencies, DataSource src, int folds, Holdout hold,
+                         String trainPattern, String testPattern,
+                         @Nullable Function<DAOFactory,DAOFactory> wrapFun) {
 	    super(name, dependencies);
         source = src;
 	    partitionCount = folds;
         holdout = hold;
         trainFilePattern = trainPattern;
         testFilePattern = testPattern;
+        wrapper = wrapFun;
     }
 
     /**
@@ -302,6 +308,8 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         for(int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
             CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
+            trainBuilder.setWrapper(wrapper);
+            testBuilder.setWrapper(wrapper);
             GenericTTDataBuilder TTbuilder = new GenericTTDataBuilder();
 
             dataSets.add(TTbuilder.setTest(testBuilder.setFile(testFiles[i]).build())
