@@ -1,11 +1,9 @@
 package org.grouplens.lenskit.eval;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/20/12
- * Time: 1:22 PM
- * To change this template use File | Settings | File Templates.
+ * The exception thrown when error occurs in execution of the evaluation task
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class EvalTaskFailedException extends Exception{
 

@@ -3,11 +3,9 @@ package org.grouplens.lenskit.eval;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/14/12
- * Time: 11:48 AM
- * To change this template use File | Settings | File Templates.
+ *  The abstract class of EvalTask
+ *
+ *  @author Shuo Chang<schang@cs.umn.edu>
  */
 public abstract class AbstractEvalTask implements EvalTask{
     protected final String name;

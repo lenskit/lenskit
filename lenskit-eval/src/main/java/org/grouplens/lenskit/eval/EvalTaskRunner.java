@@ -7,11 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/20/12
- * Time: 1:29 PM
- * To change this template use File | Settings | File Templates.
+ * The runner resolves the dependencies of the evaluation task recursively and execute the evaluation task.
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class EvalTaskRunner {
 
@@ -27,7 +25,13 @@ public class EvalTaskRunner {
         completed = new HashSet<EvalTask>();
     }
 
-
+    /**
+     * The executor first checks if the dependency has been executed and resolve all the dependencies recursively
+     * before execute the input task
+     *
+     * @param task The task to be executed.
+     * @throws EvalTaskFailedException
+     */
     public void execute(EvalTask task) throws EvalTaskFailedException {
         if(!completed.contains(task)) {
             Set<EvalTask> depends = task.getDependencies();

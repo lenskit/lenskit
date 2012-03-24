@@ -118,6 +118,11 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         return holdout;
     }
 
+    /**
+     * Write the crossfold files to the disk by reading in the original data source file
+     *
+     * @throws EvalTaskFailedException
+     */
     @Override
     public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
         if(!options.isForce() && lastModified() >= source.lastModified()) {
@@ -144,6 +149,11 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         }
     }
 
+    /**
+     * Get the list of files satisfying the specified name pattern
+     * @param pattern  The file name pattern
+     * @return
+     */
     protected File[] getFiles(String pattern) {
         File[] files = new File[partitionCount];
         for (int i = 0; i < partitionCount; i++) {
@@ -152,6 +162,12 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         return files;
     }
 
+    /**
+     * Get the last modification time of all the crossfold split files. The modified time is the
+     * oldest modified time of all the files.
+     *
+     * @return The modification time
+     */
 	public long lastModified() {
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
@@ -180,6 +196,14 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 	    return mtime;
 	}
 
+    /**
+     * Create the split files from the DAO using specified holdout method.
+     *
+     * @param dao       The DAO of the data source file
+     * @param mode      Holdout mode
+     * @param splits    The map of user id to the split number of all the users
+     * @throws EvalTaskFailedException
+     */
     protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws EvalTaskFailedException {
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
@@ -229,6 +253,11 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         }
     }
 
+    /**
+     * Writing a rating event to the file using table writer
+     *
+     * @throws IOException
+     */
     protected void writeRating(TableWriter writer, Rating rating) throws IOException{
         String[] row = new String[4];
         row[0] = Long.toString(rating.getUserId());
@@ -237,8 +266,13 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         row[3] = Long.toString(rating.getTimestamp());
         writer.writeRow(row);
     }
-	
-	protected Long2IntMap splitUsers(DataAccessObject dao) {
+
+    /**
+     * Split users ids to n splits, where n is the partitionCount
+     * @param dao The DAO of the source file
+     * @return
+     */
+    protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
         // Randomly allocate users in a Fisher-Yates shuffle

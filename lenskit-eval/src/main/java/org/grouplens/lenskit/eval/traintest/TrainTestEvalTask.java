@@ -84,13 +84,11 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         dataSources = sources;
         algorithms = algos;
         metrics = metrics1;
-
         setupJobs();
     }
 
     protected void setupJobs() {
         TableLayoutBuilder master = new TableLayoutBuilder();
-
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds: dataSources) {
@@ -215,8 +213,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     }
 
     /**
-     * Run the evaluation.  This method assumes that the evaluation is already
-     * prepared — call to do that.
+     * Run the evaluation task..  .
      */
     @Override
     public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {

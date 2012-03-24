@@ -3,28 +3,32 @@ package org.grouplens.lenskit.eval;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/14/12
- * Time: 11:09 AM
- * To change this template use File | Settings | File Templates.
+ *  An evaluation task has dependencies to resolve before running.
+ *
+ *  @author Shuo Chang<schang@cs.umn.edu>
  */
 public interface EvalTask  {
 
     /**
-     * Get a descriptive name for this job.  The name is displayed in UI to let
-     * the user know what is being run.  More specific descriptors identifying
-     * this job to allow its output to be processed should be output directly
-     * to the output handler when the job is run.
+     * Get the name of the task
      *
-     * @return The name for this job.
+     * @return name of the task
      */
     String getName();
 
-
+    /**
+     *  Get the set of dependent tasks
+     *
+      * @return the set of dependencies
+     */
     Set<EvalTask> getDependencies();
 
-
+    /**
+     * Run the evaluation task
+     *
+     * @param options options that may affect the behavior of the task
+     * @throws EvalTaskFailedException
+     */
     void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
 
 }

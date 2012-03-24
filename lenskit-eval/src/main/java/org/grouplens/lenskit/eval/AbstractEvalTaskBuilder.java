@@ -7,11 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/14/12
- * Time: 11:57 AM
- * To change this template use File | Settings | File Templates.
+ * The abstract builder for the AbstractEvalTask
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  *
  */
 public abstract class AbstractEvalTaskBuilder {
@@ -46,11 +44,20 @@ public abstract class AbstractEvalTaskBuilder {
         return dependencies;
     }
 
+    /**
+     * Add a EvalTask to the dependencies set
+     * @param task The dependency task to add
+     * @return The builder for chaining
+     */
     public AbstractEvalTaskBuilder addDependency(EvalTask task) {
         dependencies.add(task);
         return this;
     }
 
+    /**
+     * The same with {@link #addDependency(EvalTask)}
+     *
+     */
     public AbstractEvalTaskBuilder addDepends(EvalTask task) {
         dependencies.add(task);
         return this;
