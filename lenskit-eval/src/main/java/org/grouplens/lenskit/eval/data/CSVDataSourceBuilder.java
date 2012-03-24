@@ -18,12 +18,12 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
@@ -33,12 +33,14 @@ import java.io.File;
  * Build a CSV data source.
  * @author Michael Ekstrand
  */
+@SuppressWarnings("UnusedDeclaration")
 public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     String delimiter = ",";
     String sourceName;
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
+    Function<DAOFactory,DAOFactory> wrapper;
 
     public CSVDataSourceBuilder() {}
 
@@ -86,8 +88,25 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         return this;
     }
 
+    /**
+     * Set the preference domain for the data source.
+     * @param dom The preference domain.
+     * @return The builder (for chaining).
+     */
     public CSVDataSourceBuilder setDomain(PreferenceDomain dom) {
         domain = dom;
+        return this;
+    }
+
+    /**
+     * Set a wrapper function to apply to the resulting DAOs. The data source builder
+     * wraps its DAO with this function, allowing it to be augmented with additional
+     * information or transformations if desired.
+     * @param wrapFun The DAO wrapper function.
+     * @return The builder (for chaining).
+     */
+    public CSVDataSourceBuilder setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+        wrapper = wrapFun;
         return this;
     }
 
@@ -108,7 +127,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName,inputFile, delimiter, cache, domain);
+        return new CSVDataSource(sourceName,inputFile, delimiter, cache, domain, wrapper);
     }
 
     /**

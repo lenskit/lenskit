@@ -18,7 +18,9 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
@@ -40,6 +42,7 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Bui
     private String name;
     private String trainPattern;
     private String testPattern;
+    private Function<DAOFactory,DAOFactory> wrapper;
 
     public CrossfoldTaskBuilder() {
         super();
@@ -127,6 +130,17 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Bui
         return this;
     }
 
+    /**
+     * Set a wrapper function for the constructed data sources.
+     * @param wrapFun The wrapper function.
+     * @return The builder (for chaining).
+     * @see org.grouplens.lenskit.eval.data.CSVDataSourceBuilder#setWrapper(Function)
+     */
+    public CrossfoldTaskBuilder setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+        wrapper = wrapFun;
+        return this;
+    }
+
     public CrossfoldTask build() {
         if (trainPattern == null) {
             trainPattern = name + ".train.%d.csv";
@@ -136,7 +150,7 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Bui
         }
         CrossfoldTask task = new CrossfoldTask(name, dependencies, source, folds,
                                                new Holdout(order, partition),
-                                               trainPattern, testPattern);
+                                               trainPattern, testPattern, wrapper);
         return task;
     }
 

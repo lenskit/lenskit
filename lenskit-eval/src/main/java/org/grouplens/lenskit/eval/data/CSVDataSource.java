@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -26,14 +27,12 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractEvalTask;
-import org.grouplens.lenskit.eval.EvalTask;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Michael Ekstrand
@@ -45,7 +44,8 @@ public class CSVDataSource implements DataSource {
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
+    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom,
+                  @Nullable Function<DAOFactory,DAOFactory> wrap) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
@@ -57,8 +57,9 @@ public class CSVDataSource implements DataSource {
             throw new RuntimeException(e);
         }
         final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
+        DAOFactory daof = csvFactory;
         if (cache) {
-            factory = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
+            daof = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
                 @Override
                 public List<Rating> get() {
                     DataAccessObject dao = csvFactory.create();
@@ -69,9 +70,11 @@ public class CSVDataSource implements DataSource {
                     }
                 }
             });
-        } else {
-            factory = csvFactory;
         }
+        if (wrap != null) {
+            daof = wrap.apply(csvFactory);
+        }
+        factory = daof;
     }
 
     @Override
