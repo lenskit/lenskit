@@ -56,9 +56,6 @@ LensKit Release Notes
 
 ** Cleanup and Refactoring
 
-  * Moved data tree code (<<<o.g.l.dtree>>>) into <<<lenskit-core>>> as
-    <<<o.g.l.util.dtree>>>.
-
   * Moved predict evaluators to <<<o.g.l.eval.metrics.predict>>> and renamed the base
     interface to <<<PredictEvalMetric>>>.
 
@@ -77,7 +74,10 @@ LensKit Release Notes
 
     []
 
-  * <<Incompatible change>>: replaced <<<TaskTimer>>> by commons-lang3 <<<StopWatch>>>.
+  * Replaced <<<TaskTimer>>> by commons-lang3 <<<StopWatch>>>. Any code using <<<TaskTimer>>>
+    will need to be updated.
+
+  * Removed now-unnecessary data tree code.
 
   []
 

@@ -33,6 +33,7 @@ import java.io.IOException;
  * @since 0.10
  */
 public final class LKFileUtils {
+    private static final Logger logger = LoggerFactory.getLogger(LKFileUtils.class);
     private LKFileUtils() {}
 
     /**
@@ -74,30 +75,12 @@ public final class LKFileUtils {
     }
 
     /**
-     * Close a group of objects, using a logger extracted from the stack trace. Getting the
-     * logger may be a tad slow, so if you have a logger use the other method.
+     * Close a group of objects, using a default logger.
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed successfully.
      * @see #close(Logger, Closeable...)
      */
     public static boolean close(Closeable... toClose) {
-        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-        Logger logger = null;
-        int pos = 0;
-        boolean foundMyself = false;
-        while (logger == null && pos < trace.length) {
-            StackTraceElement frame = trace[pos];
-            if (foundMyself) {
-                logger = LoggerFactory.getLogger(frame.getClassName());
-            } else if (frame.getClassName().equals(LKFileUtils.class.getName())
-                    && frame.getMethodName().equals("close")) {
-                foundMyself = true;
-            }
-            pos += 1;
-        }
-        if (logger == null) {
-            logger = LoggerFactory.getLogger(LKFileUtils.class);
-        }
         return close(logger, toClose);
     }
 }

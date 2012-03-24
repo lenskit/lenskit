@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.util;
 
-import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 import javax.annotation.Nonnull;
@@ -84,6 +83,5 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
     @Override
     public void close() {
         LKFileUtils.close(input);
-        Closeables.closeQuietly(input);
     }
 }
