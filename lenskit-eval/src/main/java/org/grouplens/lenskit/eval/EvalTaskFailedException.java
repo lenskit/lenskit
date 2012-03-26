@@ -16,14 +16,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
-
-import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
+package org.grouplens.lenskit.eval;
 
 /**
- * @author Michael Ekstrand
+ * The exception thrown when error occurs in execution of the evaluation task
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
-public abstract class AbstractPredictEvalMetric extends AbstractMetric<TrainTestEvalTask>
-        implements PredictEvalMetric {
+public class EvalTaskFailedException extends Exception{
+
+    private static final long serialVersionUID = -9073424874249517829L;
+
+    public EvalTaskFailedException() {
+    }
+
+    public EvalTaskFailedException(String message) {
+        super(message);
+    }
+
+    public EvalTaskFailedException(Throwable cause) {
+        super(cause);
+    }
+
+    public EvalTaskFailedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

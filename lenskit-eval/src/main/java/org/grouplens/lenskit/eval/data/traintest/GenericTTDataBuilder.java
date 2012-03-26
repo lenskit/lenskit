@@ -20,8 +20,11 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -41,12 +44,14 @@ public class GenericTTDataBuilder implements Builder<TTDataSet> {
         this.name = name;
     }
 
-    public void setTrain(DataSource ds) {
+    public GenericTTDataBuilder setTrain(DataSource ds) {
         trainingData = ds;
+        return this;
     }
 
-    public void setTest(DataSource ds) {
+    public GenericTTDataBuilder setTest(DataSource ds) {
         testData = ds;
+        return this;
     }
 
     public GenericTTDataSet build() {

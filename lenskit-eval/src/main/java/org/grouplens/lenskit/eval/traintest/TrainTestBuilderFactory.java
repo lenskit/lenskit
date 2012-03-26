@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand
  */
 @MetaInfServices
-public class TrainTestBuilderFactory implements BuilderFactory<TTPredictEvaluation> {
+public class TrainTestBuilderFactory implements BuilderFactory<TrainTestEvalTask> {
     @Override
     public String getName() {
         return "trainTest";

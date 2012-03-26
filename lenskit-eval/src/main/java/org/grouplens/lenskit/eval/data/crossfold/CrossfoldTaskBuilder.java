@@ -22,6 +22,7 @@ import com.google.common.base.Function;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.kohsuke.MetaInfServices;
@@ -33,17 +34,21 @@ import javax.annotation.Nonnull;
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
+public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Builder<CrossfoldTask> {
     private int folds = 5;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
     private DataSource source;
     private String name;
+    private String trainPattern;
+    private String testPattern;
     private Function<DAOFactory,DAOFactory> wrapper;
 
-    public CrossfoldBuilder() {}
+    public CrossfoldTaskBuilder() {
+        super();
+    }
 
-    public CrossfoldBuilder(String name) {
+    public CrossfoldTaskBuilder(String name) {
         this.name = name;
     }
 
@@ -52,8 +57,31 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @param n The number of partitions to generate.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setPartitions(int n) {
+    public CrossfoldTaskBuilder setPartitions(int n) {
         folds = n;
+        return this;
+    }
+
+    /**
+     * Set the pattern for the training set files. The pattern should have a single format conversion
+     * capable of taking an integer ('%s' or '%d') which will be replaced with the fold number.
+     * @param pat The training file name pattern.
+     * @return The builder (for chaining)
+     * @see String#format(String, Object...)
+     */
+    public CrossfoldTaskBuilder setTrain(String pat) {
+        trainPattern = pat;
+        return this;
+    }
+
+    /**
+     * Set the pattern for the test set files.
+     * @param pat The test file name pattern.
+     * @return The builder (for chaining)
+     * @see #setTrain(String)
+     */
+    public CrossfoldTaskBuilder setTest(String pat) {
+        testPattern = pat;
         return this;
     }
 
@@ -67,7 +95,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @see #setHoldout(double)
      * @see #setHoldout(int)
      */
-    public CrossfoldBuilder setOrder(Order<Rating> o) {
+    public CrossfoldTaskBuilder setOrder(Order<Rating> o) {
         order = o;
         return this;
     }
@@ -77,7 +105,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @param n The number of items to hold out from each user's profile.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setHoldout(int n) {
+    public CrossfoldTaskBuilder setHoldout(int n) {
         partition = new CountPartition<Rating>(n);
         return this;
     }
@@ -87,7 +115,7 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @param f The fraction of a user's ratings to hold out.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setHoldout(double f) {
+    public CrossfoldTaskBuilder setHoldout(double f) {
         partition = new FractionPartition<Rating>(f);
         return this;
     }
@@ -97,44 +125,45 @@ public class CrossfoldBuilder implements Builder<CrossfoldSplit> {
      * @param source The data source to use.
      * @return The builder (for chaining)
      */
-    public CrossfoldBuilder setSource(DataSource source) {
+    public CrossfoldTaskBuilder setSource(DataSource source) {
         this.source = source;
         return this;
     }
 
     /**
-     * Specify a function that will wrap the DAO factories created by the crossfold. Used
-     * to e.g. associate a text index with the split rating data. Note that the
-     * Groovy configuration subsystem allows you to use a closure for the function,
-     * so you can do this:
-     * {@code
-     * wrapper {
-     *     return new WrappedDao(it)
-     * }
-     * }
-     * @param f The function to wrap DAOs.
-     * @return The builder (for chaining)
+     * Set a wrapper function for the constructed data sources.
+     * @param wrapFun The wrapper function.
+     * @return The builder (for chaining).
+     * @see org.grouplens.lenskit.eval.data.CSVDataSourceBuilder#setWrapper(Function)
      */
-    public CrossfoldBuilder setWrapper(Function<DAOFactory,DAOFactory> f) {
-        wrapper = f;
+    public CrossfoldTaskBuilder setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+        wrapper = wrapFun;
         return this;
     }
 
-    public CrossfoldSplit build() {
-        CrossfoldSplit split = new CrossfoldSplit(name, source, folds, new Holdout(order, partition), wrapper);
-        return split;
+    public CrossfoldTask build() {
+        if (trainPattern == null) {
+            trainPattern = name + ".train.%d.csv";
+        }
+        if (testPattern == null) {
+            testPattern = name + ".test.%d.csv";
+        }
+        CrossfoldTask task = new CrossfoldTask(name, dependencies, source, folds,
+                                               new Holdout(order, partition),
+                                               trainPattern, testPattern, wrapper);
+        return task;
     }
 
     @MetaInfServices
-    public static class Factory implements BuilderFactory<CrossfoldSplit> {
+    public static class Factory implements BuilderFactory<CrossfoldTask> {
         @Override
         public String getName() {
             return "crossfold";
         }
 
         @Nonnull @Override
-        public CrossfoldBuilder newBuilder(String arg) {
-            return new CrossfoldBuilder(arg);
+        public CrossfoldTaskBuilder newBuilder(String arg) {
+            return new CrossfoldTaskBuilder(arg);
         }
     }
 }

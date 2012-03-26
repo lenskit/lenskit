@@ -21,7 +21,7 @@ package org.grouplens.lenskit.eval.metrics;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
-import org.grouplens.lenskit.eval.traintest.TTPredictEvaluation;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -31,7 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public interface EvalMetric<T extends EvalAccumulator> extends Metric<TTPredictEvaluation> {
+public interface EvalMetric<T extends EvalAccumulator> extends Metric<TrainTestEvalTask> {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results

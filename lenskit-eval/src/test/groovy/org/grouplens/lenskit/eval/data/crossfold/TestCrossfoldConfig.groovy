@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.*
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.CSVDataSource
+import org.junit.Ignore
 
 /**
  * Test crossfold configuration
@@ -39,7 +40,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 order RandomOrder
             }
         }
-        def cf = obj as CrossfoldSplit
+        def cf = obj as CrossfoldTask
         assertThat(cf.name, equalTo("ml-100k"))
         assertThat(cf.source, instanceOf(CSVDataSource))
         assertThat(cf.partitionCount, equalTo(10))
@@ -48,7 +49,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
         assertThat(cf.holdout.partitionMethod.fraction, closeTo(0.5, 1.0e-6))
     }
 
-    @Test
+    @Test @Ignore("wrapper functions not supported")
     void testWrapperFunction() {
         def obj = eval {
             crossfold("ml-100k") {
@@ -58,7 +59,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 }
             }
         }
-        def cf = obj as CrossfoldSplit
+        def cf = obj as CrossfoldTask
         assertThat(cf.name, equalTo("ml-100k"))
         assertThat(cf.source, instanceOf(CSVDataSource))
         assertThat(cf.getDAOWrapper(), notNullValue())

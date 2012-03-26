@@ -20,12 +20,13 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 
@@ -84,15 +85,9 @@ public class GenericTTDataSet implements TTDataSet {
     }
     
     @Override
-    public long lastUpdated(PreparationContext context) {
-        return Math.max(trainData.lastUpdated(context),
-                        testData.lastUpdated(context));
-    }
-
-    @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        context.prepare(trainData);
-        context.prepare(testData);
+    public long lastUpdated() {
+        return Math.max(trainData.lastModified(),
+                        testData.lastModified());
     }
 
     @Override

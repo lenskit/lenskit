@@ -20,8 +20,10 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalTask;
+
+import java.util.Set;
 
 /**
  * @author Michael Ekstrand
@@ -57,12 +59,10 @@ public class GenericDataSource implements DataSource {
     }
 
     @Override
-    public long lastUpdated(PreparationContext context) {
+    public long lastModified() {
         return 0;
     }
 
-    @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        /* no-op */
-    }
+
+
 }

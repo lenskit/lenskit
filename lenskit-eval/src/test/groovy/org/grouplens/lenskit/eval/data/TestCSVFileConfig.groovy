@@ -42,7 +42,7 @@ class TestCSVFileConfig extends ConfigTestBase {
         assertThat(source, notNullValue())
         assertThat(source.name, equalTo("ml-100k.dat"))
         assertThat(source.file, equalTo(new File("ml-100k.dat")))
-        assertThat(source.delimiter, equalTo("\t"))
+        assertThat(source.delimiter, equalTo(","))
     }
 
     @Test

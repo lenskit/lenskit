@@ -59,8 +59,8 @@ import com.google.common.base.Supplier;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TTPredictEvalJob implements Job {
-    private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
+public class TrainTestEvalJob implements Job {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     private final int numRecs;
     
@@ -91,7 +91,7 @@ public class TTPredictEvalJob implements Job {
      *        be prefixed with algorithm and group ID data, so only the times
      *        and eval outputProvider needs to be written.
      */
-    public TTPredictEvalJob(AlgorithmInstance algo,
+    public TrainTestEvalJob(AlgorithmInstance algo,
                             List<EvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
                             Supplier<TableWriter> out, int numRecs) {

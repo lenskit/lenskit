@@ -37,7 +37,7 @@ import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.Evaluation;
+import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,12 +109,12 @@ public class EvalConfigEngine {
      * @return A list of evaluations produced by {@code script}.
      * @throws EvaluatorConfigurationException if the script is invalid or produces an error.
      */
-    protected List<Evaluation> runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
-        List<Evaluation> evals = new LinkedList<Evaluation>();
+    protected List<EvalTask> runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
+        List<EvalTask> evals = new LinkedList<EvalTask>();
         try {
             Object obj = script.run();
-            if (obj instanceof Evaluation) {
-                evals.add((Evaluation) obj);
+            if (obj instanceof EvalTask) {
+                evals.add((EvalTask) obj);
             } else {
                 throw new EvaluatorConfigurationException("configuration script did not yield an evaluation");
             }
@@ -131,7 +131,7 @@ public class EvalConfigEngine {
      * @throws EvaluatorConfigurationException if there is a configuration error
      * @throws IOException if there is an error reading the file
      */
-    public List<Evaluation> load(File file) throws EvaluatorConfigurationException, IOException {
+    public List<EvalTask> load(File file) throws EvaluatorConfigurationException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
@@ -142,7 +142,7 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws EvaluatorConfigurationException if there is a configuration error
      */
-    public List<Evaluation> load(Reader in) throws EvaluatorConfigurationException {
+    public List<EvalTask> load(Reader in) throws EvaluatorConfigurationException {
         return runScript(loadScript(in));
     }
 

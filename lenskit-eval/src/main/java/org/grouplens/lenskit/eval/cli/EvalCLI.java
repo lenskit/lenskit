@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.config.EvalConfigEngine;
@@ -27,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
@@ -56,14 +53,16 @@ public class EvalCLI {
     public EvalCLI(EvalOptions opts) {
         options = opts;
     }
-    
+
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
-        
-        List<EvalRunner> runners = new LinkedList<EvalRunner>();
-        for (File f: options.getConfigFiles()) {
+
+        GlobalEvalOptions taskOptions = new GlobalEvalOptions(options);
+        EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
+
+        for (File f : options.getConfigFiles()) {
             logger.info("loading evaluation from {}", f);
-            List<Evaluation> evals;
+            List<EvalTask> evals;
             try {
                 evals = config.load(f);
             } catch (EvaluatorConfigurationException e) {
@@ -76,34 +75,17 @@ public class EvalCLI {
                 reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
                 return;
             }
-            for (Evaluation e: evals) {
-                runners.add(new EvalRunner(e));
-            }
-        }
-        
-        PreparationContext context = new PreparationContext();
-        context.setUnconditional(options.forcePrepare());
-        context.setCacheDirectory(options.getCacheDir());
-        for (EvalRunner runner: runners) {
-            runner.setIsolationLevel(options.getIsolation());
-            runner.setThreadCount(options.getThreadCount());
-            try {
-                runner.prepare(context);
-            } catch (PreparationException e) {
-                reportError(e, "Preparation error: " + e.getMessage());
-                return;
-            }
-            
-            if (!options.isPrepareOnly()) {
-                try {
-                    runner.run();
-                } catch (ExecutionException e) {
-                    reportError(e, "Error running evaluation: %s", e.getMessage());
-                    return;
+            for (EvalTask task : evals) {
+                try{
+                    runner.execute(task);
+                } catch (EvalTaskFailedException e) {
+                    reportError(e, "Execution error: " + e.getMessage());
                 }
             }
         }
+
     }
+
     
     protected void reportError(Exception e, String msg, Object... args) {
         String text = String.format(msg, args);

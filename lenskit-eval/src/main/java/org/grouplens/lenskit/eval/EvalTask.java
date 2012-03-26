@@ -18,38 +18,35 @@
  */
 package org.grouplens.lenskit.eval;
 
-import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.Set;
 
 /**
- * A set of job groups comprising an evaluation. Evaluations are configured and
- * set up by {@link EvalBuilder}s. They contain {@link JobGroup}s that the runner
- * should run in order to complete the evaluation.
- * 
- * @since 0.8
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ *  An evaluation task has dependencies to resolve before running.
+ *
+ *  @author Shuo Chang<schang@cs.umn.edu>
  */
-public interface Evaluation {
+public interface EvalTask  {
+
     /**
-     * Start the evaluation.  The evaluation runner calls this method before
-     * starting to run any jobs.  It is responsible for getting ready for
-     * job groups to run.
+     * Get the name of the task
+     *
+     * @return name of the task
      */
-    void start();
-    
+    String getName();
+
     /**
-     * Finalize the evaluation.  This method is called after all jobs have
-     * finished.  It is responsible for closing any output files, freeing
-     * remaining resources, etc.
+     *  Get the set of dependent tasks
+     *
+      * @return the set of dependencies
      */
-    void finish();
-    
+    Set<EvalTask> getDependencies();
+
     /**
-     * Get the job groups comprising this evaluation.
-     * 
-     * @return A list of the job groups to run for this evaluation.
+     * Run the evaluation task
+     *
+     * @param options options that may affect the behavior of the task
+     * @throws EvalTaskFailedException
      */
-    @Nonnull List<JobGroup> getJobGroups();
+    void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
+
 }

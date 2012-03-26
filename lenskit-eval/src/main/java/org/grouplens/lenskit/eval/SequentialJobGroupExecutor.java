@@ -46,12 +46,10 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
     private final List<JobGroup> groups;
     private final int threadCount;
 
-    private final EvalListenerManager listeners;
     
-    public SequentialJobGroupExecutor(int nthreads, EvalListenerManager lm) {
+    public SequentialJobGroupExecutor(int nthreads) {
         groups = new ArrayList<JobGroup>();
         threadCount = nthreads;
-        listeners = lm;
     }
     
     @Override
@@ -65,12 +63,9 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
             return new Runnable() {
                 @Override
                 public void run() {
-                    listeners.jobStarting(job);
                     try {
                         job.run();
-                        listeners.jobFinished(job, null);
                     } catch (RuntimeException e) {
-                        listeners.jobFinished(job, e);
                     }
                 }
             };
@@ -81,18 +76,15 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
     public void run() throws ExecutionException {
         ExecutorService svc = Executors.newFixedThreadPool(threadCount);
         try {
-            listeners.evaluationStarting();
             for (JobGroup group: groups) {
                 StopWatch timer = new StopWatch();
                 timer.start();
 
                 logger.info("Running job group {}", group.getName());
-                listeners.jobGroupStarting(group);
                 group.start();
                 try {
                     ExecHelpers.parallelRun(svc, Lists.transform(group.getJobs(), new JobWrapper()));
                 } finally {
-                    listeners.jobGroupFinished(group);
                     group.finish();
                 }
                 
@@ -100,12 +92,9 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
                 logger.info("Job group {} finished in {}",
                             group.getName(), timer);
             }
-            listeners.evaluationFinished(null);
         } catch (ExecutionException err) {
-            listeners.evaluationFinished(err);
             throw err;
         } catch (RuntimeException err) {
-            listeners.evaluationFinished(err);
             throw err;
         } finally {
             svc.shutdownNow();

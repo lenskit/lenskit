@@ -23,7 +23,6 @@ import java.util.Map;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.Preparable;
 import org.grouplens.lenskit.eval.config.DefaultBuilder;
 
 import javax.annotation.Nullable;
@@ -36,7 +35,7 @@ import javax.annotation.Nullable;
  *
  */
 @DefaultBuilder(GenericTTDataBuilder.class)
-public interface TTDataSet extends Preparable {
+public interface TTDataSet {
     /**
      * Get the data set name.
      * @return A name for the data set.  Used as the job group name.
@@ -77,4 +76,6 @@ public interface TTDataSet extends Preparable {
      * @return A DAO factory returning the test data.
      */
     DAOFactory getTestFactory();
+
+    long lastUpdated();
 }

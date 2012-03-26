@@ -18,31 +18,30 @@
  */
 package org.grouplens.lenskit.eval;
 
+import java.util.Set;
+
 /**
- * Error thrown when preparation fails.
- * 
- * @see Preparable
- *  * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ *  The abstract class of EvalTask
  *
+ *  @author Shuo Chang<schang@cs.umn.edu>
  */
-public class PreparationException extends Exception {
+public abstract class AbstractEvalTask implements EvalTask{
+    protected final String name;
+    protected Set<EvalTask> dependencies;
 
-    private static final long serialVersionUID = -9073424874249517829L;
-
-    public PreparationException() {
+    protected AbstractEvalTask(String name, Set<EvalTask> dependencies) {
+        this.name = name;
+        this.dependencies = dependencies;
     }
 
-    public PreparationException(String message) {
-        super(message);
+    public String getName() {
+        return name;
+    }
+    
+    public Set<EvalTask> getDependencies() {
+        return dependencies;
     }
 
-    public PreparationException(Throwable cause) {
-        super(cause);
-    }
-
-    public PreparationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
+    public abstract void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
+    
 }

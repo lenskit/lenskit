@@ -35,7 +35,7 @@ import java.util.List;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface JobGroup extends Preparable {
+public interface JobGroup {
     /**
      * Get the name of this job group. This group will be displayed in the UI,
      * and used to allow the user to selectively enable certain job groups when
@@ -50,8 +50,7 @@ public interface JobGroup extends Preparable {
      * and before any child groups are started. Job groups can pre-load data
      * here, but they are encouraged to do such loads lazily.
      * 
-     * <p>
-     * This method is <b>not</b> run before {@link #prepare(PreparationContext)}.
+     *
      */
     void start();
     

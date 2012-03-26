@@ -31,22 +31,28 @@ def buildDir = System.getProperty("project.build.directory", ".")
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
-trainTest {
-    numRecs 10
-
-    output "${buildDir}/eval-output/baselines.csv"
-    dataset crossfold {
-        source csvfile("ml-100k") {
-            file "${buildDir}/ml-100k/u.data"
-            delimiter "\t"
-            domain {
-                minimum 1.0
-                maximum 5.0
-                precision 1.0
-            }
+def ml100k = crossfold("ml-100k") {
+    source csvfile {
+        file "${buildDir}/ml-100k/u.data"
+        delimiter "\t"
+        domain {
+            minimum 1.0
+            maximum 5.0
+            precision 1.0
         }
     }
+    train "${buildDir}/ml-100k.train.%d.csv"
+    test "${buildDir}/ml-100k.test.%d.csv"
+}
 
+trainTest {
+    depends ml100k
+
+    output "${buildDir}/eval-output/baselines.csv"
+    dataset ml100k
+
+    numRecs 5
+    
     metric CoveragePredictMetric
     metric MAEPredictMetric
     metric RMSEPredictMetric

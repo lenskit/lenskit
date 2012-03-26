@@ -28,8 +28,6 @@ import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.PreparationContext;
-import org.grouplens.lenskit.eval.PreparationException;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
@@ -49,15 +47,15 @@ import com.google.common.base.Suppliers;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TTPredictEvalJobGroup implements JobGroup {
-    private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJobGroup.class);
+public class TrainTestEvalJobGroup implements JobGroup {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJobGroup.class);
     
     private TTDataSet dataSet;
     private List<Job> jobs;
 
-    private TTPredictEvaluation evaluation;
+    private TrainTestEvalTask evaluation;
 
-    public TTPredictEvalJobGroup(TTPredictEvaluation eval,
+    public TrainTestEvalJobGroup(TrainTestEvalTask eval,
                                  List<AlgorithmInstance> algos,
                                  List<EvalMetric> evals,
                                  TTDataSet data,
@@ -83,18 +81,13 @@ public class TTPredictEvalJobGroup implements JobGroup {
         jobs = new ArrayList<Job>(algos.size());
         for (AlgorithmInstance algo: algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
-            TTPredictEvalJob job = new TTPredictEvalJob(
+            TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()), numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
         }
-    }
-
-    @Override
-    public void prepare(PreparationContext context) throws PreparationException {
-        context.prepare(dataSet);
     }
 
     @Override
@@ -124,10 +117,5 @@ public class TTPredictEvalJobGroup implements JobGroup {
         } finally {
             dao.close();
         }
-    }
-
-    @Override
-    public long lastUpdated(PreparationContext context) {
-        return dataSet.lastUpdated(context);
     }
 }

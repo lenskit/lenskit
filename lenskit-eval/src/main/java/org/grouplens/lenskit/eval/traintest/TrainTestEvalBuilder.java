@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
@@ -34,7 +35,7 @@ import org.grouplens.lenskit.eval.metrics.EvalMetric;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
+public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Builder<TrainTestEvalTask> {
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
     private final List<EvalMetric> metrics;
@@ -44,6 +45,8 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     // default value for recommendation set size
     private int numRecs = 5;
 
+
+
     public TrainTestEvalBuilder() {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
@@ -52,13 +55,15 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     }
 
     @Override
-    public TTPredictEvaluation build() {
-        return new TTPredictEvaluation(dataSources, algorithms, metrics,
-                                       outputFile, userOutputFile, predictOutputFile, this.getNumRecs());
+
+    public TrainTestEvalTask build() {
+        return new TrainTestEvalTask(name, dependencies, dataSources, algorithms, metrics,
+                                       outputFile, userOutputFile, predictOutputFile, numRecs);
     }
 
     public void addDataset(TTDataSet source) {
         dataSources.add(source);
+
     }
 
     public void addAlgorithm(AlgorithmInstance algorithm) {

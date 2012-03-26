@@ -18,29 +18,43 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.io.Closeables;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
-import org.grouplens.lenskit.eval.Evaluation;
-import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
-import org.grouplens.lenskit.util.LKFileUtils;
-import org.grouplens.lenskit.util.tablewriter.*;
-import org.picocontainer.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import javax.annotation.Nonnull;
+
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.EvalTask;
+import org.grouplens.lenskit.eval.EvalTaskFailedException;
+import org.grouplens.lenskit.eval.GlobalEvalOptions;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.JobGroupExecutor;
+import org.grouplens.lenskit.eval.MergedJobGroupExecutor;
+import org.grouplens.lenskit.eval.SequentialJobGroupExecutor;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.util.LKFileUtils;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriters;
+import org.picocontainer.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.io.Closeables;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -50,8 +64,8 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public class TTPredictEvaluation implements Evaluation {
-    private static final Logger logger = LoggerFactory.getLogger(TTPredictEvaluation.class);
+public class TrainTestEvalTask extends AbstractEvalTask  {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private final File outputFile;
     private final File userOutputFile;
@@ -64,33 +78,41 @@ public class TTPredictEvaluation implements Evaluation {
     private TableWriter output;
     private TableWriter userOutput;
     private TableWriter predictOutput;
-    private int numRecs;
+    private final int numRecs;
 
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<EvalMetric> predictMetrics;
+    
+    private final List<TTDataSet> dataSources;
+    private final List<AlgorithmInstance> algorithms;
+    private final List<EvalMetric> metrics;
 
-    public TTPredictEvaluation(@Nonnull List<TTDataSet> sources,
-                               @Nonnull List<AlgorithmInstance> algos,
-                               @Nonnull List<EvalMetric> metrics,
-                               @Nonnull File output,
-                               @Nullable File userOutput,
-                               @Nullable File predictOutput,
-                               int numRecs) {
+    public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
+                             @Nonnull List<TTDataSet> sources,
+                             @Nonnull List<AlgorithmInstance> algos,
+                             @Nonnull List<EvalMetric> metrics1,
+                             @Nonnull File output,
+                             @Nullable File userOutput,
+                             @Nullable File predictOutput,
+                             int numRecs) {
+        super(name, dependencies);
+
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
+        dataSources = sources;
+        algorithms = algos;
+        metrics = metrics1;
+        setupJobs();
+        
         this.numRecs = numRecs;
 
-        setupJobs(sources, algos, metrics);
     }
 
-    protected void setupJobs(List<TTDataSet> dataSources,
-                             List<AlgorithmInstance> algorithms,
-                             List<EvalMetric> metrics) {
+    protected void setupJobs() {
         TableLayoutBuilder master = new TableLayoutBuilder();
-
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds: dataSources) {
@@ -112,8 +134,8 @@ public class TTPredictEvaluation implements Evaluation {
 
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet dataset: dataSources) {
-            TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dataset, this.numRecs);
+            TrainTestEvalJobGroup group;
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, numRecs);
             jobGroups.add(group);
         }
 
@@ -157,7 +179,7 @@ public class TTPredictEvaluation implements Evaluation {
         predictMetrics = metrics;
     }
 
-    @Override
+
     public void start() {
         logger.info("Starting evaluation");
         try {
@@ -190,7 +212,6 @@ public class TTPredictEvaluation implements Evaluation {
         }
     }
 
-    @Override
     public void finish() {
         for (EvalMetric metric: predictMetrics) {
             metric.finishEvaluation();
@@ -212,6 +233,43 @@ public class TTPredictEvaluation implements Evaluation {
             throw new RuntimeException("Error closing output", e);
         } finally {
             output = null;
+        }
+    }
+
+    /**
+     * Run the evaluation task..  .
+     */
+    @Override
+    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
+        int nthreads = options.getThreadCount();
+        if (nthreads <= 0) {
+            nthreads = Runtime.getRuntime().availableProcessors();
+        }
+        logger.info("Starting evaluation");
+        this.start();
+        logger.info("Running evaluator with {} threads", nthreads);
+        JobGroupExecutor exec;
+        switch (options.getIsolation()) {
+            case NONE:
+                exec = new MergedJobGroupExecutor(nthreads);
+                break;
+            case JOB_GROUP:
+                exec = new SequentialJobGroupExecutor(nthreads);
+                break;
+            default:
+                throw new RuntimeException("Invalid isolation level " + options.getIsolation());
+        }
+
+        for (JobGroup group: this.getJobGroups()) {
+            exec.add(group);
+        }
+        try {
+            exec.run();
+        } catch (ExecutionException e) {
+            throw new EvalTaskFailedException("Error running the evaluation", e);
+        } finally {
+            logger.info("Finishing evaluation");
+            this.finish();
         }
     }
     
@@ -260,7 +318,7 @@ public class TTPredictEvaluation implements Evaluation {
         };
     }
 
-    @Override @Nonnull
+    @Nonnull
     public List<JobGroup> getJobGroups() {
         return jobGroups;
     }
