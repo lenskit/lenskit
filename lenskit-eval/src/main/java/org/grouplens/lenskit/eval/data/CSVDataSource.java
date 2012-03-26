@@ -63,7 +63,6 @@ public class CSVDataSource implements DataSource {
         DAOFactory daof = csvFactory;
         if (cache) {
             logger.debug("constructing cached CSV source from {}", file);
-            DataAccessObject dao = csvFactory.create();
             daof = new EventCollectionDAO.Factory(new Supplier<List<Rating>>() {
                 @Override
                 public List<Rating> get() {
