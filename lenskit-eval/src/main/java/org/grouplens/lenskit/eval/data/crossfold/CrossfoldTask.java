@@ -147,8 +147,8 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         Holdout mode = this.getHoldout();
         DataAccessObject daoSnap = factory.snapshot();
         try {
-            logger.debug("Preparing data source {}", getName());
-            logger.debug("Writing train test files...");
+            logger.debug("Splitting data source {} to {} partitions",
+                         getName(), partitionCount);
             createTTFiles(daoSnap, mode, splits);
         } finally {
             daoSnap.close();
