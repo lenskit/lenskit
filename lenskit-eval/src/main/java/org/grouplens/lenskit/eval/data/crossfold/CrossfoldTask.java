@@ -131,10 +131,16 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
      */
     @Override
     public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
-        if(!options.isForce() && lastModified() >= source.lastModified()) {
-            logger.debug("Crossfold {} up to date", this);
-            return;
-        }    
+        if(!options.isForce()) {
+            long mtime = lastModified();
+            long srcMtime = source.lastModified();
+            logger.debug("crossfold {} last modified at {}", getName(), mtime);
+            logger.debug("source {} last modified at {}", getName(), srcMtime);
+            if (mtime >= srcMtime) {
+                logger.info("crossfold {} up to date", getName());
+                return;
+            }
+        }
         
         DAOFactory factory = source.getDAOFactory();
         DataAccessObject dao = factory.create();
@@ -147,8 +153,8 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         Holdout mode = this.getHoldout();
         DataAccessObject daoSnap = factory.snapshot();
         try {
-            logger.debug("Splitting data source {} to {} partitions",
-                         getName(), partitionCount);
+            logger.info("splitting data source {} to {} partitions",
+                        getName(), partitionCount);
             createTTFiles(daoSnap, mode, splits);
         } finally {
             daoSnap.close();
