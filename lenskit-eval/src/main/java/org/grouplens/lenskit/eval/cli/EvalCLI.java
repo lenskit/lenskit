@@ -57,7 +57,7 @@ public class EvalCLI {
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
 
-        GlobalEvalOptions taskOptions = new GlobalEvalOptions(options);
+        GlobalEvalOptions taskOptions = options.getEvalOptions();
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
         for (File f : options.getConfigFiles()) {

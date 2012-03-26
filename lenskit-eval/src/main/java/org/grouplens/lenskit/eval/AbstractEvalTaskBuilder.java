@@ -30,7 +30,7 @@ import java.util.Set;
  * @author Shuo Chang<schang@cs.umn.edu>
  *
  */
-public abstract class AbstractEvalTaskBuilder {
+public abstract class AbstractEvalTaskBuilder<T extends EvalTask> implements Builder<T> {
     protected String name;
     protected Set<EvalTask> dependencies = new HashSet<EvalTask>();
 
@@ -80,4 +80,7 @@ public abstract class AbstractEvalTaskBuilder {
         dependencies.add(task);
         return this;
     }
+
+    // need redeclaration due to Java type system issues
+    public abstract T build();
 }

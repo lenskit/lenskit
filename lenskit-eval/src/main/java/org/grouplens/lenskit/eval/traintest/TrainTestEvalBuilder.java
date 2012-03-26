@@ -35,7 +35,7 @@ import org.grouplens.lenskit.eval.metrics.EvalMetric;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder implements Builder<TrainTestEvalTask> {
+public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalTask> {
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
     private final List<EvalMetric> metrics;

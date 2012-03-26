@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder implements Builder<CrossfoldTask> {
+public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder<CrossfoldTask> {
     private int folds = 5;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);

@@ -21,40 +21,69 @@ package org.grouplens.lenskit.eval;
 import org.grouplens.lenskit.eval.cli.EvalOptions;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/20/12
- * Time: 2:46 PM
- * To change this template use File | Settings | File Templates.
+ * Options for evaluation tasks.
  */
 public class GlobalEvalOptions {
-    private final boolean force;
+    private boolean force = false;
     private int threadCount = 1;
     private IsolationLevel isolation = IsolationLevel.NONE;
 
-    public GlobalEvalOptions(EvalOptions opt) {
-        force = opt.forcePrepare();
-        threadCount = opt.getThreadCount();
-        isolation = opt.getIsolation();
+    public GlobalEvalOptions() {}
+
+    /**
+     * Set force mode.
+     * @param on {@code true} to turn on force mode.
+     * @return The options (for chaining).
+     * @see #isForce()
+     */
+    public GlobalEvalOptions setForce(boolean on) {
+        force = on;
+        return this;
     }
 
+    /**
+     * Query whether this run is in "force" mode. In force mode, tasks should do their
+     * work irregardless of whether files are already up-to-date.
+     * @return {@code true} if the evaluation is running in force mode.
+     */
     public boolean isForce() {
         return force;
     }
 
+    /**
+     * Get the thread count for this run.
+     * @return The number of threads to use.
+     */
     public int getThreadCount() {
         return threadCount;
     }
 
-    public void setThreadCount(int threadCount) {
+    /**
+     * Set the number of threads for tasks to use. At present, tasks are run sequentially, so this
+     * is only an instruction for how tasks are to do internal parallelism.
+     * @param threadCount The number of threads to use.
+     * @return The options (for chaining).
+     */
+    public GlobalEvalOptions setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+        return this;
     }
 
+    /**
+     * Get the "isolation" level, for JobGroup-based tasks.
+     * @return The isolation level.
+     */
     public IsolationLevel getIsolation() {
         return isolation;
     }
 
-    public void setIsolation(IsolationLevel isolation) {
+    /**
+     * Set the isolation level.
+     * @param isolation The isolation level.
+     * @return The options (for chaining).
+     */
+    public GlobalEvalOptions setIsolation(IsolationLevel isolation) {
         this.isolation = isolation;
+        return this;
     }
 }

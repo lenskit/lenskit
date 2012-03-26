@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.cli;
 
 import org.apache.commons.cli.*;
+import org.grouplens.lenskit.eval.GlobalEvalOptions;
 import org.grouplens.lenskit.eval.IsolationLevel;
 
 import java.io.File;
@@ -33,7 +34,7 @@ import java.util.Properties;
  */
 public class EvalOptions {
     private Properties properties;
-    private final boolean forcePrepare;
+    private final boolean force;
     private int threadCount = 1;
     private IsolationLevel isolation = IsolationLevel.NONE;
     private File cacheDir = new File(".eval-cache");
@@ -47,7 +48,7 @@ public class EvalOptions {
         Properties cliprops = cmd.getOptionProperties("D");
         properties.putAll(cliprops);
 
-        forcePrepare = cmd.hasOption("f");
+        force = cmd.hasOption("f");
         if (cmd.hasOption("j")) {
             threadCount = Integer.parseInt(cmd.getOptionValue("j"));
         }
@@ -138,7 +139,7 @@ public class EvalOptions {
     }
 
     public boolean forcePrepare() {
-        return forcePrepare;
+        return force;
     }
 
     public int getThreadCount() {
@@ -167,5 +168,12 @@ public class EvalOptions {
 
     public boolean printBacktraces() {
         return printBacktraces;
+    }
+    
+    public GlobalEvalOptions getEvalOptions() {
+        return new GlobalEvalOptions()
+                .setForce(force)
+                .setThreadCount(threadCount)
+                .setIsolation(isolation);
     }
 }
