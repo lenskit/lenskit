@@ -27,6 +27,8 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -38,11 +40,12 @@ import java.util.List;
  * @author Michael Ekstrand
  */
 public class CSVDataSource implements DataSource {
-    final String name;
-    final DAOFactory factory;
-    final File sourceFile;
-    final PreferenceDomain domain;
-    final String delimiter;
+    private final static Logger logger = LoggerFactory.getLogger(CSVDataSource.class);
+    private final String name;
+    private final DAOFactory factory;
+    private final File sourceFile;
+    private final PreferenceDomain domain;
+    private final String delimiter;
 
     CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom,
                   @Nullable Function<DAOFactory,DAOFactory> wrap) {
@@ -59,7 +62,9 @@ public class CSVDataSource implements DataSource {
         final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
         DAOFactory daof = csvFactory;
         if (cache) {
-            daof = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
+            logger.debug("constructing cached CSV source from {}", file);
+            DataAccessObject dao = csvFactory.create();
+            daof = new EventCollectionDAO.Factory(new Supplier<List<Rating>>() {
                 @Override
                 public List<Rating> get() {
                     DataAccessObject dao = csvFactory.create();
@@ -72,7 +77,7 @@ public class CSVDataSource implements DataSource {
             });
         }
         if (wrap != null) {
-            daof = wrap.apply(csvFactory);
+            daof = wrap.apply(daof);
         }
         factory = daof;
     }
