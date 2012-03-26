@@ -32,7 +32,7 @@ def buildDir = System.getProperty("project.build.directory", ".")
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
 trainTest {
-    recSetSize 5
+    numRecs 10
 
     output "${buildDir}/eval-output/baselines.csv"
     dataset crossfold {

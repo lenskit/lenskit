@@ -61,7 +61,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
                                  List<AlgorithmInstance> algos,
                                  List<EvalMetric> evals,
                                  TTDataSet data,
-                                 int recSetSize) {
+                                 int numRecs) {
         evaluation = eval;
         dataSet = data;
 
@@ -85,7 +85,7 @@ public class TTPredictEvalJobGroup implements JobGroup {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TTPredictEvalJob job = new TTPredictEvalJob(
                     algo, evals, data, snap,
-                    Suppliers.compose(prefix, evaluation.outputTableSupplier()), recSetSize);
+                    Suppliers.compose(prefix, evaluation.outputTableSupplier()), numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);

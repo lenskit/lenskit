@@ -62,7 +62,7 @@ import com.google.common.base.Supplier;
 public class TTPredictEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
 
-    private final int recSetSize;
+    private final int numRecs;
     
     @Nonnull
     private final AlgorithmInstance algorithm;
@@ -94,13 +94,13 @@ public class TTPredictEvalJob implements Job {
     public TTPredictEvalJob(AlgorithmInstance algo,
                             List<EvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
-                            Supplier<TableWriter> out, int recSetSize) {
+                            Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
-        this.recSetSize = recSetSize;
+        this.numRecs = numRecs;
         
         
         int ncols = 2;
@@ -215,7 +215,7 @@ public class TTPredictEvalJob implements Job {
                                     recommendations =
                                         recommender
                                             .recommend(p.getUserId(),
-                                                       recSetSize,
+                                                       numRecs,
                                                        ratings.keySet(),
                                                        null);
                                 }
