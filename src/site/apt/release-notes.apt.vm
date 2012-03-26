@@ -32,6 +32,9 @@ LensKit Release Notes
   * Evaluator inputs & outputs transparently support GZip compression if the file names end in
     ".gz".
 
+  * Removed <<<--isolate>>> command line parameter in favor of an <<<isolate>>> configuration
+    directive.
+
   []
 
 ** Algorithms

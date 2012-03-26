@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.IsolationLevel;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 
@@ -39,23 +40,23 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
     private final List<EvalMetric> metrics;
+    private IsolationLevel isolation;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
-
-
 
     public TrainTestEvalBuilder() {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<EvalMetric>();
         outputFile = new File("train-test-results.csv");
+        isolation = IsolationLevel.NONE;
     }
 
     @Override
     public TrainTestEvalTask build() {
         return new TrainTestEvalTask(name, dependencies, dataSources, algorithms, metrics,
-                                       outputFile, userOutputFile, predictOutputFile);
+                                     outputFile, userOutputFile, predictOutputFile, isolation);
     }
 
     public void addDataset(TTDataSet source) {
@@ -81,6 +82,11 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
 
     public void setPredictOutput(File file) {
         predictOutputFile = file;
+    }
+
+    public TrainTestEvalBuilder setIsolation(IsolationLevel level) {
+        isolation = level;
+        return this;
     }
 
     List<TTDataSet> dataSources() {

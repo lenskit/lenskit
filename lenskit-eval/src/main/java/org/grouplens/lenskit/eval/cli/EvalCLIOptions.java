@@ -20,12 +20,10 @@ package org.grouplens.lenskit.eval.cli;
 
 import org.apache.commons.cli.*;
 import org.grouplens.lenskit.eval.EvalOptions;
-import org.grouplens.lenskit.eval.IsolationLevel;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Parse & present command line options for running the evaluator.
@@ -33,33 +31,16 @@ import java.util.Properties;
  * @author Michael Ekstrand
  */
 public class EvalCLIOptions {
-    private Properties properties;
     private final boolean force;
     private int threadCount = 1;
-    private IsolationLevel isolation = IsolationLevel.NONE;
-    private File cacheDir = new File(".eval-cache");
-    private boolean prepareOnly;
-    private boolean throwErrors;
     private List<File> configFiles;
     private boolean printBacktraces;
 
     private EvalCLIOptions(CommandLine cmd) {
-        properties = new Properties(System.getProperties());
-        Properties cliprops = cmd.getOptionProperties("D");
-        properties.putAll(cliprops);
-
         force = cmd.hasOption("f");
         if (cmd.hasOption("j")) {
             threadCount = Integer.parseInt(cmd.getOptionValue("j"));
         }
-        if (cmd.hasOption("isolate")) {
-            isolation = IsolationLevel.JOB_GROUP;
-        }
-        if (cmd.hasOption("C")) {
-            cacheDir = new File(cmd.getOptionValue("C"));
-        }
-        prepareOnly = cmd.hasOption("prepare-only");
-        throwErrors = Boolean.parseBoolean(properties.getProperty("lenskit.eval.throwErrors", "false"));
         printBacktraces = cmd.hasOption("X");
 
         configFiles = new ArrayList<File>();
@@ -106,25 +87,6 @@ public class EvalCLIOptions {
                                .hasArg().withArgName("N")
                                .create("j"));
         opts.addOption(OptionBuilder
-                               .withDescription("isolate job groups")
-                               .withLongOpt("isolate")
-                               .create());
-        opts.addOption(OptionBuilder
-                               .withDescription("directory for cache files")
-                               .withLongOpt("cache-dir")
-                               .hasArg().withArgName("DIR")
-                               .create("C"));
-        opts.addOption(OptionBuilder
-                               .withDescription("set a property")
-                               .withArgName("property=value")
-                               .hasArgs(2)
-                               .withValueSeparator()
-                               .create("D"));
-        opts.addOption(OptionBuilder
-                               .withDescription("only prepare eval, do not run")
-                               .withLongOpt("prepare-only")
-                               .create());
-        opts.addOption(OptionBuilder
                                .withDescription("throw exceptions rather than exiting")
                                .withLongOpt("throw-errors")
                                .create());
@@ -134,11 +96,7 @@ public class EvalCLIOptions {
         return opts;
     }
 
-    public Properties getProperties() {
-        return properties;
-    }
-
-    public boolean forcePrepare() {
+    public boolean forceMode() {
         return force;
     }
 
@@ -146,20 +104,8 @@ public class EvalCLIOptions {
         return threadCount;
     }
 
-    public IsolationLevel getIsolation() {
-        return isolation;
-    }
-
-    public File getCacheDir() {
-        return cacheDir;
-    }
-
-    public boolean isPrepareOnly() {
-        return prepareOnly;
-    }
-
     public boolean throwErrors() {
-        return throwErrors;
+        return Boolean.parseBoolean(System.getProperty("lenskit.eval.throwErrors", "false"));
     }
 
     public List<File> getConfigFiles() {
@@ -173,7 +119,6 @@ public class EvalCLIOptions {
     public EvalOptions getEvalOptions() {
         return new EvalOptions()
                 .setForce(force)
-                .setThreadCount(threadCount)
-                .setIsolation(isolation);
+                .setThreadCount(threadCount);
     }
 }

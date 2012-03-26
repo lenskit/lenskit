@@ -68,6 +68,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<EvalMetric> metrics;
+    private IsolationLevel isolationLevel;
 
     public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
                              @Nonnull List<TTDataSet> sources,
@@ -75,7 +76,8 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                              @Nonnull List<EvalMetric> metrics1,
                              @Nonnull File output,
                              @Nullable File userOutput,
-                             @Nullable File predictOutput) {
+                             @Nullable File predictOutput,
+                             IsolationLevel isolation) {
         super(name, dependencies);
         outputFile = output;
         userOutputFile = userOutput;
@@ -83,6 +85,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         dataSources = sources;
         algorithms = algos;
         metrics = metrics1;
+        isolationLevel = isolation;
         setupJobs();
     }
 
@@ -221,7 +224,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         this.start();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
-        switch (options.getIsolation()) {
+        switch (isolationLevel) {
             case NONE:
                 exec = new MergedJobGroupExecutor(nthreads);
                 break;
@@ -229,7 +232,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                 exec = new SequentialJobGroupExecutor(nthreads);
                 break;
             default:
-                throw new RuntimeException("Invalid isolation level " + options.getIsolation());
+                throw new RuntimeException("Invalid isolation level " + isolationLevel);
         }
 
         for (JobGroup group: this.getJobGroups()) {

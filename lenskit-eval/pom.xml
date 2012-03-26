@@ -124,8 +124,6 @@
                     </systemProperty>
                   </systemProperties>
                   <arguments>
-                    <argument>--cache-dir</argument>
-                    <argument>${project.build.directory}/eval-cache</argument>
                     <argument>${basedir}/src/integration-test/eval.groovy</argument>
                   </arguments>
                 </configuration>

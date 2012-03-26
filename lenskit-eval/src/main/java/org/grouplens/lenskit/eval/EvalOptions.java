@@ -24,7 +24,6 @@ package org.grouplens.lenskit.eval;
 public class EvalOptions {
     private boolean force = false;
     private int threadCount = 1;
-    private IsolationLevel isolation = IsolationLevel.NONE;
 
     public EvalOptions() {}
 
@@ -64,24 +63,6 @@ public class EvalOptions {
      */
     public EvalOptions setThreadCount(int threadCount) {
         this.threadCount = threadCount;
-        return this;
-    }
-
-    /**
-     * Get the "isolation" level, for JobGroup-based tasks.
-     * @return The isolation level.
-     */
-    public IsolationLevel getIsolation() {
-        return isolation;
-    }
-
-    /**
-     * Set the isolation level.
-     * @param isolation The isolation level.
-     * @return The options (for chaining).
-     */
-    public EvalOptions setIsolation(IsolationLevel isolation) {
-        this.isolation = isolation;
         return this;
     }
 }
