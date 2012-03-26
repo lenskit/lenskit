@@ -28,8 +28,6 @@ LensKit Release Notes
 
   * Allow demo & smoke-test to use a local copy of the ML-100K data set.
 
-  * CSV data source caches are now hard rather than soft references.
-
   []
 
 ** Algorithms

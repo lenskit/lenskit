@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -59,27 +58,19 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      */
     @ThreadSafe
     public static class Factory implements DAOFactory {
-        private Supplier<? extends Collection<? extends Event>> supplier;
-        private transient volatile EventCollectionDAO singleton;
+        private final Collection<? extends Event> events;
+        private transient volatile  EventCollectionDAO singleton;
 
         public Factory(Collection<? extends Event> ratings) {
-            supplier = Suppliers.ofInstance(ratings);
-        }
-
-        public Factory(Supplier<? extends Collection<? extends Event>> s) {
-            supplier = s;
+            this.events = ratings;
         }
 
         @Override
-        public EventCollectionDAO create() {
+        public synchronized EventCollectionDAO create() {
             if (singleton == null) {
-                synchronized (this) {
-                    if (singleton == null) {
-                        singleton = new EventCollectionDAO(supplier.get());
-                        singleton.requireItemCache();
-                        singleton.requireUserCache();
-                    }
-                }
+                singleton = new EventCollectionDAO(events);
+                singleton.requireItemCache();
+                singleton.requireUserCache();
             }
 
             return singleton;
