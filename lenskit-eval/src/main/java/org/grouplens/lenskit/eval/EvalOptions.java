@@ -18,17 +18,15 @@
  */
 package org.grouplens.lenskit.eval;
 
-import org.grouplens.lenskit.eval.cli.EvalOptions;
-
 /**
  * Options for evaluation tasks.
  */
-public class GlobalEvalOptions {
+public class EvalOptions {
     private boolean force = false;
     private int threadCount = 1;
     private IsolationLevel isolation = IsolationLevel.NONE;
 
-    public GlobalEvalOptions() {}
+    public EvalOptions() {}
 
     /**
      * Set force mode.
@@ -36,7 +34,7 @@ public class GlobalEvalOptions {
      * @return The options (for chaining).
      * @see #isForce()
      */
-    public GlobalEvalOptions setForce(boolean on) {
+    public EvalOptions setForce(boolean on) {
         force = on;
         return this;
     }
@@ -64,7 +62,7 @@ public class GlobalEvalOptions {
      * @param threadCount The number of threads to use.
      * @return The options (for chaining).
      */
-    public GlobalEvalOptions setThreadCount(int threadCount) {
+    public EvalOptions setThreadCount(int threadCount) {
         this.threadCount = threadCount;
         return this;
     }
@@ -82,7 +80,7 @@ public class GlobalEvalOptions {
      * @param isolation The isolation level.
      * @return The options (for chaining).
      */
-    public GlobalEvalOptions setIsolation(IsolationLevel isolation) {
+    public EvalOptions setIsolation(IsolationLevel isolation) {
         this.isolation = isolation;
         return this;
     }

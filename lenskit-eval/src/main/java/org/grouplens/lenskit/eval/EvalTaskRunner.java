@@ -34,11 +34,11 @@ public class EvalTaskRunner {
     private static final Logger logger = LoggerFactory.getLogger(EvalTaskRunner.class);
 
     private int threadCount = 1;
-    private GlobalEvalOptions options;
+    private EvalOptions options;
     private Set<EvalTask> completed;
 
     
-    public EvalTaskRunner(GlobalEvalOptions opt) {
+    public EvalTaskRunner(EvalOptions opt) {
         options = opt;
         completed = new HashSet<EvalTask>();
     }

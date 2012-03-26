@@ -43,21 +43,21 @@ public class EvalCLI {
      * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
-        EvalOptions options = EvalOptions.parse(args);
+        EvalCLIOptions options = EvalCLIOptions.parse(args);
         EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
     
-    EvalOptions options;
+    EvalCLIOptions options;
     
-    public EvalCLI(EvalOptions opts) {
+    public EvalCLI(EvalCLIOptions opts) {
         options = opts;
     }
 
     public void run() {
         EvalConfigEngine config = new EvalConfigEngine();
 
-        GlobalEvalOptions taskOptions = options.getEvalOptions();
+        EvalOptions taskOptions = options.getEvalOptions();
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
         for (File f : options.getConfigFiles()) {

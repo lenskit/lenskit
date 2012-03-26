@@ -216,7 +216,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
      * Run the evaluation task..  .
      */
     @Override
-    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
+    public void execute(EvalOptions options) throws EvalTaskFailedException {
         int nthreads = options.getThreadCount();
         if (nthreads <= 0) {
             nthreads = Runtime.getRuntime().availableProcessors();

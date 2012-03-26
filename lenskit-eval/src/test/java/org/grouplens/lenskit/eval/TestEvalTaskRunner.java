@@ -53,7 +53,7 @@ public class TestEvalTaskRunner {
 
         public EvalTask build() {
             return new AbstractEvalTask(getName(), getDependencies()) {
-                public void execute(GlobalEvalOptions opts) {
+                public void execute(EvalOptions opts) {
                     for (Runnable r: before) {
                         r.run();
                     }
@@ -66,7 +66,7 @@ public class TestEvalTaskRunner {
 
     @Before
     public void createRunner() {
-        runner = new EvalTaskRunner(new GlobalEvalOptions());
+        runner = new EvalTaskRunner(new EvalOptions());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class TestEvalTaskRunner {
     public void testCatchRuntimeError() throws EvalTaskFailedException {
         runner.execute(new AbstractEvalTask("fail", Collections.<EvalTask>emptySet()) {
             @Override
-            public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
+            public void execute(EvalOptions options) throws EvalTaskFailedException {
                 throw new RuntimeException("Failed!");
             }
         });

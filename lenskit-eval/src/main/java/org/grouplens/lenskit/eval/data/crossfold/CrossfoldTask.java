@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvalTaskFailedException;
-import org.grouplens.lenskit.eval.GlobalEvalOptions;
+import org.grouplens.lenskit.eval.EvalOptions;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
@@ -130,7 +130,7 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
      * @throws EvalTaskFailedException
      */
     @Override
-    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
+    public void execute(EvalOptions options) throws EvalTaskFailedException {
         if(!options.isForce()) {
             long mtime = lastModified();
             long srcMtime = source.lastModified();

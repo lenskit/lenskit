@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.eval.cli;
 
 import org.apache.commons.cli.*;
-import org.grouplens.lenskit.eval.GlobalEvalOptions;
+import org.grouplens.lenskit.eval.EvalOptions;
 import org.grouplens.lenskit.eval.IsolationLevel;
 
 import java.io.File;
@@ -32,7 +32,7 @@ import java.util.Properties;
  * @since 0.10
  * @author Michael Ekstrand
  */
-public class EvalOptions {
+public class EvalCLIOptions {
     private Properties properties;
     private final boolean force;
     private int threadCount = 1;
@@ -43,7 +43,7 @@ public class EvalOptions {
     private List<File> configFiles;
     private boolean printBacktraces;
 
-    private EvalOptions(CommandLine cmd) {
+    private EvalCLIOptions(CommandLine cmd) {
         properties = new Properties(System.getProperties());
         Properties cliprops = cmd.getOptionProperties("D");
         properties.putAll(cliprops);
@@ -68,7 +68,7 @@ public class EvalOptions {
         }
     }
 
-    public static EvalOptions parse(String... args) {
+    public static EvalCLIOptions parse(String... args) {
         CommandLineParser parser = new GnuParser();
         CommandLine line;
         Options options = makeOptions();
@@ -85,7 +85,7 @@ public class EvalOptions {
             System.exit(1);
             return null;
         } else {
-            return new EvalOptions(line);
+            return new EvalCLIOptions(line);
         }
     }
 
@@ -170,8 +170,8 @@ public class EvalOptions {
         return printBacktraces;
     }
     
-    public GlobalEvalOptions getEvalOptions() {
-        return new GlobalEvalOptions()
+    public EvalOptions getEvalOptions() {
+        return new EvalOptions()
                 .setForce(force)
                 .setThreadCount(threadCount)
                 .setIsolation(isolation);
