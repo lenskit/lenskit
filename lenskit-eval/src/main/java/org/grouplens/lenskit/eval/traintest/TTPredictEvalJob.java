@@ -18,8 +18,14 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
@@ -44,10 +50,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.base.Supplier;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
@@ -59,8 +62,7 @@ import java.util.List;
 public class TTPredictEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TTPredictEvalJob.class);
 
-    // FIXME balke: make configurable
-    private static final int recSetSize = 5;
+    private final int recSetSize;
     
     @Nonnull
     private final AlgorithmInstance algorithm;
@@ -92,12 +94,14 @@ public class TTPredictEvalJob implements Job {
     public TTPredictEvalJob(AlgorithmInstance algo,
                             List<EvalMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
-                            Supplier<TableWriter> out) {
+                            Supplier<TableWriter> out, int recSetSize) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
+        this.recSetSize = recSetSize;
+        
         
         int ncols = 2;
         for (EvalMetric eval: evals) {

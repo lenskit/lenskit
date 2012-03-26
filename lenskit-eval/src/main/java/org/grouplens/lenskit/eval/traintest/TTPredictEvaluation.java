@@ -64,6 +64,7 @@ public class TTPredictEvaluation implements Evaluation {
     private TableWriter output;
     private TableWriter userOutput;
     private TableWriter predictOutput;
+    private int recSetSize;
 
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
@@ -75,10 +76,12 @@ public class TTPredictEvaluation implements Evaluation {
                                @Nonnull List<EvalMetric> metrics,
                                @Nonnull File output,
                                @Nullable File userOutput,
-                               @Nullable File predictOutput) {
+                               @Nullable File predictOutput,
+                               int recSetSize) {
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
+        this.recSetSize = recSetSize;
 
         setupJobs(sources, algos, metrics);
     }
@@ -110,7 +113,7 @@ public class TTPredictEvaluation implements Evaluation {
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet dataset: dataSources) {
             TTPredictEvalJobGroup group;
-            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dataset);
+            group = new TTPredictEvalJobGroup(this, algorithms, metrics, dataset, this.recSetSize);
             jobGroups.add(group);
         }
 

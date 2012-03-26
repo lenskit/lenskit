@@ -41,6 +41,8 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
+    // default value for recommendation set size
+    private int recSetSize = 5;
 
     public TrainTestEvalBuilder() {
         dataSources = new LinkedList<TTDataSet>();
@@ -52,7 +54,7 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     @Override
     public TTPredictEvaluation build() {
         return new TTPredictEvaluation(dataSources, algorithms, metrics,
-                                       outputFile, userOutputFile, predictOutputFile);
+                                       outputFile, userOutputFile, predictOutputFile, this.getRecSetSize());
     }
 
     public void addDataset(TTDataSet source) {
@@ -98,4 +100,14 @@ public class TrainTestEvalBuilder implements Builder<TTPredictEvaluation> {
     File getPredictOutput() {
         return predictOutputFile;
     }
+
+    public int getRecSetSize() {
+        return recSetSize;
+    }
+
+    public void setRecSetSize(int recSetSize) {
+        this.recSetSize = recSetSize;
+    }
+    
+    
 }
