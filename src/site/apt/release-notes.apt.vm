@@ -32,8 +32,9 @@ LensKit Release Notes
   * Evaluator inputs & outputs transparently support GZip compression if the file names end in
     ".gz".
 
-  * Removed <<<--isolate>>> command line parameter in favor of an <<<isolate>>> configuration
-    directive.
+  * Reworked evaluation command line arguments for new Groovy-based support. Evaluation now
+    takes a single file with the <<<-f>>> option (defaults to <<<eval.groovy>>>), and the
+    remaining command line arguments are task names.
 
   []
 

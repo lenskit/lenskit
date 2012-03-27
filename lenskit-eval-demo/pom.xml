@@ -88,13 +88,13 @@
                 <configuration>
                   <executable>${eval.java.executable}</executable>
                   <arguments>
-                    <argument>-XX:CompileThreshold=100</argument>
                     <argument>-Dscripts.directory=${basedir}/src/integration-test</argument>
                     <argument>-Dproject.build.directory=${project.build.directory}</argument>
                     <argument>-Dlenskit.eval.throwErrors=true</argument>
                     <argument>-classpath</argument>
                     <classpath />
                     <argument>org.grouplens.lenskit.eval.cli.EvalCLI</argument>
+                    <argument>-f</argument>
                     <argument>${basedir}/src/integration-test/eval.groovy</argument>
                   </arguments>
                 </configuration>

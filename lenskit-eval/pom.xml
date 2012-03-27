@@ -124,6 +124,7 @@
                     </systemProperty>
                   </systemProperties>
                   <arguments>
+                    <argument>-f</argument>
                     <argument>${basedir}/src/integration-test/eval.groovy</argument>
                   </arguments>
                 </configuration>

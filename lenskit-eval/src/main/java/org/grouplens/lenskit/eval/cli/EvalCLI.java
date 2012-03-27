@@ -24,8 +24,11 @@ import org.grouplens.lenskit.eval.config.EvalConfigEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -62,33 +65,53 @@ public class EvalCLI {
         EvalOptions taskOptions = options.getEvalOptions();
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
-        logger.info("have {} files", options.getConfigFiles().size());
-        for (File f : options.getConfigFiles()) {
-            logger.info("loading evaluation from {}", f);
-            List<EvalTask> evals;
-            try {
-                evals = config.load(f);
-            } catch (EvaluatorConfigurationException e) {
-                // we handle these specially
-                reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
+        File f = options.getConfigFile();
+        logger.info("loading evaluation from {}", f);
+        EvalEnvironment env;
+        try {
+            env = config.load(f);
+        } catch (EvaluatorConfigurationException e) {
+            // we handle these specially
+            reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
+            return;
+        } catch (IOException e) {
+            reportError(e, "%s: %s", f.getPath(), e.getMessage());
+            return;
+        }
+        logger.info("loaded {} tasks", env.getTasks().size());
+
+        List<String> taskNames = options.getTasks();
+        List<EvalTask> toRun;
+        if (taskNames.isEmpty()) {
+            EvalTask task = env.getDefaultTask();
+            if (task == null) {
+                reportError(null, "%s: no default task", f);
                 return;
-            } catch (IOException e) {
-                reportError(e, "%s: %s", f.getPath(), e.getMessage());
-                return;
+            } else {
+                toRun = Collections.singletonList(env.getDefaultTask());
             }
-            logger.info("loaded {} tasks", evals.size());
-            for (EvalTask task : evals) {
-                try{
-                    runner.execute(task);
-                } catch (EvalTaskFailedException e) {
-                    reportError(e.getCause(), "Execution error: " + e.getMessage());
+        } else {
+            toRun = new ArrayList<EvalTask>(taskNames.size());
+            for (String n: taskNames) {
+                EvalTask t = env.getTask(n);
+                if (t == null) {
+                    reportError(null, "%s: no task named %s", f, n);
+                } else {
+                    toRun.add(t);
                 }
             }
         }
-
+        
+        for (EvalTask task: toRun) {
+            try{
+                runner.execute(task);
+            } catch (EvalTaskFailedException e) {
+                reportError(e.getCause(), "Execution error: " + e.getMessage());
+            }
+        }
     }
 
-    protected void reportError(Throwable e, String msg, Object... args) {
+    protected void reportError(@Nullable Throwable e, String msg, Object... args) {
         String text = String.format(msg, args);
         System.err.println(text);
         if (e instanceof ExecutionException) {
@@ -97,7 +120,10 @@ public class EvalCLI {
         if (options.throwErrors()) {
             throw new RuntimeException(text, e);
         } else {
-            StackTraceUtils.sanitize(e).printStackTrace(System.err);
+            if (e != null) {
+                //noinspection ThrowableResultOfMethodCallIgnored
+                StackTraceUtils.sanitize(e).printStackTrace(System.err);
+            }
             System.exit(2);
         }
     }

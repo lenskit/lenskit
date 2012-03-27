@@ -39,11 +39,12 @@ public class EvalCLIOptions {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLIOptions.class);
     private final boolean force;
     private int threadCount = 1;
-    private List<File> configFiles;
+    private List<String> tasks;
+    private File configFile = new File("eval.groovy");
     private URL[] classpathUrls;
 
     private EvalCLIOptions(CommandLine cmd) {
-        force = cmd.hasOption("f");
+        force = cmd.hasOption("F");
         if (cmd.hasOption("j")) {
             threadCount = Integer.parseInt(cmd.getOptionValue("j"));
         }
@@ -65,9 +66,13 @@ public class EvalCLIOptions {
             }
         }
 
-        configFiles = new ArrayList<File>();
+        if (cmd.hasOption("f")) {
+            configFile = new File(cmd.getOptionValue("f"));
+        }
+
+        tasks = new ArrayList<String>();
         for (String s: cmd.getArgs()) {
-            configFiles.add(new File(s));
+            tasks.add(s);
         }
     }
 
@@ -99,10 +104,13 @@ public class EvalCLIOptions {
                                .withDescription("print this help")
                                .withLongOpt("help")
                                .create("h"));
+        opts.addOption(OptionBuilder.withDescription("specify the eval configuration script")
+                                    .hasArg().withArgName("FILE")
+                                    .create("f"));
         opts.addOption(OptionBuilder
                                .withDescription("re-prepare data sets even if up to date")
-                               .withLongOpt("force-prepare")
-                               .create("f"));
+                               .withLongOpt("force")
+                               .create("F"));
         opts.addOption(OptionBuilder
                                .withDescription("the number of threads to use (0 to use all)")
                                .withLongOpt("threads")
@@ -131,8 +139,12 @@ public class EvalCLIOptions {
         return Boolean.parseBoolean(System.getProperty("lenskit.eval.throwErrors", "false"));
     }
 
-    public List<File> getConfigFiles() {
-        return configFiles;
+    public File getConfigFile() {
+        return configFile;
+    }
+
+    public List<String> getTasks() {
+        return tasks;
     }
 
     public ClassLoader getClassLoader(ClassLoader parent) {

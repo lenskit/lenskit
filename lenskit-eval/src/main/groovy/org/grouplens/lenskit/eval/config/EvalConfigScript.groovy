@@ -19,10 +19,11 @@
 package org.grouplens.lenskit.eval.config
 
 import org.slf4j.LoggerFactory
+import org.grouplens.lenskit.eval.EvalTask
 
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
- * machinery to set up evaluation tasks.
+ * machinery to set up evaluation taskMap.
  * @author Michael Ekstrand
  * @since 0.10
  */

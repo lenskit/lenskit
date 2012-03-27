@@ -20,27 +20,22 @@ package org.grouplens.lenskit.eval.config;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.EvalEnvironment;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
 
 /**
  * Load and process configuration files. Also provides helper methods used by the
@@ -53,6 +48,8 @@ public class EvalConfigEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
+
+    private ThreadLocal<List<EvalTask>> taskAccum = new ThreadLocal<List<EvalTask>>();
 
     private Map<String,BuilderFactory<?>> factories = null;
     @SuppressWarnings("rawtypes")
@@ -110,21 +107,21 @@ public class EvalConfigEngine {
      * @return A list of evaluations produced by {@code script}.
      * @throws EvaluatorConfigurationException if the script is invalid or produces an error.
      */
-    protected List<EvalTask> runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
-        List<EvalTask> evals = new LinkedList<EvalTask>();
+    protected EvalEnvironment runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
+        Object result = null;
+        List<EvalTask> tasks;
         try {
-            Object obj = script.run();
-            if (obj instanceof EvalTask) {
-                evals.add((EvalTask) obj);
-            } else {
-                throw new EvaluatorConfigurationException("configuration script did not yield an evaluation");
-            }
+            taskAccum.set(new LinkedList<EvalTask>());
+            result = script.run();
+            tasks = taskAccum.get();
         } catch (RuntimeException e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
         } catch (LinkageError e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
+        } finally {
+            taskAccum.set(null);
         }
-        return evals;
+        return new EvalEnvironment(tasks, result);
     }
 
     /**
@@ -134,7 +131,7 @@ public class EvalConfigEngine {
      * @throws EvaluatorConfigurationException if there is a configuration error
      * @throws IOException if there is an error reading the file
      */
-    public List<EvalTask> load(File file) throws EvaluatorConfigurationException, IOException {
+    public EvalEnvironment load(File file) throws EvaluatorConfigurationException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
@@ -145,8 +142,21 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws EvaluatorConfigurationException if there is a configuration error
      */
-    public List<EvalTask> load(Reader in) throws EvaluatorConfigurationException {
+    public EvalEnvironment load(Reader in) throws EvaluatorConfigurationException {
         return runScript(loadScript(in));
+    }
+
+    /**
+     * Register a task in the currently-being-evaluated script. Does nothing unless called from
+     * within a sript run (inside {@link #runScript(EvalConfigScript)}).
+     * @param task The task to register.
+     */
+    public void registerTask(EvalTask task) {
+        List<EvalTask> taskList = taskAccum.get();
+        logger.debug("registering task {}", task.getName());
+        if (taskList != null) {
+            taskList.add(task);
+        }
     }
 
     /**

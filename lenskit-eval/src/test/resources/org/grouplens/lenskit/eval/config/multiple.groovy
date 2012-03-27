@@ -18,29 +18,12 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.junit.Before
-import org.grouplens.lenskit.eval.EvalEnvironment
+def data = crossfold("ML") {
+    source "ml-100k/u.data"
+    partitions 5
+}
 
-/**
- * Base/helper class for testing configuration code snippets. Provides an {@link #eval(Closure)}
- * method which runs a code snippet as if it were a config script and returns the result.
- * @author Michael Ekstrand
- */
-abstract class ConfigTestBase {
-    protected EvalConfigEngine engine
-
-    @Before
-    public void createEngine() {
-        engine = new EvalConfigEngine()
-    }
-
-    /**
-     * Evalate a closure as if it were a config snippet.
-     * @param cl The code to run.
-     * @return The return value of evaluating {@code cl}.
-     */
-    protected def eval(Closure cl) {
-        def script = new ClosureScript(engine, cl)
-        return engine.runScript(script).scriptResult
-    }
+trainTest("foo") {
+    depends data
+    dataset data
 }
