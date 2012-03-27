@@ -73,13 +73,13 @@ public class TestNDCG {
     @Test
     public void testAccumulator() {
         NDCGPredictMetric.Accum acc = (new NDCGPredictMetric()).makeAccumulator(null, null);
-        acc.evaluatePredictions(1, rv1, pv1);
+        acc.evaluatePredictions(rv1, pv1);
         assertEquals(1, acc.nusers);
         assertEquals(0.9533, acc.total, 0.0001);
-        acc.evaluatePredictions(2, rv2, pv2);
+        acc.evaluatePredictions(rv2, pv2);
         assertEquals(2, acc.nusers);
         assertEquals(1.9110, acc.total, 0.0001);
-        acc.evaluatePredictions(3, rv3, pv3);
+        acc.evaluatePredictions(rv3, pv3);
         assertEquals(3, acc.nusers);
         assertEquals(2.8069, acc.total, 0.0001);
     }

@@ -25,7 +25,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
@@ -63,17 +63,17 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
-    private List<EvalMetric> predictMetrics;
+    private List<TestUserMetric> predictMetrics;
     
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
-    private List<EvalMetric> metrics;
+    private List<TestUserMetric> metrics;
     private IsolationLevel isolationLevel;
 
     public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
                              @Nonnull List<TTDataSet> sources,
                              @Nonnull List<AlgorithmInstance> algos,
-                             @Nonnull List<EvalMetric> metrics1,
+                             @Nonnull List<TestUserMetric> metrics1,
                              @Nonnull File output,
                              @Nullable File userOutput,
                              @Nullable File predictOutput,
@@ -127,7 +127,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         String[] columnLabels;
         String[] userColumnLabels;
         
-        for (EvalMetric ev: metrics) {
+        for (TestUserMetric ev: metrics) {
             columnLabels = ev.getColumnLabels();
             if (columnLabels != null){
                 for (String c: columnLabels) {
@@ -182,13 +182,13 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (EvalMetric<?> metric: predictMetrics) {
+        for (TestUserMetric metric: predictMetrics) {
             metric.startEvaluation(this);
         }
     }
 
     public void finish() {
-        for (EvalMetric metric: predictMetrics) {
+        for (TestUserMetric metric: predictMetrics) {
             metric.finishEvaluation();
         }
         if (output == null) {

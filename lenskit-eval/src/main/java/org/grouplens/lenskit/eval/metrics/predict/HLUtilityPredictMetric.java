@@ -22,11 +22,14 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HLUtilityPredictMetric extends AbstractPredictEvalMetric {
+public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
     private static final String[] COLUMNS = { "HLUtility" };
     
@@ -67,13 +70,17 @@ public class HLUtilityPredictMetric extends AbstractPredictEvalMetric {
         return utility;
     }
 
-    public class Accum implements PredictEvalAccumulator {
+    public class Accum implements TestUserMetricAccumulator {
 
         double total = 0;
         int nusers = 0;
 
         @Override
-        public String[] evaluatePredictions(long user, SparseVector ratings, SparseVector predictions) {
+        public String[] evaluate(TestUser user) {
+            return evaluatePredictions(user.getTestRatings(), user.getPredictions());
+        }
+
+        String[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);

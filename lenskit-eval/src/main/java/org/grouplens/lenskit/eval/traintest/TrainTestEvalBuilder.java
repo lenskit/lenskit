@@ -22,12 +22,11 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.IsolationLevel;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 
 /**
  * Train-test evaluator that builds on a training set and runs on a test set.
@@ -39,7 +38,7 @@ import org.grouplens.lenskit.eval.metrics.EvalMetric;
 public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalTask> {
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
-    private final List<EvalMetric> metrics;
+    private final List<TestUserMetric> metrics;
     private IsolationLevel isolation;
     private File outputFile;
     private File userOutputFile;
@@ -48,7 +47,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     public TrainTestEvalBuilder() {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
-        metrics = new LinkedList<EvalMetric>();
+        metrics = new LinkedList<TestUserMetric>();
         outputFile = new File("train-test-results.csv");
         isolation = IsolationLevel.NONE;
     }
@@ -68,7 +67,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
         algorithms.add(algorithm);
     }
 
-    public void addMetric(EvalMetric metric) {
+    public void addMetric(TestUserMetric metric) {
         metrics.add(metric);
     }
 
@@ -97,7 +96,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
         return algorithms;
     }
 
-    List<EvalMetric> getMetrics() {
+    List<TestUserMetric> getMetrics() {
         return metrics;
     }
 

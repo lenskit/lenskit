@@ -16,25 +16,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
+package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 
 /**
-* @author Michael Ekstrand
-*/
-public interface PredictEvalAccumulator extends EvalAccumulator {
+ * 
+ * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.10
+ *
+ */
+public interface TestUserMetricAccumulator {
     /**
-     * Evaluate the predictions for a user.
-     * 
-     * @param user The ID of the user currently being tested.
-     * @param ratings The user's rating vector over the test set.
-     * @param predictions The user's prediction vector over the test set.
+     * Evaluate the recommender output for a user.
+     * @param user The user to evaluate.
      * @return The results of this user's evaluation, to be emitted in the
      *         per-user table (if one is configured). The output can be
      *         {@code null} if the user could not be evaluated.
      */
-    String[] evaluatePredictions(long user, SparseVector ratings, SparseVector predictions);
+    String[] evaluate(TestUser user);
 
+    /**
+     * Finalize the evaluation and return the final values.
+     * 
+     * @return The column values for the final evaluation.
+     */
+    String[] finalResults();
 }

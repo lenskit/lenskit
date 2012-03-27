@@ -21,6 +21,9 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CoveragePredictMetric extends AbstractPredictEvalMetric {
+public class CoveragePredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final String[] COLUMNS = {
         "NUsers", "NAttempted", "NGood", "Coverage"
@@ -42,7 +45,7 @@ public class CoveragePredictMetric extends AbstractPredictEvalMetric {
     };
 
     @Override
-    public PredictEvalAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
     
@@ -56,14 +59,15 @@ public class CoveragePredictMetric extends AbstractPredictEvalMetric {
         return USER_COLUMNS;
     }
 
-    class Accum implements PredictEvalAccumulator {
+    class Accum implements TestUserMetricAccumulator {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;
 
         @Override
-        public String[] evaluatePredictions(long user, SparseVector ratings,
-                                        SparseVector predictions) {
+        public String[] evaluate(TestUser user) {
+            SparseVector ratings = user.getTestRatings();
+            SparseVector predictions = user.getPredictions();
             int n = 0;
             int good = 0;
             for (Long2DoubleMap.Entry e: ratings.fast()) {

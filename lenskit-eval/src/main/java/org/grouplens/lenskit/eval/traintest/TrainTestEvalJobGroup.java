@@ -30,7 +30,7 @@ import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.LazyValue;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
 
     public TrainTestEvalJobGroup(TrainTestEvalTask eval,
                                  List<AlgorithmInstance> algos,
-                                 List<EvalMetric> evals,
+                                 List<TestUserMetric> evals,
                                  TTDataSet data) {
         evaluation = eval;
         dataSet = data;

@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
@@ -34,10 +35,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
-import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
-import org.grouplens.lenskit.eval.metrics.recommend.RecommendEvalAccumulator;
+import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -65,7 +64,7 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final AlgorithmInstance algorithm;
     @Nonnull
-    private final List<EvalMetric> evaluators;
+    private final List<TestUserMetric> evaluators;
     @Nonnull
     private final TTDataSet data;
     @Nonnull
@@ -90,7 +89,7 @@ public class TrainTestEvalJob implements Job {
      *        and eval outputProvider needs to be written.
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
-                            List<EvalMetric> evals,
+                            List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
                             Supplier<TableWriter> out) {
         algorithm = algo;
@@ -100,7 +99,7 @@ public class TrainTestEvalJob implements Job {
         outputSupplier = out;
         
         int ncols = 2;
-        for (EvalMetric eval: evals) {
+        for (TestUserMetric eval: evals) {
             if (eval.getColumnLabels() != null) {
                 ncols += eval.getColumnLabels().length;
             }
@@ -151,32 +150,15 @@ public class TrainTestEvalJob implements Job {
             logger.info("Testing {}", algorithm.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
-            List<EvalAccumulator> evalAccums =
-                    new ArrayList<EvalAccumulator>(evaluators.size());
+            List<TestUserMetricAccumulator> evalAccums = new ArrayList<TestUserMetricAccumulator>(evaluators.size());
             
             DataAccessObject testDao = data.getTestFactory().create();
             try {
-                for (EvalMetric eval: evaluators) {
+                for (TestUserMetric eval: evaluators) {
 
-                    EvalAccumulator accum =
+                    TestUserMetricAccumulator accum =
                         eval.makeAccumulator(algorithm, data);
-
-                    if (accum instanceof PredictEvalAccumulator) {
-                        if (predictor != null) {
-                            evalAccums.add(accum);
-                        } else {
-                            logger
-                                .error("predict metric configured, but no predictor defined! Skipping metric...");
-                        }
-                    } else if (accum instanceof RecommendEvalAccumulator) {
-                        if (recommender != null) {
-                            evalAccums.add(accum);
-                        } else {
-                            logger
-                                .error("recommend metric configured, but no recommender defined! Skipping metric...");
-                        }
-                    }
-
+                    evalAccums.add(accum);
                 }
 
                 Cursor<UserHistory<Rating>> userProfiles =
@@ -187,42 +169,16 @@ public class TrainTestEvalJob implements Job {
                         SparseVector ratings =
                             RatingVectorHistorySummarizer.makeRatingVector(p);
 
-                        // check metric type
-                        SparseVector predictions = null;
-                        ScoredLongList recommendations = null;
+                        Supplier<SparseVector> preds =
+                                new PredictionSupplier(predictor, uid, ratings.keySet());
+                        Supplier<ScoredLongList> recs =
+                                new RecommendationSupplier(recommender, uid, ratings.keySet());
+                        Supplier<UserHistory<Rating>> hist = new HistorySupplier(dao, uid);
 
-                        for (EvalAccumulator accum: evalAccums) {
+                        TestUser test = new TestUser(uid, ratings, hist, preds, recs);
 
-                            String[] perUserResults = null;
-                            if (accum instanceof PredictEvalAccumulator) {
-                                if (predictions == null) {
-                                    predictions =
-                                        predictor.score(p.getUserId(),
-                                                        ratings.keySet());
-                                }
-                                perUserResults =
-                                    ((PredictEvalAccumulator) accum)
-                                        .evaluatePredictions(uid, ratings,
-                                                             predictions);
-
-                            } else if (accum instanceof RecommendEvalAccumulator) {
-
-                                if (recommendations == null) {
-                                    recommendations =
-                                        recommender
-                                            .recommend(p.getUserId(),
-                                                       recSetSize,
-                                                       ratings.keySet(),
-                                                       null);
-                                }
-                                perUserResults =
-                                    ((RecommendEvalAccumulator) accum)
-                                        .evaluateRecommendations(p.getUserId(),
-                                                                 ratings,
-                                                                 recommendations);
-
-                            }
-
+                        for (TestUserMetricAccumulator accum: evalAccums) {
+                            String[] perUserResults = accum.evaluate(test);
                             if (perUserResults != null && userTable != null) {
                                 try {
                                     userTable.writeRow(perUserResults);
@@ -233,9 +189,8 @@ public class TrainTestEvalJob implements Job {
                             }
                         }
 
-                        if (predictTable != null && predictions != null) {
-                            writePredictions(predictTable, uid, ratings,
-                                             predictions);
+                        if (predictTable != null) {
+                            writePredictions(predictTable, uid, ratings, test.getPredictions());
                         }
                     }
                 } finally {
@@ -278,12 +233,12 @@ public class TrainTestEvalJob implements Job {
         }
     }
 
-    private void writeOutput(StopWatch build, StopWatch test, List<EvalAccumulator> accums) throws IOException {
+    private void writeOutput(StopWatch build, StopWatch test, List<TestUserMetricAccumulator> accums) throws IOException {
         String[] row = new String[outputColumnCount];
         row[0] = Long.toString(build.getTime());
         row[1] = Long.toString(test.getTime());
         int col = 2;
-        for (EvalAccumulator acc: accums) {
+        for (TestUserMetricAccumulator acc: accums) {
             String[] ar = acc.finalResults();
             if (ar != null) {
                 // no aggregated output is generated
@@ -297,6 +252,61 @@ public class TrainTestEvalJob implements Job {
             output.writeRow(row);
         } finally {
             output.close();
+        }
+    }
+
+    private class PredictionSupplier implements Supplier<SparseVector> {
+        private final RatingPredictor predictor;
+        private final long user;
+        private final LongSet items;
+
+        public PredictionSupplier(RatingPredictor pred, long id, LongSet is) {
+            predictor = pred;
+            user = id;
+            items = is;
+        }
+
+        @Override
+        public SparseVector get() {
+            if (predictor == null) {
+                throw new IllegalArgumentException("cannot compute predictions without a predictor");
+            }
+            return predictor.score(user, items);
+        }
+    }
+
+    private class RecommendationSupplier implements Supplier<ScoredLongList> {
+        private final ItemRecommender recommender;
+        private final long user;
+        private final LongSet items;
+
+        public RecommendationSupplier(ItemRecommender rec, long id, LongSet is) {
+            recommender = rec;
+            user = id;
+            items = is;
+        }
+
+        @Override
+        public ScoredLongList get() {
+            if (recommender == null) {
+                throw new IllegalArgumentException("cannot compute recommendations without a recommender");
+            }
+            return recommender.recommend(user, recSetSize, items, null);
+        }
+    }
+    
+    private class HistorySupplier implements Supplier<UserHistory<Rating>> {
+        private final DataAccessObject dao;
+        private final long user;
+        
+        public HistorySupplier(DataAccessObject dao, long id) {
+            this.dao = dao;
+            user = id;
+        }
+        
+        @Override
+        public UserHistory<Rating> get() {
+            return dao.getUserHistory(user, Rating.class);
         }
     }
 }

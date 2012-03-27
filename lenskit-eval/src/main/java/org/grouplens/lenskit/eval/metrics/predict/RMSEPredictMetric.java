@@ -21,6 +21,9 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +35,13 @@ import static java.lang.Math.sqrt;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class RMSEPredictMetric extends AbstractPredictEvalMetric {
+public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
     private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
     private static final String[] USER_COLUMNS = {"RMSE"};
 
     @Override
-    public PredictEvalAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 
@@ -52,16 +55,16 @@ public class RMSEPredictMetric extends AbstractPredictEvalMetric {
         return USER_COLUMNS;
     }
 
-    class Accum implements PredictEvalAccumulator {
+    class Accum implements TestUserMetricAccumulator {
         private double sse = 0;
         private double totalRMSE = 0;
         private int nratings = 0;
         private int nusers = 0;
 
         @Override
-        public String[] evaluatePredictions(long user, SparseVector ratings,
-                                        SparseVector predictions) {
-
+        public String[] evaluate(TestUser user) {
+            SparseVector ratings = user.getTestRatings();
+            SparseVector predictions = user.getPredictions();
             double usse = 0;
             int n = 0;
             for (Long2DoubleMap.Entry e: predictions.fast()) {

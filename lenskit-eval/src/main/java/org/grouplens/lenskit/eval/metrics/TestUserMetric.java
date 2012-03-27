@@ -16,20 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
+package org.grouplens.lenskit.eval.metrics;
 
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.EvalMetric;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 /**
- * Interface for prediction accuracy evaluators. Evaluators produce accumulators
- * which in turn accumulate prediction accuracy, returning aggregate error
- * information in the {@link PredictEvalAccumulator#finalResults()} method.
+ * Interface for prediction and recommendation accuracy evaluators. Evaluators
+ * produce accumulators which in turn accumulate recommendation statistics, returning
+ * aggregate error information in the {@link TestUserMetricAccumulator#finalResults()}
+ * method.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.10
  */
-public interface PredictEvalMetric extends EvalMetric<PredictEvalAccumulator> {
+public interface TestUserMetric extends Metric<TrainTestEvalTask> {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results
@@ -46,6 +48,20 @@ public interface PredictEvalMetric extends EvalMetric<PredictEvalAccumulator> {
      * @return The result accumulator for aggregating prediction results over a single
      * evaluation.
      */
-    PredictEvalAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
+    TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
     
+    /**
+     * Get labels for the aggregate columns output by this evaluator.
+     * @return The labels for this evaluator's output, used as column headers when
+     * outputting the results table.
+     */
+    String[] getColumnLabels();
+
+    /**
+     * Get labels for the per-user columns output by this evaluator.
+     * @return The labels for this evaluator's per-user output, used as column headers
+     * when outputting the results table.
+     * @see TestUserMetricAccumulator#evaluate(org.grouplens.lenskit.eval.traintest.TestUser)
+     */
+    String[] getUserColumnLabels();
 }
