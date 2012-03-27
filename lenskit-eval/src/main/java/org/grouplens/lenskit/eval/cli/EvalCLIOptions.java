@@ -20,8 +20,13 @@ package org.grouplens.lenskit.eval.cli;
 
 import org.apache.commons.cli.*;
 import org.grouplens.lenskit.eval.EvalOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,17 +36,34 @@ import java.util.List;
  * @author Michael Ekstrand
  */
 public class EvalCLIOptions {
+    private static final Logger logger = LoggerFactory.getLogger(EvalCLIOptions.class);
     private final boolean force;
     private int threadCount = 1;
     private List<File> configFiles;
-    private boolean printBacktraces;
+    private URL[] classpathUrls;
 
     private EvalCLIOptions(CommandLine cmd) {
         force = cmd.hasOption("f");
         if (cmd.hasOption("j")) {
             threadCount = Integer.parseInt(cmd.getOptionValue("j"));
         }
-        printBacktraces = cmd.hasOption("X");
+
+        String[] cpadds = cmd.getOptionValues("C");
+        if (cpadds != null) {
+            classpathUrls = new URL[cpadds.length];
+            for (int i = 0; i < cpadds.length; i++) {
+                URL url = null;
+                try {
+                    File f = new File(cpadds[i]);
+                    url = f.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    logger.error("malformed classpath URL {}", url);
+                    throw new RuntimeException("invalid classpath entry", e);
+                }
+                logger.info("adding {} to classpath", url);
+                classpathUrls[i] = url;
+            }
+        }
 
         configFiles = new ArrayList<File>();
         for (String s: cmd.getArgs()) {
@@ -86,13 +108,14 @@ public class EvalCLIOptions {
                                .withLongOpt("threads")
                                .hasArg().withArgName("N")
                                .create("j"));
+        opts.addOption(OptionBuilder.withDescription("add a JAR or directory to the classpath")
+                                    .withLongOpt("add-to-classpath")
+                                    .hasArg()
+                                    .create("C"));
         opts.addOption(OptionBuilder
                                .withDescription("throw exceptions rather than exiting")
                                .withLongOpt("throw-errors")
                                .create());
-        opts.addOption("X", "print-backtraces", false,
-                       "print backtraces on exceptions");
-
         return opts;
     }
 
@@ -112,8 +135,16 @@ public class EvalCLIOptions {
         return configFiles;
     }
 
-    public boolean printBacktraces() {
-        return printBacktraces;
+    public ClassLoader getClassLoader(ClassLoader parent) {
+        if (classpathUrls == null) {
+            return parent;
+        } else {
+            return new URLClassLoader(classpathUrls, parent);
+        }
+    }
+
+    public ClassLoader getClassLoader() {
+        return getClassLoader(Thread.currentThread().getContextClassLoader());
     }
     
     public EvalOptions getEvalOptions() {

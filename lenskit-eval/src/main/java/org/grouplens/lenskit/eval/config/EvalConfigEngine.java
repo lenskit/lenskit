@@ -121,6 +121,8 @@ public class EvalConfigEngine {
             }
         } catch (RuntimeException e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
+        } catch (LinkageError e) {
+            throw new EvaluatorConfigurationException("error running configuration script", e);
         }
         return evals;
     }

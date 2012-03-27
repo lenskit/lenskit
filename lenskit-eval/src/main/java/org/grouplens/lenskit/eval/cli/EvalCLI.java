@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
@@ -55,11 +56,13 @@ public class EvalCLI {
     }
 
     public void run() {
-        EvalConfigEngine config = new EvalConfigEngine();
+        ClassLoader loader = options.getClassLoader();
+        EvalConfigEngine config = new EvalConfigEngine(loader);
 
         EvalOptions taskOptions = options.getEvalOptions();
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
+        logger.info("have {} files", options.getConfigFiles().size());
         for (File f : options.getConfigFiles()) {
             logger.info("loading evaluation from {}", f);
             List<EvalTask> evals;
@@ -67,35 +70,34 @@ public class EvalCLI {
                 evals = config.load(f);
             } catch (EvaluatorConfigurationException e) {
                 // we handle these specially
-                System.err.format("%s: %s\n", f.getPath(), e.getMessage());
-                StackTraceUtils.sanitize(e.getCause()).printStackTrace(System.err);
-                System.exit(2);
+                reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
                 return;
             } catch (IOException e) {
-                reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
+                reportError(e, "%s: %s", f.getPath(), e.getMessage());
                 return;
             }
+            logger.info("loaded {} tasks", evals.size());
             for (EvalTask task : evals) {
                 try{
                     runner.execute(task);
                 } catch (EvalTaskFailedException e) {
-                    reportError(e, "Execution error: " + e.getMessage());
+                    reportError(e.getCause(), "Execution error: " + e.getMessage());
                 }
             }
         }
 
     }
 
-    
-    protected void reportError(Exception e, String msg, Object... args) {
+    protected void reportError(Throwable e, String msg, Object... args) {
         String text = String.format(msg, args);
         System.err.println(text);
+        if (e instanceof ExecutionException) {
+            e = e.getCause();
+        }
         if (options.throwErrors()) {
             throw new RuntimeException(text, e);
         } else {
-            if (e != null && options.printBacktraces()) {
-                e.printStackTrace(System.err);
-            }
+            StackTraceUtils.sanitize(e).printStackTrace(System.err);
             System.exit(2);
         }
     }
