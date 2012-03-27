@@ -18,20 +18,16 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractEvalTask;
-import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * A train-test data set backed by a pair of factories.
@@ -45,15 +41,17 @@ public class GenericTTDataSet implements TTDataSet {
     private final @Nonnull DataSource trainData;
     private final @Nonnull DataSource testData;
     private final @Nullable PreferenceDomain preferenceDomain;
-    
+    private final Map<String, Object> attributes;
+
     public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
-                            @Nullable PreferenceDomain dom) {
+                            @Nullable PreferenceDomain dom, Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
         trainData = train;
         testData = test;
         preferenceDomain = dom;
+        attributes = attrs;
     }
 
     /**
@@ -72,6 +70,7 @@ public class GenericTTDataSet implements TTDataSet {
         trainData = new GenericDataSource(name + ".train", train, domain);
         testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
+        attributes = Collections.singletonMap("DataSource", (Object) name);
     }
 
     @Override @Nonnull
@@ -81,7 +80,7 @@ public class GenericTTDataSet implements TTDataSet {
     
     @Override
     public Map<String, Object> getAttributes() {
-        return Collections.<String,Object>singletonMap("DataSet", getName());
+        return attributes;
     }
     
     @Override

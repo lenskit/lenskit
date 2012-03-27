@@ -68,6 +68,7 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
     private final Holdout holdout;
     private final String trainFilePattern;
     private final String testFilePattern;
+
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
 
@@ -316,6 +317,8 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
 
             dataSets.add(TTbuilder.setTest(testBuilder.setFile(testFiles[i]).build())
                                   .setTrain(trainBuilder.setFile(trainFiles[i]).build())
+                                  .setAttribute("DataSet", name)
+                                  .setAttribute("Partition", i)
                                   .build());
         }
         return dataSets;
