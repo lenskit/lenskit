@@ -236,7 +236,7 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
                 for(UserHistory<Rating> history: historyCursor) {
                     int foldNum = splits.get(history.getUserId());
                     List<Rating> ratings = new ArrayList<Rating>(history);
-                    final int p = mode.partition(ratings);
+                    final int p = mode.partition(ratings, random);
                     final int n = ratings.size();
 
                     for (int f = 0; f < partitionCount; f++) {

@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.event.Events;
@@ -34,7 +35,7 @@ import org.grouplens.lenskit.data.event.Events;
 public class TimestampOrder<E extends Event> implements Order<E> {
 
 	@Override
-	public void apply(List<E> list) {
+	public void apply(List<E> list, Random rng) {
 		Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
 	}
 
