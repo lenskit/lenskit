@@ -30,8 +30,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -50,13 +48,7 @@ public class CSVDataSource implements DataSource {
         sourceFile = file;
         domain = pdom;
         delimiter = delim;
-        URL url;
-        try {
-            url = file.toURI().toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(url, delim);
+        final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(file, delim);
         DAOFactory daof = csvFactory;
         if (cache) {
             daof = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {

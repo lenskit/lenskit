@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.util;
 
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;

@@ -26,7 +26,6 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
-import org.grouplens.lenskit.util.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
@@ -159,15 +158,13 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     public void start() {
         logger.info("Starting evaluation");
         try {
-            output = CSVWriter.open(outputFile, outputLayout,
-                                    LKFileUtils.isCompressed(outputFile));
+            output = CSVWriter.open(outputFile, outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
         if (userOutputFile != null) {
             try {
-                userOutput = CSVWriter.open(userOutputFile, userLayout,
-                                            LKFileUtils.isCompressed(userOutputFile));
+                userOutput = CSVWriter.open(userOutputFile, userLayout);
             } catch (IOException e) {
                 Closeables.closeQuietly(output);
                 throw new RuntimeException("Error opening user output table", e);
@@ -175,8 +172,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         }
         if (predictOutputFile != null) {
             try {
-                predictOutput = CSVWriter.open(predictOutputFile, predictLayout,
-                                               LKFileUtils.isCompressed(predictOutputFile));
+                predictOutput = CSVWriter.open(predictOutputFile, predictLayout);
             } catch (IOException e) {
                 Closeables.closeQuietly(userOutput);
                 Closeables.closeQuietly(output);

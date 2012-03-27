@@ -38,7 +38,7 @@ import org.grouplens.lenskit.eval.metrics.EvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
 import org.grouplens.lenskit.eval.metrics.predict.PredictEvalAccumulator;
 import org.grouplens.lenskit.eval.metrics.recommend.RecommendEvalAccumulator;
-import org.grouplens.lenskit.util.LKFileUtils;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;

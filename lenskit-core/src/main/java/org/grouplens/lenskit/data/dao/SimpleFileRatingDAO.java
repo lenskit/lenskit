@@ -25,13 +25,12 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.LKFileUtils;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Comparator;
 
 /**
@@ -47,59 +46,39 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     public static class Factory implements DAOFactory {
         private final File file;
         private final String delimiter;
-        private final URL url;
+        private CompressionMode compression;
 
         /**
          * Create a new DAO factory from a file.
          * @param file The name of the file toopen.
          * @param delimiter The delimiter to use.
-         * @throws FileNotFoundException if the file is not found.
+         * @param comp Whether the file is compressed.
          */
-        public Factory(File file, String delimiter) throws FileNotFoundException {
+        public Factory(File file, String delimiter, CompressionMode comp) {
+            compression = comp;
             this.file = file;
-            if (!file.exists())
-                throw new FileNotFoundException(file.toString());
-            try {
-                url = file.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
             this.delimiter = delimiter;
+        }
+
+        /**
+         * Create a factory inferring compression from the file name.
+         * @param file The file name to read from.
+         * @param delimiter The delimiter.
+         * @see #Factory(File, String, CompressionMode)
+         */
+        public Factory(File file, String delimiter) {
+            this(file, delimiter, CompressionMode.AUTO);
         }
 
         /**
          * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
          * property (defaults to "\t" if not found).
          * @param file The file to read.
-         * @see #Factory(File,String)
+         * @see #Factory(File,String,CompressionMode)
          * @throws java.io.FileNotFoundException if {@code file} is not found.
          */
         public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
-        }
-
-        /**
-         * Create a new DAO factory bound to a URL.  The delimiter is read from
-         * the property <tt>lenskit.delimiter</tt>, defaulting to "\t".
-         * @param url The URL to read.
-         * @see #Factory(URL,String)
-         */
-        public Factory(URL url) {
-            this(url, System.getProperty("lenskit.delimiter", "\t"));
-        }
-
-        /**
-         * Create a new factory opening DAOs from the specified URL.
-         * @param url The URL of the data file.
-         * @param delimiter The field delimiter for parsing the file.
-         */
-        public Factory(URL url, String delimiter) {
-            this.url = url;
-            if (url.getProtocol().equals("file"))
-                file = new File(url.getPath());
-            else
-                file = null;
-            this.delimiter = delimiter;
         }
 
         public String getDelimiter() {
@@ -108,7 +87,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public SimpleFileRatingDAO create() {
-            return new SimpleFileRatingDAO(file, url, delimiter);
+            return new SimpleFileRatingDAO(file, delimiter, compression);
         }
 
         @Override
@@ -120,27 +99,23 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
 
     private final File file;
-    private final URL url;
     private final String delimiter;
+    private CompressionMode compression;
 
     /**
      * Create a URL reading from the specified file/URL and delimiter.
      * @param file The file (if <tt>null</tt>, the URL is used).
-     * @param url The URL (ignored if <var>file</var> is not <tt>null</tt>).
      * @param delimiter The delimiter to look for in the file.
+     * @param comp Whether the input is compressed.
      */
-    public SimpleFileRatingDAO(File file, URL url, String delimiter) {
+    public SimpleFileRatingDAO(File file, String delimiter, CompressionMode comp) {
         this.file = file;
-        this.url = url;
         this.delimiter = delimiter;
+        compression = comp;
     }
 
     public File getFile() {
         return file;
-    }
-
-    public URL getURL() {
-        return url;
     }
 
     @Override
@@ -159,18 +134,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         Comparator comp = getComparator(order);
 
         Reader input;
-        String name = null;
+        final String name = file.getPath();
         try {
-            if (file != null) {
-                logger.debug("Opening {}", file.getPath());
-                name = file.getPath();
-                input = new FileReader(file);
-            } else {
-                logger.debug("Opening {}", url.toString());
-                name = url.toString();
-                InputStream instr = url.openStream();
-                input = new InputStreamReader(instr);
-            }
+            logger.debug("Opening {}", file.getPath());
+            input = LKFileUtils.openInput(file, compression);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

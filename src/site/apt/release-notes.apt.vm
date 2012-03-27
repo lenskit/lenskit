@@ -29,6 +29,9 @@ LensKit Release Notes
 
   * Allow demo & smoke-test to use a local copy of the ML-100K data set.
 
+  * Evaluator inputs & outputs transparently support GZip compression if the file names end in
+    ".gz".
+
   []
 
 ** Algorithms
@@ -72,6 +75,10 @@ LensKit Release Notes
       <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
       <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
       the scanner rating cursor directly.
+
+    * <<Incompatible change>>: removed support for URL-backed streams from
+      <<<SimpleFileRatingDAO>>>. If support for generic streams are needed, we can re-add
+      this with <<<InputSupplier>>>s from Guava.
 
     []
 
