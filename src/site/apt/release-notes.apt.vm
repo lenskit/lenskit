@@ -36,6 +36,10 @@ LensKit Release Notes
     takes a single file with the <<<-f>>> option (defaults to <<<eval.groovy>>>), and the
     remaining command line arguments are task names.
 
+  * Metrics for the train-test code now take test users, in the form of <<<TestUser>>>, rather
+    than ratings & predictions. This allows them to measure recommendations, access training
+    history, and gives us flexibility to let them do even more in the future.
+
   []
 
 ** Algorithms
