@@ -20,24 +20,22 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.EvalOptions;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvalTaskFailedException;
-import org.grouplens.lenskit.eval.EvalOptions;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.CSVWriter;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
@@ -223,43 +221,46 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
         try {
-        for (int i = 0; i < partitionCount; i++) {
-            File train = trainFiles[i];
-            File test = testFiles[i];
-            try{
-                trainWriters[i] = CSVWriter.open(train, null);
-                testWriters[i] = CSVWriter.open(test, null);
-            } catch (IOException e) {
-                throw new EvalTaskFailedException("Error creating train test file writer", e);
-            }
-        }
-        try {
-            for(UserHistory<Event> userHist : dao.getUserHistories()) {
-                int foldNum = splits.get(userHist.getUserId());
-                List<Rating> ratings = new ArrayList<Rating>(userHist.filter(Rating.class));
-                final int p = mode.partition(ratings);
-                final int n = ratings.size();
-
-                for (int f = 0; f < partitionCount; f++) {
-                    if(f == foldNum) {
-                        for (int j = p; j < n; j++) {
-                            writeRating(testWriters[f], ratings.get(j));
-                        }
-                        for (int j = 0; j < p; j++) {
-                            writeRating(trainWriters[f], ratings.get(j));
-                        }
-                    }
-                    else {
-                        for (Rating rating : ratings) {
-                            writeRating(trainWriters[f], rating);
-                        }
-                    }
+            for (int i = 0; i < partitionCount; i++) {
+                File train = trainFiles[i];
+                File test = testFiles[i];
+                try{
+                    trainWriters[i] = CSVWriter.open(train, null);
+                    testWriters[i] = CSVWriter.open(test, null);
+                } catch (IOException e) {
+                    throw new EvalTaskFailedException("Error creating train test file writer", e);
                 }
-
             }
-        } catch (IOException e) {
-            throw new EvalTaskFailedException("Error writing to the train test files", e);
-        }
+            Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
+            try {
+                for(UserHistory<Rating> history: historyCursor) {
+                    int foldNum = splits.get(history.getUserId());
+                    List<Rating> ratings = new ArrayList<Rating>(history);
+                    final int p = mode.partition(ratings);
+                    final int n = ratings.size();
+
+                    for (int f = 0; f < partitionCount; f++) {
+                        if(f == foldNum) {
+                            for (int j = p; j < n; j++) {
+                                writeRating(testWriters[f], ratings.get(j));
+                            }
+                            for (int j = 0; j < p; j++) {
+                                writeRating(trainWriters[f], ratings.get(j));
+                            }
+                        }
+                        else {
+                            for (Rating rating : ratings) {
+                                writeRating(trainWriters[f], rating);
+                            }
+                        }
+                    }
+
+                }
+            } catch (IOException e) {
+                throw new EvalTaskFailedException("Error writing to the train test files", e);
+            } finally {
+                historyCursor.close();
+            }
         } finally {
             LKFileUtils.close(logger, trainWriters);
             LKFileUtils.close(logger, testWriters);
@@ -275,7 +276,8 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         String[] row = new String[4];
         row[0] = Long.toString(rating.getUserId());
         row[1] = Long.toString(rating.getItemId());
-        row[2] = rating.getPreference()!=null ? Double.toString(rating.getPreference().getValue()) : "NaN";
+        Preference pref = rating.getPreference();
+        row[2] = pref != null ? Double.toString(pref.getValue()) : "NaN";
         row[3] = Long.toString(rating.getTimestamp());
         writer.writeRow(row);
     }
@@ -283,26 +285,19 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
     /**
      * Split users ids to n splits, where n is the partitionCount
      * @param dao The DAO of the source file
-     * @return
+     * @return a map of users to partition numbers.
      */
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
-        // Randomly allocate users in a Fisher-Yates shuffle
-        // FIXME Make this use LongLists.shuffle
-        int fold = 0;
-        for (int i = users.size() - 1; i > 0; i--) {
-            int j = random.nextInt(i+1);
-            // put users[j] in a fold
-            long u = j;
-            userMap.put(u, fold);
-            fold = (fold + 1) % partitionCount;
-            // replace users[j] with users[i] to remove used user
-            if (i != j) {
-                users.set(j, users.get(i));
-            }
+        LongLists.shuffle(users, random);
+        LongListIterator iter = users.listIterator();
+        while (iter.hasNext()) {
+            final int idx = iter.nextIndex();
+            final long user = iter.nextLong();
+            userMap.put(user, idx % partitionCount);
         }
-        
+
         logger.info("Partitioned {} users", userMap.size());
         return userMap;
     }
