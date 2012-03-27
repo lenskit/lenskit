@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -78,12 +79,12 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
                 double sum = 0;
                 FastCollection<IndexedPreference> ratings = snapshot.getRatings();
                 int numRatings = ratings.size();
-                for (IndexedPreference rating : ratings.fast()) {
+                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
                     sum += rating.getValue();
                 }
                 mean = sum / numRatings;
                 sum = 0;
-                for (IndexedPreference rating : ratings.fast()) {
+                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
                     double delta = mean - rating.getValue();
                     sum += delta * delta;
                 }

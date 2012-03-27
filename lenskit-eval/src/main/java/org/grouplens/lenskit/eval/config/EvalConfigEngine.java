@@ -55,6 +55,7 @@ public class EvalConfigEngine {
     protected GroovyShell shell;
 
     private Map<String,BuilderFactory<?>> factories = null;
+    @SuppressWarnings("rawtypes")
     private final Map<Class, Class> builders = new HashMap<Class, Class>();
 
     public EvalConfigEngine() {
@@ -150,6 +151,7 @@ public class EvalConfigEngine {
      * Get the map of names to builder factories.
      * @return The mapping of builder factory names.
      */
+    @SuppressWarnings("rawtypes")
     synchronized Map<String,BuilderFactory<?>> getFactories() {
         if (factories == null) {
             ServiceLoader<BuilderFactory> loader = ServiceLoader.load(BuilderFactory.class, classLoader);
@@ -181,6 +183,7 @@ public class EvalConfigEngine {
      */
     @SuppressWarnings("unchecked")
     public <T> Class<? extends Builder<? extends T>> getBuilderForType(Class<T> type) {
+        @SuppressWarnings("rawtypes")
         Class builder = builders.get(type);
         if (builder == null) {
             DefaultBuilder annot = type.getAnnotation(DefaultBuilder.class);

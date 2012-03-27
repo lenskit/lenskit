@@ -53,7 +53,7 @@ public abstract class AbstractEvalTaskBuilder<T extends EvalTask> implements Bui
      * @param n The name for this algorithm instance.
      * @return The builder for chaining.
      */
-    public AbstractEvalTaskBuilder setName(String n) {
+    public AbstractEvalTaskBuilder<T> setName(String n) {
         name = n;
         return this;
     }
@@ -67,7 +67,7 @@ public abstract class AbstractEvalTaskBuilder<T extends EvalTask> implements Bui
      * @param task The dependency task to add
      * @return The builder for chaining
      */
-    public AbstractEvalTaskBuilder addDependency(EvalTask task) {
+    public AbstractEvalTaskBuilder<T> addDependency(EvalTask task) {
         dependencies.add(task);
         return this;
     }
@@ -76,7 +76,7 @@ public abstract class AbstractEvalTaskBuilder<T extends EvalTask> implements Bui
      * The same with {@link #addDependency(EvalTask)}
      *
      */
-    public AbstractEvalTaskBuilder addDepends(EvalTask task) {
+    public AbstractEvalTaskBuilder<T> addDepends(EvalTask task) {
         dependencies.add(task);
         return this;
     }
