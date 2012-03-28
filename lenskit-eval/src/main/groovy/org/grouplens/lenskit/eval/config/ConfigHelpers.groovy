@@ -20,6 +20,8 @@ package org.grouplens.lenskit.eval.config
 
 import org.apache.commons.lang3.builder.Builder
 import org.grouplens.lenskit.eval.EvalTask
+import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
+import org.apache.commons.lang3.reflect.ConstructorUtils
 
 /**
  * Helper methods for invoking configuration methods.
@@ -34,7 +36,6 @@ class ConfigHelpers {
         } else {
             Class<?> dlgClass = annot.value()
             // try two-arg constructor
-            Class[] classes = [EvalConfigEngine, builder.class]
             def ctor = dlgClass.constructors.find {
                 def formals = it.parameterTypes
                 formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(builder)
@@ -84,37 +85,45 @@ class ConfigHelpers {
      * inappropriate.
      */
     static Closure findBuilderMethod(EvalConfigEngine engine, String name, args) {
-        BuilderFactory factory = engine.getBuilderFactory(name)
-        if (factory == null) return null
+        Class<? extends Builder> builderClass = engine.getBuilder(name)
+        if (builderClass == null) return null
 
-        if (args.length > 2) throw new IllegalArgumentException("${name}: too many arguments")
-        Closure block = null
-        String arg = null
-        if (args.length > 0) {
-            if (args[0] instanceof Closure) {
-                if (args.length > 1) throw new IllegalArgumentException("${name}: too many arguments")
-                block = args[0]
-            } else {
-                arg = args[0]
-                if (args.length == 2) {
-                    if (args[1] instanceof Closure) {
-                        block = args[1]
-                    } else {
-                        throw new IllegalArgumentException("${name}: 2nd argument not a closure")
-                    }
-                }
-            }
+        def build = makeBuilderClosure(builderClass, engine, args)
+        if (build == null) {
+            def msg = "cannot instantiate ${builderClass.name}: no suitable constructor found"
+            throw new InstantiationException(msg)
         }
 
         // finally have validated the arguments, move on
         return {
-            def bld = factory.newBuilder(arg)
-            invokeBuilder(engine, bld, block)
-            def obj = bld.build()
+            def obj = build(args)
             if (obj instanceof EvalTask) {
                 engine.registerTask(obj as EvalTask)
             }
             obj
+        }
+    }
+
+    static def makeBuilderClosure(Class<? extends Builder> bld, EvalConfigEngine engine, Object[] args) {
+        Closure block = null
+        Object[] trimmedArgs
+        if (args.length > 0 && args[args.length-1] instanceof Closure) {
+            block = args[args.length-1] as Closure
+            trimmedArgs = Arrays.copyOf(args, args.length-1)
+        } else {
+            trimmedArgs = args
+        }
+        def bestCtor = pickInvokable(trimmedArgs) {
+            ConstructorUtils.getMatchingAccessibleConstructor(bld, it)
+        }
+        if (bestCtor != null) {
+            return {
+                Object[] txargs = bestCtor.right.collect({it.get()})
+                def builder = bestCtor.left.newInstance(txargs)
+                ConfigHelpers.invokeBuilder(engine, builder, block)
+            }
+        } else {
+            return null
         }
     }
 }

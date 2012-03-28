@@ -31,8 +31,9 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain
 class TestCSVFileConfig extends ConfigTestBase {
     @Test
     void testBuilderAvailable() {
-        def factories = engine.getFactories()
-        assertThat(factories.get("csvfile"), notNullValue())
+        def bldClass = engine.getBuilder("csvfile")
+        assertThat(bldClass, notNullValue())
+        assertThat(bldClass, equalTo(CSVDataSourceBuilder))
     }
     @Test
     void testBasic() {

@@ -45,6 +45,11 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     private File predictOutputFile;
 
     public TrainTestEvalBuilder() {
+        this("traintest");
+    }
+
+    public TrainTestEvalBuilder(String name) {
+        super(name);
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();

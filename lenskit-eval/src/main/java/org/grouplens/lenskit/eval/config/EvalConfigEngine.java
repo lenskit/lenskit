@@ -27,13 +27,16 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.EvalEnvironment;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
 
@@ -45,13 +48,13 @@ import java.util.*;
  */
 public class EvalConfigEngine {
     private static Logger logger = LoggerFactory.getLogger(EvalConfigEngine.class);
+    private static final String METHOD_PATH = "META-INF/lenskit-eval/methods/";
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
 
     private ThreadLocal<List<EvalTask>> taskAccum = new ThreadLocal<List<EvalTask>>();
 
-    private Map<String,BuilderFactory<?>> factories = null;
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> builders = new HashMap<Class, Class>();
 
@@ -160,30 +163,34 @@ public class EvalConfigEngine {
     }
 
     /**
-     * Get the map of names to builder factories.
-     * @return The mapping of builder factory names.
-     */
-    @SuppressWarnings("rawtypes")
-    synchronized Map<String,BuilderFactory<?>> getFactories() {
-        if (factories == null) {
-            ServiceLoader<BuilderFactory> loader = ServiceLoader.load(BuilderFactory.class, classLoader);
-            factories = new HashMap<String,BuilderFactory<?>>();
-            for (BuilderFactory f: loader) {
-                logger.debug("Found factory {}", f.getName());
-                factories.put(f.getName(), f);
-            }
-        }
-        return factories;
-    }
-
-    /**
      * Find a builder factory with a particular name if it exists.
      * @param name The name of the builder
      * @return The builder factory or {@code null} if no such factory exists.
      */
-    @CheckForNull
-    public BuilderFactory<?> getBuilderFactory(@Nonnull String name) {
-        return getFactories().get(name);
+    @CheckForNull @Nullable
+    public Class<? extends Builder> getBuilder(@Nonnull String name) {
+        String path = METHOD_PATH + name + ".properties";
+        logger.debug("loading method {} from {}", name, path);
+        InputStream istr = classLoader.getResourceAsStream(path);
+        if (istr == null) {
+            logger.debug("path {} not found", path);
+            return null;
+        }
+
+        try {
+            Properties props = new Properties();
+            props.load(istr);
+            String className = props.get("builder").toString();
+            if (className == null) return null;
+
+            return Class.forName(className).asSubclass(Builder.class);
+        } catch (IOException e) {
+            throw new RuntimeException("error reading method " + name, e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("cannot find builder class", e);
+        } finally {
+            LKFileUtils.close(istr);
+        }
     }
 
     /**

@@ -18,13 +18,12 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import com.google.common.base.Supplier
 import java.lang.reflect.Method
 import org.apache.commons.lang3.builder.Builder
-import org.apache.commons.lang3.reflect.ConstructorUtils
+import org.apache.commons.lang3.reflect.TypeUtils
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
-import com.google.common.base.Supplier
-import org.apache.commons.lang3.reflect.TypeUtils
 
 /**
  * Utilities for searching for methods of {@link Builder}s.
@@ -86,26 +85,10 @@ class BuilderExtensions {
                 def type = formals[0]
                 logger.debug("looking for builder of type {}", type)
                 Class bld = engine.getBuilderForType(type)
-                if (bld != null) {
-                    logger.debug("using builder {}", bld)
-                    Closure block = null
-                    Object[] trimmedArgs
-                    if (args.length > 0 && args[args.length-1] instanceof Closure) {
-                        block = args[args.length-1] as Closure
-                        trimmedArgs = Arrays.copyOf(args, args.length-1)
-                    } else {
-                        trimmedArgs = args
-                    }
-                    def bestCtor = pickInvokable(trimmedArgs) {
-                        ConstructorUtils.getMatchingAccessibleConstructor(bld, it)
-                    }
-                    if (bestCtor != null) {
-                        return {
-                            Object[] txargs = bestCtor.right.collect({it.get()})
-                            def builder = bestCtor.left.newInstance(txargs)
-                            def obj = ConfigHelpers.invokeBuilder(engine, builder, block)
-                            method.invoke(self, obj)
-                        }
+                def ctor = ConfigHelpers.makeBuilderClosure(bld, engine, args)
+                if (ctor != null) {
+                    return {
+                        method.invoke(self, ctor(it))
                     }
                 }
             }
