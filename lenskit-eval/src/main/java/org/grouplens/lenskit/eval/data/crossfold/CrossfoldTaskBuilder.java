@@ -39,7 +39,6 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder<CrossfoldTask>
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
     private DataSource source;
-    private String name;
     private String trainPattern;
     private String testPattern;
     private Function<DAOFactory,DAOFactory> wrapper;
@@ -49,7 +48,7 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder<CrossfoldTask>
     }
 
     public CrossfoldTaskBuilder(String name) {
-        this.name = name;
+        super(name);
     }
 
     /**

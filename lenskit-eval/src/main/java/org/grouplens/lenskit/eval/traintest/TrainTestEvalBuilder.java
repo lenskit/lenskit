@@ -55,6 +55,15 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
         isolation = IsolationLevel.NONE;
     }
 
+    public TrainTestEvalBuilder(String name) {
+        super(name);
+        dataSources = new LinkedList<TTDataSet>();
+        algorithms = new LinkedList<AlgorithmInstance>();
+        metrics = new LinkedList<EvalMetric>();
+        outputFile = new File("train-test-results.csv");
+        isolation = IsolationLevel.NONE;
+    }
+
     @Override
 
     public TrainTestEvalTask build() {
