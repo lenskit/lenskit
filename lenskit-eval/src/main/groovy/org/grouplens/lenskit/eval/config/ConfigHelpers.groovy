@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.config
 
 import org.apache.commons.lang3.builder.Builder
+import org.grouplens.lenskit.eval.EvalTask
 
 /**
  * Helper methods for invoking configuration methods.
@@ -109,7 +110,11 @@ class ConfigHelpers {
         return {
             def bld = factory.newBuilder(arg)
             invokeBuilder(engine, bld, block)
-            bld.build()
+            def obj = bld.build()
+            if (obj instanceof EvalTask) {
+                engine.registerTask(obj as EvalTask)
+            }
+            obj
         }
     }
 }

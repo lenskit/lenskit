@@ -31,16 +31,16 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.EvalOptions;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvalTaskFailedException;
-import org.grouplens.lenskit.eval.GlobalEvalOptions;
+import org.grouplens.lenskit.eval.IsolationLevel;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.JobGroupExecutor;
 import org.grouplens.lenskit.eval.MergedJobGroupExecutor;
 import org.grouplens.lenskit.eval.SequentialJobGroupExecutor;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.EvalMetric;
-import org.grouplens.lenskit.util.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.CSVWriter;
 import org.grouplens.lenskit.util.tablewriter.TableLayout;
 import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
@@ -88,6 +88,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     private final List<TTDataSet> dataSources;
     private final List<AlgorithmInstance> algorithms;
     private final List<EvalMetric> metrics;
+    private final IsolationLevel isolationLevel;
 
     public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
                              @Nonnull List<TTDataSet> sources,
@@ -96,6 +97,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                              @Nonnull File output,
                              @Nullable File userOutput,
                              @Nullable File predictOutput,
+                             IsolationLevel isolation,
                              int numRecs) {
         super(name, dependencies);
 
@@ -105,6 +107,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         dataSources = sources;
         algorithms = algos;
         metrics = metrics1;
+        isolationLevel = isolation;
         setupJobs();
         
         this.numRecs = numRecs;
@@ -183,15 +186,13 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     public void start() {
         logger.info("Starting evaluation");
         try {
-            output = CSVWriter.open(outputFile, outputLayout,
-                                    LKFileUtils.isCompressed(outputFile));
+            output = CSVWriter.open(outputFile, outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
         if (userOutputFile != null) {
             try {
-                userOutput = CSVWriter.open(userOutputFile, userLayout,
-                                            LKFileUtils.isCompressed(userOutputFile));
+                userOutput = CSVWriter.open(userOutputFile, userLayout);
             } catch (IOException e) {
                 Closeables.closeQuietly(output);
                 throw new RuntimeException("Error opening user output table", e);
@@ -199,8 +200,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         }
         if (predictOutputFile != null) {
             try {
-                predictOutput = CSVWriter.open(predictOutputFile, predictLayout,
-                                               LKFileUtils.isCompressed(predictOutputFile));
+                predictOutput = CSVWriter.open(predictOutputFile, predictLayout);
             } catch (IOException e) {
                 Closeables.closeQuietly(userOutput);
                 Closeables.closeQuietly(output);
@@ -240,7 +240,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
      * Run the evaluation task..  .
      */
     @Override
-    public void execute(GlobalEvalOptions options) throws EvalTaskFailedException {
+    public void execute(EvalOptions options) throws EvalTaskFailedException {
         int nthreads = options.getThreadCount();
         if (nthreads <= 0) {
             nthreads = Runtime.getRuntime().availableProcessors();
@@ -249,7 +249,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         this.start();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
-        switch (options.getIsolation()) {
+        switch (isolationLevel) {
             case NONE:
                 exec = new MergedJobGroupExecutor(nthreads);
                 break;
@@ -257,7 +257,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                 exec = new SequentialJobGroupExecutor(nthreads);
                 break;
             default:
-                throw new RuntimeException("Invalid isolation level " + options.getIsolation());
+                throw new RuntimeException("Invalid isolation level " + isolationLevel);
         }
 
         for (JobGroup group: this.getJobGroups()) {

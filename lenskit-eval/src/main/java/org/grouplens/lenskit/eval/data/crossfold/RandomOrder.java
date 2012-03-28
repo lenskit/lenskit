@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Ordering that randomizes the list.
@@ -30,8 +31,8 @@ import java.util.List;
 public class RandomOrder<E> implements Order<E> {
 
 	@Override
-    public void apply(List<E> list) {
-	    Collections.shuffle(list);
+    public void apply(List<E> list, Random rng) {
+	    Collections.shuffle(list, rng);
     }
 
 }

@@ -16,21 +16,14 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.grouplens.lenskit.eval.config
 
-import java.util.List;
-import java.util.Random;
+def data = crossfold("ML") {
+    source "ml-100k/u.data"
+    partitions 5
+}
 
-/**
- * An order for a list.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
-public interface Order<E> {
-	/**
-	 * Apply the ordering.
-	 * @param list The list to order.
-     * @param rng The random number generator to use, if necessary.
-	 */
-	void apply(List<E> list, Random rng);
+trainTest("foo") {
+    depends data
+    dataset data
 }

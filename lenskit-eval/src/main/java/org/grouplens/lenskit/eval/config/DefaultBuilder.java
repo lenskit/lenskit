@@ -34,5 +34,6 @@ import java.lang.annotation.*;
 // FIXME Make this apply to methods as well
 @Target(ElementType.TYPE)
 public @interface DefaultBuilder {
+    @SuppressWarnings("rawtypes")
     Class<? extends Builder> value();
 }

@@ -47,6 +47,6 @@ public interface EvalTask  {
      * @param options options that may affect the behavior of the task
      * @throws EvalTaskFailedException
      */
-    void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
+    void execute(EvalOptions options) throws EvalTaskFailedException;
 
 }

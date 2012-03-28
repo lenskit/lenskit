@@ -20,13 +20,21 @@ LensKit Release Notes
   * Rewrote evaluator configuration to use Groovy rather than XML+JavaScript. The result is
     much more readable & easier to extend.  See the
     {{{http://medusa.cs.umn.edu/trac/lenskit/wiki/Manual/Evaluator}manual entry}} for
-    documentation of the evaluator.
+    documentation of the evaluator.  This also allows crossfolding to be done and written to
+    disk independent of actual train-test evaluation.
 
   * Enhance train-test predict metrics to support per-user results (written to a separate
     table), and to have knowledge of starting and stopping the evaluation (to support
     additional accumulation of results that doesn't fit in the per-user or per-run paradigm).
 
   * Allow demo & smoke-test to use a local copy of the ML-100K data set.
+
+  * Evaluator inputs & outputs transparently support GZip compression if the file names end in
+    ".gz".
+
+  * Reworked evaluation command line arguments for new Groovy-based support. Evaluation now
+    takes a single file with the <<<-f>>> option (defaults to <<<eval.groovy>>>), and the
+    remaining command line arguments are task names.
 
   []
 
@@ -71,6 +79,10 @@ LensKit Release Notes
       <<<DelimitedTextRatingCursor>>>, and made it use buffered readers (via
       <<<DelimitedTextCursor>>>) rather than scanners. Only affects code that uses
       the scanner rating cursor directly.
+
+    * <<Incompatible change>>: removed support for URL-backed streams from
+      <<<SimpleFileRatingDAO>>>. If support for generic streams are needed, we can re-add
+      this with <<<InputSupplier>>>s from Guava.
 
     []
 

@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.data.crossfold;
 
 import java.util.List;
+import java.util.Random;
 
 import org.grouplens.lenskit.data.event.Rating;
 
@@ -41,11 +42,11 @@ public class Holdout {
     	return partitionMethod;
     }
 
-	public int partition(List<Rating> ratings) {
+	public int partition(List<Rating> ratings, Random rng) {
 		if (order == null || partitionMethod == null) {
 			throw new IllegalStateException("Unconfigured holdout");
 		}
-		order.apply(ratings);
+		order.apply(ratings, rng);
 		return partitionMethod.partition(ratings);
 	}
 }

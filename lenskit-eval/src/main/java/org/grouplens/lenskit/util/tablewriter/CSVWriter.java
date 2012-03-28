@@ -19,11 +19,13 @@
 package org.grouplens.lenskit.util.tablewriter;
 
 import com.google.common.io.Files;
-import org.grouplens.lenskit.util.LKFileUtils;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.picocontainer.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -94,37 +96,34 @@ public class CSVWriter implements TableWriter {
      * Open a CSV writer to write to a file.
      * @param file The file to write to.
      * @param layout The layout of the table.
-     * @param compressed {@code true} to write the file with GZip compression.
+     * @param compression What compression, if any, to use.
      * @return A CSV writer outputting to {@code file}.
      * @throws IOException if there is an error opening the file or writing the column header.
      */
-    public static CSVWriter open(File file, TableLayout layout, boolean compressed) throws IOException {
+    public static CSVWriter open(File file, TableLayout layout, CompressionMode compression) throws IOException {
         Files.createParentDirs(file);
-        OutputStream out = new FileOutputStream(file);
+        Writer writer = LKFileUtils.openOutput(file, Charset.defaultCharset(), compression);
         try {
-            if (compressed) {
-                out = new GZIPOutputStream(out);
-            }
-            Writer writer = new OutputStreamWriter(out);
             return new CSVWriter(writer, layout);
         } catch (RuntimeException e) {
-            LKFileUtils.close(out);
+            LKFileUtils.close(writer);
             throw e;
         } catch (IOException e) {
-            LKFileUtils.close(out);
+            LKFileUtils.close(writer);
             throw e;
         }
     }
 
     /**
-     * Open a CSV writer to write to an uncompressed file.
+     * Open a CSV writer to write to an auto-compressed file. The file will be compressed if its
+     * name ends in ".gz".
      * @param file The file.
      * @param layout The table layout.
      * @return The CSV writer.
      * @throws IOException if there is an error opening the file or writing the column header.
-     * @see #open(File,TableLayout,boolean)
+     * @see #open(File,TableLayout,CompressionMode)
      */
     public static CSVWriter open(File file, @Nullable TableLayout layout) throws IOException {
-        return open(file, layout, false);
+        return open(file, layout, CompressionMode.AUTO);
     }
 }

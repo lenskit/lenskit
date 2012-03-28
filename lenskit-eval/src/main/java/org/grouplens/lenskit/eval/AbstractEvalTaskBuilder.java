@@ -30,7 +30,7 @@ import java.util.Set;
  * @author Shuo Chang<schang@cs.umn.edu>
  *
  */
-public abstract class AbstractEvalTaskBuilder {
+public abstract class AbstractEvalTaskBuilder<T extends EvalTask> implements Builder<T> {
     protected String name;
     protected Set<EvalTask> dependencies = new HashSet<EvalTask>();
 
@@ -53,7 +53,7 @@ public abstract class AbstractEvalTaskBuilder {
      * @param n The name for this algorithm instance.
      * @return The builder for chaining.
      */
-    public AbstractEvalTaskBuilder setName(String n) {
+    public AbstractEvalTaskBuilder<T> setName(String n) {
         name = n;
         return this;
     }
@@ -67,7 +67,7 @@ public abstract class AbstractEvalTaskBuilder {
      * @param task The dependency task to add
      * @return The builder for chaining
      */
-    public AbstractEvalTaskBuilder addDependency(EvalTask task) {
+    public AbstractEvalTaskBuilder<T> addDependency(EvalTask task) {
         dependencies.add(task);
         return this;
     }
@@ -76,8 +76,11 @@ public abstract class AbstractEvalTaskBuilder {
      * The same with {@link #addDependency(EvalTask)}
      *
      */
-    public AbstractEvalTaskBuilder addDepends(EvalTask task) {
+    public AbstractEvalTaskBuilder<T> addDepends(EvalTask task) {
         dependencies.add(task);
         return this;
     }
+
+    // need redeclaration due to Java type system issues
+    public abstract T build();
 }

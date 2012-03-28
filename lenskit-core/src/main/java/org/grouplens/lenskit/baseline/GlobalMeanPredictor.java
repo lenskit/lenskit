@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -66,7 +67,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
         double total = 0;
         long count = 0;
 
-        for (Preference r: ratings.getRatings().fast()) {
+        for (Preference r: CollectionUtils.fast(ratings.getRatings())) {
             total += r.getValue();
             count += 1;
         }

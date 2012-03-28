@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The runner resolves the dependencies of the evaluation task recursively and execute the evaluation task.
+ * Run eval tasks, making sure their dependencies have been executed first.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
@@ -34,11 +34,11 @@ public class EvalTaskRunner {
     private static final Logger logger = LoggerFactory.getLogger(EvalTaskRunner.class);
 
     private int threadCount = 1;
-    private GlobalEvalOptions options;
+    private EvalOptions options;
     private Set<EvalTask> completed;
 
     
-    public EvalTaskRunner(GlobalEvalOptions opt) {
+    public EvalTaskRunner(EvalOptions opt) {
         options = opt;
         completed = new HashSet<EvalTask>();
     }
@@ -48,7 +48,7 @@ public class EvalTaskRunner {
      * before execute the input task
      *
      * @param task The task to be executed.
-     * @throws EvalTaskFailedException
+     * @throws EvalTaskFailedException if the task failed to execute.
      */
     public void execute(EvalTask task) throws EvalTaskFailedException {
         if(!completed.contains(task)) {
@@ -56,7 +56,12 @@ public class EvalTaskRunner {
             for(EvalTask t: depends) {
                 execute(t);
             }
-            task.execute(options);
+            // run the task, turning *all* failures into checked exceptions
+            try {
+                task.execute(options);
+            } catch (RuntimeException e) {
+                throw new EvalTaskFailedException("runtime exception running task", e);
+            }
             completed.add(task);
         }
     }

@@ -24,9 +24,13 @@ import org.grouplens.lenskit.eval.config.EvalConfigEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
@@ -43,58 +47,82 @@ public class EvalCLI {
      * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
-        EvalOptions options = EvalOptions.parse(args);
+        EvalCLIOptions options = EvalCLIOptions.parse(args);
         EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
     
-    EvalOptions options;
+    EvalCLIOptions options;
     
-    public EvalCLI(EvalOptions opts) {
+    public EvalCLI(EvalCLIOptions opts) {
         options = opts;
     }
 
     public void run() {
-        EvalConfigEngine config = new EvalConfigEngine();
+        ClassLoader loader = options.getClassLoader();
+        EvalConfigEngine config = new EvalConfigEngine(loader);
 
-        GlobalEvalOptions taskOptions = new GlobalEvalOptions(options);
+        EvalOptions taskOptions = options.getEvalOptions();
         EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
 
-        for (File f : options.getConfigFiles()) {
-            logger.info("loading evaluation from {}", f);
-            List<EvalTask> evals;
-            try {
-                evals = config.load(f);
-            } catch (EvaluatorConfigurationException e) {
-                // we handle these specially
-                System.err.format("%s: %s\n", f.getPath(), e.getMessage());
-                StackTraceUtils.sanitize(e.getCause()).printStackTrace(System.err);
-                System.exit(2);
+        File f = options.getConfigFile();
+        logger.info("loading evaluation from {}", f);
+        EvalEnvironment env;
+        try {
+            env = config.load(f);
+        } catch (EvaluatorConfigurationException e) {
+            // we handle these specially
+            reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
+            return;
+        } catch (IOException e) {
+            reportError(e, "%s: %s", f.getPath(), e.getMessage());
+            return;
+        }
+        logger.info("loaded {} tasks", env.getTasks().size());
+
+        List<String> taskNames = options.getTasks();
+        List<EvalTask> toRun;
+        if (taskNames.isEmpty()) {
+            EvalTask task = env.getDefaultTask();
+            if (task == null) {
+                reportError(null, "%s: no default task", f);
                 return;
-            } catch (IOException e) {
-                reportError(e, "%s: %s\n", f.getPath(), e.getMessage());
-                return;
+            } else {
+                toRun = Collections.singletonList(env.getDefaultTask());
             }
-            for (EvalTask task : evals) {
-                try{
-                    runner.execute(task);
-                } catch (EvalTaskFailedException e) {
-                    reportError(e, "Execution error: " + e.getMessage());
+        } else {
+            toRun = new ArrayList<EvalTask>(taskNames.size());
+            for (String n: taskNames) {
+                EvalTask t = env.getTask(n);
+                if (t == null) {
+                    reportError(null, "%s: no task named %s", f, n);
+                } else {
+                    toRun.add(t);
                 }
             }
         }
-
+        
+        for (EvalTask task: toRun) {
+            try{
+                runner.execute(task);
+            } catch (EvalTaskFailedException e) {
+                reportError(e.getCause(), "Execution error: " + e.getMessage());
+            }
+        }
     }
 
-    
-    protected void reportError(Exception e, String msg, Object... args) {
+    protected void reportError(@Nullable Throwable e, String msg, Object... args) {
         String text = String.format(msg, args);
         System.err.println(text);
+        if (e instanceof ExecutionException) {
+            e = e.getCause();
+        }
         if (options.throwErrors()) {
             throw new RuntimeException(text, e);
         } else {
-            if (e != null && options.printBacktraces()) {
-                e.printStackTrace(System.err);
+            if (e != null) {
+                //noinspection ThrowableResultOfMethodCallIgnored
+                StackTraceUtils.sanitize(e).printStackTrace(System.err);
             }
             System.exit(2);
         }

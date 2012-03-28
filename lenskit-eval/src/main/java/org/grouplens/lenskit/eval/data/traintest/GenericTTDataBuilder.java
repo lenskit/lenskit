@@ -19,22 +19,21 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
-import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.kohsuke.MetaInfServices;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author Michael Ekstrand
  */
 public class GenericTTDataBuilder implements Builder<TTDataSet> {
     private String name;
-    private PreferenceDomain domain;
     private DataSource trainingData;
     private DataSource testData;
+    private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
     public GenericTTDataBuilder() {
         this("unnamed");
@@ -54,8 +53,22 @@ public class GenericTTDataBuilder implements Builder<TTDataSet> {
         return this;
     }
 
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+    
+    public GenericTTDataBuilder setAttribute(String name, Object value) {
+        attributes.put(name, value);
+        return this;
+    }
+
     public GenericTTDataSet build() {
-        return new GenericTTDataSet(name, trainingData, testData, domain);
+        if (attributes.isEmpty()) {
+            attributes.put("DataSet", name);
+        }
+        return new GenericTTDataSet(name, trainingData,
+                                    testData, trainingData.getPreferenceDomain(),
+                                    attributes);
     }
 
     @MetaInfServices

@@ -629,7 +629,7 @@
     </profile>
 
     <profile>
-      <id>continuous-integration</id>
+      <id>lint</id>
       <build>
         <plugins>
 

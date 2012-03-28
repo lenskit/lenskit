@@ -42,6 +42,6 @@ public abstract class AbstractEvalTask implements EvalTask{
         return dependencies;
     }
 
-    public abstract void execute(GlobalEvalOptions options) throws EvalTaskFailedException;
+    public abstract void execute(EvalOptions options) throws EvalTaskFailedException;
     
 }

@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.config
 
 import org.junit.Before
+import org.grouplens.lenskit.eval.EvalEnvironment
 
 /**
  * Base/helper class for testing configuration code snippets. Provides an {@link #eval(Closure)}
@@ -40,6 +41,6 @@ abstract class ConfigTestBase {
      */
     protected def eval(Closure cl) {
         def script = new ClosureScript(engine, cl)
-        return script.run()
+        return engine.runScript(script).scriptResult
     }
 }

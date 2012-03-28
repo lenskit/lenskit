@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 import org.grouplens.lenskit.eval.EvalTask
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask
+import org.grouplens.lenskit.eval.EvalEnvironment
 
 /**
  * Test the eval config engine and make sure it can actually load tests.
@@ -43,16 +44,29 @@ class TestEvalConfigEngine {
 
     @Test
     void testSingleEmptyEval() {
-        List<EvalTask> evals = engine.load(script("emptyTrainTest.groovy"))
-        assertThat(evals.size(), equalTo(1))
-        def eval = evals.get(0)
+        EvalEnvironment env = engine.load(script("emptyTrainTest.groovy"))
+        def eval = env.defaultTask
         assertThat(eval, instanceOf(TrainTestEvalTask))
         assertTrue(eval.getJobGroups().isEmpty())
+        def evals = env.tasks
+        assertThat(evals.size(), equalTo(1))
+        assertThat(evals.get(0), equalTo(eval))
     }
 
     @Test
     void testDefaultImports() {
-        List<EvalTask> evals = engine.load(script("import.groovy"))
-        assertThat(evals.size(), equalTo(1))
+        EvalEnvironment env = engine.load(script("import.groovy"))
+        assertThat(env.tasks.size(), equalTo(1))
+    }
+
+    @Test
+    void testMultiTasks() {
+        EvalEnvironment env = engine.load(script("multiple.groovy"))
+        def eval = env.defaultTask
+        assertThat(eval, instanceOf(TrainTestEvalTask))
+        def evals = env.tasks
+        assertThat(evals.size(), equalTo(2))
+        assertTrue(evals.contains(eval));
+        assertTrue(evals.containsAll(eval.dependencies))
     }
 }
