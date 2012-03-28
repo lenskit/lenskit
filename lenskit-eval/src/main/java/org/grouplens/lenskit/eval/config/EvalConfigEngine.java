@@ -18,12 +18,12 @@
  */
 package org.grouplens.lenskit.eval.config;
 
+import com.google.common.base.Preconditions;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.EvalEnvironment;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -78,7 +79,7 @@ public class EvalConfigEngine {
         shell = new GroovyShell(loader, new Binding(), config);
         classLoader = loader;
 
-        registerDefaultBuilders();
+        loadBuilders();
     }
 
     /**
@@ -221,13 +222,51 @@ public class EvalConfigEngine {
      * @param <T> The type to build (type parameter).
      */
     public <T> void registerBuilder(Class<T> type, Class<? extends Builder<? extends T>> builder) {
+        Preconditions.checkNotNull(type, "type cannot be null");
+        Preconditions.checkNotNull(builder, "builder cannot be null");
         builders.put(type, builder);
     }
 
     /**
      * Register a default set of builders.
      */
-    protected void registerDefaultBuilders() {
-        registerBuilder(PreferenceDomain.class, PreferenceDomainBuilder.class);
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected void loadBuilders() {
+        Properties props = new Properties();
+        try {
+            for (URL url: Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
+                InputStream istr = url.openStream();
+                try {
+                    props.load(istr);
+                } finally {
+                    LKFileUtils.close(istr);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (Map.Entry<Object,Object> prop: props.entrySet()) {
+            String name = prop.getKey().toString();
+            String builder = prop.getValue().toString();
+            Class cls;
+            try {
+                cls = Class.forName(name);
+            } catch (ClassNotFoundException e) {
+                logger.warn("builder registered for nonexistent class {}", name);
+                continue;
+            }
+            Class bld;
+            try {
+                bld = Class.forName(builder).asSubclass(Builder.class);
+            } catch (ClassNotFoundException e) {
+                logger.error("builder class {} not found", builder);
+                continue;
+            } catch (ClassCastException e) {
+                logger.error("class {} is not a builder", builder);
+                continue;
+            }
+            logger.debug("registering {} as builder for {}", bld, cls);
+            registerBuilder(cls, bld);
+        }
     }
 }
