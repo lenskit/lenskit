@@ -63,7 +63,7 @@ def ml100k = crossfold("ml-100k") {
     test "${buildDir}/ml-100k.test.%d.csv"
 }
 
-trainTest {
+trainTest("mutli-algorithm") {
     depends ml100k
     dataset ml100k
 

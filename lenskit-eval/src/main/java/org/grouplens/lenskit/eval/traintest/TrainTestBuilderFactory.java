@@ -37,6 +37,6 @@ public class TrainTestBuilderFactory implements BuilderFactory<TrainTestEvalTask
 
     @Override @Nonnull
     public TrainTestEvalBuilder newBuilder(@Nullable String arg) {
-        return new TrainTestEvalBuilder();
+        return new TrainTestEvalBuilder(arg);
     }
 }
