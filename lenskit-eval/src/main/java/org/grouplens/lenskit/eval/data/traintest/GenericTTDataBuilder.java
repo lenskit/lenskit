@@ -19,9 +19,7 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.kohsuke.MetaInfServices;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -69,16 +67,5 @@ public class GenericTTDataBuilder implements Builder<TTDataSet> {
         return new GenericTTDataSet(name, trainingData,
                                     testData, trainingData.getPreferenceDomain(),
                                     attributes);
-    }
-
-    @MetaInfServices
-    public static class Factory implements BuilderFactory<TTDataSet> {
-        public String getName() {
-            return "generic";
-        }
-
-        public GenericTTDataBuilder newBuilder(String name) {
-            return new GenericTTDataBuilder(name);
-        }
     }
 }

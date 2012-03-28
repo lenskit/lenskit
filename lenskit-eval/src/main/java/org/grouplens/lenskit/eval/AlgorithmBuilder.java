@@ -22,9 +22,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.config.AlgorithmBuilderDelegate;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
-import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -121,16 +119,5 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
     @Override
     public AlgorithmInstance build() {
         return new AlgorithmInstance(name, factory, attributes, preload);
-    }
-
-    @MetaInfServices
-    public static class Factory implements BuilderFactory<AlgorithmInstance> {
-        public String getName() {
-            return "algorithm";
-        }
-        @Nonnull
-        public AlgorithmBuilder newBuilder(String arg) {
-            return new AlgorithmBuilder(arg);
-        }
     }
 }

@@ -23,9 +23,7 @@ import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.AbstractEvalTaskBuilder;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.kohsuke.MetaInfServices;
 
 import javax.annotation.Nonnull;
 
@@ -148,22 +146,8 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder<CrossfoldTask>
         if (testPattern == null) {
             testPattern = name + ".test.%d.csv";
         }
-        CrossfoldTask task = new CrossfoldTask(name, dependencies, source, folds,
-                                               new Holdout(order, partition),
-                                               trainPattern, testPattern, wrapper);
-        return task;
-    }
-
-    @MetaInfServices
-    public static class Factory implements BuilderFactory<CrossfoldTask> {
-        @Override
-        public String getName() {
-            return "crossfold";
-        }
-
-        @Nonnull @Override
-        public CrossfoldTaskBuilder newBuilder(String arg) {
-            return new CrossfoldTaskBuilder(arg);
-        }
+        return new CrossfoldTask(name, dependencies, source, folds,
+                                 new Holdout(order, partition),
+                                 trainPattern, testPattern, wrapper);
     }
 }

@@ -19,8 +19,6 @@
 package org.grouplens.lenskit.eval;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
-
 import java.util.HashSet;
 import java.util.Set;
 

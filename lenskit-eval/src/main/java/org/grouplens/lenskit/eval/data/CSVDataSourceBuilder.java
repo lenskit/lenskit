@@ -23,10 +23,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.config.BuilderFactory;
-import org.kohsuke.MetaInfServices;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
@@ -128,23 +125,5 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
         return new CSVDataSource(sourceName,inputFile, delimiter, cache, domain, wrapper);
-    }
-
-    /**
-     * Factory for building CSV data sources. It is registered under the name “csvfile”.
-     */
-    @MetaInfServices
-    public static class Factory implements BuilderFactory<CSVDataSource> {
-        @Override public String getName() {
-            return "csvfile";
-        }
-        @Nonnull
-        @Override public CSVDataSourceBuilder newBuilder(String arg) {
-            CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
-            if (arg != null) {
-                bld.setName(arg);
-            }
-            return bld;
-        }
     }
 }
