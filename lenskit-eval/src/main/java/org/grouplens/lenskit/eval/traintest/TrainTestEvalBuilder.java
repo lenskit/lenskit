@@ -43,6 +43,8 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
+    // default value for recommendation set size
+    private int numRecs = 5;
 
     public TrainTestEvalBuilder() {
         this("traintest");
@@ -60,7 +62,7 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     @Override
     public TrainTestEvalTask build() {
         return new TrainTestEvalTask(name, dependencies, dataSources, algorithms, metrics,
-                                     outputFile, userOutputFile, predictOutputFile, isolation);
+                                     outputFile, userOutputFile, predictOutputFile, isolation, numRecs);
     }
 
     public void addDataset(TTDataSet source) {
@@ -112,4 +114,14 @@ public class TrainTestEvalBuilder extends AbstractEvalTaskBuilder<TrainTestEvalT
     File getPredictOutput() {
         return predictOutputFile;
     }
+
+    public int getNumRecs() {
+        return numRecs;
+    }
+
+    public void setNumRecs(int numRecs) {
+        this.numRecs = numRecs;
+    }
+    
+    
 }

@@ -18,24 +18,43 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import javax.annotation.Nonnull;
+
+import org.grouplens.lenskit.eval.AbstractEvalTask;
+import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.EvalOptions;
+import org.grouplens.lenskit.eval.EvalTask;
+import org.grouplens.lenskit.eval.EvalTaskFailedException;
+import org.grouplens.lenskit.eval.IsolationLevel;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.JobGroupExecutor;
+import org.grouplens.lenskit.eval.MergedJobGroupExecutor;
+import org.grouplens.lenskit.eval.SequentialJobGroupExecutor;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.tablewriter.TableWriters;
+import org.picocontainer.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Closeables;
-import org.grouplens.lenskit.eval.*;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.util.tablewriter.*;
-import org.picocontainer.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Evaluate several algorithms' prediction accuracy in a train-test
@@ -59,16 +78,17 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
     private TableWriter output;
     private TableWriter userOutput;
     private TableWriter predictOutput;
+    private final int numRecs;
 
     private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
     
-    private List<TTDataSet> dataSources;
-    private List<AlgorithmInstance> algorithms;
+    private final List<TTDataSet> dataSources;
+    private final List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
-    private IsolationLevel isolationLevel;
+    private final IsolationLevel isolationLevel;
 
     public TrainTestEvalTask(String name, Set<EvalTask> dependencies,
                              @Nonnull List<TTDataSet> sources,
@@ -77,8 +97,10 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
                              @Nonnull File output,
                              @Nullable File userOutput,
                              @Nullable File predictOutput,
-                             IsolationLevel isolation) {
+                             IsolationLevel isolation,
+                             int numRecs) {
         super(name, dependencies);
+
         outputFile = output;
         userOutputFile = userOutput;
         predictOutputFile = predictOutput;
@@ -87,6 +109,9 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         metrics = metrics1;
         isolationLevel = isolation;
         setupJobs();
+        
+        this.numRecs = numRecs;
+
     }
 
     protected void setupJobs() {
@@ -113,7 +138,7 @@ public class TrainTestEvalTask extends AbstractEvalTask  {
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         for (TTDataSet dataset: dataSources) {
             TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset);
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, numRecs);
             jobGroups.add(group);
         }
 

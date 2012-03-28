@@ -47,9 +47,12 @@ def ml100k = crossfold("ml-100k") {
 
 trainTest {
     depends ml100k
+
     output "${buildDir}/eval-output/baselines.csv"
     dataset ml100k
 
+    numRecs 5
+    
     metric CoveragePredictMetric
     metric MAEPredictMetric
     metric RMSEPredictMetric

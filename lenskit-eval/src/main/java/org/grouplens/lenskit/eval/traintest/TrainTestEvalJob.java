@@ -35,8 +35,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -58,8 +58,7 @@ import java.util.List;
 public class TrainTestEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
-    // FIXME balke: make configurable
-    private static final int recSetSize = 5;
+    private final int numRecs;
     
     @Nonnull
     private final AlgorithmInstance algorithm;
@@ -87,16 +86,18 @@ public class TrainTestEvalJob implements Job {
      * @param out The table writer to receive outputProvider. This writer is expected to
      *        be prefixed with algorithm and group ID data, so only the times
      *        and eval outputProvider needs to be written.
+     * @param numRecs The number of recommendations to compute.
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
-                            Supplier<TableWriter> out) {
+                            Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
+        this.numRecs = numRecs;
         
         int ncols = 2;
         for (TestUserMetric eval: evals) {
@@ -291,7 +292,7 @@ public class TrainTestEvalJob implements Job {
             if (recommender == null) {
                 throw new IllegalArgumentException("cannot compute recommendations without a recommender");
             }
-            return recommender.recommend(user, recSetSize, items, null);
+            return recommender.recommend(user, numRecs, items, null);
         }
     }
     

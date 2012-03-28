@@ -58,7 +58,8 @@ public class TrainTestEvalJobGroup implements JobGroup {
     public TrainTestEvalJobGroup(TrainTestEvalTask eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
-                                 TTDataSet data) {
+                                 TTDataSet data,
+                                 int numRecs) {
         evaluation = eval;
         dataSet = data;
 
@@ -82,7 +83,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
-                    Suppliers.compose(prefix, evaluation.outputTableSupplier()));
+                    Suppliers.compose(prefix, evaluation.outputTableSupplier()), numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
