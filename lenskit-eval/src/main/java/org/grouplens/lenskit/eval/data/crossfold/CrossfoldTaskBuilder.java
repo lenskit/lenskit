@@ -119,6 +119,16 @@ public class CrossfoldTaskBuilder extends AbstractEvalTaskBuilder<CrossfoldTask>
     }
 
     /**
+     * Sets the partition algorithm.
+     * @param algorithm the algorithm to use.
+     * @return The builder (for chaining)
+     */
+    public CrossfoldTaskBuilder setPartitionAlgorithm(PartitionAlgorithm algorithm) {
+        this.partition = algorithm;
+        return this;
+    }
+
+    /**
      * Set the input data source.
      * @param source The data source to use.
      * @return The builder (for chaining)
