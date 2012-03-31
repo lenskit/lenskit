@@ -181,7 +181,8 @@ public class EvalConfigEngine {
         try {
             Properties props = new Properties();
             props.load(istr);
-            String className = props.get("builder").toString();
+            Object pv = props.get("builder").toString();
+            String className = pv == null ? null : pv.toString();
             if (className == null) return null;
 
             return Class.forName(className).asSubclass(Builder.class);
