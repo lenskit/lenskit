@@ -24,15 +24,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.params.meta.DefaultDouble;
 import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * The smallest permitted rating value.
+ * @deprecated Use {@link PreferenceDomain} instead.
  */
 @Documented
 @DefaultDouble(1)
 @Parameter(Double.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated
 public @interface MinRating { }
