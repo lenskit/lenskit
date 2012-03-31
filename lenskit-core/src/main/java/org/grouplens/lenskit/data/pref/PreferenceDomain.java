@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import com.google.common.primitives.Doubles;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,10 +35,12 @@ import java.util.regex.Pattern;
  * @todo Integrate this with {@link MinRating} and {@link MaxRating}.
  * @author Michael Ekstrand
  */
-public final class PreferenceDomain {
-    private final double minimum;
-    private final double maximum;
-    private final double precision;
+public final class PreferenceDomain implements Serializable {
+    public static final long serialVersionUID = 1L;
+
+    private double minimum;
+    private double maximum;
+    private double precision;
 
     /**
      * Create a discrete bounded preference domain.
