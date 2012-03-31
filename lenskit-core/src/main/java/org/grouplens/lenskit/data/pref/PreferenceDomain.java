@@ -104,6 +104,17 @@ public final class PreferenceDomain implements Serializable {
         }
     }
 
+    /**
+     * Clamp a value to this preference domain.
+     * @param v The value to clamp.
+     * @return The value, restricted to be in the range [minimum,maximum].
+     */
+    public double clampValue(double v) {
+        if (v < minimum) return minimum;
+        else if (v > maximum) return maximum;
+        else return v;
+    }
+
     @Override
     public String toString() {
         String str = String.format("[%f,%f]", minimum, maximum);

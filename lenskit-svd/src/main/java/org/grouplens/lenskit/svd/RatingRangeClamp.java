@@ -52,10 +52,6 @@ public final class RatingRangeClamp implements DoubleFunction, Serializable {
 
     @Override
     public double apply(double v) {
-        double min = domain.getMinimum();
-        double max = domain.getMaximum();
-        if (v < min) return min;
-        else if (v > max) return max;
-        else return v;
+        return domain.clampValue(v);
     }
 }
