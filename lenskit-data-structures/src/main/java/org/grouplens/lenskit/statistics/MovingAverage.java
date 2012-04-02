@@ -49,7 +49,7 @@ public class MovingAverage {
         this.average = average;
     }
 
-    public synchronized void add(double value) {
+    public void add(double value) {
         if (count == 0) {
             average = value;
             count++;
@@ -58,7 +58,7 @@ public class MovingAverage {
         }
     }
 
-    public synchronized void remove(double value) {
+    public void remove(double value) {
         if (count == 0) {
             throw new AssertionError("no value to remove");
         } else {
@@ -66,16 +66,16 @@ public class MovingAverage {
         }
     }
 
-    public synchronized double getAverage() {
+    public double getAverage() {
         return average;
     }
 
-    public synchronized long getCount() {
+    public long getCount() {
         return count;
     }
 
     @Override
-    public synchronized String toString() {
+    public String toString() {
         return Double.toString(average);
     }
 }
