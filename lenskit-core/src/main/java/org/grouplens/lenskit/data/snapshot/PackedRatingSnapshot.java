@@ -31,7 +31,7 @@ import java.util.Random;
 
 import javax.inject.Inject;
 
-import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.cursors.Cursor;

@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
-import org.grouplens.inject.annotation.DefaultInteger;
+import org.grouplens.grapht.annotation.DefaultInteger;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both

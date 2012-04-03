@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
-import org.grouplens.inject.annotation.DefaultImplementation;
-import org.grouplens.inject.annotation.InheritsDefaultQualifier;
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.knn.PearsonCorrelation;
 
 /**

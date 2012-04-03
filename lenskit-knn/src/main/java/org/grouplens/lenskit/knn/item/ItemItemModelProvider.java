@@ -31,7 +31,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.grouplens.inject.annotation.Transient;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.cursors.Cursor;

@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.GlobalItemScorer;
 
 /**

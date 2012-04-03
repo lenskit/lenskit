@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.grouplens.inject.annotation.Transient;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.history.UserVector;

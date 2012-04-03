@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
-import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
 

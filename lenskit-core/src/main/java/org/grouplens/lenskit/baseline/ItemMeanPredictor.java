@@ -35,8 +35,8 @@ import java.util.Iterator;
 
 import javax.inject.Inject;
 
-import org.grouplens.inject.annotation.DefaultProvider;
-import org.grouplens.inject.annotation.Transient;
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

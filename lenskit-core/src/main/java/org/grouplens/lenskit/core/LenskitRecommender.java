@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.inject.Injector;
+import org.grouplens.grapht.Injector;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.ItemRecommender;

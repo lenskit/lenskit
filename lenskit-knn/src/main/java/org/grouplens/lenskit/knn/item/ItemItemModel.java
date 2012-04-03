@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.collections.ScoredLongList;
 
 /**

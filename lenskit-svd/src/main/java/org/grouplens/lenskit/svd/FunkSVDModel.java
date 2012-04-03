@@ -20,7 +20,7 @@ package org.grouplens.lenskit.svd;
 
 import java.io.Serializable;
 
-import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.Index;

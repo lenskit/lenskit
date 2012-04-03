@@ -26,7 +26,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.grouplens.inject.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 

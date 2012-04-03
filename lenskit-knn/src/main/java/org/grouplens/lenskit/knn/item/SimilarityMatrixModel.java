@@ -25,7 +25,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nonnull;
 
-import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
 

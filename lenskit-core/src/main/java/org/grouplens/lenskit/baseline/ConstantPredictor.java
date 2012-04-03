@@ -34,7 +34,7 @@ import java.util.Collection;
 
 import javax.inject.Inject;
 
-import org.grouplens.inject.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
