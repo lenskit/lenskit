@@ -18,15 +18,18 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
-import com.google.common.io.Files;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
-import org.picocontainer.annotations.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 
 import javax.annotation.Nonnull;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.zip.GZIPOutputStream;
+import javax.annotation.Nullable;
+
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
+
+import com.google.common.io.Files;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.
