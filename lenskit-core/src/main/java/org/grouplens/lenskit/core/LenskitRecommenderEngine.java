@@ -165,7 +165,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         
         @Override
         public <T> T getInstance(Class<T> type) {
-            Desire d = spi.desire(null, type);
+            Desire d = spi.desire(null, type, true);
             Edge<Satisfaction, Desire> e = dependencies.getOutgoingEdge(rootNode, d);
             
             if (e != null) {
@@ -202,7 +202,10 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
                     return new InstanceProvider(getInstance(d));
                 }
             });
-            return (T) provider.get();
+            
+            T instance = (T) provider.get();
+            newInstances.put(n, instance);
+            return instance;
         }
 
         @Override

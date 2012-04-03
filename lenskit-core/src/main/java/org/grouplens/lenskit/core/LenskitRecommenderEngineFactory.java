@@ -117,13 +117,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         }
     }
     
-    private boolean attemptResolve(Class<?> type, DependencySolver solver) {
-        try {
-            solver.resolve(solver.getSPI().desire(null, type));
-            return true;
-        } catch(ResolverException e) {
-            return false;
-        }
+    private void resolve(Class<?> type, DependencySolver solver) {
+        solver.resolve(solver.getSPI().desire(null, type, true));
     }
     
     public LenskitRecommenderEngine create(DataAccessObject dao) {
@@ -133,11 +128,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         DependencySolver solver = new DependencySolver(config.build(), 100);
         
         // Resolve all required types to complete a Recommender
-        attemptResolve(RatingPredictor.class, solver);
-        attemptResolve(ItemScorer.class, solver);
-        attemptResolve(GlobalItemScorer.class, solver);
-        attemptResolve(ItemRecommender.class, solver);
-        attemptResolve(GlobalItemRecommender.class, solver);
+        resolve(RatingPredictor.class, solver);
+        resolve(ItemScorer.class, solver);
+        resolve(GlobalItemScorer.class, solver);
+        resolve(ItemRecommender.class, solver);
+        resolve(GlobalItemRecommender.class, solver);
 
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
