@@ -311,8 +311,10 @@ public class CrossfoldTask extends AbstractEvalTask implements Supplier<List<TTD
         for(int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder();
             CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder();
-            trainBuilder.setWrapper(wrapper);
-            testBuilder.setWrapper(wrapper);
+            trainBuilder.setWrapper(wrapper)
+                        .setDomain(source.getPreferenceDomain());
+            testBuilder.setWrapper(wrapper)
+                       .setDomain(source.getPreferenceDomain());
             GenericTTDataBuilder TTbuilder =
                     new GenericTTDataBuilder(String.format("%s.%d", getName(), i));
 
