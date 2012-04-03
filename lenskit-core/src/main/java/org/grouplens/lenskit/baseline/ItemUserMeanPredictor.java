@@ -53,14 +53,14 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
+@DefaultProvider(ItemUserMeanPredictor.Provider.class)
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<ItemUserMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<ItemUserMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
         
@@ -68,15 +68,11 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
             this.dao = dao;
-        }
-        
-        @MeanSmoothing
-        public void setDamping(double d) {
             damping = d;
         }
 
         @Override
-        public ItemUserMeanPredictor build() {
+        public ItemUserMeanPredictor get() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);

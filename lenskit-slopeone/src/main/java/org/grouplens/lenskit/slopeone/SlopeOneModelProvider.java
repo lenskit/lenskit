@@ -91,11 +91,4 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
                                  baseline, items, minRating, maxRating);
     }
-
-    /**
-     * @param data data The original RatingSnapshot
-     */
-    public void setSnapshot(RatingSnapshot data) {
-        snapshot = data;
-    }
 }

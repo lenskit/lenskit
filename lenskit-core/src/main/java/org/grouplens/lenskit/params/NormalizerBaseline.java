@@ -24,12 +24,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 import javax.inject.Qualifier;
 
 import org.grouplens.inject.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Baseline scorer used by the normalizer.  The {@link BaselineSubtractingNormalizer}

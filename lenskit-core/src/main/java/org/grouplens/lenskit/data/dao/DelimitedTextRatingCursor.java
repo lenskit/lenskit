@@ -18,18 +18,20 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.base.Preconditions;
+import java.io.BufferedReader;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
+
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
-import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.WillCloseWhenClosed;
-import java.io.BufferedReader;
+import com.google.common.base.Preconditions;
 
 public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());

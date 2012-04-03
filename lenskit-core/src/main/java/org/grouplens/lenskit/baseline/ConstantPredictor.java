@@ -32,10 +32,11 @@ import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.inject.Inject;
+
+import org.grouplens.inject.annotation.DefaultDouble;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
@@ -49,7 +50,6 @@ public class ConstantPredictor implements BaselinePredictor {
      */
     @Documented
     @DefaultDouble(0.0)
-    @Parameter(Double.class)
     @Target({ ElementType.METHOD, ElementType.PARAMETER })
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value { }
@@ -63,6 +63,7 @@ public class ConstantPredictor implements BaselinePredictor {
      * can use it as a fallback.
      * @param value
      */
+    @Inject
     public ConstantPredictor(@Value double value) {
         this.value = value;
     }

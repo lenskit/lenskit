@@ -22,6 +22,10 @@ import static java.lang.Math.abs;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
+import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.Damping;
@@ -40,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
+@DefaultProvider(UserMeanPredictor.Provider.class)
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**
@@ -48,7 +52,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<UserMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
         
@@ -56,15 +60,11 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
             this.dao = dao;
-        }
-        
-        @MeanSmoothing
-        public void setSmoothing(double damping) {
-            this.smoothing = damping;
+            smoothing = damping;
         }
 
         @Override
-        public UserMeanPredictor build() {
+        public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
             logger.debug("smoothing = {}", smoothing);

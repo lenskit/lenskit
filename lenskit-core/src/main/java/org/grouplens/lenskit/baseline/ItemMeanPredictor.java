@@ -33,6 +33,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.inject.Inject;
+
+import org.grouplens.inject.annotation.DefaultProvider;
+import org.grouplens.inject.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -57,14 +61,14 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  *
  */
-@Built
+@DefaultProvider(ItemMeanPredictor.Provider.class)
 public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      *
      */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<ItemMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<ItemMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
         
@@ -72,15 +76,11 @@ public class ItemMeanPredictor implements BaselinePredictor {
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
             this.dao = dao;
-        }
-        
-        @MeanSmoothing
-        public void setDamping(double damping) {
             this.damping = damping;
         }
 
         @Override
-        public ItemMeanPredictor build() {
+        public ItemMeanPredictor get() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean = computeItemAverages(

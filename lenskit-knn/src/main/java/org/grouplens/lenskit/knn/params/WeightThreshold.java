@@ -28,8 +28,6 @@ import javax.inject.Qualifier;
 
 import org.grouplens.inject.annotation.DefaultInteger;
 import org.grouplens.lenskit.knn.SignificanceWeight;
-import org.grouplens.lenskit.params.meta.DefaultInt;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * The weight threshold for significance weighting.  If the vectors in question

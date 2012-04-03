@@ -18,10 +18,12 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import javax.inject.Inject;
+
+import org.grouplens.inject.annotation.DefaultProvider;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.params.meta.Built;
 
 /**
  * Rating scorer that predicts the global mean rating for all items.
@@ -29,22 +31,23 @@ import org.grouplens.lenskit.params.meta.Built;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-@Built
+@DefaultProvider(GlobalMeanPredictor.Provider.class)
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder implements org.grouplens.lenskit.core.Builder<GlobalMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;
         
-        public Builder(DataAccessObject dao) {
+        @Inject
+        public Provider(DataAccessObject dao) {
             this.dao = dao;
         }
         
         @Override
-        public GlobalMeanPredictor build() {
+        public GlobalMeanPredictor get() {
             double avg = computeMeanRating(dao);
             return new GlobalMeanPredictor(avg);
         }
