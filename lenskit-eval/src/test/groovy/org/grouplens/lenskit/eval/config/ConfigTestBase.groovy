@@ -19,10 +19,9 @@
 package org.grouplens.lenskit.eval.config
 
 import org.junit.Before
-import org.grouplens.lenskit.eval.EvalEnvironment
 
 /**
- * Base/helper class for testing configuration code snippets. Provides an {@link #eval(Closure)}
+ * Base/helper class for testing configuration code snippets. Provides an
  * method which runs a code snippet as if it were a config script and returns the result.
  * @author Michael Ekstrand
  */
@@ -41,6 +40,6 @@ abstract class ConfigTestBase {
      */
     protected def eval(Closure cl) {
         def script = new ClosureScript(engine, cl)
-        return engine.runScript(script).scriptResult
+        return engine.runScript(script)
     }
 }

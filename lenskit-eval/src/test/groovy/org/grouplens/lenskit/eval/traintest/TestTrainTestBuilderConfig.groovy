@@ -18,10 +18,9 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import org.grouplens.lenskit.eval.config.BuilderDelegate
 import org.grouplens.lenskit.eval.config.EvalConfigEngine
 import org.grouplens.lenskit.eval.data.CSVDataSource
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
+
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
@@ -31,22 +30,41 @@ import static org.hamcrest.Matchers.equalTo
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
 import static org.junit.Assert.assertTrue
+import org.grouplens.lenskit.eval.config.CommandDelegate
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 
 /**
- * Tests for train-test configurations; they also serve to test the builder delegate
+ * Tests for train-test configurations; they also serve to test the command delegate
  * framework.
  * @author Michael Ekstrand
  */
 class TestTrainTestBuilderConfig {
     EvalConfigEngine engine
-    TrainTestEvalBuilder builder
-    BuilderDelegate delegate
+    TrainTestEvalCommand command
+    CommandDelegate delegate
+
+    def file = new File("ml-100k.csv")
+    
+    @Before
+    void prepareFile() {
+        file.append('19,242,3,881250949\n')
+        file.append('296,242,3.5,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+    }
 
     @Before
     void setupDelegate() {
         engine = new EvalConfigEngine()
-        builder = new TrainTestEvalBuilder()
-        delegate = new BuilderDelegate(engine, builder)
+        command = new TrainTestEvalCommand("TTcommand")
+        delegate = new CommandDelegate(engine, command)
     }
     
     def eval(Closure cl) {
@@ -61,7 +79,7 @@ class TestTrainTestBuilderConfig {
             metric new CoveragePredictMetric()
             metric new RMSEPredictMetric()
         }
-        def metrics = builder.getMetrics()
+        def metrics = command.getMetrics()
         assertThat(metrics.size(), equalTo(2))
     }
 
@@ -71,7 +89,7 @@ class TestTrainTestBuilderConfig {
             metric CoveragePredictMetric
             metric RMSEPredictMetric
         }
-        def metrics = builder.getMetrics()
+        def metrics = command.getMetrics()
         assertThat(metrics.size(), equalTo(2))
     }
 
@@ -80,7 +98,7 @@ class TestTrainTestBuilderConfig {
         eval {
             output "eval-out.csv"
         }
-        assertThat(builder.getOutput(), equalTo(new File("eval-out.csv")))
+        assertThat(command.getOutput(), equalTo(new File("eval-out.csv")))
     }
 
     @Test
@@ -88,7 +106,7 @@ class TestTrainTestBuilderConfig {
         eval {
             predictOutput "predictions.csv"
         }
-        assertThat(builder.getPredictOutput(), equalTo(new File("predictions.csv")))
+        assertThat(command.getPredictOutput(), equalTo(new File("predictions.csv")))
     }
 
     @Test
@@ -97,9 +115,9 @@ class TestTrainTestBuilderConfig {
         eval {
             dataset {
                 // check some things about our strategy...
-                assertThat(delegate, instanceOf(BuilderDelegate))
+                assertThat(delegate, instanceOf(CommandDelegate))
                 assertThat(resolveStrategy, equalTo(Closure.DELEGATE_FIRST))
-                assertThat(delegate.builder, instanceOf(GenericTTDataBuilder))
+                assertThat(delegate.command, instanceOf(GenericTTDataCommand))
 
                 closureInvoked = true
 
@@ -110,7 +128,7 @@ class TestTrainTestBuilderConfig {
             }
         }
         assertTrue(closureInvoked)
-        def data = builder.dataSources()
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
@@ -132,7 +150,7 @@ class TestTrainTestBuilderConfig {
             }
         }
         assertTrue(closureInvoked)
-        def data = builder.dataSources()
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
@@ -144,13 +162,16 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testCrossfoldDataSource() {
+        def dat = eval{crossfold("ml-100k") {
+            source file
+            partitions 7
+        }  }
+        assertThat(dat.size(), equalTo(7))
+        assertThat(dat[2], instanceOf(TTDataSet))
         eval {
-            dataset crossfold("ml-100k") {
-                source "ml-100k.csv"
-                partitions 7
-            }
+            dataset dat
         }
-        def data = builder.dataSources()
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
     }
 }

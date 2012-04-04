@@ -24,29 +24,47 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.CSVDataSource
 import org.junit.Ignore
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.junit.Before
+import org.grouplens.lenskit.data.dao.DAOFactory
 
 /**
  * Test crossfold configuration
  * @author Michael Ekstrand
  */
 class TestCrossfoldConfig extends ConfigTestBase {
+
+    def file = new File("ml-100k.csv")
+    @Before
+    void prepareFile() {
+        file.append('19,242,3,881250949\n')
+        file.append('296,242,3.5,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+    }
+
     @Test
     void testBasicCrossfold() {
-        def obj = eval {
+        def obj = eval{
             crossfold("ml-100k") {
-                source "ml-100k.csv"
+                source file
                 partitions 10
                 holdout 0.5
                 order RandomOrder
             }
         }
-        def cf = obj as CrossfoldTask
-        assertThat(cf.name, equalTo("ml-100k"))
-        assertThat(cf.source, instanceOf(CSVDataSource))
-        assertThat(cf.partitionCount, equalTo(10))
-        assertThat(cf.holdout.order, instanceOf(RandomOrder))
-        assertThat(cf.holdout.partitionMethod, instanceOf(FractionPartition))
-        assertThat(cf.holdout.partitionMethod.fraction, closeTo(0.5, 1.0e-6))
+        assertThat(obj.size(), equalTo(10))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        def tt = obj as List<TTDataSet>
+        assertThat(tt[1].name, equalTo("TTData"))
+        assertThat(tt[2].attributes.get("Partition"), equalTo(2))
+        assertThat(tt[3].testFactory, instanceOf(DAOFactory))
     }
 
     @Test @Ignore("wrapper functions not supported")
@@ -59,9 +77,8 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 }
             }
         }
-        def cf = obj as CrossfoldTask
-        assertThat(cf.name, equalTo("ml-100k"))
-        assertThat(cf.source, instanceOf(CSVDataSource))
-        assertThat(cf.getDAOWrapper(), notNullValue())
+        obj = obj as List<TTDataSet>
+        assertThat(obj.size(), equalTo(10))
+        assertThat(obj[1], instanceOf(TTDataSet))
     }
 }
