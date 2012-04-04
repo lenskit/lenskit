@@ -27,9 +27,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -62,14 +59,10 @@ public class EvalCLI {
         ClassLoader loader = options.getClassLoader();
         EvalConfigEngine config = new EvalConfigEngine(loader);
 
-        EvalOptions taskOptions = options.getEvalOptions();
-        EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
-
         File f = options.getConfigFile();
         logger.info("loading evaluation from {}", f);
-        EvalEnvironment env;
         try {
-            env = config.load(f);
+            config.execute(f);
         } catch (EvaluatorConfigurationException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
@@ -77,37 +70,6 @@ public class EvalCLI {
         } catch (IOException e) {
             reportError(e, "%s: %s", f.getPath(), e.getMessage());
             return;
-        }
-        logger.info("loaded {} tasks", env.getTasks().size());
-
-        List<String> taskNames = options.getTasks();
-        List<EvalTask> toRun;
-        if (taskNames.isEmpty()) {
-            EvalTask task = env.getDefaultTask();
-            if (task == null) {
-                reportError(null, "%s: no default task", f);
-                return;
-            } else {
-                toRun = Collections.singletonList(env.getDefaultTask());
-            }
-        } else {
-            toRun = new ArrayList<EvalTask>(taskNames.size());
-            for (String n: taskNames) {
-                EvalTask t = env.getTask(n);
-                if (t == null) {
-                    reportError(null, "%s: no task named %s", f, n);
-                } else {
-                    toRun.add(t);
-                }
-            }
-        }
-        
-        for (EvalTask task: toRun) {
-            try{
-                runner.execute(task);
-            } catch (EvalTaskFailedException e) {
-                reportError(e.getCause(), "Execution error: " + e.getMessage());
-            }
         }
     }
 

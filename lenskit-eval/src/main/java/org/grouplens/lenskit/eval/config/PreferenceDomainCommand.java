@@ -21,26 +21,18 @@ package org.grouplens.lenskit.eval.config;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractCommand;
+import org.grouplens.lenskit.eval.CommandFailedException;
 
 /**
  * Builder for {@link PreferenceDomain} objects.
  * @review Should this be here, or do we want to provide it in the standard core?
  * @author Michael Ekstrand
  */
-public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
+public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain>{
     private Double min;
     private Double max;
     private Double precision;
-
-    public PreferenceDomain build() {
-        Preconditions.checkState(min != null, "no minimum set");
-        Preconditions.checkState(max != null, "no maximum set");
-        if (precision == null) {
-            return new PreferenceDomain(min, max);
-        } else {
-            return new PreferenceDomain(min, max, precision);
-        }
-    }
 
     public boolean hasMinimum() {
         return min != null;
@@ -51,7 +43,7 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
         return min;
     }
 
-    public PreferenceDomainBuilder setMinimum(double v) {
+    public PreferenceDomainCommand setMinimum(double v) {
         min = v;
         return this;
     }
@@ -65,7 +57,7 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
         return max;
     }
 
-    public PreferenceDomainBuilder setMaximum(double v) {
+    public PreferenceDomainCommand setMaximum(double v) {
         max = v;
         return this;
     }
@@ -79,8 +71,19 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
         return precision;
     }
 
-    public PreferenceDomainBuilder setPrecision(double v) {
+    public PreferenceDomainCommand setPrecision(double v) {
         precision = v;
         return this;
+    }
+
+    @Override
+    public PreferenceDomain call() throws CommandFailedException {
+        Preconditions.checkState(min != null, "no minimum set");
+        Preconditions.checkState(max != null, "no maximum set");
+        if (precision == null) {
+            return new PreferenceDomain(min, max);
+        } else {
+            return new PreferenceDomain(min, max, precision);
+        }
     }
 }

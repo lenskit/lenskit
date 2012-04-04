@@ -18,44 +18,44 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.grouplens.lenskit.eval.AlgorithmBuilder
-import org.codehaus.groovy.runtime.MetaClassHelper
+import org.grouplens.lenskit.eval.AlgorithmInstanceCommand
+
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
 
 /**
- * Groovy delegate for configuring {@code AlgorithmBuilder}s.
+ * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
  * @author Michael Ekstrand
  * @since 0.10
  */
-class AlgorithmBuilderDelegate {
-    private AlgorithmBuilder builder
+class AlgorithmInstanceCommandDelegate {
+    private AlgorithmInstanceCommand command
 
-    AlgorithmBuilderDelegate(AlgorithmBuilder builder) {
-        this.builder = builder
+    AlgorithmInstanceCommandDelegate(AlgorithmInstanceCommand builder) {
+        this.command = builder
     }
 
     LenskitRecommenderEngineFactory getFactory() {
-        return builder.getFactory()
+        return command.getFactory()
     }
 
     def getAttributes() {
-        return builder.attributes
+        return command.attributes
     }
 
     boolean getPreload() {
-        return builder.getPreload()
+        return command.getPreload()
     }
 
     void setPreload(boolean pl) {
-        builder.setPreload(pl)
+        command.setPreload(pl)
     }
 
     String getName() {
-        return builder.getName()
+        return command.getName()
     }
 
     void setName(String name) {
-        builder.setName(name)
+        command.setName(name)
     }
 
     def methodMissing(String name, args) {

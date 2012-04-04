@@ -18,11 +18,11 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.apache.commons.lang3.builder.Builder
+import org.grouplens.lenskit.eval.Command
 
 /**
- * Default Groovy delegate for configuring builders of evaluator components. It wraps
- * a {@link Builder}, and dispatches methods as follows:
+ * Default Groovy delegate for configuring commands of evaluator components. It wraps
+ * a {@link Command}, and dispatches methods as follows:
  * <p/>
  * To resolve "foo", this delegate first looks for a method "setFoo", then "addFoo", such that one
  * of the following holds:
@@ -31,46 +31,48 @@ import org.apache.commons.lang3.builder.Builder
  *     <li>The parameters specified can be converted into appropriate types
  *     for the method by wrapping strings with {@code File} objects and instantiating
  *     classes with their default constructors.</li>
- *     <li>The method takes a single parameter annotated with the {@link DefaultBuilder}
- *     annotation. This builder is constructed using a constructor that matches the arguments
+ *     <li>The method takes a single parameter annotated with the {@link DefaultCommand}
+ *     annotation. This command is constructed using a constructor that matches the arguments
  *     provided, except that the last argument is ommitted if it is a {@link Closure}. If the
- *     last argument is a {@link Closure}, it is used to configure the builder with an appropriate
+ *     last argument is a {@link Closure}, it is used to configure the command with an appropriate
  *     delegate before the object is built.</li>
  * </ul>
  *
  * @author Michael Ekstrand
  * @since 0.10
  */
-class BuilderDelegate<T> {
+
+
+class CommandDelegate<T> {
     protected final EvalConfigEngine engine
-    protected final Builder<T> builder
+    protected final Command<T> command
 
     /**
-     * Construct a new builder delegate.
-     * @param builder The builder to use when pretending methods.
+     * Construct a new command delegate.
+     * @param command The command to use when pretending methods.
      */
-    BuilderDelegate(EvalConfigEngine engine, Builder<T> builder) {
+    CommandDelegate(EvalConfigEngine engine, Command command) {
         this.engine = engine
-        this.builder = builder
+        this.command = command
     }
 
     def methodMissing(String name, args) {
         Closure method = null
-        use (BuilderExtensions) {
-            method = builder.findSetter(engine, name, args)
+        use (CommandExtensions) {
+            method = command.findSetter(engine, name, args)
 
             if (method == null) {
-                method = builder.findAdder(engine, name, args)
+                method = command.findAdder(engine, name, args)
             }
         }
 
         if (method == null) {
-            method = ConfigHelpers.findBuilderMethod(engine, name, args)
+            method = ConfigHelpers.findCommandMethod(engine, name, args)
         }
 
         if (method == null) {
             // if we got this far we failed
-            throw new MissingMethodException(name, builder.class, args)
+            throw new MissingMethodException(name, command.class, args)
         } else {
             return method.call()
         }

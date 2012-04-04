@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval.metrics;
 
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 
 /**
  * Interface for prediction and recommendation accuracy evaluators. Evaluators
@@ -31,7 +31,7 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.10
  */
-public interface TestUserMetric extends Metric<TrainTestEvalTask> {
+public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results

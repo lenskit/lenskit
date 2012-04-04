@@ -18,20 +18,11 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.Recommender;
@@ -41,7 +32,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.eval.config.DefaultBuilder;
+import org.grouplens.lenskit.eval.config.DefaultCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * An instance of a recommender algorithm to be benchmarked.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultBuilder(AlgorithmBuilder.class)
+@DefaultCommand(AlgorithmInstanceCommand.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private final @Nullable String algoName;

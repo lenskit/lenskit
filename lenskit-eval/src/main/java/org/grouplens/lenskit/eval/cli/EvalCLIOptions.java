@@ -37,18 +37,12 @@ import java.util.List;
  */
 public class EvalCLIOptions {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLIOptions.class);
-    private final boolean force;
-    private int threadCount = 1;
+
     private List<String> tasks;
     private File configFile = new File("eval.groovy");
     private URL[] classpathUrls;
 
     private EvalCLIOptions(CommandLine cmd) {
-        force = cmd.hasOption("F");
-        if (cmd.hasOption("j")) {
-            threadCount = Integer.parseInt(cmd.getOptionValue("j"));
-        }
-
         String[] cpadds = cmd.getOptionValues("C");
         if (cpadds != null) {
             classpathUrls = new URL[cpadds.length];
@@ -107,15 +101,6 @@ public class EvalCLIOptions {
         opts.addOption(OptionBuilder.withDescription("specify the eval configuration script")
                                     .hasArg().withArgName("FILE")
                                     .create("f"));
-        opts.addOption(OptionBuilder
-                               .withDescription("re-prepare data sets even if up to date")
-                               .withLongOpt("force")
-                               .create("F"));
-        opts.addOption(OptionBuilder
-                               .withDescription("the number of threads to use (0 to use all)")
-                               .withLongOpt("threads")
-                               .hasArg().withArgName("N")
-                               .create("j"));
         opts.addOption(OptionBuilder.withDescription("add a JAR or directory to the classpath")
                                     .withLongOpt("add-to-classpath")
                                     .hasArg()
@@ -127,13 +112,6 @@ public class EvalCLIOptions {
         return opts;
     }
 
-    public boolean forceMode() {
-        return force;
-    }
-
-    public int getThreadCount() {
-        return threadCount;
-    }
 
     public boolean throwErrors() {
         return Boolean.parseBoolean(System.getProperty("lenskit.eval.throwErrors", "false"));
@@ -158,10 +136,5 @@ public class EvalCLIOptions {
     public ClassLoader getClassLoader() {
         return getClassLoader(Thread.currentThread().getContextClassLoader());
     }
-    
-    public EvalOptions getEvalOptions() {
-        return new EvalOptions()
-                .setForce(force)
-                .setThreadCount(threadCount);
-    }
+
 }

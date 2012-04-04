@@ -20,26 +20,27 @@ package org.grouplens.lenskit.eval.config
 
 import com.google.common.base.Supplier
 import java.lang.reflect.Method
-import org.apache.commons.lang3.builder.Builder
+
 import org.apache.commons.lang3.reflect.TypeUtils
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
+import org.grouplens.lenskit.eval.Command
 
 /**
- * Utilities for searching for methods of {@link Builder}s.
+ * Utilities for searching for methods of {@link Command}s.
  * @author Michael Ekstrand
  */
-class BuilderExtensions {
-    private static final def logger = LoggerFactory.getLogger(BuilderExtensions)
+class CommandExtensions {
+    private static final def logger = LoggerFactory.getLogger(CommandExtensions)
 
     /**
      * Find a method compatible with some arguments.
-     * @param self The builder.
+     * @param self The command.
      * @param name The method name.
      * @param args The arguments.
      * @return A closure invoking the method, or {@code null}.
      */
-    static def findMethod(Builder self, String name, Object[] args) {
+    static def findMethod(Command self, String name, Object[] args) {
         logger.debug("searching for method {}", name)
         def atypes = new Class[args.length]
         for (i in 0..<args.length) {
@@ -69,23 +70,23 @@ class BuilderExtensions {
 
     /**
      * Search for a single-argument method with a parameter that can be built.
-     * @param self The builder to search.
+     * @param self The command to search.
      * @param engine The config engine.
      * @param name The method name.
      * @param args The arguments.
-     * @return A closure using a builder to build an object and then pass it to a single-parameter
+     * @return A closure using a command to build an object and then pass it to a single-parameter
      * method, or {@code null} if no such method can be found.
-     * @see EvalConfigEngine#getBuilderForType(Class)
+     * @see EvalConfigEngine#getCommandForType(Class)
      */
-    static def findBuildableMethod(Builder self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
+    static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
         // FIXME this is messy and unreadable
         def buildables = methods.collect({ method ->
             def formals = method.parameterTypes
             if (formals.length == 1) {
                 def type = formals[0]
-                logger.debug("looking for builder of type {}", type)
-                Class bld = engine.getBuilderForType(type)
-                def ctor = ConfigHelpers.makeBuilderClosure(bld, engine, args)
+                logger.debug("looking for command of type {}", type)
+                Class cmd = engine.getCommandForType(type)
+                def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
                 if (ctor != null) {
                     return {
                         method.invoke(self, ctor(it))
@@ -104,40 +105,56 @@ class BuilderExtensions {
         }
     }
 
-    static def findMultiMethod(Builder self, String name, Object[] args) {
+    static def findMultiMethod(Command self, String name, Object[] args) {
         if (args.length != 1) return null
-        if (!(args[0] instanceof Supplier)) return null
-        def arg = args[0] as Supplier
+        // the argument is a list
+        def arg
+        Class[] atypes
+        if (!(args[0] instanceof Supplier)){
+            arg = args[0]
+            if(!List.class.isAssignableFrom(arg.class)) {
+                return null
+            }
+            def type = arg[0].class
+            assert type != null
+            atypes = [type]
+        }
+        // the argument is a supplier
+        else{
+            arg = args[0] as Supplier
+            // unpack the type
+            def type = arg.class
+            arg = arg.get()
+            // get the type arguments for Supplier to instantiate this type
+            def asn = TypeUtils.getTypeArguments(type, Supplier)
+            def lstType = asn?.get(Supplier.typeParameters[0])
 
-        // unpack the type
-        def type = arg.class
-        // get the type arguments for Supplier to instantiate this type
-        def asn = TypeUtils.getTypeArguments(type, Supplier)
-        def lstType = asn?.get(Supplier.typeParameters[0])
-        if (lstType == null) return null // we can't resolve the list type
-        // Does the supplier supply a list?
-        if (List.class.isAssignableFrom(TypeUtils.getRawType(lstType, null))) {
-            // Unpack the type of element in the list
-            def lstAsn = TypeUtils.getTypeArguments(lstType, List)
-            def eltType = lstAsn?.get(List.typeParameters[0])
-            assert eltType != null
-            Class[] atypes = [eltType]
-            MetaMethod mm = self.metaClass.pickMethod(name, atypes)
-            if (mm != null) {
-                return {
-                    for (elt in arg.get()) {
-                        mm.doMethodInvoke(self, elt)
-                    }
+            if (lstType == null) return null // we can't resolve the list type
+            // Does the supplier supply a list?
+            if (List.class.isAssignableFrom(TypeUtils.getRawType(lstType, null))) {
+                // Unpack the type of element in the list
+                def lstAsn = TypeUtils.getTypeArguments(lstType, List)
+                def eltType = lstAsn?.get(List.typeParameters[0])
+                assert eltType != null
+                atypes = [eltType]
+            }
+        }
+        MetaMethod mm = self.metaClass.pickMethod(name, atypes)
+        if (mm != null) {
+            return {
+                for (elt in arg) {
+                    mm.doMethodInvoke(self, elt)
                 }
             }
         }
+
     }
 
-    static List<Method> getMethods(Builder self, String name) {
+    static List<Method> getMethods(Command self, String name) {
         self.class.methods.findAll {it.name == name}
     }
 
-    static def findSetter(Builder self, EvalConfigEngine engine, String name, Object... args) {
+    static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) {
@@ -152,7 +169,7 @@ class BuilderExtensions {
         return method
     }
 
-    static def findAdder(Builder self, EvalConfigEngine engine, String name, Object... args) {
+    static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)

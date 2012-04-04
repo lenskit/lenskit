@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.config.DefaultBuilder;
+import org.grouplens.lenskit.eval.config.DefaultCommand;
 
 import javax.annotation.Nullable;
 
@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@DefaultBuilder(CSVDataSourceBuilder.class)
+@DefaultCommand(CSVDataSourceCommand.class)
 public interface DataSource {
     /**
      * Get the data source name.

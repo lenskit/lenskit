@@ -3,13 +3,14 @@ package org.grouplens.lenskit.eval;
 import java.util.concurrent.Callable;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/28/12
- * Time: 5:35 PM
- * To change this template use File | Settings | File Templates.
+ * A command of evaluation task, which is exposed to the evaluation configuration script.
+ * So the command can be called dynamically.
+ *
+ * @author Shuo Chang <schang@cs.umn.edu>
  */
-public interface Command extends Callable<Void> {
-    
-    Void call() throws CommandFailedException;
+public interface Command<T> extends Callable<T> {
+
+    String getName();
+
+    T call() throws CommandFailedException;
 }

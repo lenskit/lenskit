@@ -21,11 +21,10 @@ package org.grouplens.lenskit.eval.config;
 import com.google.common.base.Preconditions;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grouplens.lenskit.eval.EvalEnvironment;
-import org.grouplens.lenskit.eval.EvalTask;
+import org.grouplens.lenskit.eval.AbstractCommand;
+import org.grouplens.lenskit.eval.Command;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
@@ -53,11 +52,9 @@ public class EvalConfigEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-
-    private ThreadLocal<List<EvalTask>> taskAccum = new ThreadLocal<List<EvalTask>>();
-
+    
     @SuppressWarnings("rawtypes")
-    private final Map<Class, Class> builders = new HashMap<Class, Class>();
+    private final Map<Class, Class> commands = new HashMap<Class, Class>();
 
     public EvalConfigEngine() {
         this(Thread.currentThread().getContextClassLoader());
@@ -79,7 +76,7 @@ public class EvalConfigEngine {
         shell = new GroovyShell(loader, new Binding(), config);
         classLoader = loader;
 
-        loadBuilders();
+        loadCommands();
     }
 
     /**
@@ -111,21 +108,16 @@ public class EvalConfigEngine {
      * @return A list of evaluations produced by {@code script}.
      * @throws EvaluatorConfigurationException if the script is invalid or produces an error.
      */
-    protected EvalEnvironment runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
+    protected @Nullable Object runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
         Object result = null;
-        List<EvalTask> tasks;
         try {
-            taskAccum.set(new LinkedList<EvalTask>());
             result = script.run();
-            tasks = taskAccum.get();
         } catch (RuntimeException e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
         } catch (LinkageError e) {
             throw new EvaluatorConfigurationException("error running configuration script", e);
-        } finally {
-            taskAccum.set(null);
         }
-        return new EvalEnvironment(tasks, result);
+        return result;
     }
 
     /**
@@ -135,7 +127,7 @@ public class EvalConfigEngine {
      * @throws EvaluatorConfigurationException if there is a configuration error
      * @throws IOException if there is an error reading the file
      */
-    public EvalEnvironment load(File file) throws EvaluatorConfigurationException, IOException {
+    public @Nullable Object execute(File file) throws EvaluatorConfigurationException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
@@ -146,30 +138,17 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws EvaluatorConfigurationException if there is a configuration error
      */
-    public EvalEnvironment load(Reader in) throws EvaluatorConfigurationException {
+    public @Nullable Object execute(Reader in) throws EvaluatorConfigurationException {
         return runScript(loadScript(in));
     }
 
     /**
-     * Register a task in the currently-being-evaluated script. Does nothing unless called from
-     * within a sript run (inside {@link #runScript(EvalConfigScript)}).
-     * @param task The task to register.
-     */
-    public void registerTask(EvalTask task) {
-        List<EvalTask> taskList = taskAccum.get();
-        logger.debug("registering task {}", task.getName());
-        if (taskList != null) {
-            taskList.add(task);
-        }
-    }
-
-    /**
-     * Find a builder factory with a particular name if it exists.
-     * @param name The name of the builder
-     * @return The builder factory or {@code null} if no such factory exists.
+     * Find a command with a particular name if it exists.
+     * @param name The name of the command
+     * @return The command factory or {@code null} if no such factory exists.
      */
     @CheckForNull @Nullable
-    public Class<? extends Builder> getBuilder(@Nonnull String name) {
+    public Class<? extends Command> getCommand(@Nonnull String name) {
         String path = METHOD_PATH + name + ".properties";
         logger.debug("loading method {} from {}", name, path);
         InputStream istr = classLoader.getResourceAsStream(path);
@@ -181,57 +160,57 @@ public class EvalConfigEngine {
         try {
             Properties props = new Properties();
             props.load(istr);
-            String className = props.get("builder").toString();
+            String className = props.get("command").toString();
             if (className == null) return null;
 
-            return Class.forName(className).asSubclass(Builder.class);
+            return Class.forName(className).asSubclass(Command.class);
         } catch (IOException e) {
             throw new RuntimeException("error reading method " + name, e);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("cannot find builder class", e);
+            throw new RuntimeException("cannot find command class", e);
         } finally {
             LKFileUtils.close(istr);
         }
     }
 
     /**
-     * Get a builder for a type. It consults registered builders and looks for the
-     * {@link DefaultBuilder} annotation.
+     * Get a command for a type. It consults registered commands and looks for the
+     * {@link DefaultCommand} annotation.
      * @param type A type that needs to be built.
-     * @return A builder class to build {@code type}, or {@code null} if none can be found.
-     * @see #registerBuilder(Class, Class)
+     * @return A command class to build {@code type}, or {@code null} if none can be found.
+     * @see #registerCommand
      */
     @SuppressWarnings("unchecked")
-    public <T> Class<? extends Builder<? extends T>> getBuilderForType(Class<T> type) {
+    public <T> Class<? extends Command> getCommandForType(Class<T> type) {
         @SuppressWarnings("rawtypes")
-        Class builder = builders.get(type);
-        if (builder == null) {
-            DefaultBuilder annot = type.getAnnotation(DefaultBuilder.class);
+        Class command = commands.get(type);
+        if (command == null) {
+            DefaultCommand annot = type.getAnnotation(DefaultCommand.class);
             if (annot != null) {
-                builder = annot.value();
+                command = annot.value();
             }
         }
-        return builder;
+        return command;
     }
 
     /**
-     * Register a builder class for a type. Used to allow builders to be found for types where
+     * Register a command class for a type. Used to allow commands to be found for types where
      * the type cannot be augmented with the {@code DefaultBuilder} annotation.
      * @param type The type to build.
-     * @param builder A class that can build instances of {@code type}.
+     * @param command A class that can build instances of {@code type}.
      * @param <T> The type to build (type parameter).
      */
-    public <T> void registerBuilder(Class<T> type, Class<? extends Builder<? extends T>> builder) {
+    public <T> void registerCommand(Class<T> type, Class<? extends Command> command) {
         Preconditions.checkNotNull(type, "type cannot be null");
-        Preconditions.checkNotNull(builder, "builder cannot be null");
-        builders.put(type, builder);
+        Preconditions.checkNotNull(command, "command cannot be null");
+        commands.put(type, command);
     }
 
     /**
-     * Register a default set of builders.
+     * Register a default set of commands.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void loadBuilders() {
+    protected void loadCommands() {
         Properties props = new Properties();
         try {
             for (URL url: Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
@@ -247,26 +226,26 @@ public class EvalConfigEngine {
         }
         for (Map.Entry<Object,Object> prop: props.entrySet()) {
             String name = prop.getKey().toString();
-            String builder = prop.getValue().toString();
+            String command = prop.getValue().toString();
             Class cls;
             try {
                 cls = Class.forName(name);
             } catch (ClassNotFoundException e) {
-                logger.warn("builder registered for nonexistent class {}", name);
+                logger.warn("command registered for nonexistent class {}", name);
                 continue;
             }
-            Class bld;
+            Class cmd;
             try {
-                bld = Class.forName(builder).asSubclass(Builder.class);
+                cmd = Class.forName(command).asSubclass(Command.class);
             } catch (ClassNotFoundException e) {
-                logger.error("builder class {} not found", builder);
+                logger.error("command class {} not found", command);
                 continue;
             } catch (ClassCastException e) {
-                logger.error("class {} is not a builder", builder);
+                logger.error("class {} is not a command", command);
                 continue;
             }
-            logger.debug("registering {} as builder for {}", bld, cls);
-            registerBuilder(cls, bld);
+            logger.debug("registering {} as command for {}", command, cls);
+            registerCommand(cls, cmd);
         }
     }
 }

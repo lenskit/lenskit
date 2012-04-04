@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.eval.config
 
 import org.slf4j.LoggerFactory
-import org.grouplens.lenskit.eval.EvalTask
 
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
@@ -48,8 +47,8 @@ abstract class EvalConfigScript extends Script {
     }
 
     def methodMissing(String name, args) {
-        logger.debug("searching for eval task {}", name)
-        def method = ConfigHelpers.findBuilderMethod(engine, name, args)
+        logger.debug("searching for eval command {}", name)
+        def method = ConfigHelpers.findCommandMethod(engine, name, args)
         if (method != null) {
             def obj = method()
             return obj

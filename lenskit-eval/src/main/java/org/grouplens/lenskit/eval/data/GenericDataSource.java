@@ -20,10 +20,6 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractEvalTask;
-import org.grouplens.lenskit.eval.EvalTask;
-
-import java.util.Set;
 
 /**
  * @author Michael Ekstrand

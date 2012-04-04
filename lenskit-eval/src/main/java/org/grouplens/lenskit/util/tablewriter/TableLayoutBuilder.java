@@ -51,9 +51,9 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
     }
 
     /**
-     * Clone this layout builder. Used to build multiple layouts from the same initial
+     * Clone this layout command. Used to build multiple layouts from the same initial
      * columns.
-     * @return An independent copy of this table layout builder.
+     * @return An independent copy of this table layout command.
      */
     @Override
     public TableLayoutBuilder clone() {

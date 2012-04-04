@@ -20,9 +20,9 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.AbstractCommand;
 
 import java.io.File;
 
@@ -31,7 +31,7 @@ import java.io.File;
  * @author Michael Ekstrand
  */
 @SuppressWarnings("UnusedDeclaration")
-public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
+public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     String delimiter = ",";
     String sourceName;
     File inputFile;
@@ -39,9 +39,12 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     PreferenceDomain domain;
     Function<DAOFactory,DAOFactory> wrapper;
 
-    public CSVDataSourceBuilder() {}
+    public CSVDataSourceCommand() {
+        super("CSVSource");
+    }
 
-    public CSVDataSourceBuilder(String name) {
+    public CSVDataSourceCommand(String name) {
+        super();
         if (name != null) {
             setName(name);
         }
@@ -52,7 +55,8 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * @param name The name of the data source.
      * @see #setFile(File)
      */
-    public CSVDataSourceBuilder setName(String name) {
+    @Override
+    public CSVDataSourceCommand setName(String name) {
         sourceName = name;
         return this;
     }
@@ -62,7 +66,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * as the file name.
      * @param file The file to read ratings from.
      */
-    public CSVDataSourceBuilder setFile(File file) {
+    public CSVDataSourceCommand setFile(File file) {
         inputFile = file;
         return this;
     }
@@ -71,7 +75,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * Set the input field delimiter. The default is the tab character.
      * @param delim The input delimiter.
      */
-    public CSVDataSourceBuilder setDelimiter(String delim) {
+    public CSVDataSourceCommand setDelimiter(String delim) {
         delimiter = delim;
         return this;
     }
@@ -80,7 +84,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * Specify whether to cache ratings in memory. Caching is enabled by default.
      * @param on {@code false} to disable caching.
      */
-    public CSVDataSourceBuilder setCache(boolean on) {
+    public CSVDataSourceCommand setCache(boolean on) {
         cache = on;
         return this;
     }
@@ -88,21 +92,21 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     /**
      * Set the preference domain for the data source.
      * @param dom The preference domain.
-     * @return The builder (for chaining).
+     * @return The command (for chaining).
      */
-    public CSVDataSourceBuilder setDomain(PreferenceDomain dom) {
+    public CSVDataSourceCommand setDomain(PreferenceDomain dom) {
         domain = dom;
         return this;
     }
 
     /**
-     * Set a wrapper function to apply to the resulting DAOs. The data source builder
+     * Set a wrapper function to apply to the resulting DAOs. The data source command
      * wraps its DAO with this function, allowing it to be augmented with additional
      * information or transformations if desired.
      * @param wrapFun The DAO wrapper function.
-     * @return The builder (for chaining).
+     * @return The command (for chaining).
      */
-    public CSVDataSourceBuilder setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+    public CSVDataSourceCommand setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
         wrapper = wrapFun;
         return this;
     }
@@ -112,8 +116,8 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * {@link #setFile(File)} must be called prior to building.
      * @return The configured data source.
      */
-    @Override
-    public CSVDataSource build() {
+
+    public CSVDataSource call() {
         // if no name, use the file name
         if (sourceName == null && inputFile != null) {
             sourceName = inputFile.toString();

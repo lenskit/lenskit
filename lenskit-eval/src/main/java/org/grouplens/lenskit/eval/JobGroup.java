@@ -47,7 +47,7 @@ public interface JobGroup {
     
     /**
      * Start the job group. This is called before any jobs in the group are run
-     * and before any child groups are started. Job groups can pre-load data
+     * and before any child groups are started. Job groups can pre-execute data
      * here, but they are encouraged to do such loads lazily.
      * 
      *

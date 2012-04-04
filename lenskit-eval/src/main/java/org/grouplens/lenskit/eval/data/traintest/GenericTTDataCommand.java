@@ -18,7 +18,8 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
-import org.apache.commons.lang3.builder.Builder;
+import com.google.common.base.Preconditions;
+import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 
 import java.util.LinkedHashMap;
@@ -27,26 +28,28 @@ import java.util.Map;
 /**
  * @author Michael Ekstrand
  */
-public class GenericTTDataBuilder implements Builder<TTDataSet> {
-    private String name;
+public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private DataSource trainingData;
     private DataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
-    public GenericTTDataBuilder() {
-        this("unnamed");
+    public GenericTTDataCommand() {
+        super("TTData");
     }
 
-    public GenericTTDataBuilder(String name) {
-        this.name = name;
+    public GenericTTDataCommand(String name) {
+        this();
+        if(name != null) {
+            setName(name);
+        }
     }
 
-    public GenericTTDataBuilder setTrain(DataSource ds) {
+    public GenericTTDataCommand setTrain(DataSource ds) {
         trainingData = ds;
         return this;
     }
 
-    public GenericTTDataBuilder setTest(DataSource ds) {
+    public GenericTTDataCommand setTest(DataSource ds) {
         testData = ds;
         return this;
     }
@@ -55,15 +58,16 @@ public class GenericTTDataBuilder implements Builder<TTDataSet> {
         return attributes;
     }
     
-    public GenericTTDataBuilder setAttribute(String name, Object value) {
+    public GenericTTDataCommand setAttribute(String name, Object value) {
         attributes.put(name, value);
         return this;
     }
 
-    public GenericTTDataSet build() {
+    public GenericTTDataSet call() {
         if (attributes.isEmpty()) {
             attributes.put("DataSet", name);
         }
+        Preconditions.checkNotNull(trainingData, "train data is Null");
         return new GenericTTDataSet(name, trainingData,
                                     testData, trainingData.getPreferenceDomain(),
                                     attributes);

@@ -18,10 +18,9 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.apache.commons.lang3.builder.Builder
-import org.grouplens.lenskit.eval.EvalTask
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
 import org.apache.commons.lang3.reflect.ConstructorUtils
+import org.grouplens.lenskit.eval.Command
 
 /**
  * Helper methods for invoking configuration methods.
@@ -29,27 +28,27 @@ import org.apache.commons.lang3.reflect.ConstructorUtils
  * @since 0.10
  */
 class ConfigHelpers {
-    static <T> Object makeBuilderDelegate(EvalConfigEngine engine, Builder<T> builder) {
-        def annot = builder.class.getAnnotation(ConfigDelegate)
+    static <T> Object makeCommandDelegate(EvalConfigEngine engine, Command<T> command) {
+        def annot = command.class.getAnnotation(ConfigDelegate)
         if (annot == null) {
-            return new BuilderDelegate<T>(engine, builder)
+            return new CommandDelegate<T>(engine, command)
         } else {
             Class<?> dlgClass = annot.value()
             // try two-arg constructor
             def ctor = dlgClass.constructors.find {
                 def formals = it.parameterTypes
-                formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(builder)
+                formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(command)
             }
             if (ctor != null) {
-                return ctor.newInstance(engine, builder)
+                return ctor.newInstance(engine, command)
             } else {
                 ctor = dlgClass.constructors.find {
                     def formals = it.parameterTypes
-                    formals.length == 1 && formals[0].isInstance(builder)
+                    formals.length == 1 && formals[0].isInstance(command)
                 }
             }
             if (ctor != null) {
-                return ctor.newInstance(builder)
+                return ctor.newInstance(command)
             } else {
                 return dlgClass.newInstance()
             }
@@ -57,54 +56,51 @@ class ConfigHelpers {
     }
 
     /**
-     * Invoke a builder to configure an object.
-     * @param builder The builder to use.
-     * @param closure A closure to configure the builder. Can be {@code null}. If non-null,
-     * this closure is invoked with a {@link BuilderDelegate} to configure the builder.
-     * @return The object resulting from the builder.
+     * Invoke a command to configure an object.
+     * @param command The command to use.
+     * @param closure A closure to configure the command. Can be {@code null}. If non-null,
+     * this closure is invoked with a {@link CommandDelegate} to configure the command.
+     * @return The object resulting from the command.
      */
-    static <T> T invokeBuilder(EvalConfigEngine engine, Builder<T> builder, Closure closure) {
+    static <T> Object invokeCommand(EvalConfigEngine engine, Command<T> command, Closure closure) {
         if (closure != null) {
-            def delegate = makeBuilderDelegate(engine, builder)
+            def delegate = makeCommandDelegate(engine, command)
             closure.setDelegate(delegate)
             closure.setResolveStrategy(Closure.DELEGATE_FIRST)
             closure.run()
         }
-        builder.build()
+        command.call()
     }
 
     /**
-     * Resolve a method invocation with a builder factory. Takes the name of a method and its
+     * Resolve a method invocation with a command factory. Takes the name of a method and its
      * arguments and, if possible, constructs a closure that returns the result of configuring
-     * a builder and running it.
+     * a command and running it.
      * @param name The name of the method
      * @param args The arguments to the method.
-     * @return A closure invoking and configuring the builder, returning the built object,
-     * or {@code null} if the builder cannot be invoked.
-     * @throws IllegalArgumentException if the builder can be found but {@code args} is
+     * @return A closure invoking and configuring the command, returning the built object,
+     * or {@code null} if the command cannot be invoked.
+     * @throws IllegalArgumentException if the command can be found but {@code args} is
      * inappropriate.
      */
-    static Closure findBuilderMethod(EvalConfigEngine engine, String name, args) {
-        Class<? extends Builder> builderClass = engine.getBuilder(name)
-        if (builderClass == null) return null
+    static Closure findCommandMethod(EvalConfigEngine engine, String name, args) {
+        Class<? extends Command> commandClass = engine.getCommand(name)
+        if (commandClass == null) return null
 
-        def build = makeBuilderClosure(builderClass, engine, args)
-        if (build == null) {
-            def msg = "cannot instantiate ${builderClass.name}: no suitable constructor found"
+        def command = makeCommandClosure(commandClass, engine, args)
+        if (command == null) {
+            def msg = "cannot instantiate ${commandClass.name}: no suitable constructor found"
             throw new InstantiationException(msg)
         }
 
         // finally have validated the arguments, move on
         return {
-            def obj = build(args)
-            if (obj instanceof EvalTask) {
-                engine.registerTask(obj as EvalTask)
-            }
+            def obj = command(args)
             obj
         }
     }
 
-    static def makeBuilderClosure(Class<? extends Builder> bld, EvalConfigEngine engine, Object[] args) {
+    static def makeCommandClosure(Class<? extends Command> cmd, EvalConfigEngine engine, Object[] args) {
         Closure block = null
         Object[] trimmedArgs
         if (args.length > 0 && args[args.length-1] instanceof Closure) {
@@ -114,13 +110,13 @@ class ConfigHelpers {
             trimmedArgs = args
         }
         def bestCtor = pickInvokable(trimmedArgs) {
-            ConstructorUtils.getMatchingAccessibleConstructor(bld, it)
+            ConstructorUtils.getMatchingAccessibleConstructor(cmd, it)
         }
         if (bestCtor != null) {
             return {
                 Object[] txargs = bestCtor.right.collect({it.get()})
-                def builder = bestCtor.left.newInstance(txargs)
-                ConfigHelpers.invokeBuilder(engine, builder, block)
+                def command = bestCtor.left.newInstance(txargs)
+                ConfigHelpers.invokeCommand(engine, command, block)
             }
         } else {
             return null

@@ -19,9 +19,8 @@
 package org.grouplens.lenskit.eval;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.config.AlgorithmBuilderDelegate;
+import org.grouplens.lenskit.eval.config.AlgorithmInstanceCommandDelegate;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
 
 import javax.annotation.Nonnull;
@@ -32,36 +31,28 @@ import java.util.Map;
  * Builder for algorithm instances.
  * @author Michael Ekstrand
  */
-@ConfigDelegate(AlgorithmBuilderDelegate.class)
-public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
-    private String name;
+@ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
+public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>  {
     private Map<String,Object> attributes = new HashMap<String, Object>();
     private boolean preload;
     private LenskitRecommenderEngineFactory factory;
 
-    public AlgorithmBuilder() {
+    public AlgorithmInstanceCommand() {
+        this("Unnamed");
+    }
+
+    public AlgorithmInstanceCommand(String name) {
+        super(name);
         factory = new LenskitRecommenderEngineFactory();
-    }
-
-    public AlgorithmBuilder(String name) {
-        this();
-        this.name = name;
-    }
-
-    /**
-     * Get the algorithm name.
-     * @return The name for this algorithm instance.
-     */
-    public String getName() {
-        return name;
     }
 
     /**
      * Set the algorithm name.
+     *
      * @param n The name for this algorithm instance.
-     * @return The builder for chaining.
+     * @return The command for chaining.
      */
-    public AlgorithmBuilder setName(String n) {
+    public AlgorithmInstanceCommand setName(String n) {
         name = n;
         return this;
     }
@@ -78,9 +69,9 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
      * Set whether the algorithm wants ratings pre-loaded. Use this for algorithms that
      * are too slow reading on a CSV file if you have enough memory to load them all.
      * @param pl {@code true} to pre-load input data when running this algorithm.
-     * @return The builder for chaining.
+     * @return The command for chaining.
      */
-    public AlgorithmBuilder setPreload(boolean pl) {
+    public AlgorithmInstanceCommand setPreload(boolean pl) {
         preload = pl;
         return this;
     }
@@ -90,9 +81,9 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
      * instances in an algorithm family.
      * @param attr The attribute name.
      * @param value The attribute value.
-     * @return The builder for chaining.
+     * @return The command for chaining.
      */
-    public AlgorithmBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public AlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -117,7 +108,8 @@ public class AlgorithmBuilder implements Builder<AlgorithmInstance> {
     }
 
     @Override
-    public AlgorithmInstance build() {
+    public AlgorithmInstance call() throws CommandFailedException {
         return new AlgorithmInstance(name, factory, attributes, preload);
     }
+
 }
