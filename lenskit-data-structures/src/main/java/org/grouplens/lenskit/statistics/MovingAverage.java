@@ -20,14 +20,9 @@ package org.grouplens.lenskit.statistics;
 
 /**
  * <p>
- * A simple implementation of a moving average.<br/>
- * Only the average value and the item count is stored, not the values it self.
- * This is ideal, for saving memory on large data sets.
- * </p>
- * <p>
- * The removal of values is also supported. But be careful not to remove values
- * that have never been added. Most of the time this will lead to unwanted
- * results!
+ * An implementation of a moving average.<br/>
+ * Only the average value and the item count is stored, not the values them
+ * self.
  * </p>
  * 
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
@@ -44,32 +39,42 @@ public class MovingAverage {
         average = 0;
     }
 
+    /**
+     * initialize the {@link MovingAverage} with a pre-calculated average value.
+     * 
+     * @param count amount of values that where used to build this average
+     * @param average pre-calculated average
+     */
     public MovingAverage(long count, double average) {
         this.count = count;
         this.average = average;
     }
 
-    public void add(double value) {
+    /**
+     * Add a new datum to the {@link MovingAverage}
+     * 
+     * @param datum new datum to include into the average.
+     */
+    public void add(double datum) {
         if (count == 0) {
-            average = value;
+            average = datum;
             count++;
         } else {
-            average = ((average * count) + value) / ++count;
+            average = ((average * count) + datum) / ++count;
         }
     }
 
-    public void remove(double value) {
-        if (count == 0) {
-            throw new AssertionError("no value to remove");
-        } else {
-            average = ((average * count) - value) / --count;
-        }
-    }
-
+    /**
+     * 
+     * @return average over all added datums
+     */
     public double getAverage() {
         return average;
     }
 
+    /**
+     * @return amount of values this average is based on
+     */
     public long getCount() {
         return count;
     }

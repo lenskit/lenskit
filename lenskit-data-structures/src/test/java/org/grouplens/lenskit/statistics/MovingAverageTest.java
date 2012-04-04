@@ -31,6 +31,30 @@ public class MovingAverageTest {
     private static final double PRECISION = 0.0001;
 
     /**
+     * Test method for {@link org.grouplens.lenskit.statistics.MovingAverage} .
+     */
+    @Test
+    public void testInitialize() {
+        MovingAverage avg = new MovingAverage();
+        Assert.assertEquals(0, avg.getAverage(), PRECISION);
+        Assert.assertEquals(0, avg.getCount());
+    }
+
+    /**
+     * Test method for {@link org.grouplens.lenskit.statistics.MovingAverage} .
+     */
+    @Test
+    public void testInitializeAdvanced() {
+        MovingAverage avg = new MovingAverage(2, 2);
+        Assert.assertEquals(2, avg.getAverage(), PRECISION);
+        Assert.assertEquals(2, avg.getCount());
+
+        avg.add(5);
+        Assert.assertEquals(3, avg.getAverage(), PRECISION);
+        Assert.assertEquals(3, avg.getCount());
+    }
+
+    /**
      * Test method for
      * {@link org.grouplens.lenskit.statistics.MovingAverage#add(double)} .
      */
@@ -59,69 +83,6 @@ public class MovingAverageTest {
         avg.add(21);
         Assert.assertEquals(10.8, avg.getAverage(), PRECISION);
         Assert.assertEquals(5, avg.getCount());
-    }
-
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.MovingAverage#remove(double)} .
-     */
-    @Test
-    public void testRemove() {
-        MovingAverage avg = new MovingAverage();
-        Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
-        Assert.assertEquals(0, avg.getCount());
-
-        avg.add(2);
-        Assert.assertEquals(2, avg.getAverage(), PRECISION);
-        Assert.assertEquals(1, avg.getCount());
-
-        avg.add(2);
-        Assert.assertEquals(2, avg.getAverage(), PRECISION);
-        Assert.assertEquals(2, avg.getCount());
-
-        avg.add(5);
-        Assert.assertEquals(3, avg.getAverage(), PRECISION);
-        Assert.assertEquals(3, avg.getCount());
-
-        avg.remove(2);
-        Assert.assertEquals(3.5, avg.getAverage(), PRECISION);
-        Assert.assertEquals(2, avg.getCount());
-
-        avg.add(21);
-        Assert.assertEquals(9.33333333, avg.getAverage(), PRECISION);
-        Assert.assertEquals(3, avg.getCount());
-
-        avg.remove(5);
-        Assert.assertEquals(11.5, avg.getAverage(), PRECISION);
-        Assert.assertEquals(2, avg.getCount());
-    }
-
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.MovingAverage#remove(double)} .
-     */
-    @Test
-    public void testRemoveAdvanced() {
-        MovingAverage avg = new MovingAverage();
-        Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
-        Assert.assertEquals(0, avg.getCount());
-
-        avg.add(2);
-        Assert.assertEquals(2, avg.getAverage(), PRECISION);
-        Assert.assertEquals(1, avg.getCount());
-
-        avg.add(2);
-        Assert.assertEquals(2, avg.getAverage(), PRECISION);
-        Assert.assertEquals(2, avg.getCount());
-
-        avg.add(5);
-        Assert.assertEquals(3, avg.getAverage(), PRECISION);
-        Assert.assertEquals(3, avg.getCount());
-
-        // removing a value that was never added, can lead to confusion results
-        avg.remove(7);
-        Assert.assertEquals(1, avg.getAverage(), PRECISION);
-        Assert.assertEquals(2, avg.getCount());
     }
 
     /**
