@@ -30,7 +30,7 @@ package org.grouplens.lenskit.util.statistics;
  */
 public class AverageAccumulator {
 
-    private float sum;
+    private double sum;
     private long count;
 
     public AverageAccumulator() {
@@ -46,7 +46,7 @@ public class AverageAccumulator {
      * @param count amount of values that where used to build this sum
      * 
      */
-    public AverageAccumulator(float sum, long count) {
+    public AverageAccumulator(double sum, long count) {
         this.count = count;
         this.sum = sum;
     }
@@ -56,7 +56,7 @@ public class AverageAccumulator {
      * 
      * @param datum new datum to include into the average.
      */
-    public void add(float datum) {
+    public void add(double datum) {
         sum += datum;
         count++;
     }
@@ -65,7 +65,7 @@ public class AverageAccumulator {
      * 
      * @return average over all added datums
      */
-    public float getAverage() {
+    public double getAverage() {
         if (count == 0 || sum == 0) {
             return 0;
         }
@@ -82,6 +82,6 @@ public class AverageAccumulator {
 
     @Override
     public String toString() {
-        return Float.toString(this.getAverage());
+        return Double.toString(this.getAverage());
     }
 }
