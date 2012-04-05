@@ -18,10 +18,12 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -113,6 +115,13 @@ public final class PreferenceDomain implements Serializable {
         if (v < minimum) return minimum;
         else if (v > maximum) return maximum;
         else return v;
+    }
+
+    public void clampVector(MutableSparseVector vec) {
+        for (Long2DoubleMap.Entry ve: vec.fast()) {
+            final double v = ve.getDoubleValue();
+            ve.setValue(clampValue(v));
+        }
     }
 
     @Override
