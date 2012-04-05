@@ -39,11 +39,11 @@ public class AverageAccumulator {
     }
 
     /**
-     * initialize the {@link AverageAccumulator} with a pre-calculated average
-     * value.
+     * Initialize the {@link AverageAccumulator} with a pre-calculated sum and
+     * the amount of values included.
      * 
-     * @param sum pre-calculated average
-     * @param count amount of values that where used to build this average
+     * @param sum pre-calculated sum
+     * @param count amount of values that where used to build this sum
      * 
      */
     public AverageAccumulator(float sum, long count) {
