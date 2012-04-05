@@ -170,8 +170,11 @@ public class ItemMeanPredictor implements BaselinePredictor {
         }
         return MutableSparseVector.wrap(keys, preds);
     }
-    
 
+    @Override
+    public String toString() {
+        return String.format("%s(μ=%.02f)", getClass().getSimpleName(), globalMean);
+    }
     
     protected double getItemMean(long id) {
         return globalMean + itemMeans.get(id);
