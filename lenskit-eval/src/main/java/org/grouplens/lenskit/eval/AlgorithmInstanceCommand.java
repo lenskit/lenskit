@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Builder for algorithm instances.
+ * Command to get a algorithm instances.
  * @author Michael Ekstrand
  */
 @ConfigDelegate(AlgorithmInstanceCommandDelegate.class)

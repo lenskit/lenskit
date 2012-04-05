@@ -1,11 +1,9 @@
 package org.grouplens.lenskit.eval;
 
 /**
- * Created by IntelliJ IDEA.
- * User: schang
- * Date: 3/28/12
- * Time: 5:38 PM
- * To change this template use File | Settings | File Templates.
+ * The exception thrown from the failure of call() in Commmand
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class CommandFailedException extends Exception{
     private static final long serialVersionUID = -9073424874249517829L;

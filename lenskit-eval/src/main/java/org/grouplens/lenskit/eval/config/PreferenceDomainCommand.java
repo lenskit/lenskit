@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.eval.config;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandFailedException;

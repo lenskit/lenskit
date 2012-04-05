@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Created by IntelliJ IDEA.
- * User: CS
- * Date: 3/28/12
- * Time: 8:49 PM
- * To change this template use File | Settings | File Templates.
+ * The command to build and run a crossfold on the data source file and output the partition files
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
+ *
  */
 
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
@@ -220,6 +219,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
+     *
+     * @return List<TTDataSet> The partition files stored as a list of TTDataSet
      * @throws CommandFailedException
      */
     @Override

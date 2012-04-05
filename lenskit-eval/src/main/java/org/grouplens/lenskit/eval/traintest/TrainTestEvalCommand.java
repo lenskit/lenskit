@@ -17,11 +17,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 /**
- * Created by IntelliJ IDEA.
- * User: CS
- * Date: 3/29/12
- * Time: 11:56 AM
- * To change this template use File | Settings | File Templates.
+ * The command that run the algorithm instance and output the prediction result file and the evaluation result file
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class TrainTestEvalCommand extends AbstractCommand<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
@@ -134,7 +132,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
         return this;
     }
 
-
+    /**
+     * Run the evaluation on the train test data source files
+     *
+     * @return For now, return nothing
+     * @throws CommandFailedException  Failure of the evaluation
+     */
     @Override
     public Void call() throws CommandFailedException {
         this.setupJobs();

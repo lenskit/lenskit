@@ -5,6 +5,8 @@ import javax.annotation.Nonnull;
 
 /**
  * The abstract class of Command.
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public abstract class AbstractCommand<T> implements Command<T> {
     protected String name;

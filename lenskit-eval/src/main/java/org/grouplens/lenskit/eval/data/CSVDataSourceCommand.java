@@ -27,7 +27,7 @@ import org.grouplens.lenskit.eval.AbstractCommand;
 import java.io.File;
 
 /**
- * Build a CSV data source.
+ * Command to return a CSV data source.
  * @author Michael Ekstrand
  */
 @SuppressWarnings("UnusedDeclaration")
