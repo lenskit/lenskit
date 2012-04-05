@@ -16,60 +16,61 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.statistics;
+package org.grouplens.lenskit.util.statistics;
 
 /**
  * <p>
  * An implementation of a moving average.<br/>
- * Only the average value and the item count is stored, not the values them
- * self.
+ * Only the sum and the item count is stored, not the values them self.
  * </p>
  * 
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
  * @since 0.10
  * 
  */
-public class MovingAverage {
+public class AverageAccumulator {
 
-    private double average;
+    private float sum;
     private long count;
 
-    public MovingAverage() {
+    public AverageAccumulator() {
         count = 0;
-        average = 0;
+        sum = 0;
     }
 
     /**
-     * initialize the {@link MovingAverage} with a pre-calculated average value.
+     * initialize the {@link AverageAccumulator} with a pre-calculated average
+     * value.
      * 
+     * @param sum pre-calculated average
      * @param count amount of values that where used to build this average
-     * @param average pre-calculated average
+     * 
      */
-    public MovingAverage(long count, double average) {
+    public AverageAccumulator(float sum, long count) {
         this.count = count;
-        this.average = average;
+        this.sum = sum;
     }
 
     /**
-     * Add a new datum to the {@link MovingAverage}
+     * Add a new datum to the {@link AverageAccumulator}
      * 
      * @param datum new datum to include into the average.
      */
-    public void add(double datum) {
-        if (count == 0) {
-            average = datum;
-            count++;
-        } else {
-            average = ((average * count) + datum) / ++count;
-        }
+    public void add(float datum) {
+        sum += datum;
+        count++;
     }
 
     /**
      * 
      * @return average over all added datums
      */
-    public double getAverage() {
-        return average;
+    public float getAverage() {
+        if (count == 0 || sum == 0) {
+            return 0;
+        }
+
+        return sum / count;
     }
 
     /**
@@ -81,6 +82,6 @@ public class MovingAverage {
 
     @Override
     public String toString() {
-        return Double.toString(average);
+        return Float.toString(this.getAverage());
     }
 }

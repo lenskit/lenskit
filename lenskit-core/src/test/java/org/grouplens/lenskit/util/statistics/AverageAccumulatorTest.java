@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.statistics;
+package org.grouplens.lenskit.util.statistics;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,26 +26,28 @@ import org.junit.Test;
  * @since 0.10
  * 
  */
-public class MovingAverageTest {
+public class AverageAccumulatorTest {
 
     private static final double PRECISION = 0.0001;
 
     /**
-     * Test method for {@link org.grouplens.lenskit.statistics.MovingAverage} .
+     * Test method for
+     * {@link org.grouplens.lenskit.statistics.AverageAccumulator} .
      */
     @Test
     public void testInitialize() {
-        MovingAverage avg = new MovingAverage();
+        AverageAccumulator avg = new AverageAccumulator();
         Assert.assertEquals(0, avg.getAverage(), PRECISION);
         Assert.assertEquals(0, avg.getCount());
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.statistics.MovingAverage} .
+     * Test method for
+     * {@link org.grouplens.lenskit.statistics.AverageAccumulator} .
      */
     @Test
     public void testInitializeAdvanced() {
-        MovingAverage avg = new MovingAverage(2, 2);
+        AverageAccumulator avg = new AverageAccumulator(4, 2);
         Assert.assertEquals(2, avg.getAverage(), PRECISION);
         Assert.assertEquals(2, avg.getCount());
 
@@ -56,11 +58,11 @@ public class MovingAverageTest {
 
     /**
      * Test method for
-     * {@link org.grouplens.lenskit.statistics.MovingAverage#add(double)} .
+     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#add(double)} .
      */
     @Test
     public void testAdd() {
-        MovingAverage avg = new MovingAverage();
+        AverageAccumulator avg = new AverageAccumulator();
         Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
         Assert.assertEquals(0, avg.getCount());
 
@@ -87,11 +89,12 @@ public class MovingAverageTest {
 
     /**
      * Test method for
-     * {@link org.grouplens.lenskit.statistics.MovingAverage#getAverage()} .
+     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#getAverage()}
+     * .
      */
     @Test
     public void testGetAverage() {
-        MovingAverage avg = new MovingAverage();
+        AverageAccumulator avg = new AverageAccumulator();
         Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
 
         avg.add(5);
@@ -103,11 +106,11 @@ public class MovingAverageTest {
 
     /**
      * Test method for
-     * {@link org.grouplens.lenskit.statistics.MovingAverage#getCount()} .
+     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#getCount()} .
      */
     @Test
     public void testGetCount() {
-        MovingAverage avg = new MovingAverage();
+        AverageAccumulator avg = new AverageAccumulator();
         Assert.assertEquals(0, avg.getCount());
 
         avg.add(5);
