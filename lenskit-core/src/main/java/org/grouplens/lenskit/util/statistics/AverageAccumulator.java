@@ -25,7 +25,7 @@ package org.grouplens.lenskit.util.statistics;
  * </p>
  * 
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
- * @since 0.10
+ * @since 0.11
  * 
  */
 public class AverageAccumulator {
