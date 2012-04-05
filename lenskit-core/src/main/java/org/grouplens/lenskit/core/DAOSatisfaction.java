@@ -29,9 +29,8 @@ import org.grouplens.grapht.spi.ContextMatcher;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.Qualifier;
 import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.util.Function;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-
-import com.google.common.base.Function;
 
 /**
  * DAOSatisfaction is a place-holder satisfaction to mark the node that holds

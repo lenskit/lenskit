@@ -38,9 +38,9 @@ import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.ResolverException;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.util.Function;
 import org.grouplens.grapht.util.InstanceProvider;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
@@ -50,8 +50,6 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-
-import com.google.common.base.Function;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.

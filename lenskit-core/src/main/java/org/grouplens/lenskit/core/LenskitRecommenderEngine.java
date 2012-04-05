@@ -38,12 +38,11 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.util.Function;
 import org.grouplens.grapht.util.InstanceProvider;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-
-import com.google.common.base.Function;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by

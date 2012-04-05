@@ -15,12 +15,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <type>jar</type>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-data-structures</artifactId>
       <version>${project.version}</version>
@@ -34,11 +28,6 @@
       <groupId>org.grouplens.grapht</groupId>
       <artifactId>grapht</artifactId>
       <version>0.1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
