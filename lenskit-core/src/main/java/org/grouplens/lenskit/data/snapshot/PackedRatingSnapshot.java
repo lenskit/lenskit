@@ -32,6 +32,7 @@ import java.util.Random;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -66,7 +67,7 @@ public class PackedRatingSnapshot extends AbstractRatingSnapshot {
         private final DataAccessObject dao;
 
         @Inject
-        public Provider(DataAccessObject dao) {
+        public Provider(@Transient DataAccessObject dao) {
             this.dao = dao;
         }
 

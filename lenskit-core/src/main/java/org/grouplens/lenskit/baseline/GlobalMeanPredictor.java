@@ -21,6 +21,7 @@ package org.grouplens.lenskit.baseline;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -42,7 +43,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
         private DataAccessObject dao;
         
         @Inject
-        public Provider(DataAccessObject dao) {
+        public Provider(@Transient DataAccessObject dao) {
             this.dao = dao;
         }
         
