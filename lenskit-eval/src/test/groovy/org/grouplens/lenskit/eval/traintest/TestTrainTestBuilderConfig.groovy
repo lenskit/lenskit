@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue
 import org.grouplens.lenskit.eval.config.CommandDelegate
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.results.TrainTestEvalResult
 
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
@@ -162,10 +163,12 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testCrossfoldDataSource() {
-        def dat = eval{crossfold("ml-100k") {
-            source file
-            partitions 7
-        }  }
+        def dat = eval {
+            crossfold("ml-100k") {
+                source file
+                partitions 7
+            }
+        }
         assertThat(dat.size(), equalTo(7))
         assertThat(dat[2], instanceOf(TTDataSet))
         eval {
@@ -174,4 +177,5 @@ class TestTrainTestBuilderConfig {
         def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
     }
+
 }

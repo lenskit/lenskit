@@ -26,6 +26,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
+import org.grouplens.lenskit.eval.results.TrainTestEvalResult
 
 def buildDir = System.getProperty("project.build.directory", ".")
 
@@ -45,7 +46,7 @@ def ml100k = crossfold("ml-100k") {
     test "${buildDir}/ml-100k.test.%d.csv"
 }
 
-trainTest {
+def result = trainTest {
 
     output "${buildDir}/eval-output/baselines.csv"
     dataset ml100k
@@ -62,4 +63,5 @@ trainTest {
             setComponent(BaselinePredictor, bl)
         }
     }
+
 }

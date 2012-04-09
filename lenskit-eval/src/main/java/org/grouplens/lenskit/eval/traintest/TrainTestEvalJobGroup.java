@@ -55,13 +55,16 @@ public class TrainTestEvalJobGroup implements JobGroup {
 
     private TrainTestEvalCommand evaluation;
 
+    private int partitionCount;
+
     public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
-                                 TTDataSet data,
+                                 TTDataSet data, int partition,
                                  int numRecs) {
         evaluation = eval;
         dataSet = data;
+        partitionCount = partition;
 
         final Supplier<SharedRatingSnapshot> snap =
                 new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
@@ -83,7 +86,9 @@ public class TrainTestEvalJobGroup implements JobGroup {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
-                    Suppliers.compose(prefix, evaluation.outputTableSupplier()), numRecs);
+                    Suppliers.compose(prefix, evaluation.outputTableSupplier()),
+                    evaluation.getResult().getRow(algo.getName(), partitionCount),
+                    numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);

@@ -7,6 +7,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.eval.results.TrainTestEvalResult;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TrainTestEvalCommand extends AbstractCommand<Void> {
+public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
     
     private List<TTDataSet> dataSources;
@@ -48,6 +49,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
+
+    private TrainTestEvalResult result;
     
 
     public TrainTestEvalCommand() {
@@ -123,6 +126,10 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
         return predictOutputFile;
     }
 
+    public TrainTestEvalResult getResult() {
+        return result;
+    }
+
     public int getNumRecs() {
         return numRecs;
     }
@@ -139,7 +146,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
      * @throws CommandFailedException  Failure of the evaluation
      */
     @Override
-    public Void call() throws CommandFailedException {
+    public TrainTestEvalResult call() throws CommandFailedException {
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
@@ -171,11 +178,16 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
             logger.info("Finishing evaluation");
             this.finish();
         }
-        return null;
+        return result;
     }
 
-    protected void setupJobs() {
+    protected void setupJobs() throws CommandFailedException{
         TableLayoutBuilder master = new TableLayoutBuilder();
+        result = new TrainTestEvalResult(dataSources.size());
+        for(AlgorithmInstance alg: algorithms) {
+            result.putAlgorithm(alg.getName());
+        }
+
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds: dataSources) {
@@ -196,10 +208,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
         }
 
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        int idx = 0;
         for (TTDataSet dataset: dataSources) {
             TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, numRecs);
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
             jobGroups.add(group);
+            idx++;
         }
 
         commonColumnCount = master.getColumnCount();
@@ -207,6 +221,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
+        result.addField("BuildTime");
+        result.addField("TestTime");
         TableLayoutBuilder perUser = master.clone();
 
         String[] columnLabels;
@@ -217,6 +233,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Void> {
             if (columnLabels != null){
                 for (String c: columnLabels) {
                     output.addColumn(c);
+                    result.addField(c);
                 }
             }
 

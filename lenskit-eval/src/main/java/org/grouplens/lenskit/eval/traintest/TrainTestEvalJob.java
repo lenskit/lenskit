@@ -37,6 +37,8 @@ import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.results.ResultRow;
+import org.grouplens.lenskit.eval.results.TrainTestEvalResult;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -73,6 +75,8 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
 
+    private ResultRow resultRow;
+
     private final Supplier<SharedRatingSnapshot> snapshot;
     private final int outputColumnCount;
 
@@ -91,12 +95,13 @@ public class TrainTestEvalJob implements Job {
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
-                            Supplier<TableWriter> out, int numRecs) {
+                            Supplier<TableWriter> out, ResultRow row, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
+        resultRow = row;
         this.numRecs = numRecs;
         
         int ncols = 2;
@@ -238,9 +243,16 @@ public class TrainTestEvalJob implements Job {
         String[] row = new String[outputColumnCount];
         row[0] = Long.toString(build.getTime());
         row[1] = Long.toString(test.getTime());
+        resultRow.getRow().put(TrainTestEvalResult.getField(0),row[0]);
+        resultRow.getRow().put(TrainTestEvalResult.getField(1),row[1]);
         int col = 2;
         for (TestUserMetricAccumulator acc: accums) {
             String[] ar = acc.finalResults();
+            int i = col;
+            for(String s: ar) {
+                resultRow.getRow().put(TrainTestEvalResult.getField(i),s);
+                i++;
+            }
             if (ar != null) {
                 // no aggregated output is generated
                 int n = ar.length;
