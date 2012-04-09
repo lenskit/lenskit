@@ -69,6 +69,7 @@ trainTest("mutli-algorithm") {
 
     output "${buildDir}/eval-results.csv"
     predictOutput "${buildDir}/eval-preds.csv"
+    userOutput "${buildDir}/eval-user.csv"
 
     metric CoveragePredictMetric
     metric MAEPredictMetric
