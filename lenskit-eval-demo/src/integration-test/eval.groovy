@@ -88,7 +88,7 @@ trainTest {
         bind RatingPredictor to UserUserRatingPredictor
         bind VectorNormalizer withQualifier PredictNormalizer to MeanVarianceNormalizer
         bind BaselinePredictor to ItemUserMeanPredictor
-        bind BaselinePredictor withQualifier NormalizerBaseline to UserMeanPredictor
+        within BaselineSubtractingNormalizer bind BaselinePredictor to UserMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
         bind Similarity withQualifier UserSimilarity to CosineSimilarity
         within (UserSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
@@ -106,7 +106,6 @@ trainTest {
     algorithm("ItemItem") {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        bind BaselinePredictor withQualifier NormalizerBaseline to UserMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
         within (ItemSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
@@ -118,7 +117,7 @@ trainTest {
     }
     
     algorithm("WeightedSlopeOne") {
-        bind BaselinePredictor withQualifier NormalizerBaseline to GlobalMeanPredictor
+        within BaselineSubtractingNormalizer bind BaselinePredictor to GlobalMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
         bind RatingPredictor to WeightedSlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
@@ -131,7 +130,7 @@ trainTest {
     }
 
     algorithm("SlopeOne") {
-        bind BaselinePredictor withQualifier NormalizerBaseline to GlobalMeanPredictor
+        within BaselineSubtractingNormalizer bind BaselinePredictor to GlobalMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
         bind RatingPredictor to SlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
