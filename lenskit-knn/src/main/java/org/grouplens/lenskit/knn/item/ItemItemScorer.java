@@ -42,6 +42,8 @@ import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -52,6 +54,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     protected final ItemItemModel model;
     protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
         new IdentityVectorNormalizer();
@@ -69,6 +72,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
         summarizer = sum;
         this.scorer = scorer;
         algorithm = algo;
+        logger.info("building item-item scorer with scorer {}", scorer);
     }
 
     @Override

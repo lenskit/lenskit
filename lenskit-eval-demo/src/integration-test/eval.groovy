@@ -43,6 +43,7 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.knn.params.ModelSize
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -90,10 +91,10 @@ trainTest {
         bind BaselinePredictor withQualifier NormalizerBaseline to UserMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
         bind Similarity withQualifier UserSimilarity to CosineSimilarity
-        within (UserSimilarity, Similarity) bind Double withQualifier Damping to 100
+        within (UserSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, UserUserRatingPredictor)
-//        setComponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)
+//        setComnponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
 //        setComponent(NormalizerBaseline, BaselinePredictor, UserMeanPredictor)
 //        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
@@ -105,8 +106,9 @@ trainTest {
     algorithm("ItemItem") {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
+        bind BaselinePredictor withQualifier NormalizerBaseline to UserMeanPredictor
         bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
-        within (ItemSimilarity, Similarity) bind Double withQualifier Damping to 100
+        within (ItemSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, ItemItemRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)

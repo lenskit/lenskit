@@ -114,7 +114,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     @Override
     public String toString() {
-        return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
+        String cls = getClass().getSimpleName();
+        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, smoothing);
     }
 
 }

@@ -88,15 +88,16 @@ public class ItemMeanPredictor implements BaselinePredictor {
                 damping, itemMeans);
             ratings.close();
             
-            return new ItemMeanPredictor(itemMeans, globalMean);
+            return new ItemMeanPredictor(itemMeans, globalMean, damping);
         }
     }
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
 
     private final Long2DoubleMap itemMeans;
     protected final double globalMean;
+    protected final double damping;
 
     /**
      * Construct a new scorer. This assumes ownership of the provided map.
@@ -104,12 +105,14 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @param itemMeans A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.
      */
-    public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean) {
-        if (itemMeans instanceof Serializable)
+    public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
+        if (itemMeans instanceof Serializable) {
             this.itemMeans = itemMeans;
-        else
+        } else {
             this.itemMeans = new Long2DoubleOpenHashMap(itemMeans);
+        }
         this.globalMean = globalMean;
+        this.damping = damping;
     }
 
     /**
@@ -184,8 +187,12 @@ public class ItemMeanPredictor implements BaselinePredictor {
         }
         return MutableSparseVector.wrap(keys, preds);
     }
-    
 
+    @Override
+    public String toString() {
+        String cls = getClass().getSimpleName();
+        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
+    }
     
     protected double getItemMean(long id) {
         return globalMean + itemMeans.get(id);

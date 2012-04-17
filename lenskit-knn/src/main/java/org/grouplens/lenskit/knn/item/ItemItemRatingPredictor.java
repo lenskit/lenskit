@@ -78,6 +78,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      */
     @Inject
     public void setBaseline(@Nullable BaselinePredictor pred) {
+        logger.debug("using baseline {}", pred);
         baseline = pred;
     }
 

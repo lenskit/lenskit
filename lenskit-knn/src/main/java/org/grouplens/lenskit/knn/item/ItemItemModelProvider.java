@@ -86,6 +86,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     @Override
     public SimilarityMatrixModel get() {
+        logger.debug("building item-item model");
+        logger.debug("using normalizer {}", normalizer);
+        logger.debug("using summarizer {}", userSummarizer);
         ItemItemModelBuildStrategy similarityStrategy = createBuildStrategy(itemSimilarity);
 
         LongArrayList ilist = Cursors.makeList(dao.getItems());

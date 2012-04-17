@@ -82,10 +82,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         }
     }
 
-    private static final long serialVersionUID = 1L;
-
-    // "final" but for Serializable
-    protected final double damping;
+    private static final long serialVersionUID = 2L;
 
     /**
      * Create a new scorer, this assumes ownership of the given map.
@@ -95,8 +92,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @param damping
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
-        super(itemMeans, globalMean);
-        this.damping = damping;
+        super(itemMeans, globalMean, damping);
     }
 
     /**
