@@ -87,8 +87,8 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @param norm The normalizer.
      * @see UserVectorNormalizer
      */
-    @UserVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
+    @Inject
+    public void setNormalizer(@UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         normalizer = norm;
     }
 
