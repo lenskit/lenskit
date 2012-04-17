@@ -71,8 +71,8 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(3, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
+        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
         // FIXME Let this work @mludwig
         /*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
@@ -89,7 +89,7 @@ public class TestItemItemRecommender {
     public void testItemScorerNoRating() {
         UserHistory<Rating> history = getRatings(5);
         long[] items = { 7, 8 };
-        ItemItemScorer scorer = session.getComponent(ItemItemScorer.class);
+        ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
         SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
         assertThat(scores, notNullValue());

@@ -80,8 +80,7 @@ public class TestPackedRatingSnapshot {
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        PackedRatingSnapshot.Builder builder = new PackedRatingSnapshot.Builder(manager.create());
-        snap = builder.build();
+        snap = new PackedRatingSnapshot.Provider(manager.create()).get();
     }
 
 

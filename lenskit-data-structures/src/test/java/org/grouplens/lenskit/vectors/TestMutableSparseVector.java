@@ -202,7 +202,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(3), closeTo(1.5));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOverSize() {
         long[] keys = {3, 7, 9};

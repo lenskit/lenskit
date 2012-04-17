@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.params;
+package org.grouplens.lenskit.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -24,19 +24,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultDouble;
-import org.grouplens.lenskit.params.meta.Parameter;
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultDouble;
 
 /**
- * Shrinkage constant for similarity functions.  This constant is added to the
- * denominator of functions that support it, shrinking them towards 0 when there
- * are few items or users in common between the two entities being compared.
+ * Smoothing parameter for mean baselines.
  *
- * @todo Add citation to relevant literature.
+ * <p>
+ * The smoothing enabled by this parameter is based on <a
+ * href="http://sifter.org/~simon/journal/20061211.html">FunkSVD</a>. The idea
+ * is to bias item or user means towards the global mean based on how many items
+ * or users are involved. So, if the global mean is \(\mu\) and smoothing \(\gamma\),
+ * the mean of some values is \[\frac{\gamma\mu + \sum r}{\gamma + n}\]
  */
 @Documented
 @DefaultDouble(0.0)
-@Parameter(Double.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SimilarityDamping { }
+public @interface Damping { }

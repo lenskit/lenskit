@@ -33,6 +33,13 @@ import org.junit.Test;
 public class TestSlopeOneRatingPredictor {
 
     private static final double EPSILON = 1.0e-6;
+    
+    private SlopeOneModel getModel(DataAccessObject dao) {
+        PackedRatingSnapshot snapshot = new PackedRatingSnapshot.Provider(dao).get();
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null, 1, 5, 0);
+        SlopeOneModel model = builder.get();
+        return model;
+    }
 
     @Test
     public void testPredict1() {
@@ -52,17 +59,12 @@ public class TestSlopeOneRatingPredictor {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
+        
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
-        PackedRatingSnapshot snap = snapBuilder.build();
-        SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
-        builder.setRatingSnapshot(snap);
-        builder.setDamping(0);
-        builder.setMinRating(1);
-        builder.setMaxRating(5);
-        SlopeOneModel model = builder.build();
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao,model);
+        SlopeOneModel model = getModel(dao);
+        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
+        
         assertEquals(7/3.0, predictor.score(2, 9), EPSILON);
         assertEquals(13/3.0, predictor.score(3, 6), EPSILON);
         assertEquals(2, predictor.score(4, 6), EPSILON);
@@ -85,17 +87,12 @@ public class TestSlopeOneRatingPredictor {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
+        
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
-        PackedRatingSnapshot.Builder snapBuilder = new PackedRatingSnapshot.Builder(dao);
-        PackedRatingSnapshot snap = snapBuilder.build();
-        SlopeOneModelBuilder builder = new SlopeOneModelBuilder();
-        builder.setRatingSnapshot(snap);
-        builder.setDamping(0);
-        builder.setMinRating(1);
-        builder.setMaxRating(5);
-        SlopeOneModel model = builder.build();
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao,model);
+        SlopeOneModel model = getModel(dao);
+        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
+        
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);
         assertEquals(5, predictor.score(2, 5), EPSILON);

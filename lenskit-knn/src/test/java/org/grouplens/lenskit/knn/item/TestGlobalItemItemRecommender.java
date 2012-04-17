@@ -81,8 +81,8 @@ public class TestGlobalItemItemRecommender {
         rs.add(Ratings.make(4, 10, 1));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(GlobalItemRecommender.class, ItemItemGlobalRecommender.class);
-        factory.setComponent(GlobalItemScorer.class, ItemItemGlobalScorer.class);
+        factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
+        factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
         // FIXME Let this work @mludwig
         /*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
@@ -99,7 +99,7 @@ public class TestGlobalItemItemRecommender {
     public void testGlobalItemScorerNoRating() {
         long[] queryItems = {1, 10};
         long[] items = { 5, 10 };
-        ItemItemGlobalScorer scorer = session.getComponent(ItemItemGlobalScorer.class);
+        ItemItemGlobalScorer scorer = session.get(ItemItemGlobalScorer.class);
         assertThat(scorer, notNullValue());
         SparseVector scores = scorer.globalScore(LongArrayList.wrap(queryItems), LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
@@ -237,5 +237,4 @@ public class TestGlobalItemItemRecommender {
         assertTrue(recs.contains(7));
 
     }
-
 }

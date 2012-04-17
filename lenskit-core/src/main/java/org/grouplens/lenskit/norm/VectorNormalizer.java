@@ -20,7 +20,7 @@ package org.grouplens.lenskit.norm;
 
 import javax.annotation.Nullable;
 
-import org.grouplens.lenskit.params.meta.DefaultClass;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -35,7 +35,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@DefaultClass(IdentityVectorNormalizer.class)
+@DefaultImplementation(IdentityVectorNormalizer.class)
 public interface VectorNormalizer<V extends ImmutableSparseVector> {
 
     /**

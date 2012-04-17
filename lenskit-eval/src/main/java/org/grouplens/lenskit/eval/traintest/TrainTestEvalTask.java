@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.eval.AbstractEvalTask;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -46,7 +47,6 @@ import org.grouplens.lenskit.util.tablewriter.TableLayout;
 import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.util.tablewriter.TableWriters;
-import org.picocontainer.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

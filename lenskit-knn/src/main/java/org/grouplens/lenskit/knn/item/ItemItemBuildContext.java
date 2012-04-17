@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  * be used by the build strategies to build up the model in the accumulator.
  *
  * @see ItemItemModelBuildStrategy
- * @see ItemItemModelBuilder
+ * @see ItemItemModelProvider
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
@@ -50,6 +52,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     protected final FunkSVDModel model;
     private DataAccessObject dao;
 
+    @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m) {
         super(dao);
         this.dao = dao;

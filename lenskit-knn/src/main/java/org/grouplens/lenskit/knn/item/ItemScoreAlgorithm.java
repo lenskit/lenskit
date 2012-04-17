@@ -19,7 +19,8 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.params.meta.DefaultClass;
+
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -29,7 +30,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand
  * @since 0.10
  */
-@DefaultClass(DefaultItemScoreAlgorithm.class)
+@DefaultImplementation(DefaultItemScoreAlgorithm.class)
 public interface ItemScoreAlgorithm {
     MutableSparseVector scoreItems(ItemItemModel model,
                                    SparseVector userData, LongSortedSet items,

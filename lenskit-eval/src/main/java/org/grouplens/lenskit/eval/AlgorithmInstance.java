@@ -18,9 +18,10 @@
  */
 package org.grouplens.lenskit.eval;
 
-import com.google.common.base.Supplier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Provider;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -32,8 +33,8 @@ import org.grouplens.lenskit.params.MinRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.google.common.base.Supplier;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -95,20 +96,20 @@ public class AlgorithmInstance {
         LenskitRecommenderEngineFactory fac2 = factory.clone();
 
         if (dom != null) {
-            fac2.set(MaxRating.class, dom.getMaximum());
-            fac2.set(MinRating.class, dom.getMinimum());
-            fac2.setComponent(PreferenceDomain.class, dom);
+            fac2.bind(MaxRating.class, dom.getMaximum());
+            fac2.bind(MinRating.class, dom.getMinimum());
+            fac2.bind(PreferenceDomain.class).to(dom);
         }
 
         if (sharedSnapshot != null) {
             // FIXME Bind this to a provider
-            Builder<RatingSnapshot> bld = new Builder<RatingSnapshot>() {
+            Provider<RatingSnapshot> prv = new Provider<RatingSnapshot>() {
                 @Override
-                public RatingSnapshot build() {
+                public RatingSnapshot get() {
                     return sharedSnapshot.get();
                 }
             };
-            fac2.setBuilder(RatingSnapshot.class, bld);
+            fac2.bind(RatingSnapshot.class).toProvider(prv);
         }
 
         LenskitRecommenderEngine engine = fac2.create(dao);

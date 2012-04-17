@@ -18,11 +18,8 @@
  */
 package org.grouplens.lenskit.core;
 
-import it.unimi.dsi.fastutil.longs.LongLists;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nullable;

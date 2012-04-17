@@ -35,8 +35,9 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
     void testBasicAlgorithm() {
         def obj = eval {
             algorithm("GlobalMean") {
-                setComponent(RatingPredictor, BaselineRatingPredictor)
-                setComponent(BaselinePredictor, GlobalMeanPredictor)
+                bind RatingPredictor to BaselineRatingPredictor
+                bind BaselinePredictor to GlobalMeanPredictor
+
                 attributes["wombat"] = "global"
             }
         }

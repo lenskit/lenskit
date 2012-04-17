@@ -26,11 +26,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.inject.Inject;
+
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -43,39 +48,41 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * mean <i>µ</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  *
- * <p>It supports mean smoothing (see {@link MeanSmoothing}).
+ * <p>It supports mean smoothing (see {@link Damping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
+@DefaultProvider(ItemUserMeanPredictor.Provider.class)
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<ItemUserMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<ItemUserMeanPredictor> {
         private double damping = 0;
-
-        @MeanSmoothing
-        public void setDamping(double d) {
+        private DataAccessObject dao;
+        
+        @Inject
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double d) {
+            this.dao = dao;
             damping = d;
         }
 
         @Override
-        public ItemUserMeanPredictor build() {
+        public ItemUserMeanPredictor get() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
-            double globalMean = computeItemAverages(snapshot.getRatings().fastIterator(), damping, itemMeans);
+            Cursor<Rating> ratings = dao.getEvents(Rating.class);
+            double globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);
+            ratings.close();
 
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }
     }
 
-    private static final long serialVersionUID = 1L;
-
-    // "final" but for Serializable
-    protected final double damping;
+    private static final long serialVersionUID = 2L;
 
     /**
      * Create a new scorer, this assumes ownership of the given map.
@@ -85,8 +92,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @param damping
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
-        super(itemMeans, globalMean);
-        this.damping = damping;
+        super(itemMeans, globalMean, damping);
     }
 
     /**

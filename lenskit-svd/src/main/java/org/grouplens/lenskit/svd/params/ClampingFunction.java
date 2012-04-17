@@ -24,8 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.util.DoubleFunction;
 
 /**
@@ -34,8 +35,8 @@ import org.grouplens.lenskit.util.DoubleFunction;
  * result.
  */
 @Documented
-@DefaultClass(DoubleFunction.Identity.class)
-@Parameter(DoubleFunction.class)
+@DefaultImplementation(DoubleFunction.Identity.class)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClampingFunction { }

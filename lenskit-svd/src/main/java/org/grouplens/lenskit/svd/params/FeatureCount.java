@@ -24,15 +24,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultInt;
-import org.grouplens.lenskit.params.meta.Parameter;
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultInteger;
 
 /**
  * The number of latent features to use in an SVD-based recommender.
  */
 @Documented
-@DefaultInt(40)
-@Parameter(Integer.class)
+@DefaultInteger(40)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FeatureCount { }

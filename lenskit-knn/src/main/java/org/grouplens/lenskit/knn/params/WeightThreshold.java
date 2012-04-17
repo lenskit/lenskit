@@ -24,9 +24,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultInteger;
 import org.grouplens.lenskit.knn.SignificanceWeight;
-import org.grouplens.lenskit.params.meta.DefaultInt;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * The weight threshold for significance weighting.  If the vectors in question
@@ -36,8 +37,8 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * @see WeightedSimilarity
  */
 @Documented
-@DefaultInt(0)
-@Parameter(Integer.class)
+@DefaultInteger(0)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WeightThreshold { }

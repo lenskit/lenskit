@@ -107,5 +107,4 @@ public class SlopeOneModelDataAccumulator {
     public Long2ObjectOpenHashMap<Long2IntOpenHashMap> buildCoratingMatrix() {
         return coratingMatrix;
     }
-
 }

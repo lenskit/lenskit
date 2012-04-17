@@ -26,6 +26,8 @@ import java.io.Serializable;
  * @author Michael Ekstrand
  */
 public class ValueArrayQuantizer implements Quantizer, Serializable {
+    private static final long serialVersionUID = 2150927895689488171L;
+    
     protected final double[] values;
 
     /**

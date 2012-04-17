@@ -24,10 +24,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.data.history.HistorySummarizer;
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * The summarizer to use for summarizing user data prior to recommendation or
@@ -37,8 +38,9 @@ import org.grouplens.lenskit.params.meta.Parameter;
  *
  */
 @Documented
-@Parameter(HistorySummarizer.class)
-@DefaultClass(RatingVectorHistorySummarizer.class)
+@Qualifier
+@InheritsDefaultQualifier
+@DefaultImplementation(RatingVectorHistorySummarizer.class)
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserHistorySummary {

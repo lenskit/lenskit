@@ -29,6 +29,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -44,6 +46,7 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
 	protected final @Nonnull NeighborhoodScorer scorer;
     protected final @Nonnull ItemScoreAlgorithm algorithm;
 
+    @Inject
 	public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
                                 ItemScoreAlgorithm algo) {
 		super(dao);
@@ -98,5 +101,4 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
         }
         return items;
     }
-
 }

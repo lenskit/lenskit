@@ -20,6 +20,8 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -45,6 +47,7 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
      * @param baseline The baseline predictor to use.
      * @param dao The DAO.
      */
+    @Inject
     public BaselineRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
         super(dao);
         predictor = baseline;
