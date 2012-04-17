@@ -84,6 +84,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         config.getRootContext().bind(param, value);
     }
 
+    public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
+        return bind(type).withQualifier(qualifier);
+    }
+
     @Override
     public Context in(Class<?> type) {
         return config.getRootContext().in(type);
@@ -97,6 +101,27 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     @Override
     public Context in(String name, Class<?> type) {
         return config.getRootContext().in(name, type);
+    }
+
+    /**
+     * Groovy-compatible alias for {@link #in(Class)}.
+     */
+    public Context within(Class<?> type) {
+        return in(type);
+    }
+
+    /**
+     * Groovy-compatible alias for {@link #in(Class,Class)}.
+     */
+    public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
+        return in(qualifier, type);
+    }
+
+    /**
+     * Groovy-compatible alias for {@link #in(String,Class)}.
+     */
+    public Context within(String name, Class<?> type) {
+        return in(name, type);
     }
     
     @Override
