@@ -18,10 +18,9 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
@@ -31,14 +30,14 @@ import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.util.LazyValue;
+import org.grouplens.lenskit.util.SoftLazyValue;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
@@ -64,7 +63,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
         dataSet = data;
 
         final Supplier<SharedRatingSnapshot> snap =
-                new LazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
+                new SoftLazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
                     @Override
                     public SharedRatingSnapshot call() {
                         logger.info("Loading snapshot for {}", getName());
