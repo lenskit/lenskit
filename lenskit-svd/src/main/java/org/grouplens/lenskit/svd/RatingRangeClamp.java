@@ -19,12 +19,9 @@
 package org.grouplens.lenskit.svd;
 
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.params.MaxRating;
-import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.util.DoubleFunction;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 
 public final class RatingRangeClamp implements DoubleFunction, Serializable {
@@ -32,13 +29,9 @@ public final class RatingRangeClamp implements DoubleFunction, Serializable {
     private static final long serialVersionUID = 1012447846494918355L;
     private PreferenceDomain domain;
 
+    @Inject
     public RatingRangeClamp(PreferenceDomain dom) {
         domain = dom;
-    }
-
-    @Inject
-    public RatingRangeClamp(@MinRating double min, @MaxRating double max) {
-        this(new PreferenceDomain(min, max));
     }
 
     /**
