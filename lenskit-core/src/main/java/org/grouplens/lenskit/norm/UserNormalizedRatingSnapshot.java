@@ -24,9 +24,10 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
@@ -34,7 +35,6 @@ import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
-import org.grouplens.lenskit.params.meta.Built;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -57,39 +57,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@Built(ephemeral=true)
 public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
-    /**
-     * A RecommenderComponentBuilder used to create NormalizedRatingSnapshots
-     * with a specific {@link VectorNormalizer} applied to the user ratings.
-     *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-    public static class Builder extends RecommenderComponentBuilder<UserNormalizedRatingSnapshot> {
-        private VectorNormalizer<? super UserVector>normalizer;
-
-        /**
-         * Set the normalizer to use.
-         * @param normalizer
-         */
-        @UserVectorNormalizer
-        public void setNormalizer(VectorNormalizer<? super UserVector> normalizer) {
-            this.normalizer = normalizer;
-        }
-
-        @Override
-        public UserNormalizedRatingSnapshot build() {
-            return new UserNormalizedRatingSnapshot(snapshot, normalizer);
-        }
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
     private final RatingSnapshot snapshot;
     private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
 
+    @Inject
     public UserNormalizedRatingSnapshot(RatingSnapshot snapshot,
-                                        VectorNormalizer<? super UserVector> norm) {
+                                        @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         super();
         this.snapshot = snapshot;
         normalizer = norm;

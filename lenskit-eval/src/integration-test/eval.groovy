@@ -59,8 +59,8 @@ def result = trainTest {
 
     for (bl in baselines) {
         algorithm(bl.simpleName) {
-            setComponent(RatingPredictor, BaselineRatingPredictor)
-            setComponent(BaselinePredictor, bl)
+            bind RatingPredictor to BaselineRatingPredictor
+            bind BaselinePredictor to bl
         }
     }
 

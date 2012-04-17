@@ -24,16 +24,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.grouplens.lenskit.params.meta.DefaultInt;
-import org.grouplens.lenskit.params.meta.Parameter;
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultInteger;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both
  * user-user and item-item CF. If 0, then all neighbors are used.
  */
 @Documented
-@DefaultInt(30)
-@Parameter(Integer.class)
+@DefaultInteger(30)
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NeighborhoodSize { }

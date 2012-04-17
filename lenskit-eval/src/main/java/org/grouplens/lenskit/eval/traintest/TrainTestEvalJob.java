@@ -146,7 +146,8 @@ public class TrainTestEvalJob implements Job {
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            Recommender rec = algorithm.buildRecommender(dao, snapshot);
+            Recommender rec = algorithm.buildRecommender(dao, snapshot,
+                                                         data.getPreferenceDomain());
             RatingPredictor predictor = rec.getRatingPredictor();
             ItemRecommender recommender = rec.getItemRecommender();
 

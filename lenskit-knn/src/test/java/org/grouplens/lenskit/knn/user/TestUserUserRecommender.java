@@ -67,9 +67,9 @@ public class TestUserUserRecommender {
         rs.add(Ratings.make(5, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingPredictor.class, UserUserRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, UserUserRecommender.class);
-        factory.setComponent(NeighborhoodFinder.class, SimpleNeighborhoodFinder.class);
+        factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
+        factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
+        factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
         // this is the default
 /*        factory.setComponent(UserVectorNormalizer.class,
                              VectorNormalizer.class,

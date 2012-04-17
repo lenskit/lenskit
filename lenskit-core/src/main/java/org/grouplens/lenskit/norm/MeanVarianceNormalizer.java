@@ -23,12 +23,14 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 
 import java.io.Serializable;
 
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import javax.inject.Inject;
+
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -51,7 +53,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
-@Built
+@DefaultProvider(MeanVarianceNormalizer.Provider.class)
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
 
@@ -61,33 +63,46 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
      *
      * @author Michael Ludwig
      */
-    public static class Builder extends RecommenderComponentBuilder<MeanVarianceNormalizer> {
-        private double smoothing;
-
-        // FIXME should this be the MeanSmoothing parameter (which is used by the baselines?)
-        @MeanSmoothing
-        public void setSmoothing(double smoothing) {
-            this.smoothing = smoothing;
+    public static class Provider implements javax.inject.Provider<MeanVarianceNormalizer> {
+        private final double smoothing;
+        private final DataAccessObject dao;
+        
+        @Inject
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double d) {
+            this.dao = dao;
+            smoothing = d;
         }
-
+        
         @Override
-        public MeanVarianceNormalizer build() {
+        public MeanVarianceNormalizer get() {
             double variance = 0;
 
             if (smoothing != 0) {
                 double mean = 0;
                 double sum = 0;
-                FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-                int numRatings = ratings.size();
-                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
-                    sum += rating.getValue();
+                
+                Cursor<Rating> ratings = dao.getEvents(Rating.class);
+                int numRatings = 0;
+                for (Rating r: ratings.fast()) {
+                    if (r.getPreference() != null) {
+                        sum += r.getPreference().getValue();
+                        numRatings++;
+                    }
                 }
+                ratings.close();
                 mean = sum / numRatings;
+                
+                ratings = dao.getEvents(Rating.class);
                 sum = 0;
-                for (IndexedPreference rating : CollectionUtils.fast(ratings)) {
-                    double delta = mean - rating.getValue();
-                    sum += delta * delta;
+
+                for (Rating r: ratings.fast()) {
+                    if (r.getPreference() != null) {
+                        double delta = mean - r.getPreference().getValue();
+                        sum += delta * delta;
+                    }
                 }
+                ratings.close();
                 variance = sum / numRatings;
             }
 

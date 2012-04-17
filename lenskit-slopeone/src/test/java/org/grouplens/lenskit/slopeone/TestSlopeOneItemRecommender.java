@@ -34,6 +34,8 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,10 +54,11 @@ public class TestSlopeOneItemRecommender {
         manager = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingPredictor.class, SlopeOneRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, SlopeOneRecommender.class);
+        factory.bind(RatingSnapshot.class).to(PackedRatingSnapshot.class);
+        factory.bind(RatingPredictor.class).to(SlopeOneRatingPredictor.class);
+        factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
-        factory.setComponent(BaselinePredictor.class, ItemUserMeanPredictor.class);
+        factory.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
         engine = factory.create();
     }
 

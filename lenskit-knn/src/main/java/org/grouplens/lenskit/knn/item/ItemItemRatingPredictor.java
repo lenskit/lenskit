@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -31,7 +32,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.HistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.params.UserHistorySummary;
@@ -48,13 +48,14 @@ import org.slf4j.LoggerFactory;
  * item based on their other ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see ItemItemModelBuilder
+ * @see ItemItemModelProvider
  * @see ItemItemScorer
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
     protected @Nullable BaselinePredictor baseline;
 
+    @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
                                    @UserHistorySummary HistorySummarizer summarizer,
                                    ItemScoreAlgorithm algo) {
@@ -75,7 +76,9 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      *        {@link BaselinePredictor} component.
      * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
      */
+    @Inject
     public void setBaseline(@Nullable BaselinePredictor pred) {
+        logger.debug("using baseline {}", pred);
         baseline = pred;
     }
 

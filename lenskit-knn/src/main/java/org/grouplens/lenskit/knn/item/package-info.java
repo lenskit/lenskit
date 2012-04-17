@@ -20,7 +20,7 @@
  * Implementation of item-item collaborative filtering.
  * <p/>
  * The item-item CF implementation is built up of several pieces. The
- * {@linkplain ItemItemModelBuilder model builder} takes the rating data
+ * {@linkplain ItemItemModelProvider model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain Similarity similarity function} and {@linkplain ModelSize model size},
  * and computes the {@linkplain SimilarityMatrixModel similarity matrix}. The

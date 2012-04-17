@@ -20,6 +20,9 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
@@ -41,8 +44,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
     private int neighborhoodSize;
 
-    @NeighborhoodSize
-    public void setNeighborhoodSize(int n) {
+    @Inject
+    public DefaultItemScoreAlgorithm(@NeighborhoodSize int n) {
         neighborhoodSize = n;
     }
 

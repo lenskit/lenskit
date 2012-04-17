@@ -23,13 +23,11 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
 
+import javax.annotation.Nonnull;
+
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.params.meta.DefaultBuilder;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.
@@ -42,8 +40,7 @@ import javax.inject.Inject;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.10
  */
-@Built
-@DefaultBuilder(ItemItemModelBuilder.class)
+@DefaultProvider(ItemItemModelProvider.class)
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = -5986236982760043379L;
 
@@ -58,7 +55,6 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *                 of the matrix.
      * @param matrix The similarity matrix columns (maps item ID to column)
      */
-    @Inject
     public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
         itemUniverse = universe;
         similarityMatrix = matrix;
@@ -77,6 +73,5 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
             nbrs = EMPTY_LIST;
         }
         return nbrs;
-
     }
 }

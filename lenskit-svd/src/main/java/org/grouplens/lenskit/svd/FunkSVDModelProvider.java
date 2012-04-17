@@ -20,10 +20,13 @@ package org.grouplens.lenskit.svd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.apache.commons.lang3.time.StopWatch;
+import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
@@ -52,62 +55,49 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class FunkSVDModelBuilder extends RecommenderComponentBuilder<FunkSVDModel> {
-    private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
+public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
+    private static Logger logger = LoggerFactory.getLogger(FunkSVDModelProvider.class);
 
     // The default value for feature values - isn't supposed to matter much
     private static final double DEFAULT_FEATURE_VALUE = 0.1;
     // Minimum number of epochs to run to train a feature
     private static final double MIN_EPOCHS = 50;
 
-    private int featureCount;
-    private double learningRate;
-    private double trainingThreshold;
-    private double trainingRegularization;
-    private DoubleFunction clampingFunction;
-    private int iterationCount;
+    private final int featureCount;
+    private final double learningRate;
+    private final double trainingThreshold;
+    private final double trainingRegularization;
+    private final DoubleFunction clampingFunction;
+    private final int iterationCount;
 
-    private BaselinePredictor baseline;
-
-    @FeatureCount
-    public void setFeatureCount(int count) {
-        featureCount = count;
-    }
-
-    @LearningRate
-    public void setLearningRate(double rate) {
-        learningRate = rate;
-    }
-
-    @TrainingThreshold
-    public void setTrainingThreshold(double threshold) {
-        trainingThreshold = threshold;
-    }
-
-    @RegularizationTerm
-    public void setGradientDescentRegularization(double regularization) {
-        trainingRegularization = regularization;
-    }
-
-    @ClampingFunction
-    public void setClampingFunction(DoubleFunction function) {
-        clampingFunction = function;
-    }
-
-    @IterationCount
-    public void setIterationCount(int count) {
-        iterationCount = count;
-    }
-
-    public void setBaseline(BaselinePredictor baseline) {
+    private final BaselinePredictor baseline;
+    
+    private final RatingSnapshot snapshot;
+    
+    @Inject
+    public FunkSVDModelProvider(@Transient RatingSnapshot snapshot,
+                               @FeatureCount int featureCount,
+                               @LearningRate double learningRate,
+                               @TrainingThreshold double threshold,
+                               @RegularizationTerm double gradientDescent,
+                               @ClampingFunction DoubleFunction function,
+                               @IterationCount int iterCount,
+                               BaselinePredictor baseline) {
+        this.snapshot = snapshot;
+        this.featureCount = featureCount;
+        this.learningRate = learningRate;
         this.baseline = baseline;
+        trainingThreshold = threshold;
+        trainingRegularization = gradientDescent;
+        clampingFunction = function;
+        iterationCount = iterCount;
     }
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.snapshot.RatingBuildContext)
      */
     @Override
-    public FunkSVDModel build() {
+    public FunkSVDModel get() {
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);

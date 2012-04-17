@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.slopeone;
 
+import javax.inject.Inject;
+
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -38,6 +40,7 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
      * Construct a new recommender from a scorer.
      * @param predictor The predictor to use.
      */
+    @Inject
     public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
         super(dao, predictor);
         this.predictor = predictor;

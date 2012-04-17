@@ -37,6 +37,8 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -70,11 +72,12 @@ public class TestFunkSVDRecommender {
 
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(RatingPredictor.class, FunkSVDRatingPredictor.class);
-        factory.setComponent(BaselinePredictor.class, UserMeanPredictor.class);
-        factory.setComponent(ItemRecommender.class, FunkSVDRecommender.class);
+        factory.bind(RatingSnapshot.class).to(PackedRatingSnapshot.class);
+        factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
+        factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
+        factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
+        factory.bind(FeatureCount.class, 100);
         // FIXME: Don't use 100 features.
-        factory.set(FeatureCount.class, 100);
         RecommenderEngine engine = factory.create();
         svdRecommender = engine.open();
         recommender = svdRecommender.getItemRecommender();

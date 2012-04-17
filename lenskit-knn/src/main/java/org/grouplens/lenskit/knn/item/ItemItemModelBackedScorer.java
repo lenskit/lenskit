@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -31,6 +32,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultImplementation(ItemItemScorer.class)
 public interface ItemItemModelBackedScorer extends ItemScorer {
     /**
      * Get the item-item model backing this scorer.

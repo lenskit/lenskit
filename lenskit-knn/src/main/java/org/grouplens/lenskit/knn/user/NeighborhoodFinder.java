@@ -26,9 +26,9 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.params.meta.DefaultClass;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
@@ -36,7 +36,7 @@ import org.grouplens.lenskit.params.meta.DefaultClass;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@DefaultClass(SimpleNeighborhoodFinder.class)
+@DefaultImplementation(SimpleNeighborhoodFinder.class)
 public interface NeighborhoodFinder {
     /**
      * Find neighboring users for particular items. <var>user</var> and the

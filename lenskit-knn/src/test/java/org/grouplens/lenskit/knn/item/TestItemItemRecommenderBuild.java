@@ -52,10 +52,10 @@ public class TestItemItemRecommenderBuild {
         manager = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.setComponent(ItemScorer.class, ItemItemRatingPredictor.class);
-        factory.setComponent(ItemRecommender.class, ItemItemRecommender.class);
-        factory.setComponent(GlobalItemRecommender.class, ItemItemGlobalRecommender.class);
-        factory.setComponent(GlobalItemScorer.class, ItemItemGlobalScorer.class);
+        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
+        factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
+        factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //                             IdentityVectorNormalizer.class);

@@ -22,10 +22,13 @@ import static java.lang.Math.abs;
 
 import java.util.Collection;
 
-import org.grouplens.lenskit.core.RecommenderComponentBuilder;
+import javax.inject.Inject;
+
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.MeanSmoothing;
-import org.grouplens.lenskit.params.meta.Built;
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -41,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@Built
+@DefaultProvider(UserMeanPredictor.Provider.class)
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**
@@ -49,20 +52,23 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Builder extends RecommenderComponentBuilder<UserMeanPredictor> {
+    public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
         private double smoothing = 0;
-
-        @MeanSmoothing
-        public void setSmoothing(double damping) {
-            this.smoothing = damping;
+        private DataAccessObject dao;
+        
+        @Inject
+        public Provider(@Transient DataAccessObject dao,
+                        @Damping double damping) {
+            this.dao = dao;
+            smoothing = damping;
         }
 
         @Override
-        public UserMeanPredictor build() {
+        public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
             logger.debug("smoothing = {}", smoothing);
-            double mean = computeMeanRating(snapshot);
+            double mean = GlobalMeanPredictor.computeMeanRating(dao);
             logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
         }
@@ -72,6 +78,12 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     private final double globalMean;
     private final double smoothing;
+
+    @Inject
+    public UserMeanPredictor(@Transient DataAccessObject dao,
+                             @Damping double damping) {
+        this(computeMeanRating(dao), damping);
+    }
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
@@ -102,7 +114,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     @Override
     public String toString() {
-        return String.format("UserMean(µ=%.3f, γ=%.2f)", globalMean, smoothing);
+        String cls = getClass().getSimpleName();
+        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, smoothing);
     }
 
 }

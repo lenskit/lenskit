@@ -15,18 +15,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <type>jar</type>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.picocontainer</groupId>
-    	<artifactId>picocontainer</artifactId>
-    	<type>jar</type>
-    	<scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-data-structures</artifactId>
       <version>${project.version}</version>
@@ -37,8 +25,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
+      <groupId>org.grouplens.grapht</groupId>
+      <artifactId>grapht</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

@@ -21,12 +21,10 @@ package org.grouplens.lenskit.norm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.After;
@@ -40,22 +38,19 @@ import org.junit.Test;
  *
  */
 public class MeanVarianceNormalizerTest {
-    DataAccessObject dao;
-    RatingSnapshot rs;
-    ImmutableSparseVector userRatings;
-    ImmutableSparseVector uniformUserRatings;
-    MeanVarianceNormalizer.Builder builder;
-    final static double MIN_DOUBLE_PRECISION = 0.00001;
+    private final static double MIN_DOUBLE_PRECISION = 0.00001;
+    private int eid = 0;
 
-    private static int eid = 0;
+    private DataAccessObject dao;
+    private ImmutableSparseVector userRatings;
+    private ImmutableSparseVector uniformUserRatings;
 
-    private static void addRating(List<Rating> ratings, long uid, long iid, double value) {
+    private void addRating(List<Rating> ratings, long uid, long iid, double value) {
         ratings.add(new SimpleRating(eid++, uid, iid, value));
     }
 
     @Before
     public void setUp() {
-        builder = new MeanVarianceNormalizer.Builder();
 
         long[] keys = {0L, 1L, 2L};
         double[] values = {0., 2., 4.};
@@ -78,26 +73,22 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
         dao = new EventCollectionDAO.Factory(ratings).create();
-        rs = new PackedRatingSnapshot.Builder(dao).build();
-        builder.setRatingSnapshot(rs);
     }
 
     @After
     public void close() {
-        rs.close();
         dao.close();
     }
 
     @Test
     public void testBuilderNoSmoothing() {
-        MeanVarianceNormalizer urvn = builder.build();
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 0).get();
         Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
     }
 
     @Test
     public void testBuilderSmoothing() {
-        builder.setSmoothing(3);
-        MeanVarianceNormalizer urvn = builder.build();
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 3).get();
         Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
         Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
     }
@@ -142,8 +133,7 @@ public class MeanVarianceNormalizerTest {
 
     @Test
     public void testSmoothingDetailed() {
-        builder.setSmoothing(3.0);
-        MeanVarianceNormalizer urvn = builder.build();
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings);
         MutableSparseVector nUR = userRatings.mutableCopy();
@@ -160,5 +150,4 @@ public class MeanVarianceNormalizerTest {
         Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
         Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
     }
-
 }

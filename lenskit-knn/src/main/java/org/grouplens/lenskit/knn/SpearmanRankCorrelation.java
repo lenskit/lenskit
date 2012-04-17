@@ -18,12 +18,14 @@
  */
 package org.grouplens.lenskit.knn;
 
-import java.io.Serializable;
-
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 
-import org.grouplens.lenskit.knn.params.SimilarityDamping;
+import java.io.Serializable;
+
+import javax.inject.Inject;
+
+import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -42,7 +44,8 @@ public class SpearmanRankCorrelation implements
 
     private final PearsonCorrelation pearson;
 
-    public SpearmanRankCorrelation(@SimilarityDamping double shrink) {
+    @Inject
+    public SpearmanRankCorrelation(@Damping double shrink) {
         pearson = new PearsonCorrelation(shrink);
     }
 

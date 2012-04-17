@@ -22,6 +22,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import java.util.Collection;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -36,9 +42,8 @@ import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.annotation.Nonnull;
-import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -49,6 +54,7 @@ import java.util.Collection;
  */
 public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     protected final ItemItemModel model;
     protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
         new IdentityVectorNormalizer();
@@ -56,6 +62,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
     protected @Nonnull NeighborhoodScorer scorer;
     protected @Nonnull ItemScoreAlgorithm algorithm;
 
+    @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
                           @UserHistorySummary HistorySummarizer sum,
                           NeighborhoodScorer scorer,
@@ -65,6 +72,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
         summarizer = sum;
         this.scorer = scorer;
         algorithm = algo;
+        logger.info("building item-item scorer with scorer {}", scorer);
     }
 
     @Override
@@ -83,8 +91,8 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @param norm The normalizer.
      * @see UserVectorNormalizer
      */
-    @UserVectorNormalizer
-    public void setNormalizer(VectorNormalizer<? super UserVector> norm) {
+    @Inject
+    public void setNormalizer(@UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         normalizer = norm;
     }
 

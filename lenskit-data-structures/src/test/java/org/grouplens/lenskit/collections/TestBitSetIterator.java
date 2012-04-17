@@ -57,7 +57,6 @@ public class TestBitSetIterator {
         assertFalse(iter.hasPrevious());
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testDouble() {
         BitSet s = new BitSet();
@@ -88,7 +87,6 @@ public class TestBitSetIterator {
                           Iterators.toArray(iter, Integer.class));
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testSkip() {
         BitSet s = new BitSet();
@@ -130,7 +128,6 @@ public class TestBitSetIterator {
                           Iterators.toArray(iter, Integer.class));
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testStartOffset() {
         BitSet s = new BitSet();
@@ -145,7 +142,6 @@ public class TestBitSetIterator {
                           Iterators.toArray(iter, Integer.class));
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testStartEndOffset() {
         BitSet s = new BitSet();

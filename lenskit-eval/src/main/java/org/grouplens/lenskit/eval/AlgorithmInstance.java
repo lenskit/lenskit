@@ -18,23 +18,25 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.Collections;
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import com.google.common.base.Supplier;
+import javax.inject.Provider;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngineFactory;
-import org.grouplens.lenskit.core.Builder;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.eval.config.DefaultCommand;
+import org.grouplens.lenskit.params.MaxRating;
+import org.grouplens.lenskit.params.MinRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Supplier;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -83,38 +85,31 @@ public class AlgorithmInstance {
     }
 
     @Nonnull
-    public RecommenderEngineFactory getFactory() {
+    public LenskitRecommenderEngineFactory getFactory() {
         return factory;
     }
 
     public Recommender buildRecommender(DataAccessObject dao,
-                                        final @Nullable Supplier<? extends RatingSnapshot> sharedSnapshot) {
+                                        final @Nullable Supplier<? extends RatingSnapshot> sharedSnapshot,
+                                        PreferenceDomain dom) {
         // Copy the factory & set up a shared rating snapshot
-        LenskitRecommenderEngineFactory fac2 = factory;
+        LenskitRecommenderEngineFactory fac2 = factory.clone();
+
+        if (dom != null) {
+            fac2.bind(MaxRating.class, dom.getMaximum());
+            fac2.bind(MinRating.class, dom.getMinimum());
+            fac2.bind(PreferenceDomain.class).to(dom);
+        }
 
         if (sharedSnapshot != null) {
-            fac2 = factory.clone();
-            Builder<RatingSnapshot> bld = new Builder<RatingSnapshot>() {
+            // FIXME Bind this to a provider
+            Provider<RatingSnapshot> prv = new Provider<RatingSnapshot>() {
                 @Override
-                public RatingSnapshot build() {
+                public RatingSnapshot get() {
                     return sharedSnapshot.get();
                 }
             };
-            fac2.setBuilder(RatingSnapshot.class, bld);
-        }
-
-        LenskitRecommenderEngine engine = fac2.create(dao);
-
-        return engine.open(dao, false);
-    }
-
-    public Recommender buildRecommender(DataAccessObject dao, @Nullable RatingSnapshot sharedSnapshot) {
-        // Copy the factory & set up a shared rating snapshot
-        LenskitRecommenderEngineFactory fac2 = factory;
-
-        if (sharedSnapshot != null) {
-            fac2 = factory.clone();
-            fac2.setComponent(RatingSnapshot.class, sharedSnapshot);
+            fac2.bind(RatingSnapshot.class).toProvider(prv);
         }
 
         LenskitRecommenderEngine engine = fac2.create(dao);

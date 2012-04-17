@@ -24,10 +24,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.knn.CosineSimilarity;
-import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.params.meta.DefaultClass;
-import org.grouplens.lenskit.params.meta.Parameter;
 
 /**
  * Similarity function for items (used by item-item CF). The similarity function
@@ -37,8 +38,9 @@ import org.grouplens.lenskit.params.meta.Parameter;
  * @see org.grouplens.lenskit.knn.item
  */
 @Documented
-@DefaultClass(CosineSimilarity.class)
-@Parameter(Similarity.class)
+@DefaultImplementation(CosineSimilarity.class)
+@InheritsDefaultQualifier
+@Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ItemSimilarity { }

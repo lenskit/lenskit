@@ -20,14 +20,12 @@ package org.grouplens.lenskit.svd;
 
 import java.io.Serializable;
 
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.params.meta.Built;
-import org.grouplens.lenskit.params.meta.DefaultBuilder;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.util.Index;
 
-@Built
-@DefaultBuilder(FunkSVDModelBuilder.class)
+@DefaultProvider(FunkSVDModelProvider.class)
 public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;
 

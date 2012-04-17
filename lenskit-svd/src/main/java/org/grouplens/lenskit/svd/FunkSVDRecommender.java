@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.svd;
 
+import javax.inject.Inject;
+
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
@@ -26,6 +28,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * recommendation is not supported.
  */
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
+    @Inject
     public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
         super(dao, predictor);
     }
