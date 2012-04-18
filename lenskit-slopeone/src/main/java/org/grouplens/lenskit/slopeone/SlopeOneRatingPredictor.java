@@ -20,11 +20,6 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -36,6 +31,9 @@ import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
@@ -79,11 +77,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
                     unpreds.add(predicteeItem);
                 } else {
                     double predValue = total/nitems;
-                    if (predValue > model.getMaxRating()) {
-                        predValue = model.getMaxRating();
-                    } else if (predValue < model.getMinRating()) {
-                        predValue = model.getMinRating();
-                    }
+                    predValue = model.getDomain().clampValue(predValue);
                     preds.set(predicteeItem, predValue);
                 }
             }

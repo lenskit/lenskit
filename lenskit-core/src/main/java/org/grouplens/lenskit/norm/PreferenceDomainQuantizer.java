@@ -20,6 +20,8 @@ package org.grouplens.lenskit.norm;
 
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
+import javax.inject.Inject;
+
 /**
  * Quantizer that uses a range and precision to determine discrete values.
  * Values are rounded to the closest discrete value.
@@ -57,6 +59,7 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
      * @param dom The preference domain.
      * @throws IllegalArgumentException if the domain is not discrete.
      */
+    @Inject
     public PreferenceDomainQuantizer(PreferenceDomain dom) {
         super(makeValues(dom));
         domain = dom;

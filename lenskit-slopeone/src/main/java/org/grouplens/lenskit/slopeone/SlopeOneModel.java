@@ -22,9 +22,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 /**
  * A model for a <tt>SlopeOneRatingPredictor</tt> or <tt>WeightedSlopeOneRatingPredictor</tt>.
@@ -39,19 +39,17 @@ public class SlopeOneModel {
     private final Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devMatrix;
     private final BaselinePredictor baseline;
     private final LongSortedSet itemUniverse;
-    private final double minRating;
-    private final double maxRating;
+    private final PreferenceDomain domain;
 
     public SlopeOneModel(Long2ObjectOpenHashMap<Long2IntOpenHashMap> coData,
             Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devData, BaselinePredictor predictor,
-            LongSortedSet universe, double min, double max) {
+            LongSortedSet universe, PreferenceDomain dom) {
 
         coMatrix = coData;
         devMatrix = devData;
         baseline = predictor;
         itemUniverse = universe;
-        minRating = min;
-        maxRating = max;
+        domain = dom;
     }
 
     public double getDeviation(long item1, long item2) {
@@ -96,11 +94,7 @@ public class SlopeOneModel {
         return itemUniverse;
     }
 
-    public double getMinRating() {
-        return minRating;
-    }
-
-    public double getMaxRating() {
-        return maxRating;
+    public PreferenceDomain getDomain() {
+        return domain;
     }
 }
