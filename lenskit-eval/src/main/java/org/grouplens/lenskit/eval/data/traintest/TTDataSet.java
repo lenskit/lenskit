@@ -23,7 +23,7 @@ import java.util.Map;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.config.DefaultCommand;
+import org.grouplens.lenskit.eval.config.BuilderCommand;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@DefaultCommand(GenericTTDataCommand.class)
+@BuilderCommand(GenericTTDataCommand.class)
 public interface TTDataSet {
     /**
      * Get the data set name.

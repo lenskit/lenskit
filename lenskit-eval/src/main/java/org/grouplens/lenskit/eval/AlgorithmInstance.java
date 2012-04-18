@@ -27,7 +27,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.eval.config.DefaultCommand;
+import org.grouplens.lenskit.eval.config.BuilderCommand;
 import org.grouplens.lenskit.params.MaxRating;
 import org.grouplens.lenskit.params.MinRating;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ import java.util.Map;
  * An instance of a recommender algorithm to be benchmarked.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultCommand(AlgorithmInstanceCommand.class)
+@BuilderCommand(AlgorithmInstanceCommand.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
     private final @Nullable String algoName;

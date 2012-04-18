@@ -30,7 +30,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
     protected String name;
 
     public AbstractCommand() {
-        this.name = "Not specified";
+        this.name = "unnamed";
     }
 
     public AbstractCommand(@Nonnull String name) {
@@ -48,5 +48,5 @@ public abstract class AbstractCommand<T> implements Command<T> {
     }
 
     @Override
-    public abstract T call() throws CommandFailedException;
+    public abstract T call() throws CommandException;
 }

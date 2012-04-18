@@ -18,11 +18,10 @@
  */
 package org.grouplens.lenskit.eval.results;
 
-import org.grouplens.lenskit.eval.CommandFailedException;
+import org.grouplens.lenskit.eval.CommandException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * This class contains the table of the result similar to the output file. The table is a
@@ -47,15 +46,15 @@ public class TrainTestEvalResult {
      * Put a new algorithm in the result.
      *
      * @param algo The name of the algorithm to evaluate
-     * @throws CommandFailedException When the same algorithm is already in the result
+     * @throws org.grouplens.lenskit.eval.CommandException When the same algorithm is already in the result
      */
-    public void putAlgorithm(String algo) throws CommandFailedException {
+    public void putAlgorithm(String algo) throws CommandException {
         ArrayList<ResultRow> value = new ArrayList<ResultRow>();
         for(int i = 0; i < partition; i++) {
             value.add(new ResultRow());
         }
         if(result.put(algo, value)!=null) {
-            throw new CommandFailedException("A single train test has duplicated algorithm instances");
+            throw new CommandException("A single train test has duplicated algorithm instances");
         }
     }
 

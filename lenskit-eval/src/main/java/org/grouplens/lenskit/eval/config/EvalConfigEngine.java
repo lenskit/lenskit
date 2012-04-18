@@ -23,7 +23,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.Command;
 import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -176,7 +175,7 @@ public class EvalConfigEngine {
 
     /**
      * Get a command for a type. It consults registered commands and looks for the
-     * {@link DefaultCommand} annotation.
+     * {@link BuilderCommand} annotation.
      * @param type A type that needs to be built.
      * @return A command class to build {@code type}, or {@code null} if none can be found.
      * @see #registerCommand
@@ -186,7 +185,7 @@ public class EvalConfigEngine {
         @SuppressWarnings("rawtypes")
         Class command = commands.get(type);
         if (command == null) {
-            DefaultCommand annot = type.getAnnotation(DefaultCommand.class);
+            BuilderCommand annot = type.getAnnotation(BuilderCommand.class);
             if (annot != null) {
                 command = annot.value();
             }

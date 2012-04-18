@@ -16,25 +16,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
-
-import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.AbstractCommand;
-
-import java.lang.annotation.*;
+package org.grouplens.lenskit.eval;
 
 /**
- * Specify the command for the default type of this class/interface to which
- * it is applied. Used to build objects when the user doesn't specify the
- * particular command factory to use.
- * @author Michael Ekstrand
- * @since 0.10
+ * The exception thrown from the failure of call() in Commmand
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-// FIXME Make this apply to methods as well
-@Target(ElementType.TYPE)
-public @interface DefaultCommand {
-    @SuppressWarnings("rawtypes")
-    Class<? extends AbstractCommand> value();
+public class CommandException extends Exception{
+    private static final long serialVersionUID = -9073424874249517829L;
+
+    public CommandException() {}
+    
+    public CommandException(String message) {
+        super(message);
+    }
+    
+    public CommandException(Exception cause) {
+        super(cause);
+    }
+    
+    public CommandException(String message, Exception cause) {
+        super(message, cause);
+    }
 }

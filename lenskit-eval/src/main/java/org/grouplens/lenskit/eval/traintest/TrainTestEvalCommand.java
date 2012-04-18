@@ -161,10 +161,10 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
      * Run the evaluation on the train test data source files
      *
      * @return For now, return nothing
-     * @throws CommandFailedException  Failure of the evaluation
+     * @throws org.grouplens.lenskit.eval.CommandException  Failure of the evaluation
      */
     @Override
-    public TrainTestEvalResult call() throws CommandFailedException {
+    public TrainTestEvalResult call() throws CommandException {
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
@@ -191,7 +191,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         try {
             exec.run();
         } catch (ExecutionException e) {
-            throw new CommandFailedException("Error running the evaluation", e);
+            throw new CommandException("Error running the evaluation", e);
         } finally {
             logger.info("Finishing evaluation");
             this.finish();
@@ -199,7 +199,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         return result;
     }
 
-    protected void setupJobs() throws CommandFailedException{
+    protected void setupJobs() throws CommandException {
         TableLayoutBuilder master = new TableLayoutBuilder();
         result = new TrainTestEvalResult(dataSources.size());
         for(AlgorithmInstance alg: algorithms) {

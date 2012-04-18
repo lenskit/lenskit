@@ -28,7 +28,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandFailedException;
+import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand;
@@ -239,10 +239,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      *
      * @return List<TTDataSet> The partition files stored as a list of TTDataSet
-     * @throws CommandFailedException
+     * @throws org.grouplens.lenskit.eval.CommandException
      */
     @Override
-    public List<TTDataSet> call() throws CommandFailedException {
+    public List<TTDataSet> call() throws CommandException {
         this.build();
         if(!isForced) {
             long mtime = lastModified();
@@ -328,9 +328,9 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @param dao       The DAO of the data source file
      * @param mode      Holdout mode
      * @param splits    The map of user id to the split number of all the users
-     * @throws CommandFailedException Any error
+     * @throws org.grouplens.lenskit.eval.CommandException Any error
      */
-    protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandFailedException {
+    protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandException {
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
         TableWriter[] trainWriters = new TableWriter[partitionCount];
@@ -343,7 +343,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                     trainWriters[i] = CSVWriter.open(train, null);
                     testWriters[i] = CSVWriter.open(test, null);
                 } catch (IOException e) {
-                    throw new CommandFailedException("Error creating train test file writer", e);
+                    throw new CommandException("Error creating train test file writer", e);
                 }
             }
             Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
@@ -372,7 +372,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
                 }
             } catch (IOException e) {
-                throw new CommandFailedException("Error writing to the train test files", e);
+                throw new CommandException("Error writing to the train test files", e);
             } finally {
                 historyCursor.close();
             }

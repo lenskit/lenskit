@@ -31,7 +31,7 @@ import org.grouplens.lenskit.eval.Command
  *     <li>The parameters specified can be converted into appropriate types
  *     for the method by wrapping strings with {@code File} objects and instantiating
  *     classes with their default constructors.</li>
- *     <li>The method takes a single parameter annotated with the {@link DefaultCommand}
+ *     <li>The method takes a single parameter annotated with the {@link BuilderCommand}
  *     annotation. This command is constructed using a constructor that matches the arguments
  *     provided, except that the last argument is ommitted if it is a {@link Closure}. If the
  *     last argument is a {@link Closure}, it is used to configure the command with an appropriate

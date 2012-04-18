@@ -30,5 +30,5 @@ public interface Command<T> extends Callable<T> {
 
     String getName();
 
-    T call() throws CommandFailedException;
+    T call() throws CommandException;
 }

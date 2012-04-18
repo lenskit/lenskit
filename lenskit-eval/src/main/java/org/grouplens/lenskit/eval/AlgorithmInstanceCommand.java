@@ -108,7 +108,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
     }
 
     @Override
-    public AlgorithmInstance call() throws CommandFailedException {
+    public AlgorithmInstance call() throws CommandException {
         return new AlgorithmInstance(name, factory, attributes, preload);
     }
 

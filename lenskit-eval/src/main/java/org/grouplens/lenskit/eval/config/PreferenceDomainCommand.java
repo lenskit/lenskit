@@ -21,7 +21,7 @@ package org.grouplens.lenskit.eval.config;
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandFailedException;
+import org.grouplens.lenskit.eval.CommandException;
 
 /**
  * Builder for {@link PreferenceDomain} objects.
@@ -76,7 +76,7 @@ public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain>{
     }
 
     @Override
-    public PreferenceDomain call() throws CommandFailedException {
+    public PreferenceDomain call() throws CommandException {
         Preconditions.checkState(min != null, "no minimum set");
         Preconditions.checkState(max != null, "no maximum set");
         if (precision == null) {
