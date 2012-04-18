@@ -28,8 +28,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.eval.config.DefaultBuilder;
-import org.grouplens.lenskit.params.MaxRating;
-import org.grouplens.lenskit.params.MinRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,8 +94,6 @@ public class AlgorithmInstance {
         LenskitRecommenderEngineFactory fac2 = factory.clone();
 
         if (dom != null) {
-            fac2.bind(MaxRating.class, dom.getMaximum());
-            fac2.bind(MinRating.class, dom.getMinimum());
             fac2.bind(PreferenceDomain.class).to(dom);
         }
 
