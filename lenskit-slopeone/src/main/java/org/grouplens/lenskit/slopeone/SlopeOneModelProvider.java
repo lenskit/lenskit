@@ -29,8 +29,6 @@ import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.params.MaxRating;
-import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.vectors.SparseVector;
 
