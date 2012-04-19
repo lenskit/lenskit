@@ -72,7 +72,7 @@ public class CSVWriter implements TableWriter {
     }
 
     @Override
-    public synchronized void writeRow(String[] row) throws IOException {
+    public synchronized void writeRow(Object[] row) throws IOException {
         if (layout != null && row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("row too long");
         }
@@ -83,7 +83,7 @@ public class CSVWriter implements TableWriter {
                 writer.write(',');
             }
             if (i < row.length) {
-                writer.write(quote(row[i]));
+                writer.write(quote(row[i].toString()));
             }
         }
         writer.write('\n');

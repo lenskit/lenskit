@@ -22,60 +22,93 @@ import org.grouplens.lenskit.eval.CommandException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
- * This class contains the table of the result similar to the output file. The table is a
- * HashMap, in which the key is the name of the algorithm and the value is a list of result rows
- * indexed by the partition counter. Therefore, the table is essentially the output file starting
- * from the column "BuildTime" with the previous columns left out.
+ * This class contains the table of the result similar to the output file. The result is the exactly
+ * same table with that in the output file stored in the memory. The way to get the field in the table
+ * is to use {@link #getRows} and {@link #getValues} functions.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class TrainTestEvalResult {
-    private HashMap<String, ArrayList<ResultRow>> result;
-    private static ArrayList<String> fields;
-    private int partition;
+    private ArrayList<ResultRow> result;
+    private final ArrayList<String> fields;
+    private int size;
 
-    public TrainTestEvalResult(int partition) {
-        this.partition = partition;
-        result = new HashMap<String, ArrayList<ResultRow>>();
+    public TrainTestEvalResult() {
+        result = new ArrayList<ResultRow>();
         fields = new ArrayList<String>();
+        size = 0;
+    }
+
+    public TrainTestEvalResult(List<String> f) {
+        this();
+        setFields(f);
+    }
+
+    public void setFields(List<String> f) {
+        fields.addAll(f);
     }
 
     /**
      * Put a new algorithm in the result.
      *
-     * @param algo The name of the algorithm to evaluate
+     * @param list the list of objects to insert to the result table
      * @throws org.grouplens.lenskit.eval.CommandException When the same algorithm is already in the result
      */
-    public void putAlgorithm(String algo) throws CommandException {
-        ArrayList<ResultRow> value = new ArrayList<ResultRow>();
-        for(int i = 0; i < partition; i++) {
-            value.add(new ResultRow());
+    public void addResultRow(Object[] list)  {
+        ResultRow row = new ResultRow(list, fields.toArray(new String[fields.size()]));
+        result.add(row);
+        size++;
+    }
+
+    public void addResultRow(ResultRow row) {
+        result.add(row);
+        size++;
+    }
+
+    /**
+     * Get a list of rows that satisfy the query.
+     * @param col The header name of the column
+     * @param val The value in the field
+     * @return The list of rows satisfying the query warpped in the TrainTestEvalResult
+     *          to enable cascading
+     */
+    public TrainTestEvalResult getRows(String col, Object val) {
+        TrainTestEvalResult rows = new TrainTestEvalResult(this.fields);
+        for(ResultRow row: result) {
+            if(row.getValue(col).getClass().equals(val.getClass())) {
+                if(row.getValue(col).equals(val)) {
+                    rows.addResultRow(row);
+                }
+            }
         }
-        if(result.put(algo, value)!=null) {
-            throw new CommandException("A single train test has duplicated algorithm instances");
+        return rows;
+    }
+
+
+    public String[] getField() {
+        String[] res = new String[fields.size()];
+        return fields.toArray(res);
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    /**
+     * Return all the values in the specified column
+     * @param col The name of the column
+     * @return  An array of the values
+     */
+    public Object[] getValues(String col) {
+        Object[] values = new Object[result.size()];
+        int idx = 0;
+        for(ResultRow row: result) {
+            values[idx] = row.getValue(col);
+            idx++;
         }
+        return values;
     }
-
-    public void addField(String s) {
-        fields.add(s);
-    }
-
-    public static String getField(int i) {
-        return fields.get(i);
-    }
-
-    public ResultRow getRow(String row, int p) {
-        return result.get(row).get(p);
-    }
-
-    public String getValue(String row, String col, int p) {
-        return getRow(row, p).getRow().get(col);
-    }
-
-    public int getPartition() {
-        return partition;
-    }
-
 }

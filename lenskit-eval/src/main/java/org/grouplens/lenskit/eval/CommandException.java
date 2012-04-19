@@ -39,4 +39,10 @@ public class CommandException extends Exception{
     public CommandException(String message, Exception cause) {
         super(message, cause);
     }
+
+    public CommandException(String message, Error cause) {
+        super(message, cause);
+    }
+
+
 }

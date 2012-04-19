@@ -51,7 +51,7 @@ public interface TableWriter extends Closeable {
      * @throws IllegalArgumentException if {@code row} has more items than the table has
      * columns.
      */
-    void writeRow(String[] row) throws IOException;
+    void writeRow(Object[] row) throws IOException;
 
     /**
      * Finish the table.  Depending on how it was constructed, some underlying

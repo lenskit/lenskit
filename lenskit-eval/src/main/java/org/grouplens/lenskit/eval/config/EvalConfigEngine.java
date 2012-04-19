@@ -24,7 +24,7 @@ import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.lenskit.eval.Command;
-import org.grouplens.lenskit.eval.EvaluatorConfigurationException;
+import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,16 +105,16 @@ public class EvalConfigEngine {
      * Run an evaluation config script and get the evaluations it produces.
      * @param script The script to run (as loaded by Groovy)
      * @return A list of evaluations produced by {@code script}.
-     * @throws EvaluatorConfigurationException if the script is invalid or produces an error.
+     * @throws CommandException if the script is invalid or produces an error.
      */
-    protected @Nullable Object runScript(EvalConfigScript script) throws EvaluatorConfigurationException {
+    protected @Nullable Object runScript(EvalConfigScript script) throws CommandException {
         Object result = null;
         try {
             result = script.run();
         } catch (RuntimeException e) {
-            throw new EvaluatorConfigurationException("error running configuration script", e);
+            throw new CommandException("error running configuration script", e);
         } catch (LinkageError e) {
-            throw new EvaluatorConfigurationException("error running configuration script", e);
+            throw new CommandException("error running configuration script", e);
         }
         return result;
     }
@@ -123,10 +123,10 @@ public class EvalConfigEngine {
      * Load a set of evaluations from a script file.
      * @param file A Groovy script to configure the evaluator.
      * @return A list of evaluations to run.
-     * @throws EvaluatorConfigurationException if there is a configuration error
+     * @throws CommandException if there is a configuration error
      * @throws IOException if there is an error reading the file
      */
-    public @Nullable Object execute(File file) throws EvaluatorConfigurationException, IOException {
+    public @Nullable Object execute(File file) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
@@ -135,9 +135,9 @@ public class EvalConfigEngine {
      * Load a set of evaluations from an input stream.
      * @param in The input stream
      * @return A list of evaluations
-     * @throws EvaluatorConfigurationException if there is a configuration error
+     * @throws CommandException if there is a configuration error
      */
-    public @Nullable Object execute(Reader in) throws EvaluatorConfigurationException {
+    public @Nullable Object execute(Reader in) throws CommandException {
         return runScript(loadScript(in));
     }
 

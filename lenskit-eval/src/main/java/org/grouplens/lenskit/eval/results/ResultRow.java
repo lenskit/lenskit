@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.results;
 
+import com.google.common.base.Preconditions;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -27,15 +29,18 @@ import java.util.HashMap;
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class ResultRow{
-    private HashMap<String, String> row;
+    private final HashMap<String, Object> row = new HashMap<String, Object>();
 
 
-    public ResultRow() {
-        row = new HashMap<String, String>();
+    public ResultRow(Object[] list, String[] field) {
+        Preconditions.checkState(list.length == field.length);
+        for(int i = 0; i < list.length; i ++) {
+            row.put(field[i], list[i]);
+        }
     }
 
-    public HashMap<String, String> getRow() {
-        return row;
+    public Object getValue(String key) {
+        return row.get(key);
     }
 
 }

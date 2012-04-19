@@ -94,11 +94,11 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
-        String[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealGain = computeDCG(ideal, ratings);
@@ -106,14 +106,14 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             double score = gain / idealGain;
             total += score;
             nusers += 1;
-            return new String[]{Double.toString(score)};
+            return new Object[]{score};
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = total / nusers;
             logger.info("nDCG: {}", v);
-            return new String[]{ Double.toString(v) };
+            return new Object[]{v};
         }
     }
 }

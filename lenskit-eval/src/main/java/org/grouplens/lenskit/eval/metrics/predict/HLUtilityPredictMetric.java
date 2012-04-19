@@ -76,11 +76,11 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
-        String[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);
@@ -88,14 +88,14 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
             double u = actualUtility/idealUtility;
             total += u;
             nusers++;
-            return new String[]{Double.toString(u)};
+            return new Object[]{u};
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = total/nusers;
             logger.info("HLU: {}", v);
-            return new String[]{Double.toString(v)};
+            return new Object[]{v};
         }
     }
 }

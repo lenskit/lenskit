@@ -62,7 +62,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             double usse = 0;
@@ -80,21 +80,17 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
                 double rmse = sqrt(usse / n);
                 totalRMSE += rmse;
                 nusers ++;
-                return new String[]{Double.toString(rmse)};
+                return new Object[]{rmse};
             } else {
                 return null;
             }
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
-            return new String[] {
-                    Double.toString(v),
-                    Double.toString(totalRMSE / nusers)
-            };
+            return new Object[] {v,totalRMSE / nusers};
         }
-
     }
 }

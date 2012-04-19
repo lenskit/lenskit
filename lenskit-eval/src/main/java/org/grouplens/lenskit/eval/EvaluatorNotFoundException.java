@@ -24,7 +24,7 @@ package org.grouplens.lenskit.eval;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class EvaluatorNotFoundException extends EvaluatorConfigurationException {
+public class EvaluatorNotFoundException extends Exception {
     private static final long serialVersionUID = -3053758858769880366L;
 
     public EvaluatorNotFoundException(String name) {

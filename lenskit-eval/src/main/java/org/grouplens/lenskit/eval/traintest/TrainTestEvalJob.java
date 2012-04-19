@@ -71,11 +71,13 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> outputSupplier;
     @Nonnull
+    private final Supplier<TableWriter> outputInMemorySupplier;
+    @Nonnull
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
 
-    private ResultRow resultRow;
+    private TrainTestEvalResult result;
 
     private final Supplier<SharedRatingSnapshot> snapshot;
     private final int outputColumnCount;
@@ -95,13 +97,13 @@ public class TrainTestEvalJob implements Job {
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
-                            Supplier<TableWriter> out, ResultRow row, int numRecs) {
+                            Supplier<TableWriter> out, Supplier<TableWriter> outMemory, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
-        resultRow = row;
+        outputInMemorySupplier = outMemory;
         this.numRecs = numRecs;
         
         int ncols = 2;
@@ -185,7 +187,7 @@ public class TrainTestEvalJob implements Job {
                         TestUser test = new TestUser(uid, ratings, hist, preds, recs);
 
                         for (TestUserMetricAccumulator accum: evalAccums) {
-                            String[] perUserResults = accum.evaluate(test);
+                            Object[] perUserResults = accum.evaluate(test);
                             if (perUserResults != null && userTable != null) {
                                 try {
                                     userTable.writeRow(perUserResults);
@@ -241,19 +243,13 @@ public class TrainTestEvalJob implements Job {
     }
 
     private void writeOutput(StopWatch build, StopWatch test, List<TestUserMetricAccumulator> accums) throws IOException {
-        String[] row = new String[outputColumnCount];
-        row[0] = Long.toString(build.getTime());
-        row[1] = Long.toString(test.getTime());
-        resultRow.getRow().put(TrainTestEvalResult.getField(0),row[0]);
-        resultRow.getRow().put(TrainTestEvalResult.getField(1),row[1]);
+        Object[] row = new Object[outputColumnCount];
+        row[0] = build.getTime();
+        row[1] = test.getTime();
         int col = 2;
         for (TestUserMetricAccumulator acc: accums) {
-            String[] ar = acc.finalResults();
+            Object[] ar = acc.finalResults();
             int i = col;
-            for(String s: ar) {
-                resultRow.getRow().put(TrainTestEvalResult.getField(i),s);
-                i++;
-            }
             if (ar != null) {
                 // no aggregated output is generated
                 int n = ar.length;
@@ -262,8 +258,11 @@ public class TrainTestEvalJob implements Job {
             }
         }
         TableWriter output = outputSupplier.get();
+        TableWriter outMemory = outputInMemorySupplier.get();
         try {
             output.writeRow(row);
+            outMemory.writeRow(row);
+
         } finally {
             output.close();
         }

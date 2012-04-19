@@ -65,7 +65,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             int n = 0;
@@ -80,24 +80,17 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             npreds += n;
             ngood += good;
             nusers += 1;
-            return new String[]{
-                    Integer.toString(n),
-                    Integer.toString(good),
-                    n > 0 ? Double.toString(((double) good) / n) : null
+            return new Object[]{n, good,
+                    n > 0 ? (((double) good) / n) : null
             };
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
             
-            return new String[]{
-                    Integer.toString(nusers), 
-                    Integer.toString(npreds),
-                    Integer.toString(ngood), 
-                    Double.toString(coverage) 
-            };
+            return new Object[]{nusers, npreds, ngood, coverage};
         }
 
     }

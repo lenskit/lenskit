@@ -54,7 +54,6 @@ public class TrainTestEvalJobGroup implements JobGroup {
 
     private TrainTestEvalCommand evaluation;
 
-    private int partitionCount;
 
     public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
                                  List<AlgorithmInstance> algos,
@@ -63,7 +62,6 @@ public class TrainTestEvalJobGroup implements JobGroup {
                                  int numRecs) {
         evaluation = eval;
         dataSet = data;
-        partitionCount = partition;
 
         final Supplier<SharedRatingSnapshot> snap =
                 new SoftLazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
@@ -86,7 +84,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()),
-                    evaluation.getResult().getRow(algo.getName(), partitionCount),
+                    Suppliers.compose(prefix, evaluation.outputInMemoryTableSupplier()),
                     numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));

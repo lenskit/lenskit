@@ -35,12 +35,12 @@ public interface TestUserMetricAccumulator {
      *         per-user table (if one is configured). The output can be
      *         {@code null} if the user could not be evaluated.
      */
-    String[] evaluate(TestUser user);
+    Object[] evaluate(TestUser user);
 
     /**
      * Finalize the evaluation and return the final values.
      * 
      * @return The column values for the final evaluation.
      */
-    String[] finalResults();
+    Object[] finalResults();
 }

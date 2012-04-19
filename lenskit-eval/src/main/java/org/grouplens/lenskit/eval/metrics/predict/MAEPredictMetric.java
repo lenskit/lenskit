@@ -69,7 +69,7 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             double err = 0;
@@ -87,21 +87,18 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
                 double errRate = err / n;
                 totalUserError += errRate;
                 nusers += 1;
-                return new String[]{Double.toString(errRate)};
+                return new Object[]{errRate};
             } else {
                 return null;
             }
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = totalError / nratings;
             double uv = totalUserError / nusers;
             logger.info("MAE: {}", v);
-            return new String[]{
-            		Double.toString(v),
-            		Double.toString(uv)
-            };
+            return new Object[]{v, uv};
         }
 
     }

@@ -60,6 +60,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
     private TableLayout predictLayout;
 
     private TableWriter output;
+    private TableWriter outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
@@ -201,10 +202,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
 
     protected void setupJobs() throws CommandException {
         TableLayoutBuilder master = new TableLayoutBuilder();
-        result = new TrainTestEvalResult(dataSources.size());
-        for(AlgorithmInstance alg: algorithms) {
-            result.putAlgorithm(alg.getName());
-        }
+        result = new TrainTestEvalResult();
 
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
@@ -239,8 +237,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
-        result.addField("BuildTime");
-        result.addField("TestTime");
         TableLayoutBuilder perUser = master.clone();
 
         String[] columnLabels;
@@ -251,7 +247,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
             if (columnLabels != null){
                 for (String c: columnLabels) {
                     output.addColumn(c);
-                    result.addField(c);
                 }
             }
 
@@ -281,6 +276,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         logger.info("Starting evaluation");
         try {
             output = CSVWriter.open(outputFile, outputLayout);
+            outputInMemory = new InMemoryWriter(result, outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }
@@ -350,6 +346,25 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
     }
 
     /**
+     * Get the evaluation's in memory output table. Used by job groups to set up the
+     * output for their jobs.
+     *
+     * @return A supplier for the in memory table writer for this evaluation.
+     * @throws IllegalStateException if the job has not been started or is
+     *         finished.
+     */
+    @Nonnull
+    Supplier<TableWriter> outputInMemoryTableSupplier() {
+        return new Supplier<TableWriter>() {
+            @Override
+            public TableWriter get() {
+                Preconditions.checkState(outputInMemory != null, "evaluation not running");
+                return outputInMemory;
+            }
+        };
+    }
+
+    /**
      * Get the prediction output table.
      * @return The table writer for the prediction output.
      */
@@ -407,15 +422,15 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
                                    AlgorithmInstance algorithm, TTDataSet dataSet) {
         if (base == null) return null;
 
-        String[] prefix = new String[commonColumnCount];
+        Object[] prefix = new Object[commonColumnCount];
         prefix[0] = algorithm.getName();
         for (Map.Entry<String,Object> attr: dataSet.getAttributes().entrySet()) {
             int idx = dataColumns.get(attr.getKey());
-            prefix[idx] = attr.getValue().toString();
+            prefix[idx] = attr.getValue();
         }
         for (Map.Entry<String,Object> attr: algorithm.getAttributes().entrySet()) {
             int idx = algoColumns.get(attr.getKey());
-            prefix[idx] = attr.getValue().toString();
+            prefix[idx] = attr.getValue();
         }
         return TableWriters.prefixed(base, prefix);
     }

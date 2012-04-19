@@ -76,19 +76,12 @@ class TestTrainTestResult extends ConfigTestBase{
                 metric RMSEPredictMetric
 
                 algorithm("ItemUserMean") {
-                    setComponent(RatingPredictor, BaselineRatingPredictor)
-                    setComponent(BaselinePredictor, ItemUserMeanPredictor)
+                    bind RatingPredictor to BaselineRatingPredictor
+                    bind BaselinePredictor to ItemUserMeanPredictor
                 }
             }
         }
-
         assertThat(result, instanceOf(TrainTestEvalResult))
-        assertThat(result.getPartition(), equalTo(5))
-        assertThat(result.getField(0), equalTo("BuildTime"))
-        assertThat(result.getField(1), equalTo("TestTime"))
-        assertThat(result.getField(2), equalTo("MAE"))
-        assertThat(result.getRow("ItemUserMean", 0), instanceOf(ResultRow))
-
 
     }
 }

@@ -37,7 +37,7 @@ public final class TableWriters {
      *         row is prefixed with the values in <var>prefix</var>.
      * @since 0.8
      */
-    public static TableWriter prefixed(TableWriter base, String[] prefix) {
+    public static TableWriter prefixed(TableWriter base, Object[] prefix) {
         return new PrefixedTableWriter(base, prefix);
     }
 }

@@ -31,7 +31,7 @@ import java.util.List;
  *
  */
 class PrefixedTableWriter implements TableWriter {
-    private String[] rowData; // contains fixed values; other columns re-used
+    private Object[] rowData; // contains fixed values; other columns re-used
     private int fixedColumns;
     private TableLayout layout;
     private TableWriter baseWriter;
@@ -43,7 +43,7 @@ class PrefixedTableWriter implements TableWriter {
      * @param values The initial values to write. Each row written to this table
      *        writer is written to the base writer with these values prefixed.
      */
-    public PrefixedTableWriter(TableWriter writer, String[] values) {
+    public PrefixedTableWriter(TableWriter writer, Object[] values) {
         baseWriter = writer;
         TableLayout baseLayout = writer.getLayout();
         if (values.length > baseLayout.getColumnCount()) {
@@ -51,6 +51,7 @@ class PrefixedTableWriter implements TableWriter {
         }
         
         rowData = Arrays.copyOf(values, baseLayout.getColumnCount());
+
         fixedColumns = values.length;
 
         TableLayoutBuilder bld = new TableLayoutBuilder();
@@ -67,7 +68,7 @@ class PrefixedTableWriter implements TableWriter {
     }
 
     @Override
-    public synchronized void writeRow(String[] row) throws IOException {
+    public synchronized void writeRow(Object[] row) throws IOException {
         if (row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("Row too wide");
         }
