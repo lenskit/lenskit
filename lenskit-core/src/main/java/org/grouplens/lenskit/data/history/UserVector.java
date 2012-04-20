@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -94,15 +95,8 @@ public class UserVector extends ImmutableSparseVector {
     @SuppressWarnings("unchecked")
     public static UserVector fromPreferences(long userId, Collection<? extends Preference> prefs) {
         Long2DoubleMap m = new Long2DoubleOpenHashMap(prefs.size());
-        Iterator<? extends Preference> iter;
-        if (prefs instanceof FastCollection<?>) {
-            iter = ((FastCollection<? extends Preference>) prefs).fastIterator();
-        } else {
-            iter = prefs.iterator();
-        }
-        while (iter.hasNext()) {
-           Preference p = iter.next();
-           m.put(p.getItemId(), p.getValue());
+        for (Preference p: CollectionUtils.fast(prefs)) {
+            m.put(p.getItemId(), p.getValue());
         }
         return new UserVector(userId, m);
     }
