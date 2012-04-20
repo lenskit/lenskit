@@ -21,12 +21,15 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import static org.grouplens.lenskit.collections.CollectionUtils.fast;
+
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.cursors.LongCursor;
@@ -154,7 +157,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         this.ratings = events;
 
         // Scan for the types in the data source. Since this scans
-        types = TypeUtils.findTypes(events, Event.class);
+        types = TypeUtils.findTypes(fast(events), Event.class);
     }
 
     private synchronized void requireUserCache() {

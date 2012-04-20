@@ -26,10 +26,9 @@ import javax.inject.Provider;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.params.MaxRating;
-import org.grouplens.lenskit.params.MinRating;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -43,8 +42,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
     
     private final BaselinePredictor baseline;
-    private final double minRating;
-    private final double maxRating;
+    private final PreferenceDomain domain;
     
     private final RatingSnapshot snapshot;
     
@@ -53,8 +51,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
                                 // FIXME: can this be nullable? Why have two snapshots?
                                 @Transient @NormalizedSnapshot RatingSnapshot normalized,
                                 BaselinePredictor predictor,
-                                @MinRating double min,
-                                @MaxRating double max,
+                                PreferenceDomain dom,
                                 @Damping double damping) {
         if (normalized != null) {
             this.snapshot = normalized;
@@ -62,8 +59,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
             this.snapshot = snapshot;
         }
         
-        minRating = min;
-        maxRating = max;
+        domain = dom;
         baseline = predictor;
         accumulator = new SlopeOneModelDataAccumulator(damping, this.snapshot);
     }
@@ -89,6 +85,6 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
         }
         LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
-                                 baseline, items, minRating, maxRating);
+                                 baseline, items, domain);
     }
 }

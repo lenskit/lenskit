@@ -18,17 +18,18 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestSlopeOneModelBuilder {
 
@@ -36,7 +37,9 @@ public class TestSlopeOneModelBuilder {
     
     private SlopeOneModel getModel(DAOFactory factory) {
         PackedRatingSnapshot snapshot = new PackedRatingSnapshot.Provider(factory.create()).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null, 0, 0, 0);
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null,
+                                                                  new PreferenceDomain(0, 0),
+                                                                  0);
         SlopeOneModel model = builder.get();
         return model;
     }

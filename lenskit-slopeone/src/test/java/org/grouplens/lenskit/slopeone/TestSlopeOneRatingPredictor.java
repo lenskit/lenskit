@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
 import org.junit.Test;
 
@@ -36,7 +37,9 @@ public class TestSlopeOneRatingPredictor {
     
     private SlopeOneModel getModel(DataAccessObject dao) {
         PackedRatingSnapshot snapshot = new PackedRatingSnapshot.Provider(dao).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null, 1, 5, 0);
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null,
+                                                                  new PreferenceDomain(1,5),
+                                                                  0);
         SlopeOneModel model = builder.get();
         return model;
     }

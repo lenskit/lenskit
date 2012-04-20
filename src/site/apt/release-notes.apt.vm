@@ -8,6 +8,16 @@
 
 LensKit Release Notes
 
+* Release 0.11
+
+  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.11}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
+    Code should use <<<PreferenceDomain>>> instead. See #issue(163).
+
 * Release 0.10
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the

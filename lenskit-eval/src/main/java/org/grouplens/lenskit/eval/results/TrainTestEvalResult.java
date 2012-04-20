@@ -18,8 +18,11 @@
  */
 package org.grouplens.lenskit.eval.results;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.eval.CommandException;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +30,7 @@ import java.util.List;
 /**
  * This class contains the table of the result similar to the output file. The result is the exactly
  * same table with that in the output file stored in the memory. The way to get the field in the table
- * is to use {@link #getRows} and {@link #getValues} functions.
+ * is to use {@link #filter} and {@link #getValues} functions.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
@@ -35,6 +38,7 @@ public class TrainTestEvalResult {
     private ArrayList<ResultRow> result;
     private final ArrayList<String> fields;
     private int size;
+
 
     public TrainTestEvalResult() {
         result = new ArrayList<ResultRow>();
@@ -75,14 +79,17 @@ public class TrainTestEvalResult {
      * @return The list of rows satisfying the query warpped in the TrainTestEvalResult
      *          to enable cascading
      */
-    public TrainTestEvalResult getRows(String col, Object val) {
-        TrainTestEvalResult rows = new TrainTestEvalResult(this.fields);
-        for(ResultRow row: result) {
-            if(row.getValue(col).getClass().equals(val.getClass())) {
-                if(row.getValue(col).equals(val)) {
-                    rows.addResultRow(row);
-                }
+    public TrainTestEvalResult filter(final String col, final Object val) {
+        Predicate<ResultRow> pred = new Predicate<ResultRow>() {
+            @Override
+            public boolean apply(@Nullable ResultRow input) {
+                return  val.equals(input.getValue(col));
             }
+        };
+        TrainTestEvalResult rows = new TrainTestEvalResult(this.fields);
+        Iterable<ResultRow> filtered = Iterables.filter(result,pred);
+        for(ResultRow row: filtered) {
+            rows.addResultRow(row);
         }
         return rows;
     }
@@ -103,6 +110,9 @@ public class TrainTestEvalResult {
      * @return  An array of the values
      */
     public Object[] getValues(String col) {
+        if(!fields.contains(col)) {
+            return new Object[0];
+        }
         Object[] values = new Object[result.size()];
         int idx = 0;
         for(ResultRow row: result) {
@@ -111,4 +121,25 @@ public class TrainTestEvalResult {
         }
         return values;
     }
+
+    public Double getSum(String col) {
+        Object[] vals = getValues(col);
+        double sum = 0;
+        if(vals.length == 0 ||
+                !Number.class.isAssignableFrom(vals[0].getClass())) {
+            return Double.NaN;
+        }
+        else {
+            for(Object v : vals) {
+                sum += ((Number)v).doubleValue();
+            }
+            return sum;
+        }
+    }
+
+    public Double getAverage(String col) {
+        return getSum(col)/getValues(col).length;
+    }
+
+
 }

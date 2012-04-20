@@ -72,11 +72,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
                     unpreds.add(predicteeItem);
                 } else {
                     double predValue = total/nusers;
-                    if (predValue > model.getMaxRating()) {
-                        predValue = model.getMaxRating();
-                    } else if (predValue < model.getMinRating()) {
-                        predValue = model.getMinRating();
-                    }
+                    predValue = model.getDomain().clampValue(predValue);
                     preds.set(predicteeItem, predValue);
                 }
             }
