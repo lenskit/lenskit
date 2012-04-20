@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * A real-valued preference a user has for an item. Preferences can be
  * articulated by the user in the form of ratings, or they may be predicted or
@@ -28,41 +31,69 @@ package org.grouplens.lenskit.data.pref;
  * such). All exceptions must be clearly documented, and should only be in
  * contexts such as fast iteration.
  *
- * <p>
- * Only user ID, item ID, and preference values are to be considered for
- * equality. Subclasses must <strong>not</strong> introduce additional fields
- * that need to be compared for equality.
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface Preference {
+public abstract class Preference {
     /**
      * Get the ID of the user whose preference this is.
      *
      * @return The user ID.
      */
-    long getUserId();
+    public abstract long getUserId();
 
     /**
      * Get the ID of the item the preference is for.
      *
      * @return The item ID.
      */
-    long getItemId();
+    public abstract long getItemId();
 
     /**
      * Get the preference value.
      *
      * @return The preference value.
      */
-    double getValue();
+    public abstract double getValue();
 
     /**
-     * Clone the preference. The clone <b>must</b> be immutable (the
-     * implementation of the clone can be mutable, in which case the immutable
-     * guarantee is only required to be valid so long as the clone is never cast
-     * to the mutable implementation).
+     * Compare two preferences for equality. Preferences are equal if their users,
+     * items, and values are equal.
+     * @param obj The object to compare.
+     * @return {@code true} if the object compares equal to this.
      */
-    Preference clone();
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (obj == this) {
+            return true;
+        } else if (obj instanceof Preference) {
+            Preference op = (Preference) obj;
+            return new EqualsBuilder()
+                    .append(getUserId(), op.getUserId())
+                    .append(getItemId(), op.getItemId())
+                    .append(getValue(), op.getValue())
+                    .isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Hash a preference.
+     */
+    @Override
+    public final int hashCode() {
+        return new HashCodeBuilder()
+                .append(getItemId())
+                .append(getUserId())
+                .append(getValue())
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Preference(u=%d, i=%d, v=%.2f", getUserId(), getItemId(), getValue());
+    }
 }

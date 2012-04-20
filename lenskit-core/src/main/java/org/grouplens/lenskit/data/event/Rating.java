@@ -26,12 +26,6 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * A rating is an expression of preference for an item by a user.
  *
- * <p>Like all events, ratings must be effectively immutable.  In the contexts
- * where a rating is allowed to be mutable, the preference object returned by
- * {@link #getPreference()} may be tied to the particular rating object and
- * mutate along with it.  Use {@link Preference#clone()} or {@link #clone()} to
- * obtain isolated references.
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

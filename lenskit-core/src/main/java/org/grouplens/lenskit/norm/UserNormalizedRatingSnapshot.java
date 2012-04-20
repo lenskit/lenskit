@@ -30,7 +30,7 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
+import org.grouplens.lenskit.data.pref.SimpleIndexedPreference;
 import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
 import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
@@ -166,7 +166,7 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
             };
         }
 
-        final class IndirectPreference implements IndexedPreference {
+        final class IndirectPreference extends IndexedPreference {
             IndexedPreference base;
 
             @Override
@@ -201,9 +201,9 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
 
             @Override
             public IndexedPreference clone() {
-                return new MutableIndexedPreference(getUserId(), getItemId(),
-                                                    getValue(), getIndex(),
-                                                    getUserIndex(), getItemIndex());
+                return new SimpleIndexedPreference(
+                        getUserId(), getItemId(), getValue(),
+                        getIndex(), getUserIndex(), getItemIndex());
             }
         }
 
@@ -230,9 +230,10 @@ public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
                     IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
-                    return new MutableIndexedPreference(r.getUserId(), iid,
-                            normedData[uidx].get(iid), r.getIndex(),
-                            uidx, r.getItemIndex());
+                    return new SimpleIndexedPreference(
+                            r.getUserId(), iid,
+                            normedData[uidx].get(iid),
+                            r.getIndex(), uidx, r.getItemIndex());
                 }
             };
         }

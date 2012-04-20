@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.data.snapshot;
 
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.MutableIndexedPreference;
+import org.grouplens.lenskit.data.pref.SimpleIndexedPreference;
 import org.grouplens.lenskit.util.Index;
 
 /**
@@ -46,7 +46,7 @@ final class PackedRatingData {
         return new IndirectPreference(index);
     }
 
-    final class IndirectPreference implements IndexedPreference {
+    final class IndirectPreference extends IndexedPreference {
         int index;
         IndirectPreference() {
             this(-1);
@@ -88,9 +88,9 @@ final class PackedRatingData {
 
         @Override
         public IndexedPreference clone() {
-            return new MutableIndexedPreference(getUserId(), getItemId(),
-                                                getValue(), getIndex(),
-                                                getUserIndex(), getItemIndex());
+            return new SimpleIndexedPreference(getUserId(), getItemId(),
+                                               getValue(), getIndex(),
+                                               getUserIndex(), getItemIndex());
         }
     }
 }
