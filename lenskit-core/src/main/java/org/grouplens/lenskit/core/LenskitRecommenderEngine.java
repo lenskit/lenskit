@@ -169,13 +169,13 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             
             if (e != null) {
                 // The type is one of the configured roots
-                return getInstance(e.getTail());
+                return this.<T>getInstance(e.getTail());
             } else {
                 // The type is hopefully embedded in the graph
                 for (Node<Satisfaction> n: dependencies.getNodes()) {
                     if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getErasedType())) {
                         // found a node capable of creating instances of type
-                        return getInstance(n);
+                        return this.<T>getInstance(n);
                     }
                 }
                 return null;
