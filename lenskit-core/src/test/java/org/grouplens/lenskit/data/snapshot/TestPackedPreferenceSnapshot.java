@@ -18,13 +18,7 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.LongCollection;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -37,9 +31,16 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestPackedRatingSnapshot {
+import java.util.ArrayList;
+import java.util.List;
 
-    private PackedRatingSnapshot snap;
+import static org.grouplens.common.test.MoreMatchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
+
+public class TestPackedPreferenceSnapshot {
+
+    private PackedPreferenceSnapshot snap;
     private static final double EPSILON = 1.0e-6;
 
     private static int eid;
@@ -80,9 +81,14 @@ public class TestPackedRatingSnapshot {
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        snap = new PackedRatingSnapshot.Provider(manager.create()).get();
+        snap = new PackedPreferenceSnapshot.Provider(manager.create()).get();
     }
 
+    @Test
+    public void testBasicStats() {
+        assertThat(snap.getRatings().size(),
+                   equalTo(20));
+    }
 
     @Test
     public void testGetUserIds() {
@@ -180,11 +186,12 @@ public class TestPackedRatingSnapshot {
     @Test
     public void testGetUserRatings() {
         FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
-        assertEquals(4, ratings.size());
-        assertTrue(ratings.contains(preference(1, 7, 4)));
-        assertTrue(ratings.contains(preference(1, 8, 5)));
-        assertTrue(ratings.contains(preference(1, 9, 3)));
-        assertTrue(ratings.contains(preference(1, 11, 5)));
+        assertThat(ratings.size(), equalTo(4));
+        assertThat(ratings, contains(preference(1, 7, 4)));
+        assertThat(ratings, contains(preference(1, 7, 4)));
+        assertThat(ratings, contains(preference(1, 8, 5)));
+        assertThat(ratings, contains(preference(1, 9, 3)));
+        assertThat(ratings, contains(preference(1, 11, 5)));
 
         ratings = snap.getUserRatings(2);
         assertEquals(0, ratings.size());

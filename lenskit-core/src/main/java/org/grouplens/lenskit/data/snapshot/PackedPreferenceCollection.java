@@ -33,17 +33,17 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
 
 /**
  * Preference collection implemented as a view on top of
- * {@link PackedRatingData}. This is used to provide the collection
- * implementations for {@link PackedRatingSnapshot}. It supports subsetting the
+ * {@link PackedPreferenceData}. This is used to provide the collection
+ * implementations for {@link PackedPreferenceSnapshot}. It supports subsetting the
  * packed data set to only a particular list of indices.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-@SuppressWarnings("javadoc") // JavaDoc warnings incorrectly flag PackedRatingData
-class PackedRatingCollection extends AbstractCollection<IndexedPreference>
+@SuppressWarnings("javadoc") // JavaDoc warnings incorrectly flag PackedPreferenceData
+class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
-    final private PackedRatingData data;
+    final private PackedPreferenceData data;
     final private IntList indices;
 
     /**
@@ -51,9 +51,8 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
      *
      * @param data A packed rating data set.
      */
-    PackedRatingCollection(PackedRatingData data) {
-        this.data = data;
-        this.indices = new IntIntervalList(data.values.length);
+    PackedPreferenceCollection(PackedPreferenceData data) {
+        this(data, new IntIntervalList(data.size()));
     }
 
     /**
@@ -63,7 +62,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
      * @param indices A list of indices in the packed data arrays to include in
      *            the collection.
      */
-    PackedRatingCollection(PackedRatingData data, IntList indices) {
+    PackedPreferenceCollection(PackedPreferenceData data, IntList indices) {
         this.data = data;
         this.indices = indices;
     }
@@ -108,7 +107,7 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
         @Override
         public IndexedPreference next() {
             final int index = iter.next();
-            return data.makeRating(index);
+            return data.preference(index);
         }
 
         @Override
@@ -119,11 +118,11 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
     private final class FastIteratorImpl implements Iterator<IndexedPreference> {
         private final IntIterator iter;
-        private PackedRatingData.IndirectPreference preference =
-                data.makeRating(0);
+        private PackedPreferenceData.IndirectPreference preference;
 
         FastIteratorImpl() {
             iter = indices.iterator();
+            preference = data.preference(0);
         }
 
         @Override
@@ -133,7 +132,8 @@ class PackedRatingCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            preference.index = iter.next();
+            preference.setIndex(iter.next());
+            assert preference.isValid();
             return preference;
         }
 

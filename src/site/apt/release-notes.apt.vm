@@ -18,6 +18,11 @@ LensKit Release Notes
   * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).
 
+  * <<Incompatible>>: Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
+    since that's what it really is.
+
+  []
+
 * Release 0.10
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the

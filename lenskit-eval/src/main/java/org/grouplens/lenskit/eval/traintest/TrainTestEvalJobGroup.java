@@ -23,11 +23,11 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.SharedRatingSnapshot;
+import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.SoftLazyValue;
@@ -62,14 +62,14 @@ public class TrainTestEvalJobGroup implements JobGroup {
         evaluation = eval;
         dataSet = data;
 
-        final Supplier<SharedRatingSnapshot> snap =
-                new SoftLazyValue<SharedRatingSnapshot>(new Callable<SharedRatingSnapshot>() {
+        final Supplier<SharedPreferenceSnapshot> snap =
+                new SoftLazyValue<SharedPreferenceSnapshot>(new Callable<SharedPreferenceSnapshot>() {
                     @Override
-                    public SharedRatingSnapshot call() {
+                    public SharedPreferenceSnapshot call() {
                         logger.info("Loading snapshot for {}", getName());
                         StopWatch timer = new StopWatch();
                         timer.start();
-                        SharedRatingSnapshot snap = loadSnapshot();
+                        SharedPreferenceSnapshot snap = loadSnapshot();
                         timer.stop();
                         logger.info("Rating snapshot for {} loaded in {}",
                                     getName(), timer);
@@ -109,10 +109,10 @@ public class TrainTestEvalJobGroup implements JobGroup {
         return jobs;
     }
     
-    private SharedRatingSnapshot loadSnapshot() {
+    private SharedPreferenceSnapshot loadSnapshot() {
         DataAccessObject dao = dataSet.getTrainFactory().create();
         try {
-            return new SharedRatingSnapshot(new PackedRatingSnapshot.Provider(dao).get());
+            return new SharedPreferenceSnapshot(new PackedPreferenceSnapshot.Provider(dao).get());
         } finally {
             dao.close();
         }

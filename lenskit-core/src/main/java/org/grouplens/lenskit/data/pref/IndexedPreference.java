@@ -26,7 +26,7 @@ package org.grouplens.lenskit.data.pref;
 public abstract class IndexedPreference extends Preference {
     /**
      * Get the preference index. Each indexed preference (within a given context,
-     * such as a {@link org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot})
+     * such as a {@link org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot})
      * has a unique, contiguous, zero-based index. This is to make it easy to
      * store additional information related to preferences for efficient learning
      * scenarios.

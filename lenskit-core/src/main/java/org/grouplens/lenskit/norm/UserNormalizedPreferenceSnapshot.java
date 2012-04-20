@@ -31,8 +31,8 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.SimpleIndexedPreference;
-import org.grouplens.lenskit.data.snapshot.AbstractRatingSnapshot;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.AbstractPreferenceSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.Index;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rating snapshot that provides normalized ratings. They are built
- * with a {@link UserNormalizedRatingSnapshot.Builder}.
+ * with a {@link UserNormalizedPreferenceSnapshot.Builder}.
  *
  * <p>
  * This class also computes the normed data lazily, so the computation cost
@@ -50,22 +50,22 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * <strong>Warning:</strong> Do not configure this component in the
- * {@link LenskitRecommenderEngineFactory} as a plain RatingSnapshot. If this is
- * done, reference cycles will exist as UserNormalizedRatingSnapshot depends on
- * another RatingSnapshot for its data.It can be configured if combined with an
+ * {@link LenskitRecommenderEngineFactory} as a plain PreferenceSnapshot. If this is
+ * done, reference cycles will exist as UserNormalizedPreferenceSnapshot depends on
+ * another PreferenceSnapshot for its data.It can be configured if combined with an
  * annotation, such as {@link NormalizedSnapshot}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class UserNormalizedRatingSnapshot extends AbstractRatingSnapshot {
-    private static final Logger logger = LoggerFactory.getLogger(UserNormalizedRatingSnapshot.class);
-    private final RatingSnapshot snapshot;
+public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot {
+    private static final Logger logger = LoggerFactory.getLogger(UserNormalizedPreferenceSnapshot.class);
+    private final PreferenceSnapshot snapshot;
     private final VectorNormalizer<? super UserVector> normalizer;
     private SparseVector[] normedData;
 
     @Inject
-    public UserNormalizedRatingSnapshot(RatingSnapshot snapshot,
-                                        @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+    public UserNormalizedPreferenceSnapshot(PreferenceSnapshot snapshot,
+                                            @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
         super();
         this.snapshot = snapshot;
         normalizer = norm;

@@ -26,7 +26,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.DefaultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +88,7 @@ public class AlgorithmInstance {
     }
 
     public Recommender buildRecommender(DataAccessObject dao,
-                                        final @Nullable Supplier<? extends RatingSnapshot> sharedSnapshot,
+                                        final @Nullable Supplier<? extends PreferenceSnapshot> sharedSnapshot,
                                         PreferenceDomain dom) {
         // Copy the factory & set up a shared rating snapshot
         LenskitRecommenderEngineFactory fac2 = factory.clone();
@@ -99,13 +99,13 @@ public class AlgorithmInstance {
 
         if (sharedSnapshot != null) {
             // FIXME Bind this to a provider
-            Provider<RatingSnapshot> prv = new Provider<RatingSnapshot>() {
+            Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
                 @Override
-                public RatingSnapshot get() {
+                public PreferenceSnapshot get() {
                     return sharedSnapshot.get();
                 }
             };
-            fac2.bind(RatingSnapshot.class).toProvider(prv);
+            fac2.bind(PreferenceSnapshot.class).toProvider(prv);
         }
 
         LenskitRecommenderEngine engine = fac2.create(dao);

@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -36,7 +36,7 @@ public class SlopeOneModelDataAccumulator {
      * @param damping A damping term for deviation calculations.
      * @param snapshot The rating data.
      */
-    public SlopeOneModelDataAccumulator(double damping, RatingSnapshot snapshot) {
+    public SlopeOneModelDataAccumulator(double damping, PreferenceSnapshot snapshot) {
         this.damping = damping;
         deviationMatrix = new Long2ObjectOpenHashMap<Long2DoubleOpenHashMap>();
         coratingMatrix = new Long2ObjectOpenHashMap<Long2IntOpenHashMap>();

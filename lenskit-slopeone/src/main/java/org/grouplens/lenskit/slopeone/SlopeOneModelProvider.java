@@ -27,7 +27,7 @@ import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -44,12 +44,12 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final BaselinePredictor baseline;
     private final PreferenceDomain domain;
     
-    private final RatingSnapshot snapshot;
+    private final PreferenceSnapshot snapshot;
     
     @Inject
-    public SlopeOneModelProvider(@Transient RatingSnapshot snapshot,
+    public SlopeOneModelProvider(@Transient PreferenceSnapshot snapshot,
                                 // FIXME: can this be nullable? Why have two snapshots?
-                                @Transient @NormalizedSnapshot RatingSnapshot normalized,
+                                @Transient @NormalizedSnapshot PreferenceSnapshot normalized,
                                 BaselinePredictor predictor,
                                 PreferenceDomain dom,
                                 @Damping double damping) {
@@ -66,7 +66,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
 
     /**
      * Constructs a {@link SlopeOneModel} and the necessary matrices from
-     * a {@link RatingSnapshot}.
+     * a {@link org.grouplens.lenskit.data.snapshot.PreferenceSnapshot}.
      */
     @Override
     public SlopeOneModel get() {

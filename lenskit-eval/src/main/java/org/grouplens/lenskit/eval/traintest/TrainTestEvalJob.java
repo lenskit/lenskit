@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
-import org.grouplens.lenskit.eval.SharedRatingSnapshot;
+import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -73,7 +73,7 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
 
-    private final Supplier<SharedRatingSnapshot> snapshot;
+    private final Supplier<SharedPreferenceSnapshot> snapshot;
     private final int outputColumnCount;
 
     /**
@@ -90,7 +90,7 @@ public class TrainTestEvalJob implements Job {
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
-                            TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
+                            TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
                             Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;

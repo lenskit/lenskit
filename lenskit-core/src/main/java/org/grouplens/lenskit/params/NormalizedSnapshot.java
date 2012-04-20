@@ -27,16 +27,15 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.norm.UserNormalizedRatingSnapshot;
+import org.grouplens.lenskit.norm.UserNormalizedPreferenceSnapshot;
 
 /**
  * Normalized version of the rating snapshot.  This annotation is applied to
- * {@link RatingSnapshot} parameters to request the normalized version instead
- * of the raw version.  By default, that is supplied by {@link UserNormalizedRatingSnapshot}.
+ * {@link org.grouplens.lenskit.data.snapshot.PreferenceSnapshot} parameters to request the normalized version instead
+ * of the raw version.  By default, that is supplied by {@link org.grouplens.lenskit.norm.UserNormalizedPreferenceSnapshot}.
  */
 @Documented
-@DefaultImplementation(UserNormalizedRatingSnapshot.class)
+@DefaultImplementation(UserNormalizedPreferenceSnapshot.class)
 @Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

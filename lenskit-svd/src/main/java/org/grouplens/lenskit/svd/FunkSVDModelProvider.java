@@ -29,7 +29,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.IterationCount;
@@ -72,10 +72,10 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
     private final BaselinePredictor baseline;
     
-    private final RatingSnapshot snapshot;
+    private final PreferenceSnapshot snapshot;
     
     @Inject
-    public FunkSVDModelProvider(@Transient RatingSnapshot snapshot,
+    public FunkSVDModelProvider(@Transient PreferenceSnapshot snapshot,
                                @FeatureCount int featureCount,
                                @LearningRate double learningRate,
                                @TrainingThreshold double threshold,
@@ -125,7 +125,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private double[] initializeEstimates(RatingSnapshot snapshot,
+    private double[] initializeEstimates(PreferenceSnapshot snapshot,
                                                       BaselinePredictor baseline) {
         final int nusers = snapshot.userIndex().getObjectCount();
         final int nprefs = snapshot.getRatings().size();

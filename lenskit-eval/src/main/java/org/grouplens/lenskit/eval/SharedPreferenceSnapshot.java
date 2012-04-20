@@ -23,13 +23,13 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.util.Index;
 
-public class SharedRatingSnapshot implements RatingSnapshot {
-    private final RatingSnapshot snapshot;
+public class SharedPreferenceSnapshot implements PreferenceSnapshot {
+    private final PreferenceSnapshot snapshot;
 
-    public SharedRatingSnapshot(RatingSnapshot snapshot) {
+    public SharedPreferenceSnapshot(PreferenceSnapshot snapshot) {
         super();
         this.snapshot = snapshot;
     }

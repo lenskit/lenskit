@@ -56,7 +56,7 @@ import org.grouplens.lenskit.util.Index;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe
-public interface RatingSnapshot extends Closeable {
+public interface PreferenceSnapshot extends Closeable {
     /**
      * Get the set of user IDs in the snapshot.
      * @return A set of all known user IDs.

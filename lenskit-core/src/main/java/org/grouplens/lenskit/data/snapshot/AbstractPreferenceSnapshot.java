@@ -28,11 +28,11 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 
-public abstract class AbstractRatingSnapshot implements RatingSnapshot {
+public abstract class AbstractPreferenceSnapshot implements PreferenceSnapshot {
 
     protected volatile Long2ObjectMap<UserVector> cache;
 
-    public AbstractRatingSnapshot() {
+    public AbstractPreferenceSnapshot() {
         cache =
             Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<UserVector>());
     }
