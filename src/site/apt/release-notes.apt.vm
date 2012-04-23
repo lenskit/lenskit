@@ -15,6 +15,10 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  This release contains a lot of algorithm and component refactorings. The public recommender
+  API is unchanged, but many components and their interfaces have changed. This means that
+  custom components and recommender configurations will need to be updated.
+
   * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).
 
@@ -33,7 +37,11 @@ LensKit Release Notes
     * <<<PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
       context-sensitive bindings to bind the <other> normalizers.
 
+    * <<<UserHistorySummary>>>: was redundant with the component interface.
+
     []
+
+  * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
 
   []
 

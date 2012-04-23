@@ -30,7 +30,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
@@ -169,7 +169,7 @@ public class TrainTestEvalJob implements Job {
                     for (UserHistory<Rating> p: userProfiles) {
                         long uid = p.getUserId();
                         SparseVector ratings =
-                            RatingVectorHistorySummarizer.makeRatingVector(p);
+                            RatingVectorUserHistorySummarizer.makeRatingVector(p);
 
                         Supplier<SparseVector> preds =
                                 new PredictionSupplier(predictor, uid, ratings.keySet());

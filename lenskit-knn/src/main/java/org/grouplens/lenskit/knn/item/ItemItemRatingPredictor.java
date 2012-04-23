@@ -19,10 +19,6 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -30,15 +26,17 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.HistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Generate predictions with item-item collaborative filtering. This configures
@@ -57,7 +55,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 
     @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
-                                   @UserHistorySummary HistorySummarizer summarizer,
+                                   UserHistorySummarizer summarizer,
                                    ItemScoreAlgorithm algo) {
         super(dao, model, summarizer, new WeightedAverageNeighborhoodScorer(), algo);
     }

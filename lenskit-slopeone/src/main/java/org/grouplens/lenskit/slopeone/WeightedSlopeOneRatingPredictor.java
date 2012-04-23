@@ -30,7 +30,7 @@ import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -46,7 +46,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserVector user = RatingVectorHistorySummarizer.makeRatingVector(history);
+        UserVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {

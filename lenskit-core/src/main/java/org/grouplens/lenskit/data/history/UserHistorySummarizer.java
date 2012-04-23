@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 
@@ -27,7 +28,8 @@ import org.grouplens.lenskit.data.UserHistory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface HistorySummarizer {
+@DefaultImplementation(RatingVectorUserHistorySummarizer.class)
+public interface UserHistorySummarizer {
     /**
      * Get the supertype of all events required by this summarizer.
      *

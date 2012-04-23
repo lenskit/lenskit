@@ -32,7 +32,7 @@ import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
@@ -137,7 +137,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         }
 
         // Denormalize and return the results
-        UserVector urv = RatingVectorHistorySummarizer.makeRatingVector(history);
+        UserVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(urv);
         vo.unapply(preds);
 

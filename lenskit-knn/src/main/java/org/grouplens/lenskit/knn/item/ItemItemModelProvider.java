@@ -18,19 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.inject.Inject;
-import javax.inject.Provider;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -39,7 +27,7 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.HistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
@@ -47,11 +35,14 @@ import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserHistorySummary;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Build an item-item CF model from rating data.
@@ -66,7 +57,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     private final Similarity<? super ItemVector> itemSimilarity;
 
     private final VectorNormalizer<? super UserVector> normalizer;
-    private final HistorySummarizer userSummarizer;
+    private final UserHistorySummarizer userSummarizer;
     private final int modelSize;
 
     private final DataAccessObject dao;
@@ -75,7 +66,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     public ItemItemModelProvider(@Transient DataAccessObject dao,
                                  @ItemSimilarity Similarity<? super ItemVector> similarity,
                                  @UserVectorNormalizer VectorNormalizer<? super UserVector> normalizer,
-                                 @UserHistorySummary HistorySummarizer sum,
+                                 UserHistorySummarizer sum,
                                  @ModelSize int size) {
         this.dao = dao;
         this.normalizer = normalizer;
