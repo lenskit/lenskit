@@ -30,10 +30,9 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.SimpleIndexedPreference;
+import org.grouplens.lenskit.data.pref.IndexedPreferenceBuilder;
 import org.grouplens.lenskit.data.snapshot.AbstractPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.params.NormalizedSnapshot;
 import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -42,18 +41,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rating snapshot that provides normalized ratings. They are built
- * with a {@link UserNormalizedPreferenceSnapshot.Builder}.
+ * with a {@link UserNormalizedPreferenceSnapshot.Provider}.
  *
  * <p>
  * This class also computes the normed data lazily, so the computation cost
  * isn't incurred unless necessary.
- *
- * <p>
- * <strong>Warning:</strong> Do not configure this component in the
- * {@link LenskitRecommenderEngineFactory} as a plain PreferenceSnapshot. If this is
- * done, reference cycles will exist as UserNormalizedPreferenceSnapshot depends on
- * another PreferenceSnapshot for its data.It can be configured if combined with an
- * annotation, such as {@link NormalizedSnapshot}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -198,13 +190,6 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
             public int getItemIndex() {
                 return base.getItemIndex();
             }
-
-            @Override
-            public IndexedPreference clone() {
-                return new SimpleIndexedPreference(
-                        getUserId(), getItemId(), getValue(),
-                        getIndex(), getUserIndex(), getItemIndex());
-            }
         }
 
         @Override @Deprecated
@@ -230,10 +215,9 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
                     IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
-                    return new SimpleIndexedPreference(
-                            r.getUserId(), iid,
-                            normedData[uidx].get(iid),
-                            r.getIndex(), uidx, r.getItemIndex());
+                    return IndexedPreferenceBuilder.copy(r)
+                            .setValue(normedData[uidx].get(iid))
+                            .build();
                 }
             };
         }
