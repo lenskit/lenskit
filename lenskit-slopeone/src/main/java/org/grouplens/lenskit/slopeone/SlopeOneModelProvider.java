@@ -19,18 +19,20 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.params.NormalizedSnapshot;
+import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Pre-computes the deviations and number of mutual rating users for every pair
@@ -45,20 +47,21 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final PreferenceDomain domain;
     
     private final PreferenceSnapshot snapshot;
-    
+    private VectorNormalizer<? super UserVector> normalizer;
+
     @Inject
-    public SlopeOneModelProvider(@Transient PreferenceSnapshot snapshot,
-                                // FIXME: can this be nullable? Why have two snapshots?
-                                @Transient @NormalizedSnapshot PreferenceSnapshot normalized,
-                                BaselinePredictor predictor,
-                                PreferenceDomain dom,
-                                @Damping double damping) {
-        if (normalized != null) {
-            this.snapshot = normalized;
+    public SlopeOneModelProvider(@Transient PreferenceSnapshot snap,
+                                 @Transient @UserVectorNormalizer VectorNormalizer<? super UserVector> norm,
+                                 BaselinePredictor predictor,
+                                 PreferenceDomain dom,
+                                 @Damping double damping) {
+        snapshot = snap;
+        if (norm == null) {
+            normalizer = new IdentityVectorNormalizer();
         } else {
-            this.snapshot = snapshot;
+            normalizer = norm;
         }
-        
+
         domain = dom;
         baseline = predictor;
         accumulator = new SlopeOneModelDataAccumulator(damping, this.snapshot);
@@ -71,15 +74,16 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     @Override
     public SlopeOneModel get() {
         for (long currentUser : snapshot.getUserIds()) {
-            SparseVector ratings = snapshot.userRatingVector(currentUser);
-            LongIterator iter = ratings.keySet().iterator();
+            UserVector ratings = snapshot.userRatingVector(currentUser);
+            SparseVector normed = normalizer.normalize(ratings, null);
+            LongIterator iter = normed.keySet().iterator();
             while (iter.hasNext()) {
                 long item1 = iter.next();
-                LongIterator iter2 = ratings.keySet().tailSet(item1).iterator();
+                LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
                 if (iter2.hasNext()) iter2.next();
                 while (iter2.hasNext()) {
                     long item2 = iter2.next();
-                    accumulator.putRatingPair(item1, ratings.get(item1), item2, ratings.get(item2));
+                    accumulator.putRatingPair(item1, normed.get(item1), item2, normed.get(item2));
                 }
             }
         }
