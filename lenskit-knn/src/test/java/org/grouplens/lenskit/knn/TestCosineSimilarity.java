@@ -29,12 +29,12 @@ import org.junit.Test;
 
 public class TestCosineSimilarity {
     private static final double EPSILON = 1.0e-6;
-    private CosineSimilarity similarity, dampedSimilarity;
+    private CosineVectorSimilarity similarity, dampedSimilarity;
 
     @Before
     public void setUp() throws Exception {
-        similarity = new CosineSimilarity();
-        dampedSimilarity = new CosineSimilarity(10);
+        similarity = new CosineVectorSimilarity();
+        dampedSimilarity = new CosineVectorSimilarity(10);
     }
 
     private SparseVector emptyVector() {

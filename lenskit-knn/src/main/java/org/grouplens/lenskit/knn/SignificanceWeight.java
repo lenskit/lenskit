@@ -26,7 +26,6 @@ import javax.inject.Inject;
 
 import org.grouplens.lenskit.knn.params.WeightThreshold;
 import org.grouplens.lenskit.knn.params.WeightedSimilarity;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -49,29 +48,36 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @see WeightedSimilarity
  * @see WeightThreshold
  */
-public class SignificanceWeight implements
-        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
+public class SignificanceWeight implements VectorSimilarity, Serializable {
 
-    private static final long serialVersionUID = 5748342121367821678L;
+    private static final long serialVersionUID = 1L;
 
     private final int threshold;
-    private final Similarity<? super SparseVector> similarity;
+    private final VectorSimilarity delegate;
 
     @Inject
     public SignificanceWeight(@WeightThreshold int thresh,
-                              @WeightedSimilarity Similarity<? super SparseVector> sim) {
-        if (!(sim instanceof SymmetricBinaryFunction))
-            throw new IllegalArgumentException();
+                              @WeightedSimilarity VectorSimilarity sim) {
         threshold = thresh;
-        similarity = sim;
+        delegate = sim;
     }
 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
-        double s = similarity.similarity(vec1, vec2);
+        double s = delegate.similarity(vec1, vec2);
         int n = vec1.countCommonKeys(vec2);
         s *= n;
         return s / max(n, threshold);
+    }
+
+    @Override
+    public boolean isSparse() {
+        return delegate.isSparse();
+    }
+
+    @Override
+    public boolean isSymmetric() {
+        return delegate.isSymmetric();
     }
 
 }

@@ -18,19 +18,15 @@
  */
 package org.grouplens.lenskit.knn;
 
+import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import com.google.common.primitives.Doubles;
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Similarity function using Spearman rank correlation.
@@ -38,8 +34,7 @@ import com.google.common.primitives.Doubles;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SpearmanRankCorrelation implements
-        OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
+public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 3023239202579332883L;
 
     private final PearsonCorrelation pearson;
@@ -95,5 +90,15 @@ public class SpearmanRankCorrelation implements
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         return pearson.similarity(rank(vec1), rank(vec2));
+    }
+
+    @Override
+    public boolean isSparse() {
+        return true;
+    }
+
+    @Override
+    public boolean isSymmetric() {
+        return true;
     }
 }

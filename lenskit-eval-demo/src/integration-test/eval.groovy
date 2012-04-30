@@ -23,8 +23,8 @@ import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.grouplens.lenskit.knn.CosineSimilarity
-import org.grouplens.lenskit.knn.Similarity
+import org.grouplens.lenskit.knn.CosineVectorSimilarity
+import org.grouplens.lenskit.knn.VectorSimilarity
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
 import org.grouplens.lenskit.knn.params.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
@@ -42,6 +42,8 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.knn.VectorSimilarity
+import org.grouplens.lenskit.knn.CosineVectorSimilarity
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -88,8 +90,8 @@ trainTest {
         bind BaselinePredictor to ItemUserMeanPredictor
         within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        bind Similarity withQualifier UserSimilarity to CosineSimilarity
-        within (UserSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
+        bind VectorSimilarity withQualifier UserSimilarity to CosineVectorSimilarity
+        within (UserSimilarity, VectorSimilarity) bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, UserUserRatingPredictor)
 //        setComnponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)
@@ -105,7 +107,7 @@ trainTest {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within (ItemSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
+        within (ItemSimilarity, VectorSimilarity) bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, ItemItemRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)

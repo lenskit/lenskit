@@ -21,23 +21,37 @@ package org.grouplens.lenskit.knn;
 
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Compute the similarity between two objects (typically rating vectors). Similarity
- * is not necessarily symmetric (if it is, it should also implement the
- * {@link org.grouplens.lenskit.util.SymmetricBinaryFunction} tag interface). See
+ * Compute the similarity between two objects (typically rating vectors). See
  * the specific annotations {@link ItemSimilarity} and {@link UserSimilarity} for the
  * exact interpretation of the similarity function when comparing items and users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface Similarity<V> {
+public interface VectorSimilarity {
     /**
      * Compute the similarity between two vectors.
      * @param vec1 The left vector to compare.
      * @param vec2 The right vector to compare.
      * @return The similarity, in the range [-1,1].
      */
-    double similarity(V vec1, V vec2);
+    double similarity(SparseVector vec1, SparseVector vec2);
+
+    /**
+     * Query whether this similarity function is sparse (returns 0 for vectors with
+     * disjoint key sets).
+     * @return {@code true} iff {@link #similarity(Object, Object)} will always return
+     * true when applied to two vectors with no keys in common.
+     */
+    boolean isSparse();
+
+    /**
+     * Query whether this similarity function is symmetric. Symmetric similarity functions
+     * return the same result when called on (A,B) and (B,A).
+     * @return {@code true} if the function is symmetric.
+     */
+    boolean isSymmetric();
 }

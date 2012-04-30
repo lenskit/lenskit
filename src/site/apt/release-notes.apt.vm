@@ -48,6 +48,15 @@ LensKit Release Notes
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
 
+  * Removed <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>> in favor of
+    methods on the <<<VectorSimilarity>>> interface. This allows composition & wrapping components
+    to work better.
+
+  * Renamed <<<Similarity>>> to <<<VectorSimilarity>>> and removed its generic parameter.
+
+  * Removed <<<ItemVector>>> and <<<UserVector>>> classes. User and item IDs are now carried
+    independently and we use distinct component interfaces to handle users and items.
+
   []
 
 * Release 0.10

@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
@@ -78,7 +78,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     private final DataAccessObject dataSource;
     private final int neighborhoodSize;
-    private final Similarity<? super SparseVector> similarity;
+    private final VectorSimilarity similarity;
     private final UserVectorNormalizer normalizer;
     private final Long2ObjectMap<CacheEntry> userVectorCache;
 
@@ -91,7 +91,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     @Inject
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs,
-                                    @UserSimilarity Similarity<? super SparseVector> sim,
+                                    @UserSimilarity VectorSimilarity sim,
                                     UserVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;

@@ -22,7 +22,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.data.history.ItemVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
  */
 public class ItemItemBuildContext {
     private @Nonnull LongSortedSet items;
-    private @Nonnull Long2ObjectMap<ItemVector> itemVectors;
+    private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
     private @Nullable Long2ObjectMap<LongSortedSet> userItemSets;
 
     /**
@@ -50,7 +50,7 @@ public class ItemItemBuildContext {
      * @param userSets Optional map of users to rated item sets.
      */
     public ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                                @Nonnull Long2ObjectMap<ItemVector> vectors,
+                                @Nonnull Long2ObjectMap<SparseVector> vectors,
                                 @Nullable Long2ObjectMap<LongSortedSet> userSets) {
         items = universe;
         itemVectors = vectors;
@@ -74,7 +74,7 @@ public class ItemItemBuildContext {
      * @throws IllegalArgumentException if {@code item} is not a valid item.
      */
     @Nonnull
-    public ItemVector itemVector(long item) {
+    public SparseVector itemVector(long item) {
         Preconditions.checkArgument(items.contains(item), "unknown item");
         assert itemVectors.containsKey(item);
         return itemVectors.get(item);

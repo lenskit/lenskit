@@ -27,15 +27,15 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.ItemVector;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ import javax.inject.Provider;
 public class ItemItemModelProvider implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
 
-    private final Similarity<? super ItemVector> itemSimilarity;
+    private final VectorSimilarity itemSimilarity;
 
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
@@ -63,7 +63,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
-                                 @ItemSimilarity Similarity<? super ItemVector> similarity,
+                                 @ItemSimilarity VectorSimilarity similarity,
                                  UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
                                  @ModelSize int size) {
@@ -94,11 +94,11 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         Long2ObjectMap<Long2DoubleMap> itemData =
                 buildItemRatings(items, userItemSets);
         // finalize the item data into vectors
-        Long2ObjectMap<ItemVector> itemRatings =
-                new Long2ObjectOpenHashMap<ItemVector>(itemData.size());
+        Long2ObjectMap<SparseVector> itemRatings =
+                new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
             Long2DoubleMap ratings = entry.getValue();
-            ItemVector v = new ItemVector(entry.getKey(), ratings);
+            SparseVector v = new ImmutableSparseVector(ratings);
             assert v.size() == ratings.size();
             itemRatings.put(entry.getLongKey(), v);
             entry.setValue(null);          // clear the array so GC can free
@@ -175,9 +175,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(Similarity<? super ItemVector> similarity) {
-        if (similarity instanceof OptimizableVectorSimilarity) {
-            return new SparseModelBuildStrategy((OptimizableVectorSimilarity) similarity);
+    protected ItemItemModelBuildStrategy createBuildStrategy(VectorSimilarity similarity) {
+        if (similarity.isSparse()) {
+            return new SparseModelBuildStrategy(similarity);
         } else {
             return new SimpleModelBuildStrategy(similarity);
         }

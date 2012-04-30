@@ -23,7 +23,6 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +32,19 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class CosineSimilarity
-    implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
+public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
 
-    private static final long serialVersionUID = 8458039416860530219L;
-    private static final Logger logger = LoggerFactory.getLogger(CosineSimilarity.class);
+    private static final long serialVersionUID = 1L;
+    private static final Logger logger = LoggerFactory.getLogger(CosineVectorSimilarity.class);
 
     private final double dampingFactor;
 
-    public CosineSimilarity() {
+    public CosineVectorSimilarity() {
         this(0.0);
     }
 
     @Inject
-    public CosineSimilarity(@Damping double dampingFactor) {
+    public CosineVectorSimilarity(@Damping double dampingFactor) {
         this.dampingFactor = dampingFactor;
         logger.debug("Using smoothing factor {}", dampingFactor);
     }
@@ -62,5 +60,15 @@ public class CosineSimilarity
             return 0;
 
         return dot / denom;
+    }
+
+    @Override
+    public boolean isSparse() {
+        return true;
+    }
+
+    @Override
+    public boolean isSymmetric() {
+        return true;
     }
 }

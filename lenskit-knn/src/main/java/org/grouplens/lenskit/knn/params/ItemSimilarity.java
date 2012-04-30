@@ -28,7 +28,7 @@ import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.grapht.annotation.InheritsDefaultQualifier;
-import org.grouplens.lenskit.knn.CosineSimilarity;
+import org.grouplens.lenskit.knn.CosineVectorSimilarity;
 
 /**
  * Similarity function for items (used by item-item CF). The similarity function
@@ -38,7 +38,7 @@ import org.grouplens.lenskit.knn.CosineSimilarity;
  * @see org.grouplens.lenskit.knn.item
  */
 @Documented
-@DefaultImplementation(CosineSimilarity.class)
+@DefaultImplementation(CosineVectorSimilarity.class)
 @InheritsDefaultQualifier
 @Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })

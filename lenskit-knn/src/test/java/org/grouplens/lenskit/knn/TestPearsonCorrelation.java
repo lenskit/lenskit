@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  */
 public class TestPearsonCorrelation {
-    Similarity<SparseVector> sim;
+    VectorSimilarity sim;
 
     @Before
     public void setUp() {
