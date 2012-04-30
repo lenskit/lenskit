@@ -30,9 +30,9 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -53,8 +53,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     protected final ItemItemModel model;
-    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
-        new IdentityVectorNormalizer();
+    protected @Nonnull UserVectorNormalizer normalizer;
     protected UserHistorySummarizer summarizer;
     protected @Nonnull NeighborhoodScorer scorer;
     protected @Nonnull ItemScoreAlgorithm algorithm;
@@ -78,7 +77,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
     }
 
     @Nonnull
-    public VectorNormalizer<? super UserVector> getNormalizer() {
+    public UserVectorNormalizer getNormalizer() {
         return normalizer;
     }
 
@@ -89,7 +88,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @see UserVectorNormalizer
      */
     @Inject
-    public void setNormalizer(@UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+    public void setNormalizer(UserVectorNormalizer norm) {
         normalizer = norm;
     }
 
@@ -133,7 +132,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * 
      * <p>
      * The default implementation delegates to the normalizer
-     * ({@link #setNormalizer(VectorNormalizer)}).
+     * ({@link #setNormalizer(UserVectorNormalizer)}).
      * 
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.

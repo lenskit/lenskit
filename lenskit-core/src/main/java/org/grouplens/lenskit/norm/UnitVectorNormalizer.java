@@ -18,10 +18,11 @@
  */
 package org.grouplens.lenskit.norm;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Vector normalizer that scales a vector by the factor needed to scale the
@@ -31,7 +32,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class UnitVectorNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> {
+public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
+    private final static long serialVersionUID = 1L;
     private final double tolerance;
     
     /**
@@ -53,7 +55,7 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer<ImmutableSpar
     }
 
     @Override
-    public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
+    public VectorTransformation makeTransformation(SparseVector reference) {
         double s = reference.norm();
         if (Math.abs(s) < tolerance) {
             return new IdentityVectorNormalizer().makeTransformation(reference);

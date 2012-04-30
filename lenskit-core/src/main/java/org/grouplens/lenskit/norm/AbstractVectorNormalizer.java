@@ -22,21 +22,24 @@ import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
+ * Abstract vector normalizer implementation.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public abstract class AbstractVectorNormalizer<V extends ImmutableSparseVector> implements VectorNormalizer<V> {
+public abstract class AbstractVectorNormalizer implements VectorNormalizer {
 
     /**
-     * Implementation that delegates to {@link #makeTransformation(ImmutableSparseVector)}
+     * Implementation that delegates to {@link #makeTransformation(SparseVector)}
      * and the resulting {@link VectorTransformation}.
      */
     @Override
-    public MutableSparseVector normalize(V reference, @Nullable MutableSparseVector target) {
-        if (target == null)
+    public MutableSparseVector normalize(SparseVector reference, @Nullable MutableSparseVector target) {
+        if (target == null) {
             target = reference.mutableCopy();
+        }
 
         VectorTransformation tform = makeTransformation(reference);
         return tform.apply(target);

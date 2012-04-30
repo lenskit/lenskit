@@ -29,6 +29,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.norm.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
 public class TestWeightedSlopeOneRatingPredictor {
@@ -37,11 +38,10 @@ public class TestWeightedSlopeOneRatingPredictor {
     
     private SlopeOneModel getModel(DataAccessObject dao) {
         PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(dao).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null,
-                                                                  new PreferenceDomain(1, 5),
-                                                                  0);
-        SlopeOneModel model = builder.get();
-        return model;
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(
+                snapshot, new DefaultUserVectorNormalizer(), null,
+                new PreferenceDomain(1, 5), 0);
+        return builder.get();
     }
 
     @Test

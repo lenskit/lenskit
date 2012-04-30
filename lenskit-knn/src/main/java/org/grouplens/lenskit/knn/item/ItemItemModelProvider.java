@@ -27,15 +27,14 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.ItemVector;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +55,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     private final Similarity<? super ItemVector> itemSimilarity;
 
-    private final VectorNormalizer<? super UserVector> normalizer;
+    private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
     private final int modelSize;
 
@@ -65,7 +64,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
                                  @ItemSimilarity Similarity<? super ItemVector> similarity,
-                                 @UserVectorNormalizer VectorNormalizer<? super UserVector> normalizer,
+                                 UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
                                  @ModelSize int size) {
         this.dao = dao;

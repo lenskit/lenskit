@@ -31,18 +31,18 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<UserVector> implements Serializable {
-    private static final long serialVersionUID = 1449043456567302903L;
+public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {
+    private static final long serialVersionUID = 2L;
 
     protected final BaselinePredictor baselinePredictor;
 
     /**
-     * Create a new BaselineSubtractingNormalizer with the given baseline.
+     * Create a new BaselineSubtractingUserVectorNormalizer with the given baseline.
      *
      * @param baseline The baseline predictor to use for normalization.
      */
     @Inject
-    public BaselineSubtractingNormalizer(BaselinePredictor baseline) {
+    public BaselineSubtractingUserVectorNormalizer(BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 

@@ -16,31 +16,32 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.norm;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.grapht.annotation.InheritsDefaultQualifier;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+
+import javax.annotation.Nullable;
 
 /**
- * Normalizer applied to user history summary vectors prior to processing data.
- * Rating-based recommenders will use this to process rating data.
- *
- * <p>This normalizer is applied to {@link UserVector}s.
+ * Abstract user vector normalizer implementation.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.11
  */
-@Documented
-@DefaultImplementation(IdentityVectorNormalizer.class)
-@InheritsDefaultQualifier
-@Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
-@Retention(RetentionPolicy.RUNTIME)
-public @interface UserVectorNormalizer { }
+public abstract class AbstractUserVectorNormalizer implements UserVectorNormalizer {
+
+    /**
+     * Implementation that delegates to {@link #makeTransformation(UserVector)}
+     * and the resulting {@link org.grouplens.lenskit.norm.VectorTransformation}.
+     */
+    @Override
+    public MutableSparseVector normalize(UserVector reference, @Nullable MutableSparseVector target) {
+        if (target == null) {
+            target = reference.mutableCopy();
+        }
+
+        VectorTransformation tform = makeTransformation(reference);
+        return tform.apply(target);
+    }
+}

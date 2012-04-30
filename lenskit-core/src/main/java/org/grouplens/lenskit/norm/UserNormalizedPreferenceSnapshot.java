@@ -20,28 +20,23 @@ package org.grouplens.lenskit.norm;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-
-import java.util.AbstractCollection;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreferenceBuilder;
 import org.grouplens.lenskit.data.snapshot.AbstractPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.AbstractCollection;
+import java.util.Iterator;
+
 /**
- * Rating snapshot that provides normalized ratings. They are built
- * with a {@link UserNormalizedPreferenceSnapshot.Provider}.
+ * Rating snapshot that provides normalized ratings.
  *
  * <p>
  * This class also computes the normed data lazily, so the computation cost
@@ -52,12 +47,12 @@ import org.slf4j.LoggerFactory;
 public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedPreferenceSnapshot.class);
     private final PreferenceSnapshot snapshot;
-    private final VectorNormalizer<? super UserVector> normalizer;
+    private final UserVectorNormalizer normalizer;
     private SparseVector[] normedData;
 
     @Inject
     public UserNormalizedPreferenceSnapshot(PreferenceSnapshot snapshot,
-                                            @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+                                            UserVectorNormalizer norm) {
         super();
         this.snapshot = snapshot;
         normalizer = norm;
@@ -84,7 +79,7 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
         }
     }
 
-    public VectorNormalizer<? super UserVector> getNormalizer() {
+    public UserVectorNormalizer getNormalizer() {
         return normalizer;
     }
 

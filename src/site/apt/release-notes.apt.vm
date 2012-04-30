@@ -39,6 +39,11 @@ LensKit Release Notes
 
     * <<<UserHistorySummary>>>: was redundant with the component interface.
 
+    * <<<UserVectorNormalizer>>>: refactored into a separate <<<UserVectorNormalizer>>> interface,
+      the default implementation of which delegates to a generic vector normalizer.
+      Context-sensitive bindings configure the inner normalizer. <<<BaselineSubtractingNormalizer>>>
+      has become <<<BaselineSubtractingUserVectorNormalizer>>> and implements the new interface.
+
     []
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.

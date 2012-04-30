@@ -25,12 +25,12 @@ import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
-import org.grouplens.lenskit.norm.VectorNormalizer;
+import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -47,20 +47,16 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final PreferenceDomain domain;
     
     private final PreferenceSnapshot snapshot;
-    private VectorNormalizer<? super UserVector> normalizer;
+    private UserVectorNormalizer normalizer;
 
     @Inject
-    public SlopeOneModelProvider(@Transient PreferenceSnapshot snap,
-                                 @Transient @UserVectorNormalizer VectorNormalizer<? super UserVector> norm,
-                                 BaselinePredictor predictor,
-                                 PreferenceDomain dom,
+    public SlopeOneModelProvider(@Transient @Nonnull PreferenceSnapshot snap,
+                                 @Transient @Nonnull UserVectorNormalizer norm,
+                                 @Nullable BaselinePredictor predictor,
+                                 @Nonnull PreferenceDomain dom,
                                  @Damping double damping) {
         snapshot = snap;
-        if (norm == null) {
-            normalizer = new IdentityVectorNormalizer();
-        } else {
-            normalizer = norm;
-        }
+        normalizer = norm;
 
         domain = dom;
         baseline = predictor;
@@ -80,7 +76,9 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
             while (iter.hasNext()) {
                 long item1 = iter.next();
                 LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
-                if (iter2.hasNext()) iter2.next();
+                if (iter2.hasNext()) {
+                    iter2.next();
+                }
                 while (iter2.hasNext()) {
                     long item2 = iter2.next();
                     accumulator.putRatingPair(item1, normed.get(item1), item2, normed.get(item2));

@@ -18,18 +18,17 @@
  */
 package org.grouplens.lenskit.norm;
 
-import java.io.Serializable;
-
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.io.Serializable;
 
 /**
  * Identity normalization (makes no change).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IdentityVectorNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector>
-implements Serializable {
+public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -6708410675383598691L;
 
     private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
@@ -46,7 +45,7 @@ implements Serializable {
     };
 
     @Override
-    public VectorTransformation makeTransformation(ImmutableSparseVector ratings) {
+    public VectorTransformation makeTransformation(SparseVector ratings) {
         return IDENTITY_TRANSFORM;
     }
 }

@@ -24,6 +24,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.norm.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,11 +38,10 @@ public class TestSlopeOneModelBuilder {
     
     private SlopeOneModel getModel(DAOFactory factory) {
         PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(factory.create()).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null,
-                                                                  new PreferenceDomain(0, 0),
-                                                                  0);
-        SlopeOneModel model = builder.get();
-        return model;
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(
+                snapshot, new DefaultUserVectorNormalizer(), null,
+                new PreferenceDomain(0, 0), 0);
+        return builder.get();
     }
 
     @Test

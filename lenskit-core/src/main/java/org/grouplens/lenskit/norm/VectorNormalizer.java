@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Normalize vectors by applying a reversible transformation with respect to
@@ -36,7 +37,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  *
  */
 @DefaultImplementation(IdentityVectorNormalizer.class)
-public interface VectorNormalizer<V extends ImmutableSparseVector> {
+public interface VectorNormalizer {
 
     /**
      * Normalize a vector in-place with a reference vector.
@@ -59,7 +60,7 @@ public interface VectorNormalizer<V extends ImmutableSparseVector> {
      * @return <var>target</var>, or a normalized mutable copy of
      *         <var>reference</var> if <var>target</var> is <tt>null</tt>.
      */
-    MutableSparseVector normalize(V reference, @Nullable MutableSparseVector target);
+    MutableSparseVector normalize(SparseVector reference, @Nullable MutableSparseVector target);
 
     /**
      * Create a vector transformation that normalizes and denormalizes vectors
@@ -69,10 +70,13 @@ public interface VectorNormalizer<V extends ImmutableSparseVector> {
      * If the reference vector is empty, the returned transformation should be
      * the identity transform. Results are undefined if the reference vector is
      * not complete or contains NaN values.
+     * <p>
+     * If the normalization needs to retain a copy of the sparse vector, it will
+     * take an immutable copy.
      *
      * @param reference The reference vector.
      * @return A transformation built from the reference vector.
      */
-    VectorTransformation makeTransformation(V reference);
+    VectorTransformation makeTransformation(SparseVector reference);
 
 }

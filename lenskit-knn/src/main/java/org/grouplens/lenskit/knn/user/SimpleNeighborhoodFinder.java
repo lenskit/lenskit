@@ -18,21 +18,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import static java.lang.Math.max;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.PriorityQueue;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -44,12 +30,19 @@ import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.Similarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import static java.lang.Math.max;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -86,7 +79,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private final DataAccessObject dataSource;
     private final int neighborhoodSize;
     private final Similarity<? super SparseVector> similarity;
-    private final VectorNormalizer<? super UserVector> normalizer;
+    private final UserVectorNormalizer normalizer;
     private final Long2ObjectMap<CacheEntry> userVectorCache;
 
     /**
@@ -99,7 +92,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs,
                                     @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+                                    UserVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;

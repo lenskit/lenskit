@@ -30,9 +30,10 @@ import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * <p>
@@ -54,7 +55,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @DefaultProvider(MeanVarianceNormalizer.Provider.class)
-public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSparseVector> implements Serializable {
+public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
 
     /**
@@ -85,8 +86,9 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
                 Cursor<Rating> ratings = dao.getEvents(Rating.class);
                 int numRatings = 0;
                 for (Rating r: ratings.fast()) {
-                    if (r.getPreference() != null) {
-                        sum += r.getPreference().getValue();
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        sum += p.getValue();
                         numRatings++;
                     }
                 }
@@ -97,8 +99,9 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
                 sum = 0;
 
                 for (Rating r: ratings.fast()) {
-                    if (r.getPreference() != null) {
-                        double delta = mean - r.getPreference().getValue();
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        double delta = mean - p.getValue();
                         sum += delta * delta;
                     }
                 }
@@ -138,39 +141,43 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
     }
 
     @Override
-    public VectorTransformation makeTransformation(ImmutableSparseVector reference) {
-        if (reference.isEmpty())
+    public VectorTransformation makeTransformation(SparseVector reference) {
+        if (reference.isEmpty()) {
             return new IdentityVectorNormalizer().makeTransformation(reference);
-        return new Transform(reference);
-    }
-
-    class Transform implements VectorTransformation {
-        private final double mean;
-        private final double stdDev;
-
-        public Transform(ImmutableSparseVector reference) {
-            final double m = mean = reference.mean();
+        } else {
+            final double mean = reference.mean();
 
             double var = 0;
             DoubleIterator iter = reference.values().iterator();
             while (iter.hasNext()) {
                 final double v = iter.nextDouble();
-                final double diff = v - m;
+                final double diff = v - mean;
                 var += diff * diff;
             }
 
             /* smoothing calculation as described in Hofmann '04
              * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
              */
-            stdDev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
+            double stdev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
+            return new Transform(mean, stdev);
+        }
+    }
+
+    class Transform implements VectorTransformation {
+        private final double mean;
+        private final double stdev;
+
+        public Transform(double m, double sd) {
+            mean = m;
+            stdev = sd;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
             for (Entry rating : vector.fast()) {
                 vector.set(rating.getLongKey(), /* r' = (r - u) / s */
-                        stdDev == 0? 0 : // edge case
-                            (rating.getDoubleValue() - mean) / stdDev);
+                        stdev == 0? 0 : // edge case
+                            (rating.getDoubleValue() - mean) / stdev);
             }
             return vector;
         }
@@ -179,8 +186,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer<ImmutableSp
         public MutableSparseVector unapply(MutableSparseVector vector) {
             for (Entry rating : vector.fast()) {
                 vector.set(rating.getLongKey(), /* r = r' * s + u */
-                        stdDev == 0? mean : // edge case
-                        (rating.getDoubleValue() * stdDev) + mean);
+                        stdev == 0? mean : // edge case
+                        (rating.getDoubleValue() * stdev) + mean);
             }
             return vector;
         }

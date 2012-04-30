@@ -34,6 +34,7 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -55,12 +56,12 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
-    protected final VectorNormalizer<? super UserVector> normalizer;
+    protected final UserVectorNormalizer normalizer;
     protected final BaselinePredictor baseline;
 
     @Inject
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
-                                   VectorNormalizer<? super UserVector> norm,
+                                   UserVectorNormalizer norm,
                                    @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
