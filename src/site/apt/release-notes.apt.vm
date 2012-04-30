@@ -30,6 +30,9 @@ LensKit Release Notes
     * <<<NormalizerBaseline>>>: use a context-sensitive binding on
       <<<BaselineSubtractingNormalizer>>>.
 
+    * <<<PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
+      context-sensitive bindings to bind the <other> normalizers.
+
     []
 
   []

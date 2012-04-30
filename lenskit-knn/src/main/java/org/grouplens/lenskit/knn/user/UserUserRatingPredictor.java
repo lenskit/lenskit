@@ -18,19 +18,13 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import static java.lang.Math.abs;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -42,13 +36,16 @@ import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.PredictNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import java.util.Collection;
+
+import static java.lang.Math.abs;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -63,7 +60,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
 
     @Inject
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
-                                   @PredictNormalizer VectorNormalizer<? super UserVector> norm,
+                                   VectorNormalizer<? super UserVector> norm,
                                    @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
