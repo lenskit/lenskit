@@ -26,19 +26,17 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
-import org.grouplens.lenskit.knn.SignificanceWeight;
-
 /**
- * The inner similarity function to be used when using {@link SignificanceWeight}
- * to weight similarities.  Bind {@link SignificanceWeight} to either {@link ItemSimilarity}
+ * The inner similarity function to be used when using {@link org.grouplens.lenskit.knn.SignificanceWeightedVectorSimilarity}
+ * to weight similarities.  Bind {@link org.grouplens.lenskit.knn.SignificanceWeightedVectorSimilarity} to either {@link ItemSimilarity}
  * or {@link UserSimilarity}, then bind the internal similarity function to this
  * parameter.
  *
- *  @see SignificanceWeight
+ *  @see org.grouplens.lenskit.knn.SignificanceWeightedVectorSimilarity
  *  @see WeightThreshold
  */
 // FIXME: keep this? if we do, it will not inherit from the default qualifier
-// But we can also just say in(SignificanceWeight).bind(Similarity).to(asd)
+// But we can also just say in(SignificanceWeightedVectorSimilarity).bind(Similarity).to(asd)
 @Documented
 @Qualifier
 @Target({ ElementType.METHOD, ElementType.PARAMETER })

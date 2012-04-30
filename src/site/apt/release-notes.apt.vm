@@ -44,15 +44,16 @@ LensKit Release Notes
       Context-sensitive bindings configure the inner normalizer. <<<BaselineSubtractingNormalizer>>>
       has become <<<BaselineSubtractingUserVectorNormalizer>>> and implements the new interface.
 
+    * <<<ItemSimilarity>>>: factored into <<<ItemSimilarity>>> interface, with default
+      implementation delegating to <<<VectorSimilarity>>>.
+
     []
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
 
-  * Removed <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>> in favor of
-    methods on the <<<VectorSimilarity>>> interface. This allows composition & wrapping components
-    to work better.
-
-  * Renamed <<<Similarity>>> to <<<VectorSimilarity>>> and removed its generic parameter.
+  * Refactored similarities for k-NN recommenders. <<<Similarity>>> became <<<VectorSimilarity>>>,
+    without a generic parameter, and <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>>
+    have been replaced by methods on similarity interfaces.
 
   * Removed <<<ItemVector>>> and <<<UserVector>>> classes. User and item IDs are now carried
     independently and we use distinct component interfaces to handle users and items.

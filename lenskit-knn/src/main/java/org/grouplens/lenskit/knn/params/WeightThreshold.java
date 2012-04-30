@@ -27,13 +27,12 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.lenskit.knn.SignificanceWeight;
 
 /**
  * The weight threshold for significance weighting.  If the vectors in question
  * have fewer than <i>n</i> keys in common, then the similarity is decreased.
  *
- * @see SignificanceWeight
+ * @see org.grouplens.lenskit.knn.SignificanceWeightedVectorSimilarity
  * @see WeightedSimilarity
  */
 @Documented

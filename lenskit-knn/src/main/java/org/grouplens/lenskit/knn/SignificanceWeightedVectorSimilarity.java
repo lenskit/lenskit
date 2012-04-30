@@ -48,7 +48,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @see WeightedSimilarity
  * @see WeightThreshold
  */
-public class SignificanceWeight implements VectorSimilarity, Serializable {
+public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -56,8 +56,8 @@ public class SignificanceWeight implements VectorSimilarity, Serializable {
     private final VectorSimilarity delegate;
 
     @Inject
-    public SignificanceWeight(@WeightThreshold int thresh,
-                              @WeightedSimilarity VectorSimilarity sim) {
+    public SignificanceWeightedVectorSimilarity(@WeightThreshold int thresh,
+                                                @WeightedSimilarity VectorSimilarity sim) {
         threshold = thresh;
         delegate = sim;
     }

@@ -20,7 +20,6 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +32,9 @@ class SimpleModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
-    private final VectorSimilarity similarityFunction;
+    private final ItemSimilarity similarityFunction;
 
-    SimpleModelBuildStrategy(VectorSimilarity similarity) {
+    SimpleModelBuildStrategy(ItemSimilarity similarity) {
         this.similarityFunction = similarity;
     }
 
@@ -54,8 +53,8 @@ class SimpleModelBuildStrategy implements
                 final long j = jit.nextLong();
                 if (i == j) continue;
                 double sim =
-                        similarityFunction.similarity(context.itemVector(j),
-                                                      context.itemVector(i));
+                        similarityFunction.similarity(j, context.itemVector(j),
+                                                      i, context.itemVector(i));
                 accum.put(i, j, sim);
                 if (symmetric) {
                     accum.put(j, i, sim);

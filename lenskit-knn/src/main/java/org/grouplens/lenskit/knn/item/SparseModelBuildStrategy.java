@@ -23,7 +23,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -34,9 +33,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private final VectorSimilarity similarityFunction;
+    private final ItemSimilarity similarityFunction;
 
-    SparseModelBuildStrategy(VectorSimilarity sim) {
+    SparseModelBuildStrategy(ItemSimilarity sim) {
         Preconditions.checkArgument(sim.isSparse(), "similarity function is not sparse");
         similarityFunction = sim;
     }
@@ -71,7 +70,8 @@ class SparseModelBuildStrategy implements
                 }
 
                 final double sim =
-                        similarityFunction.similarity(context.itemVector(j), v);
+                        similarityFunction.similarity(j, context.itemVector(j),
+                                                      i, v);
                 accum.put(i, j, sim);
                 if (symmetric) {
                     accum.put(j, i, sim);

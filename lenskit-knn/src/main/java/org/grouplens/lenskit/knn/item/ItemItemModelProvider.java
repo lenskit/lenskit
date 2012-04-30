@@ -29,8 +29,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.VectorSimilarity;
-import org.grouplens.lenskit.knn.params.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -53,7 +51,7 @@ import javax.inject.Provider;
 public class ItemItemModelProvider implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
 
-    private final VectorSimilarity itemSimilarity;
+    private final ItemSimilarity itemSimilarity;
 
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
@@ -63,7 +61,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
-                                 @ItemSimilarity VectorSimilarity similarity,
+                                 ItemSimilarity similarity,
                                  UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
                                  @ModelSize int size) {
@@ -175,7 +173,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(VectorSimilarity similarity) {
+    protected ItemItemModelBuildStrategy createBuildStrategy(ItemSimilarity similarity) {
         if (similarity.isSparse()) {
             return new SparseModelBuildStrategy(similarity);
         } else {

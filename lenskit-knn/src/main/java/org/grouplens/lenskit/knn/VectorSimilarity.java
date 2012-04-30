@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.knn;
 
 
-import org.grouplens.lenskit.knn.params.ItemSimilarity;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -31,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@DefaultImplementation(CosineVectorSimilarity.class)
 public interface VectorSimilarity {
     /**
      * Compute the similarity between two vectors.
@@ -43,7 +44,7 @@ public interface VectorSimilarity {
     /**
      * Query whether this similarity function is sparse (returns 0 for vectors with
      * disjoint key sets).
-     * @return {@code true} iff {@link #similarity(Object, Object)} will always return
+     * @return {@code true} iff {@link #similarity(SparseVector, SparseVector)} will always return
      * true when applied to two vectors with no keys in common.
      */
     boolean isSparse();
