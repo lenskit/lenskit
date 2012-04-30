@@ -21,9 +21,16 @@ LensKit Release Notes
   * <<Incompatible>>: Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
     since that's what it really is.
 
-  * <<Incompatible>>: Removed <<<NormalizedSnapshot>>> annotation to decrease qualifier usage.
-    Components that formerly used this qualifier should depend on
-    <<<userNormalizedPreferenceSnapshot>>> or use the normalizer directly.
+  * <<Incompatible>>: Removed many annotations formerly used as dependency qualifiers (see
+    #issue(168)).
+
+    * <<<NormalizedSnapshot>>>: components that formerly used this qualifier should depend on
+      <<<userNormalizedPreferenceSnapshot>>> or use the normalizer directly.
+
+    * <<<NormalizerBaseline>>>: use a context-sensitive binding on
+      <<<BaselineSubtractingNormalizer>>>.
+
+    []
 
   []
 

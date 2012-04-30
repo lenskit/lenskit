@@ -24,7 +24,6 @@ import javax.inject.Inject;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.params.NormalizerBaseline;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -40,10 +39,10 @@ public class BaselineSubtractingNormalizer extends AbstractVectorNormalizer<User
     /**
      * Create a new BaselineSubtractingNormalizer with the given baseline.
      *
-     * @param baseline
+     * @param baseline The baseline predictor to use for normalization.
      */
     @Inject
-    public BaselineSubtractingNormalizer(@NormalizerBaseline BaselinePredictor baseline) {
+    public BaselineSubtractingNormalizer(BaselinePredictor baseline) {
         baselinePredictor = baseline;
     }
 

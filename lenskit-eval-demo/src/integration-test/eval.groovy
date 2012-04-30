@@ -32,7 +32,6 @@ import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
 import org.grouplens.lenskit.norm.MeanVarianceNormalizer
 import org.grouplens.lenskit.norm.VectorNormalizer
-import org.grouplens.lenskit.params.NormalizerBaseline
 import org.grouplens.lenskit.params.PredictNormalizer
 import org.grouplens.lenskit.params.UserVectorNormalizer
 import org.grouplens.lenskit.params.Damping
@@ -43,7 +42,6 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.knn.params.ModelSize
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
