@@ -1,7 +1,7 @@
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -32,11 +32,11 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
         delegate = norm;
     }
 
-    public MutableSparseVector normalize(UserVector user, @Nullable MutableSparseVector target) {
-        return delegate.normalize(user, target);
+    public MutableSparseVector normalize(long user, SparseVector vector, @Nullable MutableSparseVector target) {
+        return delegate.normalize(vector, target);
     }
 
-    public VectorTransformation makeTransformation(UserVector user) {
-        return delegate.makeTransformation(user);
+    public VectorTransformation makeTransformation(long user, SparseVector vector) {
+        return delegate.makeTransformation(vector);
     }
 }

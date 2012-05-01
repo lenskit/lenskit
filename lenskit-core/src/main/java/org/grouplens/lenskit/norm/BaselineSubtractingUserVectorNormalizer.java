@@ -23,7 +23,6 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -47,29 +46,32 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
     }
 
     @Override
-    public VectorTransformation makeTransformation(UserVector ratings) {
-        if (ratings.isEmpty())
+    public VectorTransformation makeTransformation(long user, SparseVector ratings) {
+        if (ratings.isEmpty()) {
             return new IdentityVectorNormalizer().makeTransformation(ratings);
-        return new Transformation(ratings);
+        }
+        return new Transformation(user, ratings);
     }
 
     protected class Transformation implements VectorTransformation {
-        private final UserVector user;
+        private final long user;
+        private final SparseVector vector;
 
-        public Transformation(UserVector r) {
-            user = r;
+        public Transformation(long u, SparseVector r) {
+            user = u;
+            vector = r;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, vector.keySet());
+            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
             vector.subtract(base);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, vector.keySet());
+            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
             vector.add(base);
             return vector;
         }

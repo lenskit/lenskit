@@ -21,10 +21,10 @@ package org.grouplens.lenskit.eval;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 public class SharedPreferenceSnapshot implements PreferenceSnapshot {
     private final PreferenceSnapshot snapshot;
@@ -70,7 +70,7 @@ public class SharedPreferenceSnapshot implements PreferenceSnapshot {
     }
 
     @Override
-    public UserVector userRatingVector(long userId) {
+    public SparseVector userRatingVector(long userId) {
         return snapshot.userRatingVector(userId);
     }
 }

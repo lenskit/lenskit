@@ -27,6 +27,8 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 
 import com.google.common.collect.Iterables;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Summarize a history by counting all events referencing an item.  The history
@@ -59,13 +61,13 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
     }
 
     @Override
-    public UserVector summarize(UserHistory<? extends Event> history) {
+    public SparseVector summarize(UserHistory<? extends Event> history) {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
         for (Event e: Iterables.filter(history, wantedType)) {
             final long iid = e.getItemId();
             map.put(iid, map.get(iid) + 1);
         }
-        return new UserVector(history.getUserId(), map);
+        return new ImmutableSparseVector(map);
     }
 
     @Override

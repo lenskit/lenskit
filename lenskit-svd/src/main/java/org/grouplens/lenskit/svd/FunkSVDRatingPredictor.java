@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -104,9 +104,9 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
      * @param user The user's rating vector.
      * @param uprefs The user's preference array from the model.
      * @param items The items to predict for.
-     * @return
+     * @return The user's predictions.
      */
-    private MutableSparseVector predict(UserVector user, double[] uprefs, Collection<Long> items) {
+    private MutableSparseVector predict(long user, SparseVector ratings, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
         final DoubleFunction clamp = model.clampingFunction;
 
@@ -117,7 +117,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             iset = new LongSortedArraySet(items);
         }
 
-        MutableSparseVector preds = model.baseline.predict(user, items);
+        MutableSparseVector preds = model.baseline.predict(user, ratings, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
@@ -139,11 +139,12 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     /**
      * Predict from a user ID and preference array. Delegates to
-     * {@link #predict(UserVector, double[], Collection)}.
+     * {@link #predict(long, SparseVector, double[], Collection)}.
      */
     private MutableSparseVector predict(long user, double[] uprefs,
                                         Collection<Long> items) {
-        return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
+        return predict(user,
+                       Ratings.userRatingVector(dao.getUserEvents(user, Rating.class)),
                        uprefs, items);
     }
 
@@ -171,8 +172,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             return predict(user, uprefs, items);
         } else {
             // The user was not included in the model, so just use the baseline
-            UserVector ratings = UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
-            return model.baseline.predict(ratings, items);
+            SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
+            return model.baseline.predict(user, ratings, items);
         }
     }
 }

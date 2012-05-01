@@ -23,6 +23,8 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
 
 import com.google.common.base.Function;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Summarize a history by extracting a rating vector.
@@ -30,7 +32,7 @@ import com.google.common.base.Function;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, UserVector> {
+public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector> {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
 
     @Override
@@ -39,16 +41,16 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
     }
 
     @Override
-    public UserVector summarize(UserHistory<? extends Event> history) {
+    public SparseVector summarize(UserHistory<? extends Event> history) {
         return history.memoize(this);
     }
 
     @Override
-    public UserVector apply(UserHistory<? extends Event> history) {
-        return UserVector.fromRatings(history.getUserId(), history.filter(Rating.class));
+    public SparseVector apply(UserHistory<? extends Event> history) {
+        return Ratings.userRatingVector(history.filter(Rating.class));
     }
 
-    public static UserVector makeRatingVector(UserHistory<? extends Event> history) {
+    public static SparseVector makeRatingVector(UserHistory<? extends Event> history) {
         return INSTANCE.summarize(history);
     }
 
@@ -62,7 +64,10 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null) return false;
-        else return getClass().equals(o.getClass());
+        if (o == null) {
+            return false;
+        } else {
+            return getClass().equals(o.getClass());
+        }
     }
 }

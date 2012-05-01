@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -137,9 +136,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
             for (UserHistory<? extends Event> user: histories) {
                 final long uid = user.getUserId();
 
-                UserVector summary = userSummarizer.summarize(user);
+                SparseVector summary = userSummarizer.summarize(user);
                 MutableSparseVector normed = summary.mutableCopy();
-                normalizer.normalize(summary, normed);
+                normalizer.normalize(uid, summary, normed);
                 final int nratings = summary.size();
 
                 // allocate the array ourselves to avoid an array copy

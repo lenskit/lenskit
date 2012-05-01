@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -50,7 +49,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
 
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {
@@ -86,7 +85,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpreds.isEmpty()) {
-            SparseVector basePreds = baseline.predict(user, unpreds);
+            SparseVector basePreds = baseline.predict(history.getUserId(), user, unpreds);
             preds.set(basePreds);
         }
         

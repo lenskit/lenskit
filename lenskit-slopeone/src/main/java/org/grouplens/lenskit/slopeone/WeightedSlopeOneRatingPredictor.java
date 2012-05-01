@@ -31,7 +31,6 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -46,7 +45,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
 
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
-        UserVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {
@@ -57,14 +56,14 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
         LongArrayList unpreds = new LongArrayList();
         for (long predicteeItem : items) {
-            if (!user.containsKey(predicteeItem)) {
+            if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;
                 int nusers = 0;
-                for (long currentItem : user.keySet()) {
+                for (long currentItem : ratings.keySet()) {
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);
-                        total += (currentDev +user.get(currentItem))* weight;
+                        total += (currentDev +ratings.get(currentItem))* weight;
                         nusers += weight;
                     }
                 }
@@ -80,7 +79,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && !unpreds.isEmpty()) {
-            SparseVector basePreds = baseline.predict(user, unpreds);
+            SparseVector basePreds = baseline.predict(history.getUserId(), ratings, unpreds);
             preds.set(basePreds);
         }
         

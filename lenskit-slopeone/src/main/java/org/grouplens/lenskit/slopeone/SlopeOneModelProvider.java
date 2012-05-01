@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
@@ -69,12 +68,12 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
      */
     @Override
     public SlopeOneModel get() {
-        for (long currentUser : snapshot.getUserIds()) {
-            UserVector ratings = snapshot.userRatingVector(currentUser);
-            SparseVector normed = normalizer.normalize(ratings, null);
+        for (long u: snapshot.getUserIds()) {
+            SparseVector ratings = snapshot.userRatingVector(u);
+            SparseVector normed = normalizer.normalize(u, ratings, null);
             LongIterator iter = normed.keySet().iterator();
             while (iter.hasNext()) {
-                long item1 = iter.next();
+                long item1 = iter.nextLong();
                 LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
                 if (iter2.hasNext()) {
                     iter2.next();

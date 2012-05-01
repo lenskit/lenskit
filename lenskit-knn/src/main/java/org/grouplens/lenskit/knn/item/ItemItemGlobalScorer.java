@@ -18,13 +18,10 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -65,18 +62,9 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
 	public SparseVector globalScore(Collection<Long> queryItems,
 			Collection<Long> items) {
 		// create the unary rating for the items
-		double[] ratings = new double[queryItems.size()];
-		for(int i = 0; i < ratings.length; i++) {
-			ratings[i] = 1.0;
-		}
-		long[] ids = new long[queryItems.size()];
-		int i = 0;
-		for(Long id:queryItems) {
-			ids[i++] = id.longValue();
-		}
-		// create a dummy user vector with user id = 0
-		UserVector basket = new UserVector(0, ids, ratings, queryItems.size());
-		
+        LongSet qItems = new LongSortedArraySet(queryItems);
+        MutableSparseVector basket = new MutableSparseVector(qItems, 1.0);
+
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {
             iset = (LongSortedSet) items;

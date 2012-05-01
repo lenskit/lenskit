@@ -28,10 +28,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
-import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -95,13 +92,13 @@ public class ItemItemScorer extends AbstractItemScorer implements
     /**
      * Score items by computing predicted ratings.
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
-     * @see #makeTransform(UserVector)
+     * @see #makeTransform(long, SparseVector)
      */
     @Override
     public SparseVector score(UserHistory<? extends Event> history,
                               Collection<Long> items) {
-        UserVector summary = summarizer.summarize(history);
-        VectorTransformation transform = makeTransform(summary);
+        SparseVector summary = summarizer.summarize(history);
+        VectorTransformation transform = makeTransform(history.getUserId(), summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 
@@ -137,15 +134,15 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */
-    protected VectorTransformation makeTransform(final UserVector userData) {
-        return normalizer.makeTransformation(userData);
+    protected VectorTransformation makeTransform(long user, SparseVector userData) {
+        return normalizer.makeTransformation(user, userData);
     }
 
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {
         // FIXME This method incorrectly assumes the model is symmetric
         LongSet items = new LongOpenHashSet();
-        UserVector summary = summarizer.summarize(user);
+        SparseVector summary = summarizer.summarize(user);
         LongIterator iter = summary.keySet().iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();

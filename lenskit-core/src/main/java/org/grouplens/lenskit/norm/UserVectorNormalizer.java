@@ -1,8 +1,8 @@
 package org.grouplens.lenskit.norm;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nullable;
 
@@ -31,19 +31,21 @@ import javax.annotation.Nullable;
 public interface UserVectorNormalizer {
     /**
      * Normalize a vector with respect to a user vector.
-     * @param user The user vector to use as a reference.
+     * @param user The user to normalize a vector for.
+     * @param vector The user's vector for reference.
      * @param target The vector to normalize. If {@code null}, the user vector is normalized.
      * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
      *         containing a normalized copy of the user vector is returned.
      */
-    MutableSparseVector normalize(UserVector user,
+    MutableSparseVector normalize(long user, SparseVector vector,
                                   @Nullable MutableSparseVector target);
 
     /**
      * Make a vector transformation for a user. The resulting transformation will be applied
      * to user vectors to normalize and denormalize them.
-     * @param user The user to normalize for.
+     * @param user The user ID to normalize for.
+     * @param vector The user's vector to use as the reference vector.
      * @return The vector transformaition normalizing for this user.
      */
-    VectorTransformation makeTransformation(UserVector user);
+    VectorTransformation makeTransformation(long user, SparseVector vector);
 }

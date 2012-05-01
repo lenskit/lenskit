@@ -21,7 +21,6 @@ package org.grouplens.lenskit.norm;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreferenceBuilder;
 import org.grouplens.lenskit.data.snapshot.AbstractPreferenceSnapshot;
@@ -71,8 +70,8 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
                 final long uid = uit.nextLong();
                 final int i = uidx.getIndex(uid);
                 assert normedData[i] == null;
-                UserVector rv = UserVector.fromPreferences(uid, snapshot.getUserRatings(uid));
-                normedData[i] = normalizer.normalize(rv, null);
+                SparseVector rv = snapshot.userRatingVector(uid);
+                normedData[i] = normalizer.normalize(uid, rv, null);
                 ndone++;
             }
             assert ndone == normedData.length;

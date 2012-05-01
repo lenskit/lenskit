@@ -27,8 +27,6 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -93,15 +91,15 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 
     /**
      * Make a transform that wraps the normalizer (
-     * {@link #setNormalizer(VectorNormalizer)}) with a baseline-adding
+     * {@link #setNormalizer(org.grouplens.lenskit.norm.UserVectorNormalizer)}) with a baseline-adding
      * transform if there is a baseline configured.
      */
     @Override
-    protected VectorTransformation makeTransform(final UserVector userData) {
+    protected VectorTransformation makeTransform(long user, SparseVector userData) {
         if (baseline == null) {
-            return normalizer.makeTransformation(userData);
+            return normalizer.makeTransformation(user, userData);
         } else {
-            return new BaselineAddingTransform(userData);
+            return new BaselineAddingTransform(user, userData);
         }
     }
     
@@ -115,11 +113,13 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      */
     protected class BaselineAddingTransform implements VectorTransformation {
         final VectorTransformation norm;
-        final UserVector ratings;
+        final long user;
+        final SparseVector ratings;
         
-        public BaselineAddingTransform(UserVector userData) {
+        public BaselineAddingTransform(long uid, SparseVector userData) {
+            user = uid;
             ratings = userData;
-            norm = normalizer.makeTransformation(userData);
+            norm = normalizer.makeTransformation(user, userData);
         }
 
         @Override
@@ -131,7 +131,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             if (!unpredItems.isEmpty()) {
                 logger.trace("Filling {} items from baseline",
                              unpredItems.size());
-                SparseVector basePreds = baseline.predict(ratings, unpredItems);
+                SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
                 vector.set(basePreds);
             }
             

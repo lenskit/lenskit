@@ -18,9 +18,8 @@
  */
 package org.grouplens.lenskit.norm;
 
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nullable;
 
@@ -32,16 +31,17 @@ import javax.annotation.Nullable;
 public abstract class AbstractUserVectorNormalizer implements UserVectorNormalizer {
 
     /**
-     * Implementation that delegates to {@link #makeTransformation(UserVector)}
+     * Implementation that delegates to {@link #makeTransformation(long, SparseVector)}
      * and the resulting {@link org.grouplens.lenskit.norm.VectorTransformation}.
      */
     @Override
-    public MutableSparseVector normalize(UserVector reference, @Nullable MutableSparseVector target) {
+    public MutableSparseVector normalize(long user, SparseVector vector,
+                                         @Nullable MutableSparseVector target) {
         if (target == null) {
-            target = reference.mutableCopy();
+            target = vector.mutableCopy();
         }
 
-        VectorTransformation tform = makeTransformation(reference);
+        VectorTransformation tform = makeTransformation(user, vector);
         return tform.apply(target);
     }
 }

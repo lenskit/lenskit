@@ -19,16 +19,14 @@
 package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
-
-import java.io.Closeable;
-
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.concurrent.ThreadSafe;
+import java.io.Closeable;
 
 /**
  * Snapshot of the ratings data for building a recommender.
@@ -110,16 +108,12 @@ public interface PreferenceSnapshot extends Closeable {
     FastCollection<IndexedPreference> getUserRatings(long userId);
 
     /**
-     * Get the ratings for a particular user in SparseVector form. It is
-     * guaranteed that no duplicate ratings appear - each <i>(user,item)</i>
-     * pair is rated at most once.
+     * Get the current preferences of a particular user in SparseVector form.
      *
      * @param userId The user's ID.
-     * @return The user's ratings, or an empty collection if the user is
-     *         unknown.
-     * @todo Make this track user rating vectors.
+     * @return The user's rating vector.
      */
-    UserVector userRatingVector(long userId);
+    SparseVector userRatingVector(long userId);
 
     /**
      * Close the build context. This overrides {@link Closeable#close()} to drop

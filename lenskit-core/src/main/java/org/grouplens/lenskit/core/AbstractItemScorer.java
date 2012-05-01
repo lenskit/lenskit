@@ -102,7 +102,4 @@ public abstract class AbstractItemScorer implements ItemScorer {
     public boolean canUseHistory() {
         return true;
     }
-    
-
-
 }

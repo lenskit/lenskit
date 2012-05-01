@@ -36,8 +36,8 @@ import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Rating scorer that predicts a constant rating for all items.
@@ -69,7 +69,7 @@ public class ConstantPredictor implements BaselinePredictor {
     }
 
     @Override
-    public MutableSparseVector predict(UserVector ratings, Collection<Long> items) {
+    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
         return constantPredictions(items, value);
     }
     

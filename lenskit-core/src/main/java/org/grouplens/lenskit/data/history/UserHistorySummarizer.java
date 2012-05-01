@@ -21,6 +21,7 @@ package org.grouplens.lenskit.data.history;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Summarize user histories as real-valued vectors.
@@ -44,5 +45,5 @@ public interface UserHistorySummarizer {
      * @param history The history to summarize.
      * @return A vector summarizing the user's history.
      */
-    UserVector summarize(UserHistory<? extends Event> history);
+    SparseVector summarize(UserHistory<? extends Event> history);
 }

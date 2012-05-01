@@ -25,11 +25,12 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,12 +63,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
 
     static class CacheEntry {
-        final UserVector user;
+        final long user;
+        final SparseVector ratings;
         final long lastRatingTimestamp;
         final int ratingCount;
 
-        CacheEntry(UserVector urv, long ts, int count) {
-            user = urv;
+        CacheEntry(long uid, SparseVector urv, long ts, int count) {
+            user = uid;
+            ratings = urv;
             lastRatingTimestamp = ts;
             ratingCount = count;
         }
@@ -112,9 +115,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
-        UserVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
+        SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
         final long uid1 = user.getUserId();
-        MutableSparseVector nratings = normalizer.normalize(urs, null);
+        MutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null);
 
         /* Find candidate neighbors. To reduce scanning, we limit users to those
          * rating target items. If the similarity is sparse and the user has
@@ -128,14 +131,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
             final long uid2 = uiter.nextLong();
-            UserVector urv = getUserRatingVector(uid2);
-            MutableSparseVector nurv = normalizer.normalize(urv, null);
+            SparseVector urv = getUserRatingVector(uid2);
+            MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
             final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
             if (Double.isNaN(sim) || Double.isInfinite(sim)) {
                 continue;
             }
-            final Neighbor n = new Neighbor(urv, sim);
+            final Neighbor n = new Neighbor(uid2, urv, sim);
 
             LongIterator iit = urv.keySet().iterator();
             while (iit.hasNext()) {
@@ -190,7 +193,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @param user The user ID.
      * @return The user's rating vector.
      */
-    private synchronized UserVector getUserRatingVector(long user) {
+    private synchronized SparseVector getUserRatingVector(long user) {
         List<Rating> ratings = Cursors.makeList(dataSource.getUserEvents(user, Rating.class));
         CacheEntry e = userVectorCache.get(user);
 
@@ -210,11 +213,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         // create new cache entry
         if (e == null) {
-            UserVector v = UserVector.fromRatings(user, ratings);
-            e = new CacheEntry(v, ts, ratings.size());
+            SparseVector v = Ratings.userRatingVector(ratings);
+            e = new CacheEntry(user, v, ts, ratings.size());
             userVectorCache.put(user, e);
         }
 
-        return e.user;
+        return e.ratings;
     }
 }

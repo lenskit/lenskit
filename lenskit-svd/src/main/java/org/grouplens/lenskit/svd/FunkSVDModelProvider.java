@@ -26,8 +26,8 @@ import javax.inject.Provider;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.ClampingFunction;
@@ -38,6 +38,7 @@ import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,20 +133,19 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         double[] estimates = new double[nprefs];
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
-            // FIXME Use the snapshot's user rating vector support
             FastCollection<IndexedPreference> ratings = snapshot.getUserRatings(uid);
-            UserVector user = UserVector.fromPreferences(uid, ratings);
-            MutableSparseVector blpreds = baseline.predict(user, user.keySet());
-            for (IndexedPreference p: ratings.fast()) {
+            SparseVector rvector = snapshot.userRatingVector(uid);
+            MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
+            for (IndexedPreference p: CollectionUtils.fast(ratings)) {
                 estimates[p.getIndex()] = blpreds.get(p.getItemId());
             }
         }
         return estimates;
     }
 
-    private final void trainFeature(double[][] ufvs, double[][] ifvs,
-                                    double[] estimates,
-                                    FastCollection<IndexedPreference> ratings, int feature) {
+    private void trainFeature(double[][] ufvs, double[][] ifvs,
+                              double[] estimates,
+                              FastCollection<IndexedPreference> ratings, int feature) {
 
         logger.trace("Training feature {}", feature);
 

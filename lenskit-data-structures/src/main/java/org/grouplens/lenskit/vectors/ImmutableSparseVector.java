@@ -50,6 +50,15 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     protected final int size;
 
     /**
+     * Create a new, empty immutable sparse vector.
+     */
+    public ImmutableSparseVector() {
+        keys = new long[0];
+        values = null;
+        size = 0;
+    }
+
+    /**
      * Create a new immutable sparse vector from a map of ratings.
      * 
      * @param ratings The ratings to make a vector from. Its key set is used as
