@@ -20,7 +20,6 @@ package org.grouplens.lenskit.knn;
 
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**

@@ -23,12 +23,10 @@ import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.grouplens.lenskit.knn.CosineVectorSimilarity
-import org.grouplens.lenskit.knn.VectorSimilarity
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
 import org.grouplens.lenskit.knn.item.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
-import org.grouplens.lenskit.knn.params.UserSimilarity
+import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
 import org.grouplens.lenskit.norm.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.norm.MeanVarianceNormalizer
@@ -88,8 +86,7 @@ trainTest {
         bind BaselinePredictor to ItemUserMeanPredictor
         within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        bind VectorSimilarity withQualifier UserSimilarity to CosineVectorSimilarity
-        within (UserSimilarity, VectorSimilarity) bind Double withQualifier Damping to 100.0d
+        within UserSimilarity bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, UserUserRatingPredictor)
 //        setComnponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)

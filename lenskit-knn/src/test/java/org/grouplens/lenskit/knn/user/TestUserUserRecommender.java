@@ -36,6 +36,8 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.knn.PearsonCorrelation;
+import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,6 +72,9 @@ public class TestUserUserRecommender {
         factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
+        factory.in(UserSimilarity.class)
+               .bind(VectorSimilarity.class)
+               .to(PearsonCorrelation.class);
         // this is the default
 /*        factory.setComponent(UserVectorNormalizer.class,
                              VectorNormalizer.class,

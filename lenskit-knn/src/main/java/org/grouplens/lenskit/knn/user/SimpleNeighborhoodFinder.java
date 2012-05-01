@@ -27,12 +27,9 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +75,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     private final DataAccessObject dataSource;
     private final int neighborhoodSize;
-    private final VectorSimilarity similarity;
+    private final UserSimilarity similarity;
     private final UserVectorNormalizer normalizer;
     private final Long2ObjectMap<CacheEntry> userVectorCache;
 
@@ -91,7 +88,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     @Inject
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs,
-                                    @UserSimilarity VectorSimilarity sim,
+                                    UserSimilarity sim,
                                     UserVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
@@ -116,6 +113,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
         UserVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
+        final long uid1 = user.getUserId();
         MutableSparseVector nratings = normalizer.normalize(urs, null);
 
         /* Find candidate neighbors. To reduce scanning, we limit users to those
@@ -129,31 +127,31 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
-            final long uid = uiter.nextLong();
-            UserVector urv = getUserRatingVector(uid);
+            final long uid2 = uiter.nextLong();
+            UserVector urv = getUserRatingVector(uid2);
             MutableSparseVector nurv = normalizer.normalize(urv, null);
 
-            final double sim = similarity.similarity(nratings, nurv);
-            if (Double.isNaN(sim) || Double.isInfinite(sim))
+            final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
+            if (Double.isNaN(sim) || Double.isInfinite(sim)) {
                 continue;
+            }
             final Neighbor n = new Neighbor(urv, sim);
 
             LongIterator iit = urv.keySet().iterator();
-            ITEMS: while (iit.hasNext()) {
+            while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items != null && !items.contains(item))
-                    continue ITEMS;
-
-                PriorityQueue<Neighbor> heap = heaps.get(item);
-                if (heap == null) {
-                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                            Neighbor.SIMILARITY_COMPARATOR);
-                    heaps.put(item, heap);
-                }
-                heap.add(n);
-                if (heap.size() > neighborhoodSize) {
-                    assert heap.size() == neighborhoodSize + 1;
-                    heap.remove();
+                if (items == null || items.contains(item)) {
+                    PriorityQueue<Neighbor> heap = heaps.get(item);
+                    if (heap == null) {
+                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                           Neighbor.SIMILARITY_COMPARATOR);
+                        heaps.put(item, heap);
+                    }
+                    heap.add(n);
+                    if (heap.size() > neighborhoodSize) {
+                        assert heap.size() == neighborhoodSize + 1;
+                        heap.remove();
+                    }
                 }
             }
         }

@@ -35,7 +35,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.norm.UserVectorNormalizer;
-import org.grouplens.lenskit.norm.VectorNormalizer;
 import org.grouplens.lenskit.norm.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
