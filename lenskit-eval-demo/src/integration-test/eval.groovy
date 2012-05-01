@@ -26,7 +26,7 @@ import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.knn.CosineVectorSimilarity
 import org.grouplens.lenskit.knn.VectorSimilarity
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
-import org.grouplens.lenskit.knn.params.ItemSimilarity
+import org.grouplens.lenskit.knn.item.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
 import org.grouplens.lenskit.knn.params.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
@@ -42,8 +42,6 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.knn.VectorSimilarity
-import org.grouplens.lenskit.knn.CosineVectorSimilarity
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -107,7 +105,7 @@ trainTest {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within (ItemSimilarity, VectorSimilarity) bind Double withQualifier Damping to 100.0d
+        within ItemSimilarity bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, ItemItemRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
