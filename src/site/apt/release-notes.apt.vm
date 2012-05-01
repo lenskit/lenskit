@@ -58,6 +58,8 @@ LensKit Release Notes
     * <<<UserSimilarity>>>: factored into <<<UserSimilarity>>> interface, with default
       implementation delegating to <<<VectorSimilarity>>>.
 
+    * <<<WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
+
     []
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.

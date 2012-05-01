@@ -25,13 +25,11 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.knn.params.WeightThreshold;
-import org.grouplens.lenskit.knn.params.WeightedSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Apply significance weighting to a similarity function. The inner function is
- * specified with the {@link WeightedSimilarity} component, and the threshold
- * with the {@link WeightThreshold} parameter.
+ * Apply significance weighting to a similarity function. The threshold
+ * is configured with the {@link WeightThreshold} parameter.
  *
  * <p>Significance weighting decreases the similarity between two vectors when
  * the number of common entities between the two vectors is low.  For a threshold
@@ -45,7 +43,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * <i>Information Retrieval</i> Vol. 5 Issue 4 (October 2002), pp. 287-310.</li>
  * </ul>
  *
- * @see WeightedSimilarity
  * @see WeightThreshold
  */
 public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, Serializable {
@@ -57,7 +54,7 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
 
     @Inject
     public SignificanceWeightedVectorSimilarity(@WeightThreshold int thresh,
-                                                @WeightedSimilarity VectorSimilarity sim) {
+                                                VectorSimilarity sim) {
         threshold = thresh;
         delegate = sim;
     }
