@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.grouplens.grapht.Binding;
@@ -39,8 +40,9 @@ import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.spi.Desire;
+import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.Function;
+import org.grouplens.grapht.util.AnnotationBuilder;
 import org.grouplens.grapht.util.InstanceProvider;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
@@ -99,8 +101,17 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
 
     @Override
+    public Context in(Annotation qualifier, Class<?> type) {
+        return config.getRootContext().in(qualifier, type);
+    }
+
     public Context in(String name, Class<?> type) {
-        return config.getRootContext().in(name, type);
+        // REVIEW: Do we want to keep this method? Do we want to add it to Grapht?
+        Annotation annot = AnnotationBuilder
+                .of(Named.class)
+                .set("value", name)
+                .build();
+        return config.getRootContext().in(annot, type);
     }
 
     /**
@@ -239,7 +250,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             if (n.getLabel() != null && !instanceMap.containsKey(n)) {
                 // instantiate this node
                 final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
-                Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
+                Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
                     @Override
                     public Provider<?> apply(Desire desire) {
                         for (Edge<Satisfaction, Desire> e: outgoing) {
