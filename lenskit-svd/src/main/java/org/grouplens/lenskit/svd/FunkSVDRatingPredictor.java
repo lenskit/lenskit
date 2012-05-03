@@ -68,37 +68,6 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     }
 
     /**
-     * Fold in a user's ratings vector to produce a feature preference vector.
-     * A baseline vector is also provided; its values are subtracted from the
-     * rating vector prior to folding in.
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @return An array of feature preference values.  The length of this array
-     * will be the number of features.
-     * @see #getFeatureCount()
-     */
-    /*protected double[] foldIn(long user, SparseVector ratings) {
-        final int nf = model.featureCount;
-        final double[][] ifeats = model.itemFeatures;
-        // FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON
-        final double[] svals = null; //model.singularValues;
-        double featurePrefs[] = new double[nf];
-        DoubleArrays.fill(featurePrefs, 0.0);
-
-        for (Long2DoubleMap.Entry rating: ratings.fast()) {
-            long iid = rating.getLongKey();
-            int idx = model.itemIndex.getIndex(iid);
-            if (idx < 0) continue;
-            double r = rating.getValue();
-            for (int f = 0; f < nf; f++) {
-                featurePrefs[f] += r * ifeats[f][idx];// / svals[f];
-            }
-        }
-
-        return featurePrefs;
-    }*/
-
-    /**
      * Predict for a user using their preference array and history vector.
      * 
      * @param user The user's rating vector.
