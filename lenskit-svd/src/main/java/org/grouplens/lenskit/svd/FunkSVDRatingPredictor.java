@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.data.pref.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -77,7 +77,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
      */
     private MutableSparseVector predict(long user, SparseVector ratings, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
-        final DoubleFunction clamp = model.clampingFunction;
+        final ClampingFunction clamp = model.clampingFunction;
 
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {
@@ -98,7 +98,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             double score = preds.get(item);
             for (int f = 0; f < nf; f++) {
                 score += uprefs[f] * model.getItemFeatureValue(idx, f);
-                score = clamp.apply(score);
+                score = clamp.apply(user, item, score);
             }
             preds.set(item, score);
         }

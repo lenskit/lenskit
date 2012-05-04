@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.data.pref.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
 @DefaultProvider(FunkSVDModelProvider.class)
@@ -32,14 +32,14 @@ public class FunkSVDModel implements Serializable {
     public final int featureCount;
     public final double itemFeatures[][];
     public final double userFeatures[][];
-    public final DoubleFunction clampingFunction;
+    public final ClampingFunction clampingFunction;
 
     public final Index itemIndex;
     public final Index userIndex;
     public final BaselinePredictor baseline;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                        DoubleFunction clamp, Index iidx, Index uidx,
+                        ClampingFunction clamp, Index iidx, Index uidx,
                         BaselinePredictor baseline) {
         featureCount = nfeatures;
         itemFeatures = ifeats;

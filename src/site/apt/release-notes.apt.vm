@@ -60,6 +60,9 @@ LensKit Release Notes
 
     * <<<WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
 
+    * Dropped <<<@ClampingFunction>>> (and <<<DoubleFunction>>>) in favor of a
+      <<<ClampingFunction>>> interface. The new interface provides the user and item IDs, too.
+
     []
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
