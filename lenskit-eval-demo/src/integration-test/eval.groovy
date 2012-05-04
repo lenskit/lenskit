@@ -28,10 +28,10 @@ import org.grouplens.lenskit.knn.item.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
 import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
-import org.grouplens.lenskit.norm.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.norm.MeanVarianceNormalizer
-import org.grouplens.lenskit.norm.UserVectorNormalizer
-import org.grouplens.lenskit.norm.VectorNormalizer
+import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.params.Damping
 import org.grouplens.lenskit.slopeone.SlopeOneModel
 import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor

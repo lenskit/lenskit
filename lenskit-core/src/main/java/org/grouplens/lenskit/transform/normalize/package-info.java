@@ -20,4 +20,4 @@
  * Interfaces and classes for data normalization. Normalization is typically
  * done prior to training a recommender.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.transform.normalize;

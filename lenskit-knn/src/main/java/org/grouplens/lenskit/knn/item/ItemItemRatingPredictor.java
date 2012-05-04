@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.norm.VectorTransformation;
+import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -91,7 +91,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 
     /**
      * Make a transform that wraps the normalizer (
-     * {@link #setNormalizer(org.grouplens.lenskit.norm.UserVectorNormalizer)}) with a baseline-adding
+     * {@link #setNormalizer(org.grouplens.lenskit.transform.normalize.UserVectorNormalizer)}) with a baseline-adding
      * transform if there is a baseline configured.
      */
     @Override

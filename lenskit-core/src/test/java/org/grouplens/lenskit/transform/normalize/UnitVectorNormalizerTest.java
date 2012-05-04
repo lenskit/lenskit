@@ -16,10 +16,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.transform.normalize.UnitVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 

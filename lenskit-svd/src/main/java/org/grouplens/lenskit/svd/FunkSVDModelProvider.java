@@ -28,7 +28,7 @@ import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.pref.ClampingFunction;
+import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.FeatureCount;

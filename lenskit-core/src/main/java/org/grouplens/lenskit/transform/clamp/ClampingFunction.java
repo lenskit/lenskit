@@ -16,19 +16,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.pref;
+package org.grouplens.lenskit.transform.clamp;
 
-import java.io.Serializable;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
- * Identity clamping function.
+ * Function for clamping user-item data, typically a preference or rating.
  * @author Michael Ekstrand
  * @since 0.11
  */
-public final class IdentityClampingFunction implements ClampingFunction, Serializable {
-    private static final long serialVersionUID = 1L;
-
-    public double apply(long user, long item, double value) {
-        return value;
-    }
+@DefaultImplementation(IdentityClampingFunction.class)
+public interface ClampingFunction {
+    /**
+     * Clamp a value.
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param value The value to clamp.
+     * @return The clamped value.
+     */
+    double apply(long user, long item, double value);
 }

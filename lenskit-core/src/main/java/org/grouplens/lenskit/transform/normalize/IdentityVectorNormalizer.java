@@ -16,30 +16,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.pref;
+package org.grouplens.lenskit.transform.normalize;
 
-import javax.inject.Inject;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+
 import java.io.Serializable;
 
 /**
- * Clamp values to the range of valid ratings. This clamping function uses
- * the {@link PreferenceDomain} to clamp values to fall within the minimum
- * and maximum allowable ratings.
+ * Identity normalization (makes no change).
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * @author Michael Ekstrand
- * @since 0.11
  */
-public class RatingRangeClampingFunction implements ClampingFunction, Serializable {
-    private static final long serialVersionUID = 1L;
+public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
+    private static final long serialVersionUID = -6708410675383598691L;
 
-    private final PreferenceDomain domain;
+    private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
 
-    @Inject
-    public RatingRangeClampingFunction(PreferenceDomain dom) {
-        domain = dom;
-    }
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            return vector;
+        }
 
-    public double apply(long user, long item, double value) {
-        return domain.clampValue(value);
+        @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            return vector;
+        }
+    };
+
+    @Override
+    public VectorTransformation makeTransformation(SparseVector ratings) {
+        return IDENTITY_TRANSFORM;
     }
 }

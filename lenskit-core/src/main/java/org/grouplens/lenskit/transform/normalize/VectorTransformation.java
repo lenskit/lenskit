@@ -16,32 +16,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.transform.normalize;
 
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.annotation.Nullable;
 
 /**
- * Abstract user vector normalizer implementation.
+ * Reversible in-place vector transformations.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @since 0.11
+ *
  */
-public abstract class AbstractUserVectorNormalizer implements UserVectorNormalizer {
+public interface VectorTransformation {
+    /**
+     * Apply the vector transformation in-place to a vector.
+     *
+     * @param vector The vector to transform.
+     * @return <var>vector</var> (for chaining).
+     */
+    MutableSparseVector apply(MutableSparseVector vector);
 
     /**
-     * Implementation that delegates to {@link #makeTransformation(long, SparseVector)}
-     * and the resulting {@link org.grouplens.lenskit.norm.VectorTransformation}.
+     * Unapply the vector transformation in-place on a transformed vector. In
+     * some cases, the unapplication may supply values for key domain members
+     * that do not have values.
+     *
+     * @param vector The vector to transform.
+     * @return <var>vector</var> (for chaining).
      */
-    @Override
-    public MutableSparseVector normalize(long user, SparseVector vector,
-                                         @Nullable MutableSparseVector target) {
-        if (target == null) {
-            target = vector.mutableCopy();
-        }
-
-        VectorTransformation tform = makeTransformation(user, vector);
-        return tform.apply(target);
-    }
+    MutableSparseVector unapply(MutableSparseVector vector);
 }

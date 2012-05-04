@@ -22,7 +22,7 @@ import java.io.Serializable;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.pref.ClampingFunction;
+import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
 @DefaultProvider(FunkSVDModelProvider.class)

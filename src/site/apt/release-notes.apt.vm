@@ -67,6 +67,8 @@ LensKit Release Notes
 
   * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
 
+  * Moved normalizers and quantizers into subpackages of <<<o.g.l.transform>>>.
+
   * Refactored similarities for k-NN recommenders. <<<Similarity>>> became <<<VectorSimilarity>>>,
     without a generic parameter, and <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>>
     have been replaced by methods on similarity interfaces.

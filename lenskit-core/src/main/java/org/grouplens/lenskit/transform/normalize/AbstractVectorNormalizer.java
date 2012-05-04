@@ -16,36 +16,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.transform.normalize;
+
+import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import java.io.Serializable;
-
 /**
- * Identity normalization (makes no change).
+ * Abstract vector normalizer implementation.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
-    private static final long serialVersionUID = -6708410675383598691L;
+public abstract class AbstractVectorNormalizer implements VectorNormalizer {
 
-    private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            return vector;
-        }
-    };
-
+    /**
+     * Implementation that delegates to {@link #makeTransformation(SparseVector)}
+     * and the resulting {@link VectorTransformation}.
+     */
     @Override
-    public VectorTransformation makeTransformation(SparseVector ratings) {
-        return IDENTITY_TRANSFORM;
+    public MutableSparseVector normalize(SparseVector reference, @Nullable MutableSparseVector target) {
+        if (target == null) {
+            target = reference.mutableCopy();
+        }
+
+        VectorTransformation tform = makeTransformation(reference);
+        return tform.apply(target);
     }
 }

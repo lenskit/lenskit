@@ -16,31 +16,32 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.norm;
+package org.grouplens.lenskit.transform.clamp;
 
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
- * Reversible in-place vector transformations.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Clamp values to the range of valid ratings. This clamping function uses
+ * the {@link org.grouplens.lenskit.data.pref.PreferenceDomain} to clamp values to fall within the minimum
+ * and maximum allowable ratings.
  *
+ * @author Michael Ekstrand
+ * @since 0.11
  */
-public interface VectorTransformation {
-    /**
-     * Apply the vector transformation in-place to a vector.
-     *
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector apply(MutableSparseVector vector);
+public class RatingRangeClampingFunction implements ClampingFunction, Serializable {
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * Unapply the vector transformation in-place on a transformed vector. In
-     * some cases, the unapplication may supply values for key domain members
-     * that do not have values.
-     *
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector unapply(MutableSparseVector vector);
+    private final PreferenceDomain domain;
+
+    @Inject
+    public RatingRangeClampingFunction(PreferenceDomain dom) {
+        domain = dom;
+    }
+
+    public double apply(long user, long item, double value) {
+        return domain.clampValue(value);
+    }
 }
