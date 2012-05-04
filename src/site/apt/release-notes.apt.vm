@@ -36,29 +36,29 @@ LensKit Release Notes
   * <<Incompatible>>: Removed many annotations formerly used as dependency qualifiers (see
     #issue(168)).
 
-    * <<<NormalizedSnapshot>>>: components that formerly used this qualifier should depend on
+    * <<<@NormalizedSnapshot>>>: components that formerly used this qualifier should depend on
       <<<userNormalizedPreferenceSnapshot>>> or use the normalizer directly.
 
-    * <<<NormalizerBaseline>>>: use a context-sensitive binding on
+    * <<<@NormalizerBaseline>>>: use a context-sensitive binding on
       <<<BaselineSubtractingNormalizer>>>.
 
-    * <<<PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
+    * <<<@PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
       context-sensitive bindings to bind the <other> normalizers.
 
-    * <<<UserHistorySummary>>>: was redundant with the component interface.
+    * <<<@UserHistorySummary>>>: was redundant with the component interface.
 
-    * <<<UserVectorNormalizer>>>: refactored into a separate <<<UserVectorNormalizer>>> interface,
+    * <<<@UserVectorNormalizer>>>: refactored into a separate <<<UserVectorNormalizer>>> interface,
       the default implementation of which delegates to a generic vector normalizer.
       Context-sensitive bindings configure the inner normalizer. <<<BaselineSubtractingNormalizer>>>
       has become <<<BaselineSubtractingUserVectorNormalizer>>> and implements the new interface.
 
-    * <<<ItemSimilarity>>>: factored into <<<ItemSimilarity>>> interface, with default
+    * <<<@ItemSimilarity>>>: factored into <<<ItemSimilarity>>> interface, with default
       implementation delegating to <<<VectorSimilarity>>>.
 
-    * <<<UserSimilarity>>>: factored into <<<UserSimilarity>>> interface, with default
+    * <<<@UserSimilarity>>>: factored into <<<UserSimilarity>>> interface, with default
       implementation delegating to <<<VectorSimilarity>>>.
 
-    * <<<WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
+    * <<<@WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
 
     * Dropped <<<@ClampingFunction>>> (and <<<DoubleFunction>>>) in favor of a
       <<<ClampingFunction>>> interface. The new interface provides the user and item IDs, too.
