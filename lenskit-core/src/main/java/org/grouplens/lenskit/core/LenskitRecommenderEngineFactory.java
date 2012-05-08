@@ -20,12 +20,14 @@ package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.InjectorConfigurationBuilder;
 import org.grouplens.grapht.Names;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.solver.ResolverException;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
@@ -136,7 +138,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     private void resolve(Class<?> type, DependencySolver solver) {
-        solver.resolve(solver.getSPI().desire(null, type, true));
+        try {
+            solver.resolve(solver.getSPI().desire(null, type, true));
+        } catch(ResolverException e) {
+            throw new InjectionException(type, null, e);
+        }
     }
     
     public LenskitRecommenderEngine create(DataAccessObject dao) {
