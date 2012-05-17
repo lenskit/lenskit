@@ -25,7 +25,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.util.table.ResultTable;
+import org.grouplens.lenskit.eval.util.table.TableImpl;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TrainTestEvalCommand extends AbstractCommand<ResultTable> {
+public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
     
     private List<TTDataSet> dataSources;
@@ -143,7 +143,7 @@ public class TrainTestEvalCommand extends AbstractCommand<ResultTable> {
         return predictOutputFile;
     }
 
-    public ResultTable getResult() {
+    public TableImpl getResult() {
         return outputInMemory.getResult();
     }
 
@@ -163,7 +163,7 @@ public class TrainTestEvalCommand extends AbstractCommand<ResultTable> {
      * @throws org.grouplens.lenskit.eval.CommandException  Failure of the evaluation
      */
     @Override
-    public ResultTable call() throws CommandException {
+    public TableImpl call() throws CommandException {
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
@@ -273,7 +273,7 @@ public class TrainTestEvalCommand extends AbstractCommand<ResultTable> {
         logger.info("Starting evaluation");
         try {
             output = CSVWriter.open(outputFile, outputLayout);
-            outputInMemory = new InMemoryWriter(new ResultTable(), outputLayout);
+            outputInMemory = new InMemoryWriter(outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }

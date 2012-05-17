@@ -32,7 +32,7 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import static org.junit.Assert.assertThat
 
 import static org.hamcrest.Matchers.instanceOf
-import org.grouplens.lenskit.eval.util.table.ResultTable
+import org.grouplens.lenskit.eval.util.table.TableImpl
 
 /**
  * Test the result returned by the trainTest
@@ -78,7 +78,7 @@ class TestTrainTestResult extends ConfigTestBase{
                 }
             }
         }
-        assertThat(result, instanceOf(ResultTable))
+        assertThat(result, instanceOf(TableImpl))
 
     }
 }

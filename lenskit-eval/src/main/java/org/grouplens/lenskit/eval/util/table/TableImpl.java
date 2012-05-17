@@ -1,6 +1,7 @@
 package org.grouplens.lenskit.eval.util.table;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import javax.annotation.Nullable;
@@ -13,41 +14,37 @@ import java.util.*;
  * Time: 1:16 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ResultTable extends AbstractList<Row> implements Table {
+public class TableImpl extends AbstractList<Row> implements Table {
     private ArrayList<Row> table;
-    private HashMap<String, Integer> header;
+    private final HashMap<String, Integer> header;
 
-    public ResultTable(){
+    public TableImpl(List<String> hdr){
         super();
         table = new ArrayList<Row>();
         header = new HashMap<String, Integer>();
-    }
-
-    public ResultTable(HashMap<String, Integer> hdr){
-        this();
-        this.header = hdr;
-    }
-
-    public void setHeader(List<String> hdr){
         for(int i = 0; i < hdr.size(); i++) {
             header.put(hdr.get(i), i);
         }
     }
 
+    private TableImpl(HashMap<String, Integer> hdr, Iterable<Row> rows){
+        table = new ArrayList<Row>();
+        this.header = hdr;
+        for(Row row: rows) {
+            table.add(row);
+        }
+    }
+
     @Override
-    public ResultTable filter(final String col, final Object data) {
+    public TableImpl filter(final String col, final Object data) {
         Predicate<Row> pred = new Predicate<Row>() {
             @Override
             public boolean apply(@Nullable Row input) {
                 return  data.equals(input.value(col));
             }
         };
-        ResultTable newTable = new ResultTable(this.header);
         Iterable<Row> filtered = Iterables.filter(this.table, pred);
-        for(Row row: filtered) {
-            newTable.add(row);
-        }
-        return newTable;
+        return new TableImpl(this.header, filtered);
     }
 
     /**
@@ -55,8 +52,11 @@ public class ResultTable extends AbstractList<Row> implements Table {
      *
      * @param list the list of objects to insert to the result table
      */
-    public void addResultRow(Object[] list)  {
-        ResultRow row = new ResultRow(header, list);
+    public void addResultRow(Object[] list) {
+        if (list.length > header.size()) {
+            throw new IllegalArgumentException("row too long");
+        }
+        RowImpl row = new RowImpl(header, list);
         table.add(row);
     }
 
@@ -94,12 +94,17 @@ public class ResultTable extends AbstractList<Row> implements Table {
         return new ResultColumn(col);
     }
 
+    public List<String> getHeader() {
+        ArrayList<String> hdr = new ArrayList<String>(header.keySet());
+        return Collections.unmodifiableList(hdr);
+    }
+
     public class ResultColumn extends AbstractList<Object> implements Column{
         ArrayList<Object> column;
 
         ResultColumn(String col) {
             super();
-            column = new ArrayList<Object>();;
+            column = new ArrayList<Object>();
             if(header.get(col)!=null){
                 for(Row row : table) {
                     column.add(row.value(header.get(col)));

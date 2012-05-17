@@ -1,6 +1,6 @@
 package org.grouplens.lenskit.util.tablewriter;
 
-import org.grouplens.lenskit.eval.util.table.ResultTable;
+import org.grouplens.lenskit.eval.util.table.TableImpl;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,21 +11,17 @@ import javax.annotation.Nullable;
  * @author Shuo Chang<schang@cs.umn.edu>.
  */
 public class InMemoryWriter implements TableWriter {
-    private ResultTable result;
+    private TableImpl result;
     private TableLayout layout;
     private Object[] buffer;
 
     /**
      * Construct a new in memory writer.
-     * @param r The underlying result to output to.
      * @param l The table layout, or {@code null} if the table has no headers.
      */
-    public InMemoryWriter(@Nonnull ResultTable r, @Nullable TableLayout l) {
+    public InMemoryWriter(@Nullable TableLayout l) {
         layout = l;
-        result = r;
-        if(layout != null) {
-            result.setHeader(layout.getColumnHeaders());
-        }
+        result = new TableImpl(layout.getColumnHeaders());
     }
 
     @Override
@@ -34,9 +30,6 @@ public class InMemoryWriter implements TableWriter {
 
     @Override
     public synchronized void writeRow(Object[] row) {
-        if (layout != null && row.length > layout.getColumnCount()) {
-            throw new IllegalArgumentException("row too long");
-        }
         result.addResultRow(row);
     }
 
@@ -45,7 +38,7 @@ public class InMemoryWriter implements TableWriter {
         return layout;
     }
 
-    public ResultTable getResult() {
+    public TableImpl getResult() {
         return result;
     }
 }

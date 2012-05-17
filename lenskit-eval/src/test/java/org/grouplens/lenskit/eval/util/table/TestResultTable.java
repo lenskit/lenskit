@@ -16,12 +16,11 @@ public class TestResultTable {
     Object[] row2 = {String.valueOf("r2"), Integer.valueOf(1), Double.valueOf(2.23), 10, 2.2122};
     Object[] row3 = {String.valueOf("r3"), Integer.valueOf(1), Double.valueOf(3.23), 100, 2.23};
     Object[] row4 = {String.valueOf("r4"), Integer.valueOf(3), Double.valueOf(4.23), 1000, 2.24};
-    ResultTable result;
+    TableImpl result;
 
     @Before
     public void Initialize() {
-        result = new ResultTable();
-        result.setHeader(Arrays.asList(header));
+        result = new TableImpl(Arrays.asList(header));
         result.addResultRow(row1);
         result.addResultRow(row2);
         result.addResultRow(row3);
