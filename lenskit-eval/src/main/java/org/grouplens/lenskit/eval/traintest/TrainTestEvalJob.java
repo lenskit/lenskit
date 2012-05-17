@@ -37,8 +37,6 @@ import org.grouplens.lenskit.eval.SharedRatingSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
-import org.grouplens.lenskit.eval.results.ResultRow;
-import org.grouplens.lenskit.eval.results.TrainTestEvalResult;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -76,9 +74,6 @@ public class TrainTestEvalJob implements Job {
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
-
-    private TrainTestEvalResult result;
-
     private final Supplier<SharedRatingSnapshot> snapshot;
     private final int outputColumnCount;
 

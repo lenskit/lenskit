@@ -110,35 +110,13 @@ class CommandExtensions {
         // the argument is a list
         def arg
         Class[] atypes
-        if (!(args[0] instanceof Supplier)){
-            arg = args[0]
-            if(!List.class.isAssignableFrom(arg.class)) {
-                return null
-            }
-            def type = arg[0].class
-            assert type != null
-            atypes = [type]
+        arg = args[0]
+        if(!List.class.isAssignableFrom(arg.class)) {
+            return null
         }
-        // the argument is a supplier
-        else{
-            arg = args[0] as Supplier
-            // unpack the type
-            def type = arg.class
-            arg = arg.get()
-            // get the type arguments for Supplier to instantiate this type
-            def asn = TypeUtils.getTypeArguments(type, Supplier)
-            def lstType = asn?.get(Supplier.typeParameters[0])
-
-            if (lstType == null) return null // we can't resolve the list type
-            // Does the supplier supply a list?
-            if (List.class.isAssignableFrom(TypeUtils.getRawType(lstType, null))) {
-                // Unpack the type of element in the list
-                def lstAsn = TypeUtils.getTypeArguments(lstType, List)
-                def eltType = lstAsn?.get(List.typeParameters[0])
-                assert eltType != null
-                atypes = [eltType]
-            }
-        }
+        def type = arg[0].class
+        assert type != null
+        atypes = [type]
         MetaMethod mm = self.metaClass.pickMethod(name, atypes)
         if (mm != null) {
             return {

@@ -25,7 +25,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.results.TrainTestEvalResult;
+import org.grouplens.lenskit.eval.util.table.ResultTable;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
+public class TrainTestEvalCommand extends AbstractCommand<ResultTable> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
     
     private List<TTDataSet> dataSources;
@@ -60,7 +60,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
     private TableLayout predictLayout;
 
     private TableWriter output;
-    private TableWriter outputInMemory;
+    private InMemoryWriter outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
@@ -68,8 +68,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
-
-    private TrainTestEvalResult result;
     
 
     public TrainTestEvalCommand() {
@@ -145,8 +143,8 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         return predictOutputFile;
     }
 
-    public TrainTestEvalResult getResult() {
-        return result;
+    public ResultTable getResult() {
+        return outputInMemory.getResult();
     }
 
     public int getNumRecs() {
@@ -165,7 +163,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
      * @throws org.grouplens.lenskit.eval.CommandException  Failure of the evaluation
      */
     @Override
-    public TrainTestEvalResult call() throws CommandException {
+    public ResultTable call() throws CommandException {
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
@@ -197,12 +195,11 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
             logger.info("Finishing evaluation");
             this.finish();
         }
-        return result;
+        return outputInMemory.getResult();
     }
 
     protected void setupJobs() throws CommandException {
         TableLayoutBuilder master = new TableLayoutBuilder();
-        result = new TrainTestEvalResult();
 
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
@@ -276,7 +273,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TrainTestEvalResult> {
         logger.info("Starting evaluation");
         try {
             output = CSVWriter.open(outputFile, outputLayout);
-            outputInMemory = new InMemoryWriter(result, outputLayout);
+            outputInMemory = new InMemoryWriter(new ResultTable(), outputLayout);
         } catch (IOException e) {
             throw new RuntimeException("Error opening output table", e);
         }

@@ -33,7 +33,6 @@ import static org.junit.Assert.assertTrue
 import org.grouplens.lenskit.eval.config.CommandDelegate
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.grouplens.lenskit.eval.results.TrainTestEvalResult
 
 /**
  * Tests for train-test configurations; they also serve to test the command delegate

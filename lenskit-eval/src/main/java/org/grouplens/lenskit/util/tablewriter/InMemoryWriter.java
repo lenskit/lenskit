@@ -1,6 +1,6 @@
 package org.grouplens.lenskit.util.tablewriter;
 
-import org.grouplens.lenskit.eval.results.TrainTestEvalResult;
+import org.grouplens.lenskit.eval.util.table.ResultTable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,20 +11,20 @@ import javax.annotation.Nullable;
  * @author Shuo Chang<schang@cs.umn.edu>.
  */
 public class InMemoryWriter implements TableWriter {
-    private TrainTestEvalResult result;
+    private ResultTable result;
     private TableLayout layout;
     private Object[] buffer;
 
     /**
-     * Construct a new CSV writer.
+     * Construct a new in memory writer.
      * @param r The underlying result to output to.
      * @param l The table layout, or {@code null} if the table has no headers.
      */
-    public InMemoryWriter(@Nonnull TrainTestEvalResult r, @Nullable TableLayout l) {
+    public InMemoryWriter(@Nonnull ResultTable r, @Nullable TableLayout l) {
         layout = l;
         result = r;
         if(layout != null) {
-            result.setFields(layout.getColumnHeaders());
+            result.setHeader(layout.getColumnHeaders());
         }
     }
 
@@ -43,5 +43,9 @@ public class InMemoryWriter implements TableWriter {
     @Override
     public TableLayout getLayout() {
         return layout;
+    }
+
+    public ResultTable getResult() {
+        return result;
     }
 }
