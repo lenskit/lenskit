@@ -4,15 +4,15 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: schang
- * Date: 5/16/12
- * Time: 1:16 PM
- * To change this template use File | Settings | File Templates.
+ * The implementation of the im memory table, which is the replica of the csv table output to the
+ * file.
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class TableImpl extends AbstractList<Row> implements Table {
     private ArrayList<Row> table;
@@ -35,11 +35,17 @@ public class TableImpl extends AbstractList<Row> implements Table {
         }
     }
 
+    /**
+     * Filter the table with the given matching data.
+     * @param col The name of the column
+     * @param data The data in the column to match
+     * @return  A new table that has "data" in "col"
+     */
     @Override
     public TableImpl filter(final String col, final Object data) {
         Predicate<Row> pred = new Predicate<Row>() {
             @Override
-            public boolean apply(@Nullable Row input) {
+            public boolean apply(@Nonnull Row input) {
                 return  data.equals(input.value(col));
             }
         };
