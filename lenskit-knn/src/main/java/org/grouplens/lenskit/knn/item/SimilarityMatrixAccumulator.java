@@ -43,8 +43,7 @@ public class SimilarityMatrixAccumulator {
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private final LongSortedSet itemUniverse;
 
-    public SimilarityMatrixAccumulator(@ModelSize int size,
-                                       LongSortedSet entities) {
+    public SimilarityMatrixAccumulator(int size, LongSortedSet entities) {
         logger.debug("Using model size of {} for {} items",
                      size, entities.size());
         itemUniverse = entities;
