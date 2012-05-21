@@ -26,18 +26,18 @@ import javax.inject.Provider;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.RatingSnapshot;
-import org.grouplens.lenskit.svd.params.ClampingFunction;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.FeatureCount;
 import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
-import org.grouplens.lenskit.util.DoubleFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,20 +67,20 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     private final double learningRate;
     private final double trainingThreshold;
     private final double trainingRegularization;
-    private final DoubleFunction clampingFunction;
+    private final ClampingFunction clampingFunction;
     private final int iterationCount;
 
     private final BaselinePredictor baseline;
     
-    private final RatingSnapshot snapshot;
+    private final PreferenceSnapshot snapshot;
     
     @Inject
-    public FunkSVDModelProvider(@Transient RatingSnapshot snapshot,
+    public FunkSVDModelProvider(@Transient PreferenceSnapshot snapshot,
                                @FeatureCount int featureCount,
                                @LearningRate double learningRate,
                                @TrainingThreshold double threshold,
                                @RegularizationTerm double gradientDescent,
-                               @ClampingFunction DoubleFunction function,
+                               ClampingFunction clamp,
                                @IterationCount int iterCount,
                                BaselinePredictor baseline) {
         this.snapshot = snapshot;
@@ -89,7 +89,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         this.baseline = baseline;
         trainingThreshold = threshold;
         trainingRegularization = gradientDescent;
-        clampingFunction = function;
+        clampingFunction = clamp;
         iterationCount = iterCount;
     }
 
@@ -125,27 +125,26 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private double[] initializeEstimates(RatingSnapshot snapshot,
+    private double[] initializeEstimates(PreferenceSnapshot snapshot,
                                                       BaselinePredictor baseline) {
         final int nusers = snapshot.userIndex().getObjectCount();
         final int nprefs = snapshot.getRatings().size();
         double[] estimates = new double[nprefs];
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
-            // FIXME Use the snapshot's user rating vector support
             FastCollection<IndexedPreference> ratings = snapshot.getUserRatings(uid);
-            UserVector user = UserVector.fromPreferences(uid, ratings);
-            MutableSparseVector blpreds = baseline.predict(user, user.keySet());
-            for (IndexedPreference p: ratings.fast()) {
+            SparseVector rvector = snapshot.userRatingVector(uid);
+            MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
+            for (IndexedPreference p: CollectionUtils.fast(ratings)) {
                 estimates[p.getIndex()] = blpreds.get(p.getItemId());
             }
         }
         return estimates;
     }
 
-    private final void trainFeature(double[][] ufvs, double[][] ifvs,
-                                    double[] estimates,
-                                    FastCollection<IndexedPreference> ratings, int feature) {
+    private void trainFeature(double[][] ufvs, double[][] ifvs,
+                              double[] estimates,
+                              FastCollection<IndexedPreference> ratings, int feature) {
 
         logger.trace("Training feature {}", feature);
 
@@ -187,7 +186,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
             double est = estimates[idx];
-            est = clampingFunction.apply(est + ufv[uidx] * ifv[iidx]);
+            est = clampingFunction.apply(r.getUserId(), r.getItemId(),
+                                         est + ufv[uidx] * ifv[iidx]);
             estimates[idx] = est;
         }
     }
@@ -227,6 +227,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                                  double[] estimates,
                                  double trailingValue,
                                  IndexedPreference r) {
+        final long uid = r.getUserId();
+        final long iid = r.getItemId();
         final int uidx = r.getUserIndex();
         final int iidx = r.getItemIndex();
         final double value = r.getValue();
@@ -234,11 +236,11 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         // and the current feature values)
         final double estimate = estimates[r.getIndex()];
         double pred = estimate + ufv[uidx] * ifv[iidx];
-        pred = clampingFunction.apply(pred);
+        pred = clampingFunction.apply(uid, iid, pred);
 
         // Step 1b: add the estimate from remaining trailing values
-        // and clamp the result.
-        pred = clampingFunction.apply(pred + trailingValue);
+        // and apply the result.
+        pred = clampingFunction.apply(uid, iid, pred + trailingValue);
 
         // Step 2: compute the prediction error. We will follow this for
         // the gradient descent.

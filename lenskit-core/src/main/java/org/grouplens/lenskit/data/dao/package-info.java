@@ -29,7 +29,7 @@
  * <p>The data access object makes no transactional or immutability guarantees,
  * and does not provide mutation.  An implementation is, of course, free to
  * provide mutation.  The recommender building process uses a
- * {@link org.grouplens.lenskit.data.snapshot.RatingSnapshot RatingSnapshot}
+ * {@link org.grouplens.lenskit.data.snapshot.PreferenceSnapshot PreferenceSnapshot}
  * so that it can make multiple passes over a snapshot of the data.
  *
  */

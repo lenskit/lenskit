@@ -18,19 +18,14 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.grapht.spi.*;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import javax.inject.Provider;
-
-import org.grouplens.grapht.spi.ContextMatcher;
-import org.grouplens.grapht.spi.Desire;
-import org.grouplens.grapht.spi.Qualifier;
-import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.Function;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * DAOSatisfaction is a place-holder satisfaction to mark the node that holds
@@ -55,12 +50,12 @@ class DAOSatisfaction implements Satisfaction {
     }
 
     @Override
-    public Provider<?> makeProvider(Function<? super Desire, ? extends Provider<?>> dependencies) {
+    public Provider<?> makeProvider(ProviderSource dependencies) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Comparator<ContextMatcher> contextComparator(Qualifier qualifier) {
+    public Comparator<ContextMatcher> contextComparator() {
         throw new UnsupportedOperationException();
     }
     

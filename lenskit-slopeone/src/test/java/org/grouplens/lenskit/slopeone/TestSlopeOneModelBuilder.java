@@ -23,7 +23,8 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PackedRatingSnapshot;
+import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -36,12 +37,11 @@ public class TestSlopeOneModelBuilder {
     public static final double EPSILON = 1.0e-6;
     
     private SlopeOneModel getModel(DAOFactory factory) {
-        PackedRatingSnapshot snapshot = new PackedRatingSnapshot.Provider(factory.create()).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(snapshot, null, null,
-                                                                  new PreferenceDomain(0, 0),
-                                                                  0);
-        SlopeOneModel model = builder.get();
-        return model;
+        PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(factory.create()).get();
+        SlopeOneModelProvider builder = new SlopeOneModelProvider(
+                snapshot, new DefaultUserVectorNormalizer(), null,
+                new PreferenceDomain(0, 0), 0);
+        return builder.get();
     }
 
     @Test

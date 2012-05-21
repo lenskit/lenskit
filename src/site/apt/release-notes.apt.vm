@@ -15,8 +15,68 @@ LensKit Release Notes
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+** Algorithm Changes
+
+  * The default user similarity for user-user CF is now cosine rather than Pearson.
+
+  []
+
+** Component Refactoring
+
+  This release contains a lot of algorithm and component refactorings. The public recommender
+  API is unchanged, but many components and their interfaces have changed. This means that
+  custom components and recommender configurations will need to be updated.
+
   * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).
+
+  * <<Incompatible>>: Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
+    since that's what it really is.
+
+  * <<Incompatible>>: Removed many annotations formerly used as dependency qualifiers (see
+    #issue(168)).
+
+    * <<<@NormalizedSnapshot>>>: components that formerly used this qualifier should depend on
+      <<<userNormalizedPreferenceSnapshot>>> or use the normalizer directly.
+
+    * <<<@NormalizerBaseline>>>: use a context-sensitive binding on
+      <<<BaselineSubtractingNormalizer>>>.
+
+    * <<<@PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
+      context-sensitive bindings to bind the <other> normalizers.
+
+    * <<<@UserHistorySummary>>>: was redundant with the component interface.
+
+    * <<<@UserVectorNormalizer>>>: refactored into a separate <<<UserVectorNormalizer>>> interface,
+      the default implementation of which delegates to a generic vector normalizer.
+      Context-sensitive bindings configure the inner normalizer. <<<BaselineSubtractingNormalizer>>>
+      has become <<<BaselineSubtractingUserVectorNormalizer>>> and implements the new interface.
+
+    * <<<@ItemSimilarity>>>: factored into <<<ItemSimilarity>>> interface, with default
+      implementation delegating to <<<VectorSimilarity>>>.
+
+    * <<<@UserSimilarity>>>: factored into <<<UserSimilarity>>> interface, with default
+      implementation delegating to <<<VectorSimilarity>>>.
+
+    * <<<@WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
+
+    * Dropped <<<@ClampingFunction>>> (and <<<DoubleFunction>>>) in favor of a
+      <<<ClampingFunction>>> interface. The new interface provides the user and item IDs, too.
+
+    []
+
+  * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
+
+  * Moved normalizers and quantizers into subpackages of <<<o.g.l.transform>>>.
+
+  * Refactored similarities for k-NN recommenders. <<<Similarity>>> became <<<VectorSimilarity>>>,
+    without a generic parameter, and <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>>
+    have been replaced by methods on similarity interfaces.
+
+  * Removed <<<ItemVector>>> and <<<UserVector>>> classes. User and item IDs are now carried
+    independently and we use distinct component interfaces to handle users and items.
+
+  []
 
 * Release 0.10
 

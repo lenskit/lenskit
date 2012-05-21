@@ -18,25 +18,20 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-
-import javax.annotation.WillClose;
-
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.history.ItemVector;
-import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import com.google.common.primitives.Longs;
+import javax.annotation.WillClose;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Utilities for working with ratings.
@@ -45,24 +40,6 @@ import com.google.common.primitives.Longs;
  */
 public final class Ratings {
 
-    public static final Comparator<Rating> TIMESTAMP_COMPARATOR = new Comparator<Rating>() {
-        @Override
-        public int compare(Rating r1, Rating r2) {
-            return Longs.compare(r1.getTimestamp(), r2.getTimestamp());
-        }
-    };
-    public static final Comparator<Rating> USER_COMPARATOR = new Comparator<Rating>() {
-        @Override
-        public int compare(Rating r1, Rating r2) {
-            return Longs.compare(r1.getUserId(), r2.getUserId());
-        }
-    };
-    public static final Comparator<Rating> ITEM_COMPARATOR = new Comparator<Rating>() {
-        @Override
-        public int compare(Rating r1, Rating r2) {
-            return Longs.compare(r1.getItemId(), r2.getItemId());
-        }
-    };
     public static final Comparator<Rating> ITEM_TIME_COMPARATOR = new Comparator<Rating>() {
         @Override
         public int compare(Rating r1, Rating r2) {
@@ -87,9 +64,7 @@ public final class Ratings {
      *
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
-     * @deprecated Use {@link ItemVector#ratingVector(long, Collection)}.
      */
-    @Deprecated
     public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
         Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
         Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
@@ -98,43 +73,16 @@ public final class Ratings {
             long uid = r.getUserId();
             long ts = r.getTimestamp();
             if (ts >= tsMap.get(uid)) {
-                vect.put(uid, r.getRating());
+                Preference p = r.getPreference();
+                if (p != null) {
+                    vect.put(uid, p.getValue());
+                } else {
+                    vect.remove(uid);
+                }
                 tsMap.put(uid, ts);
             }
         }
         return new MutableSparseVector(vect);
-    }
-
-    /**
-     * Real implementation of {@link #userRatingVector(Collection)}, using a list
-     * we are free to sort.
-     * @param ratings
-     * @return A vector containing the ratings of the list.
-     */
-    @Deprecated
-    private static MutableSparseVector userRatingVector(ArrayList<Rating> ratings) {
-        Rating rp = null;
-        for (Rating r: ratings) {
-            if (rp != null && ITEM_TIME_COMPARATOR.compare(rp, r) > 0) {
-                Collections.sort(ratings, ITEM_TIME_COMPARATOR);
-                break;
-            }
-            rp = r;
-        }
-
-        // collect the list of unique item IDs
-        long[] items = new long[ratings.size()];
-        double[] values = new double[ratings.size()];
-        int li = -1;
-        for (Rating r: ratings) {
-            long iid = r.getItemId();
-            if (li < 0 || items[li] != iid)
-                li++;
-            items[li] = iid;
-            values[li] = r.getRating();
-        }
-
-        return MutableSparseVector.wrap(items, values, li+1);
     }
 
     /**
@@ -147,12 +95,36 @@ public final class Ratings {
      *
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
-     * @deprecated Use {@link UserVector#fromRatings(long, Collection)}
-     *             instead.
      */
-    @Deprecated
     public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-        return userRatingVector(new ArrayList<Rating>(ratings));
+        // sort ratings by item, then time, so we can overwrite previous ratings
+        // since Java 1.7, this uses TimSort, so it is fast on pre-sorted lists
+        Rating[] sortedRatings = ratings.toArray(new Rating[ratings.size()]);
+        Arrays.sort(sortedRatings, ITEM_TIME_COMPARATOR);
+
+        // collect the list of unique item IDs
+        long[] items = new long[sortedRatings.length];
+        double[] values = new double[sortedRatings.length];
+        int li = -1;
+        for (Rating r: sortedRatings) {
+            long iid = r.getItemId();
+            // is this an unseen item?
+            if (li < 0 || items[li] != iid) {
+                li++;
+                items[li] = iid;
+            }
+
+            Preference p = r.getPreference();
+            if (p != null) {
+                // save the preference
+                values[li] = p.getValue();
+            } else {
+                // pretend we haven't seen the last item
+                li--;
+            }
+        }
+
+        return MutableSparseVector.wrap(items, values, li + 1);
     }
 
     /**
@@ -161,10 +133,7 @@ public final class Ratings {
      * @param ratings The rating cursor.
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
-     * @deprecated Use {@link UserVector#fromRatings(long, Cursor)}
-     *             instead.
      */
-    @Deprecated
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
         return userRatingVector(Cursors.makeList(ratings));
     }

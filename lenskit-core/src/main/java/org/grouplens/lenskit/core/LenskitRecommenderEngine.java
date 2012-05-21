@@ -37,8 +37,8 @@ import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.InjectSPI;
+import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.Function;
 import org.grouplens.grapht.util.InstanceProvider;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -169,13 +169,13 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             
             if (e != null) {
                 // The type is one of the configured roots
-                return getInstance(e.getTail());
+                return this.<T>getInstance(e.getTail());
             } else {
                 // The type is hopefully embedded in the graph
                 for (Node<Satisfaction> n: dependencies.getNodes()) {
                     if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getErasedType())) {
                         // found a node capable of creating instances of type
-                        return getInstance(n);
+                        return this.<T>getInstance(n);
                     }
                 }
                 return null;
@@ -194,7 +194,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
                 return (T) shared;
             }
             
-            Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
+            Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
                 @Override
                 public Provider<?> apply(Desire desire) {
                     Node<Satisfaction> d = dependencies.getOutgoingEdge(n, desire).getTail();
@@ -208,12 +208,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         }
 
         @Override
-        public <T> T getInstance(Class<? extends Annotation> qualifier, Class<T> type) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T getInstance(String name, Class<T> type) {
+        public <T> T getInstance(Annotation qualifier, Class<T> type) {
             throw new UnsupportedOperationException();
         }
     }

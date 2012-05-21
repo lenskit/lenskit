@@ -32,8 +32,8 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.util.DoubleFunction;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -68,47 +68,16 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     }
 
     /**
-     * Fold in a user's ratings vector to produce a feature preference vector.
-     * A baseline vector is also provided; its values are subtracted from the
-     * rating vector prior to folding in.
-     * @param user The user ID.
-     * @param ratings The user's rating vector.
-     * @return An array of feature preference values.  The length of this array
-     * will be the number of features.
-     * @see #getFeatureCount()
-     */
-    /*protected double[] foldIn(long user, SparseVector ratings) {
-        final int nf = model.featureCount;
-        final double[][] ifeats = model.itemFeatures;
-        // FIXME: MICHAEL WHY IS THIS NULL? IT WILL FAIL LATER ON
-        final double[] svals = null; //model.singularValues;
-        double featurePrefs[] = new double[nf];
-        DoubleArrays.fill(featurePrefs, 0.0);
-
-        for (Long2DoubleMap.Entry rating: ratings.fast()) {
-            long iid = rating.getLongKey();
-            int idx = model.itemIndex.getIndex(iid);
-            if (idx < 0) continue;
-            double r = rating.getValue();
-            for (int f = 0; f < nf; f++) {
-                featurePrefs[f] += r * ifeats[f][idx];// / svals[f];
-            }
-        }
-
-        return featurePrefs;
-    }*/
-
-    /**
      * Predict for a user using their preference array and history vector.
      * 
      * @param user The user's rating vector.
      * @param uprefs The user's preference array from the model.
      * @param items The items to predict for.
-     * @return
+     * @return The user's predictions.
      */
-    private MutableSparseVector predict(UserVector user, double[] uprefs, Collection<Long> items) {
+    private MutableSparseVector predict(long user, SparseVector ratings, double[] uprefs, Collection<Long> items) {
         final int nf = model.featureCount;
-        final DoubleFunction clamp = model.clampingFunction;
+        final ClampingFunction clamp = model.clampingFunction;
 
         LongSortedSet iset;
         if (items instanceof LongSortedSet) {
@@ -117,7 +86,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             iset = new LongSortedArraySet(items);
         }
 
-        MutableSparseVector preds = model.baseline.predict(user, items);
+        MutableSparseVector preds = model.baseline.predict(user, ratings, items);
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
@@ -129,7 +98,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             double score = preds.get(item);
             for (int f = 0; f < nf; f++) {
                 score += uprefs[f] * model.getItemFeatureValue(idx, f);
-                score = clamp.apply(score);
+                score = clamp.apply(user, item, score);
             }
             preds.set(item, score);
         }
@@ -139,11 +108,12 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     /**
      * Predict from a user ID and preference array. Delegates to
-     * {@link #predict(UserVector, double[], Collection)}.
+     * {@link #predict(long, SparseVector, double[], Collection)}.
      */
     private MutableSparseVector predict(long user, double[] uprefs,
                                         Collection<Long> items) {
-        return predict(UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class)),
+        return predict(user,
+                       Ratings.userRatingVector(dao.getUserEvents(user, Rating.class)),
                        uprefs, items);
     }
 
@@ -171,8 +141,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             return predict(user, uprefs, items);
         } else {
             // The user was not included in the model, so just use the baseline
-            UserVector ratings = UserVector.fromRatings(user, dao.getUserEvents(user, Rating.class));
-            return model.baseline.predict(ratings, items);
+            SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
+            return model.baseline.predict(user, ratings, items);
         }
     }
 }

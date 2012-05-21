@@ -18,9 +18,7 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Longs;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Basic preference implementation that stores data in fields.
@@ -28,53 +26,43 @@ import com.google.common.primitives.Longs;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class SimplePreference implements Preference, Cloneable {
-    protected long userId;
-    protected long itemId;
-    protected double value;
+@Immutable
+public final class SimplePreference extends Preference {
+    private final long userId;
+    private final long itemId;
+    private final double value;
 
+    /**
+     * Construct a new preference object.
+     * @param uid The user ID.
+     * @param iid The item ID.
+     * @param v The preference value.
+     */
     public SimplePreference(long uid, long iid, double v) {
         userId = uid;
         itemId = iid;
         value = v;
     }
 
+    /**
+     * Copy a preference object. This provides a convenient means of disconnecting
+     * a preference from a mutable or indirect preference with less boilerplate.
+     * @param pref The preference object to copy.
+     */
+    public SimplePreference(Preference pref) {
+        this(pref.getUserId(), pref.getItemId(), pref.getValue());
+    }
+
     @Override
-    public final long getUserId() {
+    public long getUserId() {
         return userId;
     }
     @Override
-    public final long getItemId() {
+    public long getItemId() {
         return itemId;
     }
     @Override
-    public final double getValue() {
+    public double getValue() {
         return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) return false;
-
-        if (o instanceof Preference) {
-            Preference p = (Preference) o;
-            return userId == p.getUserId() && itemId == p.getItemId() && value == p.getValue();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return Longs.hashCode(userId) ^ Longs.hashCode(itemId) ^ Doubles.hashCode(value);
-    }
-
-    @Override
-    public Preference clone() {
-        try {
-            return (Preference) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Preference not cloneable", e);
-        }
     }
 }

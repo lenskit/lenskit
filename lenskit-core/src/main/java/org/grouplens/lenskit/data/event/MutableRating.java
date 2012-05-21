@@ -49,10 +49,6 @@ public class MutableRating implements Rating {
         public double getValue() {
             return value;
         }
-        @Override
-        public Preference clone() {
-            return new SimplePreference(uid, iid, value);
-        }
     };
 
     @Override

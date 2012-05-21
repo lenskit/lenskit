@@ -18,38 +18,29 @@
  */
 package org.grouplens.lenskit.core;
 
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.inject.Provider;
-
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.InjectorConfigurationBuilder;
+import org.grouplens.grapht.Names;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.solver.ResolverException;
 import org.grouplens.grapht.spi.Desire;
+import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.Function;
 import org.grouplens.grapht.util.InstanceProvider;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.RecommenderEngineFactory;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.annotation.Nullable;
+import javax.inject.Provider;
+import java.lang.annotation.Annotation;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
@@ -99,8 +90,13 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
 
     @Override
+    public Context in(Annotation qualifier, Class<?> type) {
+        return config.getRootContext().in(qualifier, type);
+    }
+
     public Context in(String name, Class<?> type) {
-        return config.getRootContext().in(name, type);
+        // REVIEW: Do we want to keep this method? Do we want to add it to Grapht?
+        return config.getRootContext().in(Names.named(name), type);
     }
 
     /**
@@ -142,7 +138,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     private void resolve(Class<?> type, DependencySolver solver) {
-        solver.resolve(solver.getSPI().desire(null, type, true));
+        try {
+            solver.resolve(solver.getSPI().desire(null, type, true));
+        } catch(ResolverException e) {
+            throw new InjectionException(type, null, e);
+        }
     }
     
     public LenskitRecommenderEngine create(DataAccessObject dao) {
@@ -239,7 +239,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             if (n.getLabel() != null && !instanceMap.containsKey(n)) {
                 // instantiate this node
                 final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
-                Provider<?> provider = n.getLabel().makeProvider(new Function<Desire, Provider<?>>() {
+                Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
                     @Override
                     public Provider<?> apply(Desire desire) {
                         for (Edge<Satisfaction, Desire> e: outgoing) {

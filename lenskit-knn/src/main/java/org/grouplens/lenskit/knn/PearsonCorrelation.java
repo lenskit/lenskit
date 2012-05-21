@@ -18,17 +18,15 @@
  */
 package org.grouplens.lenskit.knn;
 
-import static java.lang.Math.sqrt;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Iterator;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
-import org.grouplens.lenskit.vectors.SparseVector;
+import static java.lang.Math.sqrt;
 
 /**
  * Similarity function using Pearson correlation.
@@ -45,8 +43,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVector>, SymmetricBinaryFunction, Serializable {
-    private static final long serialVersionUID = 4116492312815769666L;
+public class PearsonCorrelation implements VectorSimilarity, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final double shrinkage;
 
@@ -62,8 +60,9 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         // First check for empty vectors - then we can assume at least one element
-        if (vec1.isEmpty() || vec2.isEmpty())
+        if (vec1.isEmpty() || vec2.isEmpty()) {
             return 0;
+        }
 
         /*
          * Basic similarity: walk in parallel across the two vectors, computing
@@ -96,22 +95,37 @@ public class PearsonCorrelation implements OptimizableVectorSimilarity<SparseVec
                 var2 += v2 * v2;
                 dot += v1 * v2;
                 nCoratings += 1;
-                if (it1.hasNext())
+                if (it1.hasNext()) {
                     e1 = it1.next();
-                if (it2.hasNext())
+                }
+                if (it2.hasNext()) {
                     e2 = it2.next();
+                }
             } else if (e1.getLongKey() < e2.getLongKey()) {
-                if (it1.hasNext())
+                if (it1.hasNext()) {
                     e1 = it1.next();
+                }
             } else {
-                if (it2.hasNext())
+                if (it2.hasNext()) {
                     e2 = it2.next();
+                }
             }
         } while (it1.hasNext() && it2.hasNext());
 
-        if (nCoratings == 0)
+        if (nCoratings == 0) {
             return 0;
-        else
+        } else {
             return dot / (sqrt(var1 * var2) + shrinkage);
+        }
+    }
+
+    @Override
+    public boolean isSparse() {
+        return true;
+    }
+
+    @Override
+    public boolean isSymmetric() {
+        return true;
     }
 }

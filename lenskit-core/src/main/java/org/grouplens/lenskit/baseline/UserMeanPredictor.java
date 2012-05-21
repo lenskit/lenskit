@@ -27,7 +27,6 @@ import javax.inject.Inject;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -105,7 +104,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(UserVector ratings,
+    public MutableSparseVector predict(long user,
+                                       SparseVector ratings,
                                        Collection<Long> items) {
         double mean = average(ratings, globalMean, smoothing);
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;

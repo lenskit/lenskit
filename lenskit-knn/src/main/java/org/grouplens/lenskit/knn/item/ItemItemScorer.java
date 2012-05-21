@@ -22,28 +22,22 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.norm.IdentityVectorNormalizer;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.UserHistorySummary;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -56,15 +50,14 @@ public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     protected final ItemItemModel model;
-    protected @Nonnull VectorNormalizer<? super UserVector> normalizer =
-        new IdentityVectorNormalizer();
-    protected HistorySummarizer summarizer;
+    protected @Nonnull UserVectorNormalizer normalizer;
+    protected UserHistorySummarizer summarizer;
     protected @Nonnull NeighborhoodScorer scorer;
     protected @Nonnull ItemScoreAlgorithm algorithm;
 
     @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-                          @UserHistorySummary HistorySummarizer sum,
+                          UserHistorySummarizer sum,
                           NeighborhoodScorer scorer,
                           ItemScoreAlgorithm algo) {
         super(dao);
@@ -81,7 +74,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
     }
 
     @Nonnull
-    public VectorNormalizer<? super UserVector> getNormalizer() {
+    public UserVectorNormalizer getNormalizer() {
         return normalizer;
     }
 
@@ -92,20 +85,20 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @see UserVectorNormalizer
      */
     @Inject
-    public void setNormalizer(@UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+    public void setNormalizer(UserVectorNormalizer norm) {
         normalizer = norm;
     }
 
     /**
      * Score items by computing predicted ratings.
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
-     * @see #makeTransform(UserVector)
+     * @see #makeTransform(long, SparseVector)
      */
     @Override
     public SparseVector score(UserHistory<? extends Event> history,
                               Collection<Long> items) {
-        UserVector summary = summarizer.summarize(history);
-        VectorTransformation transform = makeTransform(summary);
+        SparseVector summary = summarizer.summarize(history);
+        VectorTransformation transform = makeTransform(history.getUserId(), summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 
@@ -136,20 +129,20 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * 
      * <p>
      * The default implementation delegates to the normalizer
-     * ({@link #setNormalizer(VectorNormalizer)}).
+     * ({@link #setNormalizer(UserVectorNormalizer)}).
      * 
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */
-    protected VectorTransformation makeTransform(final UserVector userData) {
-        return normalizer.makeTransformation(userData);
+    protected VectorTransformation makeTransform(long user, SparseVector userData) {
+        return normalizer.makeTransformation(user, userData);
     }
 
     @Override
     public LongSet getScoreableItems(UserHistory<? extends Event> user) {
         // FIXME This method incorrectly assumes the model is symmetric
         LongSet items = new LongOpenHashSet();
-        UserVector summary = summarizer.summarize(user);
+        SparseVector summary = summarizer.summarize(user);
         LongIterator iter = summary.keySet().iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();

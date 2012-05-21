@@ -18,14 +18,12 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import org.grouplens.lenskit.data.history.ItemVector;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Model build strategy that avoids computing similarities between items with
@@ -35,9 +33,10 @@ import org.grouplens.lenskit.util.SymmetricBinaryFunction;
  */
 class SparseModelBuildStrategy implements
         ItemItemModelBuildStrategy {
-    private final OptimizableVectorSimilarity<ItemVector> similarityFunction;
+    private final ItemSimilarity similarityFunction;
 
-    SparseModelBuildStrategy(OptimizableVectorSimilarity<ItemVector> sim) {
+    SparseModelBuildStrategy(ItemSimilarity sim) {
+        Preconditions.checkArgument(sim.isSparse(), "similarity function is not sparse");
         similarityFunction = sim;
     }
 
@@ -45,12 +44,12 @@ class SparseModelBuildStrategy implements
     public void buildMatrix(ItemItemBuildContext context,
                             SimilarityMatrixAccumulator accum) {
         final LongSortedSet items = context.getItems();
-        final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
+        final boolean symmetric = similarityFunction.isSymmetric();
 
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
-            final ItemVector v = context.itemVector(i);
+            final SparseVector v = context.itemVector(i);
             final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
@@ -71,7 +70,8 @@ class SparseModelBuildStrategy implements
                 }
 
                 final double sim =
-                        similarityFunction.similarity(context.itemVector(j), v);
+                        similarityFunction.similarity(j, context.itemVector(j),
+                                                      i, v);
                 accum.put(i, j, sim);
                 if (symmetric) {
                     accum.put(j, i, sim);

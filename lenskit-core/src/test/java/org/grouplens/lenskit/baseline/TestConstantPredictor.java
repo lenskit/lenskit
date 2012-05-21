@@ -21,13 +21,12 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static org.junit.Assert.assertEquals;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-
-import org.grouplens.lenskit.data.history.UserVector;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -38,8 +37,8 @@ public class TestConstantPredictor {
     @Test
     public void testConstantPredict() {
         BaselinePredictor pred = new ConstantPredictor(5);
-        UserVector map = new UserVector(10l, Long2DoubleMaps.EMPTY_MAP);
-        SparseVector pv = pred.predict(map, new LongArrayList(new long[]{2l}));
+        SparseVector map = new ImmutableSparseVector();
+        SparseVector pv = pred.predict(10l, map, new LongArrayList(new long[]{2l}));
         assertEquals(5, pv.get(2l), 0.00001);
     }
 }

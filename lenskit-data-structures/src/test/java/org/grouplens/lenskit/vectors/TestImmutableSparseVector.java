@@ -55,6 +55,13 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     protected ImmutableSparseVector singleton() {
         return ImmutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
     }
+
+    @Test
+    public void testEmptyConstructor() {
+        SparseVector v = new ImmutableSparseVector();
+        assertThat(v.isEmpty(), equalTo(true));
+        assertThat(v.get(15), notANumber());
+    }
     
     @Test
     public void testImmutable() {

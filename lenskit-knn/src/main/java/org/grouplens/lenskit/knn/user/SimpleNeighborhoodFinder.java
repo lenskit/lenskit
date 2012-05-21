@@ -18,38 +18,29 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import static java.lang.Math.max;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.PriorityQueue;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.Similarity;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.knn.params.UserSimilarity;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import static java.lang.Math.max;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -72,12 +63,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
 
     static class CacheEntry {
-        final UserVector user;
+        final long user;
+        final SparseVector ratings;
         final long lastRatingTimestamp;
         final int ratingCount;
 
-        CacheEntry(UserVector urv, long ts, int count) {
-            user = urv;
+        CacheEntry(long uid, SparseVector urv, long ts, int count) {
+            user = uid;
+            ratings = urv;
             lastRatingTimestamp = ts;
             ratingCount = count;
         }
@@ -85,8 +78,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     private final DataAccessObject dataSource;
     private final int neighborhoodSize;
-    private final Similarity<? super SparseVector> similarity;
-    private final VectorNormalizer<? super UserVector> normalizer;
+    private final UserSimilarity similarity;
+    private final UserVectorNormalizer normalizer;
     private final Long2ObjectMap<CacheEntry> userVectorCache;
 
     /**
@@ -98,8 +91,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     @Inject
     public SimpleNeighborhoodFinder(DataAccessObject data,
                                     @NeighborhoodSize int nnbrs,
-                                    @UserSimilarity Similarity<? super SparseVector> sim,
-                                    @UserVectorNormalizer VectorNormalizer<? super UserVector> norm) {
+                                    UserSimilarity sim,
+                                    UserVectorNormalizer norm) {
         dataSource = data;
         neighborhoodSize = nnbrs;
         similarity = sim;
@@ -122,8 +115,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
             new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
-        UserVector urs = RatingVectorHistorySummarizer.makeRatingVector(user);
-        MutableSparseVector nratings = normalizer.normalize(urs, null);
+        SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
+        final long uid1 = user.getUserId();
+        MutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null);
 
         /* Find candidate neighbors. To reduce scanning, we limit users to those
          * rating target items. If the similarity is sparse and the user has
@@ -136,31 +130,31 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
-            final long uid = uiter.nextLong();
-            UserVector urv = getUserRatingVector(uid);
-            MutableSparseVector nurv = normalizer.normalize(urv, null);
+            final long uid2 = uiter.nextLong();
+            SparseVector urv = getUserRatingVector(uid2);
+            MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
-            final double sim = similarity.similarity(nratings, nurv);
-            if (Double.isNaN(sim) || Double.isInfinite(sim))
+            final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
+            if (Double.isNaN(sim) || Double.isInfinite(sim)) {
                 continue;
-            final Neighbor n = new Neighbor(urv, sim);
+            }
+            final Neighbor n = new Neighbor(uid2, urv, sim);
 
             LongIterator iit = urv.keySet().iterator();
-            ITEMS: while (iit.hasNext()) {
+            while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items != null && !items.contains(item))
-                    continue ITEMS;
-
-                PriorityQueue<Neighbor> heap = heaps.get(item);
-                if (heap == null) {
-                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                            Neighbor.SIMILARITY_COMPARATOR);
-                    heaps.put(item, heap);
-                }
-                heap.add(n);
-                if (heap.size() > neighborhoodSize) {
-                    assert heap.size() == neighborhoodSize + 1;
-                    heap.remove();
+                if (items == null || items.contains(item)) {
+                    PriorityQueue<Neighbor> heap = heaps.get(item);
+                    if (heap == null) {
+                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                           Neighbor.SIMILARITY_COMPARATOR);
+                        heaps.put(item, heap);
+                    }
+                    heap.add(n);
+                    if (heap.size() > neighborhoodSize) {
+                        assert heap.size() == neighborhoodSize + 1;
+                        heap.remove();
+                    }
                 }
             }
         }
@@ -199,7 +193,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @param user The user ID.
      * @return The user's rating vector.
      */
-    private synchronized UserVector getUserRatingVector(long user) {
+    private synchronized SparseVector getUserRatingVector(long user) {
         List<Rating> ratings = Cursors.makeList(dataSource.getUserEvents(user, Rating.class));
         CacheEntry e = userVectorCache.get(user);
 
@@ -219,11 +213,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         // create new cache entry
         if (e == null) {
-            UserVector v = UserVector.fromRatings(user, ratings);
-            e = new CacheEntry(v, ts, ratings.size());
+            SparseVector v = Ratings.userRatingVector(ratings);
+            e = new CacheEntry(user, v, ts, ratings.size());
             userVectorCache.put(user, e);
         }
 
-        return e.user;
+        return e.ratings;
     }
 }

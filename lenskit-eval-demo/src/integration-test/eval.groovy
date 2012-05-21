@@ -16,25 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.grouplens.lenskit.knn.CosineSimilarity
-import org.grouplens.lenskit.knn.Similarity
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
+import org.grouplens.lenskit.knn.item.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
-import org.grouplens.lenskit.knn.params.UserSimilarity
-import org.grouplens.lenskit.knn.params.ItemSimilarity
+import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
-import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
-import org.grouplens.lenskit.norm.MeanVarianceNormalizer
-import org.grouplens.lenskit.norm.VectorNormalizer
-import org.grouplens.lenskit.params.NormalizerBaseline
-import org.grouplens.lenskit.params.PredictNormalizer
-import org.grouplens.lenskit.params.UserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.params.Damping
 import org.grouplens.lenskit.slopeone.SlopeOneModel
 import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
@@ -43,7 +40,6 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.knn.params.ModelSize
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -87,18 +83,17 @@ trainTest("mutli-algorithm") {
 
     algorithm("UserUser") {
         bind RatingPredictor to UserUserRatingPredictor
-        bind VectorNormalizer withQualifier PredictNormalizer to MeanVarianceNormalizer
+        bind VectorNormalizer to MeanVarianceNormalizer
         bind BaselinePredictor to ItemUserMeanPredictor
-        within BaselineSubtractingNormalizer bind BaselinePredictor to UserMeanPredictor
-        bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
-        bind Similarity withQualifier UserSimilarity to CosineSimilarity
-        within (UserSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
+        within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+        within UserSimilarity bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, UserUserRatingPredictor)
 //        setComnponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
 //        setComponent(NormalizerBaseline, BaselinePredictor, UserMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
 //        setComponent(UserSimilarity, Similarity, CosineSimilarity)
 //        set(SimilarityDamping, 100)
 //        set(NeighborhoodSize, 30)
@@ -107,37 +102,37 @@ trainTest("mutli-algorithm") {
     algorithm("ItemItem") {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
-        within (ItemSimilarity, Similarity) bind Double withQualifier Damping to 100.0d
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+        within ItemSimilarity bind Double withQualifier Damping to 100.0d
         bind Integer withQualifier NeighborhoodSize to 30
 //        setComponent(RatingPredictor, ItemItemRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
 //        set(SimilarityDamping, 100)
 //        set(NeighborhoodSize, 30);
     }
     
     algorithm("WeightedSlopeOne") {
-        within BaselineSubtractingNormalizer bind BaselinePredictor to GlobalMeanPredictor
-        bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
+        within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to GlobalMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to WeightedSlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         within SlopeOneModel bind Integer withQualifier Damping to 0
 //        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
 //        setComponent(RatingPredictor, WeightedSlopeOneRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
 //        set(DeviationDamping, 0)
     }
 
     algorithm("SlopeOne") {
-        within BaselineSubtractingNormalizer bind BaselinePredictor to GlobalMeanPredictor
-        bind VectorNormalizer withQualifier UserVectorNormalizer to BaselineSubtractingNormalizer
+        within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to GlobalMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to SlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         within SlopeOneModel bind Integer withQualifier Damping to 0
 //        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
 //        setComponent(RatingPredictor, SlopeOneRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
 //        set(DeviationDamping, 0)

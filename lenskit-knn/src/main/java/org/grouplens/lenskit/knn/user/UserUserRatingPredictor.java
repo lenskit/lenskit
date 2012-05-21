@@ -18,19 +18,8 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import static java.lang.Math.abs;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
+import com.google.common.collect.Iterables;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -38,17 +27,19 @@ import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.norm.VectorTransformation;
-import org.grouplens.lenskit.params.PredictNormalizer;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import java.util.Collection;
+
+import static java.lang.Math.abs;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -58,12 +49,12 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
-    protected final VectorNormalizer<? super UserVector> normalizer;
+    protected final UserVectorNormalizer normalizer;
     protected final BaselinePredictor baseline;
 
     @Inject
     public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
-                                   @PredictNormalizer VectorNormalizer<? super UserVector> norm,
+                                   UserVectorNormalizer norm,
                                    @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
@@ -81,12 +72,12 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
      * @param neighborhoods
      *
      */
-    protected Reference2ObjectMap<UserVector, SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
-        Reference2ObjectMap<UserVector, SparseVector> normedVectors =
-            new Reference2ObjectOpenHashMap<UserVector, SparseVector>();
+    protected Long2ObjectMap<SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
+        Long2ObjectMap<SparseVector> normedVectors =
+            new Long2ObjectOpenHashMap<SparseVector>();
         for (Neighbor n: Iterables.concat(neighborhoods)) {
             if (!normedVectors.containsKey(n.user)) {
-                normedVectors.put(n.user, normalizer.normalize(n.user, null));
+                normedVectors.put(n.user, normalizer.normalize(n.user, n.vector, null));
             }
         }
         return normedVectors;
@@ -113,7 +104,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         }
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
             neighborhoodFinder.findNeighbors(history, iset);
-        Reference2ObjectMap<UserVector, SparseVector> normedUsers =
+        Long2ObjectMap<SparseVector> normedUsers =
             normalizeNeighborRatings(neighborhoods.values());
         
         MutableSparseVector preds = new MutableSparseVector(iset);
@@ -140,15 +131,15 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         }
 
         // Denormalize and return the results
-        UserVector urv = RatingVectorHistorySummarizer.makeRatingVector(history);
-        VectorTransformation vo = normalizer.makeTransformation(urv);
+        SparseVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        VectorTransformation vo = normalizer.makeTransformation(history.getUserId(), urv);
         vo.unapply(preds);
 
         // Use the baseline
         if (baseline != null && missing.size() > 0) {
             logger.trace("Filling in {} missing predictions with baseline",
                          missing.size());
-            MutableSparseVector basePreds = baseline.predict(urv, missing);
+            MutableSparseVector basePreds = baseline.predict(history.getUserId(), urv, missing);
             preds.set(basePreds);
         }
         

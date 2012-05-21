@@ -43,6 +43,17 @@ public class SimpleNullRating implements Rating {
      * @param id The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
+     */
+    public SimpleNullRating(long id, long uid, long iid) {
+        this(id, uid, iid, -1);
+    }
+
+    /**
+     * Construct a new null rating.
+     *
+     * @param id The event ID.
+     * @param uid The user ID.
+     * @param iid The item ID.
      * @param ts The event timestamp.
      */
     public SimpleNullRating(long id, long uid, long iid, long ts) {

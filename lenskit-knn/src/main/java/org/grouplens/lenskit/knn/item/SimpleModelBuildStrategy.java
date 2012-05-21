@@ -20,10 +20,6 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import org.grouplens.lenskit.data.history.ItemVector;
-import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.util.SymmetricBinaryFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +32,16 @@ class SimpleModelBuildStrategy implements
         ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
-    private final Similarity<? super ItemVector> similarityFunction;
+    private final ItemSimilarity similarityFunction;
 
-    SimpleModelBuildStrategy(Similarity<? super ItemVector> similarity) {
+    SimpleModelBuildStrategy(ItemSimilarity similarity) {
         this.similarityFunction = similarity;
     }
 
     @Override
     public void buildMatrix(ItemItemBuildContext context,
                             SimilarityMatrixAccumulator accum) {
-        final boolean symmetric = similarityFunction instanceof SymmetricBinaryFunction;
+        final boolean symmetric = similarityFunction.isSymmetric();
         logger.debug("Building {} model", symmetric ? "symmetric" : "asymmetric");
         LongSortedSet items = context.getItems();
         LongIterator iit = items.iterator();
@@ -57,8 +53,8 @@ class SimpleModelBuildStrategy implements
                 final long j = jit.nextLong();
                 if (i == j) continue;
                 double sim =
-                        similarityFunction.similarity(context.itemVector(j),
-                                                      context.itemVector(i));
+                        similarityFunction.similarity(j, context.itemVector(j),
+                                                      i, context.itemVector(i));
                 accum.put(i, j, sim);
                 if (symmetric) {
                     accum.put(j, i, sim);

@@ -34,7 +34,6 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserVector;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -120,7 +119,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(UserVector ratings,
+    public MutableSparseVector predict(long user, SparseVector ratings,
                                        Collection<Long> items) {
         double meanOffset = computeUserAverage(ratings);
         long[] keys = CollectionUtils.fastCollection(items).toLongArray();

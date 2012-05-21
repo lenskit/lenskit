@@ -18,19 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.inject.Inject;
-import javax.inject.Provider;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -39,19 +27,18 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.HistorySummarizer;
-import org.grouplens.lenskit.data.history.ItemVector;
-import org.grouplens.lenskit.data.history.UserVector;
-import org.grouplens.lenskit.knn.OptimizableVectorSimilarity;
-import org.grouplens.lenskit.knn.Similarity;
-import org.grouplens.lenskit.knn.params.ItemSimilarity;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.params.ModelSize;
-import org.grouplens.lenskit.norm.VectorNormalizer;
-import org.grouplens.lenskit.params.UserHistorySummary;
-import org.grouplens.lenskit.params.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Build an item-item CF model from rating data.
@@ -63,19 +50,19 @@ import org.slf4j.LoggerFactory;
 public class ItemItemModelProvider implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
 
-    private final Similarity<? super ItemVector> itemSimilarity;
+    private final ItemSimilarity itemSimilarity;
 
-    private final VectorNormalizer<? super UserVector> normalizer;
-    private final HistorySummarizer userSummarizer;
+    private final UserVectorNormalizer normalizer;
+    private final UserHistorySummarizer userSummarizer;
     private final int modelSize;
 
     private final DataAccessObject dao;
 
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
-                                 @ItemSimilarity Similarity<? super ItemVector> similarity,
-                                 @UserVectorNormalizer VectorNormalizer<? super UserVector> normalizer,
-                                 @UserHistorySummary HistorySummarizer sum,
+                                 ItemSimilarity similarity,
+                                 UserVectorNormalizer normalizer,
+                                 UserHistorySummarizer sum,
                                  @ModelSize int size) {
         this.dao = dao;
         this.normalizer = normalizer;
@@ -104,11 +91,11 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         Long2ObjectMap<Long2DoubleMap> itemData =
                 buildItemRatings(items, userItemSets);
         // finalize the item data into vectors
-        Long2ObjectMap<ItemVector> itemRatings =
-                new Long2ObjectOpenHashMap<ItemVector>(itemData.size());
+        Long2ObjectMap<SparseVector> itemRatings =
+                new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
             Long2DoubleMap ratings = entry.getValue();
-            ItemVector v = new ItemVector(entry.getKey(), ratings);
+            SparseVector v = new ImmutableSparseVector(ratings);
             assert v.size() == ratings.size();
             itemRatings.put(entry.getLongKey(), v);
             entry.setValue(null);          // clear the array so GC can free
@@ -149,9 +136,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
             for (UserHistory<? extends Event> user: histories) {
                 final long uid = user.getUserId();
 
-                UserVector summary = userSummarizer.summarize(user);
+                SparseVector summary = userSummarizer.summarize(user);
                 MutableSparseVector normed = summary.mutableCopy();
-                normalizer.normalize(summary, normed);
+                normalizer.normalize(uid, summary, normed);
                 final int nratings = summary.size();
 
                 // allocate the array ourselves to avoid an array copy
@@ -185,9 +172,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(Similarity<? super ItemVector> similarity) {
-        if (similarity instanceof OptimizableVectorSimilarity) {
-            return new SparseModelBuildStrategy((OptimizableVectorSimilarity) similarity);
+    protected ItemItemModelBuildStrategy createBuildStrategy(ItemSimilarity similarity) {
+        if (similarity.isSparse()) {
+            return new SparseModelBuildStrategy(similarity);
         } else {
             return new SimpleModelBuildStrategy(similarity);
         }

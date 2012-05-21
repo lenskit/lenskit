@@ -30,10 +30,10 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorHistorySummarizer;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
-import org.grouplens.lenskit.eval.SharedRatingSnapshot;
+import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -74,7 +74,7 @@ public class TrainTestEvalJob implements Job {
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
-    private final Supplier<SharedRatingSnapshot> snapshot;
+    private final Supplier<SharedPreferenceSnapshot> snapshot;
     private final int outputColumnCount;
 
     /**
@@ -91,7 +91,7 @@ public class TrainTestEvalJob implements Job {
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
-                            TTDataSet ds, Supplier<SharedRatingSnapshot> snap,
+                            TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
                             Supplier<TableWriter> out, Supplier<TableWriter> outMemory, int numRecs) {
         algorithm = algo;
         evaluators = evals;
@@ -171,7 +171,7 @@ public class TrainTestEvalJob implements Job {
                     for (UserHistory<Rating> p: userProfiles) {
                         long uid = p.getUserId();
                         SparseVector ratings =
-                            RatingVectorHistorySummarizer.makeRatingVector(p);
+                            RatingVectorUserHistorySummarizer.makeRatingVector(p);
 
                         Supplier<SparseVector> preds =
                                 new PredictionSupplier(predictor, uid, ratings.keySet());
