@@ -3,6 +3,7 @@ package org.grouplens.lenskit.eval.util.table;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,29 +16,26 @@ import java.util.*;
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class TableImpl extends AbstractList<Row> implements Table {
-    private List<Row> rows;
+    private ArrayList<Row> rows;
     private final HashMap<String, Integer> header;
     //To keep the order of the header
-    private final List<String> headerList;
+    private final List<String> headerIndex;
 
     public TableImpl(List<String> hdr){
         super();
         rows = new ArrayList<Row>();
-        headerList = hdr;
+        headerIndex = hdr;
         header = new HashMap<String, Integer>();
         for(int i = 0; i < hdr.size(); i++) {
             header.put(hdr.get(i), i);
         }
     }
 
-    private TableImpl(List<String> hdr, Iterable<Row> rws){
+    private TableImpl(HashMap<String, Integer> hdr, List<String> hdrIdx, Iterable<Row> rws){
         super();
-        rows = Arrays.asList(Iterables.toArray(rws, Row.class));
-        headerList = hdr;
-        header = new HashMap<String, Integer>();
-        for(int i = 0; i < hdr.size(); i++) {
-            header.put(hdr.get(i), i);
-        }
+        rows = Lists.newArrayList(rws);
+        headerIndex = hdrIdx;
+        header = hdr;
     }
 
     /**
@@ -55,7 +53,7 @@ public class TableImpl extends AbstractList<Row> implements Table {
             }
         };
         Iterable<Row> filtered = Iterables.filter(this.rows, pred);
-        return new TableImpl(this.headerList, filtered);
+        return new TableImpl(this.header, this.headerIndex, filtered);
     }
 
     /**
@@ -92,7 +90,7 @@ public class TableImpl extends AbstractList<Row> implements Table {
     }
 
     public List<String> getHeader() {
-        return Collections.unmodifiableList(headerList);
+        return Collections.unmodifiableList(headerIndex);
     }
 
     public class ColumnImpl extends AbstractList<Object> implements Column{
