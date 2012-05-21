@@ -34,8 +34,6 @@ public class TestResultTable {
         assertEquals(result.filter("b", 1).size(), 2);
         assertEquals(result.filter("end", 22.2).size(), 1);
         assertEquals(result.filter("d",10).filter("b", 1).size(), 1);
-
-
     }
 
     @Test

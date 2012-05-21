@@ -15,23 +15,28 @@ import java.util.*;
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public class TableImpl extends AbstractList<Row> implements Table {
-    private ArrayList<Row> table;
+    private List<Row> rows;
     private final HashMap<String, Integer> header;
+    //To keep the order of the header
+    private final List<String> headerList;
 
     public TableImpl(List<String> hdr){
         super();
-        table = new ArrayList<Row>();
+        rows = new ArrayList<Row>();
+        headerList = hdr;
         header = new HashMap<String, Integer>();
         for(int i = 0; i < hdr.size(); i++) {
             header.put(hdr.get(i), i);
         }
     }
 
-    private TableImpl(HashMap<String, Integer> hdr, Iterable<Row> rows){
-        table = new ArrayList<Row>();
-        this.header = hdr;
-        for(Row row: rows) {
-            table.add(row);
+    private TableImpl(List<String> hdr, Iterable<Row> rws){
+        super();
+        rows = Arrays.asList(Iterables.toArray(rws, Row.class));
+        headerList = hdr;
+        header = new HashMap<String, Integer>();
+        for(int i = 0; i < hdr.size(); i++) {
+            header.put(hdr.get(i), i);
         }
     }
 
@@ -49,81 +54,58 @@ public class TableImpl extends AbstractList<Row> implements Table {
                 return  data.equals(input.value(col));
             }
         };
-        Iterable<Row> filtered = Iterables.filter(this.table, pred);
-        return new TableImpl(this.header, filtered);
+        Iterable<Row> filtered = Iterables.filter(this.rows, pred);
+        return new TableImpl(this.headerList, filtered);
     }
 
     /**
      * Put a new algorithm in the result.
      *
-     * @param list the list of objects to insert to the result table
+     * @param list the list of objects to insert to the result rows
      */
     public void addResultRow(Object[] list) {
         if (list.length > header.size()) {
             throw new IllegalArgumentException("row too long");
         }
         RowImpl row = new RowImpl(header, list);
-        table.add(row);
+        rows.add(row);
     }
 
     @Override
     public int size() {
-        return table.size();
+        return rows.size();
     }
 
     @Override
     public Iterator<Row> iterator() {
-        return table.iterator();
+        return rows.iterator();
     }
 
-    @Override
-    public boolean add(Row row) {
-        return table.add(row);
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        return table.remove(o);
-    }
 
     @Override
     public Row get(int i) {
-        return table.get(i);
+        return rows.get(i);
     }
 
-    @Override
-    public Row remove(int i) {
-        return table.remove(i);
-    }
-
-    public ResultColumn column(String col){
-        return new ResultColumn(col);
+    public ColumnImpl column(String col){
+        return new ColumnImpl(col);
     }
 
     public List<String> getHeader() {
-        ArrayList<String> hdr = new ArrayList<String>(header.keySet());
-        return Collections.unmodifiableList(hdr);
+        return Collections.unmodifiableList(headerList);
     }
 
-    public class ResultColumn extends AbstractList<Object> implements Column{
+    public class ColumnImpl extends AbstractList<Object> implements Column{
         ArrayList<Object> column;
 
-        ResultColumn(String col) {
+        ColumnImpl(String col) {
             super();
             column = new ArrayList<Object>();
             if(header.get(col)!=null){
-                for(Row row : table) {
+                for(Row row : rows) {
                     column.add(row.value(header.get(col)));
                 }
             }
-        }
-
-        /**
-         * Return all the values in the specified column
-         * @return  An array of the values
-         */
-        public Object[] values() {
-            return column.toArray();
         }
 
         public Double sum() {
@@ -141,10 +123,12 @@ public class TableImpl extends AbstractList<Row> implements Table {
         }
 
         public Double average() {
-            if(column.size()==0)
+            if(column.size()==0) {
                 return Double.NaN;
+            }
             return sum()/column.size();
         }
+
         @Override
         public int size() {
             return column.size();  //To change body of implemented methods use File | Settings | File Templates.
