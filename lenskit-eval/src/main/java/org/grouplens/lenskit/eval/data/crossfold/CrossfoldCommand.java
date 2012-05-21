@@ -424,10 +424,13 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
         for(int i = 0; i < partitionCount; i++) {
-            CSVDataSourceCommand trainCommand = new CSVDataSourceCommand();
-            CSVDataSourceCommand testCommand = new CSVDataSourceCommand();
-            trainCommand.setWrapper(wrapper);
-            testCommand.setWrapper(wrapper);
+            // FIXME Support an easier "make source like this one" feature
+            CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
+                    .setWrapper(wrapper)
+                    .setDomain(source.getPreferenceDomain());
+            CSVDataSourceCommand testCommand = new CSVDataSourceCommand()
+                    .setWrapper(wrapper)
+                    .setDomain(source.getPreferenceDomain());
             GenericTTDataCommand TTcommand = new GenericTTDataCommand();
 
             dataSets.add(TTcommand.setTest(testCommand.setFile(testFiles[i]).call())

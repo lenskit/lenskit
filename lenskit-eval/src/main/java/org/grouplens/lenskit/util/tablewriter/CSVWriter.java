@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 
@@ -47,6 +48,7 @@ public class CSVWriter implements TableWriter {
      * @throws IOException if there is an error writing the column headers.
      */
     public CSVWriter(@Nonnull Writer w, @Nullable TableLayout l) throws IOException {
+        Preconditions.checkNotNull(w, "writer must not be null");
         layout = l;
         writer = w;
         if (layout != null) {
@@ -83,7 +85,10 @@ public class CSVWriter implements TableWriter {
                 writer.write(',');
             }
             if (i < row.length) {
-                writer.write(quote(row[i].toString()));
+                Object val = row[i];
+                if (val != null) {
+                    writer.write(quote(val.toString()));
+                }
             }
         }
         writer.write('\n');
