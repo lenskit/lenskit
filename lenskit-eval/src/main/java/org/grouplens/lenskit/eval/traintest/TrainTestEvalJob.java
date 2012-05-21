@@ -155,6 +155,11 @@ public class TrainTestEvalJob implements Job {
             StopWatch testTimer = new StopWatch();
             testTimer.start();
             List<TestUserMetricAccumulator> evalAccums = new ArrayList<TestUserMetricAccumulator>(evaluators.size());
+
+            Object[] userRow = null;
+            if (userTable != null) {
+                userRow = new Object[userTable.getLayout().getColumnCount()];
+            }
             
             DataAccessObject testDao = data.getTestFactory().create();
             try {
@@ -181,15 +186,20 @@ public class TrainTestEvalJob implements Job {
 
                         TestUser test = new TestUser(uid, ratings, hist, preds, recs);
 
+                        int upos = 0;
                         for (TestUserMetricAccumulator accum: evalAccums) {
-                            Object[] perUserResults = accum.evaluate(test);
-                            if (perUserResults != null && userTable != null) {
-                                try {
-                                    userTable.writeRow(perUserResults);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(
-                                            "error writing user output", e);
-                                }
+                            Object[] ures = accum.evaluate(test);
+                            if (ures != null && userRow != null) {
+                                System.arraycopy(ures, 0,
+                                                 userRow, upos, ures.length);
+                                upos += ures.length;
+                            }
+                        }
+                        if (userRow != null) {
+                            try {
+                                userTable.writeRow(userRow);
+                            } catch (IOException e) {
+                                throw new RuntimeException("error writing user row", e);
                             }
                         }
 
