@@ -70,7 +70,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     /**
      * Predict for a user using their preference array and history vector.
      * 
-     * @param user The user's rating vector.
+     * @param user The user's ID
+     * @param ratings The user's rating vector.
      * @param uprefs The user's preference array from the model.
      * @param items The items to predict for.
      * @return The user's predictions.
