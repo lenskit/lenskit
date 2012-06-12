@@ -38,6 +38,13 @@ public class FunkSVDModel implements Serializable {
     public final Index userIndex;
     public final BaselinePredictor baseline;
 
+    //Added
+    public final double[] averUserFeatures;
+    public final double[] averItemFeatures;
+    public final int numUser;
+    public final int numItem;
+    //End Adding
+    
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
                         BaselinePredictor baseline) {
@@ -47,9 +54,39 @@ public class FunkSVDModel implements Serializable {
         clampingFunction = clamp;
         itemIndex = iidx;
         userIndex = uidx;
-        this.baseline = baseline;
+        this.baseline = baseline; 
+        
+        //Added
+        numItem = iidx.getIds().size();
+        numUser = uidx.getIds().size();
+        averItemFeatures = getAverageFeatureVector(ifeats, numItem, featureCount);
+        averUserFeatures = getAverageFeatureVector(ufeats, numUser, featureCount);
+        //End Adding
+        
     }
 
+    //Add
+    
+    private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature){
+    	double[] outputVector = new double[feature];
+    	for (int i = 0; i < feature; i++){
+    		for (int j = 0; j < dimension; j++){
+    			outputVector[i] += twoDimMatrix[i][j];
+    		}
+    		outputVector[i] = outputVector[i] / dimension;
+    	}
+    	return outputVector;
+    }
+    
+    public double getUserFeatureValue(int user, int feature){
+    	return userFeatures[feature][user];
+    }
+    
+    public int getUserIndex(long user){
+    	return userIndex.getIndex(user);
+    }
+    //End Adding
+    
     public double getItemFeatureValue(int item, int feature) {
         return itemFeatures[feature][item];
     }
