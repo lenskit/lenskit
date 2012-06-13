@@ -71,11 +71,25 @@ evaluator code). Then do the following:
 
 * Check out the LensKit source tree by selecting “Mercurial” / “Clone existing repository”
   from the Import dialog.
-* Once the project is imported, right-click it and select “Maven” → “Convert to Maven project”
+* Once the project is imported, right-click it and select “Configure” → “Convert to Maven project”
   to activate Maven support on the LensKit parent project.
 * Finally, right-click the `lenskit` project, choose “Import”, and select “Maven” / “Existing
   Maven Projects”. Choose all sub-projects of `lenskit` and import them.
 
+The `lenskit-eval` project requires some additional attention to compile correctly in Eclipse:
+
+* First, right-click the `lenskit-eval` project and select “Configure” → “Convert to 
+  Groovy project” to enable Groovy support.
+* Next, right-click the `lenskit-eval` project and select “Properties” / “Java Build Path”.
+  Select the “Source” tab near the top of the window and click the “Link Source...” button on
+  the left.
+* In the window that appears, select the “Browse...” button and browse to the directory that
+  contains the `lenskit` project. Then, select “lenskit-eval” / “src” / “main” / “groovy”.
+  You may change the suggested folder name if you wish, then click “finish”.
+* Finally, click the “Link Source...” button a second time and browse to “lenskit-eval” / 
+  “src” / “test” / “groovy”. Make sure that this folder has a different name than the first
+  Groovy folder, and click “Finish” → “OK”.  
+  
 You will now have all components of LensKit imported and ready to edit and compile in Eclipse.
 
 [HGE]: http://javaforge.com/project/HGE

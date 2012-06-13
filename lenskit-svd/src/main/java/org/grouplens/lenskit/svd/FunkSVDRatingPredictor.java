@@ -28,9 +28,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -38,8 +35,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
@@ -253,7 +248,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     /**
      * Predict for a user using their preference array and history vector.
      * 
-     * @param user The user's rating vector.
+     * @param user The user's ID
+     * @param ratings The user's rating vector.
      * @param uprefs The user's preference array from the model.
      * @param items The items to predict for.
      * @return The user's predictions.
