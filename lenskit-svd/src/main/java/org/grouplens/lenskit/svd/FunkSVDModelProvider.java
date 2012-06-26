@@ -28,7 +28,6 @@ import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.svd.params.FeatureCount;
@@ -36,6 +35,7 @@ import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
+import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -73,6 +73,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     private final BaselinePredictor baseline;
     
     private final PreferenceSnapshot snapshot;
+    
     
     @Inject
     public FunkSVDModelProvider(@Transient PreferenceSnapshot snapshot,
@@ -113,12 +114,19 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
 
+        // Declaration and Initialization of the unique trainer object
+        // We'll be using this one object throughout the whole building time
+        // 		by reseting its internal values in the loop over featureCount
+        UpdateRule trainer = new UpdateRule(learningRate, trainingThreshold, trainingRegularization,
+												iterationCount, clampingFunction, MIN_EPOCHS);
+        
         final int numUsers = snapshot.getUserIds().size();
         final int numItems = snapshot.getItemIds().size();
         double[][] userFeatures = new double[featureCount][numUsers];
         double[][] itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
-            trainFeature(userFeatures, itemFeatures, estimates, ratings, i);
+        	trainer.reset();
+            trainFeature(userFeatures, itemFeatures, estimates, ratings, i, trainer);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
@@ -142,10 +150,12 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         return estimates;
     }
 
-    private void trainFeature(double[][] ufvs, double[][] ifvs,
+    @SuppressWarnings("deprecation")
+	private void trainFeature(double[][] ufvs, double[][] ifvs,
                               double[] estimates,
-                              FastCollection<IndexedPreference> ratings, int feature) {
-
+                              FastCollection<IndexedPreference> ratings,
+                              int feature, UpdateRule trainer) {
+    	
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
@@ -154,30 +164,19 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
         DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
 
-        // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
-        // We can therefore precompute the "trailing" prediction value, as it
-        // will be the same for all ratings for this feature.
-        final int rFeatCount = featureCount - feature - 1;
-        final double trailingValue = rFeatCount * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
-
         // Initialize our counters and error tracking
-        double rmse = Double.MAX_VALUE, oldRmse = 0.0;
-        int epoch;
         StopWatch timer = new StopWatch();
         timer.start();
-
-        for (epoch = 0; !isDone(epoch, rmse, oldRmse); epoch++) {
-            logger.trace("Running epoch {} of feature {}", epoch, feature);
-            // Save the old RMSE so that we can measure change in error
-            oldRmse = rmse;
-            // Run the iteration and save the error
-            rmse = trainFeatureIteration(ratings, ufv, ifv, estimates, trailingValue);
-            logger.trace("Epoch {} had RMSE of {}", epoch, rmse);
+        
+        while (trainer.nextEpochs()) {
+            logger.trace("Running epoch {} of feature {}", trainer.getEpoch(), feature);
+            trainFeatureIteration(ratings, ufv, ifv, estimates, trainer, feature);
+            logger.trace("Epoch {} had RMSE of {}", trainer.getEpoch(), trainer.getRmse());
         }
 
         timer.stop();
         logger.debug("Finished feature {} in {} epochs (took {}), rmse={}",
-                new Object[]{feature, epoch, timer, rmse});
+                new Object[]{feature, trainer.getEpoch(), timer, trainer.getRmse()});
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
@@ -192,41 +191,19 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         }
     }
 
-    /**
-     * We have two potential terminating conditions: if iterationCount is
-     * specified, we run for that many iterations irregardless of error.
-     * Otherwise, we run until the change in error is less than the training
-     * threshold.
-     *
-     * @param epoch
-     * @param rmse
-     * @param oldRmse
-     * @return <tt>true</tt> if the feature is sufficiently trained
-     */
-    protected final boolean isDone(int epoch, double rmse, double oldRmse) {
-        if (iterationCount > 0) {
-            return epoch >= iterationCount;
-        } else {
-            return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
-        }
-    }
 
-    private final double trainFeatureIteration(FastCollection<IndexedPreference> ratings,
-            double[] ufv, double[] ifv, double[] estimates, double trailingValue) {
-        // We'll need to keep track of our sum of squares
-        double ssq = 0;
+    @SuppressWarnings("deprecation")
+	private final void trainFeatureIteration(FastCollection<IndexedPreference> ratings,
+            double[] ufv, double[] ifv, double[] estimates, UpdateRule trainer, int feature) {
         for (IndexedPreference r: ratings.fast()) {
-            ssq += trainRating(ufv, ifv, estimates, trailingValue, r);
+            trainRating(ufv, ifv, estimates, trainer, r, feature);
         }
-        // We're done with this feature.  Compute the total error (RMSE)
-        // and head off to the next iteration.
-        return Math.sqrt(ssq / ratings.size());
     }
 
-    private final double trainRating(double[] ufv, double[] ifv,
-                                 double[] estimates,
-                                 double trailingValue,
-                                 IndexedPreference r) {
+    
+    private final void trainRating(double[] ufv, double[] ifv,
+                                 double[] estimates, UpdateRule trainer,
+                                 IndexedPreference r, int feature) {
         final long uid = r.getUserId();
         final long iid = r.getItemId();
         final int uidx = r.getUserIndex();
@@ -235,28 +212,21 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         // Step 1: get the predicted value (based on preceding features
         // and the current feature values)
         final double estimate = estimates[r.getIndex()];
-        double pred = estimate + ufv[uidx] * ifv[iidx];
-        pred = clampingFunction.apply(uid, iid, pred);
-
-        // Step 1b: add the estimate from remaining trailing values
-        // and apply the result.
-        pred = clampingFunction.apply(uid, iid, pred + trailingValue);
-
-        // Step 2: compute the prediction error. We will follow this for
-        // the gradient descent.
-        final double err = value - pred;
-
-        // Step 3: update the feature values.  We'll save the old values first.
+        
+        // Step 2: Save the old feature values before computing the new ones 
         final double ouf = ufv[uidx];
         final double oif = ifv[iidx];
-        // Then we'll update user feature preference
-        final double udelta = err * oif - trainingRegularization * ouf;
-        ufv[uidx] += udelta * learningRate;
-        // And the item feature relevance.
-        final double idelta = err * ouf - trainingRegularization * oif;
-        ifv[iidx] += idelta * learningRate;
+        
+        // Step 3: Compute the error
+        // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
+        // We can therefore precompute the "trailing" prediction value, as it
+        // will be the same for all ratings for this feature.
+        final int rFeatCount = featureCount - feature - 1;
+        final double trailingValue = rFeatCount * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
+        trainer.compute(uid, iid, trailingValue, estimate, value, ouf, oif);
 
-        // Finally, accumulate the squared error
-        return err * err;
+        // Step 4: Update feature values
+        ufv[uidx] = trainer.getUserUpdate(ouf, oif);
+        ifv[uidx] = trainer.getItemUpdate(ouf, oif);
     }
 }
