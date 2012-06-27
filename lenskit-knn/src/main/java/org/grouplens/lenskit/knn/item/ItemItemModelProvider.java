@@ -54,6 +54,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
+    private final SimilarityMatrixAccumulator accumulator;
     private final int modelSize;
 
     private final DataAccessObject dao;
@@ -63,11 +64,13 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                                  ItemSimilarity similarity,
                                  UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
+                                 SimilarityMatrixAccumulator accumulator,
                                  @ModelSize int size) {
         this.dao = dao;
         this.normalizer = normalizer;
         itemSimilarity = similarity;
         userSummarizer = sum;
+        this.accumulator = accumulator;
         modelSize = size;
     }
 
@@ -102,13 +105,12 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         }
         assert itemRatings.size() == itemData.size();
 
-        ItemItemBuildContext context =
-                new ItemItemBuildContext(items, itemRatings, userItemSets);
-        SimilarityMatrixAccumulator accum =
-                new SimilarityMatrixAccumulator(modelSize, items);
-        similarityStrategy.buildMatrix(context, accum);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, itemRatings, userItemSets);
+        accumulator.init(modelSize == 0 ? items.size() : modelSize, items);
 
-        return accum.build();
+        similarityStrategy.buildMatrix(context, accumulator);
+
+        return accumulator.build();
     }
 
     /**

@@ -26,11 +26,14 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.knn.params.SimilarityRetentionStrategy;
+import org.grouplens.lenskit.knn.params.SimilarityThreshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 /**
  * Accumulator for item similarities that go into the item-item CF model.
@@ -40,28 +43,36 @@ import org.slf4j.LoggerFactory;
 public class SimilarityMatrixAccumulator {
     private static final Logger logger = LoggerFactory.getLogger(SimilarityMatrixAccumulator.class);
 
-    private Long2ObjectMap<ScoredItemAccumulator> rows;
-    private final LongSortedSet itemUniverse;
+    private final double simThreshold;
+    private final int retentionStrategy;
 
-    public SimilarityMatrixAccumulator(int size, LongSortedSet entities) {
-        logger.debug("Using model size of {} for {} items",
-                     size, entities.size());
+    private Long2ObjectMap<ScoredItemAccumulator> rows;
+    private LongSortedSet itemUniverse;
+
+    @Inject
+    public SimilarityMatrixAccumulator(@SimilarityThreshold double simThreshold,
+                                       @SimilarityRetentionStrategy int retentionStrategy) {
+        this.simThreshold = simThreshold;
+        this.retentionStrategy = retentionStrategy;
+    }
+
+    /**
+     * Initializes the accumulator with parameter values that could not
+     * be set via injection. Must be called before the matrix can be used.
+     * @param modelSize The size of the square matrix to be created.
+     * @param entities The entities whose similarities are being stored
+     *                 by the matrix.
+     */
+    public void init(int modelSize, LongSortedSet entities) {
+        Preconditions.checkState(itemUniverse == null, "SimilarityMatrixAccumulator already initialized");
+        logger.debug("Using model size of {} for {} items", modelSize, entities.size());
+
         itemUniverse = entities;
         rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
         LongIterator it = entities.iterator();
         while (it.hasNext()) {
-            rows.put(it.nextLong(), new TopNScoredItemAccumulator(size));
+            rows.put(it.nextLong(), new TopNScoredItemAccumulator(modelSize));
         }
-    }
-
-    public SimilarityMatrixModel build() {
-        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
-        for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
-            data.put(row.getLongKey(), row.getValue().finish());
-        }
-        SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-        rows = null;
-        return model;
     }
 
     /**
@@ -74,8 +85,14 @@ public class SimilarityMatrixAccumulator {
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
         Preconditions.checkState(rows != null, "model already built");
-        // We only accept nonnegative similarities
-        if (sim <= 0.0) return;
+
+        if (retentionStrategy == 0) {
+            // real value retention strategy
+        } else if (retentionStrategy == 1) {
+            // absolute value retention strategy
+            sim = Math.abs(sim);
+        }
+        if (sim <= simThreshold) return;
 
         // concurrent read-only array access permitted
         ScoredItemAccumulator q = rows.get(i);
@@ -84,4 +101,19 @@ public class SimilarityMatrixAccumulator {
             q.put(j, sim);
         }
     }
+
+    /**
+     * Moves the result matrix into a SimilarityMatrixModel.
+     * @return The resulting SimilarityMatrixModel.
+     */
+    public SimilarityMatrixModel build() {
+        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
+        for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
+            data.put(row.getLongKey(), row.getValue().finish());
+        }
+        SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
+        rows = null;
+        return model;
+    }
+
 }

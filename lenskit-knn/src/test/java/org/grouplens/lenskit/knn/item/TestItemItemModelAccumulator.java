@@ -44,7 +44,8 @@ public class TestItemItemModelAccumulator {
         for (long i = 1; i <= 10; i++) {
             universe.add(i);
         }
-        accum = new SimilarityMatrixAccumulator(5, universe);
+        accum = new SimilarityMatrixAccumulator(0.0, 0);
+        accum.init(5, universe);
     }
 
     @Test
