@@ -1,57 +1,48 @@
 # Create a chart comparing the algorithms
 
-library("doBy")
-library("lattice")
+library("ggplot2")
 
 all.data <- read.csv("eval-results.csv")
 
-all.agg <- summaryBy(MAE + RMSE.ByRating + RMSE.ByUser
-                     + nDCG ~ Algorithm,
-                     all.data)
+all.agg <- aggregate(cbind(MAE, RMSE.ByRating, RMSE.ByUser, nDCG)
+                     ~ Algorithm,
+                     data=all.data, mean)
 
-err.global <- data.frame(Algorithm=all.agg$Algorithm,
-                         RMSE=all.agg$RMSE.ByRating.mean,
-                         mode="Global")
+rmse.both <- rbind(
+  data.frame(Algorithm=all.agg$Algorithm, RMSE=all.agg$RMSE.ByRating,
+             mode="Global"),
+  data.frame(Algorithm=all.agg$Algorithm, RMSE=all.agg$RMSE.ByUser,
+             mode="Per-User"))
 
-err.user <- data.frame(Algorithm=all.agg$Algorithm,
-                       RMSE=all.agg$RMSE.ByUser.mean,
-                       mode="Per User")
+chart.mae <- qplot(MAE, Algorithm, data=all.agg)
 
-err.bound <- rbind(err.global, err.user)
+chart.rmse <- qplot(RMSE, Algorithm, data=rmse.both, shape=mode, color=mode)
 
-chart.mae <- barchart(MAE.mean ~ Algorithm, all.agg,
-                      ylab="MAE")
+chart.ndcg <- qplot(nDCG, Algorithm, data=all.agg)
 
-chart.rmse <- barchart(RMSE ~ Algorithm, err.bound,
-                       groups=mode, auto.key=TRUE,
-                       ylab="RMSE")
+chart.build <- ggplot(all.data, aes(Algorithm, BuildTime)) +
+  geom_boxplot() +
+  ylab("Build time (seconds)")
 
-chart.ndcg <- barchart(nDCG.mean ~ Algorithm, all.agg,
-                       ylab="nDCG")
-
-chart.build <- bwplot(BuildTime ~ Algorithm, all.data,
-                      main="Build times",
-                      ylab="Time (seconds)")
-
-chart.test <- bwplot(TestTime ~ Algorithm, all.data,
-                     main="Test times",
-                     ylab="Time (seconds)")
+chart.test <- ggplot(all.data, aes(Algorithm, TestTime)) +
+  geom_boxplot() +
+  ylab("Test time (seconds)")
 
 print("Outputting to error.pdf")
 pdf("error.pdf", paper="letter", width=0, height=0)
-print(chart.mae, position=c(0,0.6666,1,1), more=TRUE)
-print(chart.rmse, position=c(0,0.3333,1,0.6666), more=TRUE)
-print(chart.ndcg, position=c(0,0,1,0.3333))
+error.layout <- grid.layout(nrow=3, heights=unit(0.333, "npc"))
+pushViewport(viewport(layout=error.layout, layout.pos.col=1))
+print(chart.mae, vp=viewport(layout.pos.row=1))
+print(chart.rmse, vp=viewport(layout.pos.row=2))
+print(chart.ndcg, vp=viewport(layout.pos.row=3))
+popViewport()
 dev.off()
 
 print("Outputting to times.pdf")
 pdf("times.pdf", paper="letter", width=0, height=0)
-print(chart.build, position=c(0,0.5,1,1), more=TRUE)
-print(chart.test, position=c(0,0,1,0.5))
-dev.off()
-
-pdf("rmse.pdf", width=4, height=3)
-barchart(RMSE ~ Algorithm, err.bound,
-         groups=mode, auto.key=TRUE,
-         ylab="RMSE", scales=list(x=list(rot=45)))
+times.layout <- grid.layout(nrow=2, heights=unit(0.5, "npc"))
+pushViewport(viewport(layout=times.layout, layout.pos.col=1))
+print(chart.build, vp=viewport(layout.pos.row=1))
+print(chart.test, vp=viewport(layout.pos.row=2))
+popViewport()
 dev.off()
