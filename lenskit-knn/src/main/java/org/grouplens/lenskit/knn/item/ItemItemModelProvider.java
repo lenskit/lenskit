@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -54,7 +53,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
-    private final int modelSize;
+    private final SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory;
 
     private final DataAccessObject dao;
 
@@ -63,12 +62,12 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                                  ItemSimilarity similarity,
                                  UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
-                                 @ModelSize int size) {
+                                 SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
         this.dao = dao;
         this.normalizer = normalizer;
         itemSimilarity = similarity;
         userSummarizer = sum;
-        modelSize = size;
+        this.simMatrixAccumulatorFactory = simMatrixAccumulatorFactory;
     }
 
     @Override
@@ -102,13 +101,12 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         }
         assert itemRatings.size() == itemData.size();
 
-        ItemItemBuildContext context =
-                new ItemItemBuildContext(items, itemRatings, userItemSets);
-        SimilarityMatrixAccumulator accum =
-                new SimilarityMatrixAccumulator(modelSize, items);
-        similarityStrategy.buildMatrix(context, accum);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, itemRatings, userItemSets);
+        SimilarityMatrixAccumulator accumulator = simMatrixAccumulatorFactory.create(items);
 
-        return accum.build();
+        similarityStrategy.buildMatrix(context, accumulator);
+
+        return accumulator.build();
     }
 
     /**
