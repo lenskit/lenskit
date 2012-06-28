@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Edge;
@@ -130,8 +131,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
 
     @Override
     public LenskitRecommender open() {
-        if (factory == null)
+        if (factory == null) {
             throw new IllegalStateException("No DAO creator supplied");
+        }
         DataAccessObject dao = factory.create();
         try {
             return open(dao, true);
@@ -151,8 +153,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * @return A recommender ready for use and backed by <var>dao</var>.
      */
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
-        if (dao == null)
-            throw new IllegalArgumentException("Cannot open with null DAO");
+        Preconditions.checkNotNull(dao, "Cannot open with null DAO");
         return new LenskitRecommender(new RecommenderInjector(dao), dao, shouldClose);
     }
 
@@ -175,7 +176,8 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             } else {
                 // The type is hopefully embedded in the graph
                 for (Node<Pair<Satisfaction, CachePolicy>> n: dependencies.getNodes()) {
-                    if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getLeft().getErasedType())) {
+                    Pair<Satisfaction, CachePolicy> label = n.getLabel();
+                    if (label != null && type.isAssignableFrom(label.getLeft().getErasedType())) {
                         // found a node capable of creating instances of type
                         return this.<T>getInstance(n);
                     }
@@ -195,8 +197,10 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             if (shared != null) {
                 return (T) shared;
             }
-            
-            Provider<?> provider = n.getLabel().getLeft().makeProvider(new ProviderSource() {
+
+            Pair<Satisfaction, CachePolicy> label = n.getLabel();
+            assert label != null; // non-root edges don't have null labels
+            Provider<?> provider = label.getLeft().makeProvider(new ProviderSource() {
                 @Override
                 public Provider<?> apply(Desire desire) {
                     Node<Pair<Satisfaction, CachePolicy>> d = dependencies.getOutgoingEdge(n, desire).getTail();

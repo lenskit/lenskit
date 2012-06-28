@@ -128,8 +128,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     
     @Override
     public LenskitRecommenderEngine create() {
-        if (factory == null)
+        if (factory == null) {
             throw new IllegalStateException("create() called with no DAOFactory");
+        }
         DataAccessObject dao = factory.snapshot();
         try {
             return create(dao);
@@ -183,8 +184,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 // Remove this instance if it is a DAO, or depends on a DAO,
                 // or if no other node depends on it
                 Set<Edge<Pair<Satisfaction, CachePolicy>, Desire>> incoming = buildGraph.getIncomingEdges(n);
-                
-                if (DataAccessObject.class.isAssignableFrom(n.getLabel().getLeft().getErasedType())) {
+                Pair<Satisfaction, CachePolicy> label = n.getLabel();
+                assert label != null;
+                if (DataAccessObject.class.isAssignableFrom(label.getLeft().getErasedType())) {
                     // This is the DAO instance node specific to the build phase,
                     // we replace it with a special satisfaction so it can be replaced
                     // per-session by the LenskitRecommenderEngine
@@ -207,7 +209,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     private boolean requiresDAO(Node<Pair<Satisfaction, CachePolicy>> n, Graph<Pair<Satisfaction, CachePolicy>, Desire> graph) {
         for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e: graph.getOutgoingEdges(n)) {
             Node<Pair<Satisfaction, CachePolicy>> tail = e.getTail();
-            if (DataAccessObject.class.isAssignableFrom(tail.getLabel().getLeft().getErasedType())) {
+            Pair<Satisfaction, CachePolicy> label = tail.getLabel();
+            assert label != null;
+            if (DataAccessObject.class.isAssignableFrom(label.getLeft().getErasedType())) {
                 // The node, n, has a direct dependency on a DAO
                 return true;
             } else {
@@ -243,14 +247,17 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         final Map<Node<Pair<Satisfaction, CachePolicy>>, Object> instanceMap = new HashMap<Node<Pair<Satisfaction, CachePolicy>>, Object>();
 
         for (Node<Pair<Satisfaction, CachePolicy>> n: sorted) {
-            if (n.getLabel() != null && !instanceMap.containsKey(n)) {
+            Pair<Satisfaction, CachePolicy> label = n.getLabel();
+            if (label != null && !instanceMap.containsKey(n)) {
                 // instantiate this node
                 final Set<Edge<Pair<Satisfaction, CachePolicy>, Desire>> outgoing = graph.getOutgoingEdges(n);
-                Provider<?> provider = n.getLabel().getLeft().makeProvider(new ProviderSource() {
+                Provider<?> provider = label.getLeft().makeProvider(new ProviderSource() {
                     @Override
                     public Provider<?> apply(Desire desire) {
                         for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e : outgoing) {
-                            if (e.getLabel().equals(desire)) {
+                            Desire ed = e.getLabel();
+                            assert ed != null;
+                            if (ed.equals(desire)) {
                                 // Return the cached instance based on the tail node
                                 Object instance = instanceMap.get(e.getTail());
                                 return new InstanceProvider(instance);
