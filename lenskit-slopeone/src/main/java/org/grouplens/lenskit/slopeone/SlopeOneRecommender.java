@@ -52,11 +52,14 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
             return predictor.getModel().getItemUniverse();
         } else {
             LongSet predictable = new LongOpenHashSet();
-            for (long id1 : predictor.getModel().getItemUniverse()) {
-                LongIterator iter = user.filter(Rating.class).itemSet().iterator();
+            LongIterator iter1 = predictor.getModel().getItemUniverse().iterator();
+            while (iter1.hasNext()) {
+                long id1 = iter1.nextLong();
+            	LongIterator iter2 = user.filter(Rating.class).itemSet().iterator();
                 int nusers = 0;
-                while (iter.hasNext() && nusers == 0) {
-                    nusers += predictor.getModel().getCoratings(id1, iter.next());
+                while (iter2.hasNext() && nusers == 0) {
+                    long id2 = iter2.nextLong();
+                	nusers += predictor.getModel().getCoratings(id1, id2);
                 }
                 if (nusers > 0) {
                     predictable.add(id1);

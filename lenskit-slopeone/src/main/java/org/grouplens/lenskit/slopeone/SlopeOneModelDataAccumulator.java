@@ -23,6 +23,7 @@ import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 public class SlopeOneModelDataAccumulator {
 
@@ -40,13 +41,13 @@ public class SlopeOneModelDataAccumulator {
         this.damping = damping;
         deviationMatrix = new Long2ObjectOpenHashMap<Long2DoubleOpenHashMap>();
         coratingMatrix = new Long2ObjectOpenHashMap<Long2IntOpenHashMap>();
-        for (long itemId : snapshot.getItemIds()) {
+        long[] items = snapshot.getItemIds().toLongArray();
+        for (long itemId : items) {
             deviationMatrix.put(itemId, new Long2DoubleOpenHashMap());
             coratingMatrix.put(itemId, new Long2IntOpenHashMap());
         }
-        long[] items = snapshot.getItemIds().toLongArray();
         for (int i = 0; i < items.length-1; i++) {
-            for (int j = i; j < items.length; j++) {
+        	for (int j = i; j < items.length; j++) {
                 if (items[i] < items[j]) {
                     deviationMatrix.get(items[i]).put(items[j], Double.NaN);
                 } else {
@@ -89,8 +90,12 @@ public class SlopeOneModelDataAccumulator {
      * a <tt>SlopeOneRatingPredictor</tt>.
      */
     public Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> buildDeviationMatrix() {
-        for (long item1 : deviationMatrix.keySet()) {
-            for (long item2 : deviationMatrix.get(item1).keySet()) {
+        LongIterator iter1 = deviationMatrix.keySet().iterator();
+    	while (iter1.hasNext()) {
+            long item1 = iter1.nextLong();
+            LongIterator iter2 = deviationMatrix.get(item1).keySet().iterator();
+    		while (iter2.hasNext()) {
+    			long item2 = iter2.nextLong();
                 if (coratingMatrix.get(item1).get(item2) != 0) {
                     double deviation = deviationMatrix.get(item1).get(item2)/(coratingMatrix.get(item1).get(item2) + damping);
                     deviationMatrix.get(item1).put(item2, deviation);
