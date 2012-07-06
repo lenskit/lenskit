@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval.config
 
 import org.slf4j.LoggerFactory
+import org.apache.tools.ant.DirectoryScanner
 
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
@@ -55,6 +56,31 @@ abstract class EvalConfigScript extends Script {
         } else {
             throw new MissingMethodException(name, this.class, args)
         }
+    }
+
+    /**
+     * Performs a file search based upon the parameter glob pattern.
+     * @param glob String in glob syntax giving the glob to expand.
+     * @return A List<String> of paths from the working directory to
+     *          matching file names.
+     */
+    def glob(String glob) {
+        this.glob(glob, ".")
+    }
+
+    /**
+     * Performs a file search based upon the parameter glob pattern.
+     * @param glob String in glob syntax giving the glob to expand.
+     * @param baseDir The base directory from which to search.
+     * @return A List<String> of paths from the base directory
+     *          matching the glob.
+     */
+    def glob(String glob, String baseDir) {
+        def ds = new DirectoryScanner();
+        ds.setIncludes([glob] as String[])
+        ds.setBasedir(baseDir)
+        ds.scan()
+        return ds.getIncludedFiles()
     }
 
     def run() {
