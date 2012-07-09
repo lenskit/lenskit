@@ -86,8 +86,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
                 }
             }
         }
-        LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
-                                 baseline, items, domain);
+                                 baseline, snapshot.itemIndex(), domain);
     }
 }

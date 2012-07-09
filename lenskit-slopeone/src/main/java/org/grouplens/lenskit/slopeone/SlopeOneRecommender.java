@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -49,10 +50,10 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
     @Override
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         if (predictor.getModel().getBaselinePredictor() != null) {
-            return predictor.getModel().getItemUniverse();
+            return new LongSortedArraySet(predictor.getModel().getItemIndex().getIds());
         } else {
             LongSet predictable = new LongOpenHashSet();
-            LongIterator iter1 = predictor.getModel().getItemUniverse().iterator();
+            LongIterator iter1 = predictor.getModel().getItemIndex().getIds().iterator();
             while (iter1.hasNext()) {
                 long id1 = iter1.nextLong();
             	LongIterator iter2 = user.filter(Rating.class).itemSet().iterator();

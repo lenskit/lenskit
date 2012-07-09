@@ -19,17 +19,18 @@
 package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.util.Index;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
 public class SlopeOneModelDataAccumulator {
 
-    private Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> deviationMatrix;
-    private Long2ObjectOpenHashMap<Long2IntOpenHashMap> coratingMatrix;
+    private Long2DoubleOpenHashMap[] deviationMatrix;
+    private Long2IntOpenHashMap[] coratingMatrix;
     private double damping;
+    private Index itemIndex;
 
     /**
      * Creates an accumulator to process rating data and generate the necessary data for
@@ -39,19 +40,20 @@ public class SlopeOneModelDataAccumulator {
      */
     public SlopeOneModelDataAccumulator(double damping, PreferenceSnapshot snapshot) {
         this.damping = damping;
-        deviationMatrix = new Long2ObjectOpenHashMap<Long2DoubleOpenHashMap>();
-        coratingMatrix = new Long2ObjectOpenHashMap<Long2IntOpenHashMap>();
+        itemIndex = snapshot.itemIndex();
         long[] items = snapshot.getItemIds().toLongArray();
+        deviationMatrix = new Long2DoubleOpenHashMap[itemIndex.getObjectCount()];
+        coratingMatrix = new Long2IntOpenHashMap[itemIndex.getObjectCount()];
         for (long itemId : items) {
-            deviationMatrix.put(itemId, new Long2DoubleOpenHashMap());
-            coratingMatrix.put(itemId, new Long2IntOpenHashMap());
+            deviationMatrix[itemIndex.getIndex(itemId)] = new Long2DoubleOpenHashMap();
+            coratingMatrix[itemIndex.getIndex(itemId)] = new Long2IntOpenHashMap();
         }
         for (int i = 0; i < items.length-1; i++) {
         	for (int j = i; j < items.length; j++) {
                 if (items[i] < items[j]) {
-                    deviationMatrix.get(items[i]).put(items[j], Double.NaN);
+                    deviationMatrix[itemIndex.getIndex(items[i])].put(items[j], Double.NaN);
                 } else {
-                    deviationMatrix.get(items[j]).put(items[i], Double.NaN);
+                	deviationMatrix[itemIndex.getIndex(items[j])].put(items[i], Double.NaN);
                 }
             }
         }
@@ -65,40 +67,44 @@ public class SlopeOneModelDataAccumulator {
      * @param rating2 The user's rating of the second item.
      */
     public void putRatingPair(long id1, double rating1, long id2, double rating2) {
-        if (id1 != id2) {
-            if (id1 < id2) {
-                if (Double.isNaN(deviationMatrix.get(id1).get(id2)))
-                        deviationMatrix.get(id1).put(id2, rating1 - rating2);
-                else
-                    deviationMatrix.get(id1).put(id2, deviationMatrix.get(id1).get(id2) + (rating1 - rating2));
-
-                coratingMatrix.get(id1).put(id2, coratingMatrix.get(id1).get(id2)+1);
-            }
-            else {
-                if (Double.isNaN(deviationMatrix.get(id2).get(id1)))
-                    deviationMatrix.get(id2).put(id1, rating2 - rating1);
-                else
-                    deviationMatrix.get(id2).put(id1, deviationMatrix.get(id2).get(id1) + (rating2 - rating1));
-
-                coratingMatrix.get(id2).put(id1, coratingMatrix.get(id2).get(id1)+1);
-            }
-        }
+    	if (id1 != id2) {
+    		if (id1 < id2) {
+    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
+    			if (Double.isNaN(currentDeviation)) {
+    				deviationMatrix[itemIndex.getIndex(id1)].put(id2, rating1 - rating2);
+    			} else {
+    				deviationMatrix[itemIndex.getIndex(id1)].put(id2,
+    					currentDeviation + (rating1 - rating2));
+    			}
+    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
+    			coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
+    		}
+    		else {
+    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id2)].get(id1);
+    			if (Double.isNaN(currentDeviation)) {
+    				deviationMatrix[itemIndex.getIndex(id2)].put(id1, rating2 - rating1);
+    			} else {
+    				deviationMatrix[itemIndex.getIndex(id2)].put(id1,
+    					currentDeviation + (rating2 - rating1));
+    			}
+    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id2)].get(id1);
+    			coratingMatrix[itemIndex.getIndex(id2)].put(id1,  currentCoratings + 1);
+    		}
+    	}
     }
 
     /**
      * @return A matrix of item deviation values to be used by
      * a <tt>SlopeOneRatingPredictor</tt>.
      */
-    public Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> buildDeviationMatrix() {
-        LongIterator iter1 = deviationMatrix.keySet().iterator();
-    	while (iter1.hasNext()) {
-            long item1 = iter1.nextLong();
-            LongIterator iter2 = deviationMatrix.get(item1).keySet().iterator();
-    		while (iter2.hasNext()) {
-    			long item2 = iter2.nextLong();
-                if (coratingMatrix.get(item1).get(item2) != 0) {
-                    double deviation = deviationMatrix.get(item1).get(item2)/(coratingMatrix.get(item1).get(item2) + damping);
-                    deviationMatrix.get(item1).put(item2, deviation);
+    public Long2DoubleOpenHashMap[] buildDeviationMatrix() {
+        for (int i = 0; i < coratingMatrix.length; i++) {
+            LongIterator itemIter = coratingMatrix[i].keySet().iterator();
+    		while (itemIter.hasNext()) {
+    			long curItem = itemIter.nextLong();
+                if (coratingMatrix[i].get(curItem) != 0) {
+                    double deviation = deviationMatrix[i].get(curItem)/(coratingMatrix[i].get(curItem) + damping);
+                    deviationMatrix[i].put(curItem, deviation);
                 }
             }
         }
@@ -109,7 +115,7 @@ public class SlopeOneModelDataAccumulator {
      * @return A matrix, containing the number of co-rating users for each item
      * pair, to be used by a <tt>SlopeOneRatingPredictor</tt>.
      */
-    public Long2ObjectOpenHashMap<Long2IntOpenHashMap> buildCoratingMatrix() {
+    public Long2IntOpenHashMap[] buildCoratingMatrix() {
         return coratingMatrix;
     }
 }
