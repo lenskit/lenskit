@@ -66,8 +66,8 @@ public final class UpdateRule {
 		
 		// Compute the err and store this value
 		err = rating - pred;
+		
 		updateErr(err);
-		// Update the ssq
 		updateSsq(err * err);
 		
 		// Keep track of how many ratings have been gone through
@@ -106,8 +106,8 @@ public final class UpdateRule {
 	
 	public void reset() {
 		epoch = 0;
-		err = 0;
-		ssq = 0;
+		err = 0.0;
+		ssq = 0.0;
 	}
 	
 	private boolean isDone(int epoch, double rmse, double oldRmse) {
@@ -125,9 +125,9 @@ public final class UpdateRule {
 			epochIncrement();
 			resetRatingCount();
 			return true;
-		} else {
-			return false;
-		}
+		} 
+		
+		return false;
 	}
 	
 }

@@ -76,12 +76,32 @@ public class FunkSVDModel implements Serializable {
     	return outputVector;
     }
     
+    public double[] getUserFeatureVector(int user) {
+    	double[] output = new double[featureCount];
+    	
+    	for (int i = 0; i < featureCount; i++) {
+    		output[i] = userFeatures[i][user];
+    	}
+    	
+    	return output;
+    }
+    
     public double getUserFeatureValue(int user, int feature){
     	return userFeatures[feature][user];
     }
     
     public int getUserIndex(long user){
     	return userIndex.getIndex(user);
+    }
+    
+    public double[] getItemFeatureVector(int item) {
+    	double[] output = new double[featureCount];
+    	
+    	for (int i = 0; i < featureCount; i++) {
+    		output[i] = itemFeatures[i][item];
+    	}
+    	
+    	return output;
     }
     
     public double getItemFeatureValue(int item, int feature) {

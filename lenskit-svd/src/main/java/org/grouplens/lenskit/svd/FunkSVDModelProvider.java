@@ -26,7 +26,6 @@ import javax.inject.Provider;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -70,8 +69,11 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     private final ClampingFunction clampingFunction;
     private final int iterationCount;
 
+    private double[][] userFeatures;
+    private double[][] itemFeatures;
+
+    private UpdateRule trainer;
     private final BaselinePredictor baseline;
-    
     private final PreferenceSnapshot snapshot;
     
     
@@ -92,16 +94,24 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         trainingRegularization = gradientDescent;
         clampingFunction = clamp;
         iterationCount = iterCount;
+        
+        userFeatures = new double[featureCount][snapshot.getUserIds().size()];
+        itemFeatures = new double[featureCount][snapshot.getItemIds().size()];
+        trainer = new UpdateRule(learningRate, trainingThreshold, trainingRegularization,
+    			iterationCount, clampingFunction, MIN_EPOCHS);
     }
 
+    
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.snapshot.RatingBuildContext)
      */
     @Override
     public FunkSVDModel get() {
+    	
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", trainingRegularization);
+        
         if (iterationCount > 0) {
             logger.debug("Training each epoch for {} iterations", iterationCount);
         } else {
@@ -114,55 +124,49 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         logger.debug("Building SVD with {} features for {} ratings",
                 featureCount, ratings.size());
 
-        // Declaration and Initialization of the unique trainer object
         // We'll be using this one object throughout the whole building time
         // 		by reseting its internal values in the loop over featureCount
-        UpdateRule trainer = new UpdateRule(learningRate, trainingThreshold, trainingRegularization,
-												iterationCount, clampingFunction, MIN_EPOCHS);
-        
-        final int numUsers = snapshot.getUserIds().size();
-        final int numItems = snapshot.getItemIds().size();
-        double[][] userFeatures = new double[featureCount][numUsers];
-        double[][] itemFeatures = new double[featureCount][numItems];
         for (int i = 0; i < featureCount; i++) {
         	trainer.reset();
-            trainFeature(userFeatures, itemFeatures, estimates, ratings, i, trainer);
+            trainFeature(estimates, ratings, i, trainer);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 clampingFunction, snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
-    private double[] initializeEstimates(PreferenceSnapshot snapshot,
+    
+    @SuppressWarnings("deprecation")
+	private double[] initializeEstimates(PreferenceSnapshot snapshot,
                                                       BaselinePredictor baseline) {
         final int nusers = snapshot.userIndex().getObjectCount();
         final int nprefs = snapshot.getRatings().size();
         double[] estimates = new double[nprefs];
+        
         for (int i = 0; i < nusers; i++) {
             final long uid = snapshot.userIndex().getId(i);
             FastCollection<IndexedPreference> ratings = snapshot.getUserRatings(uid);
             SparseVector rvector = snapshot.userRatingVector(uid);
             MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
-            for (IndexedPreference p: CollectionUtils.fast(ratings)) {
-                estimates[p.getIndex()] = blpreds.get(p.getItemId());
+            
+            for (IndexedPreference r: ratings.fast()) {
+                estimates[r.getIndex()] = blpreds.get(r.getItemId());
             }
         }
+        
         return estimates;
     }
 
+    
     @SuppressWarnings("deprecation")
-	private void trainFeature(double[][] ufvs, double[][] ifvs,
-                              double[] estimates,
-                              FastCollection<IndexedPreference> ratings,
-                              int feature, UpdateRule trainer) {
+	private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings
+								, int feature, UpdateRule trainer) {
     	
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
-        final double[] ufv = ufvs[feature];
-        final double[] ifv = ifvs[feature];
-        DoubleArrays.fill(ufv, DEFAULT_FEATURE_VALUE);
-        DoubleArrays.fill(ifv, DEFAULT_FEATURE_VALUE);
+        DoubleArrays.fill(userFeatures[feature], DEFAULT_FEATURE_VALUE);
+        DoubleArrays.fill(itemFeatures[feature], DEFAULT_FEATURE_VALUE);
 
         // Initialize our counters and error tracking
         StopWatch timer = new StopWatch();
@@ -170,7 +174,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         
         while (trainer.nextEpochs()) {
             logger.trace("Running epoch {} of feature {}", trainer.getEpoch(), feature);
-            trainFeatureIteration(ratings, ufv, ifv, estimates, trainer, feature);
+            trainFeatureIteration(ratings, estimates, trainer, feature);
             logger.trace("Epoch {} had RMSE of {}", trainer.getEpoch(), trainer.getRmse());
         }
 
@@ -180,53 +184,48 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
+        double[] ufvs = userFeatures[feature];
+        double[] ifvs = itemFeatures[feature];
         for (IndexedPreference r: ratings.fast()) {
-            final int idx = r.getIndex();
-            final int uidx = r.getUserIndex();
-            final int iidx = r.getItemIndex();
-            double est = estimates[idx];
-            est = clampingFunction.apply(r.getUserId(), r.getItemId(),
-                                         est + ufv[uidx] * ifv[iidx]);
-            estimates[idx] = est;
+            double est = estimates[r.getIndex()];
+            estimates[r.getIndex()] = clampingFunction.apply(r.getUserId(), r.getItemId(),
+            		est + ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()]);
         }
     }
 
-
-    @SuppressWarnings("deprecation")
-	private final void trainFeatureIteration(FastCollection<IndexedPreference> ratings,
-            double[] ufv, double[] ifv, double[] estimates, UpdateRule trainer, int feature) {
-        for (IndexedPreference r: ratings.fast()) {
-            trainRating(ufv, ifv, estimates, trainer, r, feature);
-        }
-    }
 
     
-    private final void trainRating(double[] ufv, double[] ifv,
-                                 double[] estimates, UpdateRule trainer,
-                                 IndexedPreference r, int feature) {
-        final long uid = r.getUserId();
-        final long iid = r.getItemId();
-        final int uidx = r.getUserIndex();
-        final int iidx = r.getItemIndex();
-        final double value = r.getValue();
-        // Step 1: get the predicted value (based on preceding features
-        // and the current feature values)
-        final double estimate = estimates[r.getIndex()];
-        
-        // Step 2: Save the old feature values before computing the new ones 
-        final double ouf = ufv[uidx];
-        final double oif = ifv[iidx];
-        
-        // Step 3: Compute the error
-        // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
-        // We can therefore precompute the "trailing" prediction value, as it
-        // will be the same for all ratings for this feature.
-        final int rFeatCount = featureCount - feature - 1;
-        final double trailingValue = rFeatCount * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
-        trainer.compute(uid, iid, trailingValue, estimate, value, ouf, oif);
+    @SuppressWarnings("deprecation")
+	private final void trainFeatureIteration(FastCollection<IndexedPreference> ratings,
+            					double[] estimates, UpdateRule trainer, int feature) {
+    	for (IndexedPreference r: ratings.fast()) {
+    		
+        	// Step 1: get the predicted value (based on preceding features
+            // and the current feature values)
+            final double estimate = estimates[r.getIndex()];
+            final int uidx = r.getUserIndex();
+            final int iidx = r.getItemIndex();
+            
+            // Step 2: Save the old feature values before computing the new ones 
+            final double ouf = userFeatures[feature][uidx];
+            final double oif = itemFeatures[feature][iidx];
+            
+            // Step 3: Compute the error
+            // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
+            // We can therefore precompute the "trailing" prediction value, as it
+            // will be the same for all ratings for this feature.
+            final double trailingValue = (featureCount - feature - 1) 
+            									* DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
+            trainer.compute(r.getUserId(), r.getItemId(), trailingValue 
+            										, estimate, r.getValue(), ouf, oif);
 
-        // Step 4: Update feature values
-        ufv[uidx] = trainer.getUserUpdate(ouf, oif);
-        ifv[uidx] = trainer.getItemUpdate(ouf, oif);
+            // Step 4: Update feature values
+            userFeatures[feature][uidx] = trainer.getUserUpdate(ouf, oif);
+            itemFeatures[feature][iidx] = trainer.getItemUpdate(ouf, oif);
+        }
+
+        
     }
+
+   
 }
