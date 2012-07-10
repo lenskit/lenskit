@@ -60,24 +60,24 @@ abstract class EvalConfigScript extends Script {
 
     /**
      * Performs a file search based upon the parameter glob pattern.
-     * @param glob String in glob syntax giving the glob to expand.
+     * @param globPattern String in glob syntax giving the glob to expand.
      * @return A List<String> of paths from the working directory to
      *          matching file names.
      */
-    def glob(String glob) {
-        this.glob(glob, ".")
+    def glob(String globPattern) {
+        glob(globPattern, ".")
     }
 
     /**
      * Performs a file search based upon the parameter glob pattern.
-     * @param glob String in glob syntax giving the glob to expand.
+     * @param globPattern String in glob syntax giving the glob to expand.
      * @param baseDir The base directory from which to search.
      * @return A List<String> of paths from the base directory
      *          matching the glob.
      */
-    def glob(String glob, String baseDir) {
+    def glob(String globPattern, String baseDir) {
         def ds = new DirectoryScanner();
-        ds.setIncludes([glob] as String[])
+        ds.setIncludes([globPattern] as String[])
         ds.setBasedir(baseDir)
         ds.scan()
         return ds.getIncludedFiles()
