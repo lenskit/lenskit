@@ -1,5 +1,11 @@
 package org.grouplens.lenskit.svd;
 
+import javax.inject.Inject;
+
+import org.grouplens.lenskit.svd.params.IterationCount;
+import org.grouplens.lenskit.svd.params.LearningRate;
+import org.grouplens.lenskit.svd.params.RegularizationTerm;
+import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 public final class UpdateRule {
@@ -17,9 +23,10 @@ public final class UpdateRule {
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
     
-	
-	public UpdateRule(double learningRate, double threshold, double gradientDescent,
-						int iterationCount, ClampingFunction clamp, double MIN_EPOCHS) {
+	@Inject
+	public UpdateRule(@LearningRate double learningRate, @TrainingThreshold double threshold,
+            	@RegularizationTerm double gradientDescent, ClampingFunction clamp,
+            	@IterationCount int iterCount) {
 		epoch = 0;
 		ratingCount = 0;
 		err = 0.0;
@@ -27,35 +34,19 @@ public final class UpdateRule {
 		oldRmse = 0.0;
 		rmse = Double.MAX_VALUE;
 		
-		this.MIN_EPOCHS = MIN_EPOCHS;
+		MIN_EPOCHS = 50;
 		this.learningRate = learningRate;
 		trainingThreshold = threshold;
 		trainingRegularization = gradientDescent;
 		clampingFunction = clamp;
-		this.iterationCount = iterationCount;
+		iterationCount = iterCount;
 		
-	}
-	
-	private void ratingCountIncrement() {
-		ratingCount += 1;
-	}
-	
-	private void epochIncrement() {
-		epoch += 1;
-	}
-	
-	private void updateErr(double newValue) {
-		err = newValue;
-	}
-	
-	private void updateSsq(double newValue) {
-		ssq += newValue;
 	}
 	
 	public void compute(long uid, long iid, double trailingValue, 
 			double estimate, double rating, double ufv, double ifv) {
 		
-		// Store incoming feature values, then compute prediction
+		// Compute prediction
 		double pred = estimate + ufv * ifv;
 		
 		// Clamp the prediction first
@@ -67,11 +58,11 @@ public final class UpdateRule {
 		// Compute the err and store this value
 		err = rating - pred;
 		
-		updateErr(err);
-		updateSsq(err * err);
+		// Update properties
+		ssq += err * err;
 		
 		// Keep track of how many ratings have been gone through
-		ratingCountIncrement();
+		ratingCount += 1;
 	}
 	
 	public double getUserUpdate(double ufv, double ifv) {
@@ -84,24 +75,32 @@ public final class UpdateRule {
 		return ifv + delta * learningRate;
 	}
 	
-	public double getLastErr() {
-		return err;
-	}
-	
-	public double getCurrentSsq() {
-		return ssq;
-	}
-	
 	public int getEpoch() {
 		return epoch;
 	}
 	
-	public double getRmse() {
+	public double getLastRMSE() {
 		return rmse;
 	}
 	
-	private void resetRatingCount() {
-		ratingCount = 0;
+	public double getIterationCount() {
+		return iterationCount;
+	}
+	
+	public double getLearningRate() {
+		return learningRate;
+	}
+	
+	public double getTrainingThreshold() {
+		return trainingThreshold;
+	}
+	
+	public double getTrainingRegularization() {
+		return trainingRegularization;
+	}
+	
+	public ClampingFunction getClampingFunction() {
+		return clampingFunction;
 	}
 	
 	public void reset() {
@@ -118,16 +117,15 @@ public final class UpdateRule {
         }
     }
 	
-	public boolean nextEpochs() {
+	public boolean nextEpoch() {
 		if (!isDone(epoch, rmse, oldRmse)) {
 			oldRmse = rmse;
 			rmse = Math.sqrt(ssq / ratingCount);
-			epochIncrement();
-			resetRatingCount();
+			epoch += 1;
+			ratingCount = 0;
 			return true;
 		} 
 		
 		return false;
 	}
-	
 }

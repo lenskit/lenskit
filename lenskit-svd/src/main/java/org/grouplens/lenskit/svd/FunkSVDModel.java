@@ -90,10 +90,6 @@ public class FunkSVDModel implements Serializable {
     	return userFeatures[feature][user];
     }
     
-    public int getUserIndex(long user){
-    	return userIndex.getIndex(user);
-    }
-    
     public double[] getItemFeatureVector(int item) {
     	double[] output = new double[featureCount];
     	
@@ -106,9 +102,5 @@ public class FunkSVDModel implements Serializable {
     
     public double getItemFeatureValue(int item, int feature) {
         return itemFeatures[feature][item];
-    }
-
-    public int getItemIndex(long item) {
-        return itemIndex.getIndex(item);
     }
 }

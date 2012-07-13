@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.svd;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -36,9 +35,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.svd.params.IterationCount;
-import org.grouplens.lenskit.svd.params.LearningRate;
-import org.grouplens.lenskit.svd.params.RegularizationTerm;
-import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -56,39 +52,25 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public class FunkSVDRatingPredictor extends AbstractItemScorer implements RatingPredictor {
 	
-    // Minimum number of epochs to run to train a feature
-    private static final double MIN_EPOCHS = 50;
-    
-    protected final FunkSVDModel model;
+	protected final FunkSVDModel model;
     private DataAccessObject dao;
-    private final int iterationCount;
-    private final double trainingThreshold;
-    private final double trainingRegularization;
     private final int featureCount;
     private final ClampingFunction clamp;
     
     private UpdateRule trainer;
     
     @Inject
-    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m, 
-    								   @IterationCount int iterCount,
-    	                               @LearningRate double learningRate,
-    	                               @TrainingThreshold double threshold,
-    	                               @RegularizationTerm double gradientDescent) {
+    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel m,
+    					@IterationCount int iterCount, UpdateRule trainer) {
         super(dao);
         this.dao = dao;
         model = m;
         
-        iterationCount = iterCount;
-        trainingThreshold = threshold;
-        trainingRegularization = gradientDescent;
         featureCount = model.featureCount;
         clamp = model.clampingFunction;
         
-        trainer = new UpdateRule(learningRate, trainingThreshold, trainingRegularization,
-    			iterationCount, clamp, MIN_EPOCHS);
+        this.trainer = trainer;
     }
-
 
     /**
      * Predict for a user using their preference array and history vector.
@@ -112,7 +94,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         LongIterator iter = iset.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            final int idx = model.getItemIndex(item);
+            final int idx = model.itemIndex.getIndex(item);
             
             if (idx < 0) {
                 continue;
@@ -129,7 +111,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
         return preds;
     }
-
+    
     /**
      * Predict from a user ID and preference array. Delegates to
      * {@link #predict(long, SparseVector, double[], Collection)}.
@@ -156,60 +138,60 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     @Override
     public MutableSparseVector score(long user, Collection<Long> items) {
-        int uidx = model.getUserIndex(user);
-        double[] uprefs = new double[featureCount];
+        int uidx = model.userIndex.getIndex(user);
         SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
+        MutableSparseVector estimates = model.baseline.predict(user, ratings, ratings.keySet());
         
+        if (ratings.isEmpty() && uidx < 0) {
+        	return estimates;
+        }
+        
+        double[] uprefs = new double[featureCount];
         if (uidx < 0){
-    		if (ratings.isEmpty()){
-    			DoubleArrays.fill(uprefs, 0);
-    		} 
-    		else{
-    			MutableSparseVector estimates = initializeEstimates(user, ratings);
-    			uprefs = trainingFeatureLoop(user, ratings, model.averUserFeatures, estimates);
-    		}
-    		
-    		return model.baseline.predict(user, ratings, items);
+    		uprefs = model.averUserFeatures;
     	} else{
-    		if (ratings.isEmpty()){
-    			uprefs = model.getUserFeatureVector(uidx);
-    		}
-    		else{
-    			MutableSparseVector estimates = initializeEstimates(user, ratings);
-    			uprefs = trainingFeatureLoop(user, ratings, uprefs, estimates);
-    		}
-    		
-    		return predict(user, uprefs, items);
+    		uprefs = model.getUserFeatureVector(uidx);
     	}
+        
+        if (!ratings.isEmpty()){
+        	// We'll be using this one object throughout the whole building time
+            // 		by reseting its internal values in the loop over featureCount
+	    	for (int f = 0; f < featureCount; f++){
+	    		trainer.reset();
+	    		trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
+	    	}
+		}
+        
+        return predict(user, uprefs, items);
     }
     
-    private final MutableSparseVector initializeEstimates(long userId, SparseVector ratings) {
-    	return model.baseline.predict(userId, ratings, ratings.keySet());
-    }    
-    
-    private final double[] trainingFeatureLoop(long user, SparseVector ratings, 
-    									double[] uprefs, MutableSparseVector estimates){
-    	
-        // We'll be using this one object throughout the whole building time
-        // 		by reseting its internal values in the loop over featureCount
-    	for (int f = 0; f < featureCount; f++){
-    		trainer.reset();
-    		uprefs[f] = trainingEachFeature(user, uprefs, ratings, estimates, f, trainer);
-    	}
-    	
-    	return uprefs;
-    }
-    
-    private final double trainingEachFeature(long user, double[] uprefs, SparseVector ratings,
+    private final void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
     									MutableSparseVector estimates, int feature, UpdateRule trainer){
     	
         // Fetch and initialize the arrays for this feature
-    	double trainedUserFeature = 0.0;
-        final double[] ifv = model.itemFeatures[feature];
+        final double[] ifvs = model.itemFeatures[feature];
         
-        while (trainer.nextEpochs()) {
-            trainedUserFeature = trainFeatureIteration(user, ratings, uprefs, ifv,
-            												estimates, trainer, feature);
+        // Compute the trailing value
+    	double trailingValue = 0.0;
+    	for (int f = feature + 1; f < feature; f++) {
+    		trailingValue += uprefs[f] * ifvs[f];
+    	}
+        
+        while (trainer.nextEpoch()) {
+        	for (Entry itemId : ratings.fast()) {
+        		final long iid = itemId.getLongKey();
+        	
+        		// Step 1: Save the old feature values before computing the new ones 
+            	final double ouf = uprefs[feature];
+            	final double oif = ifvs[feature];
+            
+            	// Step 2: Compute the err
+            	trainer.compute(user, itemId.getLongKey(), trailingValue, estimates.get(iid),
+            													itemId.getValue(), ouf, oif);
+
+            	// Step 3: Return updated user feature value
+            	uprefs[feature] = trainer.getUserUpdate(ouf, oif); 
+        	}
         }
 
         // After training this feature, we need to update each rating's cached
@@ -218,48 +200,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             final long iid = itemId.getLongKey();
             double est = estimates.get(itemId.getLongKey());
             est = clamp.apply(user, iid
-            		, est + uprefs[feature] * ifv[model.getItemIndex(iid)]);
+            		, est + uprefs[feature] * ifvs[model.itemIndex.getIndex(iid)]);
             estimates.set(iid, est);
         }
-        
-        return trainedUserFeature;
     }
-	
-
-    private final double trainFeatureIteration(long user, SparseVector ratings, double[] ufvs, double[] ifvs,
-    											MutableSparseVector estimates, UpdateRule trainer, int feature) {
-    	
-    	// Start looping over the ratings to train the feature value
-        for (Entry itemId : ratings.fast()) {
-        	final long iid = itemId.getLongKey();
-        	
-        	// Compute the trailing value
-        	double trailingValue = 0.0;
-        	for (int f = feature + 1; f < feature; f++) {
-        		trailingValue += ufvs[f] * ifvs[f];
-        	}
-        	
-        	ufvs[feature] = trainRating(user, ufvs[feature], ifvs[feature], estimates.get(iid), trailingValue, 
-            							iid, ratings, trainer);
-        }
-        // We're done with this feature. Return the trained value
-        // then move on to the next feature value
-        return ufvs[feature];
-    }
-
-    private final double trainRating(long userId, double ufv, double ifv, double estimate,
-    									double trailingValue, long itemId, SparseVector ratings, UpdateRule trainer) {
-    	final double value = ratings.get(itemId);
-    	
-    	// Step 2: Save the old feature values before computing the new ones 
-        final double ouf = ufv;
-        final double oif = ifv;
-        
-        // Step 3: Compute the err
-        trainer.compute(userId, itemId, trailingValue, estimate, value, ouf, oif);
-
-        // Step 4: Return updated user feature value
-        return trainer.getUserUpdate(ouf, oif);
-    }
-
 }
