@@ -42,6 +42,7 @@
     <cite.database>${basedir}/etc/references.rdf</cite.database>
     <groovy.version>1.8.6</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
+    <grapht.version>0.2.0</grapht.version>
   </properties>
 
   <distributionManagement>
@@ -471,13 +472,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>3.1</version>
-      </dependency>
-
-      <!-- DI -->
-      <dependency>
-        <groupId>org.picocontainer</groupId>
-        <artifactId>picocontainer</artifactId>
-        <version>2.13.3</version>
       </dependency>
 
       <!-- I/O support -->

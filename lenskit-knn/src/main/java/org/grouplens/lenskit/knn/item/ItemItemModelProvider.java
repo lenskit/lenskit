@@ -19,9 +19,9 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;

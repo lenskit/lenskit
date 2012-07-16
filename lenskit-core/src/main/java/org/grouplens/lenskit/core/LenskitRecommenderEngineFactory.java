@@ -18,20 +18,21 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Binding;
-import org.grouplens.grapht.Context;
-import org.grouplens.grapht.InjectionException;
-import org.grouplens.grapht.InjectorConfigurationBuilder;
-import org.grouplens.grapht.Names;
+import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.solver.CachePolicy;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.ResolverException;
+import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.spi.Attributes;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.InstanceProvider;
+import org.grouplens.grapht.spi.reflect.InstanceProvider;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -48,7 +49,7 @@ import java.util.Map.Entry;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
-    private final InjectorConfigurationBuilder config;
+    private final BindingFunctionBuilder config;
     private final DAOFactory factory;
     
     public LenskitRecommenderEngineFactory() {
@@ -57,7 +58,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
-        config = new InjectorConfigurationBuilder();
+        config = new BindingFunctionBuilder();
     }
     
     private LenskitRecommenderEngineFactory(LenskitRecommenderEngineFactory engineFactory) {
@@ -139,17 +140,21 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     
     private void resolve(Class<?> type, DependencySolver solver) {
         try {
-            solver.resolve(solver.getSPI().desire(null, type, true));
-        } catch(ResolverException e) {
+            solver.resolve(config.getSPI().desire(null, type, true));
+        } catch(SolverException e) {
             throw new InjectionException(type, null, e);
         }
     }
     
     public LenskitRecommenderEngine create(DataAccessObject dao) {
-        InjectorConfigurationBuilder config = this.config.clone();
+        BindingFunctionBuilder config = this.config.clone();
         config.getRootContext().bind(DataAccessObject.class).to(dao);
         
-        DependencySolver solver = new DependencySolver(config.build(), 100);
+        DependencySolver solver = new DependencySolver(
+                Arrays.asList(config.getFunction(RuleSet.EXPLICIT),
+                              config.getFunction(RuleSet.INTERMEDIATE_TYPES),
+                              config.getFunction(RuleSet.SUPER_TYPES)),
+                100);
         
         // Resolve all required types to complete a Recommender
         resolve(RatingPredictor.class, solver);
@@ -161,28 +166,30 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
         // because they could not have created any Nodes.
-        Graph<Satisfaction, Desire> buildGraph = solver.getGraph();
+        Graph<Pair<Satisfaction,CachePolicy>, Desire> buildGraph = solver.getGraph();
         
         // Instantiate all nodes, and remove transient edges
-        Queue<Node<Satisfaction>> removeQueue = new LinkedList<Node<Satisfaction>>();
-        Map<Node<Satisfaction>, Object> instances = instantiate(buildGraph, removeQueue);
+        Queue<Node<Pair<Satisfaction,CachePolicy>>> removeQueue =
+                new LinkedList<Node<Pair<Satisfaction, CachePolicy>>>();
+        Map<Node<Pair<Satisfaction, CachePolicy>>, Object> instances = instantiate(buildGraph, removeQueue);
         
         // Remove all subgraphs that have been detached by the transient edge removal
         pruneGraph(buildGraph, removeQueue);
         
-        Iterator<Entry<Node<Satisfaction>, Object>> i = instances.entrySet().iterator();
+        Iterator<Entry<Node<Pair<Satisfaction, CachePolicy>>, Object>> i = instances.entrySet().iterator();
         while(i.hasNext()) {
-            Node<Satisfaction> n = i.next().getKey();
+            Node<Pair<Satisfaction, CachePolicy>> n = i.next().getKey();
             if (n.getLabel() != null) {
                 // Remove this instance if it is a DAO, or depends on a DAO,
                 // or if no other node depends on it
-                Set<Edge<Satisfaction, Desire>> incoming = buildGraph.getIncomingEdges(n);
+                Set<Edge<Pair<Satisfaction, CachePolicy>, Desire>> incoming = buildGraph.getIncomingEdges(n);
                 
-                if (DataAccessObject.class.isAssignableFrom(n.getLabel().getErasedType())) {
+                if (DataAccessObject.class.isAssignableFrom(n.getLabel().getLeft().getErasedType())) {
                     // This is the DAO instance node specific to the build phase,
                     // we replace it with a special satisfaction so it can be replaced
                     // per-session by the LenskitRecommenderEngine
-                    Node<Satisfaction> newDAONode = new Node<Satisfaction>(new DAOSatisfaction());
+                    Node<Pair<Satisfaction,CachePolicy>> newDAONode =
+                            new Node<Pair<Satisfaction, CachePolicy>>(DAOSatisfaction.label());
                     buildGraph.replaceNode(n, newDAONode);
                     i.remove();
                 } else if (incoming == null || incoming.isEmpty() || requiresDAO(n, buildGraph)) {
@@ -197,10 +204,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                                             instances, config.getSPI());
     }
     
-    private boolean requiresDAO(Node<Satisfaction> n, Graph<Satisfaction, Desire> graph) {
-        for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(n)) {
-            Node<Satisfaction> tail = e.getTail();
-            if (DataAccessObject.class.isAssignableFrom(tail.getLabel().getErasedType())) {
+    private boolean requiresDAO(Node<Pair<Satisfaction, CachePolicy>> n, Graph<Pair<Satisfaction, CachePolicy>, Desire> graph) {
+        for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e: graph.getOutgoingEdges(n)) {
+            Node<Pair<Satisfaction, CachePolicy>> tail = e.getTail();
+            if (DataAccessObject.class.isAssignableFrom(tail.getLabel().getLeft().getErasedType())) {
                 // The node, n, has a direct dependency on a DAO
                 return true;
             } else {
@@ -215,14 +222,14 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         return false;
     }
     
-    private void pruneGraph(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
+    private void pruneGraph(Graph<Pair<Satisfaction, CachePolicy>, Desire> graph, Queue<Node<Pair<Satisfaction, CachePolicy>>> removeQueue) {
         while(!removeQueue.isEmpty()) {
-            Node<Satisfaction> candidate = removeQueue.poll();
-            Set<Edge<Satisfaction, Desire>> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
+            Node<Pair<Satisfaction, CachePolicy>> candidate = removeQueue.poll();
+            Set<Edge<Pair<Satisfaction, CachePolicy>, Desire>> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
             if (incoming != null && incoming.isEmpty()) {
                 // No other node depends on this node, so we can remove it,
                 // we must also flag its dependencies as removal candidates
-                for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(candidate)) {
+                for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e: graph.getOutgoingEdges(candidate)) {
                     removeQueue.add(e.getTail());
                 }
                 graph.removeNode(candidate);
@@ -231,25 +238,25 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Map<Node<Satisfaction>, Object> instantiate(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
-        List<Node<Satisfaction>> sorted = graph.sort(graph.getNode(null));
-        final Map<Node<Satisfaction>, Object> instanceMap = new HashMap<Node<Satisfaction>, Object>();
+    private Map<Node<Pair<Satisfaction,CachePolicy>>, Object> instantiate(Graph<Pair<Satisfaction, CachePolicy>, Desire> graph, Queue<Node<Pair<Satisfaction, CachePolicy>>> removeQueue) {
+        List<Node<Pair<Satisfaction, CachePolicy>>> sorted = graph.sort(graph.getNode(null));
+        final Map<Node<Pair<Satisfaction, CachePolicy>>, Object> instanceMap = new HashMap<Node<Pair<Satisfaction, CachePolicy>>, Object>();
 
-        for (Node<Satisfaction> n: sorted) {
+        for (Node<Pair<Satisfaction, CachePolicy>> n: sorted) {
             if (n.getLabel() != null && !instanceMap.containsKey(n)) {
                 // instantiate this node
-                final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
-                Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
+                final Set<Edge<Pair<Satisfaction, CachePolicy>, Desire>> outgoing = graph.getOutgoingEdges(n);
+                Provider<?> provider = n.getLabel().getLeft().makeProvider(new ProviderSource() {
                     @Override
                     public Provider<?> apply(Desire desire) {
-                        for (Edge<Satisfaction, Desire> e: outgoing) {
+                        for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e : outgoing) {
                             if (e.getLabel().equals(desire)) {
                                 // Return the cached instance based on the tail node
                                 Object instance = instanceMap.get(e.getTail());
                                 return new InstanceProvider(instance);
                             }
                         }
-                        
+
                         // Should not happen
                         throw new RuntimeException("Could not find instantiated dependency");
                     }
@@ -259,8 +266,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 instanceMap.put(n, provider.get());
                 
                 // Remove all transient outgoing edges from the graph
-                for (Edge<Satisfaction, Desire> e: outgoing) {
-                    if (e.getLabel().isTransient()) {
+                for (Edge<Pair<Satisfaction, CachePolicy>, Desire> e: outgoing) {
+                    Desire lbl = e.getLabel();
+                    assert lbl != null; // non-root dependencies never have null labels
+                    Attributes attrs = lbl.getInjectionPoint().getAttributes();
+                    if (attrs.getAttribute(Transient.class) != null) {
                         graph.removeEdge(e);
                         
                         // Push the tail node of the transient edge into the queue,

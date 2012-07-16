@@ -21,7 +21,7 @@ package org.grouplens.lenskit.baseline;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -69,7 +69,6 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * Utility method to compute the mean or average of the rating values
      * contained in the given collection of ratings.
      *
-     * @param ratings
      * @return The average of the rating values stored in <var>ratings</var>.
      */
     public static double computeMeanRating(DataAccessObject dao) {

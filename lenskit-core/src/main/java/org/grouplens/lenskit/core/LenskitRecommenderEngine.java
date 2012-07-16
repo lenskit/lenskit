@@ -31,15 +31,17 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.solver.CachePolicy;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.ProviderSource;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.InstanceProvider;
+import org.grouplens.grapht.spi.reflect.InstanceProvider;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -54,28 +56,28 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @see LenskitRecommender
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
-    private final Graph<Satisfaction, Desire> dependencies;
-    private final Node<Satisfaction> rootNode;
-    private final Node<Satisfaction> daoNode;
+    private final Graph<Pair<Satisfaction, CachePolicy>, Desire> dependencies;
+    private final Node<Pair<Satisfaction, CachePolicy>> rootNode;
+    private final Node<Pair<Satisfaction, CachePolicy>> daoNode;
     
     private final InjectSPI spi;
-    private final Map<Node<Satisfaction>, Object> sharedInstances;
+    private final Map<Node<Pair<Satisfaction, CachePolicy>>, Object> sharedInstances;
     
     private final DAOFactory factory;
 
     LenskitRecommenderEngine(DAOFactory factory,
-                             Graph<Satisfaction, Desire> dependencies,
-                             Map<Node<Satisfaction>, Object> sharedInstances,
+                             Graph<Pair<Satisfaction,CachePolicy>, Desire> dependencies,
+                             Map<Node<Pair<Satisfaction, CachePolicy>>, Object> sharedInstances,
                              InjectSPI spi) {
         this.factory = factory;
         this.dependencies = dependencies;
         this.spi = spi;
 
         // clone session binding into a HashMap so that we know its Serializable
-        this.sharedInstances = new HashMap<Node<Satisfaction>, Object>(sharedInstances);
+        this.sharedInstances = new HashMap<Node<Pair<Satisfaction, CachePolicy>>, Object>(sharedInstances);
         
         rootNode = dependencies.getNode(null);
-        daoNode = dependencies.getNode(new DAOSatisfaction());
+        daoNode = dependencies.getNode(DAOSatisfaction.label());
     }
 
     /**
@@ -96,10 +98,10 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
         try {
             spi = (InjectSPI) in.readObject();
-            dependencies = (Graph<Satisfaction, Desire>) in.readObject();
-            sharedInstances = (Map<Node<Satisfaction>, Object>) in.readObject();
+            dependencies = (Graph<Pair<Satisfaction,CachePolicy>, Desire>) in.readObject();
+            sharedInstances = (Map<Node<Pair<Satisfaction,CachePolicy>>, Object>) in.readObject();
             rootNode = dependencies.getNode(null);
-            daoNode = dependencies.getNode(new DAOSatisfaction());
+            daoNode = dependencies.getNode(DAOSatisfaction.label());
         } finally {
             in.close();
         }
@@ -155,25 +157,25 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     private class RecommenderInjector implements Injector {
-        private final Map<Node<Satisfaction>, Object> newInstances;
+        private final Map<Node<Pair<Satisfaction, CachePolicy>>, Object> newInstances;
         
         public RecommenderInjector(DataAccessObject dao) {
-            newInstances = new HashMap<Node<Satisfaction>, Object>();
+            newInstances = new HashMap<Node<Pair<Satisfaction, CachePolicy>>, Object>();
             newInstances.put(daoNode, dao);
         }
         
         @Override
         public <T> T getInstance(Class<T> type) {
             Desire d = spi.desire(null, type, true);
-            Edge<Satisfaction, Desire> e = dependencies.getOutgoingEdge(rootNode, d);
+            Edge<Pair<Satisfaction, CachePolicy>, Desire> e = dependencies.getOutgoingEdge(rootNode, d);
             
             if (e != null) {
                 // The type is one of the configured roots
                 return this.<T>getInstance(e.getTail());
             } else {
                 // The type is hopefully embedded in the graph
-                for (Node<Satisfaction> n: dependencies.getNodes()) {
-                    if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getErasedType())) {
+                for (Node<Pair<Satisfaction, CachePolicy>> n: dependencies.getNodes()) {
+                    if (n.getLabel() != null && type.isAssignableFrom(n.getLabel().getLeft().getErasedType())) {
                         // found a node capable of creating instances of type
                         return this.<T>getInstance(n);
                     }
@@ -183,7 +185,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         }
         
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        private <T> T getInstance(final Node<Satisfaction> n) {
+        private <T> T getInstance(final Node<Pair<Satisfaction, CachePolicy>> n) {
             Object session = newInstances.get(n);
             if (session != null) {
                 return (T) session;
@@ -194,10 +196,10 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
                 return (T) shared;
             }
             
-            Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
+            Provider<?> provider = n.getLabel().getLeft().makeProvider(new ProviderSource() {
                 @Override
                 public Provider<?> apply(Desire desire) {
-                    Node<Satisfaction> d = dependencies.getOutgoingEdge(n, desire).getTail();
+                    Node<Pair<Satisfaction, CachePolicy>> d = dependencies.getOutgoingEdge(n, desire).getTail();
                     return new InstanceProvider(getInstance(d));
                 }
             });

@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.solver.CachePolicy;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
@@ -58,7 +60,7 @@ class DAOSatisfaction implements Satisfaction {
     public Comparator<ContextMatcher> contextComparator() {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public int hashCode() {
         return DAOSatisfaction.class.hashCode();
@@ -67,5 +69,10 @@ class DAOSatisfaction implements Satisfaction {
     @Override
     public boolean equals(Object o) {
         return o instanceof DAOSatisfaction;
+    }
+
+    public static Pair<Satisfaction,CachePolicy> label() {
+        return Pair.of((Satisfaction) new DAOSatisfaction(),
+                       CachePolicy.NO_PREFERENCE);
     }
 }
