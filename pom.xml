@@ -487,7 +487,7 @@
         <version>2.1</version>
       </dependency>
 
-      <!-- Groovy -->
+      <!-- Groovy & Ant -->
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy</artifactId>
@@ -497,6 +497,11 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
         <version>${groovy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.8.4</version>
       </dependency>
 
       <!-- test libraries -->
