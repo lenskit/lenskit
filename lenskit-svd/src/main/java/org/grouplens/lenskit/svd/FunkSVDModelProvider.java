@@ -21,6 +21,8 @@ package org.grouplens.lenskit.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
+import java.util.Iterator;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -133,7 +135,9 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         while (trainer.nextEpoch()) {
             logger.trace("Running epoch {} of feature {}", trainer.getEpoch(), feature);
             
-        	for (IndexedPreference r: ratings.fast()) {
+            Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
+        	while (ratingIter.hasNext()) {
+        		IndexedPreference r = ratingIter.next();
             	final int uidx = r.getUserIndex();
                 final int iidx = r.getItemIndex();
                 
@@ -161,7 +165,9 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         // value to accommodate it.
         double[] ufvs = userFeatures[feature];
         double[] ifvs = itemFeatures[feature];
-        for (IndexedPreference r: ratings.fast()) {
+        Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
+    	while (ratingIter.hasNext()) {
+    		IndexedPreference r = ratingIter.next();
             double est = estimates[r.getIndex()];
             estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId()
             		, est + ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()]);
@@ -178,8 +184,9 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     		SparseVector rvector = snapshot.userRatingVector(uid);
     		MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
 
-    		FastCollection<IndexedPreference> ratings = snapshot.getUserRatings(uid);
-    		for (IndexedPreference r: ratings.fast()) {
+    		Iterator<IndexedPreference> ratingIter = snapshot.getUserRatings(uid).fastIterator();
+        	while (ratingIter.hasNext()) {
+        		IndexedPreference r = ratingIter.next();
     			estimates[r.getIndex()] = blpreds.get(r.getItemId());
     		}
     	}
