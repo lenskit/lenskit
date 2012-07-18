@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import java.util.Iterator;
 
+import java.util.Iterator;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -141,7 +143,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             logger.trace("Running epoch {} of feature {}", trainer.getEpoch(), feature);
             
             Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
-        	while (ratingIter.hasNext()){
+
+        	while (ratingIter.hasNext()) {
         		IndexedPreference r = ratingIter.next();
             	final int uidx = r.getUserIndex();
                 final int iidx = r.getItemIndex();
@@ -172,9 +175,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 								int feature, ClampingFunction clamp) {
         double[] ufvs = userFeatures[feature];
         double[] ifvs = itemFeatures[feature];
-        
         Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
-    	while (ratingIter.hasNext()){
+    	while (ratingIter.hasNext()) {
     		IndexedPreference r = ratingIter.next();
             double est = estimates[r.getIndex()];
             double offset = ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()];
@@ -195,7 +197,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     		MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
 
     		Iterator<IndexedPreference> ratingIter = snapshot.getUserRatings(uid).fastIterator();
-        	while (ratingIter.hasNext()){
+        	while (ratingIter.hasNext()) {
         		IndexedPreference r = ratingIter.next();
     			estimates[r.getIndex()] = blpreds.get(r.getItemId());
     		}
