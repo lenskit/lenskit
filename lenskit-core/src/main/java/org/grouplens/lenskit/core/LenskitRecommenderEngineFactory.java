@@ -153,9 +153,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         config.getRootContext().bind(DataAccessObject.class).to(dao);
         
         DependencySolver solver = new DependencySolver(
-                Arrays.asList(config.getFunction(RuleSet.EXPLICIT),
-                              config.getFunction(RuleSet.INTERMEDIATE_TYPES),
-                              config.getFunction(RuleSet.SUPER_TYPES),
+                Arrays.asList(config.build(RuleSet.EXPLICIT),
+                              config.build(RuleSet.INTERMEDIATE_TYPES),
+                              config.build(RuleSet.SUPER_TYPES),
                               new DefaultDesireBindingFunction(config.getSPI())),
                 100);
         
