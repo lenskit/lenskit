@@ -1,6 +1,7 @@
 # Create a chart comparing the algorithms
 
 library("ggplot2")
+library("grid")
 
 all.data <- read.csv("eval-results.csv")
 
