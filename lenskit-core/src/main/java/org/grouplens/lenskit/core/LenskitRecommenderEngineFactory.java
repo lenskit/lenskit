@@ -26,6 +26,7 @@ import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.solver.CachePolicy;
+import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.Attributes;
@@ -154,7 +155,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         DependencySolver solver = new DependencySolver(
                 Arrays.asList(config.getFunction(RuleSet.EXPLICIT),
                               config.getFunction(RuleSet.INTERMEDIATE_TYPES),
-                              config.getFunction(RuleSet.SUPER_TYPES)),
+                              config.getFunction(RuleSet.SUPER_TYPES),
+                              new DefaultDesireBindingFunction(config.getSPI())),
                 100);
         
         // Resolve all required types to complete a Recommender
