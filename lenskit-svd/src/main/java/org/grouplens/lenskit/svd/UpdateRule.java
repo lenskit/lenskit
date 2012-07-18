@@ -23,8 +23,9 @@ public final class UpdateRule {
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
     
+    
 	@Inject
-	public UpdateRule(@LearningRate double learningRate, @TrainingThreshold double threshold,
+	public UpdateRule(@LearningRate double rate, @TrainingThreshold double threshold,
             	@RegularizationTerm double gradientDescent, ClampingFunction clamp,
             	@IterationCount int iterCount) {
 		epoch = 0;
@@ -35,13 +36,14 @@ public final class UpdateRule {
 		rmse = Double.MAX_VALUE;
 		
 		MIN_EPOCHS = 50;
-		this.learningRate = learningRate;
+		learningRate = rate;
 		trainingThreshold = threshold;
 		trainingRegularization = gradientDescent;
 		clampingFunction = clamp;
 		iterationCount = iterCount;
 		
 	}
+	
 	
 	public void compute(long uid, long iid, double trailingValue, 
 			double estimate, double rating, double ufv, double ifv) {
@@ -64,6 +66,7 @@ public final class UpdateRule {
 		// Keep track of how many ratings have been gone through
 		ratingCount += 1;
 	}
+	
 	
 	public double getUserUpdate(double ufv, double ifv) {
 		double delta = err * ifv - trainingRegularization * ufv;
@@ -109,14 +112,6 @@ public final class UpdateRule {
 		ssq = 0.0;
 	}
 	
-	private boolean isDone(int epoch, double rmse, double oldRmse) {
-        if (iterationCount > 0) {
-            return epoch >= iterationCount;
-        } else {
-            return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
-        }
-    }
-	
 	public boolean nextEpoch() {
 		if (!isDone(epoch, rmse, oldRmse)) {
 			oldRmse = rmse;
@@ -128,4 +123,12 @@ public final class UpdateRule {
 		
 		return false;
 	}
+	
+	private boolean isDone(int epoch, double rmse, double oldRmse) {
+        if (iterationCount > 0) {
+            return epoch >= iterationCount;
+        } else {
+            return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
+        }
+    }
 }

@@ -30,8 +30,8 @@ public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;
 
     public final int featureCount;
-    public final double itemFeatures[][];
-    public final double userFeatures[][];
+    public final double[][] itemFeatures;
+    public final double[][] userFeatures;
     public final ClampingFunction clampingFunction;
 
     public final Index itemIndex;
@@ -64,7 +64,6 @@ public class FunkSVDModel implements Serializable {
         
     }
 
-    
     private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature){
     	double[] outputVector = new double[feature];
     	for (int i = 0; i < feature; i++){
@@ -74,33 +73,5 @@ public class FunkSVDModel implements Serializable {
     		outputVector[i] = outputVector[i] / dimension;
     	}
     	return outputVector;
-    }
-    
-    public double[] getUserFeatureVector(int user) {
-    	double[] output = new double[featureCount];
-    	
-    	for (int i = 0; i < featureCount; i++) {
-    		output[i] = userFeatures[i][user];
-    	}
-    	
-    	return output;
-    }
-    
-    public double getUserFeatureValue(int user, int feature){
-    	return userFeatures[feature][user];
-    }
-    
-    public double[] getItemFeatureVector(int item) {
-    	double[] output = new double[featureCount];
-    	
-    	for (int i = 0; i < featureCount; i++) {
-    		output[i] = itemFeatures[i][item];
-    	}
-    	
-    	return output;
-    }
-    
-    public double getItemFeatureValue(int item, int feature) {
-        return itemFeatures[feature][item];
     }
 }
