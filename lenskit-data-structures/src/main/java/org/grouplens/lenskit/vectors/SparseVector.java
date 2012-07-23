@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
@@ -31,8 +30,6 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.Pointer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -263,50 +260,29 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
         }
         return mean;
     }
-    
+
     public double dot(SparseVector o) {
         double dot = 0;
-        
-        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
-        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
-        
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            final long k1 = p1.get().getLongKey();
-            final long k2 = p2.get().getLongKey();
-            if (k1 == k2) {
-                dot += p1.get().getDoubleValue() * p2.get().getDoubleValue();
-                p1.advance();
-                p2.advance();
-            } else if (k1 < k2) {
-                p1.advance();
-            } else {
-                p2.advance();
-            }
+
+        Iterator<Long2DoubleMap.Entry[]> iter = Vectors.getPairedValsFast(this, o);
+        Long2DoubleMap.Entry[] pair;
+        while (iter.hasNext()) {
+            pair = iter.next();
+            dot += pair[0].getDoubleValue() * pair[1].getDoubleValue();
         }
-        
+
         return dot;
     }
-    
+
     public int countCommonKeys(SparseVector o) {
         int n = 0;
-        
-        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
-        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
-        
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            final long k1 = p1.get().getLongKey();
-            final long k2 = p2.get().getLongKey();
-            if (k1 == k2) {
-                n++;
-                p1.advance();
-                p2.advance();
-            } else if (k1 < k2) {
-                p1.advance();
-            } else {
-                p2.advance();
-            }
+
+        Iterator<Long2DoubleMap.Entry[]> iter = Vectors.getPairedValsFast(this, o);
+        while (iter.hasNext()) {
+            iter.next();
+            n++;
         }
-        
+
         return n;
     }
     

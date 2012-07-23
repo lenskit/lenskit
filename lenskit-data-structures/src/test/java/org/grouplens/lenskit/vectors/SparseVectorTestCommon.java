@@ -27,7 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -223,6 +225,60 @@ public abstract class SparseVectorTestCommon {
                     }
                 }), Long.class);
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
+    }
+    @Test
+    public void testVectorsGetPairedValues() {
+        Iterator noPairs = Vectors.getPairedValsFast(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Long2DoubleMap.Entry[]> pairIter = Vectors.getPairedVals(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Long2DoubleMap.Entry[] pair = pairIter.next();
+        assertTrue(pair[0].getLongKey() == 3);
+        assertTrue(pair[0].getDoubleValue() == 1.5);
+        assertTrue(pair[1].getLongKey() == 3);
+        assertTrue(pair[1].getDoubleValue() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Long2DoubleMap.Entry[] lastPair = pair;
+        pair = pairIter.next();
+        // normal iteration returns new objects
+        assertTrue(lastPair[0].getLongKey() == 3);
+        assertTrue(lastPair[0].getDoubleValue() == 1.5);
+        assertTrue(lastPair[1].getLongKey() == 3);
+        assertTrue(lastPair[1].getDoubleValue() == 2.0);
+        assertTrue(pair[0].getLongKey() == 8);
+        assertTrue(pair[0].getDoubleValue() == 2.0);
+        assertTrue(pair[1].getLongKey() == 8);
+        assertTrue(pair[1].getDoubleValue() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
+    }
+    @Test
+    public void testVectorsGetPairedValuesFast() {
+        Iterator noPairs = Vectors.getPairedValsFast(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Long2DoubleMap.Entry[]> pairIter = Vectors.getPairedValsFast(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Long2DoubleMap.Entry[] pair = pairIter.next();
+        assertTrue(pair[0].getLongKey() == 3);
+        assertTrue(pair[0].getDoubleValue() == 1.5);
+        assertTrue(pair[1].getLongKey() == 3);
+        assertTrue(pair[1].getDoubleValue() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Long2DoubleMap.Entry[] lastPair = pair;
+        pair = pairIter.next();
+        // fast iteration modifies and returns the same object
+        assertFalse(lastPair[0].getLongKey() == 3);
+        assertFalse(lastPair[0].getDoubleValue() == 1.5);
+        assertFalse(lastPair[1].getLongKey() == 3);
+        assertFalse(lastPair[1].getDoubleValue() == 2.0);
+        assertTrue(pair[0].getLongKey() == 8);
+        assertTrue(pair[0].getDoubleValue() == 2.0);
+        assertTrue(pair[1].getLongKey() == 8);
+        assertTrue(pair[1].getDoubleValue() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
     }
     @Test
     public void testFast() {
