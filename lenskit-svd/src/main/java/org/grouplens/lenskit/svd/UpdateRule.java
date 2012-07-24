@@ -15,6 +15,8 @@ public final class UpdateRule {
 	private double ssq;
 	private double oldRmse;
 	private double rmse;
+	private double ufv;
+	private double ifv;
 	
 	private final double MIN_EPOCHS;
 	private final double iterationCount;
@@ -34,6 +36,8 @@ public final class UpdateRule {
 		ssq = 0.0;
 		oldRmse = 0.0;
 		rmse = Double.MAX_VALUE;
+		ufv = 0.0;
+		ifv = 0.0;
 		
 		MIN_EPOCHS = 50;
 		learningRate = rate;
@@ -48,6 +52,10 @@ public final class UpdateRule {
 	public void compute(long uid, long iid, double trailingValue, 
 			double estimate, double rating, double ufv, double ifv) {
 		
+		// Store the new feature values
+		this.ufv = ufv;
+		this.ifv = ifv;
+		
 		// Compute prediction
 		double pred = estimate + ufv * ifv;
 		
@@ -61,21 +69,21 @@ public final class UpdateRule {
 		err = rating - pred;
 		
 		// Update properties
-		ssq += err * err;
+		ssq += (rating - pred) * (rating - pred);
 		
 		// Keep track of how many ratings have been gone through
 		ratingCount += 1;
 	}
 	
 	
-	public double getUserUpdate(double ufv, double ifv) {
+	public double getUserUpdate() {
 		double delta = err * ifv - trainingRegularization * ufv;
-		return ufv + delta * learningRate;
+		return delta * learningRate;
 	}
 	
-	public double getItemUpdate(double ufv, double ifv) {
+	public double getItemUpdate() {
 		double delta = err * ufv - trainingRegularization * ifv;
-		return ifv + delta * learningRate;
+		return delta * learningRate;
 	}
 	
 	public int getEpoch() {

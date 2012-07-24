@@ -152,12 +152,15 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                 final double oif = itemFeatures[feature][iidx];
                 
                 // Step 2: Compute the error
+                // Notice the trainer.compute method should always be called before
+                // 	updating the feature values in step 3, since this method
+                //  renew the internal feature values that will be used in step 3
                 trainer.compute(r.getUserId(), r.getItemId(), trailingValue 
                 					, estimates[r.getIndex()], r.getValue(), ouf, oif);
 
                 // Step 3: Update feature values
-                userFeatures[feature][uidx] = trainer.getUserUpdate(ouf, oif);
-                itemFeatures[feature][iidx] = trainer.getItemUpdate(ouf, oif);
+                userFeatures[feature][uidx] += trainer.getUserUpdate();
+                itemFeatures[feature][iidx] += trainer.getItemUpdate();
             }
             
             logger.trace("Epoch {} had RMSE of {}", trainer.getEpoch(), trainer.getLastRMSE());

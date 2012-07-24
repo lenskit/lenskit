@@ -34,7 +34,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.svd.params.IterationCount;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -61,8 +60,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     
     
     @Inject
-    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
-    					@IterationCount int iterCount, UpdateRule trainer) {
+    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model, UpdateRule trainer) {
         super(dao);
         this.dao = dao;
         this.model = model;
@@ -189,12 +187,15 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             	final double oif = model.itemFeatures[feature][iidx];
             
             	// Step 3: Compute the err
+            	// Notice the trainer.compute method should always be called before
+                // 	updating the feature values in step 4, since this method
+                //  renew the internal feature values that will be used in step 4
             	final double ratingValue = itemId.getValue();
             	final double estimate = estimates.get(item);
             	trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
 
             	// Step 4: Return updated user feature value
-            	uprefs[feature] = trainer.getUserUpdate(ouf, oif); 
+            	uprefs[feature] += trainer.getUserUpdate(); 
         	}
         }
 
