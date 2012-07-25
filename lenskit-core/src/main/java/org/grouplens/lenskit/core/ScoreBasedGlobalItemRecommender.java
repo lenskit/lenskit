@@ -30,6 +30,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommender{
 
@@ -103,7 +104,7 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
         }
         
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (Long2DoubleMap.Entry pred: scores.fast()) {
+        for (VectorEntry pred: scores.fast()) {
             final double v = pred.getDoubleValue();
             accum.put(pred.getLongKey(), v);
         }

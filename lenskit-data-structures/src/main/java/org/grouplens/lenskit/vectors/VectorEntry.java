@@ -18,12 +18,10 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
 /**
  * @author Michael Ekstrand
  */
-public class VectorEntry implements Long2DoubleMap.Entry {
+public class VectorEntry {
     private long key;
     private double value;
 
@@ -32,30 +30,22 @@ public class VectorEntry implements Long2DoubleMap.Entry {
         value = v;
     }
 
-    public Long getKey() {
+    public long getKey() {
         return key;
     }
 
-    public Double getValue() {
+    public double getValue() {
         return value;
     }
 
-    @Override
-    public Double setValue(Double value) {
-        throw new UnsupportedOperationException();
-    }
-
+    @Deprecated
     public long getLongKey() {
-        return key;
+        return getKey();
     }
 
-    @Override
-    public double setValue(double v) {
-        throw new UnsupportedOperationException();
-    }
-
+    @Deprecated
     public double getDoubleValue() {
-        return value;
+        return getValue();
     }
 
     void set(long k, double v) {

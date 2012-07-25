@@ -328,8 +328,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -337,8 +337,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k && usedKeys.get(i)) {
-                values[i] -= oe.getDoubleValue();
-            } // otherwise, key is greater; advance outer 
+                values[i] -= oe.getValue();
+            } // otherwise, key is greater; advance outer
         }
     }
 
@@ -354,8 +354,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -363,7 +363,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k && usedKeys.get(i)) {
-                values[i] += oe.getDoubleValue();
+                values[i] += oe.getValue();
             } // otherwise, key is greater; advance outer 
         }
     }
@@ -384,8 +384,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -393,7 +393,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k) {
-                values[i] = oe.getDoubleValue();
+                values[i] = oe.getValue();
                 usedKeys.set(i);
             } // otherwise, key is greater; advance outer 
         }

@@ -18,24 +18,17 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
-import it.unimi.dsi.fastutil.longs.LongComparator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Iterator;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.primitives.Longs;
+import java.util.Iterator;
 
 /**
  * Read-only interface to sparse vectors.
@@ -311,10 +304,10 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     
     @Override
     public String toString() {
-        Function<Long2DoubleMap.Entry, String> label = new Function<Long2DoubleMap.Entry, String>() {
+        Function<VectorEntry, String> label = new Function<VectorEntry, String>() {
             @Override
-            public String apply(Long2DoubleMap.Entry e) {
-                return String.format("%d: %.3f", e.getLongKey(), e.getDoubleValue());
+            public String apply(VectorEntry e) {
+                return String.format("%d: %.3f", e.getKey(), e.getValue());
             }
         };
         return "{" + StringUtils.join(Iterators.transform(fastIterator(), label), ", ") + "}";

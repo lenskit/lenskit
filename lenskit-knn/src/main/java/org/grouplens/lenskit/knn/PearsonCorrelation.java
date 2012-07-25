@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -81,17 +80,17 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         int nCoratings = 0; // number of common items rated
         Iterator<VectorEntry> it1 = vec1.fastIterator();
         Iterator<VectorEntry> it2 = vec2.fastIterator();
-        Long2DoubleMap.Entry e1 = it1.next();
-        Long2DoubleMap.Entry e2 = it2.next();
+        VectorEntry e1 = it1.next();
+        VectorEntry e2 = it2.next();
         do {
             /* Do one step of the parallel walk.  If the two entries have the
              * same key, add to the accumulators and advance both.  Otherwise,
              * advance the one further back to try to catch up.
              */
             // TODO Fix this loop to have cleaner hasNext/next pairs
-            if (e1.getLongKey() == e2.getLongKey()) {
-                final double v1 = e1.getDoubleValue() - mu1;
-                final double v2 = e2.getDoubleValue() - mu2;
+            if (e1.getKey() == e2.getKey()) {
+                final double v1 = e1.getValue() - mu1;
+                final double v2 = e2.getValue() - mu2;
                 var1 += v1 * v1;
                 var2 += v2 * v2;
                 dot += v1 * v2;
@@ -102,7 +101,7 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
                 if (it2.hasNext()) {
                     e2 = it2.next();
                 }
-            } else if (e1.getLongKey() < e2.getLongKey()) {
+            } else if (e1.getKey() < e2.getKey()) {
                 if (it1.hasNext()) {
                     e1 = it1.next();
                 }
