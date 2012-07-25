@@ -22,7 +22,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
@@ -65,7 +64,7 @@ import com.google.common.primitives.Longs;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 
  */
-public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
+public abstract class SparseVector implements Iterable<VectorEntry> {
     private volatile transient Double norm;
     private volatile transient Double sum;
     private volatile transient Double mean;
@@ -113,7 +112,7 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
      * @return an iterator over all key/value pairs.
      */
     @Override
-    public abstract Iterator<Long2DoubleMap.Entry> iterator();
+    public abstract Iterator<VectorEntry> iterator();
 
     /**
      * Fast iterator over all entries (it can reuse entry objects).
@@ -121,17 +120,17 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
      *         Long2DoubleMap.FastEntrySet.fastIterator()
      * @return a fast iterator over all key/value pairs
      */
-    public abstract Iterator<Long2DoubleMap.Entry> fastIterator(); 
+    public abstract Iterator<VectorEntry> fastIterator();
 
     /**
      * Return an iterable view of this vector using a fast iterator.
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
      */
-    public Iterable<Long2DoubleMap.Entry> fast() {
-        return new Iterable<Long2DoubleMap.Entry>() {
+    public Iterable<VectorEntry> fast() {
+        return new Iterable<VectorEntry>() {
             @Override
-            public Iterator<Long2DoubleMap.Entry> iterator() {
+            public Iterator<VectorEntry> iterator() {
                 return fastIterator();
             }
         };
@@ -267,8 +266,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
     public double dot(SparseVector o) {
         double dot = 0;
         
-        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
-        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
+        Pointer<VectorEntry> p1 = CollectionUtils.pointer(fastIterator());
+        Pointer<VectorEntry> p2 = CollectionUtils.pointer(o.fastIterator());
         
         while (!p1.isAtEnd() && !p2.isAtEnd()) {
             final long k1 = p1.get().getLongKey();
@@ -290,8 +289,8 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
     public int countCommonKeys(SparseVector o) {
         int n = 0;
         
-        Pointer<Entry> p1 = CollectionUtils.pointer(fastIterator());
-        Pointer<Entry> p2 = CollectionUtils.pointer(o.fastIterator());
+        Pointer<VectorEntry> p1 = CollectionUtils.pointer(fastIterator());
+        Pointer<VectorEntry> p2 = CollectionUtils.pointer(o.fastIterator());
         
         while (!p1.isAtEnd() && !p2.isAtEnd()) {
             final long k1 = p1.get().getLongKey();

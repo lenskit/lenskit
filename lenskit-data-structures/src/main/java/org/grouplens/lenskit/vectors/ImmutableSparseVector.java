@@ -108,12 +108,12 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
     
     @Override
-    public Iterator<Long2DoubleMap.Entry> iterator() {
+    public Iterator<VectorEntry> iterator() {
         return new IterImpl();
     }
     
     @Override
-    public Iterator<Long2DoubleMap.Entry> fastIterator() {
+    public Iterator<VectorEntry> fastIterator() {
         return new FastIterImpl();
     }
     
@@ -218,18 +218,21 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
         return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
     }
     
-    final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
+    final class IterImpl implements Iterator<VectorEntry> {
         int pos = 0;
         @Override
         public boolean hasNext() {
             return pos < size;
         }
         @Override
-        public Entry next() {
-            if (hasNext())
-                return new Entry(pos++);
-            else
+        public VectorEntry next() {
+            if (hasNext()) {
+                VectorEntry e = new VectorEntry(keys[pos], values[pos]);
+                pos++;
+                return e;
+            } else {
                 throw new NoSuchElementException();
+            }
         }
         @Override
         public void remove() {
@@ -237,16 +240,18 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
         }
     }
 
-    final class FastIterImpl implements Iterator<Long2DoubleMap.Entry> {
-        Entry entry = new Entry(-1);
+    final class FastIterImpl implements Iterator<VectorEntry> {
+        int pos;
+        VectorEntry entry = new VectorEntry(0,0);
         @Override
         public boolean hasNext() {
-            return entry.pos < size - 1;
+            return pos < size;
         }
         @Override
-        public Entry next() {
+        public VectorEntry next() {
             if (hasNext()) {
-                entry.pos += 1;
+                entry.set(keys[pos], values[pos]);
+                pos++;
                 return entry;
             } else {
                 throw new NoSuchElementException();

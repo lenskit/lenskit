@@ -161,7 +161,7 @@ public abstract class SparseVectorTestCommon {
             /* no-op */
         }
     
-        Iterator<Long2DoubleMap.Entry> iter = singleton().iterator();
+        Iterator<VectorEntry> iter = singleton().iterator();
         assertTrue(iter.hasNext());
         Long2DoubleMap.Entry e = iter.next();
         assertFalse(iter.hasNext());
@@ -199,7 +199,7 @@ public abstract class SparseVectorTestCommon {
             /* no-op */
         }
     
-        Iterator<Long2DoubleMap.Entry> iter = singleton().fastIterator();
+        Iterator<VectorEntry> iter = singleton().fastIterator();
         assertTrue(iter.hasNext());
         Long2DoubleMap.Entry e = iter.next();
         assertFalse(iter.hasNext());

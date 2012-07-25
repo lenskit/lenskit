@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -78,8 +79,8 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         double var2 = 0;
         double dot = 0;
         int nCoratings = 0; // number of common items rated
-        Iterator<Long2DoubleMap.Entry> it1 = vec1.fastIterator();
-        Iterator<Long2DoubleMap.Entry> it2 = vec2.fastIterator();
+        Iterator<VectorEntry> it1 = vec1.fastIterator();
+        Iterator<VectorEntry> it2 = vec2.fastIterator();
         Long2DoubleMap.Entry e1 = it1.next();
         Long2DoubleMap.Entry e2 = it2.next();
         do {
