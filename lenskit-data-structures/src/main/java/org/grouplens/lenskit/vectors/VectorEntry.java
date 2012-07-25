@@ -38,16 +38,6 @@ public class VectorEntry {
         return value;
     }
 
-    @Deprecated
-    public long getLongKey() {
-        return getKey();
-    }
-
-    @Deprecated
-    public double getDoubleValue() {
-        return getValue();
-    }
-
     void set(long k, double v) {
         key = k;
         value = v;

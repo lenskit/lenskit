@@ -105,8 +105,8 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
         
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
         for (VectorEntry pred: scores.fast()) {
-            final double v = pred.getDoubleValue();
-            accum.put(pred.getLongKey(), v);
+            final double v = pred.getValue();
+            accum.put(pred.getKey(), v);
         }
 
         return accum.finish();

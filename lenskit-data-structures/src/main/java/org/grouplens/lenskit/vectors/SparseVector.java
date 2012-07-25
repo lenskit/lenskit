@@ -263,10 +263,10 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
         Pointer<VectorEntry> p2 = CollectionUtils.pointer(o.fastIterator());
         
         while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            final long k1 = p1.get().getLongKey();
-            final long k2 = p2.get().getLongKey();
+            final long k1 = p1.get().getKey();
+            final long k2 = p2.get().getKey();
             if (k1 == k2) {
-                dot += p1.get().getDoubleValue() * p2.get().getDoubleValue();
+                dot += p1.get().getValue() * p2.get().getValue();
                 p1.advance();
                 p2.advance();
             } else if (k1 < k2) {
@@ -286,8 +286,8 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
         Pointer<VectorEntry> p2 = CollectionUtils.pointer(o.fastIterator());
         
         while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            final long k1 = p1.get().getLongKey();
-            final long k2 = p2.get().getLongKey();
+            final long k1 = p1.get().getKey();
+            final long k2 = p2.get().getKey();
             if (k1 == k2) {
                 n++;
                 p1.advance();

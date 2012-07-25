@@ -104,8 +104,8 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         double total = 0;
 
         for (VectorEntry rating: ratings.fast()) {
-            double r = rating.getDoubleValue();
-            long iid = rating.getLongKey();
+            double r = rating.getValue();
+            long iid = rating.getKey();
             total += r - getItemMean(iid);
         }
         return total / (values.size() + damping);
