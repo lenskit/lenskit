@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
@@ -55,11 +56,15 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         }
         MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
         LongArrayList unpreds = new LongArrayList();
-        for (long predicteeItem : items) {
-            if (!ratings.containsKey(predicteeItem)) {
+        LongIterator predicteeIter = iset.iterator();
+        while (predicteeIter.hasNext()) {
+            long predicteeItem = predicteeIter.nextLong();
+        	if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;
                 int nusers = 0;
-                for (long currentItem : ratings.keySet()) {
+                LongIterator ratingIter = ratings.keySet().iterator();
+                while (ratingIter.hasNext()) {
+                	long currentItem = ratingIter.nextLong();
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);

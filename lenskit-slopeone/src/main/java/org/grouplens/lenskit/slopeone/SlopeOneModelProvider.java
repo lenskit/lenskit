@@ -68,24 +68,25 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
      */
     @Override
     public SlopeOneModel get() {
-        for (long u: snapshot.getUserIds()) {
-            SparseVector ratings = snapshot.userRatingVector(u);
+        LongIterator userIter = snapshot.getUserIds().iterator();
+    	while (userIter.hasNext()) {
+            long u = userIter.nextLong();
+    		SparseVector ratings = snapshot.userRatingVector(u);
             SparseVector normed = normalizer.normalize(u, ratings, null);
             LongIterator iter = normed.keySet().iterator();
             while (iter.hasNext()) {
                 long item1 = iter.nextLong();
                 LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
                 if (iter2.hasNext()) {
-                    iter2.next();
+                    iter2.nextLong();
                 }
                 while (iter2.hasNext()) {
-                    long item2 = iter2.next();
+                    long item2 = iter2.nextLong();
                     accumulator.putRatingPair(item1, normed.get(item1), item2, normed.get(item2));
                 }
             }
         }
-        LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
-                                 baseline, items, domain);
+                                 baseline, snapshot.itemIndex(), domain);
     }
 }

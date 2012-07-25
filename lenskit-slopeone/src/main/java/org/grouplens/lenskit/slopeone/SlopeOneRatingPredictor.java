@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -60,12 +61,16 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         
         MutableSparseVector preds = new MutableSparseVector(iset);
         LongArrayList unpreds = new LongArrayList();
-        for (long predicteeItem : items) {
-            if (!user.containsKey(predicteeItem)) {
+        LongIterator predicteeIter = iset.iterator();
+        while (predicteeIter.hasNext()) {
+            long predicteeItem = predicteeIter.nextLong();
+        	if (!user.containsKey(predicteeItem)) {
                 double total = 0;
                 int nitems = 0;
-                for (long currentItem : user.keySet()) {
-                    int nusers = model.getCoratings(predicteeItem, currentItem);
+                LongIterator ratingIter = user.keySet().iterator();
+                while (ratingIter.hasNext()) {
+                    long currentItem = ratingIter.nextLong();
+                	int nusers = model.getCoratings(predicteeItem, currentItem);
                     if (nusers != 0) {
                         double currentDev = model.getDeviation(predicteeItem, currentItem);
                         total += currentDev + user.get(currentItem);
