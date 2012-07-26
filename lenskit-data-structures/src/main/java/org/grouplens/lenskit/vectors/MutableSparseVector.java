@@ -116,8 +116,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length. The
      * key array is the key domain, and all keys are considered used.
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing this vector. They must be sorted.
+     * @param values The array of values backing this vector.
      */
     protected MutableSparseVector(long[] keys, double[] values) {
         this(keys, values, keys.length);
@@ -129,8 +129,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      * 
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing the vector. It must be sorted.
+     * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
      */
     protected MutableSparseVector(long[] keys, double[] values, int length) {
@@ -149,8 +149,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      * 
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing the vector.
+     * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
      * @param used The entries in use.
      */
@@ -321,7 +321,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * @param value The value to increase it by.
      * @return The new value. If the key is not in the key domain,
      *         {@link Double#NaN} is returned.
+     * @deprecated Generally not wanted. Will be removed by LensKit 1.0.
      */
+    @Deprecated @SuppressWarnings("unused")
     public final double addOrSet(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
