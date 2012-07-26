@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +70,8 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             int n = 0;
             int good = 0;
-            for (Long2DoubleMap.Entry e: ratings.fast()) {
-                double pv = predictions.get(e.getLongKey());
+            for (VectorEntry e: ratings.fast()) {
+                double pv = predictions.get(e.getKey());
                 n += 1;
                 if (!Double.isNaN(pv)) {
                     good += 1;

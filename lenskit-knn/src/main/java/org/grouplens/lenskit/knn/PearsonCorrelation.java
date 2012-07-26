@@ -18,10 +18,10 @@
  */
 package org.grouplens.lenskit.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
 import java.io.Serializable;

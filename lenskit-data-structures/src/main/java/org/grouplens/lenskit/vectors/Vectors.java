@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
 
@@ -35,6 +34,12 @@ public class Vectors {
      */
     private Vectors() {}
 
+    /**
+     * Provides an Iterable over EntryPairs based off of a fast Iterator.
+     * @param v1 a SparseVector
+     * @param v2 a SparseVector
+     * @return an Iterable<EntryPair> wrapping a fast Iterator.
+     */
     public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -44,10 +49,24 @@ public class Vectors {
         };
     }
 
+    /**
+     * Returns a fast Iterator over the value pairs of the parameter
+     * SparseVectors that share common keys.
+     * @param v1 a SparseVector
+     * @param v2 a SparseVector
+     * @return a fast Iterator over EntryPairs, representing a shared
+     * key and the paired values for that key.
+     */
     public static Iterator<EntryPair> pairedIteratorFast(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
     }
 
+    /**
+     * Provides an Iterable over EntryPairs.
+     * @param v1 a SparseVector
+     * @param v2 a SparseVector
+     * @return an Iterable<EntryPair> wrapping a fast Iterator.
+     */
     public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -57,6 +76,14 @@ public class Vectors {
         };
     }
 
+    /**
+     * Returns an Iterator over the value pairs of the parameter
+     * SparseVectors that share common keys.
+     * @param v1 a SparseVector
+     * @param v2 a SparseVector
+     * @return an Iterator over EntryPairs, representing a shared
+     * key and the paired values for that key.
+     */
     public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
         return new IteratorImpl(v1, v2);
     }
@@ -65,8 +92,8 @@ public class Vectors {
 
     private static final class IteratorImpl implements Iterator<EntryPair> {
         private boolean atNext = false;
-        private final Pointer<Long2DoubleMap.Entry> p1;
-        private final Pointer<Long2DoubleMap.Entry> p2;
+        private final Pointer<VectorEntry> p1;
+        private final Pointer<VectorEntry> p2;
 
         IteratorImpl(SparseVector v1, SparseVector v2) {
             p1 = CollectionUtils.pointer(v1.iterator());
@@ -77,8 +104,8 @@ public class Vectors {
         public boolean hasNext() {
             if (!atNext) {
                 while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = p1.get().getLongKey();
-                    long key2 = p2.get().getLongKey();
+                    long key1 = p1.get().getKey();
+                    long key2 = p2.get().getKey();
                     if (key1 == key2) {
                         atNext = true;
                         break;
@@ -97,7 +124,7 @@ public class Vectors {
             if (!hasNext()) {
                 return null;
             }
-            EntryPair curPair = new EntryPair(p1.get().getLongKey(), p1.get().getDoubleValue(), p2.get().getDoubleValue());
+            EntryPair curPair = new EntryPair(p1.get().getKey(), p1.get().getValue(), p2.get().getValue());
             p1.advance();
             p2.advance();
             atNext = false;
@@ -113,8 +140,8 @@ public class Vectors {
     private static final class FastIteratorImpl implements Iterator<EntryPair> {
         private EntryPair curPair = new EntryPair();
         private boolean atNext = false;
-        private final Pointer<Long2DoubleMap.Entry> p1;
-        private final Pointer<Long2DoubleMap.Entry> p2;
+        private final Pointer<VectorEntry> p1;
+        private final Pointer<VectorEntry> p2;
 
         FastIteratorImpl(SparseVector v1, SparseVector v2) {
             p1 = CollectionUtils.pointer(v1.fastIterator());
@@ -125,8 +152,8 @@ public class Vectors {
         public boolean hasNext() {
             if (!atNext) {
                 while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = p1.get().getLongKey();
-                    long key2 = p2.get().getLongKey();
+                    long key1 = p1.get().getKey();
+                    long key2 = p2.get().getKey();
                     if (key1 == key2) {
                         atNext = true;
                         break;
@@ -145,9 +172,9 @@ public class Vectors {
             if (!hasNext()) {
                 return null;
             }
-            curPair.key = p1.get().getLongKey();
-            curPair.value1 = p1.get().getDoubleValue();
-            curPair.value2 = p2.get().getDoubleValue();
+            curPair.key = p1.get().getKey();
+            curPair.value1 = p1.get().getValue();
+            curPair.value2 = p2.get().getValue();
             p1.advance();
             p2.advance();
             atNext = false;
@@ -161,13 +188,13 @@ public class Vectors {
     }
 
     /**
-     * Wraps a pair of values which share a common key.
+     * Wraps a pair of values that share a common key.
      */
     public static final class EntryPair {
         long key;
         double value1;
         double value2;
-        
+
         public EntryPair() {}
         public EntryPair(long key, double value1, double value2) {
             this.key = key;
