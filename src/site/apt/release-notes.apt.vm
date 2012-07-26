@@ -35,6 +35,9 @@ LensKit Release Notes
 
   * The default user similarity for user-user CF is now cosine rather than Pearson.
 
+  * Item-item models can now have unbounded size and have rows truncated by threshold
+    value rather than size (#issue(171)).
+
   []
 
 ** Component Refactoring
