@@ -30,6 +30,7 @@ import javax.inject.Provider;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -140,10 +141,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         while (trainer.nextEpoch()) {
             logger.trace("Running epoch {} of feature {}", trainer.getEpoch(), feature);
             
-            Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
-
-        	while (ratingIter.hasNext()) {
-        		IndexedPreference r = ratingIter.next();
+            for (IndexedPreference r: CollectionUtils.fast(ratings)) {
             	final int uidx = r.getUserIndex();
                 final int iidx = r.getItemIndex();
                 
@@ -176,9 +174,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 								int feature, ClampingFunction clamp) {
         double[] ufvs = userFeatures[feature];
         double[] ifvs = itemFeatures[feature];
-        Iterator<IndexedPreference> ratingIter = ratings.fastIterator();
-    	while (ratingIter.hasNext()) {
-    		IndexedPreference r = ratingIter.next();
+    	for (IndexedPreference r: CollectionUtils.fast(ratings)) {
             double est = estimates[r.getIndex()];
             double offset = ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()];
             estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId(), est + offset);
@@ -197,9 +193,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     		SparseVector rvector = snapshot.userRatingVector(uid);
     		MutableSparseVector blpreds = baseline.predict(uid, rvector, rvector.keySet());
 
-    		Iterator<IndexedPreference> ratingIter = snapshot.getUserRatings(uid).fastIterator();
-        	while (ratingIter.hasNext()) {
-        		IndexedPreference r = ratingIter.next();
+        	for (IndexedPreference r: CollectionUtils.fast(snapshot.getUserRatings(uid))) {
     			estimates[r.getIndex()] = blpreds.get(r.getItemId());
     		}
     	}
