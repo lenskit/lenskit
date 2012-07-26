@@ -153,8 +153,6 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         
         if (!ratings.isEmpty()){
         	for (int f = 0; f < featureCount; f++){
-        		// Reset and reuse the same UpdateRule object trainer in every iteration
-	    		trainer.reset();
 	    		trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
 	    	}
 		}
@@ -169,8 +167,9 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     }
     
     
-    private final void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
-    									MutableSparseVector estimates, int feature, UpdateRule trainer){
+    private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
+                                  MutableSparseVector estimates, int feature, UpdateRule trainer){
+        trainer.reset();
     	while (trainer.nextEpoch()) {
         	for (Entry itemId : ratings.fast()) {
         		final long item = itemId.getLongKey();
