@@ -21,12 +21,6 @@ package org.grouplens.lenskit.svd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-
-import java.util.Iterator;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -40,6 +34,9 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * SVD recommender builder using gradient descent (Funk SVD).
