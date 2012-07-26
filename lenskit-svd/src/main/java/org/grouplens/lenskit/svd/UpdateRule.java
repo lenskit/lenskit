@@ -10,11 +10,13 @@ import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 public final class UpdateRule {
 	private int epoch;
-	private int ratingCount;
-	private double err;
+
+    private int ratingCount;
 	private double ssq;
 	private double oldRmse;
 	private double rmse;
+
+    private double err;
 	private double ufv;
 	private double ifv;
 	
@@ -121,9 +123,13 @@ public final class UpdateRule {
 	}
 	
 	public boolean nextEpoch() {
-		if (!isDone(epoch, rmse, oldRmse)) {
-			oldRmse = rmse;
-			rmse = Math.sqrt(ssq / ratingCount);
+        if (ratingCount > 0) {
+            oldRmse = rmse;
+            rmse = Math.sqrt(ssq / ratingCount);
+            ssq = 0;
+        }
+
+        if (!isDone(epoch, rmse, oldRmse)) {
 			epoch += 1;
 			ratingCount = 0;
 			return true;
