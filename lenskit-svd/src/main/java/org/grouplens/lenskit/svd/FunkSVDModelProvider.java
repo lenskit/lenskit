@@ -177,8 +177,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId(), est + offset);
         }
     }
-    
-    
+
     private double[] initializeEstimates(PreferenceSnapshot snapshot, BaselinePredictor baseline) {
     	final LongCollection userIds = snapshot.getUserIds();
     	final int numItem = snapshot.getRatings().size();

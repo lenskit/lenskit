@@ -18,14 +18,8 @@
  */
 package org.grouplens.lenskit.svd;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
@@ -37,6 +31,10 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
@@ -171,8 +169,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
                                   MutableSparseVector estimates, int feature, UpdateRule trainer){
         trainer.reset();
     	while (trainer.nextEpoch()) {
-        	for (Entry itemId : ratings.fast()) {
-        		final long item = itemId.getLongKey();
+        	for (VectorEntry itemId: ratings.fast()) {
+        		final long item = itemId.getKey();
         		final int iidx = model.itemIndex.getIndex(item);
         		
         		// Step 1: Compute the trailing value for this item-feature pair
@@ -201,8 +199,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
         double[] ifvs = model.itemFeatures[feature];
-        for (Entry itemId : ratings.fast()) {
-            final long iid = itemId.getLongKey();
+        for (VectorEntry itemId : ratings.fast()) {
+            final long iid = itemId.getKey();
             double est = estimates.get(iid);
             double offset = uprefs[feature] * ifvs[model.itemIndex.getIndex(iid)];
             est = clamp.apply(user, iid, est + offset);
