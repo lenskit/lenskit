@@ -263,26 +263,17 @@ public abstract class SparseVector implements Iterable<Long2DoubleMap.Entry> {
 
     public double dot(SparseVector o) {
         double dot = 0;
-
-        Iterator<Long2DoubleMap.Entry[]> iter = Vectors.getPairedValsFast(this, o);
-        Long2DoubleMap.Entry[] pair;
-        while (iter.hasNext()) {
-            pair = iter.next();
-            dot += pair[0].getDoubleValue() * pair[1].getDoubleValue();
+        for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
+            dot += pair.getValue1() * pair.getValue2();
         }
-
         return dot;
     }
 
     public int countCommonKeys(SparseVector o) {
         int n = 0;
-
-        Iterator<Long2DoubleMap.Entry[]> iter = Vectors.getPairedValsFast(this, o);
-        while (iter.hasNext()) {
-            iter.next();
+        for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
             n++;
         }
-
         return n;
     }
     

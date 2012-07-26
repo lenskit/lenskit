@@ -35,17 +35,35 @@ public class Vectors {
      */
     private Vectors() {}
 
-    public static Iterator<Long2DoubleMap.Entry[]> getPairedValsFast(SparseVector v1, SparseVector v2) {
+    public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<EntryPair>() {
+            @Override
+            public Iterator<EntryPair> iterator() {
+                return pairedIteratorFast(v1, v2);
+            }
+        };
+    }
+
+    public static Iterator<EntryPair> pairedIteratorFast(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
     }
 
-    public static Iterator<Long2DoubleMap.Entry[]> getPairedVals(SparseVector v1, SparseVector v2) {
+    public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<EntryPair>() {
+            @Override
+            public Iterator<EntryPair> iterator() {
+                return pairedIterator(v1, v2);
+            }
+        };
+    }
+
+    public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
         return new IteratorImpl(v1, v2);
     }
 
 
 
-    private static final class IteratorImpl implements Iterator<Long2DoubleMap.Entry[]> {
+    private static final class IteratorImpl implements Iterator<EntryPair> {
         private boolean atNext = false;
         private final Pointer<Long2DoubleMap.Entry> p1;
         private final Pointer<Long2DoubleMap.Entry> p2;
@@ -75,11 +93,11 @@ public class Vectors {
         }
 
         @Override
-        public Long2DoubleMap.Entry[] next() {
+        public EntryPair next() {
             if (!hasNext()) {
                 return null;
             }
-            Long2DoubleMap.Entry[] curPair = {p1.get(), p2.get()};
+            EntryPair curPair = new EntryPair(p1.get().getLongKey(), p1.get().getDoubleValue(), p2.get().getDoubleValue());
             p1.advance();
             p2.advance();
             atNext = false;
@@ -92,15 +110,13 @@ public class Vectors {
         }
     }
 
-    private static final class FastIteratorImpl implements Iterator<Long2DoubleMap.Entry[]> {
-        private Entry[] curPair = new Entry[2];
+    private static final class FastIteratorImpl implements Iterator<EntryPair> {
+        private EntryPair curPair = new EntryPair();
         private boolean atNext = false;
         private final Pointer<Long2DoubleMap.Entry> p1;
         private final Pointer<Long2DoubleMap.Entry> p2;
 
         FastIteratorImpl(SparseVector v1, SparseVector v2) {
-            curPair[0] = new Entry();
-            curPair[1] = new Entry();
             p1 = CollectionUtils.pointer(v1.fastIterator());
             p2 = CollectionUtils.pointer(v2.fastIterator());
         }
@@ -125,14 +141,13 @@ public class Vectors {
         }
 
         @Override
-        public Long2DoubleMap.Entry[] next() {
+        public EntryPair next() {
             if (!hasNext()) {
                 return null;
             }
-            curPair[0].key = p1.get().getLongKey();
-            curPair[0].value = p1.get().getDoubleValue();
-            curPair[1].key = p2.get().getLongKey();
-            curPair[1].value = p2.get().getDoubleValue();
+            curPair.key = p1.get().getLongKey();
+            curPair.value1 = p1.get().getDoubleValue();
+            curPair.value2 = p2.get().getDoubleValue();
             p1.advance();
             p2.advance();
             atNext = false;
@@ -146,34 +161,27 @@ public class Vectors {
     }
 
     /**
-     * Wraps a (key, value) pair
+     * Wraps a pair of values which share a common key.
      */
-    public static final class Entry implements Long2DoubleMap.Entry {
-        /**
-         * Field writable only by Vectors.FastIteratorImpl
-         */
-        private long key;
-        /**
-         * Field writable only by Vectors.FastIteratorImpl
-         */
-        private double value;
-        public long getLongKey() {
-            return key;
+    public static final class EntryPair {
+        long key;
+        double value1;
+        double value2;
+        
+        public EntryPair() {}
+        public EntryPair(long key, double value1, double value2) {
+            this.key = key;
+            this.value1 = value1;
+            this.value2 = value2;
         }
         public Long getKey() {
-            return getLongKey();
+            return key;
         }
-        public double getDoubleValue() {
-            return value;
+        public double getValue1() {
+            return value1;
         }
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        public double setValue(double value) {
-            throw new UnsupportedOperationException();
-        }
-        public Double setValue(Double value) {
-            throw new UnsupportedOperationException();
+        public Double getValue2() {
+            return value2;
         }
     }
 

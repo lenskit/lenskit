@@ -80,12 +80,9 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         double dot = 0;
         int nCoratings = 0;
 
-        Iterator<Long2DoubleMap.Entry[]> iter = Vectors.getPairedValsFast(vec1, vec2);
-        Long2DoubleMap.Entry[] pair;
-        while (iter.hasNext()) {
-            pair = iter.next();
-            final double v1 = pair[0].getDoubleValue() - mu1;
-            final double v2 = pair[1].getDoubleValue() - mu2;
+        for (Vectors.EntryPair pair : Vectors.pairedFast(vec1, vec2)) {
+            final double v1 = pair.getValue1() - mu1;
+            final double v2 = pair.getValue2() - mu2;
             var1 += v1 * v1;
             var2 += v2 * v2;
             dot += v1 * v2;

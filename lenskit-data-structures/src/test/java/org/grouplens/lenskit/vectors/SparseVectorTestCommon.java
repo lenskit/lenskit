@@ -228,55 +228,49 @@ public abstract class SparseVectorTestCommon {
     }
     @Test
     public void testVectorsGetPairedValues() {
-        Iterator noPairs = Vectors.getPairedValsFast(emptyVector(), simpleVector());
+        Iterator noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
         assertFalse(noPairs.hasNext());
         assertNull(noPairs.next());
-        Iterator<Long2DoubleMap.Entry[]> pairIter = Vectors.getPairedVals(simpleVector(), simpleVector2());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIterator(simpleVector(), simpleVector2());
         assertTrue(pairIter.hasNext());
-        Long2DoubleMap.Entry[] pair = pairIter.next();
-        assertTrue(pair[0].getLongKey() == 3);
-        assertTrue(pair[0].getDoubleValue() == 1.5);
-        assertTrue(pair[1].getLongKey() == 3);
-        assertTrue(pair[1].getDoubleValue() == 2.0);
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
         assertTrue(pairIter.hasNext());
-        Long2DoubleMap.Entry[] lastPair = pair;
+        Vectors.EntryPair lastPair = pair;
         pair = pairIter.next();
         // normal iteration returns new objects
-        assertTrue(lastPair[0].getLongKey() == 3);
-        assertTrue(lastPair[0].getDoubleValue() == 1.5);
-        assertTrue(lastPair[1].getLongKey() == 3);
-        assertTrue(lastPair[1].getDoubleValue() == 2.0);
-        assertTrue(pair[0].getLongKey() == 8);
-        assertTrue(pair[0].getDoubleValue() == 2.0);
-        assertTrue(pair[1].getLongKey() == 8);
-        assertTrue(pair[1].getDoubleValue() == 1.7);
+        assertTrue(lastPair.getKey() == 3);
+        assertTrue(lastPair.getValue1() == 1.5);
+        assertTrue(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
         assertFalse(pairIter.hasNext());
         assertNull(pairIter.next());
     }
     @Test
     public void testVectorsGetPairedValuesFast() {
-        Iterator noPairs = Vectors.getPairedValsFast(emptyVector(), simpleVector());
+        Iterator noPairs = Vectors.pairedIteratorFast(emptyVector(), simpleVector());
         assertFalse(noPairs.hasNext());
         assertNull(noPairs.next());
-        Iterator<Long2DoubleMap.Entry[]> pairIter = Vectors.getPairedValsFast(simpleVector(), simpleVector2());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIteratorFast(simpleVector(), simpleVector2());
         assertTrue(pairIter.hasNext());
-        Long2DoubleMap.Entry[] pair = pairIter.next();
-        assertTrue(pair[0].getLongKey() == 3);
-        assertTrue(pair[0].getDoubleValue() == 1.5);
-        assertTrue(pair[1].getLongKey() == 3);
-        assertTrue(pair[1].getDoubleValue() == 2.0);
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
         assertTrue(pairIter.hasNext());
-        Long2DoubleMap.Entry[] lastPair = pair;
+        Vectors.EntryPair lastPair = pair;
         pair = pairIter.next();
         // fast iteration modifies and returns the same object
-        assertFalse(lastPair[0].getLongKey() == 3);
-        assertFalse(lastPair[0].getDoubleValue() == 1.5);
-        assertFalse(lastPair[1].getLongKey() == 3);
-        assertFalse(lastPair[1].getDoubleValue() == 2.0);
-        assertTrue(pair[0].getLongKey() == 8);
-        assertTrue(pair[0].getDoubleValue() == 2.0);
-        assertTrue(pair[1].getLongKey() == 8);
-        assertTrue(pair[1].getDoubleValue() == 1.7);
+        assertFalse(lastPair.getKey() == 3);
+        assertFalse(lastPair.getValue1() == 1.5);
+        assertFalse(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
         assertFalse(pairIter.hasNext());
         assertNull(pairIter.next());
     }
