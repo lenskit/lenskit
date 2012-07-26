@@ -38,6 +38,8 @@ LensKit Release Notes
   * Item-item models can now have unbounded size and have rows truncated by threshold
     value rather than size (#issue(171)).
 
+  * FunkSVD now incorporates user ratings at predict time (#issue(174)).
+
   []
 
 ** Component Refactoring

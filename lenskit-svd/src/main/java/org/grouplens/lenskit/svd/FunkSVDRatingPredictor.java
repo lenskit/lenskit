@@ -119,16 +119,6 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
                        uprefs, items);
     }
 
-    
-    /**
-     * FunkSVD can currently use user history.
-     */
-    @Override
-    public boolean canUseHistory() {
-        return true;
-    }
-
-    
     @Override
     public MutableSparseVector score(UserHistory<? extends Event> userHistory, Collection<Long> items) {
         long user = userHistory.getUserId();
