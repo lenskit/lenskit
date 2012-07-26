@@ -237,6 +237,18 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
     }
 
+    private double setAt(int idx, double value) {
+        if (idx >= 0) {
+            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
+            values[idx] = value;
+            clearCachedValues();
+            usedKeys.set(idx);
+            return v;
+        } else {
+            return Double.NaN;
+        }
+    }
+
     /**
      * Set a value in the vector.
      * 
@@ -248,15 +260,27 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     public final double set(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
-        if (idx >= 0) {
-            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
-            values[idx] = value;
-            clearCachedValues();
-            usedKeys.set(idx);
-            return v;
-        } else {
-            return Double.NaN;
+        return setAt(idx, value);
+    }
+
+    /**
+     * Set the value in the vector corresponding to a vector entry. This is
+     * used in lieu of providing a {@code setValue} method on {@link VectorEntry},
+     * and changes the value in constant time. The value on the entry is also changed
+     * to reflect the new value.
+     *
+     * @param entry The entry to update.
+     * @param value The new value.
+     * @return The old value.
+     * @throws IllegalArgumentException if {@code entry} does not come from this vector.
+     */
+    public final double set(VectorEntry entry, double value) {
+        if (entry.vector != this) {
+            throw new IllegalArgumentException("entry not from correct vector");
         }
+        final int idx = entry.getIndex();
+        entry.setValue(value);
+        return setAt(idx, value);
     }
     
     /**
@@ -486,7 +510,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         @Override @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            return new VectorEntry(keys[pos], values[pos]);
+            return new VectorEntry(MutableSparseVector.this, pos, keys[pos], values[pos]);
         }
         @Override
         public void remove() {
@@ -495,7 +519,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     }
 
     final class FastIterImpl implements Iterator<VectorEntry> {
-        VectorEntry entry = new VectorEntry(0,0);
+        VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0,0);
         BitSetIterator iter = new BitSetIterator(usedKeys);
         @Override
         public boolean hasNext() {
@@ -504,7 +528,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         @Override @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            entry.set(keys[pos], values[pos]);
+            entry.set(pos, keys[pos], values[pos]);
             return entry;
         }
         @Override

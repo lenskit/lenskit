@@ -18,16 +18,27 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import javax.annotation.Nullable;
+
 /**
  * @author Michael Ekstrand
  */
-public class VectorEntry {
+public final class VectorEntry {
+    @Nullable
+    final SparseVector vector;
+    private int index;
     private long key;
     private double value;
 
-    public VectorEntry(long k, double v) {
+    VectorEntry(@Nullable SparseVector vec, int i, long k, double val) {
+        vector = vec;
+        index = i;
         key = k;
-        value = v;
+        value = val;
+    }
+
+    public VectorEntry(long k, double v) {
+        this(null, -1, k, v);
     }
 
     public long getKey() {
@@ -38,8 +49,22 @@ public class VectorEntry {
         return value;
     }
 
+    int getIndex() {
+        return index;
+    }
+
+    void set(int i, long k, double v) {
+        index = i;
+        key = k;
+        value = v;
+    }
+
     void set(long k, double v) {
         key = k;
+        value = v;
+    }
+
+    void setValue(double v) {
         value = v;
     }
 }
