@@ -20,6 +20,8 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import static org.junit.Assert.assertNull;
+
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.junit.Test;
@@ -213,6 +215,54 @@ public abstract class SparseVectorTestCommon {
                                         }
                                     }), Long.class);
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
+    }
+    @Test
+    public void testVectorsGetPairedValues() {
+        Iterator noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIterator(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair lastPair = pair;
+        pair = pairIter.next();
+        // normal iteration returns new objects
+        assertTrue(lastPair.getKey() == 3);
+        assertTrue(lastPair.getValue1() == 1.5);
+        assertTrue(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
+    }
+    @Test
+    public void testVectorsGetPairedValuesFast() {
+        Iterator noPairs = Vectors.pairedIteratorFast(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIteratorFast(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair lastPair = pair;
+        pair = pairIter.next();
+        // fast iteration modifies and returns the same object
+        assertFalse(lastPair.getKey() == 3);
+        assertFalse(lastPair.getValue1() == 1.5);
+        assertFalse(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
     }
     @Test
     public void testFast() {
