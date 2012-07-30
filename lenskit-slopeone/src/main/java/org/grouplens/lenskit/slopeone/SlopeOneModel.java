@@ -20,7 +20,6 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;

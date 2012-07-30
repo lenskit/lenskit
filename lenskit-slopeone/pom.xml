@@ -15,5 +15,12 @@
           <type>jar</type>
           <scope>compile</scope>
   	</dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-knn</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>

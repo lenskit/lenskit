@@ -28,8 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class SimpleModelBuildStrategy implements
-        ItemItemModelBuildStrategy {
+class SimpleModelBuildStrategy implements ItemItemModelBuildStrategy {
     private final static Logger logger = LoggerFactory.getLogger(SimpleModelBuildStrategy.class);
 
     private final ItemSimilarity similarityFunction;
@@ -39,25 +38,25 @@ class SimpleModelBuildStrategy implements
     }
 
     @Override
-    public void buildMatrix(ItemItemBuildContext context,
-                            SimilarityMatrixAccumulator accum) {
+    public void buildModel(ItemItemBuildContext context,
+                           SimilarityMatrixAccumulator accum) {
         final boolean symmetric = similarityFunction.isSymmetric();
         logger.debug("Building {} model", symmetric ? "symmetric" : "asymmetric");
         LongSortedSet items = context.getItems();
-        LongIterator iit = items.iterator();
-        while (iit.hasNext()) {
-            final long i = iit.nextLong();
+        LongIterator itemIter = items.iterator();
+        while (itemIter.hasNext()) {
+            final long itemId = itemIter.nextLong();
             // if it is symmetric, trim the item list.
-            LongIterator jit = symmetric ? items.iterator(i) : items.iterator();
-            while (jit.hasNext()) {
-                final long j = jit.nextLong();
-                if (i == j) continue;
+            LongIterator otherIter = symmetric ? items.iterator(itemId) : items.iterator();
+            while (otherIter.hasNext()) {
+                final long otherId = otherIter.nextLong();
+                if (itemId == otherId) continue;
                 double sim =
-                        similarityFunction.similarity(j, context.itemVector(j),
-                                                      i, context.itemVector(i));
-                accum.put(i, j, sim);
+                        similarityFunction.similarity(otherId, context.itemVector(otherId),
+                                                      itemId, context.itemVector(itemId));
+                accum.put(itemId, otherId, sim);
                 if (symmetric) {
-                    accum.put(j, i, sim);
+                    accum.put(otherId, itemId, sim);
                 }
             }
         }

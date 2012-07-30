@@ -42,6 +42,7 @@ public class ItemItemBuildContext {
     private @Nonnull LongSortedSet items;
     private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
     private @Nullable Long2ObjectMap<LongSortedSet> userItemSets;
+    // TODO: set up fancy vector iterators
 
     /**
      * Set up a new item build context.

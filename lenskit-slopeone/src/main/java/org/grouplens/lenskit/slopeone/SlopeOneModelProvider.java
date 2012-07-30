@@ -18,15 +18,15 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.knn.item.ItemItemBuildContext;
+import org.grouplens.lenskit.knn.item.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.util.Indexer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,52 +41,41 @@ import javax.inject.Provider;
  */
 public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
-    
-    private final BaselinePredictor baseline;
+    private final SlopeOneModelBuildStrategy buildStrategy;
+
+    private final DataAccessObject dao;
+    private final BaselinePredictor predictor;
     private final PreferenceDomain domain;
-    
-    private final PreferenceSnapshot snapshot;
-    private UserVectorNormalizer normalizer;
+    private final ItemItemBuildContextFactory contextFactory;
+    private final UserHistorySummarizer userSummarizer;
+    private final Indexer itemIndex;
 
     @Inject
-    public SlopeOneModelProvider(@Transient @Nonnull PreferenceSnapshot snap,
-                                 @Transient @Nonnull UserVectorNormalizer norm,
+    public SlopeOneModelProvider(@Transient @Nonnull DataAccessObject dao,
                                  @Nullable BaselinePredictor predictor,
-                                 @Nonnull PreferenceDomain dom,
+                                 @Nonnull PreferenceDomain domain,
+                                 @Transient ItemItemBuildContextFactory contextFactory,
+                                 UserHistorySummarizer userSummarizer,
                                  @Damping double damping) {
-        snapshot = snap;
-        normalizer = norm;
 
-        domain = dom;
-        baseline = predictor;
-        accumulator = new SlopeOneModelDataAccumulator(damping, this.snapshot);
+        this.dao = dao;
+        this.predictor = predictor;
+        this.domain = domain;
+        this.contextFactory = contextFactory;
+        this.userSummarizer = userSummarizer;
+        itemIndex = new Indexer();
+        accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
+        buildStrategy = new SlopeOneModelBuildStrategy();
     }
 
     /**
-     * Constructs a {@link SlopeOneModel} and the necessary matrices from
-     * a {@link org.grouplens.lenskit.data.snapshot.PreferenceSnapshot}.
+     * Constructs and returns a {@link SlopeOneModel}.
      */
     @Override
     public SlopeOneModel get() {
-        LongIterator userIter = snapshot.getUserIds().iterator();
-    	while (userIter.hasNext()) {
-            long u = userIter.nextLong();
-    		SparseVector ratings = snapshot.userRatingVector(u);
-            SparseVector normed = normalizer.normalize(u, ratings, null);
-            LongIterator iter = normed.keySet().iterator();
-            while (iter.hasNext()) {
-                long item1 = iter.nextLong();
-                LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
-                if (iter2.hasNext()) {
-                    iter2.nextLong();
-                }
-                while (iter2.hasNext()) {
-                    long item2 = iter2.nextLong();
-                    accumulator.putRatingPair(item1, normed.get(item1), item2, normed.get(item2));
-                }
-            }
-        }
-        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
-                                 baseline, snapshot.itemIndex(), domain);
+        ItemItemBuildContext buildContext = contextFactory.buildContext(buildStrategy);
+        buildStrategy.buildModel(buildContext, dao, userSummarizer, accumulator);
+        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
+                predictor, itemIndex, domain);
     }
 }

@@ -31,8 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-class SparseModelBuildStrategy implements
-        ItemItemModelBuildStrategy {
+class SparseModelBuildStrategy implements ItemItemModelBuildStrategy {
     private final ItemSimilarity similarityFunction;
 
     SparseModelBuildStrategy(ItemSimilarity sim) {
@@ -41,40 +40,40 @@ class SparseModelBuildStrategy implements
     }
 
     @Override
-    public void buildMatrix(ItemItemBuildContext context,
-                            SimilarityMatrixAccumulator accum) {
+    public void buildModel(ItemItemBuildContext context,
+                           SimilarityMatrixAccumulator accum) {
         final LongSortedSet items = context.getItems();
         final boolean symmetric = similarityFunction.isSymmetric();
 
-        LongIterator iit = items.iterator();
-        while (iit.hasNext()) {
-            final long i = iit.nextLong();
-            final SparseVector v = context.itemVector(i);
-            final LongSet candidates = new LongOpenHashSet();
-            final LongIterator uiter = v.keySet().iterator();
-            while (uiter.hasNext()) {
-                final long user = uiter.nextLong();
-                LongSortedSet uitems = context.userItems(user);
+        LongIterator itemIter = items.iterator();
+        while (itemIter.hasNext()) {
+            final long itemId = itemIter.nextLong();
+            final SparseVector itemVec = context.itemVector(itemId);
+            final LongSet coRatings = new LongOpenHashSet();
+            final LongIterator userIter = itemVec.keySet().iterator();
+            while (userIter.hasNext()) {
+                final long userId = userIter.nextLong();
+                LongSortedSet userItems = context.userItems(userId);
                 if (symmetric) {
-                    uitems = uitems.headSet(i);
+                    userItems = userItems.headSet(itemId);
                 }
-                candidates.addAll(uitems);
+                coRatings.addAll(userItems);
             }
 
-            final LongIterator iter = candidates.iterator();
-            while (iter.hasNext()) {
-                final long j = iter.nextLong();
+            final LongIterator coRatingsIter = coRatings.iterator();
+            while (coRatingsIter.hasNext()) {
+                final long coRatingId = coRatingsIter.nextLong();
 
-                if (i == j) {
+                if (itemId == coRatingId) {
                     continue;
                 }
 
                 final double sim =
-                        similarityFunction.similarity(j, context.itemVector(j),
-                                                      i, v);
-                accum.put(i, j, sim);
+                        similarityFunction.similarity(coRatingId, context.itemVector(coRatingId),
+                                                      itemId, itemVec);
+                accum.put(itemId, coRatingId, sim);
                 if (symmetric) {
-                    accum.put(j, i, sim);
+                    accum.put(coRatingId, itemId, sim);
                 }
             }
         }

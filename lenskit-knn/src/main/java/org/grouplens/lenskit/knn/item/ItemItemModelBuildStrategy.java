@@ -28,18 +28,13 @@ package org.grouplens.lenskit.knn.item;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
-public interface ItemItemModelBuildStrategy {
-    /**
-     * Query whether this strategy requires the build state to have easy access
-     * to the sets of items rated by each user.
-     * @return {@code true} if the strategy requires the item sets.
-     */
-    boolean needsUserItemSets();
+public interface ItemItemModelBuildStrategy extends ModelBuildStrategy {
 
     /**
-     * Build the item-item matrix.
+     * Build the item-item model.
      * @param context The data to be used to compute similarities.
      * @param accum The accumulator into which similarities should be stored.
      */
-    void buildMatrix(ItemItemBuildContext context, SimilarityMatrixAccumulator accum);
+    void buildModel(ItemItemBuildContext context, SimilarityMatrixAccumulator accum);
+
 }

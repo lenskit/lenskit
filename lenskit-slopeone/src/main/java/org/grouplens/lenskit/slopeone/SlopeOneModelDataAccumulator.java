@@ -18,12 +18,14 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.util.Index;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import org.grouplens.lenskit.util.Indexer;
 
 public class SlopeOneModelDataAccumulator {
 
@@ -36,25 +38,25 @@ public class SlopeOneModelDataAccumulator {
      * Creates an accumulator to process rating data and generate the necessary data for
      * a <tt>SlopeOneRatingPredictor</tt>.
      * @param damping A damping term for deviation calculations.
-     * @param snapshot The rating data.
+     * @param itemIndex An Index for items in the model
+     * @param dao The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, PreferenceSnapshot snapshot) {
+    public SlopeOneModelDataAccumulator(double damping, Indexer itemIndex, DataAccessObject dao) {
         this.damping = damping;
-        itemIndex = snapshot.itemIndex();
-        long[] items = snapshot.getItemIds().toLongArray();
-        deviationMatrix = new Long2DoubleOpenHashMap[itemIndex.getObjectCount()];
-        coratingMatrix = new Long2IntOpenHashMap[itemIndex.getObjectCount()];
+        this.itemIndex = itemIndex;
+        long[] items = Cursors.makeList(dao.getItems()).elements();
+        deviationMatrix = new Long2DoubleOpenHashMap[items.length];
+        coratingMatrix = new Long2IntOpenHashMap[items.length];
         for (long itemId : items) {
-            deviationMatrix[itemIndex.getIndex(itemId)] = new Long2DoubleOpenHashMap();
-            coratingMatrix[itemIndex.getIndex(itemId)] = new Long2IntOpenHashMap();
+            deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
+            coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
         }
         for (int i = 0; i < items.length-1; i++) {
-        	for (int j = i; j < items.length; j++) {
-                if (items[i] < items[j]) {
-                    deviationMatrix[itemIndex.getIndex(items[i])].put(items[j], Double.NaN);
-                } else {
-                	deviationMatrix[itemIndex.getIndex(items[j])].put(items[i], Double.NaN);
-                }
+            for (int j = i; j < items.length; j++) {
+                // to profit from matrix symmetry, always store by minId
+                long minId = Math.min(items[i], items[j]);
+                long maxId = Math.max(items[i], items[j]);
+                deviationMatrix[itemIndex.getIndex(minId)].put(maxId, Double.NaN);
             }
         }
     }
@@ -67,30 +69,17 @@ public class SlopeOneModelDataAccumulator {
      * @param rating2 The user's rating of the second item.
      */
     public void putRatingPair(long id1, double rating1, long id2, double rating2) {
-    	if (id1 != id2) {
-    		if (id1 < id2) {
-    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
-    			if (Double.isNaN(currentDeviation)) {
-    				deviationMatrix[itemIndex.getIndex(id1)].put(id2, rating1 - rating2);
-    			} else {
-    				deviationMatrix[itemIndex.getIndex(id1)].put(id2,
-    					currentDeviation + (rating1 - rating2));
-    			}
-    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
-    			coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
-    		}
-    		else {
-    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id2)].get(id1);
-    			if (Double.isNaN(currentDeviation)) {
-    				deviationMatrix[itemIndex.getIndex(id2)].put(id1, rating2 - rating1);
-    			} else {
-    				deviationMatrix[itemIndex.getIndex(id2)].put(id1,
-    					currentDeviation + (rating2 - rating1));
-    			}
-    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id2)].get(id1);
-    			coratingMatrix[itemIndex.getIndex(id2)].put(id1,  currentCoratings + 1);
-    		}
-    	}
+        if (id1 != id2 && id1 < id2) {
+            double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
+            if (Double.isNaN(currentDeviation)) {
+                deviationMatrix[itemIndex.getIndex(id1)].put(id2, rating1 - rating2);
+            } else {
+                deviationMatrix[itemIndex.getIndex(id1)].put(id2,
+                        currentDeviation + (rating1 - rating2));
+            }
+            int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
+            coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
+        }
     }
 
     /**
