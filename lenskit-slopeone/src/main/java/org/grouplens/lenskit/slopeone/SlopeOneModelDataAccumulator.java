@@ -69,14 +69,11 @@ public class SlopeOneModelDataAccumulator {
      * @param rating2 The user's rating of the second item.
      */
     public void putRatingPair(long id1, double rating1, long id2, double rating2) {
-        if (id1 != id2 && id1 < id2) {
+        if (id1 < id2) {
             double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
-            if (Double.isNaN(currentDeviation)) {
-                deviationMatrix[itemIndex.getIndex(id1)].put(id2, rating1 - rating2);
-            } else {
-                deviationMatrix[itemIndex.getIndex(id1)].put(id2,
-                        currentDeviation + (rating1 - rating2));
-            }
+            currentDeviation = Double.isNaN(currentDeviation) ? 0.0 : currentDeviation;
+            deviationMatrix[itemIndex.getIndex(id1)].put(id2,
+                    currentDeviation + (rating1 - rating2));
             int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
             coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
         }

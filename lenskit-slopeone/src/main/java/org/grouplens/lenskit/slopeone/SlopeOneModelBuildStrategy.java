@@ -19,22 +19,20 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.item.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.ModelBuildStrategy;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.Vectors;
 
 /**
- * Slope One model build strategy. Constructs
+ * Slope One model build strategy. Constructs the co-ratings and
+ * deviation matrices.
  */
 public class SlopeOneModelBuildStrategy implements ModelBuildStrategy {
 
 
     public void buildModel(ItemItemBuildContext context,
-             DataAccessObject dao, UserHistorySummarizer userSummarizer,
-             SlopeOneModelDataAccumulator accumulator) {
+                           SlopeOneModelDataAccumulator accumulator) {
 
         final LongSortedSet items = context.getItems();
         LongIterator itemIter = items.iterator();
@@ -42,15 +40,14 @@ public class SlopeOneModelBuildStrategy implements ModelBuildStrategy {
             final long itemId = itemIter.nextLong();
             SparseVector itemVec = context.itemVector(itemId);
 
-            final LongIterator userIter = itemVec.keySet().iterator();
-            while (userIter.hasNext()) {
-                final long userId = userIter.nextLong();
-
-                final SparseVector userRatings = userSummarizer.summarize(dao.getUserHistory(userId));
-                final double userItemRating = userRatings.get(itemId);
-                for (VectorEntry userRating : userRatings.fast()) {
-                    accumulator.putRatingPair(itemId, userItemRating,
-                            userRating.getKey(), userRating.getValue());
+            LongIterator otherIter = items.iterator();
+            while (otherIter.hasNext()) {
+                final long otherId = otherIter.nextLong();
+                if (itemId < otherId) {
+                    SparseVector otherVec = context.itemVector(otherId);
+                    for (Vectors.EntryPair coRating : Vectors.pairedFast(itemVec, otherVec)) {
+                        accumulator.putRatingPair(itemId, coRating.getValue1(), otherId, coRating.getValue2());
+                    }
                 }
             }
         }

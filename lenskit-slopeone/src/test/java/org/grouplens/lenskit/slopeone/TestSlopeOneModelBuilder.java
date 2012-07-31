@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.knn.item.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
-import org.grouplens.lenskit.util.Indexer;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class TestSlopeOneModelBuilder {
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
                 dao, new DefaultUserVectorNormalizer(), summarizer);
         SlopeOneModelProvider provider = new SlopeOneModelProvider(
-                dao, null, new PreferenceDomain(1, 5), contextFactory, summarizer, 0);
+                dao, null, new PreferenceDomain(1, 5), contextFactory, 0);
         return provider.get();
     }
 

@@ -21,7 +21,6 @@ package org.grouplens.lenskit.slopeone;
 import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.knn.item.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.ItemItemBuildContextFactory;
@@ -43,11 +42,9 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
     private final SlopeOneModelBuildStrategy buildStrategy;
 
-    private final DataAccessObject dao;
     private final BaselinePredictor predictor;
     private final PreferenceDomain domain;
     private final ItemItemBuildContextFactory contextFactory;
-    private final UserHistorySummarizer userSummarizer;
     private final Indexer itemIndex;
 
     @Inject
@@ -55,14 +52,11 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
                                  @Nullable BaselinePredictor predictor,
                                  @Nonnull PreferenceDomain domain,
                                  @Transient ItemItemBuildContextFactory contextFactory,
-                                 UserHistorySummarizer userSummarizer,
                                  @Damping double damping) {
 
-        this.dao = dao;
         this.predictor = predictor;
         this.domain = domain;
         this.contextFactory = contextFactory;
-        this.userSummarizer = userSummarizer;
         itemIndex = new Indexer();
         accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
         buildStrategy = new SlopeOneModelBuildStrategy();
@@ -74,7 +68,7 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     @Override
     public SlopeOneModel get() {
         ItemItemBuildContext buildContext = contextFactory.buildContext(buildStrategy);
-        buildStrategy.buildModel(buildContext, dao, userSummarizer, accumulator);
+        buildStrategy.buildModel(buildContext, accumulator);
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
                 predictor, itemIndex, domain);
     }
