@@ -35,6 +35,8 @@ import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
 
+import javax.annotation.Nonnull;
+
 /**
  * Mutable sparse vector interface
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -114,8 +116,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length. The
      * key array is the key domain, and all keys are considered used.
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing this vector. They must be sorted.
+     * @param values The array of values backing this vector.
      */
     protected MutableSparseVector(long[] keys, double[] values) {
         this(keys, values, keys.length);
@@ -127,8 +129,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      * 
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing the vector. It must be sorted.
+     * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
      */
     protected MutableSparseVector(long[] keys, double[] values, int length) {
@@ -147,8 +149,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      * 
-     * @param keys
-     * @param values
+     * @param keys The array of keys backing the vector.
+     * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
      * @param used The entries in use.
      */
@@ -205,12 +207,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     }
     
     @Override
-    public Iterator<Long2DoubleMap.Entry> iterator() {
+    public Iterator<VectorEntry> iterator() {
         return new IterImpl();
     }
     
     @Override
-    public Iterator<Long2DoubleMap.Entry> fastIterator() {
+    public Iterator<VectorEntry> fastIterator() {
         return new FastIterImpl();
     }
     
@@ -235,6 +237,18 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
     }
 
+    private double setAt(int idx, double value) {
+        if (idx >= 0) {
+            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
+            values[idx] = value;
+            clearCachedValues();
+            usedKeys.set(idx);
+            return v;
+        } else {
+            return Double.NaN;
+        }
+    }
+
     /**
      * Set a value in the vector.
      * 
@@ -246,15 +260,27 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     public final double set(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
-        if (idx >= 0) {
-            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
-            values[idx] = value;
-            clearCachedValues();
-            usedKeys.set(idx);
-            return v;
-        } else {
-            return Double.NaN;
+        return setAt(idx, value);
+    }
+
+    /**
+     * Set the value in the vector corresponding to a vector entry. This is
+     * used in lieu of providing a {@code setValue} method on {@link VectorEntry},
+     * and changes the value in constant time. The value on the entry is also changed
+     * to reflect the new value.
+     *
+     * @param entry The entry to update.
+     * @param value The new value.
+     * @return The old value.
+     * @throws IllegalArgumentException if {@code entry} does not come from this vector.
+     */
+    public final double set(VectorEntry entry, double value) {
+        if (entry.vector != this) {
+            throw new IllegalArgumentException("entry not from correct vector");
         }
+        final int idx = entry.getIndex();
+        entry.setValue(value);
+        return setAt(idx, value);
     }
     
     /**
@@ -295,7 +321,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * @param value The value to increase it by.
      * @return The new value. If the key is not in the key domain,
      *         {@link Double#NaN} is returned.
+     * @deprecated Generally not wanted. Will be removed by LensKit 1.0.
      */
+    @Deprecated @SuppressWarnings("unused")
     public final double addOrSet(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
@@ -326,8 +354,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -335,8 +363,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k && usedKeys.get(i)) {
-                values[i] -= oe.getDoubleValue();
-            } // otherwise, key is greater; advance outer 
+                values[i] -= oe.getValue();
+            } // otherwise, key is greater; advance outer
         }
     }
 
@@ -352,8 +380,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -361,7 +389,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k && usedKeys.get(i)) {
-                values[i] += oe.getDoubleValue();
+                values[i] += oe.getValue();
             } // otherwise, key is greater; advance outer 
         }
     }
@@ -382,8 +410,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         checkValid();
         clearCachedValues();
         int i = 0;
-        for (Long2DoubleMap.Entry oe : other.fast()) {
-            final long k = oe.getLongKey();
+        for (VectorEntry oe : other.fast()) {
+            final long k = oe.getKey();
             while (i < domainSize && keys[i] < k) {
                 i++;
             }
@@ -391,7 +419,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
                 break; // no more entries
             }
             if (keys[i] == k) {
-                values[i] = oe.getDoubleValue();
+                values[i] = oe.getValue();
                 usedKeys.set(i);
             } // otherwise, key is greater; advance outer 
         }
@@ -475,15 +503,16 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         return isv;
     }
     
-    final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
+    final class IterImpl implements Iterator<VectorEntry> {
         BitSetIterator iter = new BitSetIterator(usedKeys);
         @Override
         public boolean hasNext() {
             return iter.hasNext();
         }
-        @Override
-        public Entry next() {
-            return new Entry(iter.nextInt());
+        @Override @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            return new VectorEntry(MutableSparseVector.this, pos, keys[pos], values[pos]);
         }
         @Override
         public void remove() {
@@ -491,16 +520,17 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
     }
 
-    final class FastIterImpl implements Iterator<Long2DoubleMap.Entry> {
-        Entry entry = new Entry(-1);
+    final class FastIterImpl implements Iterator<VectorEntry> {
+        VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0,0);
         BitSetIterator iter = new BitSetIterator(usedKeys);
         @Override
         public boolean hasNext() {
             return iter.hasNext();
         }
-        @Override
-        public Entry next() {
-            entry.pos = iter.nextInt();
+        @Override @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            entry.set(pos, keys[pos], values[pos]);
             return entry;
         }
         @Override
@@ -509,40 +539,6 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
     }
 
-    private final class Entry implements Long2DoubleMap.Entry {
-        int pos;
-        public Entry(int p) {
-            pos = p;
-        }
-        @Override
-        public double getDoubleValue() {
-            return values[pos];
-        }
-        @Override
-        public long getLongKey() {
-            return keys[pos];
-        }
-        @Override
-        public double setValue(double value) {
-            assert usedKeys.get(pos);
-            double v = values[pos];
-            values[pos] = value;
-            return v;
-        }
-        @Override
-        public Long getKey() {
-            return getLongKey();
-        }
-        @Override
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        @Override
-        public Double setValue(Double value) {
-            throw new UnsupportedOperationException();
-        }
-    }
-    
     /**
      * Wrap key and value arrays in a sparse vector.
      *

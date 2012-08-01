@@ -18,27 +18,22 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import static org.junit.Assert.assertNull;
+
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.junit.Test;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import static org.grouplens.common.test.MoreMatchers.closeTo;
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.*;
 
 public abstract class SparseVectorTestCommon {
     /**
@@ -161,14 +156,12 @@ public abstract class SparseVectorTestCommon {
             /* no-op */
         }
     
-        Iterator<Long2DoubleMap.Entry> iter = singleton().iterator();
+        Iterator<VectorEntry> iter = singleton().iterator();
         assertTrue(iter.hasNext());
-        Long2DoubleMap.Entry e = iter.next();
+        VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getLongKey());
-        assertEquals(Long.valueOf(5), e.getKey());
-        assertThat(e.getDoubleValue(), closeTo(Math.PI));
-        assertThat(e.getValue(), closeTo(Double.valueOf(Math.PI)));
+        assertEquals(5, e.getKey());
+        assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
             fail("iter.next() should throw exception");
@@ -176,15 +169,16 @@ public abstract class SparseVectorTestCommon {
             /* no-op */
         }
     
-        Long2DoubleMap.Entry[] entries = Iterators.toArray(
-                simpleVector().iterator(), Long2DoubleMap.Entry.class);
+        VectorEntry[] entries =
+                Iterators.toArray(simpleVector().iterator(),
+                                  VectorEntry.class);
         assertEquals(3, entries.length);
-        assertEquals(3, entries[0].getLongKey());
-        assertEquals(7, entries[1].getLongKey());
-        assertEquals(8, entries[2].getLongKey());
-        assertThat(entries[0].getDoubleValue(), closeTo(1.5));
-        assertThat(entries[1].getDoubleValue(), closeTo(3.5));
-        assertThat(entries[2].getDoubleValue(), closeTo(2));
+        assertEquals(3, entries[0].getKey());
+        assertEquals(7, entries[1].getKey());
+        assertEquals(8, entries[2].getKey());
+        assertThat(entries[0].getValue(), closeTo(1.5));
+        assertThat(entries[1].getValue(), closeTo(3.5));
+        assertThat(entries[2].getValue(), closeTo(2));
     }
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#fastIterator()}.
@@ -199,14 +193,12 @@ public abstract class SparseVectorTestCommon {
             /* no-op */
         }
     
-        Iterator<Long2DoubleMap.Entry> iter = singleton().fastIterator();
+        Iterator<VectorEntry> iter = singleton().fastIterator();
         assertTrue(iter.hasNext());
-        Long2DoubleMap.Entry e = iter.next();
+        VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getLongKey());
-        assertEquals(Long.valueOf(5), e.getKey());
-        assertThat(e.getDoubleValue(), closeTo(Math.PI));
-        assertThat(e.getValue(), closeTo(Double.valueOf(Math.PI)));
+        assertEquals(5, e.getKey());
+        assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
             fail("iter.next() should throw exception");
@@ -216,13 +208,61 @@ public abstract class SparseVectorTestCommon {
     
         Long[] keys = Iterators.toArray(
                 Iterators.transform(simpleVector().fastIterator(),
-                        new Function<Long2DoubleMap.Entry,Long>() {
-                    @Override
-                    public Long apply(Long2DoubleMap.Entry e) {
-                        return e.getKey();
-                    }
-                }), Long.class);
+                                    new Function<VectorEntry,Long>() {
+                                        @Override
+                                        public Long apply(VectorEntry e) {
+                                            return e.getKey();
+                                        }
+                                    }), Long.class);
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
+    }
+    @Test
+    public void testVectorsGetPairedValues() {
+        Iterator noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIterator(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair lastPair = pair;
+        pair = pairIter.next();
+        // normal iteration returns new objects
+        assertTrue(lastPair.getKey() == 3);
+        assertTrue(lastPair.getValue1() == 1.5);
+        assertTrue(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
+    }
+    @Test
+    public void testVectorsGetPairedValuesFast() {
+        Iterator noPairs = Vectors.pairedIteratorFast(emptyVector(), simpleVector());
+        assertFalse(noPairs.hasNext());
+        assertNull(noPairs.next());
+        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIteratorFast(simpleVector(), simpleVector2());
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair pair = pairIter.next();
+        assertTrue(pair.getKey() == 3);
+        assertTrue(pair.getValue1() == 1.5);
+        assertTrue(pair.getValue2() == 2.0);
+        assertTrue(pairIter.hasNext());
+        Vectors.EntryPair lastPair = pair;
+        pair = pairIter.next();
+        // fast iteration modifies and returns the same object
+        assertFalse(lastPair.getKey() == 3);
+        assertFalse(lastPair.getValue1() == 1.5);
+        assertFalse(lastPair.getValue2() == 2.0);
+        assertTrue(pair.getKey() == 8);
+        assertTrue(pair.getValue1() == 2.0);
+        assertTrue(pair.getValue2() == 1.7);
+        assertFalse(pairIter.hasNext());
+        assertNull(pairIter.next());
     }
     @Test
     public void testFast() {

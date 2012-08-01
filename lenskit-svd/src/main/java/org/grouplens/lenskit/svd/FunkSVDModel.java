@@ -30,31 +30,48 @@ public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;
 
     public final int featureCount;
-    public final double itemFeatures[][];
-    public final double userFeatures[][];
+    public final double[][] itemFeatures;
+    public final double[][] userFeatures;
     public final ClampingFunction clampingFunction;
 
     public final Index itemIndex;
     public final Index userIndex;
     public final BaselinePredictor baseline;
 
+    public final double[] averUserFeatures;
+    public final double[] averItemFeatures;
+    public final int numUser;
+    public final int numItem;
+    
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
                         BaselinePredictor baseline) {
         featureCount = nfeatures;
+        clampingFunction = clamp;
+        this.baseline = baseline;
+        
         itemFeatures = ifeats;
         userFeatures = ufeats;
-        clampingFunction = clamp;
+        
         itemIndex = iidx;
         userIndex = uidx;
-        this.baseline = baseline;
+        
+        numItem = iidx.getIds().size();
+        numUser = uidx.getIds().size();
+        
+        averItemFeatures = getAverageFeatureVector(ifeats, numItem, featureCount);
+        averUserFeatures = getAverageFeatureVector(ufeats, numUser, featureCount);
+        
     }
 
-    public double getItemFeatureValue(int item, int feature) {
-        return itemFeatures[feature][item];
-    }
-
-    public int getItemIndex(long item) {
-        return itemIndex.getIndex(item);
+    private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature){
+    	double[] outputVector = new double[feature];
+    	for (int i = 0; i < feature; i++){
+    		for (int j = 0; j < dimension; j++){
+    			outputVector[i] += twoDimMatrix[i][j];
+    		}
+    		outputVector[i] = outputVector[i] / dimension;
+    	}
+    	return outputVector;
     }
 }

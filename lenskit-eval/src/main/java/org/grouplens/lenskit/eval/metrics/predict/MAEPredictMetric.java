@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,10 +74,10 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             double err = 0;
             int n = 0;
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
+            for (VectorEntry e: predictions.fast()) {
+                if (Double.isNaN(e.getValue())) continue;
 
-                err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
+                err += abs(e.getValue() - ratings.get(e.getKey()));
                 n++;
             }
 

@@ -19,12 +19,6 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap.Entry;
-
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -34,6 +28,10 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * <p>
@@ -174,20 +172,20 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            for (Entry rating : vector.fast()) {
-                vector.set(rating.getLongKey(), /* r' = (r - u) / s */
+            for (VectorEntry rating : vector.fast()) {
+                vector.set(rating.getKey(), /* r' = (r - u) / s */
                         stdev == 0? 0 : // edge case
-                            (rating.getDoubleValue() - mean) / stdev);
+                            (rating.getValue() - mean) / stdev);
             }
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            for (Entry rating : vector.fast()) {
-                vector.set(rating.getLongKey(), /* r = r' * s + u */
+            for (VectorEntry rating : vector.fast()) {
+                vector.set(rating.getKey(), /* r = r' * s + u */
                         stdev == 0? mean : // edge case
-                        (rating.getDoubleValue() * stdev) + mean);
+                        (rating.getValue() * stdev) + mean);
             }
             return vector;
         }

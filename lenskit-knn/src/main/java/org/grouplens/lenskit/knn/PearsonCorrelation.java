@@ -18,9 +18,10 @@
  */
 package org.grouplens.lenskit.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -69,7 +70,7 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
          * the dot product and simultaneously computing the variance within each
          * vector of the items also contained in the other vector.  Pearson
          * correlation only considers items shared by both vectors; other items
-         * aren't entirely discarded for the purpose of similarity computation.
+         * are discarded for the purpose of similarity computation.
          */
         final double mu1 = vec1.mean();
         final double mu2 = vec2.mean();
@@ -77,40 +78,16 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         double var1 = 0;
         double var2 = 0;
         double dot = 0;
-        int nCoratings = 0; // number of common items rated
-        Iterator<Long2DoubleMap.Entry> it1 = vec1.fastIterator();
-        Iterator<Long2DoubleMap.Entry> it2 = vec2.fastIterator();
-        Long2DoubleMap.Entry e1 = it1.next();
-        Long2DoubleMap.Entry e2 = it2.next();
-        do {
-            /* Do one step of the parallel walk.  If the two entries have the
-             * same key, add to the accumulators and advance both.  Otherwise,
-             * advance the one further back to try to catch up.
-             */
-            // TODO Fix this loop to have cleaner hasNext/next pairs
-            if (e1.getLongKey() == e2.getLongKey()) {
-                final double v1 = e1.getDoubleValue() - mu1;
-                final double v2 = e2.getDoubleValue() - mu2;
-                var1 += v1 * v1;
-                var2 += v2 * v2;
-                dot += v1 * v2;
-                nCoratings += 1;
-                if (it1.hasNext()) {
-                    e1 = it1.next();
-                }
-                if (it2.hasNext()) {
-                    e2 = it2.next();
-                }
-            } else if (e1.getLongKey() < e2.getLongKey()) {
-                if (it1.hasNext()) {
-                    e1 = it1.next();
-                }
-            } else {
-                if (it2.hasNext()) {
-                    e2 = it2.next();
-                }
-            }
-        } while (it1.hasNext() && it2.hasNext());
+        int nCoratings = 0;
+
+        for (Vectors.EntryPair pair : Vectors.pairedFast(vec1, vec2)) {
+            final double v1 = pair.getValue1() - mu1;
+            final double v2 = pair.getValue2() - mu2;
+            var1 += v1 * v1;
+            var2 += v2 * v2;
+            dot += v1 * v2;
+            nCoratings += 1;
+        }
 
         if (nCoratings == 0) {
             return 0;

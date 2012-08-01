@@ -32,6 +32,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,11 +149,11 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                     userItems = LongArrayList.wrap(userItemArr, 0);
                 }
 
-                for (Long2DoubleMap.Entry rating: normed.fast()) {
-                    final long item = rating.getLongKey();
+                for (VectorEntry rating: normed.fast()) {
+                    final long item = rating.getKey();
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(item);
-                    ivect.put(uid, rating.getDoubleValue());
+                    ivect.put(uid, rating.getValue());
                     if (userItems != null)
                         userItems.add(item);
                 }

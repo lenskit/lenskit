@@ -25,6 +25,7 @@ import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +68,10 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             double usse = 0;
             int n = 0;
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
+            for (VectorEntry e: predictions.fast()) {
+                if (Double.isNaN(e.getValue())) continue;
 
-                double err = e.getDoubleValue() - ratings.get(e.getLongKey());
+                double err = e.getValue() - ratings.get(e.getKey());
                 usse += err * err;
                 n++;
             }

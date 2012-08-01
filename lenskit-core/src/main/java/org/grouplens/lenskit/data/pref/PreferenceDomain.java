@@ -18,10 +18,10 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -115,9 +115,9 @@ public final class PreferenceDomain implements Serializable {
     }
 
     public void clampVector(MutableSparseVector vec) {
-        for (Long2DoubleMap.Entry ve: vec.fast()) {
-            final double v = ve.getDoubleValue();
-            ve.setValue(clampValue(v));
+        for (VectorEntry ve: vec.fast()) {
+            final double v = ve.getValue();
+            vec.set(ve, clampValue(v));
         }
     }
 
