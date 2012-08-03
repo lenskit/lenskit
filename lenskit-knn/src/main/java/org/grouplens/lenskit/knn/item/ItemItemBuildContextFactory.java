@@ -32,7 +32,6 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -41,7 +40,7 @@ import javax.inject.Inject;
  */
 public class ItemItemBuildContextFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextFactory.class);
 
     private final DataAccessObject dao;
     private final UserVectorNormalizer normalizer;
@@ -58,11 +57,9 @@ public class ItemItemBuildContextFactory {
 
     /**
      * Constructs and returns a new ItemItemBuildContext.
-     * @param buildStrategy The ModelBuildStrategy that the build context
-     *                      will be used by.
      * @return a new ItemItemBuildContext.
      */
-    public ItemItemBuildContext buildContext(ModelBuildStrategy buildStrategy) {
+    public ItemItemBuildContext buildContext() {
         logger.info("constructing build context");
         logger.debug("using normalizer {}", normalizer);
         logger.debug("using summarizer {}", userSummarizer);
@@ -71,15 +68,8 @@ public class ItemItemBuildContextFactory {
         LongCollection ilist = Cursors.makeList(dao.getItems());
         LongSortedSet items = new LongSortedArraySet(ilist);
 
-        Long2ObjectMap<LongSortedSet> userItemSets;
-        if (buildStrategy.needsUserItemSets()) {
-            userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>(items.size());
-        } else {
-            userItemSets = null;
-        }
-
         logger.debug("Building item data");
-        Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings(items, userItemSets);
+        Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings(items);
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
@@ -91,27 +81,20 @@ public class ItemItemBuildContextFactory {
         }
         assert itemRatings.size() == itemData.size();
 
-        return new ItemItemBuildContext(items, itemRatings, userItemSets);
+        return new ItemItemBuildContext(items, itemRatings);
     }
 
     /**
      * Transpose the user matrix so we have a matrix of item ids
-     * to ratings. If the parameter userItemSets is not null, modify
-     * it in place to map user ids to rated items.
+     * to ratings.
      * @param items A SortedSet of item ids to be mapped to ratings.
-     * @param userItemSets If not null, an empty structure to be
-     *                     modified to map user ids to rated items.
      * @return a Long2ObjectMap<Long2DoubleMap> encoding a matrix
-     *          of item ids to (userId: rating) pairs. If userItemSets
-     *          is not null, it is modified in place to hold a matrix
-     *          of user ids to item ids the user has rated.
-     * TODO: Fix this method to abstract item collection.
+     *          of item ids to (userId: rating) pairs.
      */
-    private Long2ObjectMap<Long2DoubleMap>
-    buildItemRatings(LongSortedSet items, @Nullable Long2ObjectMap<LongSortedSet> userItemSets) {
+    private Long2ObjectMap<Long2DoubleMap> buildItemRatings(LongSortedSet items) {
         final int nitems = items.size();
 
-        // Create and initialize the transposed array to collect user
+        // Create and initialize the transposed array to collect item vector data
         Long2ObjectMap<Long2DoubleMap> workMatrix =
                 new Long2ObjectOpenHashMap<Long2DoubleMap>(nitems);
         LongIterator iter = items.iterator();
@@ -124,29 +107,12 @@ public class ItemItemBuildContextFactory {
             SparseVector summary = userSummarizer.summarize(dao.getUserHistory(uid));
             MutableSparseVector normed = summary.mutableCopy();
             normalizer.normalize(uid, summary, normed);
-            final int nratings = summary.size();
-
-            // allocate the array ourselves to avoid an array copy
-            long[] userItemArr = null;
-            LongCollection userItems = null;
-            if (userItemSets != null) {
-                // we are collecting user item sets
-                userItemArr = new long[nratings];
-                userItems = LongArrayList.wrap(userItemArr, 0);
-            }
 
             for (VectorEntry rating: normed.fast()) {
                 final long item = rating.getKey();
                 // get the item's rating vector
                 Long2DoubleMap ivect = workMatrix.get(item);
                 ivect.put(uid, rating.getValue());
-                if (userItems != null)
-                    userItems.add(item);
-            }
-            if (userItems != null) {
-                // collected user item sets, finalize that
-                LongSortedSet itemSet = new LongSortedArraySet(userItemArr, 0, userItems.size());
-                userItemSets.put(uid, itemSet);
             }
         }
 

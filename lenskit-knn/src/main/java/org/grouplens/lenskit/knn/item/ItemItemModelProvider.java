@@ -53,22 +53,24 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     @Override
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
-        ItemItemModelBuildStrategy buildStrategy = createBuildStrategy(itemSimilarity);
 
-        ItemItemBuildContext buildContext = contextFactory.buildContext(buildStrategy);
+        ItemItemBuildContext buildContext = contextFactory.buildContext();
         SimilarityMatrixAccumulator accumulator = simMatrixAccumulatorFactory.create(buildContext.getItems());
 
-        buildStrategy.buildModel(buildContext, accumulator);
+        for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
+            if (itemSimilarity.isSymmetric() && pair.itemId1 >= pair.itemId2) {
+                continue;
+            }
+            if (pair.itemId1 != pair.itemId2) {
+                double sim = itemSimilarity.similarity(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
+                accumulator.put(pair.itemId1, pair.itemId2, sim);
+                if (itemSimilarity.isSymmetric()) {
+                    accumulator.put(pair.itemId2, pair.itemId1, sim);
+                }
+            }
+        }
 
         return accumulator.build();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected ItemItemModelBuildStrategy createBuildStrategy(ItemSimilarity similarity) {
-        if (similarity.isSparse()) {
-            return new SparseModelBuildStrategy(similarity);
-        } else {
-            return new SimpleModelBuildStrategy(similarity);
-        }
-    }
 }

@@ -40,7 +40,6 @@ import javax.inject.Provider;
  */
 public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
-    private final SlopeOneModelBuildStrategy buildStrategy;
 
     private final BaselinePredictor predictor;
     private final PreferenceDomain domain;
@@ -59,7 +58,6 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
         this.contextFactory = contextFactory;
         itemIndex = new Indexer();
         accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
-        buildStrategy = new SlopeOneModelBuildStrategy();
     }
 
     /**
@@ -67,8 +65,12 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
      */
     @Override
     public SlopeOneModel get() {
-        ItemItemBuildContext buildContext = contextFactory.buildContext(buildStrategy);
-        buildStrategy.buildModel(buildContext, accumulator);
+        ItemItemBuildContext buildContext = contextFactory.buildContext();
+        for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
+            if (pair.itemId1 != pair.itemId2) {
+                accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
+            }
+        }
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
                 predictor, itemIndex, domain);
     }

@@ -26,6 +26,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.util.Indexer;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
 
 public class SlopeOneModelDataAccumulator {
 
@@ -62,21 +64,25 @@ public class SlopeOneModelDataAccumulator {
     }
 
     /**
-     * Provide a pair of ratings to the accumulator.
+     * Puts the item pair into the accumulator.
      * @param id1 The id of the first item.
-     * @param rating1 The user's rating of the first item.
+     * @param itemVec1 The rating vector of the first item.
      * @param id2 The id of the second item.
-     * @param rating2 The user's rating of the second item.
+     * @param itemVec2 The rating vector of the second item.
      */
-    public void putRatingPair(long id1, double rating1, long id2, double rating2) {
+    public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
         if (id1 < id2) {
-            double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
-            currentDeviation = Double.isNaN(currentDeviation) ? 0.0 : currentDeviation;
-            deviationMatrix[itemIndex.getIndex(id1)].put(id2,
-                    currentDeviation + (rating1 - rating2));
-            int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
-            coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
+            int corating = 0;
+            double deviation = 0.0;
+            for (Vectors.EntryPair pair : Vectors.pairedFast(itemVec1, itemVec2)) {
+                corating++;
+                deviation += pair.getValue1() - pair.getValue2();
+            }
+            deviation = (corating == 0) ? Double.NaN : deviation;
+            deviationMatrix[itemIndex.getIndex(id1)].put(id2, deviation);
+            coratingMatrix[itemIndex.getIndex(id1)].put(id2, corating);
         }
+
     }
 
     /**
