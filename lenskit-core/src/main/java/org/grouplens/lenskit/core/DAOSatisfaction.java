@@ -18,15 +18,12 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.grapht.solver.CachePolicy;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -52,12 +49,12 @@ class DAOSatisfaction implements Satisfaction {
     }
 
     @Override
-    public Provider<?> makeProvider(ProviderSource dependencies) {
-        throw new UnsupportedOperationException();
+    public CachePolicy getDefaultCachePolicy() {
+        return CachePolicy.NO_PREFERENCE;
     }
 
     @Override
-    public Comparator<ContextMatcher> contextComparator() {
+    public Provider<?> makeProvider(ProviderSource dependencies) {
         throw new UnsupportedOperationException();
     }
 
@@ -71,8 +68,8 @@ class DAOSatisfaction implements Satisfaction {
         return o instanceof DAOSatisfaction;
     }
 
-    public static Pair<Satisfaction,CachePolicy> label() {
-        return Pair.of((Satisfaction) new DAOSatisfaction(),
-                       CachePolicy.NO_PREFERENCE);
+    public static CachedSatisfaction label() {
+        return new CachedSatisfaction(new DAOSatisfaction(),
+                                      CachePolicy.NO_PREFERENCE);
     }
 }

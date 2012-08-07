@@ -42,7 +42,7 @@
     <cite.database>${basedir}/etc/references.rdf</cite.database>
     <groovy.version>1.8.6</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
-    <grapht.version>0.2.1-SNAPSHOT</grapht.version>
+    <grapht.version>0.3.0</grapht.version>
   </properties>
 
   <distributionManagement>
