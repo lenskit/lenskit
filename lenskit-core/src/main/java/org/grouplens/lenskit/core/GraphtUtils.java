@@ -63,7 +63,11 @@ class GraphtUtils {
             return false;
         }
 
-        if (!isDAONode(node) && label.getSatisfaction().hasInstance()) {
+        if (isDAONode(node)) {
+            return false;
+        }
+
+        if (label.getSatisfaction().hasInstance()) {
             return true;
         }
 
