@@ -18,12 +18,8 @@
  */
 package org.grouplens.lenskit.core;
 
-import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
-
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
@@ -32,16 +28,15 @@ import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.*;
-import org.grouplens.grapht.util.InstanceProvider;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.Map.Entry;
+
+import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
