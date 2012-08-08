@@ -134,7 +134,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         // Set up a session graph with the DAO node
         Graph sgraph = dependencies.clone();
         Node daoNode = new Node(new CachedSatisfaction(spi.satisfy(dao), CachePolicy.NO_PREFERENCE));
-        sgraph.replaceNode(daoPlaceholder, daoNode);
+        if (daoPlaceholder != null) {
+            sgraph.replaceNode(daoPlaceholder, daoNode);
+        }
         Injector inj = new StaticInjector(spi, sgraph, rootNode);
         return new LenskitRecommender(inj, dao, shouldClose);
     }
