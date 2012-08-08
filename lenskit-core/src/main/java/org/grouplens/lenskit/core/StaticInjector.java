@@ -11,8 +11,7 @@ import org.grouplens.grapht.spi.ProviderSource;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A Grapht injector that uses a precomputed graph.
@@ -54,9 +53,43 @@ public class StaticInjector implements Injector {
         if (e != null) {
             return type.cast(instantiate(e.getTail()));
         } else {
-            // FIXME support retrieving deep nodes
-            return null;
+            Node node = findSatisfyingNode(type);
+            if (node != null) {
+                return type.cast(instantiate(node));
+            } else {
+                return null;
+            }
         }
+    }
+
+    /**
+     * Find a node with a satisfaction for a specified type. Does a breadth-first
+     * search to find the closest matching one.
+     * @param type The type to look for.
+     * @return A node whose satisfaction is compatible with {@code type}.
+     * @review Decide how to handle qualifiers and contexts
+     */
+    private Node findSatisfyingNode(Class<?> type) {
+        Queue<Node> work = new LinkedList<Node>();
+        Set<Node> seen = new HashSet<Node>();
+        work.add(root);
+        seen.add(root);
+        while (!work.isEmpty()) {
+            Node node = work.remove();
+            CachedSatisfaction lbl = node.getLabel();
+            if (lbl != null && type.isAssignableFrom(lbl.getSatisfaction().getErasedType())) {
+                return node;
+            }
+            for (Edge e: graph.getOutgoingEdges(node)) {
+                Node nbr = e.getTail();
+                if (!seen.contains(nbr)) {
+                    seen.add(nbr);
+                    work.add(nbr);
+                }
+            }
+        }
+        // got this far, no node
+        return null;
     }
 
     /**
