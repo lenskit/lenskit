@@ -192,10 +192,11 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         Set<Node> shared = getShareableNodes(original);
 
         // Instantiate and replace shareable nodes
-        Graph modified = instantiate(original, shared);
+        Graph modified = original.clone();
+        Set<Node> sharedInstances = instantiate(modified, shared);
 
         // Remove transient edges and orphaned subgraphs
-        Set<Node> transientTargets = removeTransientEdges(modified);
+        Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
         removeOrphanSubgraphs(modified, transientTargets);
 
         // Find the DAO node
@@ -229,8 +230,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 
         List<Node> nodes = graph.sort(graph.getNode(null));
         for (Node node : nodes) {
-            // TODO Be more selective about actually shareable nodes.
-            if (node.getLabel() == null || GraphtUtils.isDAONode(node)) {
+            if (!GraphtUtils.isShareable(node)) {
                 continue;
             }
 
@@ -251,15 +251,14 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     /**
      * Instantiate the shared objects in a graph. This instantiates all shared objects,
      * and replaces their nodes with nodes wrapping instance satisfactions.
-     * @param graph The complete configuration graph.
+     * @param graph The complete configuration graph. This graph will be modified.
      * @param toReplace The shared nodes to replace.
-     * @return A new graph with the nodes in {@code toReplace} replaced with instance
-     *         satisfaction nodes holding the resulting instances.
+     * @return The new instance nodes, in iteration order from {@code toReplace}.
      */
-    private Graph instantiate(Graph graph, Set<Node> toReplace) {
+    private LinkedHashSet<Node> instantiate(Graph graph, Set<Node> toReplace) {
         InjectSPI spi = config.getSPI();
         StaticInjector injector = new StaticInjector(spi, graph);
-        Graph trimmed = graph.clone();
+        LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
         for (Node node: toReplace) {
             Object obj = injector.instantiate(node);
             Satisfaction sat;
@@ -271,21 +270,23 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 sat = spi.satisfy(obj);
             }
             Node repl = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
-            trimmed.replaceNode(node, repl);
+            graph.replaceNode(node, repl);
         }
-        return trimmed;
+        return replacements;
     }
 
     /**
      * Remove transient edges from a graph.
      * @param graph The graph to remove transient edges from.
+     * @param nodes The nodes whose outgoing transient edges should be removed.
      * @return The set of tail nodes of removed edges.
      */
-    private Set<Node> removeTransientEdges(Graph graph) {
+    private Set<Node> removeTransientEdges(Graph graph, Set<Node> nodes) {
         Set<Node> targets = new HashSet<Node>();
         Set<Node> seen = new HashSet<Node>();
         Queue<Node> work = new LinkedList<Node>();
-        work.add(graph.getNode(null));
+        work.addAll(nodes);
+        seen.addAll(nodes);
         while (!work.isEmpty()) {
             Node node = work.remove();
             for (Edge e: graph.getOutgoingEdges(node)) {

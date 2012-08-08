@@ -51,6 +51,20 @@ class GraphtUtils {
     }
 
     /**
+     * Determine if a node is a shareable component.
+     * @param node The node.
+     * @return {@code true} if the component is shareable.
+     */
+    public static boolean isShareable(Node node) {
+        CachedSatisfaction label = node.getLabel();
+        if (label == null) return false;
+
+        Class<?> type = label.getSatisfaction().getErasedType();
+        Shareable annot = type.getAnnotation(Shareable.class);
+        return annot != null;
+    }
+
+    /**
      * Find the DAO node in a graph.
      * @param graph The graph to search.
      * @return The DAO node, if one exists, or {@code null}.
