@@ -44,8 +44,17 @@ import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
+    private static final Class<?>[] INITIAL_ROOTS = {
+            RatingPredictor.class,
+            ItemScorer.class,
+            GlobalItemScorer.class,
+            ItemRecommender.class,
+            GlobalItemRecommender.class
+    };
+
     private final BindingFunctionBuilder config;
     private final DAOFactory factory;
+    private final Set<Class<?>> roots;
 
     public LenskitRecommenderEngineFactory() {
         this((DAOFactory) null);
@@ -54,11 +63,27 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
         config = new BindingFunctionBuilder();
+        roots = new HashSet<Class<?>>();
+        for (Class<?> r: INITIAL_ROOTS) {
+            roots.add(r);
+        }
     }
 
     private LenskitRecommenderEngineFactory(LenskitRecommenderEngineFactory engineFactory) {
         factory = engineFactory.factory;
         config = engineFactory.config.clone();
+        roots = new HashSet<Class<?>>(engineFactory.roots);
+    }
+
+    /**
+     * Add the specified component type as a root component. This forces it (and its
+     * dependencies) to be resolved, and makes it available from the resulting
+     * recommenders.
+     * @param componentType The type of component to add as a root (typically an interface).
+     * @see LenskitRecommender#get(Class)
+     */
+    public void addRoot(Class<?> componentType) {
+        roots.add(componentType);
     }
 
     @Override
@@ -154,11 +179,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 100);
 
         // Resolve all required types to complete a Recommender
-        resolve(RatingPredictor.class, solver);
-        resolve(ItemScorer.class, solver);
-        resolve(GlobalItemScorer.class, solver);
-        resolve(ItemRecommender.class, solver);
-        resolve(GlobalItemRecommender.class, solver);
+        for (Class<?> root: roots) {
+            resolve(root, solver);
+        }
 
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
