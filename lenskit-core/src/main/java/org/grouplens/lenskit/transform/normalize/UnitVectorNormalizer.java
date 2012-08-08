@@ -18,10 +18,12 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
@@ -32,6 +34,8 @@ import java.io.Serializable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
+@Singleton
 public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private final static long serialVersionUID = 1L;
     private final double tolerance;

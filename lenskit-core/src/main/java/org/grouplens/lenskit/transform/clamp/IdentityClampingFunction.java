@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.transform.clamp;
 
+import org.grouplens.lenskit.core.Shareable;
+
+import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
@@ -25,6 +28,8 @@ import java.io.Serializable;
  * @author Michael Ekstrand
  * @since 0.11
  */
+@Shareable
+@Singleton
 public final class IdentityClampingFunction implements ClampingFunction, Serializable {
     private static final long serialVersionUID = 1L;
 

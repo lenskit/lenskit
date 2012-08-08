@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.clamp;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 import javax.inject.Inject;
@@ -31,6 +32,7 @@ import java.io.Serializable;
  * @author Michael Ekstrand
  * @since 0.11
  */
+@Shareable
 public class RatingRangeClampingFunction implements ClampingFunction, Serializable {
     private static final long serialVersionUID = 1L;
 

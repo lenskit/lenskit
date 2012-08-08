@@ -23,6 +23,7 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
 public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {
     private static final long serialVersionUID = 2L;
 
