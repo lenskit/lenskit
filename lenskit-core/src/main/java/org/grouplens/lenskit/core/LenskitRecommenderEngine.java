@@ -22,6 +22,8 @@ import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.spi.CachePolicy;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -42,21 +44,20 @@ import java.io.*;
 public class LenskitRecommenderEngine implements RecommenderEngine {
     private final Graph dependencies;
     private final Node rootNode;
-    private final Node daoNode;
+    private final Node daoPlaceholder;
     
     private final InjectSPI spi;
 
     private final DAOFactory factory;
 
-    LenskitRecommenderEngine(DAOFactory factory,
-                             Graph dependencies,
-                             InjectSPI spi) {
+    LenskitRecommenderEngine(DAOFactory factory, Graph dependencies,
+                             Node daoNode, InjectSPI spi) {
         this.factory = factory;
         this.dependencies = dependencies;
         this.spi = spi;
 
         rootNode = dependencies.getNode(null);
-        daoNode = dependencies.getNode(DAOSatisfaction.label());
+        daoPlaceholder = daoNode;
     }
 
     /**
@@ -65,8 +66,8 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * except it will use the new DAOFactory. It is assumed that the file was
      * created by using {@link #write(File)}.
      *
-     * @param factory
-     * @param file
+     * @param factory The DAO factory.
+     * @param file The file from which to load the recommender engine.
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -79,8 +80,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
             spi = (InjectSPI) in.readObject();
             dependencies = (Graph) in.readObject();
             rootNode = dependencies.getNode(null);
-            // FIXME Deal with null DAO nodes
-            daoNode = dependencies.getNode(DAOSatisfaction.label());
+            daoPlaceholder = GraphtUtils.findDAONode(dependencies);
         } finally {
             in.close();
         }
@@ -92,7 +92,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * default object serialization so if the factory has a PicoContainer or
      * session bindings containing non-serializable types, this will fail.
      *
-     * @param file
+     * @param file The file to write the rec engine to.
      * @throws IOException
      * @see #LenskitRecommenderEngine(DAOFactory, File)
      */
@@ -131,8 +131,11 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      */
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         Preconditions.checkNotNull(dao, "Cannot open with null DAO");
-        // FIXME Replace the DAO node
-        Injector inj = new StaticInjector(spi, dependencies, rootNode);
+        // Set up a session graph with the DAO node
+        Graph sgraph = dependencies.clone();
+        Node daoNode = new Node(new CachedSatisfaction(spi.satisfy(dao), CachePolicy.NO_PREFERENCE));
+        sgraph.replaceNode(daoPlaceholder, daoNode);
+        Injector inj = new StaticInjector(spi, sgraph, rootNode);
         return new LenskitRecommender(inj, dao, shouldClose);
     }
 }

@@ -48,7 +48,7 @@ public class StaticInjector implements Injector {
 
     @Override
     public <T> T getInstance(Class<T> type) {
-        Desire d = spi.desire(null, type, false);
+        Desire d = spi.desire(null, type, true);
         Edge e = graph.getOutgoingEdge(root, d);
 
         if (e != null) {
@@ -68,12 +68,12 @@ public class StaticInjector implements Injector {
         // FIXME Respect cache policies
         // FIXME Use memoizing providers
         Object instance = cache.get(node);
-        if (instance != null) {
+        if (instance == null) {
             CachedSatisfaction lbl = node.getLabel();
             assert lbl != null;
             Provider<?> provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
             instance = provider.get();
-            cache.put(node, lbl);
+            cache.put(node, instance);
         }
         return instance;
     }

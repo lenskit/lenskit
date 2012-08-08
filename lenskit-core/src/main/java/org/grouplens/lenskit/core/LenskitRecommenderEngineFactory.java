@@ -181,27 +181,20 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         removeOrphanSubgraphs(pruned, transientTargets);
 
         // Find the DAO node
-        Set<Node> daoNodes = Sets.filter(pruned.getNodes(), new Predicate<Node>() {
-            @Override
-            public boolean apply(@Nullable Node input) {
-                return isDAONode(input);
-            }
-        });
-        if (daoNodes.size() > 1) {
-            throw new RuntimeException("found multiple DAO nodes");
-        } else if (!daoNodes.isEmpty()) {
-            Node daoNode = daoNodes.iterator().next();
-            pruned.replaceNode(daoNode, new Node(DAOSatisfaction.label()));
-        } // otherwise, no DAO, not really a problem
+        Node daoNode = GraphtUtils.findDAONode(pruned);
+        Node daoPlaceholder = null;
+        if (daoNode != null) {
+            // replace it with a null satisfaction
+            CachedSatisfaction daoLbl = daoNode.getLabel();
+            assert daoLbl != null;
+            Class<?> type = daoLbl.getSatisfaction().getErasedType();
+            Satisfaction sat = config.getSPI().satisfyWithNull(type);
+            daoPlaceholder = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
+            pruned.replaceNode(daoNode, daoPlaceholder);
+        }
 
-        return new LenskitRecommenderEngine(factory, graph, config.getSPI());
-    }
-
-    private boolean isDAONode(@Nullable Node n) {
-        CachedSatisfaction label = n == null ? null : n.getLabel();
-        return label != null &&
-                DataAccessObject.class.isAssignableFrom(
-                        label.getSatisfaction().getErasedType());
+        return new LenskitRecommenderEngine(factory, graph, daoPlaceholder,
+                                            config.getSPI());
     }
 
     /**
@@ -218,7 +211,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         List<Node> nodes = graph.sort(graph.getNode(null));
         for (Node node : nodes) {
             // TODO Be more selective about actually shareable nodes.
-            if (isDAONode(node)) {
+            if (node.getLabel() == null || GraphtUtils.isDAONode(node)) {
                 continue;
             }
 
@@ -245,11 +238,19 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      *         satisfaction nodes holding the resulting instances.
      */
     private Graph instantiate(Graph graph, Set<Node> toReplace) {
-        StaticInjector injector = new StaticInjector(config.getSPI(), graph);
+        InjectSPI spi = config.getSPI();
+        StaticInjector injector = new StaticInjector(spi, graph);
         Graph trimmed = graph.clone();
         for (Node node: toReplace) {
             Object obj = injector.instantiate(node);
-            Satisfaction sat = config.getSPI().satisfy(obj);
+            Satisfaction sat;
+            if (obj == null) {
+                CachedSatisfaction lbl = node.getLabel();
+                assert lbl != null;
+                sat = spi.satisfyWithNull(lbl.getSatisfaction().getErasedType());
+            } else {
+                sat = spi.satisfy(obj);
+            }
             Node repl = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
             trimmed.replaceNode(node, repl);
         }
@@ -276,7 +277,9 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 seen.add(nbr);
 
                 // remove transient edges, traverse non-transient ones
-                if (GraphtUtils.desireIsTransient(e.getDesire())) {
+                Desire desire = e.getDesire();
+                assert desire != null;
+                if (GraphtUtils.desireIsTransient(desire)) {
                     graph.removeEdge(e);
                     targets.add(nbr);
                 } else {
