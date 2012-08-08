@@ -22,10 +22,8 @@ import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.Desire;
-import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.ProviderSource;
+import org.grouplens.grapht.spi.*;
+import org.grouplens.grapht.util.MemoizingProvider;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
@@ -39,7 +37,7 @@ public class StaticInjector implements Injector {
     private InjectSPI spi;
     private Graph graph;
     private Node root;
-    private Map<Node, Object> cache;
+    private Map<Node, Provider<?>> providerCache;
 
     /**
      * Create a new static injector. The node labelled with
@@ -60,7 +58,7 @@ public class StaticInjector implements Injector {
         this.spi = spi;
         graph = g;
         root = rt;
-        cache = new HashMap<Node, Object>();
+        providerCache = new HashMap<Node, Provider<?>>();
     }
 
     @Override
@@ -116,17 +114,34 @@ public class StaticInjector implements Injector {
      * @return The instantiation of the node.
      */
     public Object instantiate(Node node) {
-        // FIXME Respect cache policies
-        // FIXME Use memoizing providers
-        Object instance = cache.get(node);
-        if (instance == null) {
+        Provider<?> p = getProvider(node);
+
+        return p.get();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private synchronized Provider<?> getProvider(Node node) {
+        Provider<?> provider = providerCache.get(node);
+        if (provider == null) {
             CachedSatisfaction lbl = node.getLabel();
             assert lbl != null;
-            Provider<?> provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
-            instance = provider.get();
-            cache.put(node, instance);
+            Provider<?> np = lbl.getSatisfaction().makeProvider(new DepSrc(node));
+            CachePolicy pol = lbl.getCachePolicy();
+            if (pol == CachePolicy.NO_PREFERENCE) {
+                pol = lbl.getSatisfaction().getDefaultCachePolicy();
+            }
+            switch (pol) {
+                case NEW_INSTANCE:
+                    provider = np;
+                    break;
+                default:
+                    // TODO allow default policy to be specified
+                    provider = new MemoizingProvider(np);
+                    break;
+            }
+            providerCache.put(node, provider);
         }
-        return instance;
+        return provider;
     }
 
     @Override
