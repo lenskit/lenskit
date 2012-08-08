@@ -42,7 +42,7 @@ import java.io.*;
  * @see LenskitRecommender
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
-    private final Graph dependencies;
+    final Graph dependencies;
     private final Node rootNode;
     private final Node daoPlaceholder;
     

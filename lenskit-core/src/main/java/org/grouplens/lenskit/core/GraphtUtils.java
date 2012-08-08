@@ -100,6 +100,21 @@ class GraphtUtils {
     }
 
     /**
+     * Predicate satisfied by nodes whose satisfactions have the specified type.
+     * @param type The requested type.
+     * @return A predicate accepting nodes with the specified type.
+     */
+    public static Predicate<Node> nodeHasType(final Class<?> type) {
+        return new Predicate<Node>() {
+            @Override
+            public boolean apply(@Nullable Node input) {
+                CachedSatisfaction lbl = input == null ? null : input.getLabel();
+                return lbl != null && type.isAssignableFrom(lbl.getSatisfaction().getErasedType());
+            }
+        };
+    }
+
+    /**
      * Function to extract the tail of a node.
      * @return A function extracting the tail of a node.
      */
