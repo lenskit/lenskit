@@ -84,7 +84,7 @@ class GraphtUtils {
             @Override
             public boolean apply(@Nullable Edge input) {
                 Desire desire = input == null ? null : input.getDesire();
-                return desire != null && desireIsTransient(desire);
+                return desire == null || !desireIsTransient(desire);
             }
         });
     }

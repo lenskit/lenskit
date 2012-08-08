@@ -186,20 +186,20 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
         // because they could not have created any Nodes.
-        Graph graph = solver.getGraph();
+        Graph original = solver.getGraph();
 
         // Get the set of shareable instances.
-        Set<Node> shared = getShareableRoots(graph);
+        Set<Node> shared = getShareableRoots(original);
 
         // Instantiate and replace shareable nodes
-        Graph pruned = instantiate(graph, shared);
+        Graph modified = instantiate(original, shared);
 
         // Remove transient edges and orphaned subgraphs
-        Set<Node> transientTargets = removeTransientEdges(pruned);
-        removeOrphanSubgraphs(pruned, transientTargets);
+        Set<Node> transientTargets = removeTransientEdges(modified);
+        removeOrphanSubgraphs(modified, transientTargets);
 
         // Find the DAO node
-        Node daoNode = GraphtUtils.findDAONode(pruned);
+        Node daoNode = GraphtUtils.findDAONode(modified);
         Node daoPlaceholder = null;
         if (daoNode != null) {
             // replace it with a null satisfaction
@@ -208,10 +208,10 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             Class<?> type = daoLbl.getSatisfaction().getErasedType();
             Satisfaction sat = config.getSPI().satisfyWithNull(type);
             daoPlaceholder = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
-            pruned.replaceNode(daoNode, daoPlaceholder);
+            modified.replaceNode(daoNode, daoPlaceholder);
         }
 
-        return new LenskitRecommenderEngine(factory, graph, daoPlaceholder,
+        return new LenskitRecommenderEngine(factory, modified, daoPlaceholder,
                                             config.getSPI());
     }
 
@@ -289,10 +289,6 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             Node node = work.remove();
             for (Edge e: graph.getOutgoingEdges(node)) {
                 Node nbr = e.getTail();
-                if (seen.contains(nbr)) {
-                    continue;
-                }
-                seen.add(nbr);
 
                 // remove transient edges, traverse non-transient ones
                 Desire desire = e.getDesire();
@@ -300,7 +296,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 if (GraphtUtils.desireIsTransient(desire)) {
                     graph.removeEdge(e);
                     targets.add(nbr);
-                } else {
+                } else  if (!seen.contains(nbr)) {
+                    seen.add(nbr);
                     work.add(nbr);
                 }
             }
