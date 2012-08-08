@@ -26,12 +26,14 @@ import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.Attributes;
+import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Desire;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Singleton;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -57,11 +59,28 @@ class GraphtUtils {
      */
     public static boolean isShareable(Node node) {
         CachedSatisfaction label = node.getLabel();
-        if (label == null) return false;
+        if (label == null) {
+            return false;
+        }
+
+        if (label.getSatisfaction().hasInstance()) {
+            return true;
+        }
+
+        if (label.getCachePolicy() == CachePolicy.NEW_INSTANCE) {
+            return false;
+        }
 
         Class<?> type = label.getSatisfaction().getErasedType();
-        Shareable annot = type.getAnnotation(Shareable.class);
-        return annot != null;
+        if (type.getAnnotation(Shareable.class) != null) {
+            return true;
+        }
+
+        if (type.getAnnotation(Singleton.class) != null) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
