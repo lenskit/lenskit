@@ -33,8 +33,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.inject.Inject;
+import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.Parameter;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -50,6 +52,8 @@ public class ConstantPredictor implements BaselinePredictor {
      */
     @Documented
     @DefaultDouble(0.0)
+    @Qualifier
+    @Parameter(Parameter.PrimitiveType.DOUBLE)
     @Target({ ElementType.METHOD, ElementType.PARAMETER })
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value { }
