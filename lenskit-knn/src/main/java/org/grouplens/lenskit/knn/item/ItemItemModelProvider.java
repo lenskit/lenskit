@@ -60,8 +60,8 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
-                                 ItemSimilarity similarity,
-                                 UserVectorNormalizer normalizer,
+                                 @Transient ItemSimilarity similarity,
+                                 @Transient UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
                                  SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
         this.dao = dao;

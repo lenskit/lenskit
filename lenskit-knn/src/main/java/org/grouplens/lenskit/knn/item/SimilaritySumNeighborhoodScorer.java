@@ -20,13 +20,18 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Singleton;
 
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
+@Singleton
 public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer {
     @Override
     public double score(ScoredLongList neighbors, SparseVector scores) {
