@@ -189,7 +189,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         Graph original = solver.getGraph();
 
         // Get the set of shareable instances.
-        Set<Node> shared = getShareableRoots(original);
+        Set<Node> shared = getShareableNodes(original);
 
         // Instantiate and replace shareable nodes
         Graph modified = instantiate(original, shared);
@@ -216,14 +216,15 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     }
 
     /**
-     * Prune the graph, returning the set of shared roots (objects that need
-     * to be replaced with instance satisfactions in the final graph).
+     * Prune the graph, returning the set of nodes for shareable objects
+     * (objects that will be replaced with instance satisfactions in the
+     * final graph).
      *
      * @param graph The graph to analyze. The graph is not modified.
      * @return The set of root nodes - nodes that need to be instantiated and
      *         removed. These nodes are in topologically sorted order.
      */
-    private LinkedHashSet<Node> getShareableRoots(Graph graph) {
+    private LinkedHashSet<Node> getShareableNodes(Graph graph) {
         LinkedHashSet<Node> shared = new LinkedHashSet<Node>();
 
         List<Node> nodes = graph.sort(graph.getNode(null));
