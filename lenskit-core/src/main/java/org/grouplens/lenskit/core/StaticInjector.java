@@ -33,7 +33,7 @@ import java.util.*;
  * A Grapht injector that uses a precomputed graph.
  * @author Michael Ekstrand
  */
-public class StaticInjector implements Injector {
+class StaticInjector implements Injector {
     private InjectSPI spi;
     private Graph graph;
     private Node root;
