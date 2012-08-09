@@ -131,21 +131,38 @@ class CommandExtensions {
     static List<Method> getMethods(Command self, String name) {
         self.class.methods.findAll {it.name == name}
     }
-
-    static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
+		
+	static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
-        def method = findMethod(self, name, args)
-        if (method == null) {
-            def methods = getMethods(self, name)
-            method = findBuildableMethod(self, engine, methods, args)
-            if (method == null && !methods.isEmpty()) {
-                return {
-                    throw new IllegalArgumentException("no compatible method ${name} found")
-                }
-            }
-        }
-        return method
-    }
+		def methods = getMethods(self, name)
+		
+		if (args.length == 1 && args[0] == null) {
+			if (methods.size() == 1) {
+				def method = methods[0]
+				def formals = method.parameterTypes
+				if (formals.size() == 1 && !formals[0].isPrimitive() && !formals[0].isWrappedPrimitive()) {
+					return {
+						method.invoke(self, args)
+					}
+				} else {
+					return {
+						throw new IllegalArgumentException("multiple methods found matching ${name}")
+					}
+				}
+			}
+		} else {						
+	        def method = findMethod(self, name, args)
+	        if (method == null) {
+	            method = findBuildableMethod(self, engine, methods, args)
+	            if (method == null && !methods.isEmpty()) {
+	                return {
+	                    throw new IllegalArgumentException("no compatible method ${name} found")
+	                }
+	            }
+	        }
+	        return method
+	    }
+	}
 
     static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
@@ -162,4 +179,15 @@ class CommandExtensions {
         }
         return method
     }
+	
+	static def isWrappedPrimitive(Class clazz) {
+		return clazz.equals(Byte.class) ||
+			clazz.equals(Short.class) ||
+			clazz.equals(Integer.class) ||
+			clazz.equals(Long.class) ||
+			clazz.equals(Float.class) ||
+			clazz.equals(Double.class) ||
+			clazz.equals(Boolean.class) ||
+			clazz.equals(Character.class)			
+	}
 }

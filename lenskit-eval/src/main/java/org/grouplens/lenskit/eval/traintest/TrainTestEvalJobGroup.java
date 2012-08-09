@@ -84,7 +84,6 @@ public class TrainTestEvalJobGroup implements JobGroup {
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()),
-                    Suppliers.compose(prefix, evaluation.outputInMemoryTableSupplier()),
                     numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));

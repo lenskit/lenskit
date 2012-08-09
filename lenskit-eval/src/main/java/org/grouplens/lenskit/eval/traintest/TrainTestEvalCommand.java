@@ -143,10 +143,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         return predictOutputFile;
     }
 
-    public TableImpl getResult() {
-        return outputInMemory.getResult();
-    }
-
     public int getNumRecs() {
         return numRecs;
     }
@@ -164,13 +160,13 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
      */
     @Override
     public TableImpl call() throws CommandException {
-        this.setupJobs();
+    	this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
             nthreads = Runtime.getRuntime().availableProcessors();
         }
         logger.info("Starting evaluation");
-        this.start();
+        this.initialize();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
         switch (isolationLevel) {
@@ -193,7 +189,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
             throw new CommandException("Error running the evaluation", e);
         } finally {
             logger.info("Finishing evaluation");
-            this.finish();
+            this.cleanUp();
         }
         return outputInMemory.getResult();
     }
@@ -269,14 +265,19 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         predictMetrics = metrics;
     }
 
-    public void start() {
+    private void initialize() {
         logger.info("Starting evaluation");
-        try {
-            output = CSVWriter.open(outputFile, outputLayout);
-            outputInMemory = new InMemoryWriter(outputLayout);
-        } catch (IOException e) {
-            throw new RuntimeException("Error opening output table", e);
-        }
+        List<TableWriter> tableWriters = new ArrayList<TableWriter>();
+        outputInMemory = new InMemoryWriter(outputLayout);
+        tableWriters.add(outputInMemory);
+        if (outputFile != null)  {
+        	try {
+        		tableWriters.add(CSVWriter.open(outputFile, outputLayout));
+        	} catch (IOException e) {
+        		throw new RuntimeException("Error opening output table", e);
+        	}
+        }        
+        output = new MultiplexedTableWriter(outputLayout, tableWriters);
         if (userOutputFile != null) {
             try {
                 userOutput = CSVWriter.open(userOutputFile, userLayout);
@@ -299,7 +300,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         }
     }
 
-    public void finish() {
+    private void cleanUp() {
         for (TestUserMetric metric: predictMetrics) {
             metric.finishEvaluation();
         }
@@ -338,25 +339,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
             public TableWriter get() {
                 Preconditions.checkState(output != null, "evaluation not running");
                 return output;
-            }
-        };
-    }
-
-    /**
-     * Get the evaluation's in memory output table. Used by job groups to set up the
-     * output for their jobs.
-     *
-     * @return A supplier for the in memory table writer for this evaluation.
-     * @throws IllegalStateException if the job has not been started or is
-     *         finished.
-     */
-    @Nonnull
-    Supplier<TableWriter> outputInMemoryTableSupplier() {
-        return new Supplier<TableWriter>() {
-            @Override
-            public TableWriter get() {
-                Preconditions.checkState(outputInMemory != null, "evaluation not running");
-                return outputInMemory;
             }
         };
     }
