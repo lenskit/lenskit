@@ -67,7 +67,7 @@ public interface ItemScorer {
      *         not contain all requested items.
      */
     @Nonnull
-    SparseVector score(long user, Collection<Long> items);
+    SparseVector score(long user, @Nonnull Collection<Long> items);
 
     /**
      * Score items in a vector. The key domain of the provided vector is the
@@ -96,7 +96,7 @@ public interface ItemScorer {
      * @param item The item to score.
      * @return The score, or {@link Double#NaN} if no score can be computed.
      */
-    double score(UserHistory<? extends Event> profile, long item);
+    double score(@Nonnull UserHistory<? extends Event> profile, long item);
 
     /**
      * Score a collection of items for the user using a history. If possible,
@@ -110,7 +110,8 @@ public interface ItemScorer {
      *         score will be omitted.
      */
     @Nonnull
-    SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items);
+    SparseVector score(@Nonnull UserHistory<? extends Event> profile,
+                       @Nonnull Collection<Long> items);
 
     /**
      * Score items in a vector. The key domain of the provided vector is the

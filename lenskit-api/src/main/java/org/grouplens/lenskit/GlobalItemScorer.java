@@ -46,7 +46,7 @@ public interface GlobalItemScorer {
      * @return The preference, or {@link Double#NaN} if no preference can be
      *         predicted.
      */
-	double globalScore(Collection<Long> queryItems, long item);
+	double globalScore(@Nonnull Collection<Long> queryItems, long item);
 
     /**
      * Score a collection of items based on a collection of items(a shopping basket).
@@ -57,12 +57,14 @@ public interface GlobalItemScorer {
      *         not contain all requested items.
      */
 	@Nonnull
-	SparseVector globalScore(Collection<Long> queryItems, Collection<Long> items);
+	SparseVector globalScore(@Nonnull Collection<Long> queryItems,
+                             @Nonnull Collection<Long> items);
 
     /**
      * Score a collection of items based on a collection of items (a shopping basket).
      * @param queryItems The items to use as the query.
      * @param output A vector whose key domain is the items to score.
      */
-    void globalScore(Collection<Long> queryItems, MutableSparseVector output);
+    void globalScore(@Nonnull Collection<Long> queryItems,
+                     @Nonnull MutableSparseVector output);
 }

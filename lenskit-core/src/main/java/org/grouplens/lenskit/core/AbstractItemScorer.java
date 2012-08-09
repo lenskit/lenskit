@@ -71,7 +71,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
      */
     @Nonnull
     @Override
-    public SparseVector score(long user, Collection<Long> items) {
+    public SparseVector score(long user, @Nonnull Collection<Long> items) {
         MutableSparseVector scores = new MutableSparseVector(items);
         score(user, scores);
         // FIXME Create a more efficient way of "releasing" mutable sparse vectors
@@ -83,8 +83,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
      */
     @Nonnull
     @Override
-    public SparseVector score(UserHistory<? extends Event> history,
-                              Collection<Long> items) {
+    public SparseVector score(@Nonnull UserHistory<? extends Event> history,
+                              @Nonnull Collection<Long> items) {
         MutableSparseVector scores = new MutableSparseVector(items);
         score(history, scores);
         return scores.freeze();
@@ -116,7 +116,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * Delegate to {@link #score(UserHistory, Collection)}
      */
     @Override
-    public double score(UserHistory<? extends Event> profile, long item) {
+    public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
         SparseVector v = score(profile, LongLists.singleton(item));
         return v.get(item, Double.NaN);
     }

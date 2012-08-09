@@ -59,8 +59,8 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
     }
     
     @Override
-    public void globalScore(Collection<Long> queryItems,
-                            MutableSparseVector output) {
+    public void globalScore(@Nonnull Collection<Long> queryItems,
+                            @Nonnull MutableSparseVector output) {
 		// create the unary rating for the items
         LongSet qItems = new LongSortedArraySet(queryItems);
         MutableSparseVector basket = new MutableSparseVector(qItems, 1.0);
