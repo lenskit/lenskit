@@ -42,10 +42,15 @@ import java.util.Collection;
  * @see BaselineRatingPredictor
  */
 public interface BaselinePredictor extends Serializable {
-    /**
-     * Predict method that returns mutable sparse vectors.
-     * @see RatingPredictor#score(UserHistory, Collection)
-     */
+    @Deprecated
     MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
-   
+
+    /**
+     * Predict method that scores into an existing mutable sparse vector.
+     * @param user The user ID.
+     * @param ratings The user's ratings.
+     * @param output The output vector. All items in the key domain are scored.
+     * @see RatingPredictor#score(UserHistory, MutableSparseVector)
+     */
+    void predict(long user, SparseVector ratings, MutableSparseVector output);
 }

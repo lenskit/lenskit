@@ -20,9 +20,7 @@ package org.grouplens.lenskit.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -34,7 +32,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -91,6 +88,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @param damping
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
+        // FIXME Make this use a sparse vector
         super(itemMeans, globalMean, damping);
     }
 
@@ -117,16 +115,10 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings,
-                                       Collection<Long> items) {
+    public void predict(long user, SparseVector ratings, MutableSparseVector scores) {
         double meanOffset = computeUserAverage(ratings);
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            preds[i] = meanOffset + getItemMean(keys[i]);
+        for (VectorEntry e: scores.fast()) {
+            scores.set(e, meanOffset + getItemMean(e.getKey()));
         }
-        return MutableSparseVector.wrap(keys, preds);
     }
 }

@@ -21,27 +21,16 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Arrays;
-import java.util.Collection;
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.Parameter;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
 import javax.inject.Qualifier;
 import javax.inject.Singleton;
-
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.grapht.annotation.Parameter;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import java.lang.annotation.*;
 
 /**
  * Rating scorer that predicts a constant rating for all items.
@@ -50,7 +39,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 @Shareable
 @Singleton
-public class ConstantPredictor implements BaselinePredictor {
+public class ConstantPredictor extends AbstractBaselinePredictor {
     /**
      * Parameter: the value used by the constant scorer.
      */
@@ -69,7 +58,7 @@ public class ConstantPredictor implements BaselinePredictor {
     /**
      * Construct a new constant scorer.  This is exposed so other code
      * can use it as a fallback.
-     * @param value
+     * @param value The value to use.
      */
     @Inject
     public ConstantPredictor(@Value double value) {
@@ -77,32 +66,13 @@ public class ConstantPredictor implements BaselinePredictor {
     }
 
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        return constantPredictions(items, value);
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output) {
+        output.fill(value);
     }
     
-
-    /**
-     * Construct a rating vector with the same rating for all items.
-     *
-     * @param items The items to include in the vector.
-     * @param value The rating/prediction to give.
-     * @return A rating vector mapping all items in <var>items</var> to
-     *         <var>value</var>.
-     */
-    public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        DoubleArrays.fill(preds, value);
-        return MutableSparseVector.wrap(keys, preds);
-    }
-
     @Override
     public String toString() {
         return String.format("%s(%.3f)", getClass().getCanonicalName(), value);
     }
-
-
 }

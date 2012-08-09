@@ -21,22 +21,8 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -46,8 +32,13 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * Rating scorer that returns the item's mean rating for all predictions.
@@ -64,7 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 @DefaultProvider(ItemMeanPredictor.Provider.class)
 @Shareable
-public class ItemMeanPredictor implements BaselinePredictor {
+public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      * @author Michael Ludwig <mludwig@cs.umn.edu>
@@ -178,16 +169,10 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings,
-                                       Collection<Long> items) {
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            preds[i] = getItemMean(keys[i]);
+    public void predict(long user, SparseVector ratings, MutableSparseVector items) {
+        for (VectorEntry e: items.fast()) {
+            items.set(e, getItemMean(e.getKey()));
         }
-        return MutableSparseVector.wrap(keys, preds);
     }
 
     @Override

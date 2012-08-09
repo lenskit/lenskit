@@ -18,12 +18,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static java.lang.Math.abs;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -33,6 +27,10 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+
+import static java.lang.Math.abs;
 
 /**
  * Rating scorer that returns the user's average rating for all predictions.
@@ -106,12 +104,10 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user,
-                                       SparseVector ratings,
-                                       Collection<Long> items) {
+    public void predict(long user, SparseVector ratings, MutableSparseVector output) {
         double mean = average(ratings, globalMean, smoothing);
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
-        return ConstantPredictor.constantPredictions(items, mean);
+        output.fill(mean);
     }
 
     @Override
