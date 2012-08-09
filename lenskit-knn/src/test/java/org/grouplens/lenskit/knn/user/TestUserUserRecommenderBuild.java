@@ -35,6 +35,9 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
+
 public class TestUserUserRecommenderBuild {
 
     private DAOFactory manager;
@@ -63,10 +66,12 @@ public class TestUserUserRecommenderBuild {
         Recommender rec = engine.open();
 
         try {
-            // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-            Assert.assertTrue(rec.getRatingPredictor() instanceof UserUserRatingPredictor);
-            Assert.assertTrue(rec.getItemRecommender() instanceof UserUserRecommender);
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(UserUserRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(UserUserRatingPredictor.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(UserUserRecommender.class));
         } finally {
             rec.close();
         }

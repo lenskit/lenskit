@@ -18,18 +18,9 @@
  */
 package org.grouplens.lenskit.svd;
 
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
@@ -45,8 +36,13 @@ import org.grouplens.lenskit.svd.params.IterationCount;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+
 public class TestFunkSVDRecommenderBuild {
-    private DAOFactory manager;
     private LenskitRecommenderEngine engine;
 
     @Before
@@ -57,9 +53,9 @@ public class TestFunkSVDRecommenderBuild {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        manager = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
@@ -74,9 +70,10 @@ public class TestFunkSVDRecommenderBuild {
         Recommender rec = engine.open();
 
         try {
-            // These assert instanceof's are also assertNotNull's
-            assertTrue(rec.getRatingPredictor() instanceof FunkSVDRatingPredictor);
-            assertTrue(rec.getItemRecommender() instanceof FunkSVDRecommender);
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(FunkSVDRatingPredictor.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(FunkSVDRecommender.class));
         } finally {
             rec.close();
         }

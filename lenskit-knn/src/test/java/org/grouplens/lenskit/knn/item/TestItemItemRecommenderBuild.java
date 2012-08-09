@@ -47,9 +47,9 @@ public class TestItemItemRecommenderBuild {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
-        DAOFactory daoFactory = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
@@ -65,12 +65,16 @@ public class TestItemItemRecommenderBuild {
     public void testItemItemRecommenderEngineCreate() {
         Recommender rec = engine.open();
 
-        // These assert instanceof's are also assertNotNull's
-        assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
-        assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-        assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
-        assertTrue(rec.getGlobalItemRecommender() instanceof ItemItemGlobalRecommender);
-        assertTrue(rec.getGlobalItemScorer() instanceof ItemItemGlobalScorer);
+        assertThat(rec.getItemScorer(),
+                   instanceOf(ItemItemRatingPredictor.class));
+        assertThat(rec.getRatingPredictor(),
+                   instanceOf(ItemItemRatingPredictor.class));
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(ItemItemRecommender.class));
+        assertThat(rec.getGlobalItemRecommender(),
+                   instanceOf(ItemItemGlobalRecommender.class));
+        assertThat(rec.getGlobalItemScorer(),
+                   instanceOf(ItemItemGlobalScorer.class));
     }
 
     @Test

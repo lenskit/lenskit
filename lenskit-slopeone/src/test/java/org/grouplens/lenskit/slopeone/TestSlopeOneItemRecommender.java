@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import junit.framework.Assert;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -44,7 +43,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class TestSlopeOneItemRecommender {
-    private DAOFactory daoFactory;
     private LenskitRecommenderEngine engine;
 
     @Before
@@ -55,9 +53,9 @@ public class TestSlopeOneItemRecommender {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        daoFactory = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         factory.bind(RatingPredictor.class).to(SlopeOneRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
@@ -72,10 +70,12 @@ public class TestSlopeOneItemRecommender {
         Recommender rec = engine.open();
 
         try {
-            // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getItemScorer() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneRecommender);
+            assertThat(rec.getItemScorer(),
+                       instanceOf(SlopeOneRatingPredictor.class));
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(SlopeOneRatingPredictor.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(SlopeOneRecommender.class));
         } finally {
             rec.close();
         }
