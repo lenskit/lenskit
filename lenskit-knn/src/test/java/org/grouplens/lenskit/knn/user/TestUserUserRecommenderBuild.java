@@ -18,11 +18,6 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
-
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -35,12 +30,14 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class TestUserUserRecommenderBuild {
 
-    private DAOFactory manager;
     private static RecommenderEngine engine;
 
     @Before
@@ -51,9 +48,9 @@ public class TestUserUserRecommenderBuild {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        manager = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
