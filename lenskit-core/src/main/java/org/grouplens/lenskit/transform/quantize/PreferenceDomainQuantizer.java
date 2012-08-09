@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 import javax.inject.Inject;
@@ -27,6 +28,7 @@ import javax.inject.Inject;
  * Values are rounded to the closest discrete value.
  * @author Michael Ekstrand
  */
+@Shareable
 public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
     private static final long serialVersionUID = 8258336921679357985L;
     

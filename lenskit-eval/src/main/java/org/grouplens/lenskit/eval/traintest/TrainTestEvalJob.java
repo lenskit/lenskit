@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.ItemRecommender;
@@ -40,6 +39,7 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,10 +227,10 @@ public class TrainTestEvalJob implements Job {
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
         String[] row = new String[4];
         row[0] = Long.toString(uid);
-        for (Long2DoubleMap.Entry e: ratings.fast()) {
-            long iid = e.getLongKey();
+        for (VectorEntry e: ratings.fast()) {
+            long iid = e.getKey();
             row[1] = Long.toString(iid);
-            row[2] = Double.toString(e.getDoubleValue());
+            row[2] = Double.toString(e.getValue());
             if (predictions.containsKey(iid)) {
                 row[3] = Double.toString(predictions.get(iid));
             } else {

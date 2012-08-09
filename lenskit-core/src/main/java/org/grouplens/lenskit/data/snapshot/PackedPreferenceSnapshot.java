@@ -22,9 +22,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.SortOrder;
@@ -49,6 +50,7 @@ import java.util.List;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @DefaultProvider(PackedPreferenceSnapshot.Provider.class)
+@Shareable
 public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     private static final Logger logger = LoggerFactory.getLogger(PackedPreferenceSnapshot.class);
 

@@ -19,9 +19,9 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -32,6 +32,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +60,8 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
     @Inject
     public ItemItemModelProvider(@Transient DataAccessObject dao,
-                                 ItemSimilarity similarity,
-                                 UserVectorNormalizer normalizer,
+                                 @Transient ItemSimilarity similarity,
+                                 @Transient UserVectorNormalizer normalizer,
                                  UserHistorySummarizer sum,
                                  SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
         this.dao = dao;
@@ -148,11 +149,11 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                     userItems = LongArrayList.wrap(userItemArr, 0);
                 }
 
-                for (Long2DoubleMap.Entry rating: normed.fast()) {
-                    final long item = rating.getLongKey();
+                for (VectorEntry rating: normed.fast()) {
+                    final long item = rating.getKey();
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(item);
-                    ivect.put(uid, rating.getDoubleValue());
+                    ivect.put(uid, rating.getValue());
                     if (userItems != null)
                         userItems.add(item);
                 }

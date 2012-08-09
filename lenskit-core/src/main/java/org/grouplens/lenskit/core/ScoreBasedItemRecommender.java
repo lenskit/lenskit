@@ -19,10 +19,9 @@
 package org.grouplens.lenskit.core;
 
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -35,8 +34,9 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
-import com.google.common.collect.Iterables;
+import javax.inject.Inject;
 
 /**
  * Base class for recommenders that recommend the top N items by a scorer.
@@ -47,9 +47,10 @@ import com.google.common.collect.Iterables;
  * Recommendations are returned in descending order of score.
  *
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender{
+public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
 
+    @Inject
     public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
@@ -115,9 +116,9 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
         }
         
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (Long2DoubleMap.Entry pred: scores.fast()) {
-            final double v = pred.getDoubleValue();
-            accum.put(pred.getLongKey(), v);
+        for (VectorEntry pred: scores.fast()) {
+            final double v = pred.getValue();
+            accum.put(pred.getKey(), v);
         }
 
         return accum.finish();

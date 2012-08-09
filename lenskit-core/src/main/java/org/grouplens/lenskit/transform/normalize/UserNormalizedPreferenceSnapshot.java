@@ -21,6 +21,7 @@ package org.grouplens.lenskit.transform.normalize;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreferenceBuilder;
 import org.grouplens.lenskit.data.snapshot.AbstractPreferenceSnapshot;
@@ -43,6 +44,8 @@ import java.util.Iterator;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@Shareable
+@Deprecated
 public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     private static final Logger logger = LoggerFactory.getLogger(UserNormalizedPreferenceSnapshot.class);
     private final PreferenceSnapshot snapshot;

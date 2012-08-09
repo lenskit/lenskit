@@ -19,9 +19,9 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;

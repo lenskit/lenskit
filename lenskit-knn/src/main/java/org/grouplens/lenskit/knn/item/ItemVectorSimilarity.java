@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.VectorSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -27,6 +28,7 @@ import javax.inject.Inject;
  * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
  * @author Michael Ekstrand
  */
+@Shareable
 public class ItemVectorSimilarity implements ItemSimilarity {
     private VectorSimilarity delegate;
 

@@ -10,14 +10,35 @@ LensKit Release Notes
 
 * Release 0.11
 
+  The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
+  rather than PicoContainer, with additional refactorings of components to more
+  effectively take advantage of Grapht. We also made significant improvements to how
+  the evaluator works to allow evaluation scripts to be more flexible, and made a number
+  of other improvements and bug fixes.
+
+  There are a number of backwards-incompatible changes in this release. Configurations and
+  algorithm implementations will definitely need to be updated; other client code may need
+  updates as well.
+
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
   {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.11}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Made <<<SparseVector>>> return <<<VectorEntry>>> objects when iterated,
+    rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse
+    vectors will need to be updated.
+
+  []
+
 ** Algorithm Changes
 
   * The default user similarity for user-user CF is now cosine rather than Pearson.
+
+  * Item-item models can now have unbounded size and have rows truncated by threshold
+    value rather than size (#issue(171)).
+
+  * FunkSVD now incorporates user ratings at predict time (#issue(174)).
 
   []
 
@@ -27,13 +48,17 @@ LensKit Release Notes
   API is unchanged, but many components and their interfaces have changed. This means that
   custom components and recommender configurations will need to be updated.
 
-  * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
+  * Added <<<@Shareable>>> annotation for components that can be put in the model build
+    and shared between recommender sessions. All shareable components must now be annotated
+    with this annotation (or configured via instance bindings), or they will not be pre-built.
+
+  * Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).
 
-  * <<Incompatible>>: Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
+  * Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
     since that's what it really is.
 
-  * <<Incompatible>>: Removed many annotations formerly used as dependency qualifiers (see
+  * Removed many annotations formerly used as dependency qualifiers (see
     #issue(168)).
 
     * <<<@NormalizedSnapshot>>>: components that formerly used this qualifier should depend on

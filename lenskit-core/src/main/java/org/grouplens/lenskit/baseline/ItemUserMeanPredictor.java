@@ -21,22 +21,21 @@ package org.grouplens.lenskit.baseline;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -53,6 +52,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  */
 @DefaultProvider(ItemUserMeanPredictor.Provider.class)
+@Shareable
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
@@ -105,11 +105,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         Collection<Double> values = ratings.values();
         double total = 0;
 
-        Iterator<Long2DoubleMap.Entry> iter = ratings.fastIterator();
-        while (iter.hasNext()) {
-            Long2DoubleMap.Entry rating = iter.next();
-            double r = rating.getDoubleValue();
-            long iid = rating.getLongKey();
+        for (VectorEntry rating: ratings.fast()) {
+            double r = rating.getValue();
+            long iid = rating.getKey();
             total += r - getItemMean(iid);
         }
         return total / (values.size() + damping);

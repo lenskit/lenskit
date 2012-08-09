@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import javax.inject.Inject;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.params.WeightThreshold;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -45,6 +46,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  * @see WeightThreshold
  */
+@Shareable
 public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, Serializable {
 
     private static final long serialVersionUID = 1L;

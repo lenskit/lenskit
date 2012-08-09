@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.grouplens.grapht</groupId>
       <artifactId>grapht</artifactId>
-      <version>0.1.0</version>
+      <version>${grapht.version}</version>
     </dependency>
     <dependency>
       <groupId>org.grouplens.common</groupId>
