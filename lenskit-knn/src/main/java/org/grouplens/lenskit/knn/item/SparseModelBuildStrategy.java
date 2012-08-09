@@ -46,11 +46,11 @@ class SparseModelBuildStrategy implements
         final LongSortedSet items = context.getItems();
         final boolean symmetric = similarityFunction.isSymmetric();
 
+        LongSet candidates = new LongOpenHashSet();
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long i = iit.nextLong();
             final SparseVector v = context.itemVector(i);
-            final LongSet candidates = new LongOpenHashSet();
             final LongIterator uiter = v.keySet().iterator();
             while (uiter.hasNext()) {
                 final long user = uiter.nextLong();
@@ -77,6 +77,7 @@ class SparseModelBuildStrategy implements
                     accum.put(j, i, sim);
                 }
             }
+            candidates.clear();
         }
     }
 
