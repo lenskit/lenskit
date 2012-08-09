@@ -24,7 +24,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -50,15 +49,15 @@ class DAOSatisfaction implements Satisfaction {
     }
 
     @Override
+    public CachePolicy getDefaultCachePolicy() {
+        return CachePolicy.NO_PREFERENCE;
+    }
+
+    @Override
     public Provider<?> makeProvider(ProviderSource dependencies) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public Comparator<ContextMatcher> contextComparator() {
-        throw new UnsupportedOperationException();
-    }
-    
     @Override
     public int hashCode() {
         return DAOSatisfaction.class.hashCode();
@@ -67,5 +66,10 @@ class DAOSatisfaction implements Satisfaction {
     @Override
     public boolean equals(Object o) {
         return o instanceof DAOSatisfaction;
+    }
+
+    public static CachedSatisfaction label() {
+        return new CachedSatisfaction(new DAOSatisfaction(),
+                                      CachePolicy.NO_PREFERENCE);
     }
 }

@@ -20,7 +20,7 @@ package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
