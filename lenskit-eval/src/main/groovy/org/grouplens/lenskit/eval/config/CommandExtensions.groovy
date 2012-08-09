@@ -38,7 +38,7 @@ class CommandExtensions {
      * @param self The command.
      * @param name The method name.
      * @param args The arguments.
-     * @return A closure invoking the method, or {@code null}.
+     * @return A no-argument closure invoking the method, or {@code null}.
      */
     static def findMethod(Command self, String name, Object[] args) {
         logger.debug("searching for method {}", name)
@@ -132,6 +132,14 @@ class CommandExtensions {
         self.class.methods.findAll {it.name == name}
     }
 		
+	/**
+	* Find a setter method compatible with a specific property name and arguments.
+	* @param self The command.
+	* @param name The property name.
+	* @param args The arguments.
+	* @return A no-argument closure that either invokes the method if it is found
+	* or throws an exception if there is no matching method.
+	*/
 	static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
 		def methods = getMethods(self, name)
@@ -164,7 +172,15 @@ class CommandExtensions {
 	    }
 	}
 
-    static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
+	/**
+	* Find an adder method compatible with a specific property name and arguments.
+	* @param self The command.
+	* @param name The property name.
+	* @param args The arguments.
+	* @return A no-argument closure that either invokes the method if it is found
+	* or throws an exception if there is no matching method.
+	*/
+	static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)
