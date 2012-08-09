@@ -25,6 +25,7 @@ import java.util.Collection;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.params.Damping;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @DefaultProvider(UserMeanPredictor.Provider.class)
+@Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
     /**

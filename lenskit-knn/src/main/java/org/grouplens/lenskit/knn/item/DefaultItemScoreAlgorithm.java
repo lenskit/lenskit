@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand
  */
+@Shareable
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
     private int neighborhoodSize;

@@ -21,11 +21,11 @@ chart.rmse <- qplot(RMSE, Algorithm, data=rmse.both, shape=mode, color=mode)
 
 chart.ndcg <- qplot(nDCG, Algorithm, data=all.agg)
 
-chart.build <- ggplot(all.data, aes(Algorithm, BuildTime)) +
+chart.build <- ggplot(all.data, aes(Algorithm, BuildTime / 1000)) +
   geom_boxplot() +
   ylab("Build time (seconds)")
 
-chart.test <- ggplot(all.data, aes(Algorithm, TestTime)) +
+chart.test <- ggplot(all.data, aes(Algorithm, TestTime / 1000)) +
   geom_boxplot() +
   ylab("Test time (seconds)")
 

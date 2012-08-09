@@ -21,6 +21,7 @@ package org.grouplens.lenskit.baseline;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -33,6 +34,7 @@ import org.grouplens.lenskit.data.event.Rating;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
 @DefaultProvider(GlobalMeanPredictor.Provider.class)
+@Shareable
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.

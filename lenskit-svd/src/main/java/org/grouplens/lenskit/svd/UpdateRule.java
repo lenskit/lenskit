@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.svd;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.svd.params.IterationCount;
@@ -26,6 +27,7 @@ import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
+@NotThreadSafe
 public final class UpdateRule {
 	private int epoch;
 
@@ -46,11 +48,11 @@ public final class UpdateRule {
     private final ClampingFunction clampingFunction;
     
     
-	@Inject
-	public UpdateRule(@LearningRate double rate, @TrainingThreshold double threshold,
-            	@RegularizationTerm double gradientDescent, ClampingFunction clamp,
-            	@IterationCount int iterCount) {
-		epoch = 0;
+    @Inject
+    public UpdateRule(@LearningRate double rate, @TrainingThreshold double threshold,
+                      @RegularizationTerm double gradientDescent, ClampingFunction clamp,
+                      @IterationCount int iterCount) {
+        epoch = 0;
 		ratingCount = 0;
 		err = 0.0;
 		ssq = 0.0;

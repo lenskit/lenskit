@@ -36,6 +36,8 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.inject.Inject;
+
 /**
  * Base class for recommenders that recommend the top N items by a scorer.
  * Implements all methods required by {@link AbstractItemRecommender}. The
@@ -45,9 +47,10 @@ import org.grouplens.lenskit.vectors.VectorEntry;
  * Recommendations are returned in descending order of score.
  *
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender{
+public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
 
+    @Inject
     public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;

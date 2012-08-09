@@ -28,6 +28,7 @@ import javax.annotation.Nonnull;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.core.Shareable;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.
@@ -41,6 +42,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * @since 0.10
  */
 @DefaultProvider(ItemItemModelProvider.class)
+@Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = -5986236982760043379L;
 

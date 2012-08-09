@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -30,6 +31,7 @@ import java.io.Serializable;
  * @author Michael Ekstrand
  * @since 0.11
  */
+@Shareable
 public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serializable {
     private static final long serialVersionUID = 1L;
     protected final VectorNormalizer delegate;
