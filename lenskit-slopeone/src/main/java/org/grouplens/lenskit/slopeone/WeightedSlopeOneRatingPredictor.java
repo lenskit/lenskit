@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -44,6 +45,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         super(dao, model);
     }
 
+    @Nonnull
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);

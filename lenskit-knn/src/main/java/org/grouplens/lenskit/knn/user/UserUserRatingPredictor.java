@@ -35,6 +35,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Collection;
@@ -89,6 +90,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
      * possible predictions.
      * @see RatingPredictor#score(long, Collection)
      */
+    @Nonnull
     @Override
     public SparseVector score(UserHistory<? extends Event> history,
                               @Nullable Collection<Long> items) {

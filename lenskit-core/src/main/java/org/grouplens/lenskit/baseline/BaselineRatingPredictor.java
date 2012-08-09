@@ -20,6 +20,7 @@ package org.grouplens.lenskit.baseline;
 
 import java.util.Collection;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.RatingPredictor;
@@ -55,6 +56,7 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
     /**
      * Delegate to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
      */
+    @Nonnull
     @Override
     public SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(profile);

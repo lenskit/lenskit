@@ -94,6 +94,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
      * @see #makeTransform(long, SparseVector)
      */
+    @Nonnull
     @Override
     public SparseVector score(UserHistory<? extends Event> history,
                               Collection<Long> items) {

@@ -70,6 +70,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * retrieved from the DAO.
      * @see #getUserHistory(long)
      */
+    @Nonnull
     @Override
     public SparseVector score(long user, Collection<Long> items) {
         UserHistory<? extends Event> profile = getUserHistory(user);

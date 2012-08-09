@@ -33,6 +33,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Collection;
 
@@ -119,6 +120,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
                        uprefs, items);
     }
 
+    @Nonnull
     @Override
     public MutableSparseVector score(UserHistory<? extends Event> userHistory, Collection<Long> items) {
         long user = userHistory.getUserId();
@@ -149,6 +151,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     }
 
     
+    @Nonnull
     @Override
     public MutableSparseVector score(long user, Collection<Long> items) {
         return score(dao.getUserHistory(user), items);

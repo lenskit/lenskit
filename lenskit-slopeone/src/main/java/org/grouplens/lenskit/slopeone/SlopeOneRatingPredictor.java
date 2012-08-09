@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Collection;
 
@@ -48,6 +49,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         this.model = model;
     }
 
+    @Nonnull
     @Override
     public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
