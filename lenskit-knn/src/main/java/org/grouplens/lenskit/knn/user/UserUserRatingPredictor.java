@@ -85,12 +85,6 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
         return normedVectors;
     }
 
-    /**
-     * Get predictions for a set of items.  Unlike the interface method, this
-     * method can take a null <var>items</var> set, in which case it returns all
-     * possible predictions.
-     * @see RatingPredictor#score(long, Collection)
-     */
     @Override
     public void score(@Nonnull UserHistory<? extends Event> history,
                       @Nonnull MutableSparseVector scores) {
@@ -109,7 +103,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
             if (nbrs != null) {
-                for (final Neighbor n: neighborhoods.get(item)) {
+                for (Neighbor n: nbrs) {
                     weight += abs(n.similarity);
                     sum += n.similarity * normedUsers.get(n.user).get(item);
                 }
