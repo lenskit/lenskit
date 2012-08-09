@@ -21,11 +21,13 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.grapht.annotation.Parameter;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
 import javax.inject.Qualifier;
@@ -67,8 +69,16 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
 
     @Override
     public void predict(long user, SparseVector ratings,
-                        MutableSparseVector output) {
-        output.fill(value);
+                        MutableSparseVector output, boolean predictSet) {
+        if (predictSet) {
+            output.fill(value);
+        } else {
+            for (VectorEntry e: output.fastWithUnset()) {
+                if (!e.isSet()) {
+                    output.set(e, value);
+                }
+            }
+        }
     }
     
     @Override

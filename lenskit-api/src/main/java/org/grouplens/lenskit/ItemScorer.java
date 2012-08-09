@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -69,6 +70,16 @@ public interface ItemScorer {
     SparseVector score(long user, Collection<Long> items);
 
     /**
+     * Score items in a vector. The key domain of the provided vector is the
+     * items to score, and the score method sets the values for each item to
+     * its score (or unsets it, if no score can be provided). The previous
+     * values are discarded.
+     * @param user The user ID.
+     * @param scores The score vector.
+     */
+    void score(long user, @Nonnull MutableSparseVector scores);
+
+    /**
      * Query whether this scorer can actually use user history.
      *
      * @return <tt>true</tt> if the history passed to one of the history-based
@@ -100,4 +111,15 @@ public interface ItemScorer {
      */
     @Nonnull
     SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items);
+
+    /**
+     * Score items in a vector. The key domain of the provided vector is the
+     * items to score, and the score method sets the values for each item to
+     * its score (or unsets it, if no score can be provided). The previous
+     * values are discarded.
+     * @param profile The user history.
+     * @param scores The score vector.
+     */
+    void score(@Nonnull UserHistory<? extends Event> profile,
+               @Nonnull MutableSparseVector scores);
 }

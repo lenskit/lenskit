@@ -116,6 +116,11 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     public Iterator<VectorEntry> fastIterator() {
         return new FastIterImpl();
     }
+
+    @Override
+    public Iterator<VectorEntry> fastIteratorWithUnset() {
+        return fastIterator();
+    }
     
     @Override
     public LongSortedSet keySet() {

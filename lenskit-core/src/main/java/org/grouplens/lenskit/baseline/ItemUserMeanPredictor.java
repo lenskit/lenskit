@@ -115,10 +115,13 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public void predict(long user, SparseVector ratings, MutableSparseVector scores) {
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector scores, boolean predictSet) {
         double meanOffset = computeUserAverage(ratings);
-        for (VectorEntry e: scores.fast()) {
-            scores.set(e, meanOffset + getItemMean(e.getKey()));
+        for (VectorEntry e: scores.fastWithUnset()) {
+            if (predictSet || !e.isSet()) {
+                scores.set(e, meanOffset + getItemMean(e.getKey()));
+            }
         }
     }
 }

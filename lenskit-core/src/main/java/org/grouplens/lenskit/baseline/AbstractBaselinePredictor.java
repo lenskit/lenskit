@@ -19,4 +19,8 @@ public abstract class AbstractBaselinePredictor implements BaselinePredictor {
         predict(user, ratings, v);
         return v;
     }
+
+    public void predict(long user, SparseVector ratings, MutableSparseVector output) {
+        predict(user, ratings, output, true);
+    }
 }

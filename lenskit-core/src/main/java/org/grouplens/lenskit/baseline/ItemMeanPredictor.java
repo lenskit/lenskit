@@ -169,9 +169,12 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public void predict(long user, SparseVector ratings, MutableSparseVector items) {
-        for (VectorEntry e: items.fast()) {
-            items.set(e, getItemMean(e.getKey()));
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector items, boolean predictSet) {
+        for (VectorEntry e: items.fastWithUnset()) {
+            if (predictSet || !e.isSet()) {
+                items.set(e, getItemMean(e.getKey()));
+            }
         }
     }
 

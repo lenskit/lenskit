@@ -21,7 +21,6 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -70,7 +69,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      *
      * @param pred The baseline predictor. Configure this by setting the
      *        {@link BaselinePredictor} component.
-     * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
+     * @see LenskitRecommenderEngineFactory#bind(Class)
      */
     @Inject
     public void setBaseline(@Nullable BaselinePredictor pred) {
@@ -127,14 +126,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             norm.unapply(vector);
             
             assert baseline != null;
-            LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
-            if (!unpredItems.isEmpty()) {
-                logger.trace("Filling {} items from baseline",
-                             unpredItems.size());
-                SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
-                vector.set(basePreds);
-            }
-            
+            baseline.predict(user, ratings, vector, false);
             return vector;
         }
 

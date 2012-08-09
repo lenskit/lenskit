@@ -21,11 +21,13 @@ package org.grouplens.lenskit.vectors;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.BitSetIterator;
+import org.grouplens.lenskit.collections.IntIntervalList;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
 
@@ -205,7 +207,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     
     @Override
     public Iterator<VectorEntry> fastIterator() {
-        return new FastIterImpl();
+        return new FastIterImpl(new BitSetIterator(usedKeys, 0, domainSize));
+    }
+
+    @Override
+    public Iterator<VectorEntry> fastIteratorWithUnset() {
+        return new FastIterImpl(new IntIntervalList(0, domainSize).iterator());
     }
     
     @Override
@@ -295,6 +302,25 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         if (idx >= 0) {
             usedKeys.clear(idx);
         }
+    }
+
+    /**
+     * Clear the value for a vector entry.
+     * @param e The entry to clear.
+     * @see #clear(long)
+     */
+    public final void clear(VectorEntry e) {
+        if (e.vector != this) {
+            throw new IllegalArgumentException("clearing vector from wrong entry");
+        }
+        usedKeys.clear(e.getIndex());
+    }
+
+    /**
+     * Clear all values from the set.
+     */
+    public void clear() {
+        usedKeys.clear();
     }
 
     /**
@@ -513,7 +539,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         @Override @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            return new VectorEntry(MutableSparseVector.this, pos, keys[pos], values[pos]);
+            return new VectorEntry(MutableSparseVector.this, pos,
+                                   keys[pos], values[pos], true);
         }
         @Override
         public void remove() {
@@ -522,8 +549,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     }
 
     final class FastIterImpl implements Iterator<VectorEntry> {
-        VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0,0);
-        BitSetIterator iter = new BitSetIterator(usedKeys);
+        VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
+        IntIterator iter;
+        public FastIterImpl(IntIterator positions) {
+            iter = positions;
+        }
+
         @Override
         public boolean hasNext() {
             return iter.hasNext();
@@ -531,7 +562,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         @Override @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            entry.set(pos, keys[pos], values[pos]);
+            boolean set = usedKeys.get(pos);
+            double v = set ? values[pos] : Double.NaN;
+            entry.set(pos, keys[pos], v, set);
             return entry;
         }
         @Override

@@ -28,12 +28,13 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Base class to make item scorers easier to implement. Delegates single=item
- * score methods to collection-based ones, and {@link #score(long, Collection)}
- * to {@link #score(UserHistory, Collection)}.
+ * score methods to collection-based ones, and {@link #score(long, MutableSparseVector)}
+ * to {@link #score(UserHistory, MutableSparseVector)}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * 	   
@@ -66,15 +67,40 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(UserHistory, Collection)} with a history
-     * retrieved from the DAO.
-     * @see #getUserHistory(long)
+     * Delegate to {@link #score(long, MutableSparseVector)}.
      */
     @Nonnull
     @Override
     public SparseVector score(long user, Collection<Long> items) {
+        MutableSparseVector scores = new MutableSparseVector(items);
+        score(user, scores);
+        // FIXME Create a more efficient way of "releasing" mutable sparse vectors
+        return scores.freeze();
+    }
+
+    /**
+     * Delegate to {@link #score(UserHistory, MutableSparseVector)}.
+     */
+    @Nonnull
+    @Override
+    public SparseVector score(UserHistory<? extends Event> history,
+                              Collection<Long> items) {
+        MutableSparseVector scores = new MutableSparseVector(items);
+        score(history, scores);
+        return scores.freeze();
+    }
+
+    /**
+     * Delegate to {@link #score(UserHistory, MutableSparseVector)}, with a
+     * history retrieved from the DAO.
+     * @param user The user ID.
+     * @param scores The score vector.
+     * @see #getUserHistory(long)
+     */
+    @Override
+    public void score(long user, @Nonnull MutableSparseVector scores) {
         UserHistory<? extends Event> profile = getUserHistory(user);
-        return score(profile, items);
+        score(profile, scores);
     }
 
     /**

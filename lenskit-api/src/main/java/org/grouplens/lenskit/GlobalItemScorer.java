@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 
@@ -37,8 +38,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  */
 public interface GlobalItemScorer {
-
-	
     /**
      * Score a single item based on a collection of items(a shopping basket).
      *
@@ -60,5 +59,10 @@ public interface GlobalItemScorer {
 	@Nonnull
 	SparseVector globalScore(Collection<Long> queryItems, Collection<Long> items);
 
-
+    /**
+     * Score a collection of items based on a collection of items (a shopping basket).
+     * @param queryItems The items to use as the query.
+     * @param output A vector whose key domain is the items to score.
+     */
+    void globalScore(Collection<Long> queryItems, MutableSparseVector output);
 }

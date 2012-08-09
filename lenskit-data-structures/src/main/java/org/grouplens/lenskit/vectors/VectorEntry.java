@@ -36,6 +36,7 @@ public final class VectorEntry {
     private int index;
     private long key;
     private double value;
+    private boolean isSet;
 
     /**
      * Construct a new vector entry for a particular vector.
@@ -44,11 +45,12 @@ public final class VectorEntry {
      * @param k The entry's key.
      * @param val The entry's value.
      */
-    VectorEntry(@Nullable SparseVector vec, int i, long k, double val) {
+    VectorEntry(@Nullable SparseVector vec, int i, long k, double val, boolean set) {
         vector = vec;
         index = i;
         key = k;
         value = val;
+        isSet = set;
     }
 
     /**
@@ -57,7 +59,7 @@ public final class VectorEntry {
      * @param v The entry's value.
      */
     public VectorEntry(long k, double v) {
-        this(null, -1, k, v);
+        this(null, -1, k, v, true);
     }
 
     /**
@@ -85,15 +87,25 @@ public final class VectorEntry {
     }
 
     /**
+     * Query whether this entry is set.
+     * @return {@code true} if the entry's key is in the key set; {@code false} if
+     * it is only in the key domain.
+     */
+    public boolean isSet() {
+        return isSet;
+    }
+
+    /**
      * Update the entry (used for fast iteration).
      * @param i The new index.
      * @param k The new key.
      * @param v the new value.
      */
-    void set(int i, long k, double v) {
+    void set(int i, long k, double v, boolean set) {
         index = i;
         key = k;
         value = v;
+        isSet = set;
     }
 
     /**
@@ -104,6 +116,7 @@ public final class VectorEntry {
     void set(long k, double v) {
         key = k;
         value = v;
+        isSet = true;
     }
 
     /**

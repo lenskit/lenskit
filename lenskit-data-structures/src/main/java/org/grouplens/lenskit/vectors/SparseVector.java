@@ -119,6 +119,15 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     public abstract Iterator<VectorEntry> fastIterator();
 
     /**
+     * Fast iterator over all entries (it can reuse entry objects), including
+     * unset elements of the key domain (their values will be {@link Double#NaN}).
+     * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
+     *         Long2DoubleMap.FastEntrySet.fastIterator()
+     * @return a fast iterator over all key/value pairs
+     */
+    public abstract Iterator<VectorEntry> fastIteratorWithUnset();
+
+    /**
      * Return an iterable view of this vector using a fast iterator.
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
@@ -128,6 +137,22 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
             @Override
             public Iterator<VectorEntry> iterator() {
                 return fastIterator();
+            }
+        };
+    }
+
+    /**
+     * Return an iterable view of this vector using a fast iterator with unset
+     * elements returned.
+     * @return This object wrapped in an iterable that returns a fast iterator
+     * with unset elements..
+     * @see #fastIteratorWithUnset()
+     */
+    public Iterable<VectorEntry> fastWithUnset() {
+        return new Iterable<VectorEntry>() {
+            @Override
+            public Iterator<VectorEntry> iterator() {
+                return fastIteratorWithUnset();
             }
         };
     }

@@ -19,10 +19,10 @@
 package org.grouplens.lenskit.knn.user;
 
 import com.google.common.collect.Iterables;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -32,6 +32,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,30 +91,20 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
      * possible predictions.
      * @see RatingPredictor#score(long, Collection)
      */
-    @Nonnull
     @Override
-    public SparseVector score(UserHistory<? extends Event> history,
-                              @Nullable Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         logger.trace("Predicting for user {} with {} events",
                      history.getUserId(), history.size());
-        LongSortedSet iset;
-        if (items == null) {
-            iset = null;
-        } else if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
+
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            neighborhoodFinder.findNeighbors(history, iset);
+            neighborhoodFinder.findNeighbors(history, scores.keyDomain());
         Long2ObjectMap<SparseVector> normedUsers =
             normalizeNeighborRatings(neighborhoods.values());
         
-        MutableSparseVector preds = new MutableSparseVector(iset);
-        LongArrayList missing = new LongArrayList();
-        LongIterator iter = iset.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+        int nmissing = 0;
+        for (VectorEntry e: scores.fastWithUnset()) {
+            final long item = e.getKey();
             double sum = 0;
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
@@ -126,25 +117,23 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
 
             if (weight >= MINIMUM_SIMILARITY) {
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
-                preds.set(item, sum / weight);
+                scores.set(e, sum / weight);
             } else {
-                missing.add(item);
+                nmissing = 0;
+                scores.clear(e);
             }
         }
 
         // Denormalize and return the results
         SparseVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(history.getUserId(), urv);
-        vo.unapply(preds);
+        vo.unapply(scores);
 
         // Use the baseline
-        if (baseline != null && missing.size() > 0) {
+        if (baseline != null && nmissing > 0) {
             logger.trace("Filling in {} missing predictions with baseline",
-                         missing.size());
-            MutableSparseVector basePreds = baseline.predict(history.getUserId(), urv, missing);
-            preds.set(basePreds);
+                         nmissing);
+            baseline.predict(history.getUserId(), urv, scores, false);
         }
-        
-        return preds;
     }
 }

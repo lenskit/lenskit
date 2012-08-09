@@ -18,11 +18,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
@@ -32,8 +27,11 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -51,21 +49,10 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         neighborhoodSize = n;
     }
 
-    /**
-     * Compute item scores.
-     *
-     * @param model The item-item similarity model to use.
-     * @param userData The user vector for which scores are to be computed.
-     * @param items The items to score.
-     * @param scorer The neighborhood scorer used to score items.
-     * @return The scores for the items. The key domain contains all items; only
-     *         those items with scores are set.
-     */
     @Override
-    public MutableSparseVector scoreItems(ItemItemModel model,
-                                          SparseVector userData, LongSortedSet items,
-                                          NeighborhoodScorer scorer) {
-        MutableSparseVector scores = new MutableSparseVector(items);
+    public void scoreItems(ItemItemModel model, SparseVector userData,
+                           MutableSparseVector scores,
+                           NeighborhoodScorer scorer) {
         // We ran reuse accumulators
         ScoredItemAccumulator accum;
         if (neighborhoodSize > 0) {
@@ -75,9 +62,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         }
 
         // for each item, compute its prediction
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+        for (VectorEntry e: scores.fastWithUnset()) {
+            final long item = e.getKey();
 
             // find all potential neighbors
             // FIXME: Take advantage of the fact that the neighborhood is sorted
@@ -102,10 +88,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
             if (!Double.isNaN(score)) {
-                scores.set(item, score);
+                scores.set(e, score);
             }
         }
-
-        return scores;
     }
 }

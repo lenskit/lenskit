@@ -21,8 +21,6 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -91,30 +89,23 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Score items by computing predicted ratings.
-     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
+     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
      * @see #makeTransform(long, SparseVector)
      */
-    @Nonnull
     @Override
-    public SparseVector score(UserHistory<? extends Event> history,
-                              Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector summary = summarizer.summarize(history);
         VectorTransformation transform = makeTransform(history.getUserId(), summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
+        scores.clear();
 
-		MutableSparseVector preds = algorithm.scoreItems(model, normed, iset, scorer);
+        algorithm.scoreItems(model, normed, scores, scorer);
 
 		// untransform the scores
-        transform.unapply(preds);
-        return preds.freeze();
+        transform.unapply(scores);
     }
 
     /**

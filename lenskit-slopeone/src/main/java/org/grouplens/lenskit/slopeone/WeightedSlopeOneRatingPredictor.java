@@ -18,23 +18,18 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.
@@ -45,22 +40,14 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         super(dao, model);
     }
 
-    @Nonnull
     @Override
-    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
-        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
-        LongArrayList unpreds = new LongArrayList();
-        LongIterator predicteeIter = iset.iterator();
-        while (predicteeIter.hasNext()) {
-            long predicteeItem = predicteeIter.nextLong();
+        int nUnpred = 0;
+        for (VectorEntry e: scores.fastWithUnset()) {
+            final long predicteeItem = e.getKey();
         	if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;
                 int nusers = 0;
@@ -75,21 +62,19 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
                     }
                 }
                 if (nusers == 0) {
-                    unpreds.add(predicteeItem);
+                    nUnpred += 1;
+                    scores.clear(e);
                 } else {
                     double predValue = total/nusers;
                     predValue = model.getDomain().clampValue(predValue);
-                    preds.set(predicteeItem, predValue);
+                    scores.set(e, predValue);
                 }
             }
         }
         
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && !unpreds.isEmpty()) {
-            SparseVector basePreds = baseline.predict(history.getUserId(), ratings, unpreds);
-            preds.set(basePreds);
+        if (baseline != null && nUnpred > 0) {
+            baseline.predict(history.getUserId(), ratings, scores, false);
         }
-        
-        return preds;
     }
 }

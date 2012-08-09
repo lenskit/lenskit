@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,10 +105,19 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public void predict(long user, SparseVector ratings, MutableSparseVector output) {
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output, boolean predictSet) {
         double mean = average(ratings, globalMean, smoothing);
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
-        output.fill(mean);
+        if (predictSet) {
+            output.fill(mean);
+        } else {
+            for (VectorEntry e: output.fastWithUnset()) {
+                if (!e.isSet()) {
+                    output.set(e, mean);
+                }
+            }
+        }
     }
 
     @Override

@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -50,7 +51,6 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer{
         this.dao = dao;
     }
     
-    
     /**
      * Delegate to {@link #globalScore(Collection, Collection)}
      */
@@ -60,6 +60,11 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer{
 		return v.get(item, Double.NaN);
     }
 
-
-
+    @Nonnull
+    public MutableSparseVector globalScore(Collection<Long> queryItems,
+                                           Collection<Long> items) {
+        MutableSparseVector v = new MutableSparseVector(items);
+        globalScore(queryItems, v);
+        return v;
+    }
 }
