@@ -112,9 +112,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             throw new IndexOutOfBoundsException();
 
         if (!clean) {
-            // check for sortedness first to avoid the actual sort
-            if (!MoreArrays.isSorted(data, start, toIndex))
-                Arrays.sort(data, start, toIndex);
+            Arrays.sort(data, start, toIndex);
             end = MoreArrays.deduplicate(data, start, toIndex);
         } else {
             end = toIndex;
@@ -263,6 +261,21 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             return a;
         } else {
             return super.toLongArray(a);
+        }
+    }
+
+    /**
+     * Get this set as an array. If possible, the set's underlying
+     * array is returned, so the returned array should not be modified
+     * if the set is still needed.
+     * @return The array of elements.
+     * @see #toLongArray()
+     */
+    public long[] unsafeArray() {
+        if (start == 0 && end == data.length && mask == null) {
+            return data;
+        } else {
+            return toLongArray();
         }
     }
 

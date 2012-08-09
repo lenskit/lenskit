@@ -25,17 +25,16 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-
 import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Mutable sparse vector interface
@@ -90,11 +89,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     }
 
     /**
-     * Construct a new zero vector with specified key domain.
-     * @param keySet The key domain.
+     * Construct a new empty vector with specified key domain.
+     * @param domain The key domain.
      */
-    public MutableSparseVector(LongSet keySet) {
-        keys = normalizeKeys(keySet);
+    public MutableSparseVector(Collection<Long> domain) {
+        LongSortedArraySet set = new LongSortedArraySet(domain);
+        keys = set.unsafeArray();
         values = new double[keys.length];
         domainSize = keys.length;
         usedKeys = new BitSet(domainSize);
@@ -161,14 +161,6 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         usedKeys = used;
     }
 
-    static long[] normalizeKeys(LongSet set) {
-        long[] keys = set.toLongArray();
-        if (!(set instanceof LongSortedSet)) {
-            Arrays.sort(keys);
-        }
-        return keys;
-    }
-    
     protected void checkValid() {
         if (values == null) {
             throw new IllegalStateException("Vector is frozen");
@@ -281,6 +273,15 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         final int idx = entry.getIndex();
         entry.setValue(value);
         return setAt(idx, value);
+    }
+
+    /**
+     * Set the values for all items in the key domain to {@code value}.
+     * @param value The value to set.
+     */
+    public final void fill(double value) {
+        DoubleArrays.fill(values, 0, domainSize, value);
+        usedKeys.set(0, domainSize);
     }
     
     /**
