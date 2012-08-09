@@ -39,13 +39,4 @@ public class MultiplexedTableWriter implements TableWriter {
 			w.close();
 		}
 	}
-	
-	public TableImpl getResult() {
-		for (TableWriter writer : writers) {
-			if (writer instanceof InMemoryWriter) {
-				return ((InMemoryWriter) writer).getResult();
-			}
-		}
-		return null;
-	}
 }
