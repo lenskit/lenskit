@@ -24,6 +24,7 @@ import org.grouplens.lenskit.eval.data.CSVDataSource
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import static org.hamcrest.Matchers.equalTo
@@ -44,11 +45,13 @@ class TestTrainTestBuilderConfig {
     TrainTestEvalCommand command
     CommandDelegate delegate
 
-    def file = new File("ml-100k.csv")
+	def buildDir = System.getProperty("project.build.directory", ".")
+	def file = File.createTempFile("tempRatings", "csv")
     
     @Before
     void prepareFile() {
-        file.append('19,242,3,881250949\n')
+		file.deleteOnExit()
+		file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -66,6 +69,12 @@ class TestTrainTestBuilderConfig {
         command = new TrainTestEvalCommand("TTcommand")
         delegate = new CommandDelegate(engine, command)
     }
+	
+	@After
+	void cleanUpFiles() {
+		file.delete()
+		new File("${buildDir}/temp").deleteDir()
+	}
     
     def eval(Closure cl) {
         cl.setDelegate(delegate)
@@ -163,9 +172,11 @@ class TestTrainTestBuilderConfig {
     @Test
     void testCrossfoldDataSource() {
         def dat = eval {
-            crossfold("ml-100k") {
+            crossfold("tempRatings") {
                 source file
                 partitions 7
+				train "${buildDir}/temp/ratings.train.%d.csv"
+				test "${buildDir}/temp/ratings.test.%d.csv"
             }
         }
         assertThat(dat.size(), equalTo(7))
@@ -176,5 +187,5 @@ class TestTrainTestBuilderConfig {
         def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
     }
-
+    
 }
