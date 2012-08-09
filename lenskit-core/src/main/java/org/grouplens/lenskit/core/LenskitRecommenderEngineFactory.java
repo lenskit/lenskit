@@ -208,7 +208,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             assert daoLbl != null;
             Class<?> type = daoLbl.getSatisfaction().getErasedType();
             Satisfaction sat = config.getSPI().satisfyWithNull(type);
-            daoPlaceholder = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
+            daoPlaceholder = new Node(sat, CachePolicy.MEMOIZE);
             modified.replaceNode(daoNode, daoPlaceholder);
         }
 
@@ -261,15 +261,15 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
         for (Node node: toReplace) {
             Object obj = injector.instantiate(node);
-            Satisfaction sat;
+            CachedSatisfaction label = node.getLabel();
+            assert label != null;
+            Satisfaction instanceSat;
             if (obj == null) {
-                CachedSatisfaction lbl = node.getLabel();
-                assert lbl != null;
-                sat = spi.satisfyWithNull(lbl.getSatisfaction().getErasedType());
+                instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
             } else {
-                sat = spi.satisfy(obj);
+                instanceSat = spi.satisfy(obj);
             }
-            Node repl = new Node(new CachedSatisfaction(sat, CachePolicy.NO_PREFERENCE));
+            Node repl = new Node(instanceSat, label.getCachePolicy());
             graph.replaceNode(node, repl);
         }
         return replacements;
