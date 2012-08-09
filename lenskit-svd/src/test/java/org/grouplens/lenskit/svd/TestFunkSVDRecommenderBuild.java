@@ -18,6 +18,9 @@
  */
 package org.grouplens.lenskit.svd;
 
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -29,6 +32,8 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -42,7 +47,7 @@ import org.junit.Test;
 
 public class TestFunkSVDRecommenderBuild {
     private DAOFactory manager;
-    private RecommenderEngine engine;
+    private LenskitRecommenderEngine engine;
 
     @Before
     public void setup() {
@@ -74,6 +79,29 @@ public class TestFunkSVDRecommenderBuild {
             assertTrue(rec.getItemRecommender() instanceof FunkSVDRecommender);
         } finally {
             rec.close();
+        }
+    }
+
+    @Test
+    public void testConfigSeparation() {
+        LenskitRecommender rec1 = null;
+        LenskitRecommender rec2 = null;
+        try {
+            rec1 = engine.open();
+            rec2 = engine.open();
+
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(FunkSVDModel.class),
+                       allOf(not(nullValue()),
+                             sameInstance(rec2.get(FunkSVDModel.class))));
+        } finally {
+            if (rec2 != null) {
+                rec2.close();
+            }
+            if (rec1 != null) {
+                rec1.close();
+            }
         }
     }
 }
