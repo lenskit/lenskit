@@ -187,5 +187,4 @@ class TestTrainTestBuilderConfig {
         def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
     }
-    
 }

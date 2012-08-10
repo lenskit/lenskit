@@ -54,7 +54,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
     }
 	
 	@After
-	void cleanUpFile() {
+	void cleanUpFiles() {
 		file.delete()
 		new File("${buildDir}/temp").deleteDir()
 	}

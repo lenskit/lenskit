@@ -196,7 +196,7 @@ class CommandExtensions {
         return method
     }
 	
-	static def isWrappedPrimitive(Class clazz) {
+	static def isWrappedPrimitive(Class<?> clazz) {
 		return clazz.equals(Byte.class) ||
 			clazz.equals(Short.class) ||
 			clazz.equals(Integer.class) ||

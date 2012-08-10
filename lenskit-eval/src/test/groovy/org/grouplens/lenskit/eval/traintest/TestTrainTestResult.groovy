@@ -60,7 +60,7 @@ class TestTrainTestResult extends ConfigTestBase{
     }
 	
 	@After
-	void cleanUpFile() {
+	void cleanUpFiles() {
 		file.delete()
 		new File("${buildDir}/temp").deleteDir()
 	}
@@ -78,7 +78,7 @@ class TestTrainTestResult extends ConfigTestBase{
         def result = eval{
             trainTest {
                 dataset dat
-
+				output null
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
 
