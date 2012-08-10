@@ -170,7 +170,14 @@ public class Cursors {
 
 		return list;
 	}
-	
+
+    /**
+     * Read a LongCursor into a LongArrayList, closing the cursor when done.
+     * @param cursor The LongCursor to be read into a list.
+     * @return A new list containing the elements of the cursor. The list has been
+     * allocated with a capacity of {@link Cursor#getRowCount()} if possible,
+     * but has not been trimmed.
+     */
 	public static LongArrayList makeList(@WillClose LongCursor cursor) {
         LongArrayList list = null;
         try {
@@ -187,10 +194,15 @@ public class Cursors {
         } finally {
             cursor.close();
         }
-        list.trim();
+
         return list;
     }
-	
+
+    /**
+     * Read a LongCursor into a LongSet, closing the cursor when done.
+     * @param cursor The LongCursor to be read into a set.
+     * @return A LongSet containing the elements of the cursor.
+     */
 	public static LongSet makeSet(@WillClose LongCursor cursor) {
         LongOpenHashSet set = null;
         try {

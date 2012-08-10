@@ -18,13 +18,14 @@
  */
 package org.grouplens.lenskit.slopeone;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.util.Index;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.util.Indexer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
@@ -46,18 +47,21 @@ public class SlopeOneModelDataAccumulator {
     public SlopeOneModelDataAccumulator(double damping, Indexer itemIndex, DataAccessObject dao) {
         this.damping = damping;
         this.itemIndex = itemIndex;
-        long[] items = Cursors.makeList(dao.getItems()).elements();
-        deviationMatrix = new Long2DoubleOpenHashMap[items.length];
-        coratingMatrix = new Long2IntOpenHashMap[items.length];
-        for (long itemId : items) {
+        LongList items = Cursors.makeList(dao.getItems());
+        deviationMatrix = new Long2DoubleOpenHashMap[items.size()];
+        coratingMatrix = new Long2IntOpenHashMap[items.size()];
+
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            final long itemId = iter.nextLong();
             deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
             coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
         }
-        for (int i = 0; i < items.length-1; i++) {
-            for (int j = i; j < items.length; j++) {
+        for (int i = 0; i < items.size()-1; i++) {
+            for (int j = i; j < items.size(); j++) {
                 // to profit from matrix symmetry, always store by minId
-                long minId = Math.min(items[i], items[j]);
-                long maxId = Math.max(items[i], items[j]);
+                long minId = Math.min(items.getLong(i), items.getLong(j));
+                long maxId = Math.max(items.getLong(i), items.getLong(j));
                 deviationMatrix[itemIndex.getIndex(minId)].put(maxId, Double.NaN);
             }
         }

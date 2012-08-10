@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -103,7 +104,9 @@ public class ItemItemBuildContextFactory {
             workMatrix.put(iid, new Long2DoubleOpenHashMap(20));
         }
 
-        for (long uid : dao.getUsers()) {
+        LongCursor userCursor = dao.getUsers();
+        while (userCursor.hasNext()) {
+            long uid = userCursor.nextLong();
             SparseVector summary = userSummarizer.summarize(dao.getUserHistory(uid));
             MutableSparseVector normed = summary.mutableCopy();
             normalizer.normalize(uid, summary, normed);
@@ -115,6 +118,7 @@ public class ItemItemBuildContextFactory {
                 ivect.put(uid, rating.getValue());
             }
         }
+        userCursor.close();
 
         return workMatrix;
     }
