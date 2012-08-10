@@ -148,7 +148,7 @@ class CommandExtensions {
 			if (methods.size() == 1) {
 				def method = methods[0]
 				def formals = method.parameterTypes
-				if (formals.size() == 1 && !formals[0].isPrimitive() && !formals[0].isWrappedPrimitive()) {
+				if (formals.size() == 1 && !formals[0].isPrimitive()) {
 					return {
 						method.invoke(self, args)
 					}
@@ -195,15 +195,4 @@ class CommandExtensions {
         }
         return method
     }
-	
-	static def isWrappedPrimitive(Class<?> clazz) {
-		return clazz.equals(Byte.class) ||
-			clazz.equals(Short.class) ||
-			clazz.equals(Integer.class) ||
-			clazz.equals(Long.class) ||
-			clazz.equals(Float.class) ||
-			clazz.equals(Double.class) ||
-			clazz.equals(Boolean.class) ||
-			clazz.equals(Character.class)			
-	}
 }
