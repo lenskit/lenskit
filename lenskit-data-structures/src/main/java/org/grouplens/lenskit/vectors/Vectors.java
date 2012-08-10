@@ -44,7 +44,7 @@ public class Vectors {
         return new Iterable<EntryPair>() {
             @Override
             public Iterator<EntryPair> iterator() {
-                return pairedIteratorFast(v1, v2);
+                return pairedFastIterator(v1, v2);
             }
         };
     }
@@ -57,8 +57,13 @@ public class Vectors {
      * @return a fast Iterator over EntryPairs, representing a shared
      * key and the paired values for that key.
      */
-    public static Iterator<EntryPair> pairedIteratorFast(SparseVector v1, SparseVector v2) {
+    public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
+    }
+
+    @Deprecated
+    public static Iterator<EntryPair> pairedIteratorFast(SparseVector v1, SparseVector v2) {
+        return pairedFastIterator(v1, v2);
     }
 
     /**

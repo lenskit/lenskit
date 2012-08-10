@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

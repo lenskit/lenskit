@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.knn;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
@@ -44,6 +45,7 @@ import static java.lang.Math.sqrt;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
 public class PearsonCorrelation implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 1L;
 

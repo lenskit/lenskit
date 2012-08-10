@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -34,6 +35,7 @@ import java.io.Serializable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
 public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 3023239202579332883L;
 

@@ -16,40 +16,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
+package org.grouplens.lenskit.core;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.VectorSimilarity;
-import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.inject.Inject;
+import java.lang.annotation.*;
 
 /**
- * Implementation of {@link UserSimilarity} that delegates to a vector similarity.
+ * Mark a component implementation as shareable. Shareable components can be shared
+ * between recommender sessions. Things like item-item models should be shareable.
+ * <p>
+ * Shareable components must meet the following requirements:
+ * <ul>
+ * <li>Be thread-safe</li>
+ * <li>Be serializable (or externalizable)</li>
+ * </ul>
+ * <p>
+ * Shareable components will be reused as much as possible. If a shareable component
+ * has no non-transient non-shareable dependencies, then it will be created once per
+ * recommender <i>engine</i> rather than per-recommender.
+ * <p>
+ * The Shareable annotation should be on the component implementation, not interface.
+ *
  * @author Michael Ekstrand
- * @since 0.11
  */
-@Shareable
-public class UserVectorSimilarity implements UserSimilarity {
-    private VectorSimilarity delegate;
-
-    @Inject
-    public UserVectorSimilarity(VectorSimilarity sim) {
-        delegate = sim;
-    }
-
-    @Override
-    public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
-        return delegate.similarity(v1, v2);
-    }
-
-    @Override
-    public boolean isSparse() {
-        return delegate.isSparse();
-    }
-
-    @Override
-    public boolean isSymmetric() {
-        return delegate.isSymmetric();
-    }
+@Documented
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Shareable {
 }

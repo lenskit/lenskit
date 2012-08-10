@@ -33,9 +33,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.inject.Inject;
+import javax.inject.Qualifier;
+import javax.inject.Singleton;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.Parameter;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -44,12 +48,16 @@ import org.grouplens.lenskit.vectors.SparseVector;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@Shareable
+@Singleton
 public class ConstantPredictor implements BaselinePredictor {
     /**
      * Parameter: the value used by the constant scorer.
      */
     @Documented
     @DefaultDouble(0.0)
+    @Qualifier
+    @Parameter(Parameter.PrimitiveType.DOUBLE)
     @Target({ ElementType.METHOD, ElementType.PARAMETER })
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value { }

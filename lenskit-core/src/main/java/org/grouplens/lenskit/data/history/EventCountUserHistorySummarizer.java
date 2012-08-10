@@ -22,7 +22,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
 import javax.annotation.Nonnull;
+import javax.inject.Singleton;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 
@@ -37,6 +39,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
+@Singleton
 public final class EventCountUserHistorySummarizer implements UserHistorySummarizer {
     protected final Class<? extends Event> wantedType;
 

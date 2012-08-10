@@ -23,6 +23,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.util.Index;
 
@@ -33,6 +34,7 @@ import org.grouplens.lenskit.util.Index;
  * for use by a scorer.
  */
 @DefaultProvider(SlopeOneModelProvider.class)
+@Shareable
 public class SlopeOneModel {
 
     private final Long2IntOpenHashMap[] coMatrix;

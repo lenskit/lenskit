@@ -16,40 +16,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
+package org.grouplens.lenskit.core;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.VectorSimilarity;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.grapht.annotation.Attribute;
 
-import javax.inject.Inject;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Implementation of {@link UserSimilarity} that delegates to a vector similarity.
+ * Mark a component dependency as transient. This is only done on provider/builder
+ * components, and means that the specified dependency is only needed while the
+ * output component is being built, but the final component does not depend on
+ * the transient dependency.
+ * <p>
+ * Example: a provider that reads the ratings from the DAO to compute their average
+ * and build a component around that average has a transient dependency on the DAO.
+ *
  * @author Michael Ekstrand
- * @since 0.11
  */
-@Shareable
-public class UserVectorSimilarity implements UserSimilarity {
-    private VectorSimilarity delegate;
-
-    @Inject
-    public UserVectorSimilarity(VectorSimilarity sim) {
-        delegate = sim;
-    }
-
-    @Override
-    public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
-        return delegate.similarity(v1, v2);
-    }
-
-    @Override
-    public boolean isSparse() {
-        return delegate.isSparse();
-    }
-
-    @Override
-    public boolean isSymmetric() {
-        return delegate.isSymmetric();
-    }
+@Attribute
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Transient {
 }

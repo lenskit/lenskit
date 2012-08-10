@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 
@@ -27,6 +28,7 @@ import javax.inject.Inject;
 /**
  * Factory for use in instantiating a {@link SimilarityMatrixAccumulator}.
  */
+@Shareable
 public class SimilarityMatrixAccumulatorFactory {
 
     private final int modelSize;

@@ -22,13 +22,18 @@ import static java.lang.Math.abs;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Singleton;
 
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
+@Shareable
+@Singleton
 public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer {
     @Override
     public double score(ScoredLongList neighbors, SparseVector scores) {

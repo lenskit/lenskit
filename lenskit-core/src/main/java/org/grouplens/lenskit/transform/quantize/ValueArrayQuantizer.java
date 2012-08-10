@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import org.grouplens.lenskit.core.Shareable;
+
 import java.io.Serializable;
 
 /**
@@ -25,6 +27,7 @@ import java.io.Serializable;
  * values. Values are quantized to their closest discrete possibility.
  * @author Michael Ekstrand
  */
+@Shareable
 public class ValueArrayQuantizer implements Quantizer, Serializable {
     private static final long serialVersionUID = 2150927895689488171L;
     

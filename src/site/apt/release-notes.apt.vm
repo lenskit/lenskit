@@ -35,6 +35,11 @@ LensKit Release Notes
 
   * The default user similarity for user-user CF is now cosine rather than Pearson.
 
+  * Item-item models can now have unbounded size and have rows truncated by threshold
+    value rather than size (#issue(171)).
+
+  * FunkSVD now incorporates user ratings at predict time (#issue(174)).
+
   []
 
 ** Component Refactoring
@@ -42,6 +47,10 @@ LensKit Release Notes
   This release contains a lot of algorithm and component refactorings. The public recommender
   API is unchanged, but many components and their interfaces have changed. This means that
   custom components and recommender configurations will need to be updated.
+
+  * Added <<<@Shareable>>> annotation for components that can be put in the model build
+    and shared between recommender sessions. All shareable components must now be annotated
+    with this annotation (or configured via instance bindings), or they will not be pre-built.
 
   * Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).

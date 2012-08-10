@@ -20,7 +20,8 @@ package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -53,6 +54,7 @@ import java.io.Serializable;
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
 @DefaultProvider(MeanVarianceNormalizer.Provider.class)
+@Shareable
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
 
