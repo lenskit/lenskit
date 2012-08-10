@@ -128,6 +128,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      *
      * @param state The state of entries to iterate.
      * @return a fast iterator over all key/value pairs
+     * @since 0.11
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *         Long2DoubleMap.FastEntrySet.fastIterator()
      */
@@ -147,6 +148,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      * Return an iterable view of this vector using a fast iterator.
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator(State)
+     * @since 0.11
      */
     public Iterable<VectorEntry> fast(final State state) {
         return new Iterable<VectorEntry>() {
