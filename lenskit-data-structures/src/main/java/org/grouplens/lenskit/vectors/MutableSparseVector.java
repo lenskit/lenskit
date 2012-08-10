@@ -206,13 +206,26 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     }
     
     @Override
-    public Iterator<VectorEntry> fastIterator() {
-        return new FastIterImpl(new BitSetIterator(usedKeys, 0, domainSize));
-    }
-
-    @Override
-    public Iterator<VectorEntry> fastIteratorWithUnset() {
-        return new FastIterImpl(new IntIntervalList(0, domainSize).iterator());
+    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
+        IntIterator iter;
+        switch (state) {
+            case SET:
+                iter = new BitSetIterator(usedKeys, 0, domainSize);
+                break;
+            case UNSET: {
+                BitSet unused = (BitSet) usedKeys.clone();
+                unused.flip(0, domainSize);
+                iter = new BitSetIterator(unused, 0, domainSize);
+                break;
+            }
+            case EITHER: {
+                iter = new IntIntervalList(0, domainSize).iterator();
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("invalid entry state");
+        }
+        return new FastIterImpl(iter);
     }
     
     @Override

@@ -112,10 +112,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         if (predictSet) {
             output.fill(mean);
         } else {
-            for (VectorEntry e: output.fastWithUnset()) {
-                if (!e.isSet()) {
-                    output.set(e, mean);
-                }
+            for (VectorEntry e: output.fast(VectorEntry.State.UNSET)) {
+                output.set(e, mean);
             }
         }
     }

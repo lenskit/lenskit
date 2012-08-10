@@ -33,6 +33,8 @@ import java.util.Iterator;
 
 import org.apache.commons.lang3.StringUtils;
 
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
 /**
  * Read-only interface to sparse vectors.
  * 
@@ -111,48 +113,46 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     public abstract Iterator<VectorEntry> iterator();
 
     /**
-     * Fast iterator over all entries (it can reuse entry objects).
+     * Fast iterator over all set entries (it can reuse entry objects).
+     * @return a fast iterator over all key/value pairs
+     * @see #fastIterator(State)
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *         Long2DoubleMap.FastEntrySet.fastIterator()
-     * @return a fast iterator over all key/value pairs
      */
-    public abstract Iterator<VectorEntry> fastIterator();
+    public Iterator<VectorEntry> fastIterator() {
+        return fastIterator(State.SET);
+    }
 
     /**
-     * Fast iterator over all entries (it can reuse entry objects), including
-     * unset elements of the key domain (their values will be {@link Double#NaN}).
+     * Fast iterator over entries (it can reuse entry objects).
+     *
+     * @param state The state of entries to iterate.
+     * @return a fast iterator over all key/value pairs
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *         Long2DoubleMap.FastEntrySet.fastIterator()
-     * @return a fast iterator over all key/value pairs
      */
-    public abstract Iterator<VectorEntry> fastIteratorWithUnset();
+    public abstract Iterator<VectorEntry> fastIterator(State state);
 
     /**
-     * Return an iterable view of this vector using a fast iterator.
+     * Return an iterable view of this vector using a fast iterator. This method
+     * delegates to {@link #fast(State)} with state {@link State#SET}.
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
      */
     public Iterable<VectorEntry> fast() {
-        return new Iterable<VectorEntry>() {
-            @Override
-            public Iterator<VectorEntry> iterator() {
-                return fastIterator();
-            }
-        };
+        return fast(State.SET);
     }
 
     /**
-     * Return an iterable view of this vector using a fast iterator with unset
-     * elements returned.
-     * @return This object wrapped in an iterable that returns a fast iterator
-     * with unset elements..
-     * @see #fastIteratorWithUnset()
+     * Return an iterable view of this vector using a fast iterator.
+     * @return This object wrapped in an iterable that returns a fast iterator.
+     * @see #fastIterator(State)
      */
-    public Iterable<VectorEntry> fastWithUnset() {
+    public Iterable<VectorEntry> fast(final State state) {
         return new Iterable<VectorEntry>() {
             @Override
             public Iterator<VectorEntry> iterator() {
-                return fastIteratorWithUnset();
+                return fastIterator(state);
             }
         };
     }

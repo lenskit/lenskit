@@ -34,6 +34,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import javax.inject.Inject;
 import java.util.Collection;
 
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
  * predictions.
@@ -98,7 +100,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @return the mean offset from item mean rating.
      */
     protected double computeUserAverage(SparseVector ratings) {
-        if (ratings.isEmpty()) return 0;
+        if (ratings.isEmpty()) {
+            return 0;
+        }
 
         Collection<Double> values = ratings.values();
         double total = 0;
@@ -118,10 +122,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector scores, boolean predictSet) {
         double meanOffset = computeUserAverage(ratings);
-        for (VectorEntry e: scores.fastWithUnset()) {
-            if (predictSet || !e.isSet()) {
-                scores.set(e, meanOffset + getItemMean(e.getKey()));
-            }
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e: scores.fast(state)) {
+            scores.set(e, meanOffset + getItemMean(e.getKey()));
         }
     }
 }

@@ -97,7 +97,7 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
             normalizeNeighborRatings(neighborhoods.values());
         
         int nmissing = 0;
-        for (VectorEntry e: scores.fastWithUnset()) {
+        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
             double weight = 0;

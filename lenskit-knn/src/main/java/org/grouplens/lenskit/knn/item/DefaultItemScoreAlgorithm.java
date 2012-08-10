@@ -62,7 +62,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         }
 
         // for each item, compute its prediction
-        for (VectorEntry e: scores.fastWithUnset()) {
+        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
             // find all potential neighbors

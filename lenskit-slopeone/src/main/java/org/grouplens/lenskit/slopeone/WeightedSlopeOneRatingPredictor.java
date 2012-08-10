@@ -46,7 +46,7 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;
-        for (VectorEntry e: scores.fastWithUnset()) {
+        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
         	if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;

@@ -29,8 +29,29 @@ import javax.annotation.Nullable;
  * {@link MutableSparseVector#set(VectorEntry, double)}.
  *
  * @author Michael Ekstrand
+ * @since 0.11
  */
 public final class VectorEntry {
+    /**
+     * The state of an entry in a sparse vector.
+     * @author Michael Ekstrand
+     * @since 0.11
+     */
+    public static enum State {
+        /**
+         * A set entry.
+         */
+        SET,
+        /**
+         * An unset entry.
+         */
+        UNSET,
+        /**
+         * Either entry state — used for requesting all entries.
+         */
+        EITHER
+    }
+
     @Nullable
     final SparseVector vector;
     private int index;

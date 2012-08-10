@@ -40,6 +40,8 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
 /**
  * Rating scorer that returns the item's mean rating for all predictions.
  *
@@ -171,10 +173,9 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     @Override
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector items, boolean predictSet) {
-        for (VectorEntry e: items.fastWithUnset()) {
-            if (predictSet || !e.isSet()) {
-                items.set(e, getItemMean(e.getKey()));
-            }
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e: items.fast(state)) {
+            items.set(e, getItemMean(e.getKey()));
         }
     }
 

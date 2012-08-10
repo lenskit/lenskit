@@ -34,6 +34,8 @@ import javax.inject.Qualifier;
 import javax.inject.Singleton;
 import java.lang.annotation.*;
 
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
 /**
  * Rating scorer that predicts a constant rating for all items.
  *
@@ -73,10 +75,8 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
         if (predictSet) {
             output.fill(value);
         } else {
-            for (VectorEntry e: output.fastWithUnset()) {
-                if (!e.isSet()) {
-                    output.set(e, value);
-                }
+            for (VectorEntry e: output.fast(State.UNSET)) {
+                output.set(e, value);
             }
         }
     }

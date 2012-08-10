@@ -52,7 +52,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;
-        for (VectorEntry e: scores.fastWithUnset()) {
+        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
         	if (!user.containsKey(predicteeItem)) {
                 double total = 0;

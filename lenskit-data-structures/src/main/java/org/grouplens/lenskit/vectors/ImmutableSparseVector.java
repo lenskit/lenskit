@@ -118,10 +118,10 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
 
     @Override
-    public Iterator<VectorEntry> fastIteratorWithUnset() {
+    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
         return fastIterator();
     }
-    
+
     @Override
     public LongSortedSet keySet() {
         return LongSortedArraySet.wrap(keys, size);
@@ -264,37 +264,6 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
         }
         @Override
         public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private final class Entry implements Long2DoubleMap.Entry {
-        int pos;
-        public Entry(int p) {
-            pos = p;
-        }
-        @Override
-        public double getDoubleValue() {
-            return values[pos];
-        }
-        @Override
-        public long getLongKey() {
-            return keys[pos];
-        }
-        @Override
-        public double setValue(double value) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public Long getKey() {
-            return getLongKey();
-        }
-        @Override
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        @Override
-        public Double setValue(Double value) {
             throw new UnsupportedOperationException();
         }
     }
