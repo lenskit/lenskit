@@ -49,7 +49,6 @@ class TestTrainTestResult extends ConfigTestBase{
     @Before
     void prepareFile() {
         file.deleteOnExit()
-		trainTestDir.deleteOnExit()
 		file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -65,7 +64,7 @@ class TestTrainTestResult extends ConfigTestBase{
 	@After
 	void cleanUpFiles() {
 		file.delete()
-		trainTestDir.delete()
+		trainTestDir.deleteDir()
 	}
 
     @Test
