@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
+import com.google.common.io.Files
+
 import org.grouplens.lenskit.eval.config.EvalConfigEngine
 import org.grouplens.lenskit.eval.data.CSVDataSource
 
@@ -45,12 +47,13 @@ class TestTrainTestBuilderConfig {
     TrainTestEvalCommand command
     CommandDelegate delegate
 
-	def buildDir = System.getProperty("project.build.directory", ".")
 	def file = File.createTempFile("tempRatings", "csv")
+	def trainTestDir = Files.createTempDir()
     
     @Before
     void prepareFile() {
 		file.deleteOnExit()
+		trainTestDir.deleteOnExit()
 		file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -73,7 +76,7 @@ class TestTrainTestBuilderConfig {
 	@After
 	void cleanUpFiles() {
 		file.delete()
-		new File("${buildDir}/temp").deleteDir()
+		trainTestDir.delete()
 	}
     
     def eval(Closure cl) {
@@ -175,8 +178,8 @@ class TestTrainTestBuilderConfig {
             crossfold("tempRatings") {
                 source file
                 partitions 7
-				train "${buildDir}/temp/ratings.train.%d.csv"
-				test "${buildDir}/temp/ratings.test.%d.csv"
+				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
         assertThat(dat.size(), equalTo(7))
