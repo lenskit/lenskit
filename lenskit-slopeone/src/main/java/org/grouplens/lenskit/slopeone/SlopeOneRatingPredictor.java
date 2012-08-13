@@ -80,7 +80,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         
         //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && nUnpred == 0) {
+        if (baseline != null && nUnpred > 0) {
             baseline.predict(history.getUserId(), user, scores, false);
         }
     }
