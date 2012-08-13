@@ -1,10 +1,9 @@
 package org.grouplens.lenskit.util.tablewriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.grouplens.lenskit.eval.util.table.TableImpl;
 
 public class MultiplexedTableWriter implements TableWriter {
 
@@ -35,8 +34,16 @@ public class MultiplexedTableWriter implements TableWriter {
 
 	@Override
 	public void close() throws IOException {
+		ArrayList<IOException> closeExceptions = new ArrayList<IOException>(writers.size());
 		for (TableWriter w : writers) {
-			w.close();
+			try {
+				w.close();
+			} catch (IOException e) {
+				closeExceptions.add(e);
+			}
+		}
+		if (!closeExceptions.isEmpty()) {
+			throw closeExceptions.get(0);
 		}
 	}
 }
