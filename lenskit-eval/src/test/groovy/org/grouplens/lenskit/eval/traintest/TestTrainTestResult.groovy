@@ -18,8 +18,10 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import org.junit.Before
+import com.google.common.io.Files
 
+import org.junit.Before
+import org.junit.After
 import org.junit.Test
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
@@ -41,11 +43,13 @@ import org.grouplens.lenskit.eval.util.table.TableImpl
  *
  */
 class TestTrainTestResult extends ConfigTestBase{
-    def file = new File("ml-100k.csv")
+	def file = File.createTempFile("tempRatings", "csv")
+	def trainTestDir = Files.createTempDir()
 
     @Before
     void prepareFile() {
-        file.append('19,242,3,881250949\n')
+        file.deleteOnExit()
+		file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -56,19 +60,27 @@ class TestTrainTestResult extends ConfigTestBase{
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
     }
+	
+	@After
+	void cleanUpFiles() {
+		file.delete()
+		trainTestDir.deleteDir()
+	}
 
     @Test
     void TestResult() {
         def dat = eval{
-            crossfold("ml-100k") {
+            crossfold("tempRatings") {
                 source file
                 partitions 5
+				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
         def result = eval{
             trainTest {
                 dataset dat
-
+				output null
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
 

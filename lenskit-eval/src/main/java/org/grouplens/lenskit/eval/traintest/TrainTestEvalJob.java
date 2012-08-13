@@ -69,8 +69,6 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> outputSupplier;
     @Nonnull
-    private final Supplier<TableWriter> outputInMemorySupplier;
-    @Nonnull
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
@@ -92,13 +90,12 @@ public class TrainTestEvalJob implements Job {
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
-                            Supplier<TableWriter> out, Supplier<TableWriter> outMemory, int numRecs) {
+                            Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
-        outputInMemorySupplier = outMemory;
         this.numRecs = numRecs;
         
         int ncols = 2;
@@ -263,10 +260,8 @@ public class TrainTestEvalJob implements Job {
             }
         }
         TableWriter output = outputSupplier.get();
-        TableWriter outMemory = outputInMemorySupplier.get();
         try {
             output.writeRow(row);
-            outMemory.writeRow(row);
 
         } finally {
             output.close();

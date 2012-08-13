@@ -20,12 +20,14 @@ package org.grouplens.lenskit.eval.data.crossfold
 
 import static org.junit.Assert.*
 import static org.hamcrest.Matchers.*
+import com.google.common.io.Files
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.CSVDataSource
 import org.junit.Ignore
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.junit.Before
+import org.junit.After
 import org.grouplens.lenskit.data.dao.DAOFactory
 
 /**
@@ -34,10 +36,13 @@ import org.grouplens.lenskit.data.dao.DAOFactory
  */
 class TestCrossfoldConfig extends ConfigTestBase {
 
-    def file = new File("ml-100k.csv")
+	def file = File.createTempFile("tempRatings", "csv")
+	def trainTestDir = Files.createTempDir()
+	
     @Before
     void prepareFile() {
-        file.append('19,242,3,881250949\n')
+        file.deleteOnExit()
+		file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -48,15 +53,23 @@ class TestCrossfoldConfig extends ConfigTestBase {
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
     }
+	
+	@After
+	void cleanUpFiles() {
+		file.delete()
+		trainTestDir.deleteDir()
+	}
 
     @Test
     void testBasicCrossfold() {
         def obj = eval{
-            crossfold("ml-100k") {
+            crossfold("tempRatings") {
                 source file
                 partitions 10
                 holdout 0.5
                 order RandomOrder
+				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
         assertThat(obj.size(), equalTo(10))
@@ -70,11 +83,13 @@ class TestCrossfoldConfig extends ConfigTestBase {
     @Test @Ignore("wrapper functions not supported")
     void testWrapperFunction() {
         def obj = eval {
-            crossfold("ml-100k") {
-                source "ml-100k.csv"
+            crossfold("tempRatings") {
+                source file
                 wrapper {
                     it
                 }
+				train "${buildDir}/temp/ratings.train.%d.csv"
+				test "${buildDir}/temp/ratings.test.%d.csv"
             }
         }
         obj = obj as List<TTDataSet>
