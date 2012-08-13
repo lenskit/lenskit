@@ -29,6 +29,9 @@ LensKit Release Notes
     rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse
     vectors will need to be updated.
 
+  * Added methods to <<<ItemScorer>>> and <<<GlobalItemScorer>>> to output scores to sparse
+    vectors.
+
   []
 
 ** Algorithm Changes
