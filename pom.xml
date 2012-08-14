@@ -43,7 +43,7 @@
     <groovy.version>1.8.6</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
     <grapht.version>0.3.1</grapht.version>
-    <grouplens.common.version>0.6-SNAPSHOT</grouplens.common.version>
+    <grouplens.common.version>0.6.1</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
