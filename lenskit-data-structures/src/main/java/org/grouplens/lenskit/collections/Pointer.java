@@ -25,7 +25,7 @@ package org.grouplens.lenskit.collections;
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.9
- * 
+ * @compat Public
  */
 public interface Pointer<E> {
     /**

@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
  *
  * @author Michael Ekstrand
  * @since 0.11
+ * @compat Public
  */
 public final class VectorEntry {
     /**

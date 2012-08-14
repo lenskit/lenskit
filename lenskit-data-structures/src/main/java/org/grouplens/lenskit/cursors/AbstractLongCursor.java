@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
         LongCursor {

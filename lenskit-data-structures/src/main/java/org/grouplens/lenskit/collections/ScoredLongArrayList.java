@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
  * are stored in parallel arrays.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class ScoredLongArrayList implements ScoredLongList, Serializable {
     private static final long serialVersionUID = 5831057078223040093L;

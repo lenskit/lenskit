@@ -41,7 +41,7 @@ import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
  * Various helper methods for working with collections (particularly Fastutil
  * collections).
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class CollectionUtils {
     /**

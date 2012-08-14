@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 /**
  * Utility methods for interacting with vectors.
+ * @compat Public
  */
 public class Vectors {
 

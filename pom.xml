@@ -256,6 +256,9 @@
                   <additionalJOption>
                     "-J-Djavadoc.cite.database=${cite.database}"
                   </additionalJOption>
+                  <additionalJOption>
+                    "-J-Dgrouplens.javadoc.versioning.url=${lenskit.web.url}/versioning.html"
+                  </additionalJOption>
 
                   <taglets>
                     <taglet>
@@ -264,6 +267,14 @@
                         <groupId>org.grouplens.common</groupId>
                         <artifactId>javadoc-citation-taglet</artifactId>
                         <version>0.4</version>
+                      </tagletArtifact>
+                    </taglet>
+                    <taglet>
+                      <tagletClass>org.grouplens.javadoc.taglets.CompatTaglet</tagletClass>
+                      <tagletArtifact>
+                        <groupId>org.grouplens.lenskit</groupId>
+                        <artifactId>build-tools</artifactId>
+                        <version>${project.version}</version>
                       </tagletArtifact>
                     </taglet>
                   </taglets>

@@ -29,7 +29,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores are stored as {@link Double#NaN}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface ScoredLongList extends LongList {
     /**

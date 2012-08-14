@@ -45,7 +45,7 @@ import com.google.common.base.Predicates;
 /**
  * Utility methods for cursors.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class Cursors {
     private static final Logger logger = LoggerFactory.getLogger(Cursors.class);

@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
  * <p>No orders are supported other than the natural ordering.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 885774794586510968L;

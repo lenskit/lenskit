@@ -52,7 +52,7 @@ import java.util.Iterator;
  * MutableSparseVector normalized = MutableSparseVector.copy(vector);
  * normalized.subtract(normFactor);
  * </pre>
- *
+ * @compat Public
  */
 public class MutableSparseVector extends SparseVector implements Serializable {
 

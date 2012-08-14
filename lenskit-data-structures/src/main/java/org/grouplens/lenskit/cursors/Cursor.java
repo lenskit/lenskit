@@ -39,6 +39,8 @@ import javax.annotation.Nonnull;
  * This class does not implement {@link Iterator} because the 'is-a' relationship
  * does not hold; cursors must be closed by their clients while iterators do
  * not have such a requirement.
+ *
+ * @compat Public
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *

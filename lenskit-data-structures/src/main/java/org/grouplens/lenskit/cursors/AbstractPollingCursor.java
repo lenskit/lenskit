@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
  * 
  * @author Michael Ludwig
  * @param <T>
+ * @compat Public
  */
 public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     private boolean hasNextCalled;

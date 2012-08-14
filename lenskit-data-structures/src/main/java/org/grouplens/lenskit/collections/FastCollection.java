@@ -34,7 +34,7 @@ import java.util.Iterator;
  * Those loops benefit from fast iterators.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface FastCollection<E> extends Collection<E> {
     /**

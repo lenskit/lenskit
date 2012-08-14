@@ -60,7 +60,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * {@link ImmutableSparseVector}.
  * 
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry> {
     private volatile transient Double norm;

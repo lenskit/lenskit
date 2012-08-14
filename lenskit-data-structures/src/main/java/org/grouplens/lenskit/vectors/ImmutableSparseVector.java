@@ -37,9 +37,9 @@ import org.grouplens.lenskit.collections.MoreArrays;
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
- * 
+ *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
  */
 @Immutable
 public class ImmutableSparseVector extends SparseVector implements Serializable {

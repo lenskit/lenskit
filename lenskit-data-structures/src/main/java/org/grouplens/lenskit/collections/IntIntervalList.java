@@ -28,7 +28,7 @@ import java.io.Serializable;
  * Efficient representation of intervals as an integer list.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class IntIntervalList extends AbstractIntList implements Serializable {
     private static final long serialVersionUID = -914440213158448384L;
