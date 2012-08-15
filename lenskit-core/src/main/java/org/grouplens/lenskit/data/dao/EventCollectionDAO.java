@@ -21,15 +21,12 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import static org.grouplens.lenskit.collections.CollectionUtils.fast;
-
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.cursors.LongCursor;
@@ -44,6 +41,7 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 
 import static com.google.common.collect.Iterables.filter;
+import static org.grouplens.lenskit.collections.CollectionUtils.fast;
 
 /**
  * Data source backed by a collection of events.
@@ -56,13 +54,13 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      * Factory for creating event collection DAOs.  It assumes that the collection
      * is not modified by other code, so a singleton DAO is created and returned
      * for both {@link #create()} and {@link #snapshot()}.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      *
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      */
     @ThreadSafe
     public static class Factory implements DAOFactory {
         private final Collection<? extends Event> events;
-        private transient volatile  EventCollectionDAO singleton;
+        private transient volatile EventCollectionDAO singleton;
 
         public Factory(Collection<? extends Event> ratings) {
             this.events = ratings;
@@ -94,34 +92,35 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             }
         }
     }
-    
+
     /**
      * Soft-caching factory for event collection DAOs.
+     *
      * @since 0.8
      */
     public static class SoftFactory implements DAOFactory {
         private final Supplier<? extends Collection<? extends Event>> provider;
         private transient volatile SoftReference<DataAccessObject> instance;
-        
+
         public SoftFactory(Supplier<? extends Collection<? extends Event>> p) {
             provider = p;
         }
-        
+
         @Override
         public synchronized DataAccessObject create() {
             DataAccessObject dao = null;
             if (instance != null) {
                 dao = instance.get();
             }
-            
+
             if (dao == null) {
                 dao = new EventCollectionDAO(provider.get());
                 instance = new SoftReference<DataAccessObject>(dao);
             }
-            
+
             return dao;
         }
-        
+
         @Override
         public DataAccessObject snapshot() {
             return create();
@@ -150,6 +149,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
     /**
      * Construct a new data source from a collection of events.
+     *
      * @param events The events to use.
      */
     public EventCollectionDAO(Collection<? extends Event> events) {
@@ -164,8 +164,8 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         if (users == null) {
             logger.debug("Caching user histories");
             Long2ObjectMap<ArrayList<Event>> ratingCs =
-                new Long2ObjectOpenHashMap<ArrayList<Event>>();
-            for (Event r: ratings) {
+                    new Long2ObjectOpenHashMap<ArrayList<Event>>();
+            for (Event r : ratings) {
                 final long uid = r.getUserId();
                 ArrayList<Event> userRatings = ratingCs.get(uid);
                 if (userRatings == null) {
@@ -175,7 +175,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
                 userRatings.add(r);
             }
             users = new Long2ObjectOpenHashMap<UserHistory<Event>>(ratingCs.size());
-            for (Long2ObjectMap.Entry<ArrayList<Event>> e: ratingCs.long2ObjectEntrySet()) {
+            for (Long2ObjectMap.Entry<ArrayList<Event>> e : ratingCs.long2ObjectEntrySet()) {
                 e.getValue().trimToSize();
                 Collections.sort(e.getValue(), Events.TIMESTAMP_COMPARATOR);
                 users.put(e.getLongKey(), new BasicUserHistory<Event>(e.getLongKey(), e.getValue()));
@@ -187,7 +187,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         if (items == null) {
             logger.debug("Caching item event collections");
             items = new Long2ObjectOpenHashMap<ArrayList<Event>>();
-            for (Event r: ratings) {
+            for (Event r : ratings) {
                 final long iid = r.getItemId();
                 ArrayList<Event> itemRatings = items.get(iid);
                 if (itemRatings == null) {
@@ -196,7 +196,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
                 }
                 itemRatings.add(r);
             }
-            for (ArrayList<Event> rs: items.values()) {
+            for (ArrayList<Event> rs : items.values()) {
                 rs.trimToSize();
                 Collections.sort(rs, Events.USER_TIME_COMPARATOR);
             }
@@ -229,7 +229,9 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
         requireUserCache();
         Collection<? extends Event> ratings = users.get(user);
-        if (ratings == null) return Cursors.empty();
+        if (ratings == null) {
+            return Cursors.empty();
+        }
 
         return Cursors.wrap(Iterators.filter(ratings.iterator(), type));
     }
@@ -244,26 +246,31 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
     public <E extends Event> Cursor<UserHistory<E>> getUserHistories(final Class<E> type) {
         return Cursors.transform(getUserHistories(),
                                  new Function<UserHistory<Event>, UserHistory<E>>() {
-            @Override
-            public UserHistory<E> apply(UserHistory<Event> input) {
-                List<E> events;
-                if (containsType(type))
-                    events = Lists.newArrayList(filter(input, type));
-                else
-                    events = Collections.emptyList();
-                return new BasicUserHistory<E>(input.getUserId(), events);
-            }
-        });
+                                     @Override
+                                     public UserHistory<E> apply(UserHistory<Event> input) {
+                                         List<E> events;
+                                         if (containsType(type)) {
+                                             events = Lists.newArrayList(filter(input, type));
+                                         } else {
+                                             events = Collections.emptyList();
+                                         }
+                                         return new BasicUserHistory<E>(input.getUserId(), events);
+                                     }
+                                 });
     }
 
     @Override
     public <E extends Event> Cursor<E> getItemEvents(long item, Class<E> type) {
-        if (!containsType(type)) return Cursors.empty();
+        if (!containsType(type)) {
+            return Cursors.empty();
+        }
 
         requireItemCache();
 
         List<Event> ratings = items.get(item);
-        if (ratings == null) return Cursors.empty();
+        if (ratings == null) {
+            return Cursors.empty();
+        }
 
         return Cursors.filter(Cursors.wrap(ratings), type);
     }

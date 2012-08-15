@@ -21,7 +21,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.grapht.annotation.Parameter;
 import org.grouplens.lenskit.core.Shareable;
@@ -51,9 +50,10 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
     @DefaultDouble(0.0)
     @Qualifier
     @Parameter(Parameter.PrimitiveType.DOUBLE)
-    @Target({ ElementType.METHOD, ElementType.PARAMETER })
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface Value { }
+    public @interface Value {
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -62,6 +62,7 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
     /**
      * Construct a new constant scorer.  This is exposed so other code
      * can use it as a fallback.
+     *
      * @param value The value to use.
      */
     @Inject
@@ -75,12 +76,12 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
         if (predictSet) {
             output.fill(value);
         } else {
-            for (VectorEntry e: output.fast(State.UNSET)) {
+            for (VectorEntry e : output.fast(State.UNSET)) {
                 output.set(e, value);
             }
         }
     }
-    
+
     @Override
     public String toString() {
         return String.format("%s(%.3f)", getClass().getCanonicalName(), value);

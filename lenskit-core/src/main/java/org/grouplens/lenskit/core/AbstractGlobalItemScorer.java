@@ -31,35 +31,37 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Base class to make global item scorers easier to implement. Delegates single=item
- * score methods to collection-based ones, 
+ * score methods to collection-based ones,
  *
- * @author Steven Chang <schang@cs.umn.edu>		   
- *
+ * @author Steven Chang <schang@cs.umn.edu>
  */
-public abstract class AbstractGlobalItemScorer implements GlobalItemScorer{
+public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     /**
      * The DAO passed to the constructor.
      */
-    protected final @Nonnull DataAccessObject dao;
+    protected final
+    @Nonnull
+    DataAccessObject dao;
 
     /**
      * Initialize the abstract item scorer.
-     * 
+     *
      * @param dao The data access object to use for retrieving histories.
      */
     protected AbstractGlobalItemScorer(@Nonnull DataAccessObject dao) {
         this.dao = dao;
     }
-    
+
     /**
      * Delegate to {@link #globalScore(Collection, Collection)}
      */
     @Override
-	public double globalScore(@Nonnull Collection<Long> queryItems, long item){
-    	SparseVector v = globalScore(queryItems, LongLists.singleton(item));
-		return v.get(item, Double.NaN);
+    public double globalScore(@Nonnull Collection<Long> queryItems, long item) {
+        SparseVector v = globalScore(queryItems, LongLists.singleton(item));
+        return v.get(item, Double.NaN);
     }
 
+    @Override
     @Nonnull
     public MutableSparseVector globalScore(@Nonnull Collection<Long> queryItems,
                                            @Nonnull Collection<Long> items) {

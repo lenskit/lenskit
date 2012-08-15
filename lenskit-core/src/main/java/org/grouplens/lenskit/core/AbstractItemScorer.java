@@ -37,18 +37,18 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * to {@link #score(UserHistory, MutableSparseVector)}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 	   
- *
  */
 public abstract class AbstractItemScorer implements ItemScorer {
     /**
      * The DAO passed to the constructor.
      */
-    protected final @Nonnull DataAccessObject dao;
+    protected final
+    @Nonnull
+    DataAccessObject dao;
 
     /**
      * Initialize the abstract item scorer.
-     * 
+     *
      * @param dao The data access object to use for retrieving histories.
      */
     protected AbstractItemScorer(@Nonnull DataAccessObject dao) {
@@ -93,7 +93,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     /**
      * Delegate to {@link #score(UserHistory, MutableSparseVector)}, with a
      * history retrieved from the DAO.
-     * @param user The user ID.
+     *
+     * @param user   The user ID.
      * @param scores The score vector.
      * @see #getUserHistory(long)
      */
@@ -111,7 +112,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
         SparseVector v = score(user, LongLists.singleton(item));
         return v.get(item, Double.NaN);
     }
-    
+
     /**
      * Delegate to {@link #score(UserHistory, Collection)}
      */

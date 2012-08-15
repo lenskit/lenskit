@@ -24,9 +24,8 @@ import java.util.Queue;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
+public class IteratorTaskQueue<I, W extends ObjectWorker<I>> {
     private final Iterator<I> iterator;
     private final WorkerFactory<W> factory;
 
@@ -49,14 +48,16 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
             Thread t = threads.element();
             try {
                 t.join();
-                if (!t.isAlive())
+                if (!t.isAlive()) {
                     threads.remove();
+                }
             } catch (InterruptedException e) {
                 /* no-op, try again */
             }
         }
     }
-    public static <I,W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
+
+    public static <I, W extends ObjectWorker<I>> void parallelDo(Iterator<I> iter, int nthreads, WorkerFactory<W> factory) {
         IteratorTaskQueue<I, W> queue = new IteratorTaskQueue<I, W>(iter, factory);
         queue.run(nthreads);
     }
@@ -73,6 +74,7 @@ public class IteratorTaskQueue<I,W extends ObjectWorker<I>> {
         public TaskThread(ThreadGroup group, String name) {
             super(group, name);
         }
+
         @Override
         public void run() {
             W worker = factory.create(this);

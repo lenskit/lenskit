@@ -20,8 +20,6 @@ package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.transform.normalize.UnitVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -44,10 +42,10 @@ public class UnitVectorNormalizerTest {
         assertThat(norm.normalize(v.immutable(), v), sameInstance(v));
         assertThat(v.norm(), closeTo(1, 1.0e-6));
         assertThat(v.size(), equalTo(2));
-        assertThat(v.get(1), closeTo(1/sqrt(2), 1.0e-6));
-        assertThat(v.get(4), closeTo(1/sqrt(2), 1.0e-6));
+        assertThat(v.get(1), closeTo(1 / sqrt(2), 1.0e-6));
+        assertThat(v.get(4), closeTo(1 / sqrt(2), 1.0e-6));
     }
-    
+
     @Test
     public void testScaleOther() {
         MutableSparseVector v = new MutableSparseVector(keySet);
@@ -57,14 +55,14 @@ public class UnitVectorNormalizerTest {
         ref.set(1, 1);
         ref.set(6, 1);
         ref.set(3, 2);
-        
+
         VectorTransformation tx = norm.makeTransformation(ref.immutable());
         assertThat(tx.apply(v), sameInstance(v));
-        assertThat(v.norm(), closeTo(sqrt(2.0/6), 1.0e-6));
+        assertThat(v.norm(), closeTo(sqrt(2.0 / 6), 1.0e-6));
         assertThat(v.size(), equalTo(2));
-        assertThat(v.get(1), closeTo(1/sqrt(6), 1.0e-6));
-        assertThat(v.get(4), closeTo(1/sqrt(6), 1.0e-6));
-        
+        assertThat(v.get(1), closeTo(1 / sqrt(6), 1.0e-6));
+        assertThat(v.get(4), closeTo(1 / sqrt(6), 1.0e-6));
+
         assertThat(tx.unapply(v), sameInstance(v));
         assertThat(v.size(), equalTo(2));
         assertThat(v.get(1), closeTo(1, 1.0e-6));

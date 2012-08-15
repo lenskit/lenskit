@@ -48,7 +48,6 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * <p>It supports mean smoothing (see {@link Damping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultProvider(ItemUserMeanPredictor.Provider.class)
 @Shareable
@@ -61,7 +60,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     public static class Provider implements javax.inject.Provider<ItemUserMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
@@ -85,9 +84,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * Create a new scorer, this assumes ownership of the given map.
      *
-     * @param itemMeans
-     * @param globalMean
-     * @param damping
+     * @param itemMeans The map of item means.
+     * @param globalMean The global mean rating.
+     * @param damping The damping term.
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
         // FIXME Make this use a sparse vector
@@ -96,6 +95,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 
     /**
      * Compute the mean offset in user rating from item mean rating.
+     *
      * @param ratings the user's rating profile
      * @return the mean offset from item mean rating.
      */
@@ -107,7 +107,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         Collection<Double> values = ratings.values();
         double total = 0;
 
-        for (VectorEntry rating: ratings.fast()) {
+        for (VectorEntry rating : ratings.fast()) {
             double r = rating.getValue();
             long iid = rating.getKey();
             total += r - getItemMean(iid);
@@ -123,7 +123,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
                         MutableSparseVector scores, boolean predictSet) {
         double meanOffset = computeUserAverage(ratings);
         State state = predictSet ? State.EITHER : State.UNSET;
-        for (VectorEntry e: scores.fast(state)) {
+        for (VectorEntry e : scores.fast(state)) {
             scores.set(e, meanOffset + getItemMean(e.getKey()));
         }
     }

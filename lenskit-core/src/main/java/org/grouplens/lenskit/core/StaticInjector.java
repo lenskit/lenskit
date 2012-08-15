@@ -31,6 +31,7 @@ import java.util.*;
 
 /**
  * A Grapht injector that uses a precomputed graph.
+ *
  * @author Michael Ekstrand
  */
 class StaticInjector implements Injector {
@@ -42,17 +43,20 @@ class StaticInjector implements Injector {
     /**
      * Create a new static injector. The node labelled with
      * {@code null} is the root node.
+     *
      * @param spi The inject SPI.
-     * @param g The object graph.
+     * @param g   The object graph.
      */
     public StaticInjector(InjectSPI spi, Graph g) {
         this(spi, g, g.getNode(null));
     }
+
     /**
      * Create a new static injector with a specified root node.
+     *
      * @param spi The inject SPI.
-     * @param g The object graph.
-     * @param rt The root node.
+     * @param g   The object graph.
+     * @param rt  The root node.
      */
     public StaticInjector(InjectSPI spi, Graph g, Node rt) {
         this.spi = spi;
@@ -81,6 +85,7 @@ class StaticInjector implements Injector {
     /**
      * Find a node with a satisfaction for a specified type. Does a breadth-first
      * search to find the closest matching one.
+     *
      * @param type The type to look for.
      * @return A node whose satisfaction is compatible with {@code type}.
      * @review Decide how to handle qualifiers and contexts
@@ -96,7 +101,7 @@ class StaticInjector implements Injector {
             if (lbl != null && type.isAssignableFrom(lbl.getSatisfaction().getErasedType())) {
                 return node;
             }
-            for (Edge e: graph.getOutgoingEdges(node)) {
+            for (Edge e : graph.getOutgoingEdges(node)) {
                 Node nbr = e.getTail();
                 if (!seen.contains(nbr)) {
                     seen.add(nbr);
@@ -110,6 +115,7 @@ class StaticInjector implements Injector {
 
     /**
      * Instantiate a particular node in the graph.
+     *
      * @param node The node to instantiate.
      * @return The instantiation of the node.
      */

@@ -24,10 +24,7 @@ import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
 
 import org.junit.Test;
 
-/**
- * @author Michael Ekstrand
- */
-public class TestPackedPreferenceData {
+public class PackedPreferenceDataTest {
     @Test
     public void testChunk() {
         assertThat(chunk(0), equalTo(0));

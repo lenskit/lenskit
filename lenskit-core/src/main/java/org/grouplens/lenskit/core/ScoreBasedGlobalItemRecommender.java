@@ -18,9 +18,7 @@
  */
 package org.grouplens.lenskit.core;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -32,18 +30,18 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
-public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommender{
+public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommender {
 
-	protected final GlobalItemScorer scorer;
-	
-	public ScoreBasedGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
-	    super(dao);
-	    this.scorer = scorer;
-	}
-	
+    protected final GlobalItemScorer scorer;
+
+    public ScoreBasedGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
+        super(dao);
+        this.scorer = scorer;
+    }
+
     /**
      * Implement the ID-based recommendation in terms of the scorer. This method
-     * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
+     * uses {@link #getDefaultExcludes(LongSet)} to supply a missing exclude set.
      */
     @Override
     protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
@@ -62,34 +60,33 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
     }
 
     /**
-     * Get the default exclude set for a item in the global recommendation.  The base implementation returns
-     * the input set.
+     * Get the default exclude set for a item in the global recommendation.
+     * The base implementation returns the input set.
      *
-     * @param item The item to make recommendation
+     * @param items The items for which we are recommending.
      * @return The set of items to exclude.
-     */    
+     */
     protected LongSet getDefaultExcludes(LongSet items) {
-    	return items;
+        return items;
     }
-    
+
     /**
      * Determine the items for which predictions can be made for a certain item.
      * This implementation is naive and asks the DAO for all items; subclasses
      * should override it with something more efficient if practical.
      *
-     * @param item The ID of the item.
+     * @param items IDs of the basket items.
      * @return All items for which predictions can be generated for the user.
      */
     protected LongSet getPredictableItems(LongSet items) {
         return Cursors.makeSet(dao.getItems());
     }
 
-    
 
     /**
      * Pick the top <var>n</var> items from a score vector.
      *
-     * @param n The number of items to recommend.
+     * @param n      The number of items to recommend.
      * @param scores The scored item vector.
      * @return The top <var>n</var> items from <var>scores</var>, in descending
      *         order of score.
@@ -102,9 +99,9 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
         if (n < 0) {
             n = scores.size();
         }
-        
+
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (VectorEntry pred: scores.fast()) {
+        for (VectorEntry pred : scores.fast()) {
             final double v = pred.getValue();
             accum.put(pred.getKey(), v);
         }

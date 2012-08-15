@@ -26,11 +26,13 @@ import java.util.Collection;
 
 /**
  * Utility class for working with preferences.
+ *
  * @author Michael Ekstrand
  */
 public class Preferences {
     /**
      * Compute a user preference vector.
+     *
      * @param prefs The user's preferences.
      * @return A vector of the preferences.
      * @throws IllegalArgumentException if the same item appears multiple times, or there are
@@ -40,7 +42,7 @@ public class Preferences {
         // find keys and pre-validate data
         Long2DoubleOpenHashMap prefMap = new Long2DoubleOpenHashMap(prefs.size());
         long user = 0;
-        for (Preference p: CollectionUtils.fast(prefs)) {
+        for (Preference p : CollectionUtils.fast(prefs)) {
             final long iid = p.getItemId();
             if (prefMap.isEmpty()) {
                 user = p.getUserId();

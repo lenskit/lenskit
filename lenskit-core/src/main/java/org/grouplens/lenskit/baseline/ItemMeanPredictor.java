@@ -53,20 +53,19 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
- *
  */
 @DefaultProvider(ItemMeanPredictor.Provider.class)
 @Shareable
 public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
      *
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Provider implements javax.inject.Provider<ItemMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -79,10 +78,10 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean = computeItemAverages(
-                ratings.fast().iterator(),
-                damping, itemMeans);
+                    ratings.fast().iterator(),
+                    damping, itemMeans);
             ratings.close();
-            
+
             return new ItemMeanPredictor(itemMeans, globalMean, damping);
         }
     }
@@ -97,7 +96,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * Construct a new scorer. This assumes ownership of the provided map.
      *
-     * @param itemMeans A map of item IDs to their mean ratings.
+     * @param itemMeans  A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.
      */
     public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
@@ -119,7 +118,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      * returning the global mean, so that we can compute the global mean and the
      * item means in a single pass through the data source.
      *
-     * @param ratings The collection of preferences the averages are based on.
+     * @param ratings         The collection of preferences the averages are based on.
      * @param itemMeansResult A map in which the means should be stored.
      * @return The global mean rating. The item means are stored in
      *         <var>itemMeans</var>.
@@ -136,12 +135,12 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         Long2IntMap itemCounts = new Long2IntOpenHashMap();
         itemCounts.defaultReturnValue(0);
 
-        while(ratings.hasNext()) {
+        while (ratings.hasNext()) {
             Preference r = ratings.next().getPreference();
             if (r == null) {
                 continue; // skip unrates
             }
-            
+
             long i = r.getItemId();
             double v = r.getValue();
             total += v;
@@ -152,7 +151,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
 
         final double mean = count > 0 ? total / count : 0;
         logger.debug("Computed global mean {} for {} items",
-                mean, itemMeansResult.size());
+                     mean, itemMeansResult.size());
 
         logger.debug("Computing item means, smoothing={}", damping);
         LongIterator items = itemCounts.keySet().iterator();
@@ -161,7 +160,9 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
             double ct = itemCounts.get(iid) + damping;
             double t = itemMeansResult.get(iid) + damping * mean;
             double avg = 0.0;
-            if (ct > 0) avg = t / ct - mean;
+            if (ct > 0) {
+                avg = t / ct - mean;
+            }
             itemMeansResult.put(iid, avg);
         }
         return mean;
@@ -174,7 +175,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector items, boolean predictSet) {
         State state = predictSet ? State.EITHER : State.UNSET;
-        for (VectorEntry e: items.fast(state)) {
+        for (VectorEntry e : items.fast(state)) {
             items.set(e, getItemMean(e.getKey()));
         }
     }
@@ -184,7 +185,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         String cls = getClass().getSimpleName();
         return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
     }
-    
+
     protected double getItemMean(long id) {
         return globalMean + itemMeans.get(id);
     }

@@ -26,6 +26,7 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 
 /**
  * Rating scorer that predicts the global mean rating for all items.
@@ -43,12 +44,12 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      */
     public static class Provider implements javax.inject.Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao) {
             this.dao = dao;
         }
-        
+
         @Override
         public GlobalMeanPredictor get() {
             double avg = computeMeanRating(dao);
@@ -61,7 +62,8 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * Construct a new global mean scorer where it is assumed
      * that the given value is the global mean.
-     * @param mean
+     *
+     * @param mean The global mean.
      */
     public GlobalMeanPredictor(double mean) {
         super(mean);
@@ -78,17 +80,19 @@ public class GlobalMeanPredictor extends ConstantPredictor {
         long count = 0;
 
         Cursor<Rating> ratings = dao.getEvents(Rating.class);
-        for (Rating r: ratings.fast()) {
-            if (r.getPreference() != null) {
-                total += r.getPreference().getValue();
+        for (Rating r : ratings.fast()) {
+            Preference p = r.getPreference();
+            if (p != null) {
+                total += p.getValue();
                 count += 1;
             }
         }
         ratings.close();
 
         double avg = 0;
-        if (count > 0)
+        if (count > 0) {
             avg = total / count;
+        }
 
         return avg;
     }

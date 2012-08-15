@@ -41,12 +41,12 @@ import static java.lang.Math.abs;
  * the global mean for the returned prediction.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultProvider(UserMeanPredictor.Provider.class)
 @Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
+
     /**
      * A builder that creates UserMeanPredictors.
      *
@@ -55,7 +55,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -87,18 +87,21 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
-        * @param globalMean The mean rating value for all items.
-        * @param damping A damping term for the calculations.
+     *
+     * @param globalMean The mean rating value for all items.
+     * @param damping    A damping term for the calculations.
      */
     public UserMeanPredictor(double globalMean, double damping) {
         super(globalMean);
-    	this.globalMean = globalMean;
+        this.globalMean = globalMean;
         this.smoothing = damping;
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
-        if (ratings.isEmpty()) return globalMean;
-        return (ratings.sum() + smoothing*globalMean) / (ratings.size() + smoothing);
+        if (ratings.isEmpty()) {
+            return globalMean;
+        }
+        return (ratings.sum() + smoothing * globalMean) / (ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
@@ -108,11 +111,12 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector output, boolean predictSet) {
         double mean = average(ratings, globalMean, smoothing);
+        //noinspection AssertWithSideEffects
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         if (predictSet) {
             output.fill(mean);
         } else {
-            for (VectorEntry e: output.fast(VectorEntry.State.UNSET)) {
+            for (VectorEntry e : output.fast(VectorEntry.State.UNSET)) {
                 output.set(e, mean);
             }
         }

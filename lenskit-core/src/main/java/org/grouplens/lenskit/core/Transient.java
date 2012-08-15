@@ -34,8 +34,8 @@ import java.lang.annotation.Target;
  * Example: a provider that reads the ratings from the DAO to compute their average
  * and build a component around that average has a transient dependency on the DAO.
  *
- * @compat Public
  * @author Michael Ekstrand
+ * @compat Public
  */
 @Attribute
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})

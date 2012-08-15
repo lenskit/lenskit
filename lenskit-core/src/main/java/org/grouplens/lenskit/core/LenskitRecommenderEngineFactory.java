@@ -65,9 +65,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         this.factory = factory;
         config = new BindingFunctionBuilder();
         roots = new HashSet<Class<?>>();
-        for (Class<?> r: INITIAL_ROOTS) {
-            roots.add(r);
-        }
+        Collections.addAll(roots, INITIAL_ROOTS);
     }
 
     private LenskitRecommenderEngineFactory(LenskitRecommenderEngineFactory engineFactory) {
@@ -80,6 +78,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
      * Add the specified component type as a root component. This forces it (and its
      * dependencies) to be resolved, and makes it available from the resulting
      * recommenders.
+     *
      * @param componentType The type of component to add as a root (typically an interface).
      * @see LenskitRecommender#get(Class)
      */
@@ -124,6 +123,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     /**
      * Groovy-compatible alias for {@link #in(Class)}.
      */
+    @SuppressWarnings("unused")
     public Context within(Class<?> type) {
         return in(type);
     }
@@ -131,6 +131,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     /**
      * Groovy-compatible alias for {@link #in(Class, Class)}.
      */
+    @SuppressWarnings("unused")
     public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
         return in(qualifier, type);
     }
@@ -180,7 +181,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 100);
 
         // Resolve all required types to complete a Recommender
-        for (Class<?> root: roots) {
+        for (Class<?> root : roots) {
             resolve(root, solver);
         }
 
@@ -252,7 +253,8 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     /**
      * Instantiate the shared objects in a graph. This instantiates all shared objects,
      * and replaces their nodes with nodes wrapping instance satisfactions.
-     * @param graph The complete configuration graph. This graph will be modified.
+     *
+     * @param graph     The complete configuration graph. This graph will be modified.
      * @param toReplace The shared nodes to replace.
      * @return The new instance nodes, in iteration order from {@code toReplace}.
      */
@@ -260,7 +262,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         InjectSPI spi = config.getSPI();
         StaticInjector injector = new StaticInjector(spi, graph);
         LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
-        for (Node node: toReplace) {
+        for (Node node : toReplace) {
             Object obj = injector.instantiate(node);
             CachedSatisfaction label = node.getLabel();
             assert label != null;
@@ -278,6 +280,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
 
     /**
      * Remove transient edges from a graph.
+     *
      * @param graph The graph to remove transient edges from.
      * @param nodes The nodes whose outgoing transient edges should be removed.
      * @return The set of tail nodes of removed edges.
@@ -290,7 +293,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
         seen.addAll(nodes);
         while (!work.isEmpty()) {
             Node node = work.remove();
-            for (Edge e: graph.getOutgoingEdges(node)) {
+            for (Edge e : graph.getOutgoingEdges(node)) {
                 Node nbr = e.getTail();
 
                 // remove transient edges, traverse non-transient ones
@@ -299,7 +302,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
                 if (GraphtUtils.desireIsTransient(desire)) {
                     graph.removeEdge(e);
                     targets.add(nbr);
-                } else  if (!seen.contains(nbr)) {
+                } else if (!seen.contains(nbr)) {
                     seen.add(nbr);
                     work.add(nbr);
                 }
