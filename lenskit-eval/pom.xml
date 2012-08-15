@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.grouplens.lenskit</groupId>
         <artifactId>lenskit</artifactId>
-        <version>0.11-SNAPSHOT</version>
+        <version>0.11</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>lenskit-eval</artifactId>
@@ -55,7 +54,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -116,15 +115,9 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <property
-                                            name="project.build.directory"
-                                            value="${project.build.directory}" />
-                                        <property
-                                            name="grouplens.mldata.acknowledge"
-                                            value="${grouplens.mldata.acknowledge}" />
-                                        <ant
-                                            antfile="src/integration-test/setup.xml"
-                                            target="prepare-100k" />
+                                        <property name="project.build.directory" value="${project.build.directory}" />
+                                        <property name="grouplens.mldata.acknowledge" value="${grouplens.mldata.acknowledge}" />
+                                        <ant antfile="src/integration-test/setup.xml" target="prepare-100k" />
                                     </target>
                                 </configuration>
                             </execution>
