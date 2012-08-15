@@ -33,6 +33,7 @@ import com.google.common.base.Predicate;
  * events are in timestamp order. Histories also can memoize summaries and other
  * computed properties of themselves.
  *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe

@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * @see RecommenderEngine
+ * @compat Public
  */
 public interface Recommender {
     /**

@@ -33,6 +33,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * 
  * The implementation is analogous to the {@link ItemRecommender}.
  * 
+ * @compat Public
  * @author Steven Chang <schang@cs.umn.edu>
  * 
  *

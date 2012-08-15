@@ -35,6 +35,7 @@ package org.grouplens.lenskit.data;
  * Implementations must also have well-defined {@link #equals(Object)} and
  * {@link #hashCode()} methods.
  *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

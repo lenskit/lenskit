@@ -24,6 +24,7 @@ package org.grouplens.lenskit;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see RecommenderEngine
+ * @compat Public
  */
 public interface RecommenderEngineFactory {
     RecommenderEngine create();

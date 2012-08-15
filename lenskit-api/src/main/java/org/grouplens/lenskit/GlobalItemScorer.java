@@ -32,8 +32,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * assigned to an item for a given item.
  *
  *
- * @since 1.0
+ * @since 0.10
  *
+ * @compat Public
  * @author Steven Chang <schang@cs.umn.edu>
  *
  */

@@ -32,6 +32,7 @@ import com.google.common.base.Function;
  * An abstract implementation of {@link UserHistory} to provide default
  * implementations of convenience methods.
  *
+ * @compat Public (may require additional method implementations across minor revisions)
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

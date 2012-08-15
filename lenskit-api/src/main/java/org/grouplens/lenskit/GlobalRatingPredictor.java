@@ -23,6 +23,8 @@ package org.grouplens.lenskit;
  * this scorer's methods are predicted ratings in the same scale as the input
  * ratings.
  *
+ * @since 0.10
+ * @compat Public
  * @author Steven Chang <schang@cs.umn.edu>
  *
  */

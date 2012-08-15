@@ -33,6 +33,7 @@ package org.grouplens.lenskit;
  *
  * @see RecommenderEngineFactory
  * @see Recommender
+ * @compat Public
  */
 public interface RecommenderEngine {
     /**

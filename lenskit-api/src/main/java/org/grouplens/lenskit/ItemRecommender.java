@@ -54,6 +54,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * specifying the exclude set, however, so applications with particular needs in
  * this respect can manually provide the sets they need respected.
  *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

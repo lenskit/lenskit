@@ -43,7 +43,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * the ID-based methods.
  *
  * @since 0.4
- *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */
