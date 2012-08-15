@@ -284,7 +284,7 @@
                   <footer><![CDATA[
                   <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
                   ]]></footer>
-                  <excludePackageNames>org.grouplens.lenskit.pico</excludePackageNames>
+                  <excludePackageNames>org.grouplens.javadoc.taglets</excludePackageNames>
                   <detectJavaApiLink>true</detectJavaApiLink>
                   <detectJavaLinks>true</detectJavaLinks>
                   <links>
