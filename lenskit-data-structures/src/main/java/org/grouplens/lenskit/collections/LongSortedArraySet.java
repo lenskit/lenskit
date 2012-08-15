@@ -38,6 +38,7 @@ import java.util.NoSuchElementException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * A sorted set of longs implemented using a sorted array.  It's much faster
@@ -49,6 +50,7 @@ import javax.annotation.Nullable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
+@Immutable
 public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 885774794586510968L;
 
@@ -123,7 +125,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     /**
      * Find the index for a key.
      * @see Arrays#binarySearch(long[], int, int, long)
-     * @param key
+     * @param key The key to find.
      * @return The index at which <var>key</var> is stored.
      */
     private int findIndex(long key) {

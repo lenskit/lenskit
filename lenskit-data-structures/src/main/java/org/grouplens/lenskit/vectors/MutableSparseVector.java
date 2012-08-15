@@ -95,7 +95,13 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * @param domain The key domain.
      */
     public MutableSparseVector(Collection<Long> domain) {
-        LongSortedArraySet set = new LongSortedArraySet(domain);
+        LongSortedArraySet set;
+        // since LSAS is immutable, we'll use its array if we can!
+        if (domain instanceof LongSortedArraySet) {
+            set = (LongSortedArraySet) domain;
+        } else {
+            set = new LongSortedArraySet(domain);
+        }
         keys = set.unsafeArray();
         values = new double[keys.length];
         domainSize = keys.length;
