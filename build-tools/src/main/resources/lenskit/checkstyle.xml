@@ -88,6 +88,7 @@
     <!-- JavaDoc -->
     <module name="JavadocType">
       <property name="scope" value="public"/>
+      <property name="allowUnknownTags" value="true"/>
       &error;
     </module>
     <module name="JavadocMethod">
