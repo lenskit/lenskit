@@ -32,7 +32,7 @@ LensKit Release Notes
   * Added methods to <<<ItemScorer>>> and <<<GlobalItemScorer>>> to output scores to sparse
     vectors.
 
-  * Begun documenting {{{versioning.html}API stability}} (#issue(103)).
+  * Begun documenting {{{./versioning.html}API stability}} (#issue(103)).
 
   []
 

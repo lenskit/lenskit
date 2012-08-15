@@ -35,6 +35,8 @@ Versioning and API change policy
   is closely tied to them (re-implementing particularly internal components, etc.),
   or extends the evaluator.
 
+  []
+
   * For all components, binary- and source-incompatible changes will result in
     at least a point version increase (1.x). 1.x.y releases, where y>1, will only
     be bug fixes.
