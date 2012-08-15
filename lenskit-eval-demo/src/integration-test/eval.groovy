@@ -40,6 +40,7 @@ import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.svd.params.IterationCount
 import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.svd.FunkSVDModelProvider
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -141,7 +142,8 @@ trainTest("mutli-algorithm") {
         bind RatingPredictor to FunkSVDRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind Integer withQualifier FeatureCount to 30
-        bind Integer withQualifier IterationCount to 100
+        within FunkSVDModelProvider bind Integer withQualifier IterationCount to 100
+        within FunkSVDRatingPredictor bind Integer withQualifier IterationCount to 30
 //        setComponent(RatingPredictor, FunkSVDRatingPredictor)
 //        setComponent(BaselinePredictor, ItemUserMeanPredictor)
 //        set(FeatureCount, 30)
