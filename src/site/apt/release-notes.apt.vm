@@ -34,6 +34,9 @@ LensKit Release Notes
 
   * Begun documenting {{{./versioning.html}API stability}} (#issue(103)).
 
+  * Events are no longer <<<Cloneable>>>, and the <<<clone>>> method is now a deprecated
+    alias for <<<copy()>>>.
+
   []
 
 ** Algorithm Changes

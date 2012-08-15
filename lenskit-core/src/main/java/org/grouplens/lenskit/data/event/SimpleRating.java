@@ -21,6 +21,7 @@ package org.grouplens.lenskit.data.event;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.SimplePreference;
 
@@ -36,7 +37,7 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  *
  */
 @Immutable
-public class SimpleRating extends AbstractEvent implements Rating {
+public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
     final long eventId;
     final long timestamp;
     final @Nonnull Preference preference;
@@ -57,6 +58,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
      * @param pref The preference.
      */
     public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
+        Preconditions.checkNotNull(pref);
         eventId = eid;
         timestamp = ts;
         preference = pref;
@@ -103,6 +105,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
         return preference.getItemId();
     }
 
+    @Nonnull
     @Override
     final public Preference getPreference() {
         return preference;
@@ -120,15 +123,20 @@ public class SimpleRating extends AbstractEvent implements Rating {
     @Override
     @Deprecated
     public double getRating() {
-        Preference p = getPreference();
-        if (p != null)
-            return p.getValue();
-        else
-            return Double.NaN;
+        return preference.getValue();
     }
 
     @Override
-    public Rating clone() {
-        return (Rating) super.clone();
+    public Rating copy() {
+        return clone();
+    }
+
+    @Override
+    protected Rating clone() {
+        try {
+            return (Rating) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("clone error", e);
+        }
     }
 }

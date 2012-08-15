@@ -50,5 +50,5 @@ public interface Rating extends Event {
     double getRating();
 
     @Override
-    Rating clone();
+    Rating copy();
 }

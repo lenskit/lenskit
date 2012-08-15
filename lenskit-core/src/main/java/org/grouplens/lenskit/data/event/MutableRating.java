@@ -19,7 +19,6 @@
 package org.grouplens.lenskit.data.event;
 
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * Rating implementation for mutation by fast iterators. It is used in
@@ -107,7 +106,7 @@ public class MutableRating implements Rating {
     }
 
     @Override
-    public Rating clone() {
+    public Rating copy() {
         if (Double.isNaN(value)) return new SimpleNullRating(eid, uid, iid, timestamp);
         else return new SimpleRating(eid, uid, iid, value, timestamp);
     }

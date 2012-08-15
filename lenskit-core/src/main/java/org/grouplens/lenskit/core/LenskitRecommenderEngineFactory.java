@@ -40,11 +40,14 @@ import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
+ * <p>
+ *     This class is final for copying safety. This decision can be revisited.
+ * </p>
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
-public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
+public final class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Context {
     private static final Class<?>[] INITIAL_ROOTS = {
             RatingPredictor.class,
             ItemScorer.class,
@@ -131,7 +134,7 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
     /**
      * Groovy-compatible alias for {@link #in(Class, Class)}.
      */
-    @SuppressWarnings("unused")
+
     public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
         return in(qualifier, type);
     }

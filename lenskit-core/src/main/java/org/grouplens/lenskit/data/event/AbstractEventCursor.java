@@ -43,8 +43,9 @@ public abstract class AbstractEventCursor<E extends Event> extends AbstractPolli
      * @param event The event to copy.
      * @return A copy of {@code event}.
      */
+    @Override
     @SuppressWarnings("unchecked")
     protected E copy(E event) {
-        return (E) event.clone();
+        return (E) event.copy();
     }
 }

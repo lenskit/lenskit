@@ -94,7 +94,7 @@ public class SimpleNullRating implements Rating {
     }
 
     @Override
-    public Rating clone() {
+    public Rating copy() {
         /* this object is immutable. Just return it. */
         return this;
     }
