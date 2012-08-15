@@ -25,6 +25,7 @@ import java.util.Map;
 
 /**
  * JavaDoc taglet for compatability information.
+ *
  * @author Michael Ekstrand
  */
 public class CompatTaglet implements Taglet {

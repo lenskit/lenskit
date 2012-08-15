@@ -23,8 +23,8 @@ package org.grouplens.lenskit;
  * an implementation of this class that builds a recommender from a data source.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see RecommenderEngine
  * @compat Public
+ * @see RecommenderEngine
  */
 public interface RecommenderEngineFactory {
     RecommenderEngine create();

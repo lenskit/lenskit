@@ -35,9 +35,8 @@ package org.grouplens.lenskit.data;
  * Implementations must also have well-defined {@link #equals(Object)} and
  * {@link #hashCode()} methods.
  *
- * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface Event extends Cloneable {
     /**
@@ -57,6 +56,7 @@ public interface Event extends Cloneable {
 
     /**
      * Get the item ID.
+     *
      * @return The item ID of the event.
      */
     abstract long getItemId();

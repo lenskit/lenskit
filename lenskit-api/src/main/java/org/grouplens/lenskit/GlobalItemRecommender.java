@@ -25,28 +25,27 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.collections.ScoredLongList;
 
 
-
 /**
- * The interface for recommendation based on the items only. The difference from the {@link ItemRecommender} is 
- * that the input is only the item or list of items instead of user specific information. This is a Find Similar 
+ * The interface for recommendation based on the items only. The difference from the {@link ItemRecommender} is
+ * that the input is only the item or list of items instead of user specific information. This is a Find Similar
  * Items/ People Also Liked recommendation.
- * 
- * The implementation is analogous to the {@link ItemRecommender}.
- * 
- * @compat Public
- * @author Steven Chang <schang@cs.umn.edu>
- * 
  *
+ * <p>
+ * The implementation is analogous to the {@link ItemRecommender}.
+ * </p>
+ *
+ * @author Steven Chang <schang@cs.umn.edu>
+ * @compat Public
  */
 public interface GlobalItemRecommender {
 
-    
+
     /**
      * Recommend all possible items for a basket of items using the default exclude set.
      *
      * @param items The items value.
      * @return The sorted list of scored items.
-     * @see #globalRecommend(long, int, Set, Set)
+     * @see #globalRecommend(Set, int, Set, Set)
      */
     ScoredLongList globalRecommend(Set<Long> items);
 
@@ -55,24 +54,24 @@ public interface GlobalItemRecommender {
      * set.
      *
      * @param items The items value.
-     * @param n The number of recommendations to return.
+     * @param n     The number of recommendations to return.
      * @return The sorted list of scored items.
-     * @see #globalRecommend(long, int, Set, Set)
+     * @see #globalRecommend(Set, int, Set, Set)
      */
-    ScoredLongList globalRecommend(Set<Long> items, int n); 
+    ScoredLongList globalRecommend(Set<Long> items, int n);
 
     /**
      * Recommend all possible items for a basket of items from a set of candidates using
      * the default exclude set.
      *
-     * @param items The items value.
+     * @param items      The items value.
      * @param candidates The candidate set (can be null to represent the
-     *        universe).
+     *                   universe).
      * @return The sorted list of scored items.
-     * @see #globalRecommend(long, int, Set, Set)
+     * @see #globalRecommend(Set, int, Set, Set)
      */
     ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates);
-    
+
     /**
      * Produce a set of recommendations for the item. This is the most general
      * recommendation method, allowing the recommendations to be constrained by
@@ -80,13 +79,13 @@ public interface GlobalItemRecommender {
      * the candidate set, so the final effective candidate set is
      * <var>canditates</var> minus <var>exclude</var>.
      *
-     * @param items The items value
-     * @param n The number of ratings to return. If negative, recommend all
-     *        possible items.
+     * @param items      The items value
+     * @param n          The number of ratings to return. If negative, recommend all
+     *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *        <tt>null</tt>, all items are considered candidates.
-     * @param exclude A set of items to be excluded. If <tt>null</tt>, a default
-     *        exclude set is used.
+     *                   <tt>null</tt>, all items are considered candidates.
+     * @param exclude    A set of items to be excluded. If <tt>null</tt>, a default
+     *                   exclude set is used.
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For
      *         most scoring recommenders, the items should be ordered in
@@ -94,5 +93,5 @@ public interface GlobalItemRecommender {
      *         set recommenders are allowed to be more flexible.
      */
     ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
-                             @Nullable Set<Long> exclude);
+                                   @Nullable Set<Long> exclude);
 }

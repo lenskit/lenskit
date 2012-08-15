@@ -29,19 +29,18 @@ import org.grouplens.lenskit.data.UserHistory;
 /**
  * Interface for recommending items. Several methods are provided, of varying
  * generality.
- *
  * <p>
  * The core idea of the recommend API is to recommend <i>n</i> items for a user,
  * where the items recommended are taken from a set of candidate items and
  * further constrained by an exclude set of forbidden items. Items in the
  * candidate set but not in the exclude set are considered viable for
  * recommendation.
- *
+ * </p>
  * <p>
  * As with {@link ItemScorer}, this interface supports both ID-based and
  * history-based recommendation. The {@link #canUseHistory()} method allows this
  * to be queried.
- *
+ * </p>
  * <p>
  * By default, the candidate set is the universe of all items the recommender
  * knows about. The default exclude set is somewhat more subtle. Its exact
@@ -53,10 +52,10 @@ import org.grouplens.lenskit.data.UserHistory;
  * allow this to be configured. Client code always has the option of manually
  * specifying the exclude set, however, so applications with particular needs in
  * this respect can manually provide the sets they need respected.
+ * </p>
  *
- * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface ItemRecommender {
     /**
@@ -73,7 +72,7 @@ public interface ItemRecommender {
      * set.
      *
      * @param user The user ID.
-     * @param n The number of recommendations to return.
+     * @param n    The number of recommendations to return.
      * @return The sorted list of scored items.
      * @see #recommend(long, int, Set, Set)
      */
@@ -83,9 +82,9 @@ public interface ItemRecommender {
      * Recommend all possible items for a user from a set of candidates using
      * the default exclude set.
      *
-     * @param user The user ID.
+     * @param user       The user ID.
      * @param candidates The candidate set (can be null to represent the
-     *        universe).
+     *                   universe).
      * @return The sorted list of scored items.
      * @see #recommend(long, int, Set, Set)
      */
@@ -98,13 +97,13 @@ public interface ItemRecommender {
      * the candidate set, so the final effective candidate set is
      * <var>canditates</var> minus <var>exclude</var>.
      *
-     * @param user The user's ID
-     * @param n The number of ratings to return. If negative, recommend all
-     *        possible items.
+     * @param user       The user's ID
+     * @param n          The number of ratings to return. If negative, recommend all
+     *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *        <tt>null</tt>, all items are considered candidates.
-     * @param exclude A set of items to be excluded. If <tt>null</tt>, a default
-     *        exclude set is used.
+     *                   <tt>null</tt>, all items are considered candidates.
+     * @param exclude    A set of items to be excluded. If <tt>null</tt>, a default
+     *                   exclude set is used.
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For
      *         most scoring recommenders, the items should be ordered in
@@ -137,7 +136,7 @@ public interface ItemRecommender {
      * set.
      *
      * @param profile The user profile.
-     * @param n The number of recommendations to return.
+     * @param n       The number of recommendations to return.
      * @return The sorted list of scored items.
      * @see #recommend(UserHistory, int, Set, Set)
      */
@@ -147,33 +146,33 @@ public interface ItemRecommender {
      * Recommend all possible items for a user from a set of candidates using
      * the default exclude set.
      *
-     * @param profile The user profile.
+     * @param profile    The user profile.
      * @param candidates The candidate set (can be null to represent the
-     *        universe).
+     *                   universe).
      * @return The sorted list of scored items.
      * @see #recommend(UserHistory, int, Set, Set)
      */
     public ScoredLongList recommend(UserHistory<? extends Event> profile,
-            @Nullable Set<Long> candidates);
+                                    @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user.
      *
-     * @param profile The user profile.
-     * @param n The number of ratings to return. If negative, recommend all
-     *        possible items.
+     * @param profile    The user profile.
+     * @param n          The number of ratings to return. If negative, recommend all
+     *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *        <tt>null</tt>, the candidate set is considered to contain the
-     *        universe.
-     * @param exclude A set of items to be excluded. If <tt>null</tt>, the
-     *        default exclude set is used. Exclusions are applied to the
-     *        candidate set, so the final candidate set is <var>candidates</var>
-     *        minus <var>exclude</var>.
+     *                   <tt>null</tt>, the candidate set is considered to contain the
+     *                   universe.
+     * @param exclude    A set of items to be excluded. If <tt>null</tt>, the
+     *                   default exclude set is used. Exclusions are applied to the
+     *                   candidate set, so the final candidate set is <var>candidates</var>
+     *                   minus <var>exclude</var>.
      * @return a list of scored recommendations, sorted in nondecreasing order
      *         of score.
      * @see ItemRecommender#recommend(long, int, Set, Set)
      */
     public ScoredLongList recommend(UserHistory<? extends Event> profile, int n,
-            @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
+                                    @Nullable Set<Long> candidates, @Nullable Set<Long> exclude);
 
 }

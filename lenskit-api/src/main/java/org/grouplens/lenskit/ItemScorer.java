@@ -31,7 +31,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Score items for users.  These scores can be predicted ratings, relevance
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a particular user.
- *
  * <p>
  * This method provides two flavors of score methods: those that take a user ID,
  * loading data from the database as appropriate, and those that take a user
@@ -41,11 +40,11 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * recommender.  Both methods will work, but if {@link #canUseHistory()} returns
  * <tt>false</tt>, then the history-based methods will be equivalent to calling
  * the ID-based methods.
+ * </p>
  *
- * @since 0.4
- * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
+ * @since 0.4
  */
 public interface ItemScorer {
     /**
@@ -61,7 +60,7 @@ public interface ItemScorer {
     /**
      * Score a collection of items.
      *
-     * @param user The user ID for whom to generate scores.
+     * @param user  The user ID for whom to generate scores.
      * @param items The item to score.
      * @return A mapping from item IDs to predicted preference. This mapping may
      *         not contain all requested items.
@@ -74,7 +73,8 @@ public interface ItemScorer {
      * items to score, and the score method sets the values for each item to
      * its score (or unsets it, if no score can be provided). The previous
      * values are discarded.
-     * @param user The user ID.
+     *
+     * @param user   The user ID.
      * @param scores The score vector.
      */
     void score(long user, @Nonnull MutableSparseVector scores);
@@ -93,7 +93,7 @@ public interface ItemScorer {
      * model.
      *
      * @param profile The user's profile.
-     * @param item The item to score.
+     * @param item    The item to score.
      * @return The score, or {@link Double#NaN} if no score can be computed.
      */
     double score(@Nonnull UserHistory<? extends Event> profile, long item);
@@ -104,7 +104,7 @@ public interface ItemScorer {
      * database or model.
      *
      * @param profile The user's profile
-     * @param items The items to score.
+     * @param items   The items to score.
      * @return A mapping from item IDs to scores. This mapping may not contain
      *         all requested items — ones for which the scorer cannot compute a
      *         score will be omitted.
@@ -118,8 +118,9 @@ public interface ItemScorer {
      * items to score, and the score method sets the values for each item to
      * its score (or unsets it, if no score can be provided). The previous
      * values are discarded.
+     *
      * @param profile The user history.
-     * @param scores The score vector.
+     * @param scores  The score vector.
      */
     void score(@Nonnull UserHistory<? extends Event> profile,
                @Nonnull MutableSparseVector scores);
