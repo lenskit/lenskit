@@ -218,7 +218,7 @@ public abstract class SparseVectorTestCommon {
     }
     @Test
     public void testVectorsGetPairedValues() {
-        Iterator noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
+        Iterator<Vectors.EntryPair> noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
         assertFalse(noPairs.hasNext());
         assertNull(noPairs.next());
         Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIterator(simpleVector(), simpleVector2());
@@ -242,10 +242,12 @@ public abstract class SparseVectorTestCommon {
     }
     @Test
     public void testVectorsGetPairedValuesFast() {
-        Iterator noPairs = Vectors.pairedIteratorFast(emptyVector(), simpleVector());
+        Iterator<Vectors.EntryPair> noPairs =
+                Vectors.pairedFastIterator(emptyVector(), simpleVector());
         assertFalse(noPairs.hasNext());
         assertNull(noPairs.next());
-        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIteratorFast(simpleVector(), simpleVector2());
+        Iterator<Vectors.EntryPair> pairIter =
+                Vectors.pairedFastIterator(simpleVector(), simpleVector2());
         assertTrue(pairIter.hasNext());
         Vectors.EntryPair pair = pairIter.next();
         assertTrue(pair.getKey() == 3);

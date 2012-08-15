@@ -163,6 +163,7 @@ class StaticInjector implements Injector {
         }
 
         @Override
+        @SuppressWarnings("rawtypes")
         public Provider<?> apply(Desire desire) {
             final Node dep = graph.getOutgoingEdge(node, desire).getTail();
             return new Provider() {

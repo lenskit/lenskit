@@ -35,6 +35,7 @@ public class CompatTaglet implements Taglet {
         versionUrl = System.getProperty("grouplens.javadoc.versioning.url");
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked", "unused"})
     public static void register(Map tagletMap) {
         Taglet tag = new CompatTaglet();
         tagletMap.put(tag.getName(), tag);

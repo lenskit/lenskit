@@ -158,7 +158,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         if (comp == null) {
             return (Cursor<E>) cursor;
         } else {
-            return (Cursor) Cursors.sort(cursor, comp);
+            return Cursors.sort(cursor, comp);
         }
     }
 

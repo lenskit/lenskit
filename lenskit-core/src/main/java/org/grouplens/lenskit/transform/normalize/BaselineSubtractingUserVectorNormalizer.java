@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import java.io.Serializable;
+import java.lang.ref.SoftReference;
 
 import javax.inject.Inject;
 
@@ -57,23 +58,25 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
     protected class Transformation implements VectorTransformation {
         private final long user;
-        private final SparseVector vector;
+        private final SparseVector reference;
 
         public Transformation(long u, SparseVector r) {
             user = u;
-            vector = r;
+            reference = r;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
+            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            baselinePredictor.predict(user, reference, base);
             vector.subtract(base);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
+            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            baselinePredictor.predict(user, reference, base);
             vector.add(base);
             return vector;
         }
