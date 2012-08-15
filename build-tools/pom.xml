@@ -10,7 +10,7 @@
 
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>build-tools</artifactId>
-  <version>0.11</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>LensKit Build Tools</name>
