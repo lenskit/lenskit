@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * users, items, and event histories to LensKit recommenders.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface DataAccessObject extends Closeable {
     /**

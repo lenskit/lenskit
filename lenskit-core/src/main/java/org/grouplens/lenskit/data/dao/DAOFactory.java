@@ -25,7 +25,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
  * create DAOs at will.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface DAOFactory {
     /**

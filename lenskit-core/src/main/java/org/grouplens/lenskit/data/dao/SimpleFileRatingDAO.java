@@ -36,7 +36,7 @@ import java.util.Comparator;
 /**
  * Rating-only data source backed by a simple delimited file.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     /**

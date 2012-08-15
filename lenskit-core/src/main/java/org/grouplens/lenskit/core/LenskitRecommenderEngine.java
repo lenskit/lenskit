@@ -40,6 +40,7 @@ import java.io.*;
  *
  * @see LenskitRecommenderEngineFactory
  * @see LenskitRecommender
+ * @compat Public
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
     final Graph dependencies;

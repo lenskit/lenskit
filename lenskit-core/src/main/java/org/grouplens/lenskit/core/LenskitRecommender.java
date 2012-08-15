@@ -37,6 +37,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * recommender (e.g. extract the item-item similarity matrix), this class and its
  * {@link #getComponent(Class)} method can be useful.
  *
+ * @compat Public
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  */

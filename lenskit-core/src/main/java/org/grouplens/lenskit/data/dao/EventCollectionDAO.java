@@ -49,7 +49,7 @@ import static com.google.common.collect.Iterables.filter;
  * Data source backed by a collection of events.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class EventCollectionDAO extends AbstractDataAccessObject {
     /**

@@ -33,6 +33,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Cursor that parses arbitrary delimited text.
+ * @compat Public
+ */
 public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;

@@ -49,7 +49,8 @@ import com.google.common.base.Predicate;
  * Abstract implementation of {@link DataAccessObject}, delegating
  * to a few core methods.  It also handles thread-local session management.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * */
+ * @compat Public
+ */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
     protected final Logger logger;
 

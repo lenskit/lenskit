@@ -42,6 +42,7 @@ import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
     private static final Class<?>[] INITIAL_ROOTS = {
