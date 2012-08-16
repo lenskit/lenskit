@@ -27,8 +27,10 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.knn.item.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
@@ -37,11 +39,12 @@ public class TestSlopeOneRatingPredictor {
     private static final double EPSILON = 1.0e-6;
     
     private SlopeOneModel getModel(DataAccessObject dao) {
-        PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(dao).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(
-                snapshot, new DefaultUserVectorNormalizer(), null,
-                new PreferenceDomain(1,5), 0);
-        return builder.get();
+        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
+                dao, new DefaultUserVectorNormalizer(), summarizer);
+        SlopeOneModelProvider provider = new SlopeOneModelProvider(
+                dao, null, new PreferenceDomain(1, 5), contextFactory, 0);
+        return provider.get();
     }
 
     @Test

@@ -18,12 +18,17 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.util.Index;
-
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.util.Index;
+
+import org.grouplens.lenskit.util.Indexer;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
 
 public class SlopeOneModelDataAccumulator {
 
@@ -36,61 +41,52 @@ public class SlopeOneModelDataAccumulator {
      * Creates an accumulator to process rating data and generate the necessary data for
      * a <tt>SlopeOneRatingPredictor</tt>.
      * @param damping A damping term for deviation calculations.
-     * @param snapshot The rating data.
+     * @param itemIndex An Index for items in the model
+     * @param dao The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, PreferenceSnapshot snapshot) {
+    public SlopeOneModelDataAccumulator(double damping, Indexer itemIndex, DataAccessObject dao) {
         this.damping = damping;
-        itemIndex = snapshot.itemIndex();
-        long[] items = snapshot.getItemIds().toLongArray();
-        deviationMatrix = new Long2DoubleOpenHashMap[itemIndex.getObjectCount()];
-        coratingMatrix = new Long2IntOpenHashMap[itemIndex.getObjectCount()];
-        for (long itemId : items) {
-            deviationMatrix[itemIndex.getIndex(itemId)] = new Long2DoubleOpenHashMap();
-            coratingMatrix[itemIndex.getIndex(itemId)] = new Long2IntOpenHashMap();
+        this.itemIndex = itemIndex;
+        LongList items = Cursors.makeList(dao.getItems());
+        deviationMatrix = new Long2DoubleOpenHashMap[items.size()];
+        coratingMatrix = new Long2IntOpenHashMap[items.size()];
+
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            final long itemId = iter.nextLong();
+            deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
+            coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
         }
-        for (int i = 0; i < items.length-1; i++) {
-        	for (int j = i; j < items.length; j++) {
-                if (items[i] < items[j]) {
-                    deviationMatrix[itemIndex.getIndex(items[i])].put(items[j], Double.NaN);
-                } else {
-                	deviationMatrix[itemIndex.getIndex(items[j])].put(items[i], Double.NaN);
-                }
+        for (int i = 0; i < items.size()-1; i++) {
+            for (int j = i; j < items.size(); j++) {
+                // to profit from matrix symmetry, always store by minId
+                long minId = Math.min(items.getLong(i), items.getLong(j));
+                long maxId = Math.max(items.getLong(i), items.getLong(j));
+                deviationMatrix[itemIndex.getIndex(minId)].put(maxId, Double.NaN);
             }
         }
     }
 
     /**
-     * Provide a pair of ratings to the accumulator.
+     * Puts the item pair into the accumulator.
      * @param id1 The id of the first item.
-     * @param rating1 The user's rating of the first item.
+     * @param itemVec1 The rating vector of the first item.
      * @param id2 The id of the second item.
-     * @param rating2 The user's rating of the second item.
+     * @param itemVec2 The rating vector of the second item.
      */
-    public void putRatingPair(long id1, double rating1, long id2, double rating2) {
-    	if (id1 != id2) {
-    		if (id1 < id2) {
-    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id1)].get(id2);
-    			if (Double.isNaN(currentDeviation)) {
-    				deviationMatrix[itemIndex.getIndex(id1)].put(id2, rating1 - rating2);
-    			} else {
-    				deviationMatrix[itemIndex.getIndex(id1)].put(id2,
-    					currentDeviation + (rating1 - rating2));
-    			}
-    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id1)].get(id2);
-    			coratingMatrix[itemIndex.getIndex(id1)].put(id2, currentCoratings + 1);
-    		}
-    		else {
-    			double currentDeviation = deviationMatrix[itemIndex.getIndex(id2)].get(id1);
-    			if (Double.isNaN(currentDeviation)) {
-    				deviationMatrix[itemIndex.getIndex(id2)].put(id1, rating2 - rating1);
-    			} else {
-    				deviationMatrix[itemIndex.getIndex(id2)].put(id1,
-    					currentDeviation + (rating2 - rating1));
-    			}
-    			int currentCoratings = coratingMatrix[itemIndex.getIndex(id2)].get(id1);
-    			coratingMatrix[itemIndex.getIndex(id2)].put(id1,  currentCoratings + 1);
-    		}
-    	}
+    public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+        if (id1 < id2) {
+            int corating = 0;
+            double deviation = 0.0;
+            for (Vectors.EntryPair pair : Vectors.pairedFast(itemVec1, itemVec2)) {
+                corating++;
+                deviation += pair.getValue1() - pair.getValue2();
+            }
+            deviation = (corating == 0) ? Double.NaN : deviation;
+            deviationMatrix[itemIndex.getIndex(id1)].put(id2, deviation);
+            coratingMatrix[itemIndex.getIndex(id1)].put(id2, corating);
+        }
+
     }
 
     /**

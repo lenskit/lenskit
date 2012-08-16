@@ -21,18 +21,18 @@ package org.grouplens.lenskit.knn.item;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Iterator;
 
 /**
  * Encapsulation of data needed during an item-item model build.  This class
- * provides access to item vectors, the item universe, and user-item sets to
- * be used by the build strategies to build up the model in the accumulator.
+ * provides access to item vectors and the item universe for use in  building
+ * up the model in the accumulator.
  *
- * @see ItemItemModelBuildStrategy
  * @see ItemItemModelProvider
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -41,20 +41,16 @@ import javax.annotation.Nullable;
 public class ItemItemBuildContext {
     private @Nonnull LongSortedSet items;
     private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
-    private @Nullable Long2ObjectMap<LongSortedSet> userItemSets;
 
     /**
      * Set up a new item build context.
      * @param universe The set of items for the model.
      * @param vectors Map of item IDs to item rating vectors.
-     * @param userSets Optional map of users to rated item sets.
      */
     public ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                                @Nonnull Long2ObjectMap<SparseVector> vectors,
-                                @Nullable Long2ObjectMap<LongSortedSet> userSets) {
+                                @Nonnull Long2ObjectMap<SparseVector> vectors) {
         items = universe;
         itemVectors = vectors;
-        userItemSets = userSets;
     }
 
     /**
@@ -81,24 +77,83 @@ public class ItemItemBuildContext {
     }
 
     /**
-     * Get the set of items rated by a user.
-     * @param user The user to query.
-     * @return The set of items rated by {@code user}.
-     * @throws IllegalArgumentException if {@code user} is unknown.
-     * @throws IllegalStateException if the build context did not collect user item sets.
-     * @see ItemItemModelBuildStrategy#needsUserItemSets()
+     * Provides an Iterable over ItemVecPairs
+     * @return An Iterable over ItemVecPairs, objects
+     * pairing item ids and their corresponding vectors.
      */
-    @Nonnull
-    public LongSortedSet userItems(long user) {
-        if (userItemSets == null) {
-            throw new IllegalStateException("build context doesn't have user item sets");
-        } else {
-            LongSortedSet set = userItemSets.get(user);
-            if (set == null) {
-                throw new IllegalArgumentException("unknown user");
-            } else {
-                return set;
+    public Iterable<ItemVecPair> getItemPairs() {
+        return new Iterable<ItemVecPair>() {
+            @Override
+            public Iterator<ItemVecPair> iterator() {
+                return getItemPairIterator();
             }
+        };
+    }
+
+    /**
+     * Returns an Iterator over all item vector pairs.
+     * @return An Iterator over ItemVecPairs, an object
+     * offering public access to the item ids and their
+     * corresponding vectors.
+     */
+    public Iterator<ItemVecPair> getItemPairIterator() {
+        return new FastIteratorImpl(items, items);
+    }
+
+    /**
+     * An Iterator implementation iterating over all ItemVecPairs from
+     * the parameter LongSortedSets of item ids.
+     */
+    private final class FastIteratorImpl implements Iterator<ItemVecPair> {
+        private ItemVecPair itemVecPair;
+        private LongIterator iter1;
+        private LongSortedSet list2;
+        private LongIterator iter2;
+
+        public FastIteratorImpl(LongSortedSet list1, LongSortedSet list2) {
+            itemVecPair = new ItemVecPair();
+            iter1 = list1.iterator();
+            itemVecPair.setItem1(iter1.nextLong());
+            this.list2 = list2;
+            iter2 = list2.iterator();
+        }
+        @Override
+        public boolean hasNext() {
+            return iter2.hasNext() || iter1.hasNext();
+        }
+        @Override
+        public ItemVecPair next() {
+            if (!iter2.hasNext()) {
+                itemVecPair.setItem1(iter1.nextLong());
+                iter2 = list2.iterator();
+            }
+            itemVecPair.setItem2(iter2.nextLong());
+            return itemVecPair;
+        }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
     }
+
+    /**
+     * A pair of item ids and their corresponding item
+     * vectors, avoiding (un)boxing the ids.
+     */
+    public final class ItemVecPair {
+        public long itemId1;
+        public SparseVector vec1;
+        public long itemId2;
+        public SparseVector vec2;
+
+        public void setItem1(long itemId1) {
+            this.itemId1 = itemId1;
+            vec1 = itemVector(itemId1);
+        }
+        public void setItem2(long itemId2) {
+            this.itemId2 = itemId2;
+            vec2 = itemVector(itemId2);
+        }
+    }
+
 }
