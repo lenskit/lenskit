@@ -58,6 +58,7 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
         this(in, Pattern.compile(Pattern.quote(delim)));
     }
 
+    @Override
     public String[] poll() {
         String line;
         try {

@@ -40,12 +40,17 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 public abstract class AbstractGlobalItemRecommender implements GlobalItemRecommender {
     protected final DataAccessObject dao;
 
+    /**
+     * Initialize the recommender.
+     * @param dao The DAO.
+     */
     protected AbstractGlobalItemRecommender(DataAccessObject dao) {
         this.dao = dao;
     }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList globalRecommend(Set<Long> items) {
@@ -53,7 +58,8 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList globalRecommend(Set<Long> items, int n) {
@@ -61,7 +67,8 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates) {
@@ -69,7 +76,8 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,

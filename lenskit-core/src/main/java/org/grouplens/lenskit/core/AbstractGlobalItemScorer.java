@@ -39,9 +39,7 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     /**
      * The DAO passed to the constructor.
      */
-    protected final
-    @Nonnull
-    DataAccessObject dao;
+    protected final @Nonnull DataAccessObject dao;
 
     /**
      * Initialize the abstract item scorer.
@@ -53,7 +51,8 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     }
 
     /**
-     * Delegate to {@link #globalScore(Collection, Collection)}
+     * {@inheritDoc}
+     * <p>Delegate to {@link #globalScore(Collection, Collection)}
      */
     @Override
     public double globalScore(@Nonnull Collection<Long> queryItems, long item) {

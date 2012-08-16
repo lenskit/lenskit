@@ -55,7 +55,8 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
     }
 
     /**
-     * Delegate to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
      */
     @Override
     public void score(@Nonnull UserHistory<? extends Event> profile,

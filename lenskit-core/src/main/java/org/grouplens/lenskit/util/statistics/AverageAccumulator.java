@@ -33,6 +33,9 @@ public class AverageAccumulator {
     private double sum;
     private long count;
 
+    /**
+     * Construct a new, zeroed average accumulator.
+     */
     public AverageAccumulator() {
         count = 0;
         sum = 0;

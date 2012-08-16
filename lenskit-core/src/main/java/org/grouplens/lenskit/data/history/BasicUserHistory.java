@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
  * underlying list.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @param <E> The type of event in this history.
  */
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;
@@ -91,7 +91,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     }
 
     /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     * {@inheritDoc}
+     * <p>This implementation filters into a new {@link BasicUserHistory} backed
+     * by an {@link ArrayList}.
      */
     @Override
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
@@ -100,7 +102,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     }
 
     /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     * {@inheritDoc}
+     * <p>This implementation filters into a new {@link BasicUserHistory} backed
+     * by an {@link ArrayList}.
      */
     @Override
     public UserHistory<E> filter(Predicate<? super E> pred) {

@@ -42,6 +42,14 @@ import java.util.Collection;
  * @see BaselineRatingPredictor
  */
 public interface BaselinePredictor extends Serializable {
+    /**
+     * Generate baseline predictions for several items into a new vector.
+     * @param user The user ID.
+     * @param ratings The user's ratings.
+     * @param items The items to score.
+     * @return A new sparse vector containing the baseline predictions for {@code items}.
+     * @deprecated Use {@link #predict(long, SparseVector, MutableSparseVector)} instead.
+     */
     @Deprecated
     MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 

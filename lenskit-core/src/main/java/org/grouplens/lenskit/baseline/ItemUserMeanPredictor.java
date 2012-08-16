@@ -61,6 +61,12 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         private double damping = 0;
         private DataAccessObject dao;
 
+        /**
+         * Construct a new provider.
+         * @param dao The DAO.
+         * @param d The Bayesian mean damping term. A positive value biases means
+         *          towards the global mean.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {

@@ -18,74 +18,89 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 
 /**
+ * Base class to make {@link Cursor}s easier to implement.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
 public abstract class AbstractCursor<T> implements Cursor<T> {
     private final int rowCount;
-    
+
+    /**
+     * Construct a cursor of unknown size.
+     */
     public AbstractCursor() {
         this(-1);
     }
-    
+
+    /**
+     * Construct a cursor.
+     *
+     * @param rowCount The number of rows, or -1 for unknown size.
+     */
     public AbstractCursor(int rowCount) {
         this.rowCount = Math.max(rowCount, -1); // Just a convenience to make all neg. #s map to -1
     }
-    
-	@Override
-	public int getRowCount() {
-		return rowCount;
-	}
-	
-	/**
-	 * No-op implementation of the {@link Cursor#close()} method.
-	 */
-	@Override
-	public void close() {
-		// no-op
-	}
-	
-	/**
-	 * Implementation of {@link Cursor#fastNext()} that delegates to {@link #next()}.
-	 */
-	@Override
-    public T fastNext() {
-	    return next();
-	}
-	
-	@Override
-    public Iterable<T> fast() {
-	    return new Iterable<T>() {
-	        @Override
-            public Iterator<T> iterator() {
-	            return new Iterator<T>() {
-	                @Override
-                    public boolean hasNext() {
-	                    return AbstractCursor.this.hasNext();
-	                }
-	                @Override
-                    public T next() {
-	                    return fastNext();
-	                }
-	                @Override
-                    public void remove() {
-	                    throw new UnsupportedOperationException();
-	                }
-	            };
-	        }
-	    };
-	}
 
-	/**
-	 * Get the iterator.  This method just returns <tt>this</tt>, so for-each
-	 * loops can be used over cursors.
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public Iterator<T> iterator() {
-		return new CursorIterator<T>(this);
-	}
+    @Override
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    /**
+     * No-op implementation of the {@link Cursor#close()} method.
+     */
+    @Override
+    public void close() {
+        // no-op
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>This implementation delegates to {@link #next()}.
+     */
+    @Nonnull
+    @Override
+    public T fastNext() {
+        return next();
+    }
+
+    @Override
+    public Iterable<T> fast() {
+        return new Iterable<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                return new Iterator<T>() {
+                    @Override
+                    public boolean hasNext() {
+                        return AbstractCursor.this.hasNext();
+                    }
+
+                    @Override
+                    public T next() {
+                        return fastNext();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Get the iterator.  This method just returns <tt>this</tt>, so for-each
+     * loops can be used over cursors.
+     *
+     * @see java.lang.Iterable#iterator()
+     */
+    @Override
+    public Iterator<T> iterator() {
+        return new CursorIterator<T>(this);
+    }
 }

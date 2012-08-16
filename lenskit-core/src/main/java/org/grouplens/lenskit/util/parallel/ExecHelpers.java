@@ -33,6 +33,9 @@ import com.google.common.util.concurrent.Uninterruptibles;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class ExecHelpers {
+    private ExecHelpers() {
+    }
+
     /**
      * Extract the cause exception for an execution exception if possible.
      *
@@ -72,8 +75,7 @@ public class ExecHelpers {
      * @review Should we wait for all futures, then throw all the errors
      * together?
      */
-    public static void waitAll(List<Future<?>> results)
-            throws ExecutionException {
+    public static void waitAll(List<Future<?>> results) throws ExecutionException {
         for (Future<?> f : results) {
             Uninterruptibles.getUninterruptibly(f);
         }

@@ -66,6 +66,13 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         private double damping = 0;
         private DataAccessObject dao;
 
+        /**
+         * Construct a new provider.
+         *
+         * @param dao     The DAO.
+         * @param damping The Bayesian mean damping term. It biases means toward the
+         *                global mean.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -98,6 +105,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      *
      * @param itemMeans  A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.
+     * @param damping    The damping factor.
      */
     public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
         if (itemMeans instanceof Serializable) {
@@ -120,10 +128,12 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      *
      * @param ratings         The collection of preferences the averages are based on.
      * @param itemMeansResult A map in which the means should be stored.
+     * @param damping         The damping term.
      * @return The global mean rating. The item means are stored in
      *         <var>itemMeans</var>.
      */
-    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeansResult) {
+    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping,
+                                             Long2DoubleMap itemMeansResult) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -186,6 +196,11 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
     }
 
+    /**
+     * Get the mean for a particular item.
+     * @param id The item ID.
+     * @return The item's mean rating.
+     */
     protected double getItemMean(long id) {
         return globalMean + itemMeans.get(id);
     }

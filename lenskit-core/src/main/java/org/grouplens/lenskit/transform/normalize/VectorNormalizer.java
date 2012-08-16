@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
@@ -59,7 +60,8 @@ public interface VectorNormalizer {
      * @return <var>target</var>, or a normalized mutable copy of
      *         <var>reference</var> if <var>target</var> is <tt>null</tt>.
      */
-    MutableSparseVector normalize(SparseVector reference, @Nullable MutableSparseVector target);
+    MutableSparseVector normalize(@Nonnull SparseVector reference,
+                                  @Nullable MutableSparseVector target);
 
     /**
      * Create a vector transformation that normalizes and denormalizes vectors

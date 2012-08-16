@@ -67,7 +67,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(long, MutableSparseVector)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #score(long, MutableSparseVector)}.
      */
     @Nonnull
     @Override
@@ -79,7 +80,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(UserHistory, MutableSparseVector)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #score(UserHistory, MutableSparseVector)}.
      */
     @Nonnull
     @Override
@@ -91,7 +93,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(UserHistory, MutableSparseVector)}, with a
+     * {@inheritDoc}
+     * <p>Delegates to {@link #score(UserHistory, MutableSparseVector)}, with a
      * history retrieved from the DAO.
      *
      * @param user   The user ID.
@@ -105,7 +108,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(long, Collection)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #score(long, Collection)}.
      */
     @Override
     public double score(long user, long item) {
@@ -114,7 +118,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Delegate to {@link #score(UserHistory, Collection)}
+     * {@inheritDoc}
+     * <p>Delegates to {@link #score(UserHistory, Collection)}
      */
     @Override
     public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
@@ -123,8 +128,9 @@ public abstract class AbstractItemScorer implements ItemScorer {
     }
 
     /**
-     * Default implementation can use history. Override this in subclasses that
-     * don't.
+     * {@inheritDoc}
+     * <p>Default implementation assumes history is usable. Override this in subclasses where
+     * it isn't.
      */
     @Override
     public boolean canUseHistory() {

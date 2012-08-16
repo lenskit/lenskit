@@ -18,11 +18,12 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import java.util.NoSuchElementException;
 
 /**
  * An extension of AbstractCursor that simplifies the mechanics of the
- * next()/hasNext() implementation to a simple method, poll().
+ * next()/hasNext() implementation to a simple method, {@link #poll()}.
  * 
  * @author Michael Ludwig
  * @param <T>
@@ -31,11 +32,18 @@ import java.util.NoSuchElementException;
 public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     private boolean hasNextCalled;
     private T polled;
-    
+
+    /**
+     * Construct a cursor of unknown size.
+     */
     public AbstractPollingCursor() {
         super();
     }
-    
+
+    /**
+     * Construct a cursor with a known number of rows.
+     * @param rowCount The number of rows, or -1 for unknown size.
+     */
     public AbstractPollingCursor(int rowCount) {
         super(rowCount);
     }
@@ -50,6 +58,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
         return polled != null;
     }
 
+    @Nonnull
     @Override
     public T fastNext() {
         if (!hasNextCalled) {
@@ -65,6 +74,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
         return n;
     }
 
+    @Nonnull
     @Override
     public T next() {
         return copy(fastNext());
@@ -73,7 +83,8 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     /**
      * Return the next element in this Cursor, or null if there are no more
      * elements. This must be safe to call multiple times at the end of its
-     * collection.
+     * collection. The same element object is allowed to be reused (fast
+     * iteration), so long as {@link #copy(Object)} copies objects.
      * 
      * @return The next element, or null
      */

@@ -64,16 +64,16 @@ public final class LKFileUtils {
         try {
             InputStream wrapped = istream;
             switch (compression) {
-                case GZIP:
+            case GZIP:
+                wrapped = new GZIPInputStream(istream);
+                break;
+            case AUTO:
+                if (isCompressed(file)) {
                     wrapped = new GZIPInputStream(istream);
-                    break;
-                case AUTO:
-                    if (isCompressed(file)) {
-                        wrapped = new GZIPInputStream(istream);
-                    }
-                    break;
-                default:
-                    break;
+                }
+                break;
+            default:
+                break;
             }
             return new InputStreamReader(wrapped, charset);
         } catch (RuntimeException e) {
@@ -127,16 +127,16 @@ public final class LKFileUtils {
         try {
             OutputStream wrapped = ostream;
             switch (compression) {
-                case GZIP:
+            case GZIP:
+                wrapped = new GZIPOutputStream(ostream);
+                break;
+            case AUTO:
+                if (isCompressed(file)) {
                     wrapped = new GZIPOutputStream(ostream);
-                    break;
-                case AUTO:
-                    if (isCompressed(file)) {
-                        wrapped = new GZIPOutputStream(ostream);
-                    }
-                    break;
-                default:
-                    break;
+                }
+                break;
+            default:
+                break;
             }
             return new OutputStreamWriter(wrapped, charset);
         } catch (RuntimeException e) {

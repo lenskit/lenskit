@@ -22,6 +22,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -52,10 +53,12 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
         delegate = norm;
     }
 
-    public MutableSparseVector normalize(long user, SparseVector vector, @Nullable MutableSparseVector target) {
+    @Override
+    public MutableSparseVector normalize(long user, @Nonnull SparseVector vector, @Nullable MutableSparseVector target) {
         return delegate.normalize(vector, target);
     }
 
+    @Override
     public VectorTransformation makeTransformation(long user, SparseVector vector) {
         return delegate.makeTransformation(vector);
     }

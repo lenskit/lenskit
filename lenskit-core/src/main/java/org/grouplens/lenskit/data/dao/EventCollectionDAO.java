@@ -62,6 +62,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         private final Collection<? extends Event> events;
         private transient volatile EventCollectionDAO singleton;
 
+        /**
+         * Construct a new factory.
+         *
+         * @param ratings The event collection.
+         */
         public Factory(Collection<? extends Event> ratings) {
             this.events = ratings;
         }
@@ -82,6 +87,12 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             return create();
         }
 
+        /**
+         * Wrap another factory by reading its event list.
+         *
+         * @param base The underlying factory.
+         * @return A factory built from the events in {@vector base}.
+         */
         public static Factory wrap(DAOFactory base) {
             DataAccessObject dao = base.create();
             try {
@@ -102,6 +113,13 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         private final Supplier<? extends Collection<? extends Event>> provider;
         private transient volatile SoftReference<DataAccessObject> instance;
 
+        /**
+         * Construct a new factory that memoizes the specifeid supplier.
+         *
+         * @param p A supplier that will return the event collection. The factory
+         *          remembers its response in a soft reference to share the collection
+         *          across DAO instances if possible.
+         */
         public SoftFactory(Supplier<? extends Collection<? extends Event>> p) {
             provider = p;
         }
@@ -126,6 +144,12 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             return create();
         }
 
+        /**
+         * Construct a factory wrapping another DAO factory.
+         *
+         * @param base The base factory.
+         * @return A factory of DAOs that will read the event list from {@code base}.
+         */
         public static SoftFactory wrap(final DAOFactory base) {
             Supplier<List<Event>> supplier = new Supplier<List<Event>>() {
                 @Override
@@ -244,19 +268,20 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<UserHistory<E>> getUserHistories(final Class<E> type) {
-        return Cursors.transform(getUserHistories(),
-                                 new Function<UserHistory<Event>, UserHistory<E>>() {
-                                     @Override
-                                     public UserHistory<E> apply(UserHistory<Event> input) {
-                                         List<E> events;
-                                         if (containsType(type)) {
-                                             events = Lists.newArrayList(filter(input, type));
-                                         } else {
-                                             events = Collections.emptyList();
-                                         }
-                                         return new BasicUserHistory<E>(input.getUserId(), events);
-                                     }
-                                 });
+        Function<UserHistory<Event>, UserHistory<E>> function;
+        function = new Function<UserHistory<Event>, UserHistory<E>>() {
+            @Override
+            public UserHistory<E> apply(UserHistory<Event> input) {
+                List<E> events;
+                if (containsType(type)) {
+                    events = Lists.newArrayList(filter(input, type));
+                } else {
+                    events = Collections.emptyList();
+                }
+                return new BasicUserHistory<E>(input.getUserId(), events);
+            }
+        };
+        return Cursors.transform(getUserHistories(), function);
     }
 
     @Override

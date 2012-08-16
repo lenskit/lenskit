@@ -28,9 +28,11 @@ import com.google.common.primitives.Longs;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class Events {
+    private Events() {
+    }
+
     /**
      * Integer to generate sequential IDs for fresh events.  Used mostly in
      * test cases.
@@ -54,9 +56,9 @@ public class Events {
         @Override
         public int compare(Event e1, Event e2) {
             return ComparisonChain.start()
-                    .compare(e1.getUserId(), e2.getUserId())
-                    .compare(e1.getTimestamp(), e2.getTimestamp())
-                    .result();
+                                  .compare(e1.getUserId(), e2.getUserId())
+                                  .compare(e1.getTimestamp(), e2.getTimestamp())
+                                  .result();
         }
     };
 
@@ -67,9 +69,9 @@ public class Events {
         @Override
         public int compare(Event e1, Event e2) {
             return ComparisonChain.start()
-                    .compare(e1.getItemId(), e2.getItemId())
-                    .compare(e1.getTimestamp(), e2.getTimestamp())
-                    .result();
+                                  .compare(e1.getItemId(), e2.getItemId())
+                                  .compare(e1.getTimestamp(), e2.getTimestamp())
+                                  .result();
         }
     };
 

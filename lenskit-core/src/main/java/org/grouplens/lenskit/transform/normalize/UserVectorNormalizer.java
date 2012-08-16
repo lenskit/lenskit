@@ -22,6 +22,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -55,7 +56,7 @@ public interface UserVectorNormalizer {
      * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
      *         containing a normalized copy of the user vector is returned.
      */
-    MutableSparseVector normalize(long user, SparseVector vector,
+    MutableSparseVector normalize(long user, @Nonnull SparseVector vector,
                                   @Nullable MutableSparseVector target);
 
     /**

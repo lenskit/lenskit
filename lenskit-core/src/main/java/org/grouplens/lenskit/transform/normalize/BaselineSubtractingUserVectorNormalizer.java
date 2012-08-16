@@ -18,15 +18,13 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import java.io.Serializable;
-import java.lang.ref.SoftReference;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -56,7 +54,7 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
         return new Transformation(user, ratings);
     }
 
-    protected class Transformation implements VectorTransformation {
+    private class Transformation implements VectorTransformation {
         private final long user;
         private final SparseVector reference;
 

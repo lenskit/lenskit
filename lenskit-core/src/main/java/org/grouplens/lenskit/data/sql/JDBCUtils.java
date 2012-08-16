@@ -27,11 +27,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helper utilities for JDBC.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class JDBCUtils {
+    private JDBCUtils() {
+    }
+
     private static Logger logger = LoggerFactory.getLogger(JDBCUtils.class);
 
+    /**
+     * Execute an SQL statement.
+     *
+     * @param dbc The connection to use.
+     * @param sql The statement to execute.
+     * @throws SQLException if there is an error executing the statement.
+     */
     public static void execute(Connection dbc, String sql) throws SQLException {
         logger.debug("Executing: {}", sql);
         Statement stmt = dbc.createStatement();

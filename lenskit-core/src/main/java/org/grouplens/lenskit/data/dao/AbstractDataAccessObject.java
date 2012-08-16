@@ -53,14 +53,21 @@ import com.google.common.base.Predicate;
  * @compat Public
  */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
+    /**
+     * Logger available to the DAO. This is initialized based on the implementing class.
+     */
     protected final Logger logger;
 
+    /**
+     * Construct a new abstract DAO.
+     */
     protected AbstractDataAccessObject() {
         logger = LoggerFactory.getLogger(getClass());
     }
 
     /**
-     * Delegate to {@link #getEvents(Class, SortOrder)}, filtering with
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getEvents(Class, SortOrder)}, filtering with
      * {@link Event} as the type.
      */
     @Override
@@ -69,7 +76,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Delegate to {@link #getEvents(Class, SortOrder)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getEvents(Class, SortOrder)}.
      */
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type) {
@@ -77,7 +85,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getEvents(Class, SortOrder)} by sorting
+     * {@inheritDoc}
+     * <p>Implement {@link DataAccessObject#getEvents(Class, SortOrder)} by sorting
      * and filtering output of {@link #getEvents()}.
      */
     @SuppressWarnings("unchecked")
@@ -106,21 +115,22 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     protected static Comparator<Event> getComparator(SortOrder order) {
         switch (order) {
-            case ANY:
-                return null;
-            case TIMESTAMP:
-                return Events.TIMESTAMP_COMPARATOR;
-            case USER:
-                return Events.USER_TIME_COMPARATOR;
-            case ITEM:
-                return Events.ITEM_TIME_COMPARATOR;
-            default:
-                throw new IllegalArgumentException();
+        case ANY:
+            return null;
+        case TIMESTAMP:
+            return Events.TIMESTAMP_COMPARATOR;
+        case USER:
+            return Events.USER_TIME_COMPARATOR;
+        case ITEM:
+            return Events.ITEM_TIME_COMPARATOR;
+        default:
+            throw new IllegalArgumentException();
         }
     }
 
     /**
-     * Delegate to {@link #getUserHistories(Class)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getUserHistories(Class)}.
      */
     @Override
     public Cursor<UserHistory<Event>> getUserHistories() {
@@ -128,8 +138,9 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUserHistories(Class)} by
-     * processing the output of {@link #getEvents(Class, SortOrder)} sorted by user.
+     * {@inheritDoc}
+     * <p>Implemented by processing the output of {@link #getEvents(Class, SortOrder)}
+     * sorted by user.
      */
     @Override
     public <E extends Event> Cursor<UserHistory<E>> getUserHistories(Class<E> type) {
@@ -143,8 +154,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUserEvents(long)} by delegating to
-     * {@link #getUserEvents(long, Class)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getUserEvents(long, Class)}.
      */
     @Override
     public Cursor<? extends Event> getUserEvents(long userId) {
@@ -152,8 +163,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUserEvents(long, Class)} by
-     * filtering the output of {@link #getEvents(Class, SortOrder)}.
+     * {@inheritDoc}
+     * <p>>Implemented by filtering the output of {@link #getEvents(Class, SortOrder)}.
      */
     @Override
     public <E extends Event> Cursor<E> getUserEvents(final long userId, Class<E> type) {
@@ -167,8 +178,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUserHistory(long)} by delegating
-     * to {@link #getUserEvents(long)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getUserEvents(long)}.
      */
     @Override
     public UserHistory<Event> getUserHistory(long user) {
@@ -176,8 +187,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUserHistory(long, Class)} by delegating
-     * to {@link #getUserEvents(long, Class)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getUserEvents(long, Class)}.
      */
     @Override
     public <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type) {
@@ -185,8 +196,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getItemEvents(long)} by delegating
-     * to {@link #getItemEvents(long, Class)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #getItemEvents(long, Class)}.
      */
     @Override
     public Cursor<? extends Event> getItemEvents(long itemId) {
@@ -194,8 +205,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getItemEvents(long, Class)}
-     * by filtering the output of {@link #getEvents(Class, SortOrder)}.
+     * {@inheritDoc}
+     * <p>Implemented by filtering the output of {@link #getEvents(Class, SortOrder)}.
      */
     @Override
     public <E extends Event> Cursor<E> getItemEvents(final long itemId, Class<E> type) {
@@ -214,7 +225,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
         Cursor<? extends Event> ratings = getEvents();
         try {
             items = new LongOpenHashSet();
-            for (Event r: ratings) {
+            for (Event r : ratings) {
                 items.add(r.getItemId());
             }
         } finally {
@@ -225,8 +236,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getItems()} by processing the output
-     * of {@link #getEvents(Class)}.
+     * {@inheritDoc}
+     * <p>Implemented by processing the output of {@link #getEvents(Class)}.
      */
     @Override
     public LongCursor getItems() {
@@ -255,8 +266,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     }
 
     /**
-     * Implement {@link DataAccessObject#getUsers()} by processing the output
-     * of {@link #getEvents(Class)}.
+     * {@inheritDoc}
+     * <p>Implemented by processing the output of {@link #getEvents(Class)}.
      */
     @Override
     public LongCursor getUsers() {

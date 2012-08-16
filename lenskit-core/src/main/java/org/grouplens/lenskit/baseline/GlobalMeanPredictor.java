@@ -45,6 +45,10 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     public static class Provider implements javax.inject.Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;
 
+        /**
+         * Construct a new provider.
+         * @param dao The DAO.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao) {
             this.dao = dao;
@@ -73,6 +77,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * Utility method to compute the mean or average of the rating values
      * contained in the given collection of ratings.
      *
+     * @param dao The DAO to average.
      * @return The average of the rating values stored in <var>ratings</var>.
      */
     public static double computeMeanRating(DataAccessObject dao) {

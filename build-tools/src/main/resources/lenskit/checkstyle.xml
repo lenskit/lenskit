@@ -11,6 +11,7 @@
   <module name="NewlineAtEndOfFile">&error;</module>
   <module name="FileTabCharacter"/>
   <module name="TreeWalker">
+    <module name="FileContentsHolder"/>
     <!-- Whitespace checks -->
     <module name="MissingDeprecated"/>
     <module name="MissingOverride">&error;</module>
@@ -102,10 +103,10 @@
     <!-- misc cruft, etc. -->
     <module name="UncommentedMain">&error;</module>
     <module name="UpperEll">&error;</module>
-    <module name="ArrayTypeStyle">
-      <property name="javaStyle" value="true"/>
-      &error;
-    </module>
+    <!--<module name="ArrayTypeStyle">-->
+      <!--<property name="javaStyle" value="true"/>-->
+      <!--&error;-->
+    <!--</module>-->
     <module name="Indentation">
       <property name="caseIndent" value="0"/>
       &error;
@@ -147,4 +148,5 @@
       <property name="allowEmptyMethods" value="true"/>
     </module>
   </module>
+  <module name="SuppressionCommentFilter"/>
 </module>
