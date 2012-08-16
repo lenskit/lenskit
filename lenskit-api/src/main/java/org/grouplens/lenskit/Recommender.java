@@ -101,5 +101,4 @@ public interface Recommender {
      */
     void close();
 
-
 }
