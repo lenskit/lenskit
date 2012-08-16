@@ -119,7 +119,7 @@
     </profile>
 
     <profile>
-      <id>continuous-integration</id>
+      <id>jenkins</id>
       <build>
         <plugins>
           <plugin>
