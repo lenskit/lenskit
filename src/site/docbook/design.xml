@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.1//EN"
-"http://www.oasis-open.org/docbook/xml/simple/1.1/sdocbook.dtd">
+        "http://www.oasis-open.org/docbook/xml/simple/1.1/sdocbook.dtd">
 <article>
   <articleinfo>
     <title>LensKit Design Document</title>
@@ -20,7 +20,8 @@
 
   <note>
     <para>This document is out-of-date. Its contents will eventually be
-    refactored into multiple design and usage guides.</para>
+      refactored into multiple design and usage guides.
+    </para>
   </note>
 
   <section id="sec-design-goals">
@@ -30,25 +31,34 @@
 
     <itemizedlist>
       <listitem>
-        <para><emphasis>Clarity.</emphasis> LensKit should embody a clean,
-        straightforward but not naïve implementation of a recommender system
-        based on several algorithms.</para>
+        <para>
+          <emphasis>Clarity.</emphasis>
+          LensKit should embody a clean,
+          straightforward but not naïve implementation of a recommender system
+          based on several algorithms.
+        </para>
       </listitem>
 
       <listitem id="goal-modularity">
-        <para><emphasis>Modularity.</emphasis> LensKit's architecture and
-        algorithm implementations should be flexible and reconfigurable so
-        that new algorithm configurations can be assembled from the pieces of
-        existing algorithms. Algorithm pieces, such as normalizers and
-        similarity functions, should be loosely coupled so that they can be
-        reused with other algorithms.</para>
+        <para>
+          <emphasis>Modularity.</emphasis>
+          LensKit's architecture and
+          algorithm implementations should be flexible and reconfigurable so
+          that new algorithm configurations can be assembled from the pieces of
+          existing algorithms. Algorithm pieces, such as normalizers and
+          similarity functions, should be loosely coupled so that they can be
+          reused with other algorithms.
+        </para>
       </listitem>
 
       <listitem>
-        <para><emphasis>Efficiency.</emphasis> LensKit should be efficient,
-        capable of running on significant data sets with reasonable hardware
-        requirements. Efficiency should not, however, come at the expense of
-        readability.</para>
+        <para>
+          <emphasis>Efficiency.</emphasis>
+          LensKit should be efficient,
+          capable of running on significant data sets with reasonable hardware
+          requirements. Efficiency should not, however, come at the expense of
+          readability.
+        </para>
       </listitem>
     </itemizedlist>
   </section>
@@ -57,30 +67,38 @@
     <title>High-Level Design Decisions</title>
 
     <para>This section documents several high-level design and technology
-    selection decisions for the LensKit architecture and code base.</para>
+      selection decisions for the LensKit architecture and code base.
+    </para>
 
     <section id="sec-java-platform">
       <title>Java Platform</title>
 
       <para>LensKit is implemented in Java 1.6. Several reasons contributed to
-      our selection of Java as the implementation language and
-      platform.</para>
+        our selection of Java as the implementation language and
+        platform.
+      </para>
 
       <itemizedlist>
         <listitem>
-          <para><emphasis>Approachability.</emphasis> Java is a widely-known
-          language, so a Java implementation will be understandable by a large
-          number of programmers and students. Implementing in Java allows the
-          code to be usable in a variety of educational settings and opens it
-          to use and extension by students, researchers, and other software
-          developers.</para>
+          <para>
+            <emphasis>Approachability.</emphasis>
+            Java is a widely-known
+            language, so a Java implementation will be understandable by a large
+            number of programmers and students. Implementing in Java allows the
+            code to be usable in a variety of educational settings and opens it
+            to use and extension by students, researchers, and other software
+            developers.
+          </para>
         </listitem>
 
         <listitem>
-          <para><emphasis>Performance.</emphasis> The Java virtual machine has
-          a high-quality optimizing compiler, allowing us to achieve good
-          performance with straightforward code if we take some care in our
-          choice of data structures and code structure.</para>
+          <para>
+            <emphasis>Performance.</emphasis>
+            The Java virtual machine has
+            a high-quality optimizing compiler, allowing us to achieve good
+            performance with straightforward code if we take some care in our
+            choice of data structures and code structure.
+          </para>
         </listitem>
       </itemizedlist>
     </section>
@@ -89,130 +107,158 @@
       <title>Primitive Collections — Fastutil</title>
 
       <para>Java's data model does not allow generic types, such as data
-      structures, to be parameterized over primitive types. Therefore code
-      wishing to store primitive types in collections must first box them into
-      the corresponding object types. For a package like LensKit which makes
-      extensive use of large collections of longs, doubles, and other
-      primitives, this boxing exacts a significant penalty both in memory use
-      and execution time as the memory allocator and garbage collector must
-      work noticably harder. We use the <ulink
-      url="http://fastutil.dsi.unimi.it/">Fastutil</ulink> library of
-      primitive collections extensively to be able to use high-level data
-      structures, such as sets, maps, and lists, without the memory and
-      performance penalty of boxing most numbers. This allows us to achieve
-      good performance without using and managing arrays directly all the
-      time.</para>
+        structures, to be parameterized over primitive types. Therefore code
+        wishing to store primitive types in collections must first box them into
+        the corresponding object types. For a package like LensKit which makes
+        extensive use of large collections of longs, doubles, and other
+        primitives, this boxing exacts a significant penalty both in memory use
+        and execution time as the memory allocator and garbage collector must
+        work noticably harder. We use the
+        <ulink
+                url="http://fastutil.dsi.unimi.it/">Fastutil
+        </ulink>
+        library of
+        primitive collections extensively to be able to use high-level data
+        structures, such as sets, maps, and lists, without the memory and
+        performance penalty of boxing most numbers. This allows us to achieve
+        good performance without using and managing arrays directly all the
+        time.
+      </para>
 
       <para>There are several primitive collection libraries around, such as
-      PCJ and GNU Trove. We selected Fastutil because it supports generics
-      where appropriate and takes advantage of Java 5 features to provide a
-      clean API. Further, Fastutil classes implement the relevant Java
-      Collections interfaces so it is easy to integrate with code written
-      against the Java Collections API.</para>
+        PCJ and GNU Trove. We selected Fastutil because it supports generics
+        where appropriate and takes advantage of Java 5 features to provide a
+        clean API. Further, Fastutil classes implement the relevant Java
+        Collections interfaces so it is easy to integrate with code written
+        against the Java Collections API.
+      </para>
 
       <para>While Fastutil is used internally extensively, the APIs are
-      designed so that client code that only wants to use LensKit for
-      recommendation is not required to use Fastutil to interface with
-      recommenders and predictors. This also makes it easier to integrate
-      LensKit with other APIs that produce standard Java collections. When
-      collection objects are a Fastutil collection, however, the
-      implementations generally take advantage of that and avoid temporary
-      boxing.</para>
+        designed so that client code that only wants to use LensKit for
+        recommendation is not required to use Fastutil to interface with
+        recommenders and predictors. This also makes it easier to integrate
+        LensKit with other APIs that produce standard Java collections. When
+        collection objects are a Fastutil collection, however, the
+        implementations generally take advantage of that and avoid temporary
+        boxing.
+      </para>
 
       <para>We have also written some new primitive collection classes and
-      utilities. Some provide complete new primitive collections like
-      Fastutil's implementation does (such as <literal>
-      LongArraySortedSet</literal>), while others are entirely new data
-      structures (like <literal>SparseVector</literal>).</para>
+        utilities. Some provide complete new primitive collections like
+        Fastutil's implementation does (such as<literal>
+          LongArraySortedSet</literal>), while others are entirely new data
+        structures (like<literal>SparseVector</literal>).
+      </para>
     </section>
 
     <section id="sec-strategy">
       <title>Strategy Pattern</title>
 
       <para>In LensKit, we often encounter situations where there are several
-      approaches to a particular piece of code. One example of this is the
-      method for filling in the item-item similarity matrix for item-based
-      collaborative filtering: if the similarity function is symmetric, we can
-      loop over a triangular section of the matrix and treat item pairs as
-      unordered, while an asymmetric simialrity function requires considering
-      item pairs as ordered and iterating over the entire matrix. Another
-      example is in user-user collaborative filtering ― the high-level
-      structure is always the same (find neighbors, then aggregate), but
-      different neighborhood-finding strategies are possible.</para>
+        approaches to a particular piece of code. One example of this is the
+        method for filling in the item-item similarity matrix for item-based
+        collaborative filtering: if the similarity function is symmetric, we can
+        loop over a triangular section of the matrix and treat item pairs as
+        unordered, while an asymmetric simialrity function requires considering
+        item pairs as ordered and iterating over the entire matrix. Another
+        example is in user-user collaborative filtering ― the high-level
+        structure is always the same (find neighbors, then aggregate), but
+        different neighborhood-finding strategies are possible.
+      </para>
 
       <para>There are a couple of ways of implementing this effect:</para>
 
       <itemizedlist>
         <listitem>
           <para>Create an abstract class containing the common logic and put
-          the replacable logic in an abstract method to be implemented in
-          derived classes for the various strategies.</para>
+            the replacable logic in an abstract method to be implemented in
+            derived classes for the various strategies.
+          </para>
         </listitem>
 
         <listitem>
-          <para>Use the <ulink
-          url="http://en.wikipedia.org/wiki/Strategy_pattern"><emphasis>strategy
-          pattern</emphasis></ulink>, a design pattern in which the replacable
-          code is defined via an interface, with the different strategies
-          implementing that interface. The interface is then used via
-          composition in class implementing the common logic.</para>
+          <para>Use the
+            <ulink
+                    url="http://en.wikipedia.org/wiki/Strategy_pattern">
+              <emphasis>strategy
+                pattern
+              </emphasis>
+            </ulink>
+            , a design pattern in which the replacable
+            code is defined via an interface, with the different strategies
+            implementing that interface. The interface is then used via
+            composition in class implementing the common logic.
+          </para>
         </listitem>
       </itemizedlist>
 
       <para>In LensKit, we prefer the strategy pattern. Composing strategies
-      works very well with dependency injection as the user-user recommender
-      can simply depend on the neighborhood-finding strategy. It also makes
-      the code more explicit at the call site, as it is clear that the method
-      implementing the strategy resides elsewhere and is pluggable, as opposed
-      to an abstract method where the method's declaration must be consulted
-      to see that it is intended to be overridden.</para>
+        works very well with dependency injection as the user-user recommender
+        can simply depend on the neighborhood-finding strategy. It also makes
+        the code more explicit at the call site, as it is clear that the method
+        implementing the strategy resides elsewhere and is pluggable, as opposed
+        to an abstract method where the method's declaration must be consulted
+        to see that it is intended to be overridden.
+      </para>
 
       <para>The current LensKit code is not yet consistent in its use of this
-      choice, but we are working on making it more so. Additionally, this
-      design decision is not a hard-and-fast rule. If it clearly makes more
-      sense to use inheritance than composition for a particular class,
-      readability and understandability should trump inordinate
-      consistency.</para>
+        choice, but we are working on making it more so. Additionally, this
+        design decision is not a hard-and-fast rule. If it clearly makes more
+        sense to use inheritance than composition for a particular class,
+        readability and understandability should trump inordinate
+        consistency.
+      </para>
     </section>
 
     <section id="sec-logging">
       <title>Logging Framework — SLF4J</title>
 
-      <para>In LensKit, we use the <ulink url="http://www.slf4j.org"> Simple
-      Logging Facade for Java (<acronym>SLF4J</acronym>)</ulink> logging
-      framework. This allows LensKit to emit log messages independent of the
-      actual logging library used in the surrounding code. It can be cleanly
-      integrated with applications using Log4J, standard Java logging, Jakarta
-      Commons logging, or Logback. Applications included with LensKit use
-      <ulink url="http://logback.qos.ch/">Logback</ulink> as the logging
-      backend.</para>
+      <para>In LensKit, we use the
+        <ulink url="http://www.slf4j.org">Simple
+          Logging Facade for Java (<acronym>SLF4J</acronym>)
+        </ulink>
+        logging
+        framework. This allows LensKit to emit log messages independent of the
+        actual logging library used in the surrounding code. It can be cleanly
+        integrated with applications using Log4J, standard Java logging, Jakarta
+        Commons logging, or Logback. Applications included with LensKit use
+        <ulink url="http://logback.qos.ch/">Logback</ulink>
+        as the logging
+        backend.
+      </para>
     </section>
 
     <section id="sec-maven">
       <title>Build and Dependency Management — Maven</title>
 
-      <para>LensKit uses <ulink url="http://maven.apache.org">Apache
-      Maven</ulink> as its build system. This provides full dependency
-      management in the build system, so we do not need to include library
-      JARs in our version control or maintain them (and their dependencies)
-      ourself. It also makes it easy to use LensKit in other projects, as
-      Maven automatically fetches the appropriate version of LensKit from the
-      Maven central repositories — all that a client application needs to do
-      is declare a dependency on the LensKit packages it uses in its Maven POM
-      file.</para>
+      <para>LensKit uses
+        <ulink url="http://maven.apache.org">Apache
+          Maven
+        </ulink>
+        as its build system. This provides full dependency
+        management in the build system, so we do not need to include library
+        JARs in our version control or maintain them (and their dependencies)
+        ourself. It also makes it easy to use LensKit in other projects, as
+        Maven automatically fetches the appropriate version of LensKit from the
+        Maven central repositories — all that a client application needs to do
+        is declare a dependency on the LensKit packages it uses in its Maven POM
+        file.
+      </para>
 
       <para>Maven does come with some additional complexity, and can at times
-      be difficult to configure. Basic projects, however, can be created and
-      managed very easily. Additionally, LensKit can be easily used in
-      projects built with Ant by using <ulink
-      url="http://ant.apache.org/ivy/">Ivy</ulink>, a dependency management
-      extension to Ant that can load dependencies from Maven
-      repositories.</para>
+        be difficult to configure. Basic projects, however, can be created and
+        managed very easily. Additionally, LensKit can be easily used in
+        projects built with Ant by using<ulink
+                url="http://ant.apache.org/ivy/">Ivy</ulink>, a dependency management
+        extension to Ant that can load dependencies from Maven
+        repositories.
+      </para>
 
       <para>Maven also provides us with a unified framework for handling
-      project reporting and building the project web site with integrated
-      JavaDoc, hyperlinked source code, and reports such as package
-      dependencies, software licenses, and static code analysis.</para>
+        project reporting and building the project web site with integrated
+        JavaDoc, hyperlinked source code, and reports such as package
+        dependencies, software licenses, and static code analysis.
+      </para>
     </section>
   </section>
 
@@ -220,111 +266,158 @@
     <title>API Design</title>
 
     <para>LensKit provides a common API for all recommender implementations,
-    allowing the recommender algorithm for an application to be replaced with
-    minimal need to modify the application's code.</para>
+      allowing the recommender algorithm for an application to be replaced with
+      minimal need to modify the application's code.
+    </para>
 
     <section>
       <title>Basic Data Model</title>
 
       <para>In order to do recommendations, we need standard representations
-      for the basic entities in the recommender: users, items, and ratings or
-      occurrances. In selecting representations, we want to balance genericity
-      with efficiency. Allowing users and items to be arbitrary types, either
-      deriving from base <literal role="class">User</literal> or <literal
-      role="class"> Item</literal> classes or as generic type parameters,
-      would allow a great deal of flexibility. This requires objects for every
-      user or item, however, and if users and items are integers then this can
-      impose significant overhead due to unnecessary boxing and
-      indirection.</para>
+        for the basic entities in the recommender: users, items, and ratings or
+        occurrances. In selecting representations, we want to balance genericity
+        with efficiency. Allowing users and items to be arbitrary types, either
+        deriving from base
+        <literal role="class">User</literal>
+        or
+        <literal
+                role="class">Item
+        </literal>
+        classes or as generic type parameters,
+        would allow a great deal of flexibility. This requires objects for every
+        user or item, however, and if users and items are integers then this can
+        impose significant overhead due to unnecessary boxing and
+        indirection.
+      </para>
 
-      <para>In LensKit, we have opted to uniformly use <literal
-      role="type">long</literal> IDs for users and items. No restrictions are
-      placed on these IDs. Ratings are represented via the <literal
-      role="class">Rating</literal> interface, which exposes the user ID, item
-      ID, rating as a double, and optional timestamp. In some parts of the
-      API, we use sparse vectors mapping item (or user) IDs to ratings to
-      represent user (or item) rating vectors.</para>
+      <para>In LensKit, we have opted to uniformly use
+        <literal
+                role="type">long
+        </literal>
+        IDs for users and items. No restrictions are
+        placed on these IDs. Ratings are represented via the
+        <literal
+                role="class">Rating
+        </literal>
+        interface, which exposes the user ID, item
+        ID, rating as a double, and optional timestamp. In some parts of the
+        API, we use sparse vectors mapping item (or user) IDs to ratings to
+        represent user (or item) rating vectors.
+      </para>
 
-      <para>Sparse vectors are realized through our custom <literal
-      role="class">SparseVector</literal> interface and its subclass <literal
-      role="class">MutableSparseVector</literal>. SparseVector is an efficient
-      mapping from longs to doubles that uses parallel primitive arrays sorted
-      by key and binary search. Dot products can be computed very efficiently
-      by iterating over two arrays in parallel. The class also memoizes the
-      sum, mean, and L2 norm so that they can be accessed efficiently.
-      MutableSparseVector extends the sparse vector by allowing values (but
-      not keys) to be modified, allowing efficient in-place addition,
-      subtraction, and scaling of vectors.</para>
+      <para>Sparse vectors are realized through our custom
+        <literal
+                role="class">SparseVector
+        </literal>
+        interface and its subclass<literal
+                role="class">MutableSparseVector</literal>. SparseVector is an efficient
+        mapping from longs to doubles that uses parallel primitive arrays sorted
+        by key and binary search. Dot products can be computed very efficiently
+        by iterating over two arrays in parallel. The class also memoizes the
+        sum, mean, and L2 norm so that they can be accessed efficiently.
+        MutableSparseVector extends the sparse vector by allowing values (but
+        not keys) to be modified, allowing efficient in-place addition,
+        subtraction, and scaling of vectors.
+      </para>
     </section>
 
     <section>
       <title>Recommendation API</title>
 
       <para>The recommendation API in LensKit is broken into separate pieces
-      to allow different types of access and reflect the fact that not all
-      recommendation methods support all types of recommendation. The <literal
-      role="class">Recommender</literal> interface is the primary entry point
-      for using a recommender. It provides access to different recommender
-      operations are supported by the following interfaces:</para>
+        to allow different types of access and reflect the fact that not all
+        recommendation methods support all types of recommendation. The
+        <literal
+                role="class">Recommender
+        </literal>
+        interface is the primary entry point
+        for using a recommender. It provides access to different recommender
+        operations are supported by the following interfaces:
+      </para>
 
       <itemizedlist>
         <listitem>
-          <para><literal role="class">RatingPredictor</literal> supports the
-          <emphasis>predict</emphasis> task, allowing client code to query for
-          the predicted value of a user's rating.</para>
+          <para>
+            <literal role="class">RatingPredictor</literal>
+            supports the
+            <emphasis>predict</emphasis>
+            task, allowing client code to query for
+            the predicted value of a user's rating.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">DynamicRatingPredictor</literal>
-          supports the predict task for users whose ratings are provided at
-          call time rather than retrieved from the backing data store.</para>
+          <para>
+            <literal role="class">DynamicRatingPredictor</literal>
+            supports the predict task for users whose ratings are provided at
+            call time rather than retrieved from the backing data store.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemRecommender</literal> supports the
-          <emphasis>recommend</emphasis> task where users have expressed
-          ratings, allowing client code to query for recommendations based on
-          a user's ID.</para>
+          <para>
+            <literal role="class">ItemRecommender</literal>
+            supports the
+            <emphasis>recommend</emphasis>
+            task where users have expressed
+            ratings, allowing client code to query for recommendations based on
+            a user's ID.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">DynamicItemRecommender</literal>
-          supports the recommend task with user IDs provided at recommendation
-          time.</para>
+          <para>
+            <literal role="class">DynamicItemRecommender</literal>
+            supports the recommend task with user IDs provided at recommendation
+            time.
+          </para>
         </listitem>
       </itemizedlist>
 
       <para>Recommender operations are typically lightweight objects that wrap
-      an implementation-specific recommender model, which in turn contains all
-      the configuration and persistent data for the recommender.</para>
+        an implementation-specific recommender model, which in turn contains all
+        the configuration and persistent data for the recommender.
+      </para>
     </section>
 
     <section>
       <title>Building Recommenders</title>
 
       <para><literal role="class">Recommender</literal>s are obtained by
-      "opening" them from recommender engines (the <literal
-      role="class">RecommenderEngine</literal> interface). Before
-      recommendation or prediction can be done, the program needs a
-      recommender engine. Recommender services are built using <literal
-      role="class">RecommenderServiceBuilder</literal> instances. Each
-      recommender implementation will provide a recommender service builder
-      that knows how to build it from its constituent components. Service
-      builders provide getters and setters to configure the various parameters
-      used by a particular recommender and a <literal
-      role="class">build(RatingBuildContext)</literal> method that actually
-      builds the recommender. The basic procedure for setting up a recommender
-      is as follows:</para>
+        "opening" them from recommender engines (the
+        <literal
+                role="class">RecommenderEngine
+        </literal>
+        interface). Before
+        recommendation or prediction can be done, the program needs a
+        recommender engine. Recommender services are built using
+        <literal
+                role="class">RecommenderServiceBuilder
+        </literal>
+        instances. Each
+        recommender implementation will provide a recommender service builder
+        that knows how to build it from its constituent components. Service
+        builders provide getters and setters to configure the various parameters
+        used by a particular recommender and a
+        <literal
+                role="class">build(RatingBuildContext)
+        </literal>
+        method that actually
+        builds the recommender. The basic procedure for setting up a recommender
+        is as follows:
+      </para>
 
       <orderedlist>
         <listitem>
           <para>Construct and configure the appropriate recommender model
-          builder.</para>
+            builder.
+          </para>
         </listitem>
 
         <listitem>
-          <para>Set up a rating data access object (see <link
-          linkend="sec-data-access">Data Access Layer</link>).</para>
+          <para>Set up a rating data access object (see<link
+                  linkend="sec-data-access">Data Access Layer</link>).
+          </para>
         </listitem>
 
         <listitem>
@@ -333,182 +426,244 @@
 
         <listitem>
           <para>Pass the build context to the builder and get a recommender
-          model.</para>
+            model.
+          </para>
         </listitem>
 
         <listitem>
           <para>Create one or more recommender operations built on the model,
-          or wrap the model up with operation factories in a <literal
-          role="class">RecommenderService</literal> to make it easily
-          available throughout the application.</para>
+            or wrap the model up with operation factories in a
+            <literal
+                    role="class">RecommenderService
+            </literal>
+            to make it easily
+            available throughout the application.
+          </para>
         </listitem>
       </orderedlist>
 
       <para>Many recommenders will have subcomponents that also need to be
-      built from a build context. For this purpose, the <literal
-      role="class">RecommenderComponentBuilder&lt;T&gt;</literal> interface is
-      provided. Builders take build contexts and produce objects. They also
-      memoize their results, so calling the build method twice with the same
-      build context will produce the same object. The memoization facility
-      does impose the limitation that a builder instance cannot be
-      reconfigured and used to build a second object from the same rating
-      build context.</para>
+        built from a build context. For this purpose, the
+        <literal
+                role="class">RecommenderComponentBuilder&lt;T&gt;</literal>
+        interface is
+        provided. Builders take build contexts and produce objects. They also
+        memoize their results, so calling the build method twice with the same
+        build context will produce the same object. The memoization facility
+        does impose the limitation that a builder instance cannot be
+        reconfigured and used to build a second object from the same rating
+        build context.
+      </para>
 
       <para>This design will allow recommender services to be flexibly
-      configured. Further, since many Java scripting languages support easy
-      access to Bean properties, it will be possible to configure recommenders
-      with scripts in JavaScript or other Java-compatible scripting languages
-      that look much like configuration files: a sequence of parameter
-      assignments with the occasional object construction.</para>
+        configured. Further, since many Java scripting languages support easy
+        access to Bean properties, it will be possible to configure recommenders
+        with scripts in JavaScript or other Java-compatible scripting languages
+        that look much like configuration files: a sequence of parameter
+        assignments with the occasional object construction.
+      </para>
 
       <para>Builder objects are also fully composable: builders can use other
-      builders to build subcomponents of their target objects, allowing
-      recommender components to be nested and configured almost arbitrarily.
-      Configuration code will need to take care to use the same builder
-      instance when the same type of object is needed in multiple places to
-      avoid unnecessarily duplicating objects, but this will hopefully not
-      impose an unreasonable burden.</para>
+        builders to build subcomponents of their target objects, allowing
+        recommender components to be nested and configured almost arbitrarily.
+        Configuration code will need to take care to use the same builder
+        instance when the same type of object is needed in multiple places to
+        avoid unnecessarily duplicating objects, but this will hopefully not
+        impose an unreasonable burden.
+      </para>
     </section>
 
     <section id="sec-data-access">
       <title>Data Access Layer</title>
 
       <para>In order to build recommender models and provide recommendations,
-      LensKit needs an API for obtaining rating or purchase data from data
-      sources. Further, this API needs to be generic and flexible so that the
-      recommenders can be integrated into a variety of environments. Some
-      recommenders may also need to respond to rating data changes to update
-      or invalidate caches. Finally, while pre-computing recommender models it
-      can be necessary to iterate over the ratings data multiple times without
-      it changing in the process, necessitating a means for isolating rating
-      data reads.</para>
+        LensKit needs an API for obtaining rating or purchase data from data
+        sources. Further, this API needs to be generic and flexible so that the
+        recommenders can be integrated into a variety of environments. Some
+        recommenders may also need to respond to rating data changes to update
+        or invalidate caches. Finally, while pre-computing recommender models it
+        can be necessary to iterate over the ratings data multiple times without
+        it changing in the process, necessitating a means for isolating rating
+        data reads.
+      </para>
 
       <para>To solve these problems, we have designed a rating API with two
-      primary components. The core part of the data access layer is modeled
-      after the J2EE <ulink
-      url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data
-      Access Object</ulink> pattern. The <literal>
-      UserItemDataAccessObject</literal> interface provides accesss to users
-      and items, while the <literal> RatingDataAccessObject</literal>
-      interface makes rating data available. These interfaces are intended to
-      be implemented by singletons, so all code across an application uses the
-      same data access object (and thus any object can register a listener to
-      receive notifications of rating updates).</para>
+        primary components. The core part of the data access layer is modeled
+        after the J2EE
+        <ulink
+                url="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">
+          Data
+          Access Object
+        </ulink>
+        pattern. The
+        <literal>
+          UserItemDataAccessObject
+        </literal>
+        interface provides accesss to users
+        and items, while the
+        <literal>RatingDataAccessObject</literal>
+        interface makes rating data available. These interfaces are intended to
+        be implemented by singletons, so all code across an application uses the
+        same data access object (and thus any object can register a listener to
+        receive notifications of rating updates).
+      </para>
 
       <para>Actual data access is mediated via cursor objects implementing the
-      <literal>Cursor</literal> interface. A cursor is essentially an iterator
-      that can be closed and may be able to report its size. This allows
-      backing resources, such as files or database result sets, to be
-      closed.</para>
+        <literal>Cursor</literal>
+        interface. A cursor is essentially an iterator
+        that can be closed and may be able to report its size. This allows
+        backing resources, such as files or database result sets, to be
+        closed.
+      </para>
 
-      <para>Cursors must exist in sessions. <literal
-      role="class">RatingDataAccessObject</literal> provides <literal
-      role="method">openSession()</literal> and <literal
-      role="method">closeSession()</literal> methods which open and close the
-      active session on a particular thread. Requesting a cursor without an
-      active session is an error. Client code is responsible for making sure
-      that all recommender access occurs within a session; servlet filters or
-      Struts interceptors are a good place to make sure this happens. Data
-      access object implementations should use thread-local storage to allow
-      each thread to have its own session.</para>
+      <para>Cursors must exist in sessions.
+        <literal
+                role="class">RatingDataAccessObject
+        </literal>
+        provides
+        <literal
+                role="method">openSession()
+        </literal>
+        and
+        <literal
+                role="method">closeSession()
+        </literal>
+        methods which open and close the
+        active session on a particular thread. Requesting a cursor without an
+        active session is an error. Client code is responsible for making sure
+        that all recommender access occurs within a session; servlet filters or
+        Struts interceptors are a good place to make sure this happens. Data
+        access object implementations should use thread-local storage to allow
+        each thread to have its own session.
+      </para>
 
       <para>In addition to data data access objects, we also have a concept of
-      <emphasis>build contexts</emphasis>, realized through the
-      <literal>RatingBuildContext</literal> interface. A build context is a
-      snapshot of the ratings data at a particular point in time, suitable for
-      repeated iteration to learn a recommender model. It also captures
-      characteristics such as the number of users and items and provides a
-      mapping from user and item IDs to consecutive zero-based integers
-      suitable for array indexing. Further, the collection of ratings it
-      captures supports a concept borrwed from Fastutil called <emphasis>fast
-      iteration</emphasis>, where an iterator mutates a single object in-place
-      and returns it again rather than creating a new object for each
-      <literal> next()</literal> call. This allows large collections of
-      synthetic objects to be iterated more efficiently when the objects are
-      not needed outside the iterating loop body. Rating build contexts also
-      have a type-safe object storage facility using unique keys to allow
-      builders to store memoized objects on the build context rather than
-      internally; this allows intermediate objects to be more easily garbage
-      collected once the build process has finished.</para>
+        <emphasis>build contexts</emphasis>, realized through the
+        <literal>RatingBuildContext</literal>
+        interface. A build context is a
+        snapshot of the ratings data at a particular point in time, suitable for
+        repeated iteration to learn a recommender model. It also captures
+        characteristics such as the number of users and items and provides a
+        mapping from user and item IDs to consecutive zero-based integers
+        suitable for array indexing. Further, the collection of ratings it
+        captures supports a concept borrwed from Fastutil called<emphasis>fast
+          iteration</emphasis>, where an iterator mutates a single object in-place
+        and returns it again rather than creating a new object for each
+        <literal>next()</literal>
+        call. This allows large collections of
+        synthetic objects to be iterated more efficiently when the objects are
+        not needed outside the iterating loop body. Rating build contexts also
+        have a type-safe object storage facility using unique keys to allow
+        builders to store memoized objects on the build context rather than
+        internally; this allows intermediate objects to be more easily garbage
+        collected once the build process has finished.
+      </para>
 
-      <para>The primary build context implementation, <literal
-      role="class">PackedRatingBuildContext</literal>, simply iterates over
-      all ratings presented by the data access object and stores the rating
-      data efficiently in a set of parallel arrays, allowing for very fast
-      iteration.</para>
+      <para>The primary build context implementation,<literal
+              role="class">PackedRatingBuildContext</literal>, simply iterates over
+        all ratings presented by the data access object and stores the rating
+        data efficiently in a set of parallel arrays, allowing for very fast
+        iteration.
+      </para>
 
       <para>This collection of interfaces allows LensKit to have access to the
-      data, provides a mechanism for applications to notify LensKit components
-      of rating updates, and stable snapshots for iterative model
-      building.</para>
+        data, provides a mechanism for applications to notify LensKit components
+        of rating updates, and stable snapshots for iterative model
+        building.
+      </para>
     </section>
 
     <section>
       <title>Vectors</title>
 
       <para>There are many places in recommender implementation where it is
-      useful to have sparse vectors (vectors where many of the values are
-      missing). To support these needs, LensKit includes a sparse vector
-      implementation in the <literal
-      role="package">org.grouplens.lenskit.data.vector</literal> package.
-      Sparse vectors are stored in parallel arrays sorted by <literal
-      role="type">long</literal> key. This allows efficient access to specific
-      values, and also allows binary operations such as dot products to be
-      computed efficiently with a single linear pass through the arrays
-      backing two vectors. It also provides a place to memoize single-vector
-      metrics such as sum and L2 norm.</para>
+        useful to have sparse vectors (vectors where many of the values are
+        missing). To support these needs, LensKit includes a sparse vector
+        implementation in the
+        <literal
+                role="package">org.grouplens.lenskit.data.vector
+        </literal>
+        package.
+        Sparse vectors are stored in parallel arrays sorted by
+        <literal
+                role="type">long
+        </literal>
+        key. This allows efficient access to specific
+        values, and also allows binary operations such as dot products to be
+        computed efficiently with a single linear pass through the arrays
+        backing two vectors. It also provides a place to memoize single-vector
+        metrics such as sum and L2 norm.
+      </para>
 
       <para>The key sets of a sparse vector is immutable once the vector has
-      been created. This can be limiting, but it allows the implementation
-      code to be very simple and works out well in practice. A common pattern
-      is to accumulate values for a new vector in a fastutil hash table and
-      then convert it to a vector for subsequent operations.</para>
+        been created. This can be limiting, but it allows the implementation
+        code to be very simple and works out well in practice. A common pattern
+        is to accumulate values for a new vector in a fastutil hash table and
+        then convert it to a vector for subsequent operations.
+      </para>
 
-      <para>The <literal role="class">MutableSparseVector</literal> class
-      provides a sparse vector which supports in-place mutation of values.
-      This allows vector addition, subtraction, and scaling to be handled
-      efficiently without incurring excess copying overhead. It does require
-      client code to occasionally create additional vectors, but it allows the
-      client code to control how many copies are made and potentially re-use
-      vectors.</para>
+      <para>The
+        <literal role="class">MutableSparseVector</literal>
+        class
+        provides a sparse vector which supports in-place mutation of values.
+        This allows vector addition, subtraction, and scaling to be handled
+        efficiently without incurring excess copying overhead. It does require
+        client code to occasionally create additional vectors, but it allows the
+        client code to control how many copies are made and potentially re-use
+        vectors.
+      </para>
 
       <para>Since sparse vectors can be mutated, we wanted a way to declare
-      methods so that a sparse vector that might be mutated later cannot be
-      passed to certain methods which may store the vector somewhere. We
-      therefore developed the following three-prong type family for sparse
-      vectors:</para>
+        methods so that a sparse vector that might be mutated later cannot be
+        passed to certain methods which may store the vector somewhere. We
+        therefore developed the following three-prong type family for sparse
+        vectors:
+      </para>
 
       <itemizedlist>
         <listitem>
-          <para><literal role="class">SparseVector</literal> provides a
-          read-only view of a sparse vector. Objects of this type cannot be
-          modified; however, since <literal
-          role="class">MutableSparseVector</literal> is a subclass of <literal
-          role="class">SparseVector</literal>, other code may know the
-          object's real type and mutate it.</para>
+          <para>
+            <literal role="class">SparseVector</literal>
+            provides a
+            read-only view of a sparse vector. Objects of this type cannot be
+            modified; however, since
+            <literal
+                    role="class">MutableSparseVector
+            </literal>
+            is a subclass of<literal
+                  role="class">SparseVector</literal>, other code may know the
+            object's real type and mutate it.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">MutableSparseVector</literal> is a
-          mutable sparse vector, as discussed above.</para>
+          <para>
+            <literal role="class">MutableSparseVector</literal>
+            is a
+            mutable sparse vector, as discussed above.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ImmutableSparseVector</literal> is a
-          read-only sparse vector that is guaranteed not to change. If an
-          object or method receives an immutable sparse vector, it can safely
-          save it and know that no other code will change it. Immutable sparse
-          vectors are also thread-safe (and are the only sparse vectors that
-          can be safely shared across thread boundaries).</para>
+          <para>
+            <literal role="class">ImmutableSparseVector</literal>
+            is a
+            read-only sparse vector that is guaranteed not to change. If an
+            object or method receives an immutable sparse vector, it can safely
+            save it and know that no other code will change it. Immutable sparse
+            vectors are also thread-safe (and are the only sparse vectors that
+            can be safely shared across thread boundaries).
+          </para>
         </listitem>
       </itemizedlist>
 
       <para>The SparseVector class provides methods to convert to an
-      appropriate type of vector, avoiding copying when making an
-      already-immutable sparse vector immutable. Since the key set is
-      immutable, conversions requiring a copy only need to copy the value
-      array. Future work may allow the value array to also be shared by making
-      mutable sparse vectors copy-on-write.</para>
+        appropriate type of vector, avoiding copying when making an
+        already-immutable sparse vector immutable. Since the key set is
+        immutable, conversions requiring a copy only need to copy the value
+        array. Future work may allow the value array to also be shared by making
+        mutable sparse vectors copy-on-write.
+      </para>
     </section>
   </section>
 
@@ -516,40 +671,46 @@
     <title id="sec-algorithms">Algorithm Implementation Design</title>
 
     <para>Different recommender algorithms require specific design
-    considerations. This section documents those for the various algorithms
-    implemented in LensKit.</para>
+      considerations. This section documents those for the various algorithms
+      implemented in LensKit.
+    </para>
 
     <section>
       <title id="sec-normalization">Normalization</title>
 
       <para>In keeping with LensKit's modular design, normalization is
-      considered to be a cross-cutting concern orthoganal to the recommender
-      algorithm employed.</para>
+        considered to be a cross-cutting concern orthoganal to the recommender
+        algorithm employed.
+      </para>
 
       <para>Currently, the only supported normalization is baseline
-      subtraction, where the real recommender algorithm is supplied with a
-      baseline predictor and the prediction for each rating is subtracted from
-      the rating prior to processing. In the predict phase, the baseline is
-      added back to the predictions before returning them.</para>
+        subtraction, where the real recommender algorithm is supplied with a
+        baseline predictor and the prediction for each rating is subtracted from
+        the rating prior to processing. In the predict phase, the baseline is
+        added back to the predictions before returning them.
+      </para>
 
       <para>We are planning to add support for more flexibile normalization
-      strategies, so that baseline normalization is only one, but have not yet
-      figured out how we want to do that. It is being tracked in <ulink
-      url="http://dev.grouplens.org/trac/lenskit/ticket/31">bug
-      #31</ulink>.</para>
+        strategies, so that baseline normalization is only one, but have not yet
+        figured out how we want to do that. It is being tracked in<ulink
+                url="http://dev.grouplens.org/trac/lenskit/ticket/31">bug
+          #31</ulink>.
+      </para>
     </section>
 
     <section>
       <title id="sec-user-cf">User-User Collaborative Filtering</title>
 
       <para>Algorithmically, user-user CF divides into three
-      components:</para>
+        components:
+      </para>
 
       <orderedlist>
         <listitem>
           <para>Find user neighborhoods for items under consideration. For
-          recommendation, this may also involve finding the items which can
-          have neighborhoods.</para>
+            recommendation, this may also involve finding the items which can
+            have neighborhoods.
+          </para>
         </listitem>
 
         <listitem>
@@ -562,261 +723,366 @@
       </orderedlist>
 
       <para>The predict task, of course, only involves steps 1 and 2. It is
-      possible to combine one or more of the steps into a single loop, but we
-      separate them in order to allow them to be reconfigured
-      separately.</para>
+        possible to combine one or more of the steps into a single loop, but we
+        separate them in order to allow them to be reconfigured
+        separately.
+      </para>
 
-      <para>The class <literal
-      role="class">UserUserRatingRecommender</literal> implements the <literal
-      role="class">RatingRecommender</literal> and <literal
-      role="class">RatingPredictor</literal> interfaces, embodying the code
-      for steps 2 and 3. It depends in turn on a <literal
-      role="class">NeighborhoodFinder</literal>, providing the
-      neighborhood-finding logic required for step 1. NeighborhoodFinder's
-      interface follows:</para>
+      <para>The class
+        <literal
+                role="class">UserUserRatingRecommender
+        </literal>
+        implements the
+        <literal
+                role="class">RatingRecommender
+        </literal>
+        and
+        <literal
+                role="class">RatingPredictor
+        </literal>
+        interfaces, embodying the code
+        for steps 2 and 3. It depends in turn on a<literal
+                role="class">NeighborhoodFinder</literal>, providing the
+        neighborhood-finding logic required for step 1. NeighborhoodFinder's
+        interface follows:
+      </para>
 
       <programlisting language="java">/**
- * Interface for neighborhood-finding strategies. These strategies are used by
- * {@link UserUserRatingRecommender} to find neighbors for recommendation.
- * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
- *
- */
-public interface NeighborhoodFinder {
-    /**
-     * Find neighboring users for particular items.
-     * @param user The user ID.
-     * @param ratings The user rating vector.
-     * @param items The items we're trying to recommend, or &lt;tt&gt;null&lt;/tt&gt; to get
-     * get neighborhoods for all possible items.
-     * @return A map from item IDs to user neighborhoods for all items for which
-     * we can find neighboring users.
-     */
-    
-    Long2ObjectMap&lt;? extends Collection&lt;Neighbor&gt;&gt; findNeighbors(long user,
-            @Nonnull SparseVector ratings, @Nullable LongSet items);
-}</programlisting>
+        * Interface for neighborhood-finding strategies. These strategies are used by
+        * {@link UserUserRatingRecommender} to find neighbors for recommendation.
+        * @author Michael Ekstrand &lt;ekstrand@cs.umn.edu&gt;
+        *
+        */
+        public interface NeighborhoodFinder {
+        /**
+        * Find neighboring users for particular items.
+        * @param user The user ID.
+        * @param ratings The user rating vector.
+        * @param items The items we're trying to recommend, or &lt;tt&gt;null&lt;/tt&gt; to get
+        * get neighborhoods for all possible items.
+        * @return A map from item IDs to user neighborhoods for all items for which
+        * we can find neighboring users.
+        */
 
-      <para>The <literal role="method">findNeighbors</literal> method finds
-      collections of neighbors by whatever means are appropriate. The <literal
-      role="class">Neighbor</literal> class contains the neighbor's user ID,
-      rating vector, and its similarity to the user in question. The specific
-      neighborhood finder implementation is responsible for using the
-      similarity function to identify neighbors and truncate the neighborhood
-      lists as appropriate. This allows the neighborhood strategy to be
-      implemented and selected entirely independently of the rating
-      aggregation logic. There are two neighborhood strategies currently
-      provided with LensKit:</para>
+        Long2ObjectMap&lt;? extends Collection&lt;Neighbor&gt;&gt; findNeighbors(long user,
+        @Nonnull SparseVector ratings, @Nullable LongSet items);
+        }
+      </programlisting>
+
+      <para>The
+        <literal role="method">findNeighbors</literal>
+        method finds
+        collections of neighbors by whatever means are appropriate. The
+        <literal
+                role="class">Neighbor
+        </literal>
+        class contains the neighbor's user ID,
+        rating vector, and its similarity to the user in question. The specific
+        neighborhood finder implementation is responsible for using the
+        similarity function to identify neighbors and truncate the neighborhood
+        lists as appropriate. This allows the neighborhood strategy to be
+        implemented and selected entirely independently of the rating
+        aggregation logic. There are two neighborhood strategies currently
+        provided with LensKit:
+      </para>
 
       <itemizedlist>
         <listitem>
-          <para><literal role="class">SimpleNeighborhoodFinder</literal> uses
-          a similarity function, represented by an instance of <literal
-          role="class">Similarity&lt;SparseVector&gt;</literal>, and scans
-          over all the user profiles in the database to find the most similar
-          users. It does no caching and is therefore fairly
-          inefficient.</para>
+          <para>
+            <literal role="class">SimpleNeighborhoodFinder</literal>
+            uses
+            a similarity function, represented by an instance of<literal
+                  role="class">Similarity&lt;SparseVector&gt;</literal>, and scans
+            over all the user profiles in the database to find the most similar
+            users. It does no caching and is therefore fairly
+            inefficient.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">CachingNeighborhoodFinder</literal>
-          caches user rating vectors in memory, indexed by the items they
-          contain. This allows the neighborhoods to be determined more quickly
-          by only considering users who have co-rated movies with the user in
-          question. It requires that the similarity function is
-          <emphasis>optimizable</emphasis>, or always returns 0 for two rating
-          vectors with disjoint item sets. Optimizable similarities implement
-          the <literal role="class">OptimizableVectorSimilarity</literal>
-          interface.</para>
+          <para>
+            <literal role="class">CachingNeighborhoodFinder</literal>
+            caches user rating vectors in memory, indexed by the items they
+            contain. This allows the neighborhoods to be determined more quickly
+            by only considering users who have co-rated movies with the user in
+            question. It requires that the similarity function is
+            <emphasis>optimizable</emphasis>, or always returns 0 for two rating
+            vectors with disjoint item sets. Optimizable similarities implement
+            the
+            <literal role="class">OptimizableVectorSimilarity</literal>
+            interface.
+          </para>
         </listitem>
       </itemizedlist>
 
       <para>Currently, the rating aggregation strategy — weighted averaging —
-      is hard-coded into <literal
-      role="class">UserUserRatingRecommender</literal>. At present, other
-      rating aggregation strategies are rarely used. It would be a relatively
-      simple matter to factor it out into another strategy interface, however,
-      if we want to be able to experiment with alternative strategies. At
-      present, if someone wants to change it, they can re-implement or
-      subclass the existing implementation.</para>
+        is hard-coded into<literal
+                role="class">UserUserRatingRecommender</literal>. At present, other
+        rating aggregation strategies are rarely used. It would be a relatively
+        simple matter to factor it out into another strategy interface, however,
+        if we want to be able to experiment with alternative strategies. At
+        present, if someone wants to change it, they can re-implement or
+        subclass the existing implementation.
+      </para>
     </section>
 
     <section>
       <title id="sec-item-cf">Item-Item Collaborative Filtering</title>
 
       <para>Item-item CF is divided somewhat differently, as it uses a
-      pre-built model. It is therefore divided into separate classes as
-      follows:</para>
+        pre-built model. It is therefore divided into separate classes as
+        follows:
+      </para>
 
       <itemizedlist>
         <listitem>
-          <para><literal role="class">ItemItemModel</literal> contains the
-          item-item similarity matrix and neighborhood-finding code.
-          Currently, the neighborhood-finding strategy is fixed, but this can
-          be changed.</para>
+          <para>
+            <literal role="class">ItemItemModel</literal>
+            contains the
+            item-item similarity matrix and neighborhood-finding code.
+            Currently, the neighborhood-finding strategy is fixed, but this can
+            be changed.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemItemModelBuilder</literal> uses a
-          <literal role="class">BuildContext</literal> and a normalizing
-          baseline to build a new Item-item model. It normalizes and
-          transposes the rating matrix (generating a set of item rating
-          vectors), then hands it off to an <literal
-          role="class">ItemItemModelBuildStrategy</literal> to compute the
-          actual similarity matrix.</para>
+          <para>
+            <literal role="class">ItemItemModelBuilder</literal>
+            uses a
+            <literal role="class">BuildContext</literal>
+            and a normalizing
+            baseline to build a new Item-item model. It normalizes and
+            transposes the rating matrix (generating a set of item rating
+            vectors), then hands it off to an
+            <literal
+                    role="class">ItemItemModelBuildStrategy
+            </literal>
+            to compute the
+            actual similarity matrix.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemItemModelBuildStrategy</literal>
-          abstracts the process of computing an item-item similarity matrix
-          from a transposed ratings matrix. The exact strategy depends on what
-          can be assumed about the similarity function:</para>
+          <para>
+            <literal role="class">ItemItemModelBuildStrategy</literal>
+            abstracts the process of computing an item-item similarity matrix
+            from a transposed ratings matrix. The exact strategy depends on what
+            can be assumed about the similarity function:
+          </para>
 
           <itemizedlist>
             <listitem>
-              <para>The naive method, implemented by <literal
-              role="class">SimpleModelBuildStrategy</literal>, computes the
-              pairwise similarity between all pairs of items. It makes no
-              assumptions about the nature of the similarity function but may
-              compute many unnecessary similarities.</para>
+              <para>The naive method, implemented by<literal
+                      role="class">SimpleModelBuildStrategy</literal>, computes the
+                pairwise similarity between all pairs of items. It makes no
+                assumptions about the nature of the similarity function but may
+                compute many unnecessary similarities.
+              </para>
             </listitem>
 
             <listitem>
               <para>If the similarity function is symmetric (indicated by
-              implementing the <literal
-              role="class">SymmetricBinaryFunction</literal> tag interfac),
-              then the builder only needs to compute one triangle of the
-              matrix. The algorithm is still O(n^2), but avoids half the
-              similarity computations. <literal
-              role="class">SymmetricModelBuildStrategy</literal> handles this
-              case.</para>
+                implementing the
+                <literal
+                        role="class">SymmetricBinaryFunction
+                </literal>
+                tag interfac),
+                then the builder only needs to compute one triangle of the
+                matrix. The algorithm is still O(n^2), but avoids half the
+                similarity computations.
+                <literal
+                        role="class">SymmetricModelBuildStrategy
+                </literal>
+                handles this
+                case.
+              </para>
             </listitem>
 
             <listitem>
               <para>If the similarity function is optimizable, then only items
-              that have been rated by the same users need to be compared. With
-              the help of some additional bookkeeping data recorded during the
-              initial matrix transposition, this results in substantial
-              efficiency gains. <literal
-              role="class">SparseModelBuildStrategy</literal> implements this
-              approach.</para>
+                that have been rated by the same users need to be compared. With
+                the help of some additional bookkeeping data recorded during the
+                initial matrix transposition, this results in substantial
+                efficiency gains.
+                <literal
+                        role="class">SparseModelBuildStrategy
+                </literal>
+                implements this
+                approach.
+              </para>
             </listitem>
 
             <listitem>
-              <para>Finally, <literal
-              role="class">SparseSymmetricModelBuildStrategy</literal> handles
-              similarity functions which are both optimizable and
-              symmetric.</para>
+              <para>Finally,
+                <literal
+                        role="class">SparseSymmetricModelBuildStrategy
+                </literal>
+                handles
+                similarity functions which are both optimizable and
+                symmetric.
+              </para>
             </listitem>
           </itemizedlist>
 
-          <para><literal
-          role="class">ItemItemModelBuildStrategyProvider</literal> is the
-          default means of providing build strategies for injection and
-          automatically selects the appropriate strategy based on the type of
-          the similarity function. This can be overridden by re-binding
-          <literal role="class">ItemItemModelBuildStrategy</literal> in a
-          Guice module.</para>
+          <para>
+            <literal
+                    role="class">ItemItemModelBuildStrategyProvider
+            </literal>
+            is the
+            default means of providing build strategies for injection and
+            automatically selects the appropriate strategy based on the type of
+            the similarity function. This can be overridden by re-binding
+            <literal role="class">ItemItemModelBuildStrategy</literal>
+            in a
+            Guice module.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemItemModelProvider</literal>
-          implements a Guice <literal role="class">Provider</literal> that
-          depends on a build context and baseline and uses the <literal
-          role="class">ItemItemModelBuilder</literal> to provide a model a
-          new. It is the default provider for <literal
-          role="class">ItemItemModel</literal> (using a
-          <literal>ProvidedBy</literal> annotation). It is also the extension
-          point for replacing the <literal
-          role="class">ItemItemModelBuilder</literal>; customizers can bind
-          <literal role="class">ItemItemModel</literal> to a different class
-          or provider to replace it and/or the model builder entirely.</para>
+          <para>
+            <literal role="class">ItemItemModelProvider</literal>
+            implements a Guice
+            <literal role="class">Provider</literal>
+            that
+            depends on a build context and baseline and uses the
+            <literal
+                    role="class">ItemItemModelBuilder
+            </literal>
+            to provide a model a
+            new. It is the default provider for
+            <literal
+                    role="class">ItemItemModel
+            </literal>
+            (using a
+            <literal>ProvidedBy</literal>
+            annotation). It is also the extension
+            point for replacing the<literal
+                  role="class">ItemItemModelBuilder</literal>; customizers can bind
+            <literal role="class">ItemItemModel</literal>
+            to a different class
+            or provider to replace it and/or the model builder entirely.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemItemRatingPredictor</literal> wraps
-          an <literal role="class">ItemItemModel</literal> and provides the
-          rating prediction service. It also exposes the model, but this
-          feature is not for public use.</para>
+          <para>
+            <literal role="class">ItemItemRatingPredictor</literal>
+            wraps
+            an
+            <literal role="class">ItemItemModel</literal>
+            and provides the
+            rating prediction service. It also exposes the model, but this
+            feature is not for public use.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">ItemItemRatingRecommender</literal>
-          takes an <literal role="class">ItemItemRatingPredictor</literal>,
-          with its exposed model, and provides a rating recommender built on
-          it. Rating recommendation is done in two passes: first the
-          recommendable items are collected (if the client has not provided a
-          candidate list), and then prediction is done. This allows
-          recommendations to be accumulated in sparse vectors rather than hash
-          tables and reduces data conversion overhead.</para>
+          <para>
+            <literal role="class">ItemItemRatingRecommender</literal>
+            takes an<literal role="class">ItemItemRatingPredictor</literal>,
+            with its exposed model, and provides a rating recommender built on
+            it. Rating recommendation is done in two passes: first the
+            recommendable items are collected (if the client has not provided a
+            candidate list), and then prediction is done. This allows
+            recommendations to be accumulated in sparse vectors rather than hash
+            tables and reduces data conversion overhead.
+          </para>
         </listitem>
 
         <listitem>
-          <para><literal role="class">SimilarityMatrixBuilder</literal>
-          abstracts building similarity matrices. It exposes <literal
-          role="method">put</literal> methods for putting similarities in the
-          matrix and a <literal role="class">build</literal> method that
-          compiles the accumulated similarities into an (usually truncated)
-          immutable matrix. The similarity matrix builder itself is split into
-          multiple stages:</para>
+          <para>
+            <literal role="class">SimilarityMatrixBuilder</literal>
+            abstracts building similarity matrices. It exposes
+            <literal
+                    role="method">put
+            </literal>
+            methods for putting similarities in the
+            matrix and a
+            <literal role="class">build</literal>
+            method that
+            compiles the accumulated similarities into an (usually truncated)
+            immutable matrix. The similarity matrix builder itself is split into
+            multiple stages:
+          </para>
 
           <orderedlist>
             <listitem>
-              <para>Use a <literal
-              role="class">SimilarityMatrixBuilderFactory</literal> to get a
-              <literal role="class">SimilarityMatrixBuilder</literal> that
-              will build a matrix for a given number of rows. This is
-              necessary so the matrix builder can know the matrix size ahead
-              of time.</para>
+              <para>Use a
+                <literal
+                        role="class">SimilarityMatrixBuilderFactory
+                </literal>
+                to get a
+                <literal role="class">SimilarityMatrixBuilder</literal>
+                that
+                will build a matrix for a given number of rows. This is
+                necessary so the matrix builder can know the matrix size ahead
+                of time.
+              </para>
             </listitem>
 
             <listitem>
-              <para>Accumulate similarities in the <literal
-              role="class">SimilarityMatrixBuilder</literal>.</para>
+              <para>Accumulate similarities in the<literal
+                      role="class">SimilarityMatrixBuilder</literal>.
+              </para>
             </listitem>
 
             <listitem>
-              <para>Call the matrix builder's build() method to get a <literal
-              role="class">SimilarityMatrix</literal>.</para>
+              <para>Call the matrix builder's build() method to get a<literal
+                      role="class">SimilarityMatrix</literal>.
+              </para>
             </listitem>
           </orderedlist>
 
           <para>The default (and currently only) implementation of the
-          similarity matrix framework is TruncatingSimilarityMatrixBuilder,
-          which accumulates and maintains the truncated rows of the similarity
-          matrix in priority queues. For a neighborhood size N, the matrix
-          builder only ever keeps the N most similar neighbors of each item in
-          memory.</para>
+            similarity matrix framework is TruncatingSimilarityMatrixBuilder,
+            which accumulates and maintains the truncated rows of the similarity
+            matrix in priority queues. For a neighborhood size N, the matrix
+            builder only ever keeps the N most similar neighbors of each item in
+            memory.
+          </para>
         </listitem>
       </itemizedlist>
 
       <para>This level of division and declarative dependency structure allows
-      the item-item recommender to be extensively reconfigured and customized.
-      It should therefore be fairly easy to plug a new piece into it to test
-      new recommender ideas.</para>
+        the item-item recommender to be extensively reconfigured and customized.
+        It should therefore be fairly easy to plug a new piece into it to test
+        new recommender ideas.
+      </para>
     </section>
 
     <section>
       <title>Singular Value Decomposition</title>
 
       <para>LensKit also provides a recommender (currently only implementing
-      the <literal role="class">RatingPredictor</literal> interface) built on
-      singular value decomposition.</para>
+        the
+        <literal role="class">RatingPredictor</literal>
+        interface) built on
+        singular value decomposition.
+      </para>
 
       <para>The architecture of the SVD recommender is similar to but simpler
-      than the item-item CF implementation. Instead of having a single builder
-      class that uses pluggable strategies, it has an <literal
-      role="class">SVDModelBuilder</literal> interface that takes the build
-      context and baseline and builds an <literal
-      role="class">SVDModel</literal>. This is used by <literal
-      role="class">SVDModelProvider</literal> to provide models to Guice. This
-      difference is due to the increased dissimilarity between SVD
-      impelmentations; as we implement additional SVD algorithms, we may
-      consolidate code and introduce an additional strategy interface.</para>
+        than the item-item CF implementation. Instead of having a single builder
+        class that uses pluggable strategies, it has an
+        <literal
+                role="class">SVDModelBuilder
+        </literal>
+        interface that takes the build
+        context and baseline and builds an<literal
+                role="class">SVDModel</literal>. This is used by
+        <literal
+                role="class">SVDModelProvider
+        </literal>
+        to provide models to Guice. This
+        difference is due to the increased dissimilarity between SVD
+        impelmentations; as we implement additional SVD algorithms, we may
+        consolidate code and introduce an additional strategy interface.
+      </para>
 
-      <para>Currently there is a single SVD model builder, <literal
-      role="grade">GradientDescentSVDModelBuilder</literal>. It implements a
-      gradient descent approximation approach to SVD; configured with an
-      appropriately damped baseline, it becomes FunkSVD.</para>
+      <para>Currently there is a single SVD model builder,<literal
+              role="grade">GradientDescentSVDModelBuilder</literal>. It implements a
+        gradient descent approximation approach to SVD; configured with an
+        appropriately damped baseline, it becomes FunkSVD.
+      </para>
     </section>
   </section>
 </article>

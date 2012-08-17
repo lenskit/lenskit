@@ -19,8 +19,8 @@
 package org.grouplens.lenskit.util.io;
 
 /**
-* @author Michael Ekstrand
-*/
+ * @author Michael Ekstrand
+ */
 public enum CompressionMode {
     /**
      * No compression.
@@ -28,6 +28,7 @@ public enum CompressionMode {
     NONE,
     /**
      * GZip compression.
+     *
      * @see java.util.zip.GZIPInputStream
      * @see java.util.zip.GZIPOutputStream
      */

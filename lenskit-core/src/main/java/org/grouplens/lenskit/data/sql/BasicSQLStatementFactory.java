@@ -28,9 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Default implementation of the SQL statement factory.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@SuppressWarnings("unused")
 public class BasicSQLStatementFactory implements SQLStatementFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(BasicSQLStatementFactory.class);
@@ -61,6 +63,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the column of the event ID in the rating table.
+     *
      * @return The name of the event ID column.
      */
     public String getIdColumn() {
@@ -69,6 +72,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the event ID column in the rating table.
+     *
      * @param col The name of the event ID column.
      */
     public void setIdColumn(String col) {
@@ -152,39 +156,37 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     @Override
     public PreparedStatement prepareUsers(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
+                String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
-    public PreparedStatement prepareUserCount(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareUserCount(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
-                          tableName);
+                String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
+                              tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
     public PreparedStatement prepareItems(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
+                String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
-    public PreparedStatement prepareItemCount(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareItemCount(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
-                          tableName);
+                String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
+                              tableName);
         return dbc.prepareStatement(query);
     }
 
     /**
      * Add the SELECT and FROM clauses to the query
      *
-     * @param query
+     * @param query The query accumulator.
      */
     protected void rqAddSelectFrom(StringBuilder query) {
         query.append("SELECT ");
@@ -204,7 +206,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     /**
-     * Add an ORDER BY clause to a query
+     * Add an ORDER BY clause to a query.
+     *
+     * @param query The query accumulator
+     * @param order The sort order.
      */
     protected void rqAddOrder(StringBuilder query, SortOrder order) {
         switch (order) {
@@ -219,7 +224,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             }
             break;
         case USER:
-            query.append(" ORDER BY " + userColumn);
+            query.append(" ORDER BY ").append(userColumn);
             if (timestampColumn != null) {
                 query.append(", ");
                 query.append(timestampColumn);
@@ -228,7 +233,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         case TIMESTAMP:
             /* If we don't have timestamps, we return in any order. */
             if (timestampColumn != null) {
-                query.append(" ORDER BY " + timestampColumn);
+                query.append(" ORDER BY ").append(timestampColumn);
             }
             break;
         default:
@@ -236,13 +241,17 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         }
     }
 
+    /**
+     * Finish a query (append a semicolon).
+     *
+     * @param query The query accumulator
+     */
     protected void rqFinish(StringBuilder query) {
         query.append(";");
     }
 
     @Override
-    public PreparedStatement prepareEvents(Connection dbc, SortOrder order)
-            throws SQLException {
+    public PreparedStatement prepareEvents(Connection dbc, SortOrder order) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         rqAddOrder(query, order);
@@ -252,22 +261,20 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareUserEvents(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareUserEvents(Connection dbc) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
-        query.append(" WHERE " + userColumn + " = ?");
+        query.append(" WHERE ").append(userColumn).append(" = ?");
         rqFinish(query);
         logger.debug("User rating query: {}", query);
         return dbc.prepareStatement(query.toString());
     }
 
     @Override
-    public PreparedStatement prepareItemEvents(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareItemEvents(Connection dbc) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
-        query.append(" WHERE " + itemColumn + " = ?");
+        query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
         return dbc.prepareStatement(query.toString());

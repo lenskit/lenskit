@@ -25,25 +25,26 @@ import java.util.List;
 
 /**
  * Partition a list by fraction.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * @param <E>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class FractionPartition<E> implements PartitionAlgorithm<E> {
-	
-	private double fraction;
 
-	/**
-	 * The fraction to hold out (put in the second partition).
-	 * @param f The fraction of users to hold out.
-	 */
-	public FractionPartition(double f) {
-		fraction = f;
-	}
+    private double fraction;
 
-	@Override
-	public int partition(List<E> data) {
-		int n = (int) round(data.size() * fraction);
-		return max(0, data.size() - n);
-	}
+    /**
+     * The fraction to hold out (put in the second partition).
+     *
+     * @param f The fraction of users to hold out.
+     */
+    public FractionPartition(double f) {
+        fraction = f;
+    }
+
+    @Override
+    public int partition(List<E> data) {
+        int n = (int) round(data.size() * fraction);
+        return max(0, data.size() - n);
+    }
 }

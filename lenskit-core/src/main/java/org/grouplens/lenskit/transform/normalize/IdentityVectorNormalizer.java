@@ -27,8 +27,8 @@ import java.io.Serializable;
 
 /**
  * Identity normalization (makes no change).
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 @Singleton

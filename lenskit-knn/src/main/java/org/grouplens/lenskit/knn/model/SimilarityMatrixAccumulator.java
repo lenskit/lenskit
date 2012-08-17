@@ -28,8 +28,9 @@ public interface SimilarityMatrixAccumulator {
 
     /**
      * Store an entry in the similarity matrix.
-     * @param i The matrix row (an item ID).
-     * @param j The matrix column (an item ID).
+     *
+     * @param i   The matrix row (an item ID).
+     * @param j   The matrix column (an item ID).
      * @param sim The similarity between items {@code j} and {@code i}. As documented in the
      *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
      */
@@ -46,6 +47,7 @@ public interface SimilarityMatrixAccumulator {
 
     /**
      * Moves the result matrix into a SimilarityMatrixModel.
+     *
      * @return The resulting SimilarityMatrixModel.
      */
     public SimilarityMatrixModel build();

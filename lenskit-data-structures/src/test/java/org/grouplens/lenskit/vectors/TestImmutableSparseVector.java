@@ -23,13 +23,13 @@ import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestImmutableSparseVector extends SparseVectorTestCommon {
     @Override
@@ -62,22 +62,22 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.get(15), notANumber());
     }
-    
+
     @Test
     public void testImmutable() {
         ImmutableSparseVector v = simpleVector();
         assertThat(v.immutable(), sameInstance(v));
     }
-    
+
     @Test
     public void testOverSize() {
         long[] keys = {3, 7, 9};
-        double[] values = { Math.PI, Math.E, 0.42 };
+        double[] values = {Math.PI, Math.E, 0.42};
         ImmutableSparseVector v = ImmutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());
-        assertThat(v.get(3), closeTo(Math.PI));        
+        assertThat(v.get(3), closeTo(Math.PI));
         assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }

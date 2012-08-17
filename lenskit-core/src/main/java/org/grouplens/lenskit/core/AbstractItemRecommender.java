@@ -38,14 +38,23 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * fastutil-based interfaces.
  */
 public abstract class AbstractItemRecommender implements ItemRecommender {
+    /**
+     * The DAO provided at construct time.
+     */
     protected final DataAccessObject dao;
 
+    /**
+     * Initialize the recommender.
+     *
+     * @param dao The DAO.
+     */
     protected AbstractItemRecommender(DataAccessObject dao) {
         this.dao = dao;
     }
 
     /**
-     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(long user) {
@@ -53,7 +62,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(long user, int n) {
@@ -61,7 +71,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(long user, Set<Long> candidates) {
@@ -69,18 +80,21 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(long, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList recommend(long user, int n, Set<Long> candidates,
-                                    Set<Long> exclude) {
+    public ScoredLongList recommend(long user, int n,
+                                    @Nullable Set<Long> candidates,
+                                    @Nullable Set<Long> exclude) {
         LongSet cs = CollectionUtils.fastSet(candidates);
         LongSet es = CollectionUtils.fastSet(exclude);
         return recommend(user, n, cs, es);
     }
 
     /**
-     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(UserHistory<? extends Event> ratings) {
@@ -88,7 +102,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(UserHistory<? extends Event> ratings, int n) {
@@ -96,7 +111,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(UserHistory<? extends Event> ratings, Set<Long> candidates) {
@@ -104,11 +120,12 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     }
 
     /**
-     * Delegate to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #recommend(UserHistory, int, LongSet, LongSet)}.
      */
     @Override
     public ScoredLongList recommend(UserHistory<? extends Event> ratings, int n,
-            Set<Long> candidates, Set<Long> exclude) {
+                                    Set<Long> candidates, Set<Long> exclude) {
         LongSet cs = CollectionUtils.fastSet(candidates);
         LongSet es = CollectionUtils.fastSet(exclude);
         return recommend(ratings, n, cs, es);
@@ -116,7 +133,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 
 
     /**
-     * Return <tt>true</tt>, indicating this recommender can use histories.
+     * {@inheritDoc}
+     * <p>This implementation returns {@code true}, indicating this recommender can use histories.
      * Override this if the recommender actually doesn't.
      */
     @Override
@@ -130,17 +148,17 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * {@link #recommend(UserHistory, int, LongSet, LongSet)} with a history
      * obtained by {@link #getUserHistory(long)}.
      *
-     * @param user The user ID.
-     * @param n The number of items to return, or negative to return all
-     *        possible items.
+     * @param user       The user ID.
+     * @param n          The number of items to return, or negative to return all
+     *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude The set of excluded items, or <tt>null</tt> to use the
-     *        default exclude set.
+     * @param exclude    The set of excluded items, or <tt>null</tt> to use the
+     *                   default exclude set.
      * @return A list of <tt>ScoredId</tt> objects representing recommended
      *         items.
      * @see ItemRecommender#recommend(long, int, Set, Set)
      */
-    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
+    protected ScoredLongList recommend(long user, int n, @Nullable LongSet candidates, @Nullable LongSet exclude) {
         return recommend(getUserHistory(user), n, candidates, exclude);
     }
 
@@ -159,19 +177,17 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     /**
      * Implementation method for recommender services.
      *
-     * @param ratings The user rating vector.
-     * @param n The number of items to return, or negative to return all
-     *        possible items.
+     * @param ratings    The user rating vector.
+     * @param n          The number of items to return, or negative to return all
+     *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude The set of excluded items, or <tt>null</tt> for the
-     *        default exclude set.
+     * @param exclude    The set of excluded items, or <tt>null</tt> for the
+     *                   default exclude set.
      * @return The recommendations with associated scores.
      * @see ItemRecommender#recommend(UserHistory, int, Set, Set)
      */
     protected abstract ScoredLongList recommend(UserHistory<? extends Event> ratings, int n,
                                                 @Nullable LongSet candidates,
                                                 @Nullable LongSet exclude);
-    
 
-    
 }

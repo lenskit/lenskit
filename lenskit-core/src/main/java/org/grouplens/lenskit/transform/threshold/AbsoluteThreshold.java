@@ -29,15 +29,20 @@ import javax.inject.Inject;
  */
 @Shareable
 public class AbsoluteThreshold implements Threshold {
+    private final double value;
 
-    private final double thresholdValue;
-
+    /**
+     * Construct a new absolute-value threshold.
+     *
+     * @param threshold The threshold valud.
+     */
     @Inject
-    public AbsoluteThreshold(@ThresholdValue double thresholdValue) {
-        this.thresholdValue = thresholdValue;
+    public AbsoluteThreshold(@ThresholdValue double threshold) {
+        this.value = threshold;
     }
 
+    @Override
     public boolean retain(double sim) {
-        return Math.abs(sim) > thresholdValue;
+        return Math.abs(sim) > value;
     }
 }

@@ -29,6 +29,8 @@ import java.util.List;
  */
 public interface Table extends List<Row> {
     Table filter(String header, Object data);
+
     Column column(String col);
+
     List<String> getHeader();
 }

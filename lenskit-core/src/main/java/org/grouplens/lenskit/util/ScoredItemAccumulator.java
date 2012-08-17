@@ -22,11 +22,13 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 
 /**
  * Accumulate a sorted list of scored items.
+ *
  * @author Michael Ekstrand
  */
 public interface ScoredItemAccumulator {
     /**
      * Query whether the accumulator is empty.
+     *
      * @return <tt>true</tt> if the accumulator has no items.
      */
     boolean isEmpty();
@@ -44,7 +46,7 @@ public interface ScoredItemAccumulator {
      * <strong>not</strong> replace the previous entry - it adds a new entry
      * with the same ID.
      *
-     * @param item The item to add to the accumulator.
+     * @param item  The item to add to the accumulator.
      * @param score The item's score.
      */
     void put(long item, double score);

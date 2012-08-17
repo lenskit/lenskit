@@ -60,10 +60,10 @@ public class TestCosineSimilarity {
         long[] k2 = {3, 4, 7};
         double[] val2 = {1, 3, 2};
         SparseVector v1, v2;
-        v1 = ImmutableSparseVector.wrap(k1,val1);
-        v2 = ImmutableSparseVector.wrap(k2,val2);
-        assertEquals(0, similarity.similarity(v1,v2), EPSILON);
-        assertEquals(0, dampedSimilarity.similarity(v1,v2), EPSILON);
+        v1 = ImmutableSparseVector.wrap(k1, val1);
+        v2 = ImmutableSparseVector.wrap(k2, val2);
+        assertEquals(0, similarity.similarity(v1, v2), EPSILON);
+        assertEquals(0, dampedSimilarity.similarity(v1, v2), EPSILON);
     }
 
     @Test

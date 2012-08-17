@@ -18,10 +18,10 @@
  */
 package org.grouplens.lenskit.svd;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -33,7 +33,9 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -45,145 +47,136 @@ import java.util.Collection;
  * user's ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class FunkSVDRatingPredictor extends AbstractItemScorer implements RatingPredictor {
-	
-	protected final FunkSVDModel model;
+
+    protected final FunkSVDModel model;
     private DataAccessObject dao;
     private final int featureCount;
     private final ClampingFunction clamp;
-    
+
     private UpdateRule trainer;
-    
-    
+
+
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model, UpdateRule trainer) {
         super(dao);
         this.dao = dao;
         this.model = model;
         this.trainer = trainer;
-        
+
         featureCount = model.featureCount;
         clamp = model.clampingFunction;
     }
 
-    
+
     /**
      * Predict for a user using their preference array and history vector.
-     * 
-     * @param user The user's ID
-     * @param ratings The user's rating vector.
+     *
+     * @param user   The user's ID
      * @param uprefs The user's preference array from the model.
-     * @param items The items to predict for.
-     * @return The user's predictions.
+     * @param output The output vector, whose key domain is the items to predict for. It must
+     *               be initialized to the user's baseline predictions.
      */
-    private MutableSparseVector predict(long user, SparseVector ratings,
-    									double[] uprefs, Collection<Long> items) {
-    	LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
-
-        MutableSparseVector preds = model.baseline.predict(user, ratings, items);
-        LongIterator iter = iset.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+    private void predict(long user, double[] uprefs, MutableSparseVector output) {
+        for (VectorEntry e : output.fast()) {
+            final long item = e.getKey();
             final int iidx = model.itemIndex.getIndex(item);
-            
+
             if (iidx < 0) {
                 continue;
             }
 
-            double score = preds.get(item);
+            double score = e.getValue();
             for (int f = 0; f < featureCount; f++) {
                 score += uprefs[f] * model.itemFeatures[f][iidx];
                 score = clamp.apply(user, item, score);
             }
-            preds.set(item, score);
+            output.set(e, score);
         }
-
-        return preds;
     }
-    
-    
+
     /**
-     * Predict from a user ID and preference array. Delegates to
-     * {@link #predict(long, SparseVector, double[], Collection)}.
+     * Get estimates for all a user's ratings and the target items.
+     *
+     * @param user    The user ID.
+     * @param ratings The user's ratings.
+     * @param items   The target items.
+     * @return Baseline predictions for all items either in the target set or the set of
+     *         rated items.
      */
-    private MutableSparseVector predict(long user, double[] uprefs, Collection<Long> items) {
-        return predict(user,
-                       Ratings.userRatingVector(dao.getUserEvents(user, Rating.class)),
-                       uprefs, items);
+    private MutableSparseVector initialEstimates(long user, SparseVector ratings, LongSet items) {
+        LongSet allItems = new LongOpenHashSet(items);
+        allItems.addAll(ratings.keySet());
+        MutableSparseVector estimates = new MutableSparseVector(allItems);
+        model.baseline.predict(user, ratings, estimates);
+        return estimates;
     }
 
     @Override
-    public MutableSparseVector score(UserHistory<? extends Event> userHistory, Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> userHistory,
+                      @Nonnull MutableSparseVector scores) {
         long user = userHistory.getUserId();
         int uidx = model.userIndex.getIndex(user);
         SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
-        
-        MutableSparseVector estimates = model.baseline.predict(user, ratings, ratings.keySet());
-        if (ratings.isEmpty() && uidx < 0) {
-        	return estimates;
+
+        MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
+        // propagate estimates to the output scores
+        scores.set(estimates);
+        if (uidx < 0 && ratings.isEmpty()) {
+            // no real work to do, stop with baseline predictions
+            return;
         }
-        
-        double[] uprefs = new double[featureCount];
-        if (uidx < 0){
-    		uprefs = model.averUserFeatures;
-    	} else{
-    		for (int i = 0; i < featureCount; i++) {
-        		uprefs[i] = model.userFeatures[i][uidx];
-        	}
-    	}
-        
-        if (!ratings.isEmpty()){
-        	for (int f = 0; f < featureCount; f++){
-	    		trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
-	    	}
-		}
-        
-        return predict(user, uprefs, items);
+
+        double[] uprefs;
+        if (uidx < 0) {
+            uprefs = DoubleArrays.copy(model.averUserFeatures);
+        } else {
+            uprefs = new double[featureCount];
+            for (int i = 0; i < featureCount; i++) {
+                uprefs[i] = model.userFeatures[i][uidx];
+            }
+        }
+
+        if (!ratings.isEmpty()) {
+            for (int f = 0; f < featureCount; f++) {
+                trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
+            }
+        }
+
+        // scores are the estimates, uprefs are trained up.
+        predict(user, uprefs, scores);
     }
 
-    
-    @Override
-    public MutableSparseVector score(long user, Collection<Long> items) {
-        return score(dao.getUserHistory(user), items);
-    }
-    
-    
     private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
-                                  MutableSparseVector estimates, int feature, UpdateRule trainer){
+                                  MutableSparseVector estimates, int feature, UpdateRule trainer) {
         trainer.reset();
-    	while (trainer.nextEpoch()) {
-        	for (VectorEntry itemId: ratings.fast()) {
-        		final long item = itemId.getKey();
-        		final int iidx = model.itemIndex.getIndex(item);
-        		
-        		// Step 1: Compute the trailing value for this item-feature pair
-            	double trailingValue = 0.0;
-            	for (int f = feature + 1; f < featureCount; f++) {
-            		trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
-            	}
-        	
-        		// Step 2: Save the old feature values before computing the new ones 
-            	final double ouf = uprefs[feature];
-            	final double oif = model.itemFeatures[feature][iidx];
-            
-            	// Step 3: Compute the err
-            	// Notice the trainer.compute method should always be called before
+        while (trainer.nextEpoch()) {
+            for (VectorEntry itemId : ratings.fast()) {
+                final long item = itemId.getKey();
+                final int iidx = model.itemIndex.getIndex(item);
+
+                // Step 1: Compute the trailing value for this item-feature pair
+                double trailingValue = 0.0;
+                for (int f = feature + 1; f < featureCount; f++) {
+                    trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
+                }
+
+                // Step 2: Save the old feature values before computing the new ones
+                final double ouf = uprefs[feature];
+                final double oif = model.itemFeatures[feature][iidx];
+
+                // Step 3: Compute the err
+                // Notice the trainer.compute method should always be called before
                 // 	updating the feature values in step 4, since this method
                 //  renew the internal feature values that will be used in step 4
-            	final double ratingValue = itemId.getValue();
-            	final double estimate = estimates.get(item);
-            	trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
+                final double ratingValue = itemId.getValue();
+                final double estimate = estimates.get(item);
+                trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
 
-            	// Step 4: Return updated user feature value
-            	uprefs[feature] += trainer.getUserUpdate(); 
-        	}
+                // Step 4: Return updated user feature value
+                uprefs[feature] += trainer.getUserUpdate();
+            }
         }
 
         // After training this feature, we need to update each rating's cached

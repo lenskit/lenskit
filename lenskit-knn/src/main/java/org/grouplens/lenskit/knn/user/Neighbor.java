@@ -24,8 +24,8 @@ import java.util.Comparator;
 
 /**
  * Representation of a single neighboring user.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class Neighbor {
     public final long user;
@@ -34,8 +34,9 @@ public class Neighbor {
 
     /**
      * Construct a new neighbor.
-     * @param u The neighbor's ID.
-     * @param v The neighbor's unnormalized rating vector.
+     *
+     * @param u   The neighbor's ID.
+     * @param v   The neighbor's unnormalized rating vector.
      * @param sim The neighbor's similarity to the query user.
      */
     public Neighbor(long u, SparseVector v, double sim) {

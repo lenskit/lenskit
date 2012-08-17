@@ -31,9 +31,8 @@ import java.io.Serializable;
 
 /**
  * Similarity function using Spearman rank correlation.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
@@ -65,7 +64,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
         MutableSparseVector rank = vec.mutableCopy();
         // assign ranks to each item
         for (int i = 0; i < n; i++) {
-            rank.set(ids[i], i+1);
+            rank.set(ids[i], i + 1);
             values[i] = vec.get(ids[i]);
         }
 
@@ -73,14 +72,16 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
         int i = 0;
         while (i < n) {
             int j;
-            for (j = i+1; j < n; j++) {
-                if (values[j] != values[i])
+            for (j = i + 1; j < n; j++) {
+                if (values[j] != values[i]) {
                     break;
+                }
             }
             if (j - i > 1) {
-                double r2 = (rank.get(ids[i]) + rank.get(ids[j-1])) / (j - i);
-                for (int k = i; k < j; k++)
+                double r2 = (rank.get(ids[i]) + rank.get(ids[j - 1])) / (j - i);
+                for (int k = i; k < j; k++) {
                     rank.set(ids[k], r2);
+                }
             }
             i = j;
         }

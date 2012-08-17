@@ -45,11 +45,10 @@ import static java.lang.Math.log;
  * <p>nDCG is computed per-user and then averaged over all users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class NDCGPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
-    private static final String[] COLUMNS = { "nDCG" };
+    private static final String[] COLUMNS = {"nDCG"};
 
     @Override
     public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -80,10 +79,11 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             final long item = iit.nextLong();
             final double v = values.get(item);
             rank++;
-            if (rank < 2)
+            if (rank < 2) {
                 gain += v;
-            else
+            } else {
                 gain += v * lg2 / log(rank);
+            }
         }
 
         return gain;

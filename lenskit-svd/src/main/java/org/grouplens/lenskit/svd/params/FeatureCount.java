@@ -34,6 +34,7 @@ import org.grouplens.grapht.annotation.DefaultInteger;
 @Documented
 @DefaultInteger(40)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FeatureCount { }
+public @interface FeatureCount {
+}

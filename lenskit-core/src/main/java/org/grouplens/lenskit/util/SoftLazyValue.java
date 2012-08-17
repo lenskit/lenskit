@@ -29,9 +29,8 @@ import java.util.concurrent.Callable;
 /**
  * A thread-safe lazy value class using soft references. Like {@link LazyValue},
  * but it recomputes its value if it is garbage collected.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
  */
 public class SoftLazyValue<T> implements Supplier<T> {
     private volatile Reference<T> value;
@@ -39,10 +38,10 @@ public class SoftLazyValue<T> implements Supplier<T> {
 
     /**
      * Create a lazy value whose value will be provided by a callable.
-     * 
+     *
      * @param f The callable responsible for providing the lazy value. The
-     *        callable's {@link Callable#call()} method cannot return
-     *        <tt>null</tt>.
+     *          callable's {@link Callable#call()} method cannot return
+     *          <tt>null</tt>.
      */
     public SoftLazyValue(@Nonnull Callable<T> f) {
         provider = f;
@@ -50,6 +49,7 @@ public class SoftLazyValue<T> implements Supplier<T> {
 
     /**
      * Get the value, computing it if necessary.
+     *
      * @return The value returned by the callable.
      */
     @Override
@@ -63,7 +63,7 @@ public class SoftLazyValue<T> implements Supplier<T> {
                 throw Throwables.propagate(e);
             }
         }
-        
+
         return val;
     }
 }

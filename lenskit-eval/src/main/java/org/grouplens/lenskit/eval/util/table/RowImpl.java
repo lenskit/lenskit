@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-class RowImpl extends AbstractMap<String, Object> implements Row{
+class RowImpl extends AbstractMap<String, Object> implements Row {
     private final ArrayList<Object> row = new ArrayList<Object>();
     private final HashMap<String, Integer> header;
 
@@ -40,12 +40,12 @@ class RowImpl extends AbstractMap<String, Object> implements Row{
     }
 
     @Override
-    public Object value(String key){
+    public Object value(String key) {
         return row.get(header.get(key));
     }
 
     @Override
-    public Object value(int idx){
+    public Object value(int idx) {
         return row.get(idx);
     }
 

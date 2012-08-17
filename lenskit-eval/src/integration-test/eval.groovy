@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.baseline.UserMeanPredictor
 import org.grouplens.lenskit.baseline.ItemMeanPredictor
@@ -51,7 +52,7 @@ def result = trainTest {
     dataset ml100k
 
     numRecs 5
-    
+
     metric CoveragePredictMetric
     metric MAEPredictMetric
     metric RMSEPredictMetric

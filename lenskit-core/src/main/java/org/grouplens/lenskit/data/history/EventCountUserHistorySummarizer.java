@@ -18,26 +18,25 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-
-import javax.annotation.Nonnull;
-import javax.inject.Singleton;
-
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-
-import com.google.common.collect.Iterables;
+import org.grouplens.lenskit.params.EventType;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Summarize a history by counting all events referencing an item.  The history
  * can be filtered by type prior to counting.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Shareable
 @Singleton
@@ -47,15 +46,18 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
     /**
      * Create a summarizer that counts all events.
      */
+    @SuppressWarnings("unused")
     public EventCountUserHistorySummarizer() {
         this(Event.class);
     }
 
     /**
      * Create a summarizer that counts events of a particular type.
-     * @param type
+     *
+     * @param type The type of event to count.
      */
-    public EventCountUserHistorySummarizer(@Nonnull Class<? extends Event> type) {
+    @Inject
+    public EventCountUserHistorySummarizer(@EventType @Nonnull Class<? extends Event> type) {
         wantedType = type;
     }
 
@@ -67,7 +69,7 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
     @Override
     public SparseVector summarize(UserHistory<? extends Event> history) {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
-        for (Event e: Iterables.filter(history, wantedType)) {
+        for (Event e : Iterables.filter(history, wantedType)) {
             final long iid = e.getItemId();
             map.put(iid, map.get(iid) + 1);
         }

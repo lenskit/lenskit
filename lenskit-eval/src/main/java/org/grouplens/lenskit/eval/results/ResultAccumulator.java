@@ -22,8 +22,8 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
 
 /**
  * Result accumulator for test runs.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface ResultAccumulator {
     AlgorithmTestAccumulator makeAlgorithmAccumulator(AlgorithmInstance algo);

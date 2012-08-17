@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
+
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -38,21 +39,28 @@ import java.util.Map;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @BuilderCommand(AlgorithmInstanceCommand.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-    private final @Nullable String algoName;
-    private final @Nonnull LenskitRecommenderEngineFactory factory;
-    private final @Nonnull Map<String,Object> attributes;
+    private final
+    @Nullable
+    String algoName;
+    private final
+    @Nonnull
+    LenskitRecommenderEngineFactory factory;
+    private final
+    @Nonnull
+    Map<String, Object> attributes;
     private final boolean preload;
 
     public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
-        this(name, factory, Collections.<String,Object>emptyMap(), false);
+        this(name, factory, Collections.<String, Object>emptyMap(), false);
     }
 
-    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String,Object> attributes, boolean preload) {
+    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String, Object> attributes, boolean preload) {
         algoName = name;
         this.factory = factory;
         this.attributes = attributes;
@@ -62,6 +70,7 @@ public class AlgorithmInstance {
     /**
      * Get the name of this algorithm.  This returns a short name which is
      * used to identify the algorithm or instance.
+     *
      * @return The algorithm's name
      */
     public String getName() {
@@ -70,15 +79,16 @@ public class AlgorithmInstance {
 
     /**
      * Query whether this algorithm is to operate on in-memory data.
+     *
      * @return <tt>true</tt> if the ratings database should be loaded in-memory
-     * prior to running.
+     *         prior to running.
      */
     public boolean getPreload() {
         return preload;
     }
 
     @Nonnull
-    public Map<String,Object> getAttributes() {
+    public Map<String, Object> getAttributes() {
         return attributes;
     }
 

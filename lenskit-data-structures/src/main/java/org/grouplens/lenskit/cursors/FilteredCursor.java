@@ -22,33 +22,30 @@ import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Predicate;
 
-/**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- */
 class FilteredCursor<T> extends AbstractPollingCursor<T> {
-	private final Cursor<T> cursor;
-	private final Predicate<? super T> filter;
-	
-	public FilteredCursor(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> filter) {
-	    super();
-		this.cursor = cursor;
-		this.filter = filter;
-	}
-	
-	@Override
-	public void close() {
-		cursor.close();
-	}
+    private final Cursor<T> cursor;
+    private final Predicate<? super T> filter;
+
+    public FilteredCursor(@WillCloseWhenClosed Cursor<T> cur, Predicate<? super T> filt) {
+        super();
+        cursor = cur;
+        filter = filt;
+    }
+
+    @Override
+    public void close() {
+        cursor.close();
+    }
 
     @Override
     protected T poll() {
-        while(cursor.hasNext()) {
-            T next = cursor.next();
-            if (filter.apply(next))
+        while (cursor.hasNext()) {
+            final T next = cursor.next();
+            if (filter.apply(next)) {
                 return next;
+            }
         }
-        
+
         // Reached the end of the base cursor, so return null
         return null;
     }

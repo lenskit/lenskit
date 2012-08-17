@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
-    private static final String[] COLUMNS = { "HLUtility" };
-    
+    private static final String[] COLUMNS = {"HLUtility"};
+
     private double alpha;
 
     public HLUtilityPredictMetric(double newAlpha) {
@@ -47,7 +47,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
@@ -65,7 +65,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         while (itemIterator.hasNext()) {
             final double v = values.get(itemIterator.nextLong());
             rank++;
-            utility += v/Math.pow(2,(rank-1)/(alpha-1));
+            utility += v / Math.pow(2, (rank - 1) / (alpha - 1));
         }
         return utility;
     }
@@ -85,7 +85,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);
             double actualUtility = computeHLU(actual, ratings);
-            double u = actualUtility/idealUtility;
+            double u = actualUtility / idealUtility;
             total += u;
             nusers++;
             return new Object[]{u};
@@ -93,7 +93,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
 
         @Override
         public Object[] finalResults() {
-            double v = total/nusers;
+            double v = total / nusers;
             logger.info("HLU: {}", v);
             return new Object[]{v};
         }

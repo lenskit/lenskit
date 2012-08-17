@@ -45,7 +45,6 @@ import javax.inject.Inject;
  *
  * <p>
  * Recommendations are returned in descending order of score.
- *
  */
 public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
@@ -96,12 +95,11 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
     }
-    
 
     /**
      * Pick the top <var>n</var> items from a score vector.
      *
-     * @param n The number of items to recommend.
+     * @param n      The number of items to recommend.
      * @param scores The scored item vector.
      * @return The top <var>n</var> items from <var>scores</var>, in descending
      *         order of score.
@@ -114,9 +112,9 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         if (n < 0) {
             n = scores.size();
         }
-        
+
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (VectorEntry pred: scores.fast()) {
+        for (VectorEntry pred : scores.fast()) {
             final double v = pred.getValue();
             accum.put(pred.getKey(), v);
         }
@@ -144,12 +142,12 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      */
     protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
         LongSet excludes = new LongOpenHashSet();
-        for (Rating r: Iterables.filter(user, Rating.class)) {
+        for (Rating r : Iterables.filter(user, Rating.class)) {
             excludes.add(r.getItemId());
         }
         return excludes;
     }
-    
+
     /**
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
@@ -161,7 +159,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(long user) {
         return Cursors.makeSet(dao.getItems());
     }
-  
 
     /**
      * Determine the items for which predictions can be made for a certain user.
@@ -174,5 +171,4 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return Cursors.makeSet(dao.getItems());
     }
-
 }

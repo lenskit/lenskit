@@ -24,15 +24,15 @@ import java.util.List;
  * Partitioning algorithm for an ordered sequence of stuff. Partition
  * algorithms are typically used to hold out some items by putting
  * them into the second partition.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface PartitionAlgorithm<E> {
-	/**
-	 * Compute a partition of some data.
-	 * @param data The data to partition.
-	 * @return The index of the start of the second partition.
-	 */
-	int partition(List<E> data);
+    /**
+     * Compute a partition of some data.
+     *
+     * @param data The data to partition.
+     * @return The index of the start of the second partition.
+     */
+    int partition(List<E> data);
 }

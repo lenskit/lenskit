@@ -23,8 +23,8 @@ import org.grouplens.lenskit.data.Event;
 import com.google.common.primitives.Longs;
 
 /**
+ * Abstract base class for implementing events.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public abstract class AbstractEvent implements Event {
     @Override
@@ -40,18 +40,5 @@ public abstract class AbstractEvent implements Event {
     @Override
     public int hashCode() {
         return Longs.hashCode(getId());
-    }
-
-    /**
-     * Default clone implementation; hands off to {@link Object#clone()}.
-     * @return The cloned event.
-     */
-    @Override
-    public Event clone() {
-        try {
-            return (Event) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError("Rating not cloneable");
-        }
     }
 }

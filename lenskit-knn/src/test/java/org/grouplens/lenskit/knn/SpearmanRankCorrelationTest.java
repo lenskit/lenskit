@@ -30,7 +30,6 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class SpearmanRankCorrelationTest {
 
@@ -49,8 +48,8 @@ public class SpearmanRankCorrelationTest {
 
     @Test
     public void testRankSeveral() {
-        long[] keys = { 1, 2, 3, 4, 5 };
-        double[] values = { 7, 2, 3, 1, 5};
+        long[] keys = {1, 2, 3, 4, 5};
+        double[] values = {7, 2, 3, 1, 5};
         SparseVector v = ImmutableSparseVector.wrap(keys, values);
         SparseVector r = rank(v);
         assertEquals(5, r.size());
@@ -63,8 +62,8 @@ public class SpearmanRankCorrelationTest {
 
     @Test
     public void testRankTie() {
-        long[] keys = { 1, 2, 3, 4, 5 };
-        double[] values = { 7, 2, 3, 1, 3};
+        long[] keys = {1, 2, 3, 4, 5};
+        double[] values = {7, 2, 3, 1, 3};
         SparseVector v = ImmutableSparseVector.wrap(keys, values);
         SparseVector r = rank(v);
         assertEquals(5, r.size());

@@ -18,12 +18,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static java.lang.Math.abs;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -31,8 +25,13 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+
+import static java.lang.Math.abs;
 
 /**
  * Rating scorer that returns the user's average rating for all predictions.
@@ -42,12 +41,12 @@ import org.slf4j.LoggerFactory;
  * the global mean for the returned prediction.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultProvider(UserMeanPredictor.Provider.class)
 @Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
+
     /**
      * A builder that creates UserMeanPredictors.
      *
@@ -56,7 +55,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -88,30 +87,39 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
-        * @param globalMean The mean rating value for all items.
-        * @param damping A damping term for the calculations.
+     *
+     * @param globalMean The mean rating value for all items.
+     * @param damping    A damping term for the calculations.
      */
     public UserMeanPredictor(double globalMean, double damping) {
         super(globalMean);
-    	this.globalMean = globalMean;
+        this.globalMean = globalMean;
         this.smoothing = damping;
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
-        if (ratings.isEmpty()) return globalMean;
-        return (ratings.sum() + smoothing*globalMean) / (ratings.size() + smoothing);
+        if (ratings.isEmpty()) {
+            return globalMean;
+        }
+        return (ratings.sum() + smoothing * globalMean) / (ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user,
-                                       SparseVector ratings,
-                                       Collection<Long> items) {
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output, boolean predictSet) {
         double mean = average(ratings, globalMean, smoothing);
+        //noinspection AssertWithSideEffects
         assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
-        return ConstantPredictor.constantPredictions(items, mean);
+        if (predictSet) {
+            output.fill(mean);
+        } else {
+            for (VectorEntry e : output.fast(VectorEntry.State.UNSET)) {
+                output.set(e, mean);
+            }
+        }
     }
 
     @Override

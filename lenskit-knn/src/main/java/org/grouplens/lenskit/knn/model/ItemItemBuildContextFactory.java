@@ -58,6 +58,7 @@ public class ItemItemBuildContextFactory {
 
     /**
      * Constructs and returns a new ItemItemBuildContext.
+     *
      * @return a new ItemItemBuildContext.
      */
     public ItemItemBuildContext buildContext() {
@@ -73,7 +74,7 @@ public class ItemItemBuildContextFactory {
         Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings(items);
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
-        for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
+        for (Long2ObjectMap.Entry<Long2DoubleMap> entry : CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
             Long2DoubleMap ratings = entry.getValue();
             SparseVector v = new ImmutableSparseVector(ratings);
             assert v.size() == ratings.size();
@@ -88,9 +89,10 @@ public class ItemItemBuildContextFactory {
     /**
      * Transpose the user matrix so we have a matrix of item ids
      * to ratings.
+     *
      * @param items A SortedSet of item ids to be mapped to ratings.
      * @return a Long2ObjectMap<Long2DoubleMap> encoding a matrix
-     *          of item ids to (userId: rating) pairs.
+     *         of item ids to (userId: rating) pairs.
      */
     private Long2ObjectMap<Long2DoubleMap> buildItemRatings(LongSortedSet items) {
         final int nitems = items.size();
@@ -105,20 +107,23 @@ public class ItemItemBuildContextFactory {
         }
 
         LongCursor userCursor = dao.getUsers();
-        while (userCursor.hasNext()) {
-            long uid = userCursor.nextLong();
-            SparseVector summary = userSummarizer.summarize(dao.getUserHistory(uid));
-            MutableSparseVector normed = summary.mutableCopy();
-            normalizer.normalize(uid, summary, normed);
+        try {
+            while (userCursor.hasNext()) {
+                long uid = userCursor.nextLong();
+                SparseVector summary = userSummarizer.summarize(dao.getUserHistory(uid));
+                MutableSparseVector normed = summary.mutableCopy();
+                normalizer.normalize(uid, summary, normed);
 
-            for (VectorEntry rating: normed.fast()) {
-                final long item = rating.getKey();
-                // get the item's rating vector
-                Long2DoubleMap ivect = workMatrix.get(item);
-                ivect.put(uid, rating.getValue());
+                for (VectorEntry rating : normed.fast()) {
+                    final long item = rating.getKey();
+                    // get the item's rating vector
+                    Long2DoubleMap ivect = workMatrix.get(item);
+                    ivect.put(uid, rating.getValue());
+                }
             }
+        } finally {
+            userCursor.close();
         }
-        userCursor.close();
 
         return workMatrix;
     }

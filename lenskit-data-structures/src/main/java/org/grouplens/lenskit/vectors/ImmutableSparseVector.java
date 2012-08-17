@@ -37,14 +37,14 @@ import org.grouplens.lenskit.collections.MoreArrays;
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @compat Public
  */
 @Immutable
 public class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -4740588973577998934L;
-    
+
     protected final long[] keys;
     protected double[] values;
     protected final int size;
@@ -60,9 +60,9 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
 
     /**
      * Create a new immutable sparse vector from a map of ratings.
-     * 
+     *
      * @param ratings The ratings to make a vector from. Its key set is used as
-     *        the vector's key domain.
+     *                the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
@@ -76,83 +76,89 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
             values[i] = ratings.get(keys[i]);
         }
     }
-    
+
     /**
      * Construct a new sparse vector from pre-existing arrays. These arrays must
      * be sorted in key order and cannot contain duplicate keys; this condition
      * is not checked.
-     * 
-     * @param keys The key array (will be the key domain).
-     * @param values The value array.
-     * @param size The length to actually use.
+     *
+     * @param ks The key array (will be the key domain).
+     * @param vs The value array.
+     * @param sz The length to actually use.
      */
-    protected ImmutableSparseVector(long[] keys, double[] values, int size) {    
-        this.keys = keys;
-        this.values = values;
-        this.size = size;
-        assert MoreArrays.isSorted(keys, 0, size);
+    protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
+        keys = ks;
+        values = vs;
+        size = sz;
+        assert MoreArrays.isSorted(ks, 0, sz);
     }
-    
+
     @Override
     public final double get(long key, double dft) {
-        int idx = Arrays.binarySearch(keys, 0, size, key);
-        if (idx >= 0)
+        final int idx = Arrays.binarySearch(keys, 0, size, key);
+        if (idx >= 0) {
             return values[idx];
-        else
+        } else {
             return dft;
+        }
     }
-    
+
     @Override
     public final boolean containsKey(long key) {
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
-    
+
     @Override
     public Iterator<VectorEntry> iterator() {
         return new IterImpl();
     }
-    
+
     @Override
     public Iterator<VectorEntry> fastIterator() {
         return new FastIterImpl();
     }
-    
+
+    @Override
+    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
+        return fastIterator();
+    }
+
     @Override
     public LongSortedSet keySet() {
         return LongSortedArraySet.wrap(keys, size);
     }
-    
+
     @Override
     public LongSortedSet keyDomain() {
         return keySet();
     }
-    
+
     @Override
     public DoubleList values() {
         return DoubleLists.unmodifiable(new DoubleArrayList(values, 0, size));
     }
-    
+
     @Override
     public int size() {
         return size;
     }
-    
+
     /**
-     * Reimplement {@link SparseVector#dot(SparseVector)} to use an optimized
-     * implementation when computing the dot product of two immutable sparse
-     * vectors.
-     * @see SparseVector#dot(SparseVector)
+     * {@inheritDoc}
+     * <p>This implementation uses an optimized implementation when computing
+     * the dot product of two immutable sparse vectors.
      */
     @Override
     public double dot(SparseVector o) {
         if (o instanceof ImmutableSparseVector) {
             // we can speed this up a lot
-            ImmutableSparseVector iv = (ImmutableSparseVector) o;
+            final ImmutableSparseVector iv = (ImmutableSparseVector) o;
             double dot = 0;
-            
+
             final int sz = size;
             final int osz = iv.size;
-            int i = 0, j = 0;
+            int i = 0;
+            int j = 0;
             while (i < sz && j < osz) {
                 final long k1 = keys[i];
                 final long k2 = iv.keys[j];
@@ -166,28 +172,29 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
                     j++;
                 }
             }
-            
+
             return dot;
         } else {
             return super.dot(o);
         }
     }
-    
+
     /**
-     * Reimplement {@link SparseVector#countCommonKeys(SparseVector)} to be more
-     * efficient when computing common keys of two immutable sparse vectors.
-     * @see SparseVector#countCommonKeys(SparseVector)
+     * {@inheritDoc}
+     * <p>Uses an optimized implementation when computing common keys of
+     * two immutable sparse vectors.
      */
     @Override
     public int countCommonKeys(SparseVector o) {
         if (o instanceof ImmutableSparseVector) {
             // we can speed this up a lot
-            ImmutableSparseVector iv = (ImmutableSparseVector) o;
+            final ImmutableSparseVector iv = (ImmutableSparseVector) o;
             int n = 0;
-            
+
             final int sz = size;
             final int osz = iv.size;
-            int i = 0, j = 0;
+            int i = 0;
+            int j = 0;
             while (i < sz && j < osz) {
                 final long k1 = keys[i];
                 final long k2 = iv.keys[j];
@@ -201,7 +208,7 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
                     j++;
                 }
             }
-            
+
             return n;
         } else {
             return super.countCommonKeys(o);
@@ -212,28 +219,31 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     public ImmutableSparseVector immutable() {
         return this;
     }
-    
+
     @Override
     public MutableSparseVector mutableCopy() {
         return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
     }
-    
-    final class IterImpl implements Iterator<VectorEntry> {
+
+    private final class IterImpl implements Iterator<VectorEntry> {
         int pos = 0;
+
         @Override
         public boolean hasNext() {
             return pos < size;
         }
+
         @Override
         public VectorEntry next() {
             if (hasNext()) {
-                VectorEntry e = new VectorEntry(keys[pos], values[pos]);
+                final VectorEntry e = new VectorEntry(keys[pos], values[pos]);
                 pos++;
                 return e;
             } else {
                 throw new NoSuchElementException();
             }
         }
+
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -242,11 +252,13 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
 
     final class FastIterImpl implements Iterator<VectorEntry> {
         int pos;
-        VectorEntry entry = new VectorEntry(0,0);
+        VectorEntry entry = new VectorEntry(0, 0);
+
         @Override
         public boolean hasNext() {
             return pos < size;
         }
+
         @Override
         public VectorEntry next() {
             if (hasNext()) {
@@ -257,39 +269,9 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
                 throw new NoSuchElementException();
             }
         }
+
         @Override
         public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private final class Entry implements Long2DoubleMap.Entry {
-        int pos;
-        public Entry(int p) {
-            pos = p;
-        }
-        @Override
-        public double getDoubleValue() {
-            return values[pos];
-        }
-        @Override
-        public long getLongKey() {
-            return keys[pos];
-        }
-        @Override
-        public double setValue(double value) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public Long getKey() {
-            return getLongKey();
-        }
-        @Override
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        @Override
-        public Double setValue(Double value) {
             throw new UnsupportedOperationException();
         }
     }

@@ -3,16 +3,51 @@
                          -------------------
                            Michael Ekstrand
                          -------------------
-                            June 14, 2011
+                           August 13, 2012
                          -------------------
 
 Versioning and API change policy
 
-  Until LensKit reaches version 1.0, the APIs may change somewhat as
-  development progresses.
-  
-  Once LensKit reaches 1.0, we will be adopting a policy with regards
-  to version numbers and API compatibility.  This policy will likely
-  be heavily influenced by {{{http://semver.org/}Semantic Versioning}}
-  (if we don't adopt semantic versioning wholesale), and will be
-  decided as we get closer to 1.0.
+  Until LensKit reaches version 1.0, APIs are liable to change.
+
+  Once LensKit reaches 1.0, we will be making certain guarantees about
+  the stability of certain interfaces. Component types and interfaces
+  are labelled with their compatibility (using the <<<@compat>>> JavaDoc
+  tag). Since LensKit APIs are intended both to be used and extended or
+  implemented, compatibility also depends on the use case.
+
+  LensKit version numbers have three components, <Major.Minor.Patch>. The
+  versioning is based on {{{http://semver.org}Semantic Versioning}}, adapted
+  for the needs of a framework and toolkit.
+
+  We define the following use cases:
+
+  [Clients] Client code is code that uses the LensKit APIs and algorithms
+  to provide recommendation services. It does not implement any LensKit
+  interfaces, other than perhaps the DAO.
+
+  [Implementers] Implementation code implements various LensKit APIs to provide
+  new algorithms. It may implement individual components of existing algorithms,
+  or reuse their components.
+
+  [Extenders] Extension code is level most closely coupled to LensKit's internals.
+  This is code that derives from the classes inside LensKit algorithm implementations,
+  is closely tied to them (re-implementing particularly internal components, etc.),
+  or extends the evaluator.
+
+  []
+
+  * For all components, binary- and source-incompatible changes will result in
+    at least a point version increase (1.x). 1.x.y releases, where y>1, will only
+    be bug fixes.
+
+  * Client code may need to update its recommender configurations across minor (1.x)
+    releases, but we will seek to minimize these changes and clearly document
+    any necessary changes in the release notes.
+
+  * Types designated “Compatibility: Public” will only have source- or binary-incompatible
+    changes for client code in new major releases of LensKit. Incompatible changes for
+    implementers or extenders will be associated with new minor versions and clearly
+    identified in the release notes.
+
+  []

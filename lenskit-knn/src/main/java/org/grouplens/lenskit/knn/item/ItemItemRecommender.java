@@ -31,13 +31,13 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * Recommend items using item-item collaborative filtering.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class ItemItemRecommender extends ScoreBasedItemRecommender {
     protected final ItemItemModelBackedScorer scorer;
 
     /**
      * Construct a new item-item recommender from a scorer.
+     *
      * @param scorer The scorer to use.
      */
     @Inject

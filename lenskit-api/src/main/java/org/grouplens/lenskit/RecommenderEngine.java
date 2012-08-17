@@ -23,14 +23,17 @@ package org.grouplens.lenskit;
  * Service providing access to a recommender.  In LensKit, you build a recommender
  * engine from a {@link RecommenderEngineFactory}, then use it to open recommenders.
  *
- * <p>Recommender engines can be shared across threads or sessions; they are
+ * <p>
+ * Recommender engines can be shared across threads or sessions; they are
  * long-lived objects that should be built once.  Recommenders are opened "per-request"
- * or per thread and provide access to the actual recommendation.</p>
+ * or per thread and provide access to the actual recommendation.
+ * </p>
  *
  * <p>Recommender engines do not hold connections to data sources.  The data
  * source is accessed by the factory, and then re-connected to the recommender
  * machinery in {@link #open()}.</p>
  *
+ * @compat Public
  * @see RecommenderEngineFactory
  * @see Recommender
  */
@@ -42,7 +45,7 @@ public interface RecommenderEngine {
      *
      * @return A recommender ready for use.
      * @throws IllegalStateException if the recommender requires a DAO and no
-     * DAO provider is available.
+     *                               DAO provider is available.
      */
     public Recommender open();
 }

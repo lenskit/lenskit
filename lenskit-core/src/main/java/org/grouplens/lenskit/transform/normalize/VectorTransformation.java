@@ -22,8 +22,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Reversible in-place vector transformations.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface VectorTransformation {
     /**

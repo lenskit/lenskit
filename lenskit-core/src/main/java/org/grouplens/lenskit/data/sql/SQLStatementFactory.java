@@ -41,7 +41,6 @@ import org.grouplens.lenskit.data.dao.SortOrder;
  * queries which return results in a defined format.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Immutable
 public interface SQLStatementFactory {
@@ -91,7 +90,7 @@ public interface SQLStatementFactory {
      * contain NULL values or to be omitted entirely. ID, user, item, and rating
      * columns must be non-null.
      *
-     * @param dbc The database connection
+     * @param dbc   The database connection
      * @param order The sort order
      */
     PreparedStatement prepareEvents(Connection dbc, SortOrder order)

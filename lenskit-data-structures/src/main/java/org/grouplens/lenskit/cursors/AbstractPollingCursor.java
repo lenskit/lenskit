@@ -18,37 +18,48 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import java.util.NoSuchElementException;
 
 /**
  * An extension of AbstractCursor that simplifies the mechanics of the
- * next()/hasNext() implementation to a simple method, poll().
- * 
- * @author Michael Ludwig
+ * next()/hasNext() implementation to a simple method, {@link #poll()}.
+ *
  * @param <T>
+ * @author Michael Ludwig
+ * @compat Public
  */
 public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     private boolean hasNextCalled;
     private T polled;
-    
+
+    /**
+     * Construct a cursor of unknown size.
+     */
     public AbstractPollingCursor() {
         super();
     }
-    
+
+    /**
+     * Construct a cursor with a known number of rows.
+     *
+     * @param rowCount The number of rows, or -1 for unknown size.
+     */
     public AbstractPollingCursor(int rowCount) {
         super(rowCount);
     }
-    
+
     @Override
     public boolean hasNext() {
         if (!hasNextCalled) {
             polled = poll();
             hasNextCalled = true;
         }
-        
+
         return polled != null;
     }
 
+    @Nonnull
     @Override
     public T fastNext() {
         if (!hasNextCalled) {
@@ -57,13 +68,14 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
         if (polled == null) {
             throw new NoSuchElementException();
         }
-        
-        T n = polled;
+
+        final T n = polled;
         polled = null;
         hasNextCalled = false;
         return n;
     }
 
+    @Nonnull
     @Override
     public T next() {
         return copy(fastNext());
@@ -72,8 +84,9 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
     /**
      * Return the next element in this Cursor, or null if there are no more
      * elements. This must be safe to call multiple times at the end of its
-     * collection.
-     * 
+     * collection. The same element object is allowed to be reused (fast
+     * iteration), so long as {@link #copy(Object)} copies objects.
+     *
      * @return The next element, or null
      */
     protected abstract T poll();
@@ -85,6 +98,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
      * method, and override this method to create a new copy of an object for when
      * {@link #next()} is called. Subclasses which return fresh objects on each
      * call to {@link #poll()} do not need to override this method.
+     *
      * @param obj The object to copy.
      * @return A copy of {@code obj}.
      */

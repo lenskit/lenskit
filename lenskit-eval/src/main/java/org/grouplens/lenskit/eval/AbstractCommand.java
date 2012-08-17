@@ -34,7 +34,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
     }
 
     public AbstractCommand(@Nonnull String name) {
-            this.name = name;
+        this.name = name;
     }
 
     public AbstractCommand setName(String name) {

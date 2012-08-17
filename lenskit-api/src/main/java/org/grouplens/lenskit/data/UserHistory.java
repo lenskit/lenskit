@@ -34,6 +34,7 @@ import com.google.common.base.Predicate;
  * computed properties of themselves.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 @ThreadSafe
 public interface UserHistory<E extends Event> extends List<E> {

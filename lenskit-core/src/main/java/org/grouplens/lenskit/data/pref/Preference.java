@@ -32,7 +32,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * contexts such as fast iteration.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public abstract class Preference {
     /**
@@ -59,6 +58,7 @@ public abstract class Preference {
     /**
      * Compare two preferences for equality. Preferences are equal if their users,
      * items, and values are equal.
+     *
      * @param obj The object to compare.
      * @return {@code true} if the object compares equal to this.
      */

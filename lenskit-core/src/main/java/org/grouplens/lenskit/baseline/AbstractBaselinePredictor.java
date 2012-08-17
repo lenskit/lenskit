@@ -16,35 +16,33 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.grouplens.lenskit.baseline;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
-import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
-import org.junit.Test;
+import java.util.Collection;
 
 /**
+ * Abstract implementation of BaselinePredictor.
+ *
  * @author Michael Ekstrand
  */
-public class TestPackedPreferenceData {
-    @Test
-    public void testChunk() {
-        assertThat(chunk(0), equalTo(0));
-        assertThat(chunk(39), equalTo(0));
-        assertThat(chunk(4095), equalTo(0));
-        assertThat(chunk(4096), equalTo(1));
-        assertThat(chunk(6938), equalTo(1));
-        assertThat(chunk(1 << 14), equalTo(4));
+public abstract class AbstractBaselinePredictor implements BaselinePredictor {
+    /**
+     * {@inheritDoc}
+     * <p>Implemented new-vector predict in terms of
+     * {@link #predict(long, SparseVector, MutableSparseVector)}.
+     */
+    @Override
+    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
+        MutableSparseVector v = new MutableSparseVector(items);
+        predict(user, ratings, v);
+        return v;
     }
 
-    @Test
-    public void testElement() {
-        assertThat(element(0), equalTo(0));
-        assertThat(element(39), equalTo(39));
-        assertThat(element(4095), equalTo(4095));
-        assertThat(element(4096), equalTo(0));
-        assertThat(element(6938), equalTo(6938 - 4096));
-        assertThat(element(1 << 14), equalTo(0));
+    @Override
+    public void predict(long user, SparseVector ratings, MutableSparseVector output) {
+        predict(user, ratings, output, true);
     }
 }

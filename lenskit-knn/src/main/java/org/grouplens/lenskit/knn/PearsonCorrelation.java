@@ -43,7 +43,6 @@ import static java.lang.Math.sqrt;
  * Springer. 2010, pp. 107-144.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Shareable
 public class PearsonCorrelation implements VectorSimilarity, Serializable {

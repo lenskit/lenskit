@@ -36,7 +36,6 @@ import com.google.common.base.Predicate;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TypeUtilsTest {
 

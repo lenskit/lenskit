@@ -25,7 +25,6 @@ import org.grouplens.lenskit.util.Index;
  * Data storage for packed rating snapshots.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 final class PackedPreferenceData {
     static final int CHUNK_SHIFT = 12;
@@ -52,6 +51,7 @@ final class PackedPreferenceData {
 
     /**
      * Convert an index to a chunk index.
+     *
      * @param idx The global index.
      * @return A chunk index.
      */
@@ -61,6 +61,7 @@ final class PackedPreferenceData {
 
     /**
      * Convert an index to a chunk element index.
+     *
      * @param idx The global index.
      * @return The element within the chunk that this refers to
      */
@@ -70,6 +71,7 @@ final class PackedPreferenceData {
 
     /**
      * Get the size of this data pack.
+     *
      * @return The number of preferences in the data pack.
      */
     public int size() {
@@ -78,6 +80,7 @@ final class PackedPreferenceData {
 
     /**
      * Get an indirect preference pointed at the specified index.
+     *
      * @param index An index in the data pack.
      * @return A preference pointing at the index. This does no checking to make sure that
      *         the preference is valid.
@@ -88,6 +91,7 @@ final class PackedPreferenceData {
 
     /**
      * Get the user index mapping between user IDs and indexes.
+     *
      * @return The user index.
      */
     public Index getUserIndex() {
@@ -96,6 +100,7 @@ final class PackedPreferenceData {
 
     /**
      * Get the item index mapping between user IDs and indexes.
+     *
      * @return The item index.
      */
     public Index getItemIndex() {
@@ -115,6 +120,7 @@ final class PackedPreferenceData {
 
         /**
          * Query whether this preference is valid. Valid preferences point to
+         *
          * @return {@code true} if this index is valid.
          */
         public boolean isValid() {

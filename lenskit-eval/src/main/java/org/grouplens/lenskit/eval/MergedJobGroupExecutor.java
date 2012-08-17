@@ -34,9 +34,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Run the jobs from a set of job groups in a single work queue, allowing the
  * groups to overlap.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
  */
 public class MergedJobGroupExecutor implements JobGroupExecutor {
     private static final Logger logger = LoggerFactory.getLogger(MergedJobGroupExecutor.class);
@@ -65,10 +64,10 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
         groups.add(group);
         assert groups.get(num) == group;
 
-        for (Job job: group.getJobs()) {
+        for (Job job : group.getJobs()) {
             if (jobGroupMap.containsKey(job)) {
                 throw new IllegalStateException("Job " + job.getName()
-                        + " appears more than once");
+                                                        + " appears more than once");
             }
             jobGroupMap.put(job, num);
         }
@@ -91,7 +90,7 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
             groupStates[i] = JobGroupState.WAITING;
             JobGroup group = groups.get(i);
             pendingJobCounts[i] = group.getJobs().size();
-            for (Job job: group.getJobs()) {
+            for (Job job : group.getJobs()) {
                 tasks.add(new JobTask(job));
             }
         }
@@ -112,7 +111,7 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     /**
      * Start a job, calling its group's {@link JobGroup#start()} method if
      * necessary.
-     * 
+     *
      * @param job
      */
     private synchronized void jobStarting(Job job) {
@@ -130,7 +129,7 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     /**
      * Finalize a job, calling the group's {@link JobGroup#finish()} method if
      * appropriate.
-     * 
+     *
      * @param job
      */
     private synchronized void jobFinished(Job job) {
@@ -150,9 +149,8 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     /**
      * Run a job, calling {@link MergedJobGroupExecutor#jobStarting(Job)} and
      * {@link MergedJobGroupExecutor#jobFinished(Job)} before and after.
-     * 
+     *
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     * 
      */
     private class JobTask implements Runnable {
         final Job job;

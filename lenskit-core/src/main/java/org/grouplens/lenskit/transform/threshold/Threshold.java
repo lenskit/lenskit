@@ -30,8 +30,9 @@ public interface Threshold {
     /**
      * Checks a similarity value against retention criteria for
      * inclusion in similarity models.
+     *
      * @param sim The double similarity value to check against
-     *        the threshold.
+     *            the threshold.
      * @return true if the parameter similarity value should be
      *         retained in the similarity model, false otherwise.
      */

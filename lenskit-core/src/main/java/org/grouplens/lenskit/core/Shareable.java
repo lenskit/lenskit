@@ -37,9 +37,9 @@ import java.lang.annotation.*;
  * The Shareable annotation should be on the component implementation, not interface.
  *
  * @author Michael Ekstrand
+ * @compat Public
  */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Shareable {
-}
+public @interface Shareable {}

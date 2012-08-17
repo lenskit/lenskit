@@ -30,7 +30,8 @@ import java.util.Map;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public interface Row extends Map<String, Object>{
+public interface Row extends Map<String, Object> {
     Object value(String key);
+
     Object value(int idx);
 }

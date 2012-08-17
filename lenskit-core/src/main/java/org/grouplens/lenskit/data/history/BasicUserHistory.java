@@ -36,8 +36,8 @@ import com.google.common.collect.Lists;
  * aspects of the profile are implemented as a read-only delegation to an
  * underlying list.
  *
+ * @param <E> The type of event in this history.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;
@@ -46,9 +46,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     /**
      * Construct a new basic user profile.
      *
-     * @param user The user ID.
+     * @param user   The user ID.
      * @param events The list of events in this user's history. All events must
-     *            be for the user.
+     *               be for the user.
      */
     public BasicUserHistory(long user, List<E> events) {
         this.user = user;
@@ -91,7 +91,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     }
 
     /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     * {@inheritDoc}
+     * <p>This implementation filters into a new {@link BasicUserHistory} backed
+     * by an {@link ArrayList}.
      */
     @Override
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
@@ -100,7 +102,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     }
 
     /**
-     * Filter into a new {@link BasicUserHistory} backed by an {@link ArrayList}.
+     * {@inheritDoc}
+     * <p>This implementation filters into a new {@link BasicUserHistory} backed
+     * by an {@link ArrayList}.
      */
     @Override
     public UserHistory<E> filter(Predicate<? super E> pred) {

@@ -18,74 +18,69 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Score items based on the basket of items using an item-item CF model.
- * 
+ *
  * @author Shuo Chang <schang@cs.umn.edu>
- * 
  */
 public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
         ItemItemModelBackedGlobalScorer {
-	protected final ItemItemModel model;
-	protected final @Nonnull NeighborhoodScorer scorer;
-    protected final @Nonnull ItemScoreAlgorithm algorithm;
+    protected final ItemItemModel model;
+    protected final
+    @Nonnull
+    NeighborhoodScorer scorer;
+    protected final
+    @Nonnull
+    ItemScoreAlgorithm algorithm;
 
     @Inject
-	public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
+    public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
                                 ItemScoreAlgorithm algo) {
-		super(dao);
-		model = m;
-		// The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
-		this.scorer = new SimilaritySumNeighborhoodScorer();
-		algorithm = algo;
-	}
+        super(dao);
+        model = m;
+        // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
+        this.scorer = new SimilaritySumNeighborhoodScorer();
+        algorithm = algo;
+    }
 
     @Override
     public ItemItemModel getModel() {
         return model;
     }
-    
-	@Override
-	public SparseVector globalScore(Collection<Long> queryItems,
-			Collection<Long> items) {
-		// create the unary rating for the items
+
+    @Override
+    public void globalScore(@Nonnull Collection<Long> queryItems,
+                            @Nonnull MutableSparseVector output) {
+        // create the unary rating for the items
         LongSet qItems = new LongSortedArraySet(queryItems);
         MutableSparseVector basket = new MutableSparseVector(qItems, 1.0);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
-        
-        MutableSparseVector preds = algorithm.scoreItems(model, basket, iset, scorer);
+        output.clear();
+        algorithm.scoreItems(model, basket, output, scorer);
+    }
 
-		return preds.freeze();
-	}
-	
 
-	@Override
-	public LongSet getScoreableItems(Collection<Long> queryItems) {
+    @Override
+    public LongSet getScoreableItems(Collection<Long> queryItems) {
         // FIXME This method incorrectly assumes the model is symmetric
         LongSet items = new LongOpenHashSet();
-        Iterator<Long> iter = queryItems.iterator();
+        LongIterator iter = LongIterators.asLongIterator(queryItems.iterator());
         while (iter.hasNext()) {
-            final long item = iter.next().longValue();
+            final long item = iter.nextLong();
             items.addAll(model.getNeighbors(item));
         }
         return items;

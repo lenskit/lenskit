@@ -37,10 +37,11 @@ public final class SimpleIndexedPreference extends IndexedPreference {
 
     /**
      * Construct a new indexed preference object.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param v The preference value.
-     * @param idx The preference index
+     *
+     * @param uid  The user ID.
+     * @param iid  The item ID.
+     * @param v    The preference value.
+     * @param idx  The preference index
      * @param uidx The user index
      * @param iidx The item index
      */
@@ -57,6 +58,7 @@ public final class SimpleIndexedPreference extends IndexedPreference {
     /**
      * Copy a preference object. This provides a convenient means of disconnecting
      * a preference from a mutable or indirect preference with less boilerplate.
+     *
      * @param pref The preference object to copy.
      */
     public SimpleIndexedPreference(IndexedPreference pref) {
@@ -68,22 +70,27 @@ public final class SimpleIndexedPreference extends IndexedPreference {
     public int getIndex() {
         return index;
     }
+
     @Override
     public long getUserId() {
         return userId;
     }
+
     @Override
     public int getUserIndex() {
         return userIndex;
     }
+
     @Override
     public long getItemId() {
         return itemId;
     }
+
     @Override
     public int getItemIndex() {
         return itemIndex;
     }
+
     @Override
     public double getValue() {
         return value;

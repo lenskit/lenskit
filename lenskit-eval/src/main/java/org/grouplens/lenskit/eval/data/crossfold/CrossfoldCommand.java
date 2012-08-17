@@ -50,7 +50,6 @@ import java.util.Random;
  * The command to build and run a crossfold on the data source file and output the partition files
  *
  * @author Shuo Chang<schang@cs.umn.edu>
- *
  */
 
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
@@ -69,18 +68,19 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
-    
+
 
     public CrossfoldCommand() {
         super("Crossfold");
-    }                   
-    
+    }
+
     public CrossfoldCommand(String n) {
         super(n);
     }
 
     /**
-     *  Set the number of partitions to generate.
+     * Set the number of partitions to generate.
+     *
      * @param partition The number of paritions
      * @return The CrossfoldCommand object  (for chaining)
      */
@@ -92,6 +92,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     /**
      * Set the pattern for the training set files. The pattern should have a single format conversion
      * capable of taking an integer ('%s' or '%d') which will be replaced with the fold number.
+     *
      * @param pat The training file name pattern.
      * @return The CrossfoldCommand object  (for chaining)
      * @see String#format(String, Object...)
@@ -103,6 +104,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Set the pattern for the test set files.
+     *
      * @param pat The test file name pattern.
      * @return The CrossfoldCommand object  (for chaining)
      * @see #setTrain(String)
@@ -115,6 +117,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     /**
      * Set the order for the train-test splitting. To split a user's ratings, the ratings are
      * first ordered by this order, and then partitioned.
+     *
      * @param o The sort order.
      * @return The CrossfoldCommand object  (for chaining)
      * @see RandomOrder
@@ -129,6 +132,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Set holdout to a fixed number of items per user.
+     *
      * @param n The number of items to hold out from each user's profile.
      * @return The CrossfoldCommand object  (for chaining)
      */
@@ -139,6 +143,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Set holdout to a fraction of each user's profile.
+     *
      * @param f The fraction of a user's ratings to hold out.
      * @return The CrossfoldCommand object  (for chaining)
      */
@@ -149,6 +154,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Set the input data source.
+     *
      * @param source The data source to use.
      * @return The CrossfoldCommand object  (for chaining)
      */
@@ -159,11 +165,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Set a wrapper function for the constructed data sources.
+     *
      * @param wrapFun The wrapper function.
      * @return The CrossfoldCommand object  (for chaining)
      * @see org.grouplens.lenskit.eval.data.CSVDataSourceCommand#setWrapper(Function)
      */
-    public CrossfoldCommand setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+    public CrossfoldCommand setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
         wrapper = wrapFun;
         return this;
     }
@@ -172,6 +179,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * Set the force running option of the command. The crossfold will be forced to
      * ran with the isForced set to true regardless of whether the partition files
      * are up to date.
+     *
      * @param force The force to run option
      * @return The CrossfoldCommand object  (for chaining)
      */
@@ -193,6 +201,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Get the visible name of this crossfold split.
+     *
      * @return The name of the crossfold split.
      */
     public String getName() {
@@ -213,6 +222,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Get the data source backing this crossfold manager.
+     *
      * @return The underlying data source.
      */
     public DataSource getSource() {
@@ -221,6 +231,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Get the number of folds.
+     *
      * @return The number of folds in this crossfold.
      */
     public int getPartitionCount() {
@@ -240,11 +251,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *
      * @return List<TTDataSet> The partition files stored as a list of TTDataSet
      * @throws org.grouplens.lenskit.eval.CommandException
+     *
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
         this.build();
-        if(!isForced) {
+        if (!isForced) {
             long mtime = lastModified();
             long srcMtime = source.lastModified();
             logger.debug("crossfold {} last modified at {}", getName(), mtime);
@@ -266,7 +278,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         DataAccessObject daoSnap = factory.snapshot();
         try {
             logger.info("splitting data source {} to {} partitions",
-                    getName(), partitionCount);
+                        getName(), partitionCount);
             createTTFiles(daoSnap, mode, splits);
         } finally {
             daoSnap.close();
@@ -277,7 +289,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Get the list of files satisfying the specified name pattern
-     * @param pattern  The file name pattern
+     *
+     * @param pattern The file name pattern
      * @return The list of files
      */
     protected File[] getFiles(String pattern) {
@@ -298,7 +311,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
         Long mtime = null;
-        for (File f: trainFiles) {
+        for (File f : trainFiles) {
             if (!f.exists()) {
                 mtime = -1L;
             } else if (mtime == null) {
@@ -307,7 +320,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                 mtime = Math.min(mtime, f.lastModified());
             }
         }
-        for (File f: testFiles) {
+        for (File f : testFiles) {
             if (!f.exists()) {
                 mtime = -1L;
             } else if (mtime == null) {
@@ -325,10 +338,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     /**
      * Create the split files from the DAO using specified holdout method.
      *
-     * @param dao       The DAO of the data source file
-     * @param mode      Holdout mode
-     * @param splits    The map of user id to the split number of all the users
-     * @throws org.grouplens.lenskit.eval.CommandException Any error
+     * @param dao    The DAO of the data source file
+     * @param mode   Holdout mode
+     * @param splits The map of user id to the split number of all the users
+     * @throws org.grouplens.lenskit.eval.CommandException
+     *          Any error
      */
     protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandException {
         File[] trainFiles = getFiles(trainFilePattern);
@@ -339,7 +353,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             for (int i = 0; i < partitionCount; i++) {
                 File train = trainFiles[i];
                 File test = testFiles[i];
-                try{
+                try {
                     trainWriters[i] = CSVWriter.open(train, null);
                     testWriters[i] = CSVWriter.open(test, null);
                 } catch (IOException e) {
@@ -348,22 +362,21 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             }
             Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
             try {
-                for(UserHistory<Rating> history: historyCursor) {
+                for (UserHistory<Rating> history : historyCursor) {
                     int foldNum = splits.get(history.getUserId());
                     List<Rating> ratings = new ArrayList<Rating>(history);
                     final int p = mode.partition(ratings, random);
                     final int n = ratings.size();
 
                     for (int f = 0; f < partitionCount; f++) {
-                        if(f == foldNum) {
+                        if (f == foldNum) {
                             for (int j = p; j < n; j++) {
                                 writeRating(testWriters[f], ratings.get(j));
                             }
                             for (int j = 0; j < p; j++) {
                                 writeRating(trainWriters[f], ratings.get(j));
                             }
-                        }
-                        else {
+                        } else {
                             for (Rating rating : ratings) {
                                 writeRating(trainWriters[f], rating);
                             }
@@ -389,7 +402,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @param rating The rating event to output
      * @throws IOException The writer IO error
      */
-    protected void writeRating(TableWriter writer, Rating rating) throws IOException{
+    protected void writeRating(TableWriter writer, Rating rating) throws IOException {
         String[] row = new String[4];
         row[0] = Long.toString(rating.getUserId());
         row[1] = Long.toString(rating.getItemId());
@@ -401,6 +414,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     /**
      * Split users ids to n splits, where n is the partitionCount
+     *
      * @param dao The DAO of the source file
      * @return a map of users to partition numbers.
      */
@@ -423,7 +437,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
         File[] trainFiles = getFiles(trainFilePattern);
         File[] testFiles = getFiles(testFilePattern);
-        for(int i = 0; i < partitionCount; i++) {
+        for (int i = 0; i < partitionCount; i++) {
             // FIXME Support an easier "make source like this one" feature
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
@@ -434,10 +448,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             GenericTTDataCommand TTcommand = new GenericTTDataCommand();
 
             dataSets.add(TTcommand.setTest(testCommand.setFile(testFiles[i]).call())
-                    .setTrain(trainCommand.setFile(trainFiles[i]).call())
-                    .setAttribute("DataSet", name)
-                    .setAttribute("Partition", i)
-                    .call());
+                                  .setTrain(trainCommand.setFile(trainFiles[i]).call())
+                                  .setAttribute("DataSet", name)
+                                  .setAttribute("Partition", i)
+                                  .call());
         }
         return dataSets;
     }

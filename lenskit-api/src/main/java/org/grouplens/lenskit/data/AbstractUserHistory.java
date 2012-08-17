@@ -33,7 +33,7 @@ import com.google.common.base.Function;
  * implementations of convenience methods.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public (may require additional method implementations across minor revisions)
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
@@ -42,7 +42,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     @Override
     public LongSet itemSet() {
         LongSet items = new LongOpenHashSet();
-        for (Event e: this) {
+        for (Event e : this) {
             items.add(e.getItemId());
         }
         return items;
@@ -51,9 +51,9 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     @Override
     @SuppressWarnings("unchecked")
     public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
-         if (!memTable.containsKey(func)) {
-             memTable.put(func, func.apply(this));
-         }
-         return (T) memTable.get(func);
+        if (!memTable.containsKey(func)) {
+            memTable.put(func, func.apply(this));
+        }
+        return (T) memTable.get(func);
     }
 }

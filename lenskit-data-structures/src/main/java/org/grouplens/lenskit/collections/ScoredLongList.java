@@ -29,14 +29,14 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores are stored as {@link Double#NaN}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface ScoredLongList extends LongList {
     /**
      * Add a scored item at a particular position.
      *
      * @param index The position for the new item.
-     * @param item The item value.
+     * @param item  The item value.
      * @param score The item score.
      * @see #add(int, long)
      */
@@ -45,7 +45,7 @@ public interface ScoredLongList extends LongList {
     /**
      * Add a scored item to the list.
      *
-     * @param item The item to add.
+     * @param item  The item to add.
      * @param score The item's score.
      * @return <tt>true</tt> if the collection was modified.
      * @see #add(long)
@@ -55,8 +55,8 @@ public interface ScoredLongList extends LongList {
     /**
      * Add scored elements to the list.
      *
-     * @param index The index at which to insert elements.
-     * @param items The items.
+     * @param index  The index at which to insert elements.
+     * @param items  The items.
      * @param scores The scores.
      * @see #addElements(int, long[])
      */
@@ -65,8 +65,8 @@ public interface ScoredLongList extends LongList {
     /**
      * Add scored elements to the list.
      *
-     * @param index The index at which to insert elements.
-     * @param items The items.
+     * @param index  The index at which to insert elements.
+     * @param items  The items.
      * @param scores The scores.
      * @param offset The offset in <var>items</var> of the first element to add.
      * @param length The number of elements to add.
@@ -78,11 +78,11 @@ public interface ScoredLongList extends LongList {
     /**
      * Copies elements into the given arrays.
      *
-     * @param from The index in the list at which to start copying.
-     * @param items The array to receive the items.
+     * @param from   The index in the list at which to start copying.
+     * @param items  The array to receive the items.
      * @param scores The array to receive the scores.
      * @param offset The offset in <var>items</var> and <var>scores</var> at
-     *            which to start copying.
+     *               which to start copying.
      * @param length The number of elements to copy.
      * @see #getElements(int, long[], int, int)
      */
@@ -100,6 +100,7 @@ public interface ScoredLongList extends LongList {
 
     /**
      * Set the score for the item at a position.
+     *
      * @param index The index.
      * @param score The new score.
      * @return The old score.

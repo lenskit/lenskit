@@ -103,9 +103,9 @@ class ConfigHelpers {
     static def makeCommandClosure(Class<? extends Command> cmd, EvalConfigEngine engine, Object[] args) {
         Closure block = null
         Object[] trimmedArgs
-        if (args.length > 0 && args[args.length-1] instanceof Closure) {
-            block = args[args.length-1] as Closure
-            trimmedArgs = Arrays.copyOf(args, args.length-1)
+        if (args.length > 0 && args[args.length - 1] instanceof Closure) {
+            block = args[args.length - 1] as Closure
+            trimmedArgs = Arrays.copyOf(args, args.length - 1)
         } else {
             trimmedArgs = args
         }

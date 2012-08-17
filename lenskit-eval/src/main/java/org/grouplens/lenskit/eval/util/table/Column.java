@@ -27,5 +27,6 @@ import java.util.List;
  */
 public interface Column extends List<Object> {
     Double sum();
+
     Double average();
 }

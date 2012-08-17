@@ -23,19 +23,19 @@ package org.grouplens.lenskit.eval;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class CommandException extends Exception{
+public class CommandException extends Exception {
     private static final long serialVersionUID = -9073424874249517829L;
 
     public CommandException() {}
-    
+
     public CommandException(String message) {
         super(message);
     }
-    
+
     public CommandException(Exception cause) {
         super(cause);
     }
-    
+
     public CommandException(String message, Exception cause) {
         super(message, cause);
     }
@@ -43,6 +43,5 @@ public class CommandException extends Exception{
     public CommandException(String message, Error cause) {
         super(message, cause);
     }
-
 
 }

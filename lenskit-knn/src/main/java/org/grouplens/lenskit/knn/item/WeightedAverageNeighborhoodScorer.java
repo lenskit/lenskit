@@ -29,8 +29,8 @@ import javax.inject.Singleton;
 
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 @Singleton

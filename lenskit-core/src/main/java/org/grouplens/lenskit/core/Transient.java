@@ -35,6 +35,7 @@ import java.lang.annotation.Target;
  * and build a component around that average has a transient dependency on the DAO.
  *
  * @author Michael Ekstrand
+ * @compat Public
  */
 @Attribute
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})

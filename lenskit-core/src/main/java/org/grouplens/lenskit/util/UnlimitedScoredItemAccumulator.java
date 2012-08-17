@@ -24,6 +24,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 
 /**
  * Scored item accumulator with no upper bound.
+ *
  * @author Michael Ekstrand
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {

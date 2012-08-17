@@ -18,12 +18,9 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -31,9 +28,10 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import java.util.Collection;
 
 /**
  * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
@@ -49,52 +47,42 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
     }
 
     @Override
-    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
-        
-        MutableSparseVector preds = new MutableSparseVector(iset);
-        LongArrayList unpreds = new LongArrayList();
-        LongIterator predicteeIter = iset.iterator();
-        while (predicteeIter.hasNext()) {
-            long predicteeItem = predicteeIter.nextLong();
-        	if (!user.containsKey(predicteeItem)) {
+        int nUnpred = 0;
+        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+            final long predicteeItem = e.getKey();
+            if (!user.containsKey(predicteeItem)) {
                 double total = 0;
                 int nitems = 0;
                 LongIterator ratingIter = user.keySet().iterator();
                 while (ratingIter.hasNext()) {
                     long currentItem = ratingIter.nextLong();
-                	int nusers = model.getCoratings(predicteeItem, currentItem);
+                    int nusers = model.getCoratings(predicteeItem, currentItem);
                     if (nusers != 0) {
                         double currentDev = model.getDeviation(predicteeItem, currentItem);
                         total += currentDev + user.get(currentItem);
                         nitems++;
                     }
                 }
-                if (nitems == 0) {
-                    unpreds.add(predicteeItem);
-                } else {
-                    double predValue = total/nitems;
+                if (nitems != 0) {
+                    double predValue = total / nitems;
                     predValue = model.getDomain().clampValue(predValue);
-                    preds.set(predicteeItem, predValue);
+                    scores.set(e, predValue);
+                } else {
+                    nUnpred += 1;
+                    scores.clear(e);
                 }
             }
         }
-        
+
         //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && !unpreds.isEmpty()) {
-            SparseVector basePreds = baseline.predict(history.getUserId(), user, unpreds);
-            preds.set(basePreds);
+        if (baseline != null && nUnpred > 0) {
+            baseline.predict(history.getUserId(), user, scores, false);
         }
-        
-        return preds;
     }
 
     public SlopeOneModel getModel() {

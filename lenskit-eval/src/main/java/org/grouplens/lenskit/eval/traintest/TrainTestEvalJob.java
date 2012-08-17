@@ -50,16 +50,15 @@ import java.util.List;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class TrainTestEvalJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     private final int numRecs;
-    
+
     @Nonnull
     private final AlgorithmInstance algorithm;
     @Nonnull
@@ -69,8 +68,6 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> outputSupplier;
     @Nonnull
-    private final Supplier<TableWriter> outputInMemorySupplier;
-    @Nonnull
     private Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private Supplier<TableWriter> predictOutputSupplier;
@@ -79,30 +76,30 @@ public class TrainTestEvalJob implements Job {
 
     /**
      * Create a new train-test eval job.
-     * @param algo The algorithm to test.
-     * @param evals The evaluators to use.
-     * @param ds The data set to use.
-     * @param snap Supplier providing access to a shared rating snapshot to use in the
-     *             build process.
-     * @param out The table writer to receive outputProvider. This writer is expected to
-     *        be prefixed with algorithm and group ID data, so only the times
-     *        and eval outputProvider needs to be written.
+     *
+     * @param algo    The algorithm to test.
+     * @param evals   The evaluators to use.
+     * @param ds      The data set to use.
+     * @param snap    Supplier providing access to a shared rating snapshot to use in the
+     *                build process.
+     * @param out     The table writer to receive outputProvider. This writer is expected to
+     *                be prefixed with algorithm and group ID data, so only the times
+     *                and eval outputProvider needs to be written.
      * @param numRecs The number of recommendations to compute.
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
-                            Supplier<TableWriter> out, Supplier<TableWriter> outMemory, int numRecs) {
+                            Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
-        outputInMemorySupplier = outMemory;
         this.numRecs = numRecs;
-        
+
         int ncols = 2;
-        for (TestUserMetric eval: evals) {
+        for (TestUserMetric eval : evals) {
             if (eval.getColumnLabels() != null) {
                 ncols += eval.getColumnLabels().length;
             }
@@ -118,6 +115,7 @@ public class TrainTestEvalJob implements Job {
      * Set a supplier for the prediction output table. The writer is expected to be
      * prefixed with algorithm and group ID data; the job will only write user, item,
      * rating, and prediction.
+     *
      * @param out The table writer supplier.
      */
     public void setPredictOutput(Supplier<TableWriter> out) {
@@ -160,23 +158,23 @@ public class TrainTestEvalJob implements Job {
             if (userTable != null) {
                 userRow = new Object[userTable.getLayout().getColumnCount()];
             }
-            
+
             DataAccessObject testDao = data.getTestFactory().create();
             try {
-                for (TestUserMetric eval: evaluators) {
+                for (TestUserMetric eval : evaluators) {
 
                     TestUserMetricAccumulator accum =
-                        eval.makeAccumulator(algorithm, data);
+                            eval.makeAccumulator(algorithm, data);
                     evalAccums.add(accum);
                 }
 
                 Cursor<UserHistory<Rating>> userProfiles =
-                    testDao.getUserHistories(Rating.class);
+                        testDao.getUserHistories(Rating.class);
                 try {
-                    for (UserHistory<Rating> p: userProfiles) {
+                    for (UserHistory<Rating> p : userProfiles) {
                         long uid = p.getUserId();
                         SparseVector ratings =
-                            RatingVectorUserHistorySummarizer.makeRatingVector(p);
+                                RatingVectorUserHistorySummarizer.makeRatingVector(p);
 
                         Supplier<SparseVector> preds =
                                 new PredictionSupplier(predictor, uid, ratings.keySet());
@@ -187,7 +185,7 @@ public class TrainTestEvalJob implements Job {
                         TestUser test = new TestUser(uid, ratings, hist, preds, recs);
 
                         int upos = 0;
-                        for (TestUserMetricAccumulator accum: evalAccums) {
+                        for (TestUserMetricAccumulator accum : evalAccums) {
                             Object[] ures = accum.evaluate(test);
                             if (ures != null && userRow != null) {
                                 System.arraycopy(ures, 0,
@@ -215,7 +213,7 @@ public class TrainTestEvalJob implements Job {
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
-            
+
             try {
                 writeOutput(buildTimer, testTimer, evalAccums);
             } catch (IOException e) {
@@ -230,7 +228,7 @@ public class TrainTestEvalJob implements Job {
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
         String[] row = new String[4];
         row[0] = Long.toString(uid);
-        for (VectorEntry e: ratings.fast()) {
+        for (VectorEntry e : ratings.fast()) {
             long iid = e.getKey();
             row[1] = Long.toString(iid);
             row[2] = Double.toString(e.getValue());
@@ -252,7 +250,7 @@ public class TrainTestEvalJob implements Job {
         row[0] = build.getTime();
         row[1] = test.getTime();
         int col = 2;
-        for (TestUserMetricAccumulator acc: accums) {
+        for (TestUserMetricAccumulator acc : accums) {
             Object[] ar = acc.finalResults();
             int i = col;
             if (ar != null) {
@@ -263,10 +261,8 @@ public class TrainTestEvalJob implements Job {
             }
         }
         TableWriter output = outputSupplier.get();
-        TableWriter outMemory = outputInMemorySupplier.get();
         try {
             output.writeRow(row);
-            outMemory.writeRow(row);
 
         } finally {
             output.close();
@@ -312,16 +308,16 @@ public class TrainTestEvalJob implements Job {
             return recommender.recommend(user, numRecs, items, null);
         }
     }
-    
+
     private class HistorySupplier implements Supplier<UserHistory<Rating>> {
         private final DataAccessObject dao;
         private final long user;
-        
+
         public HistorySupplier(DataAccessObject dao, long id) {
             this.dao = dao;
             user = id;
         }
-        
+
         @Override
         public UserHistory<Rating> get() {
             return dao.getUserHistory(user, Rating.class);

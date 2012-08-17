@@ -35,6 +35,7 @@ import javax.inject.Qualifier;
 @Documented
 @DefaultDouble(0.0)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ThresholdValue {}
+public @interface ThresholdValue {
+}

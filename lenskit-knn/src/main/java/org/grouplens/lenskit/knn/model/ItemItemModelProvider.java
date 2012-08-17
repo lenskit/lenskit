@@ -31,7 +31,6 @@ import javax.inject.Provider;
  * Build an item-item CF model from rating data.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @NotThreadSafe
 public class ItemItemModelProvider implements Provider<ItemItemModel> {

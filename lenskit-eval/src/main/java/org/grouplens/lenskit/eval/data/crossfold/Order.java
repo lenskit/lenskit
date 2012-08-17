@@ -23,14 +23,15 @@ import java.util.Random;
 
 /**
  * An order for a list.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface Order<E> {
-	/**
-	 * Apply the ordering.
-	 * @param list The list to order.
-     * @param rng The random number generator to use, if necessary.
-	 */
-	void apply(List<E> list, Random rng);
+    /**
+     * Apply the ordering.
+     *
+     * @param list The list to order.
+     * @param rng  The random number generator to use, if necessary.
+     */
+    void apply(List<E> list, Random rng);
 }

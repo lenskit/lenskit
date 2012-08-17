@@ -24,7 +24,7 @@ package org.grouplens.lenskit;
  * ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface RatingPredictor extends ItemScorer {
 }

@@ -34,11 +34,12 @@ import org.grouplens.lenskit.svd.FunkSVDModelProvider;
  * features in FunkSVD.  For a regularization term \(\lambda\) and current value,
  * \(x\), the update for each step is decreased by \(\lambda x\).
  *
- *  @see FunkSVDModelProvider
+ * @see FunkSVDModelProvider
  */
 @Documented
 @DefaultDouble(0.015)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RegularizationTerm { }
+public @interface RegularizationTerm {
+}

@@ -38,9 +38,9 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
  * packed data set to only a particular list of indices.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-@SuppressWarnings("javadoc") // JavaDoc warnings incorrectly flag PackedPreferenceData
+@SuppressWarnings("javadoc")
+        // JavaDoc warnings incorrectly flag PackedPreferenceData
 class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
     final private PackedPreferenceData data;
@@ -58,9 +58,9 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
     /**
      * Construct a collection view of a subset of the rating data.
      *
-     * @param data The rating data.
+     * @param data    The rating data.
      * @param indices A list of indices in the packed data arrays to include in
-     *            the collection.
+     *                the collection.
      */
     PackedPreferenceCollection(PackedPreferenceData data, IntList indices) {
         this.data = data;
@@ -77,7 +77,8 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         return indices.size();
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public Iterable<IndexedPreference> fast() {
         return new Iterable<IndexedPreference>() {
             @Override

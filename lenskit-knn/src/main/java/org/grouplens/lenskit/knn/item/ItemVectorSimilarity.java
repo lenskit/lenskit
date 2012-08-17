@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 /**
  * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
+ *
  * @author Michael Ekstrand
  */
 @Shareable

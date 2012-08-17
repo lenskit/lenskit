@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
@@ -38,7 +39,6 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestLongSortedArraySet {
     @SuppressWarnings("unchecked")
@@ -74,6 +74,7 @@ public class TestLongSortedArraySet {
     /**
      * Run a battery of tests on a standard set. Used to test a variety of
      * construction scenarios with less code duplication.
+     *
      * @param set The set {2, 5, 6}.
      */
     private void testSetSimple(LongSortedSet set) {
@@ -107,6 +108,7 @@ public class TestLongSortedArraySet {
         assertEquals(2, iter.previousLong());
         assertFalse(iter.hasPrevious());
     }
+
     @Test
     public void testArrayCtorUnsorted() {
         long[] data = {5, 2, 6};
@@ -115,11 +117,13 @@ public class TestLongSortedArraySet {
         // make sure it tweaked our array
         assertEquals(2, data[0]);
     }
+
     @Test
     public void testArrayCtorRanged() {
         LongSortedSet set = new LongSortedArraySet(new long[]{42, 5, 2, 6, 7}, 1, 4);
         testSetSimple(set);
     }
+
     @Test
     public void testCollectionCtor() {
         long[] data = {5, 2, 6};
@@ -178,7 +182,7 @@ public class TestLongSortedArraySet {
         assertEquals(2, data[0]);
         testSetSimple(set);
     }
-    
+
     @Test
     public void testMaskFirst() {
         long[] data = {2, 7, 8, 42, 639};
@@ -199,7 +203,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{8, 42, 639}));
         assertThat(set.headSet(42).size(), equalTo(2));
     }
-    
+
     @Test
     public void testMaskMid() {
         long[] data = {2, 7, 8, 42, 639};
@@ -223,7 +227,7 @@ public class TestLongSortedArraySet {
         assertThat(set.toLongArray(),
                    equalTo(new long[]{2, 7, 42, 639}));
     }
-    
+
     @Test
     public void testMaskLast() {
         long[] data = {2, 7, 8, 42, 639};
@@ -246,13 +250,13 @@ public class TestLongSortedArraySet {
         assertThat(set.tailSet(7).toLongArray(),
                    equalTo(new long[]{7, 8, 42}));
     }
-    
+
     @Test
     public void testMaskEmpty() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        
+
         assertThat(set.size(), equalTo(0));
         assertTrue(set.isEmpty());
         assertFalse(set.iterator().hasNext());
@@ -260,8 +264,9 @@ public class TestLongSortedArraySet {
             assertFalse(set.contains(data[i]));
         }
     }
-    
-    @Test @Ignore("until the bit set iterator is properly bidirectional")
+
+    @Test
+    @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIterator() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);
@@ -272,8 +277,9 @@ public class TestLongSortedArraySet {
         assertThat(set.iterator(7).nextLong(), equalTo(8l));
         assertThat(set.iterator(7).previousLong(), equalTo(7l));
     }
-    
-    @Test @Ignore("until the bit set iterator is properly bidirectional")
+
+    @Test
+    @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIteratorMid() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);

@@ -39,17 +39,17 @@ public class TableImpl extends AbstractList<Row> implements Table {
     //To keep the order of the header
     private final List<String> headerIndex;
 
-    public TableImpl(List<String> hdr){
+    public TableImpl(List<String> hdr) {
         super();
         rows = new ArrayList<Row>();
         headerIndex = hdr;
         header = new HashMap<String, Integer>();
-        for(int i = 0; i < hdr.size(); i++) {
+        for (int i = 0; i < hdr.size(); i++) {
             header.put(hdr.get(i), i);
         }
     }
 
-    private TableImpl(HashMap<String, Integer> hdr, List<String> hdrIdx, Iterable<Row> rws){
+    private TableImpl(HashMap<String, Integer> hdr, List<String> hdrIdx, Iterable<Row> rws) {
         super();
         rows = Lists.newArrayList(rws);
         headerIndex = hdrIdx;
@@ -58,16 +58,17 @@ public class TableImpl extends AbstractList<Row> implements Table {
 
     /**
      * Filter the table with the given matching data.
-     * @param col The name of the column
+     *
+     * @param col  The name of the column
      * @param data The data in the column to match
-     * @return  A new table that has "data" in "col"
+     * @return A new table that has "data" in "col"
      */
     @Override
     public TableImpl filter(final String col, final Object data) {
         Predicate<Row> pred = new Predicate<Row>() {
             @Override
             public boolean apply(@Nonnull Row input) {
-                return  data.equals(input.value(col));
+                return data.equals(input.value(col));
             }
         };
         Iterable<Row> filtered = Iterables.filter(this.rows, pred);
@@ -103,7 +104,7 @@ public class TableImpl extends AbstractList<Row> implements Table {
         return rows.get(i);
     }
 
-    public ColumnImpl column(String col){
+    public ColumnImpl column(String col) {
         return new ColumnImpl(col);
     }
 
@@ -111,14 +112,14 @@ public class TableImpl extends AbstractList<Row> implements Table {
         return Collections.unmodifiableList(headerIndex);
     }
 
-    public class ColumnImpl extends AbstractList<Object> implements Column{
+    public class ColumnImpl extends AbstractList<Object> implements Column {
         ArrayList<Object> column;
 
         ColumnImpl(String col) {
             super();
             column = new ArrayList<Object>();
-            if(header.get(col)!=null){
-                for(Row row : rows) {
+            if (header.get(col) != null) {
+                for (Row row : rows) {
                     column.add(row.value(header.get(col)));
                 }
             }
@@ -126,23 +127,22 @@ public class TableImpl extends AbstractList<Row> implements Table {
 
         public Double sum() {
             double sum = 0;
-            if(column.size() == 0 ||
+            if (column.size() == 0 ||
                     !Number.class.isAssignableFrom(column.get(0).getClass())) {
                 return Double.NaN;
-            }
-            else {
-                for(Object v : column) {
-                    sum += ((Number)v).doubleValue();
+            } else {
+                for (Object v : column) {
+                    sum += ((Number) v).doubleValue();
                 }
                 return sum;
             }
         }
 
         public Double average() {
-            if(column.size()==0) {
+            if (column.size() == 0) {
                 return Double.NaN;
             }
-            return sum()/column.size();
+            return sum() / column.size();
         }
 
         @Override

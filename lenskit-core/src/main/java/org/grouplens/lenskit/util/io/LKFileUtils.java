@@ -35,11 +35,14 @@ import java.util.zip.GZIPOutputStream;
  */
 public final class LKFileUtils {
     private static final Logger logger = LoggerFactory.getLogger(LKFileUtils.class);
-    private LKFileUtils() {}
+
+    private LKFileUtils() {
+    }
 
     /**
      * Query whether this filename represents a compressed file. It just looks at
      * the name to see if it ends in “.gz”.
+     *
      * @param file The file to query.
      * @return {@code true} if the file name ends in “.gz”.
      */
@@ -49,8 +52,9 @@ public final class LKFileUtils {
 
     /**
      * Open a file for input, optionally compressed.
-     * @param file The file to open.
-     * @param charset The character set to use.
+     *
+     * @param file        The file to open.
+     * @param charset     The character set to use.
      * @param compression Whether to compress the file.
      * @return A reader opened on the file.
      * @throws IOException if there is an error opening the file.
@@ -60,16 +64,16 @@ public final class LKFileUtils {
         try {
             InputStream wrapped = istream;
             switch (compression) {
-                case GZIP:
+            case GZIP:
+                wrapped = new GZIPInputStream(istream);
+                break;
+            case AUTO:
+                if (isCompressed(file)) {
                     wrapped = new GZIPInputStream(istream);
-                    break;
-                case AUTO:
-                    if (isCompressed(file)) {
-                        wrapped = new GZIPInputStream(istream);
-                    }
-                    break;
-                default:
-                    break;
+                }
+                break;
+            default:
+                break;
             }
             return new InputStreamReader(wrapped, charset);
         } catch (RuntimeException e) {
@@ -83,33 +87,37 @@ public final class LKFileUtils {
 
     /**
      * Open a file for input with the default charset.
-     * @param file The file to open.
+     *
+     * @param file        The file to open.
      * @param compression The compression mode.
      * @return A reader opened on the file.
      * @throws IOException if there was an error opening the file.
      * @see #openInput(java.io.File, Charset, CompressionMode)
      */
     public static Reader openInput(File file, CompressionMode compression) throws IOException {
-        return openInput(file, Charset.defaultCharset(), CompressionMode.AUTO);
+        return openInput(file, Charset.defaultCharset(), compression);
     }
 
     /**
      * Open a reader with automatic compression and the default character set.
+     *
      * @param file The file to open.
      * @return A reader opened on the input file.
      * @throws IOException if there is an error opening the file.
-     * @see #openInput(File,Charset,CompressionMode)
+     * @see #openInput(File, Charset, CompressionMode)
      * @see CompressionMode#AUTO
      * @see Charset#defaultCharset()
      */
+    @SuppressWarnings("unused")
     public static Reader openInput(File file) throws IOException {
         return openInput(file, Charset.defaultCharset(), CompressionMode.AUTO);
     }
 
     /**
      * Open a file for input, optionally compressed.
-     * @param file The file to open.
-     * @param charset The caracter set to use.
+     *
+     * @param file        The file to open.
+     * @param charset     The character set to use.
      * @param compression Whether to compress the file.
      * @return A reader opened on the file.
      * @throws IOException if there is an error opening the file.
@@ -119,16 +127,16 @@ public final class LKFileUtils {
         try {
             OutputStream wrapped = ostream;
             switch (compression) {
-                case GZIP:
+            case GZIP:
+                wrapped = new GZIPOutputStream(ostream);
+                break;
+            case AUTO:
+                if (isCompressed(file)) {
                     wrapped = new GZIPOutputStream(ostream);
-                    break;
-                case AUTO:
-                    if (isCompressed(file)) {
-                        wrapped = new GZIPOutputStream(ostream);
-                    }
-                    break;
-                default:
-                    break;
+                }
+                break;
+            default:
+                break;
             }
             return new OutputStreamWriter(wrapped, charset);
         } catch (RuntimeException e) {
@@ -142,36 +150,41 @@ public final class LKFileUtils {
 
     /**
      * Open a file for output with the default charset.
-     * @param file The file to open.
+     *
+     * @param file        The file to open.
      * @param compression The compression mode.
      * @return A writer opened on the file.
      * @throws IOException if there was an error opening the file.
      * @see #openInput(java.io.File, Charset, CompressionMode)
      */
+    @SuppressWarnings("unused")
     public static Writer openOutput(File file, CompressionMode compression) throws IOException {
-        return openOutput(file, Charset.defaultCharset(), CompressionMode.AUTO);
+        return openOutput(file, Charset.defaultCharset(), compression);
     }
 
     /**
-     * Open a reader with automatic compression inferrence.
+     * Open a reader with automatic compression inference.
+     *
      * @param file The file to open.
      * @return A reader opened on the input file.
      * @throws IOException if there is an error opening the file.
      */
+    @SuppressWarnings("unused")
     public static Writer openOutput(File file) throws IOException {
         return openOutput(file, Charset.defaultCharset(), CompressionMode.AUTO);
     }
 
     /**
      * Close a set of closeable objects, swallowing and logging all exceptions.
-     * @param log The logger to which to report errors.
+     *
+     * @param log     The logger to which to report errors.
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed cleanly; {@code false} if some objects
-     * failed when closing.
+     *         failed when closing.
      */
     public static boolean close(Logger log, Closeable... toClose) {
         boolean success = true;
-        for (Closeable c: toClose) {
+        for (Closeable c : toClose) {
             if (c != null) {
                 try {
                     c.close();
@@ -192,6 +205,7 @@ public final class LKFileUtils {
 
     /**
      * Close a group of objects, using a default logger.
+     *
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed successfully.
      * @see #close(Logger, Closeable...)

@@ -28,9 +28,11 @@ import com.google.common.base.Function
 class ParameterTransforms {
     abstract static class Transform {
         final Class resultType
+
         Transform(Class type) {
             resultType = type
         }
+
         abstract def get()
     }
 

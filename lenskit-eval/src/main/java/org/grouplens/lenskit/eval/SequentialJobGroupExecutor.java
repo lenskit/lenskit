@@ -35,28 +35,27 @@ import com.google.common.collect.Lists;
 /**
  * Execute job groups sequentially. Used to implement
  * {@link IsolationLevel#JOB_GROUP}.
- * 
- * @since 0.8
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @since 0.8
  */
 public class SequentialJobGroupExecutor implements JobGroupExecutor {
     private static final Logger logger = LoggerFactory.getLogger(SequentialJobGroupExecutor.class);
-    
+
     private final List<JobGroup> groups;
     private final int threadCount;
 
-    
+
     public SequentialJobGroupExecutor(int nthreads) {
         groups = new ArrayList<JobGroup>();
         threadCount = nthreads;
     }
-    
+
     @Override
     public void add(JobGroup group) {
         groups.add(group);
     }
-    
+
     class JobWrapper implements Function<Job, Runnable> {
         @Override
         public Runnable apply(final Job job) {
@@ -71,12 +70,12 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
             };
         }
     }
-    
+
     @Override
     public void run() throws ExecutionException {
         ExecutorService svc = Executors.newFixedThreadPool(threadCount);
         try {
-            for (JobGroup group: groups) {
+            for (JobGroup group : groups) {
                 StopWatch timer = new StopWatch();
                 timer.start();
 
@@ -87,7 +86,7 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
                 } finally {
                     group.finish();
                 }
-                
+
                 timer.stop();
                 logger.info("Job group {} finished in {}",
                             group.getName(), timer);

@@ -34,8 +34,8 @@ import com.google.common.io.Files;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class CSVWriter implements TableWriter {
     private Writer writer;
@@ -43,6 +43,7 @@ public class CSVWriter implements TableWriter {
 
     /**
      * Construct a new CSV writer.
+     *
      * @param w The underlying writer to output to.
      * @param l The table layout, or {@code null} if the table has no headers.
      * @throws IOException if there is an error writing the column headers.
@@ -63,8 +64,9 @@ public class CSVWriter implements TableWriter {
     }
 
     String quote(String e) {
-        if (e == null)
+        if (e == null) {
             return "";
+        }
 
         if (e.matches("[\r\n,\"]")) {
             return "\"" + e.replaceAll("\"", "\"\"") + "\"";
@@ -102,8 +104,9 @@ public class CSVWriter implements TableWriter {
 
     /**
      * Open a CSV writer to write to a file.
-     * @param file The file to write to.
-     * @param layout The layout of the table.
+     *
+     * @param file        The file to write to.
+     * @param layout      The layout of the table.
      * @param compression What compression, if any, to use.
      * @return A CSV writer outputting to {@code file}.
      * @throws IOException if there is an error opening the file or writing the column header.
@@ -125,11 +128,12 @@ public class CSVWriter implements TableWriter {
     /**
      * Open a CSV writer to write to an auto-compressed file. The file will be compressed if its
      * name ends in ".gz".
-     * @param file The file.
+     *
+     * @param file   The file.
      * @param layout The table layout.
      * @return The CSV writer.
      * @throws IOException if there is an error opening the file or writing the column header.
-     * @see #open(File,TableLayout,CompressionMode)
+     * @see #open(File, TableLayout, CompressionMode)
      */
     public static CSVWriter open(File file, @Nullable TableLayout layout) throws IOException {
         return open(file, layout, CompressionMode.AUTO);

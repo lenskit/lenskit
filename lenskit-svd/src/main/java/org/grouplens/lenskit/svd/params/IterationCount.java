@@ -38,6 +38,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelProvider;
 @Documented
 @DefaultInteger(0)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IterationCount { }
+public @interface IterationCount {
+}

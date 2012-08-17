@@ -29,39 +29,67 @@ import javax.annotation.Nullable;
  * {@link MutableSparseVector#set(VectorEntry, double)}.
  *
  * @author Michael Ekstrand
+ * @compat Public
+ * @since 0.11
  */
 public final class VectorEntry {
+    /**
+     * The state of an entry in a sparse vector.
+     *
+     * @author Michael Ekstrand
+     * @since 0.11
+     */
+    public static enum State {
+        /**
+         * A set entry.
+         */
+        SET,
+        /**
+         * An unset entry.
+         */
+        UNSET,
+        /**
+         * Either entry state — used for requesting all entries.
+         */
+        EITHER
+    }
+
     @Nullable
     final SparseVector vector;
     private int index;
     private long key;
     private double value;
+    private boolean isSet;
 
     /**
      * Construct a new vector entry for a particular vector.
+     *
      * @param vec The vector this entry is from.
-     * @param i The index in the vector of this entry.
-     * @param k The entry's key.
+     * @param i   The index in the vector of this entry.
+     * @param k   The entry's key.
      * @param val The entry's value.
      */
-    VectorEntry(@Nullable SparseVector vec, int i, long k, double val) {
+    VectorEntry(@Nullable SparseVector vec, int i, long k, double val, boolean set) {
         vector = vec;
         index = i;
         key = k;
         value = val;
+        isSet = set;
     }
 
     /**
      * Construct a new vector entry.
+     *
      * @param k The entry's key.
      * @param v The entry's value.
      */
     public VectorEntry(long k, double v) {
-        this(null, -1, k, v);
+        this(null, -1, k, v, true);
     }
 
     /**
      * Get the key at this entry.
+     *
      * @return The key of this entry.
      */
     public long getKey() {
@@ -70,6 +98,7 @@ public final class VectorEntry {
 
     /**
      * Get the value at this entry.
+     *
      * @return The value of this entry.
      */
     public double getValue() {
@@ -78,6 +107,7 @@ public final class VectorEntry {
 
     /**
      * Internal method to get associated index, if specified.
+     *
      * @return The index into the vector of this entry.
      */
     int getIndex() {
@@ -85,29 +115,44 @@ public final class VectorEntry {
     }
 
     /**
-     * Update the entry (used for fast iteration).
-     * @param i The new index.
-     * @param k The new key.
-     * @param v the new value.
+     * Query whether this entry is set.
+     *
+     * @return {@code true} if the entry's key is in the key set; {@code false} if
+     *         it is only in the key domain.
      */
-    void set(int i, long k, double v) {
-        index = i;
-        key = k;
-        value = v;
+    public boolean isSet() {
+        return isSet;
     }
 
     /**
      * Update the entry (used for fast iteration).
+     *
+     * @param i The new index.
+     * @param k The new key.
+     * @param v the new value.
+     */
+    void set(int i, long k, double v, boolean set) {
+        index = i;
+        key = k;
+        value = v;
+        isSet = set;
+    }
+
+    /**
+     * Update the entry (used for fast iteration).
+     *
      * @param k The new key.
      * @param v The new value.
      */
     void set(long k, double v) {
         key = k;
         value = v;
+        isSet = true;
     }
 
     /**
      * Update the value. Used only to implement {@link MutableSparseVector#set(VectorEntry, double)}.
+     *
      * @param v The new value
      */
     void setValue(double v) {

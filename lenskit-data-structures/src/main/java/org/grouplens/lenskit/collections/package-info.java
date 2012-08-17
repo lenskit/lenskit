@@ -18,7 +18,7 @@
  */
 /**
  * Custom collections and related utilities.
- * 
+ *
  * <p>
  * This package contains various custom collections LensKit requires, extending
  * both Java collections and fastutil collections.  It also contains some

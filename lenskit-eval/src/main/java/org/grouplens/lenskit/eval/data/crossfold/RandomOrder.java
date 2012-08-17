@@ -24,15 +24,14 @@ import java.util.Random;
 
 /**
  * Ordering that randomizes the list.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class RandomOrder<E> implements Order<E> {
 
-	@Override
+    @Override
     public void apply(List<E> list, Random rng) {
-	    Collections.shuffle(list, rng);
+        Collections.shuffle(list, rng);
     }
 
 }

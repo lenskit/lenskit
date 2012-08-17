@@ -67,25 +67,24 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
     public static class Provider implements javax.inject.Provider<MeanVarianceNormalizer> {
         private final double smoothing;
         private final DataAccessObject dao;
-        
+
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
             this.dao = dao;
             smoothing = d;
         }
-        
+
         @Override
         public MeanVarianceNormalizer get() {
             double variance = 0;
 
             if (smoothing != 0) {
-                double mean = 0;
                 double sum = 0;
-                
+
                 Cursor<Rating> ratings = dao.getEvents(Rating.class);
                 int numRatings = 0;
-                for (Rating r: ratings.fast()) {
+                for (Rating r : ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         sum += p.getValue();
@@ -93,12 +92,12 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                     }
                 }
                 ratings.close();
-                mean = sum / numRatings;
-                
+                final double mean = sum / numRatings;
+
                 ratings = dao.getEvents(Rating.class);
                 sum = 0;
 
-                for (Rating r: ratings.fast()) {
+                for (Rating r : ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         double delta = mean - p.getValue();
@@ -124,8 +123,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
     }
 
     /**
-     * @param smoothing            smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
-     * @param globalVariance    global variance to use in the smoothing calculations.
+     * @param smoothing      smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
+     * @param globalVariance global variance to use in the smoothing calculations.
      */
     public MeanVarianceNormalizer(double smoothing, double globalVariance) {
         this.smoothing = smoothing;
@@ -176,8 +175,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public MutableSparseVector apply(MutableSparseVector vector) {
             for (VectorEntry rating : vector.fast()) {
                 vector.set(rating.getKey(), /* r' = (r - u) / s */
-                        stdev == 0? 0 : // edge case
-                            (rating.getValue() - mean) / stdev);
+                           stdev == 0 ? 0 : // edge case
+                                   (rating.getValue() - mean) / stdev);
             }
             return vector;
         }
@@ -186,8 +185,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public MutableSparseVector unapply(MutableSparseVector vector) {
             for (VectorEntry rating : vector.fast()) {
                 vector.set(rating.getKey(), /* r = r' * s + u */
-                        stdev == 0? mean : // edge case
-                        (rating.getValue() * stdev) + mean);
+                           stdev == 0 ? mean : // edge case
+                                   (rating.getValue() * stdev) + mean);
             }
             return vector;
         }

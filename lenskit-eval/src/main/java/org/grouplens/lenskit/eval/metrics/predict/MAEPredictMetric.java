@@ -40,11 +40,10 @@ import static java.lang.Math.abs;
  * over all users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
-    private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
+    private static final String[] COLUMNS = {"MAE", "MAE.ByUser"};
     private static final String[] USER_COLUMNS = {"MAE"};
 
     @Override
@@ -74,8 +73,10 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             double err = 0;
             int n = 0;
-            for (VectorEntry e: predictions.fast()) {
-                if (Double.isNaN(e.getValue())) continue;
+            for (VectorEntry e : predictions.fast()) {
+                if (Double.isNaN(e.getValue())) {
+                    continue;
+                }
 
                 err += abs(e.getValue() - ratings.get(e.getKey()));
                 n++;

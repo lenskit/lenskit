@@ -21,7 +21,6 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -50,7 +49,9 @@ import javax.inject.Inject;
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected @Nullable BaselinePredictor baseline;
+    protected
+    @Nullable
+    BaselinePredictor baseline;
 
     @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
@@ -70,8 +71,8 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      * the prediction is supplied from this baseline.
      *
      * @param pred The baseline predictor. Configure this by setting the
-     *        {@link BaselinePredictor} component.
-     * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
+     *             {@link BaselinePredictor} component.
+     * @see LenskitRecommenderEngineFactory#bind(Class)
      */
     @Inject
     public void setBaseline(@Nullable BaselinePredictor pred) {
@@ -103,20 +104,19 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             return new BaselineAddingTransform(user, userData);
         }
     }
-    
+
     /**
      * Vector transformation that wraps the normalizer to supply baseline
      * predictions for missing values in the
      * {@link #unapply(MutableSparseVector)} method.
-     * 
+     *
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     * 
      */
     protected class BaselineAddingTransform implements VectorTransformation {
         final VectorTransformation norm;
         final long user;
         final SparseVector ratings;
-        
+
         public BaselineAddingTransform(long uid, SparseVector userData) {
             user = uid;
             ratings = userData;
@@ -126,16 +126,9 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
             norm.unapply(vector);
-            
+
             assert baseline != null;
-            LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
-            if (!unpredItems.isEmpty()) {
-                logger.trace("Filling {} items from baseline",
-                             unpredItems.size());
-                SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
-                vector.set(basePreds);
-            }
-            
+            baseline.predict(user, ratings, vector, false);
             return vector;
         }
 

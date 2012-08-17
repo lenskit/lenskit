@@ -36,7 +36,6 @@ import com.google.common.collect.Sets;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Override
@@ -76,7 +75,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v2.sum(), closeTo(Math.PI - 2.3));
         assertThat(v1.sum(), closeTo(Math.PI));
     }
-    
+
     @Test
     public void testImmutable() {
         MutableSparseVector v = simpleVector();
@@ -85,8 +84,8 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(7), closeTo(42.0));
         assertThat(iv.get(7), closeTo(3.5));
     }
-    
-    @Test(expected=IllegalStateException.class)
+
+    @Test(expected = IllegalStateException.class)
     public void testFreeze() {
         MutableSparseVector v = simpleVector();
         ImmutableSparseVector iv = v.freeze();
@@ -164,7 +163,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertTrue(v.keyDomain().contains(2));
         assertThat(v.get(2), notANumber());
     }
-    
+
     @Test
     public void testClear() {
         long[] keys = {2, 5};
@@ -176,7 +175,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.containsKey(5), equalTo(false));
         assertThat(v.keySet(),
                    equalTo((Set<Long>) Sets.newHashSet(2l)));
-        
+
         v.clear(2);
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.size(), equalTo(0));
@@ -205,7 +204,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Test
     public void testOverSize() {
         long[] keys = {3, 7, 9};
-        double[] values = { Math.PI, Math.E, 0.42 };
+        double[] values = {Math.PI, Math.E, 0.42};
         MutableSparseVector v = MutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
@@ -219,17 +218,17 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
-    
+
     @Test
     public void testFreezeClear() {
         long[] keys = {3, 7, 9};
-        double[] values = { Math.PI, Math.E, 0.42 };
+        double[] values = {Math.PI, Math.E, 0.42};
         MutableSparseVector v = MutableSparseVector.wrap(keys, values);
         v.clear(7);
         assertThat(v.size(), equalTo(2));
         ImmutableSparseVector f = v.freeze();
         assertThat(f.size(), equalTo(2));
-        assertThat(f.keySet().toLongArray(), equalTo(new long[]{3,9}));
+        assertThat(f.keySet().toLongArray(), equalTo(new long[]{3, 9}));
         assertThat(f.get(3), closeTo(Math.PI));
         assertThat(f.get(9), closeTo(0.42));
         assertThat(f.containsKey(7), equalTo(false));

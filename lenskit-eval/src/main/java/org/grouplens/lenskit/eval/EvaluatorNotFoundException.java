@@ -20,9 +20,9 @@ package org.grouplens.lenskit.eval;
 
 /**
  * Thrown when the requested evaluator could not be found.
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class EvaluatorNotFoundException extends Exception {
     private static final long serialVersionUID = -3053758858769880366L;

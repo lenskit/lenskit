@@ -34,70 +34,77 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * Base class for item recommenders. It implements all methods required by
  * {@link GlobalItemRecommender} by delegating them to general methods with
  * fastutil-based interfaces.
- * 
+ *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public abstract class AbstractGlobalItemRecommender implements GlobalItemRecommender{
+public abstract class AbstractGlobalItemRecommender implements GlobalItemRecommender {
     protected final DataAccessObject dao;
 
+    /**
+     * Initialize the recommender.
+     *
+     * @param dao The DAO.
+     */
     protected AbstractGlobalItemRecommender(DataAccessObject dao) {
         this.dao = dao;
     }
-    
+
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
-	public ScoredLongList globalRecommend(Set<Long> items){
-    	return globalRecommend(items, -1, null, null);
+    public ScoredLongList globalRecommend(Set<Long> items) {
+        return globalRecommend(items, -1, null, null);
     }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
-    @Override 
-    public ScoredLongList globalRecommend(Set<Long> items, int n){
-    	return globalRecommend(items, n, null, null);
-    } 
+    @Override
+    public ScoredLongList globalRecommend(Set<Long> items, int n) {
+        return globalRecommend(items, n, null, null);
+    }
 
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
-    @Override 
-    public ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates){
-    	return globalRecommend(items, -1, candidates, null);
+    @Override
+    public ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates) {
+        return globalRecommend(items, -1, candidates, null);
     }
-    
+
     /**
-     * Delegate to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
+     * {@inheritDoc}
+     * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
-    @Override 
+    @Override
     public ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
-                             @Nullable Set<Long> exclude){
-    	LongSet it = CollectionUtils.fastSet(items);
-    	LongSet cs = CollectionUtils.fastSet(candidates);
+                                          @Nullable Set<Long> exclude) {
+        LongSet it = CollectionUtils.fastSet(items);
+        LongSet cs = CollectionUtils.fastSet(candidates);
         LongSet es = CollectionUtils.fastSet(exclude);
         return globalRecommend(it, n, cs, es);
     }
-    
-    
-    
+
+
     /**
-     * Implementation method for global item recommendation.  
+     * Implementation method for global item recommendation.
      *
-     * @param items The items ID.
-     * @param n The number of items to return, or negative to return all
-     *        possible items.
+     * @param items      The items ID.
+     * @param n          The number of items to return, or negative to return all
+     *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude The set of excluded items, or <tt>null</tt> to use the
-     *        default exclude set.
+     * @param exclude    The set of excluded items, or <tt>null</tt> to use the
+     *                   default exclude set.
      * @return A list of <tt>ScoredId</tt> objects representing recommended
      *         items.
-     * @see GlobalItemRecommender#globalRecommend(long, int, Set, Set)
+     * @see GlobalItemRecommender#globalRecommend(Set, int, Set, Set)
      */
-    protected abstract ScoredLongList globalRecommend(LongSet items, int n, 
-    												  @Nullable LongSet candidates,
-    												  @Nullable LongSet exclude);
+    protected abstract ScoredLongList globalRecommend(LongSet items, int n,
+                                                      @Nullable LongSet candidates,
+                                                      @Nullable LongSet exclude);
 
-    
 }

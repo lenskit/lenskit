@@ -26,12 +26,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Helper utilities for JDBC.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class JDBCUtils {
+    private JDBCUtils() {
+    }
+
     private static Logger logger = LoggerFactory.getLogger(JDBCUtils.class);
 
+    /**
+     * Execute an SQL statement.
+     *
+     * @param dbc The connection to use.
+     * @param sql The statement to execute.
+     * @throws SQLException if there is an error executing the statement.
+     */
     public static void execute(Connection dbc, String sql) throws SQLException {
         logger.debug("Executing: {}", sql);
         Statement stmt = dbc.createStatement();
@@ -44,19 +55,19 @@ public class JDBCUtils {
             stmt.close();
         }
     }
-    
+
     /**
      * Safely clsoe a group of statements. Throws the first SQLException thrown
      * in closing the statements. If no SQLExceptions are thrown but closing a
      * statement throws a runtime exception, that is thrown.
-     * 
+     *
      * @param statements A set of statements to close.
      * @throws SQLException if one of the statements fails. The other statements
-     *         are still closed if possible.
+     *                      are still closed if possible.
      */
     public static void close(Statement... statements) throws SQLException {
         Exception err = null;
-        for (Statement s: statements) {
+        for (Statement s : statements) {
             if (s != null) {
                 try {
                     s.close();

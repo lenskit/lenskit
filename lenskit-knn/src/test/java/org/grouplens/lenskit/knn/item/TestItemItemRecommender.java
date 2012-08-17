@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -88,7 +89,7 @@ public class TestItemItemRecommender {
     @Test
     public void testItemScorerNoRating() {
         UserHistory<Rating> history = getRatings(5);
-        long[] items = { 7, 8 };
+        long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
         SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
@@ -255,7 +256,7 @@ public class TestItemItemRecommender {
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(7);
         recs = recommender.recommend(getRatings(5), 2, candidates, exclude);
-        assertEquals(1,recs.size());
+        assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
         recs = recommender.recommend(getRatings(5), 0, candidates, null);

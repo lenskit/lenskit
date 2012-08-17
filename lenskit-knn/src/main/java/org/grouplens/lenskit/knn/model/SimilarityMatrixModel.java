@@ -53,9 +53,10 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     /**
      * Construct a new item-item model.
+     *
      * @param universe The set of item IDs. This should be equal to the key set
      *                 of the matrix.
-     * @param matrix The similarity matrix columns (maps item ID to column)
+     * @param matrix   The similarity matrix columns (maps item ID to column)
      */
     public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
         itemUniverse = universe;

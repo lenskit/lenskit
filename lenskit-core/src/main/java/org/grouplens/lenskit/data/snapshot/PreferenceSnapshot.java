@@ -57,24 +57,28 @@ import java.io.Closeable;
 public interface PreferenceSnapshot extends Closeable {
     /**
      * Get the set of user IDs in the snapshot.
+     *
      * @return A set of all known user IDs.
      */
     LongCollection getUserIds();
 
     /**
      * Get the set of item IDs in the snapshot.
+     *
      * @return A set of all known item IDs.
      */
     LongCollection getItemIds();
 
     /**
      * Get the user ID index.
+     *
      * @return The index mapping between user IDs and user indices.
      */
     Index userIndex();
 
     /**
      * Get the item ID index.
+     *
      * @return The index mapping between user IDs and user indices.
      */
     Index itemIndex();

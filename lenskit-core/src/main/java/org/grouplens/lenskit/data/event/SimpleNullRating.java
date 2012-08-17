@@ -25,10 +25,8 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * Simple implementation of a null rating (unrate event).
  *
- * @see SimpleRating
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @see SimpleRating
  */
 @Immutable
 public class SimpleNullRating implements Rating {
@@ -40,7 +38,7 @@ public class SimpleNullRating implements Rating {
     /**
      * Construct a new null rating.
      *
-     * @param id The event ID.
+     * @param id  The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
      */
@@ -51,10 +49,10 @@ public class SimpleNullRating implements Rating {
     /**
      * Construct a new null rating.
      *
-     * @param id The event ID.
+     * @param id  The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param ts The event timestamp.
+     * @param ts  The event timestamp.
      */
     public SimpleNullRating(long id, long uid, long iid, long ts) {
         this.id = id;
@@ -88,13 +86,14 @@ public class SimpleNullRating implements Rating {
         return null;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public double getRating() {
         return Double.NaN;
     }
 
     @Override
-    public Rating clone() {
+    public Rating copy() {
         /* this object is immutable. Just return it. */
         return this;
     }

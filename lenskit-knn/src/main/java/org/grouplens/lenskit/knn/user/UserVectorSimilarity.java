@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 /**
  * Implementation of {@link UserSimilarity} that delegates to a vector similarity.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */

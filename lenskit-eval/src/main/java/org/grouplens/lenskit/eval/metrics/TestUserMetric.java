@@ -27,7 +27,7 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
  * produce accumulators which in turn accumulate recommendation statistics, returning
  * aggregate error information in the {@link TestUserMetricAccumulator#finalResults()}
  * method.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.10
  */
@@ -43,24 +43,26 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      * be possible to have multiple accumulators in separate threads in use concurrently.
      *
      * @param algorithm The algorithm to be evaluated.
-     * @param dataSet The data set being evaluated — used if the evaluator needs something
-     *           from it (such as the preference domain).
+     * @param dataSet   The data set being evaluated — used if the evaluator needs something
+     *                  from it (such as the preference domain).
      * @return The result accumulator for aggregating prediction results over a single
-     * evaluation.
+     *         evaluation.
      */
     TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
-    
+
     /**
      * Get labels for the aggregate columns output by this evaluator.
+     *
      * @return The labels for this evaluator's output, used as column headers when
-     * outputting the results table.
+     *         outputting the results table.
      */
     String[] getColumnLabels();
 
     /**
      * Get labels for the per-user columns output by this evaluator.
+     *
      * @return The labels for this evaluator's per-user output, used as column headers
-     * when outputting the results table.
+     *         when outputting the results table.
      * @see TestUserMetricAccumulator#evaluate(org.grouplens.lenskit.eval.traintest.TestUser)
      */
     String[] getUserColumnLabels();

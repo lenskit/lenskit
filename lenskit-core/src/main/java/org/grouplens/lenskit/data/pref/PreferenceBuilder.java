@@ -22,6 +22,7 @@ import org.apache.commons.lang3.builder.Builder;
 
 /**
  * Build a preference.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */

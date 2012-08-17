@@ -25,14 +25,14 @@ import javax.annotation.Nullable;
  * is effectively a recommender <i>session</i>: it is a per-thread or per-request
  * object, likely connected to a database connection or persistence session, that
  * needs to be closed when the client code is finished with it.
- *
+ * <p/>
  * <p>The various methods in this class return <var>null</var> if the corresponding
  * operation is not supported by the underlying recommender configuration.  This
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  * @see RecommenderEngine
  */
 public interface Recommender {
@@ -44,7 +44,7 @@ public interface Recommender {
      */
     @Nullable
     ItemScorer getItemScorer();
-    
+
     /**
      * Get the recommender's global item scorer.
      *
@@ -66,7 +66,8 @@ public interface Recommender {
     /**
      * @deprecated Use {@link #getRatingPredictor()} instead.
      */
-    @Nullable @Deprecated
+    @Nullable
+    @Deprecated
     RatingPredictor getDynamicRatingPredictor();
 
     /**
@@ -77,7 +78,7 @@ public interface Recommender {
      */
     @Nullable
     ItemRecommender getItemRecommender();
-        
+
     /**
      * Get the recommender's global item recommender.
      *
@@ -86,10 +87,12 @@ public interface Recommender {
      */
     @Nullable
     GlobalItemRecommender getGlobalItemRecommender();
-/**
+
+    /**
      * @deprecated Use {@link #getItemRecommender()} instead.
      */
-    @Nullable @Deprecated
+    @Nullable
+    @Deprecated
     ItemRecommender getDynamicItemRecommender();
 
     /**
@@ -97,6 +100,5 @@ public interface Recommender {
      * as appropriate.
      */
     void close();
-
 
 }

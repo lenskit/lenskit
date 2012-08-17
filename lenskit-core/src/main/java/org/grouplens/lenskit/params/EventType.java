@@ -16,12 +16,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.parallel;
+package org.grouplens.lenskit.params;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * A type of event, such as events to count in a history summarizer.
  *
+ * @author Michael Ekstrand
  */
-public interface WorkerFactory<T extends Worker> {
-    public T create(Thread owner);
-}
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.FIELD})
+@Documented
+public @interface EventType {}

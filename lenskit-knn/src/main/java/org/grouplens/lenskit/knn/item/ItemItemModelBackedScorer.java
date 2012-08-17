@@ -31,7 +31,6 @@ import org.grouplens.lenskit.knn.model.ItemItemModel;
  * model as well as the scoring functionality.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultImplementation(ItemItemScorer.class)
 public interface ItemItemModelBackedScorer extends ItemScorer {
@@ -44,6 +43,7 @@ public interface ItemItemModelBackedScorer extends ItemScorer {
 
     /**
      * Get the set of scoreable items for a user.
+     *
      * @param user The user to query for.
      * @return The set of items for which scores can be generated.
      */

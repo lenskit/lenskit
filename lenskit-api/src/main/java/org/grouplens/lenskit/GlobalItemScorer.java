@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 
@@ -30,35 +31,39 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a given item.
  *
- *
- * @since 1.0
- *
  * @author Steven Chang <schang@cs.umn.edu>
- *
+ * @compat Public
+ * @since 0.10
  */
 public interface GlobalItemScorer {
-
-	
     /**
      * Score a single item based on a collection of items(a shopping basket).
      *
      * @param queryItems The objective items ID used as the query
-     * @param item The item ID to score.
+     * @param item       The item ID to score.
      * @return The preference, or {@link Double#NaN} if no preference can be
      *         predicted.
      */
-	double globalScore(Collection<Long> queryItems, long item);
+    double globalScore(@Nonnull Collection<Long> queryItems, long item);
 
     /**
      * Score a collection of items based on a collection of items(a shopping basket).
      *
      * @param queryItems The objective items ID used as the query
-     * @param items The list of items to score.
+     * @param items      The list of items to score.
      * @return A mapping from item IDs to predicted preference. This mapping may
      *         not contain all requested items.
      */
-	@Nonnull
-	SparseVector globalScore(Collection<Long> queryItems, Collection<Long> items);
+    @Nonnull
+    SparseVector globalScore(@Nonnull Collection<Long> queryItems,
+                             @Nonnull Collection<Long> items);
 
-
+    /**
+     * Score a collection of items based on a collection of items (a shopping basket).
+     *
+     * @param queryItems The items to use as the query.
+     * @param output     A vector whose key domain is the items to score.
+     */
+    void globalScore(@Nonnull Collection<Long> queryItems,
+                     @Nonnull MutableSparseVector output);
 }

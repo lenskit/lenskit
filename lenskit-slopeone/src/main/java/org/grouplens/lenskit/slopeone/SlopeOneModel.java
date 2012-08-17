@@ -44,7 +44,7 @@ public class SlopeOneModel {
     private final PreferenceDomain domain;
 
     public SlopeOneModel(Long2IntMap[] coMatrix,Long2DoubleMap[] devMatrix,
-    	BaselinePredictor predictor, Index itemIndex, PreferenceDomain dom) {
+                         BaselinePredictor predictor, Index itemIndex, PreferenceDomain dom) {
 
         this.coMatrix = coMatrix;
         this.devMatrix = devMatrix;
@@ -54,16 +54,16 @@ public class SlopeOneModel {
     }
 
     public double getDeviation(long item1, long item2) {
-        if (item1 == item2) return 0;
-        else if (item1 < item2) {
+        if (item1 == item2) {
+            return 0;
+        } else if (item1 < item2) {
             int index = itemIndex.getIndex(item1);
             if (index < 0) {
                 return Double.NaN;
             } else {
                 return devMatrix[index].get(item2);
             }
-        }
-        else {
+        } else {
             int index = itemIndex.getIndex(item2);
             if (index < 0) {
                 return Double.NaN;
@@ -74,21 +74,21 @@ public class SlopeOneModel {
     }
 
     public int getCoratings(long item1, long item2) {
-        if (item1 == item2) return 0;
-        else if (item1 < item2) {
-        	int index = itemIndex.getIndex(item1);
+        if (item1 == item2) {
+            return 0;
+        } else if (item1 < item2) {
+            int index = itemIndex.getIndex(item1);
             if (index < 0) {
-            	return 0;
+                return 0;
             } else {
-            	return coMatrix[index].get(item2);
+                return coMatrix[index].get(item2);
             }
-        }
-        else {
+        } else {
             int index = itemIndex.getIndex(item2);
             if (index < 0) {
-            	return 0;
+                return 0;
             } else {
-            	return coMatrix[index].get(item1);
+                return coMatrix[index].get(item1);
             }
         }
     }

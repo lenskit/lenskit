@@ -34,6 +34,7 @@ import static org.junit.Assert.assertThat;
  */
 public class TestPreferenceDomainQuantizer {
     PreferenceDomain domain;
+
     @Before
     public void setUp() {
         domain = new PreferenceDomain(0.5, 5.0, 0.5);
@@ -42,7 +43,7 @@ public class TestPreferenceDomainQuantizer {
     @Test
     public void testMakeValues() {
         double[] vals = PreferenceDomainQuantizer.makeValues(domain);
-        double[] evals = { 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0 };
+        double[] evals = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0};
         assertArrayEquals(evals, vals, 1.0e-6);
     }
 

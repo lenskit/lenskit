@@ -33,12 +33,11 @@ import org.slf4j.LoggerFactory;
  * recommender coverage over the queried items.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class CoveragePredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final String[] COLUMNS = {
-        "NUsers", "NAttempted", "NGood", "Coverage"
+            "NUsers", "NAttempted", "NGood", "Coverage"
     };
     private static final String[] USER_COLUMNS = {
             "NAttempted", "NGood", "Coverage"
@@ -48,7 +47,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
@@ -70,7 +69,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             int n = 0;
             int good = 0;
-            for (VectorEntry e: ratings.fast()) {
+            for (VectorEntry e : ratings.fast()) {
                 double pv = predictions.get(e.getKey());
                 n += 1;
                 if (!Double.isNaN(pv)) {
@@ -81,7 +80,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             ngood += good;
             nusers += 1;
             return new Object[]{n, good,
-                    n > 0 ? (((double) good) / n) : null
+                                n > 0 ? (((double) good) / n) : null
             };
         }
 
@@ -89,7 +88,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         public Object[] finalResults() {
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
-            
+
             return new Object[]{nusers, npreds, ngood, coverage};
         }
 
