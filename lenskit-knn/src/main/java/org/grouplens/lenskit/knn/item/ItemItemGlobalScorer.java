@@ -33,45 +33,48 @@ import java.util.Collection;
 
 /**
  * Score items based on the basket of items using an item-item CF model.
- * 
+ *
  * @author Shuo Chang <schang@cs.umn.edu>
- * 
  */
 public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
         ItemItemModelBackedGlobalScorer {
-	protected final ItemItemModel model;
-	protected final @Nonnull NeighborhoodScorer scorer;
-    protected final @Nonnull ItemScoreAlgorithm algorithm;
+    protected final ItemItemModel model;
+    protected final
+    @Nonnull
+    NeighborhoodScorer scorer;
+    protected final
+    @Nonnull
+    ItemScoreAlgorithm algorithm;
 
     @Inject
-	public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
+    public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
                                 ItemScoreAlgorithm algo) {
-		super(dao);
-		model = m;
-		// The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
-		this.scorer = new SimilaritySumNeighborhoodScorer();
-		algorithm = algo;
-	}
+        super(dao);
+        model = m;
+        // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
+        this.scorer = new SimilaritySumNeighborhoodScorer();
+        algorithm = algo;
+    }
 
     @Override
     public ItemItemModel getModel() {
         return model;
     }
-    
+
     @Override
     public void globalScore(@Nonnull Collection<Long> queryItems,
                             @Nonnull MutableSparseVector output) {
-		// create the unary rating for the items
+        // create the unary rating for the items
         LongSet qItems = new LongSortedArraySet(queryItems);
         MutableSparseVector basket = new MutableSparseVector(qItems, 1.0);
 
         output.clear();
         algorithm.scoreItems(model, basket, output, scorer);
-	}
-	
+    }
 
-	@Override
-	public LongSet getScoreableItems(Collection<Long> queryItems) {
+
+    @Override
+    public LongSet getScoreableItems(Collection<Long> queryItems) {
         // FIXME This method incorrectly assumes the model is symmetric
         LongSet items = new LongOpenHashSet();
         LongIterator iter = LongIterators.asLongIterator(queryItems.iterator());

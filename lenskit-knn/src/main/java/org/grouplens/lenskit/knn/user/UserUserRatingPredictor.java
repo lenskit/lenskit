@@ -45,7 +45,6 @@ import static java.lang.Math.abs;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class UserUserRatingPredictor extends AbstractItemScorer implements RatingPredictor {
     private static final double MINIMUM_SIMILARITY = 0.001;
@@ -72,12 +71,11 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
      * FIXME: MDE does not like this method.
      *
      * @param neighborhoods
-     *
      */
     protected Long2ObjectMap<SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
         Long2ObjectMap<SparseVector> normedVectors =
-            new Long2ObjectOpenHashMap<SparseVector>();
-        for (Neighbor n: Iterables.concat(neighborhoods)) {
+                new Long2ObjectOpenHashMap<SparseVector>();
+        for (Neighbor n : Iterables.concat(neighborhoods)) {
             if (!normedVectors.containsKey(n.user)) {
                 normedVectors.put(n.user, normalizer.normalize(n.user, n.vector, null));
             }
@@ -92,18 +90,18 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
                      history.getUserId(), history.size());
 
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-            neighborhoodFinder.findNeighbors(history, scores.keyDomain());
+                neighborhoodFinder.findNeighbors(history, scores.keyDomain());
         Long2ObjectMap<SparseVector> normedUsers =
-            normalizeNeighborRatings(neighborhoods.values());
-        
+                normalizeNeighborRatings(neighborhoods.values());
+
         int nmissing = 0;
-        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
             double weight = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
             if (nbrs != null) {
-                for (Neighbor n: nbrs) {
+                for (Neighbor n : nbrs) {
                     weight += abs(n.similarity);
                     sum += n.similarity * normedUsers.get(n.user).get(item);
                 }

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of the SQL statement factory.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @SuppressWarnings("unused")
@@ -206,6 +207,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Add an ORDER BY clause to a query.
+     *
      * @param query The query accumulator
      * @param order The sort order.
      */
@@ -241,6 +243,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Finish a query (append a semicolon).
+     *
      * @param query The query accumulator
      */
     protected void rqFinish(StringBuilder query) {

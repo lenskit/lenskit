@@ -32,12 +32,12 @@ import org.junit.Test;
 
 public class TestSimilaritySumNeighborhoodScorer {
     SimilaritySumNeighborhoodScorer scorer;
-    
+
     @Before
     public void createScorer() {
         scorer = new SimilaritySumNeighborhoodScorer();
     }
-    
+
     public static Matcher<Double> closeTo(double x) {
         return Matchers.closeTo(x, 1.0e-5);
     }
@@ -48,14 +48,14 @@ public class TestSimilaritySumNeighborhoodScorer {
         SparseVector scores = new MutableSparseVector();
         assertThat(scorer.score(nbrs, scores), closeTo(0));
     }
-    
+
     @Test
     public void testEmptyNbrs() {
         ScoredLongList nbrs = new ScoredLongArrayList();
         SparseVector scores = ImmutableSparseVector.wrap(new long[]{5}, new double[]{3.7});
         assertThat(scorer.score(nbrs, scores), closeTo(0));
     }
-    
+
     @Test
     public void testOneNbr() {
         ScoredLongList nbrs = new ScoredLongArrayList();
@@ -63,7 +63,7 @@ public class TestSimilaritySumNeighborhoodScorer {
         SparseVector scores = ImmutableSparseVector.wrap(new long[]{5}, new double[]{3.7});
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
-    
+
     @Test
     public void testMultipleNeighbors() {
         ScoredLongList nbrs = new ScoredLongArrayList();

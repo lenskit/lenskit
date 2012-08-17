@@ -29,6 +29,7 @@ import java.io.Serializable;
 
 /**
  * Default user vector normalizer that delegates to a generic {@link VectorNormalizer}.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -46,6 +47,7 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
 
     /**
      * Construct a new user vector normalizer wrapping a generic vector normalizer.
+     *
      * @param norm The generic normalizer to use.
      */
     @Inject

@@ -27,7 +27,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Summarize user histories as real-valued vectors.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultImplementation(RatingVectorUserHistorySummarizer.class)
 public interface UserHistorySummarizer {

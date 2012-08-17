@@ -29,7 +29,6 @@ import com.google.common.collect.Iterators;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestBitSetIterator {
 
@@ -39,7 +38,7 @@ public class TestBitSetIterator {
         assertFalse(iter.hasNext());
         assertFalse(iter.hasPrevious());
     }
-    
+
     @Test
     public void testSingle() {
         BitSet s = new BitSet();
@@ -56,14 +55,14 @@ public class TestBitSetIterator {
         assertTrue(iter.hasNext());
         assertFalse(iter.hasPrevious());
     }
-    
+
     @Test
     public void testDouble() {
         BitSet s = new BitSet();
         s.set(0);
         s.set(1);
         BitSetIterator iter = new BitSetIterator(s);
-        
+
         // do some repeated things to make sure that advancing doesn't break
         assertFalse(iter.hasPrevious());
         assertTrue(iter.hasNext());
@@ -81,12 +80,12 @@ public class TestBitSetIterator {
         assertFalse(iter.hasNext());
         assertTrue(iter.hasPrevious());
         assertFalse(iter.hasNext());
-        
+
         iter = new BitSetIterator(s);
         assertArrayEquals(new Integer[]{0, 1},
                           Iterators.toArray(iter, Integer.class));
     }
-    
+
     @Test
     public void testSkip() {
         BitSet s = new BitSet();
@@ -94,7 +93,7 @@ public class TestBitSetIterator {
         s.set(5);
         s.set(7);
         BitSetIterator iter = new BitSetIterator(s);
-        
+
         // do some repeated things to make sure that advancing doesn't break
         assertFalse(iter.hasPrevious());
         assertTrue(iter.hasNext());
@@ -122,12 +121,12 @@ public class TestBitSetIterator {
         assertTrue(iter.hasPrevious());
         assertTrue(iter.hasNext());
         assertThat(iter.nextInt(), equalTo(5));
-       
+
         iter = new BitSetIterator(s);
         assertArrayEquals(new Integer[]{2, 5, 7},
                           Iterators.toArray(iter, Integer.class));
     }
-    
+
     @Test
     public void testStartOffset() {
         BitSet s = new BitSet();
@@ -136,12 +135,12 @@ public class TestBitSetIterator {
         BitSetIterator iter = new BitSetIterator(s, 2);
         assertArrayEquals(new Integer[]{2, 5},
                           Iterators.toArray(iter, Integer.class));
-        
+
         iter = new BitSetIterator(s, 3);
         assertArrayEquals(new Integer[]{5},
                           Iterators.toArray(iter, Integer.class));
     }
-    
+
     @Test
     public void testStartEndOffset() {
         BitSet s = new BitSet();

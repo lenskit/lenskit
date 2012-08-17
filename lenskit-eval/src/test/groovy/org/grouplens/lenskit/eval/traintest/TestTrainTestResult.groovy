@@ -42,14 +42,14 @@ import org.grouplens.lenskit.eval.util.table.TableImpl
  * @author Shuo Chang<schang@cs.umn.edu>
  *
  */
-class TestTrainTestResult extends ConfigTestBase{
-	def file = File.createTempFile("tempRatings", "csv")
-	def trainTestDir = Files.createTempDir()
+class TestTrainTestResult extends ConfigTestBase {
+    def file = File.createTempFile("tempRatings", "csv")
+    def trainTestDir = Files.createTempDir()
 
     @Before
     void prepareFile() {
         file.deleteOnExit()
-		file.append('19,242,3,881250949\n')
+        file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -60,27 +60,27 @@ class TestTrainTestResult extends ConfigTestBase{
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
     }
-	
-	@After
-	void cleanUpFiles() {
-		file.delete()
-		trainTestDir.deleteDir()
-	}
+
+    @After
+    void cleanUpFiles() {
+        file.delete()
+        trainTestDir.deleteDir()
+    }
 
     @Test
     void TestResult() {
-        def dat = eval{
+        def dat = eval {
             crossfold("tempRatings") {
                 source file
                 partitions 5
-				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
-        def result = eval{
+        def result = eval {
             trainTest {
                 dataset dat
-				output null
+                output null
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
 

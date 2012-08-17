@@ -48,7 +48,9 @@ import javax.inject.Inject;
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected @Nullable BaselinePredictor baseline;
+    protected
+    @Nullable
+    BaselinePredictor baseline;
 
     @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
@@ -68,7 +70,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      * the prediction is supplied from this baseline.
      *
      * @param pred The baseline predictor. Configure this by setting the
-     *        {@link BaselinePredictor} component.
+     *             {@link BaselinePredictor} component.
      * @see LenskitRecommenderEngineFactory#bind(Class)
      */
     @Inject
@@ -101,20 +103,19 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             return new BaselineAddingTransform(user, userData);
         }
     }
-    
+
     /**
      * Vector transformation that wraps the normalizer to supply baseline
      * predictions for missing values in the
      * {@link #unapply(MutableSparseVector)} method.
-     * 
+     *
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     * 
      */
     protected class BaselineAddingTransform implements VectorTransformation {
         final VectorTransformation norm;
         final long user;
         final SparseVector ratings;
-        
+
         public BaselineAddingTransform(long uid, SparseVector userData) {
             user = uid;
             ratings = userData;
@@ -124,7 +125,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
             norm.unapply(vector);
-            
+
             assert baseline != null;
             baseline.predict(user, ratings, vector, false);
             return vector;

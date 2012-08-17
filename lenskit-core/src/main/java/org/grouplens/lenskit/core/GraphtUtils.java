@@ -39,6 +39,7 @@ import java.util.Set;
 
 /**
  * Helper utilities for Grapht integration.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -54,6 +55,7 @@ class GraphtUtils {
 
     /**
      * Determine if a node is a shareable component.
+     *
      * @param node The node.
      * @return {@code true} if the component is shareable.
      */
@@ -89,6 +91,7 @@ class GraphtUtils {
 
     /**
      * Find the DAO node in a graph.
+     *
      * @param graph The graph to search.
      * @return The DAO node, if one exists, or {@code null}.
      * @throws IllegalArgumentException if there is more than one DAO node in the graph.
@@ -113,6 +116,7 @@ class GraphtUtils {
 
     /**
      * Remove transient edges from a set.
+     *
      * @param edges The set of edges.
      * @return A new set containing only the non-transient edges.
      */
@@ -128,6 +132,7 @@ class GraphtUtils {
 
     /**
      * Determine whether a desire is transient.
+     *
      * @param d The desire to test.
      * @return {@code true} if the desire is transient.
      */
@@ -138,6 +143,7 @@ class GraphtUtils {
 
     /**
      * Predicate satisfied by nodes whose satisfactions have the specified type.
+     *
      * @param type The requested type.
      * @return A predicate accepting nodes with the specified type.
      */
@@ -153,13 +159,14 @@ class GraphtUtils {
 
     /**
      * Function to extract the tail of a node.
+     *
      * @return A function extracting the tail of a node.
      */
-    public static Function<Edge,Node> edgeTail() {
+    public static Function<Edge, Node> edgeTail() {
         return EdgeTail.instance;
     }
 
-    private static class EdgeTail implements Function<Edge,Node> {
+    private static class EdgeTail implements Function<Edge, Node> {
         public static EdgeTail instance = new EdgeTail();
 
         @Override

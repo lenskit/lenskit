@@ -28,6 +28,7 @@ import java.io.File;
 
 /**
  * Command to return a CSV data source.
+ *
  * @author Michael Ekstrand
  */
 @SuppressWarnings("UnusedDeclaration")
@@ -37,7 +38,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
-    Function<DAOFactory,DAOFactory> wrapper;
+    Function<DAOFactory, DAOFactory> wrapper;
 
     public CSVDataSourceCommand() {
         super("CSVSource");
@@ -52,6 +53,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
 
     /**
      * Set the data source name. If unspecified, a name is derived from the file.
+     *
      * @param name The name of the data source.
      * @see #setFile(File)
      */
@@ -64,6 +66,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     /**
      * Set the input file. If unspecified, the name (see {@link #setName(String)}) is used
      * as the file name.
+     *
      * @param file The file to read ratings from.
      */
     public CSVDataSourceCommand setFile(File file) {
@@ -73,6 +76,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
 
     /**
      * Set the input field delimiter. The default is the tab character.
+     *
      * @param delim The input delimiter.
      */
     public CSVDataSourceCommand setDelimiter(String delim) {
@@ -82,6 +86,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
 
     /**
      * Specify whether to cache ratings in memory. Caching is enabled by default.
+     *
      * @param on {@code false} to disable caching.
      */
     public CSVDataSourceCommand setCache(boolean on) {
@@ -91,6 +96,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
 
     /**
      * Set the preference domain for the data source.
+     *
      * @param dom The preference domain.
      * @return The command (for chaining).
      */
@@ -103,10 +109,11 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      * Set a wrapper function to apply to the resulting DAOs. The data source command
      * wraps its DAO with this function, allowing it to be augmented with additional
      * information or transformations if desired.
+     *
      * @param wrapFun The DAO wrapper function.
      * @return The command (for chaining).
      */
-    public CSVDataSourceCommand setWrapper(Function<DAOFactory,DAOFactory> wrapFun) {
+    public CSVDataSourceCommand setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
         wrapper = wrapFun;
         return this;
     }
@@ -114,6 +121,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     /**
      * Build the data source. At least one of {@link #setName(String)} or
      * {@link #setFile(File)} must be called prior to building.
+     *
      * @return The configured data source.
      */
 
@@ -128,6 +136,6 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName,inputFile, delimiter, cache, domain, wrapper);
+        return new CSVDataSource(sourceName, inputFile, delimiter, cache, domain, wrapper);
     }
 }

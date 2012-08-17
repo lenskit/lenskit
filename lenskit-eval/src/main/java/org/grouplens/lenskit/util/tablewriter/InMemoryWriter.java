@@ -35,6 +35,7 @@ public class InMemoryWriter implements TableWriter {
 
     /**
      * Construct a new in memory writer.
+     *
      * @param l The table layout, or {@code null} if the table has no headers.
      */
     public InMemoryWriter(@Nullable TableLayout l) {
@@ -43,7 +44,8 @@ public class InMemoryWriter implements TableWriter {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 
 
     @Override

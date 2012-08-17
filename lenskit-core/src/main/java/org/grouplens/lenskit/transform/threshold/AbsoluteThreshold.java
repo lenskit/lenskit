@@ -33,6 +33,7 @@ public class AbsoluteThreshold implements Threshold {
 
     /**
      * Construct a new absolute-value threshold.
+     *
      * @param threshold The threshold valud.
      */
     @Inject

@@ -52,15 +52,15 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;
-        for (VectorEntry e: scores.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
-        	if (!user.containsKey(predicteeItem)) {
+            if (!user.containsKey(predicteeItem)) {
                 double total = 0;
                 int nitems = 0;
                 LongIterator ratingIter = user.keySet().iterator();
                 while (ratingIter.hasNext()) {
                     long currentItem = ratingIter.nextLong();
-                	int nusers = model.getCoratings(predicteeItem, currentItem);
+                    int nusers = model.getCoratings(predicteeItem, currentItem);
                     if (nusers != 0) {
                         double currentDev = model.getDeviation(predicteeItem, currentItem);
                         total += currentDev + user.get(currentItem);
@@ -68,7 +68,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
                     }
                 }
                 if (nitems != 0) {
-                    double predValue = total/nitems;
+                    double predValue = total / nitems;
                     predValue = model.getDomain().clampValue(predValue);
                     scores.set(e, predValue);
                 } else {
@@ -77,7 +77,7 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
                 }
             }
         }
-        
+
         //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && nUnpred > 0) {

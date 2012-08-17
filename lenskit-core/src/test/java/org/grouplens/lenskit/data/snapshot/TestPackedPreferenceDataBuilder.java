@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestPackedPreferenceDataBuilder {
     PackedPreferenceDataBuilder bld;
+
     @Before
     public void createBuilder() {
         bld = new PackedPreferenceDataBuilder();
@@ -71,8 +72,8 @@ public class TestPackedPreferenceDataBuilder {
         long[] items = new long[1000];
         for (int i = 0; i < 500; i++) {
             users[i] = rnd.nextInt(20000);
-            items[i*2] = rnd.nextInt(20000);
-            items[i*2+1] = rnd.nextInt(20000);
+            items[i * 2] = rnd.nextInt(20000);
+            items[i * 2 + 1] = rnd.nextInt(20000);
         }
         Preference[] prefs = new Preference[10000];
         for (int i = 0; i < 10000; i++) {

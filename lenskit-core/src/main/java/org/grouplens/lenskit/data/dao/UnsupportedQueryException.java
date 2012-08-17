@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.dao;
 
 /**
  * Exception thrown when a data source receives an unsupported query.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */

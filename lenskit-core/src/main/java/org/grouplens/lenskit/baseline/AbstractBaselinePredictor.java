@@ -25,6 +25,7 @@ import java.util.Collection;
 
 /**
  * Abstract implementation of BaselinePredictor.
+ *
  * @author Michael Ekstrand
  */
 public abstract class AbstractBaselinePredictor implements BaselinePredictor {

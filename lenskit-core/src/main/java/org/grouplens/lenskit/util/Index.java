@@ -50,6 +50,7 @@ public interface Index extends Serializable {
 
     /**
      * Get the number of ID in the index.
+     *
      * @return The number of indexed keys.
      */
     int getObjectCount();

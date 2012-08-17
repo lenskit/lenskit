@@ -37,13 +37,13 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
 /**
  * Read-only interface to sparse vectors.
- * 
+ *
  * <p>
  * This vector class works a lot like a map, but it also caches some
  * commonly-used statistics. The values are stored in parallel arrays sorted by
  * key. This allows fast lookup and sorted iteration. All iterators access the
  * items in key order.
- * 
+ *
  * <p>
  * Vectors have a <i>key domain</i>, which is a set containing all valid keys in
  * the vector. This key domain is fixed at construction; mutable vectors cannot
@@ -51,14 +51,14 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * from longs to doubles, the key domain would actually be the codomain, and the
  * key set the algebraic domain, but that gets cumbersome to write in code. So
  * think of the key domain as the domain from which valid keys are drawn.
- * 
+ *
  * <p>
  * This class provides a <em>read-only</em> interface to sparse vectors. It may
  * actually be a {@link MutableSparseVector}, so the data may be modified by
  * code elsewhere that has access to the mutable representation. For sparse
  * vectors that are guaranteed to be unchanging, see
  * {@link ImmutableSparseVector}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
@@ -81,6 +81,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Get the rating for <var>key</var>.
+     *
      * @param key the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
      * @see #get(long, double)
@@ -91,6 +92,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Get the rating for <var>key</var>.
+     *
      * @param key the key to look up
      * @param dft The value to return if the key is not in the vector
      * @return the value (or <var>dft</var> if no such key exists)
@@ -107,6 +109,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Iterate over all entries.
+     *
      * @return an iterator over all key/value pairs.
      */
     @Override
@@ -114,10 +117,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Fast iterator over all set entries (it can reuse entry objects).
+     *
      * @return a fast iterator over all key/value pairs
      * @see #fastIterator(State)
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
-     *         Long2DoubleMap.FastEntrySet.fastIterator()
+     *      Long2DoubleMap.FastEntrySet.fastIterator()
      */
     public Iterator<VectorEntry> fastIterator() {
         return fastIterator(State.SET);
@@ -128,15 +132,16 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      *
      * @param state The state of entries to iterate.
      * @return a fast iterator over all key/value pairs
-     * @since 0.11
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
-     *         Long2DoubleMap.FastEntrySet.fastIterator()
+     *      Long2DoubleMap.FastEntrySet.fastIterator()
+     * @since 0.11
      */
     public abstract Iterator<VectorEntry> fastIterator(State state);
 
     /**
      * Return an iterable view of this vector using a fast iterator. This method
      * delegates to {@link #fast(State)} with state {@link State#SET}.
+     *
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
      */
@@ -146,6 +151,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Return an iterable view of this vector using a fast iterator.
+     *
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator(State)
      * @since 0.11
@@ -161,18 +167,21 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Get the set of keys of this vector. It is a subset of the key domain.
+     *
      * @return The set of keys used in this vector.
      */
     public abstract LongSortedSet keySet();
-    
+
     /**
      * Get the key domain for this vector. All keys used are in this set.
+     *
      * @return The key domain for this vector.
      */
     public abstract LongSortedSet keyDomain();
 
     /**
      * Return the keys of this vector sorted by value.
+     *
      * @return A list of keys in nondecreasing order of value.
      * @see #keysByValue(boolean)
      */
@@ -182,6 +191,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Get the keys of this vector sorted by value.
+     *
      * @param decreasing If <var>true</var>, sort in decreasing order.
      * @return The sorted list of keys of this vector.
      */
@@ -196,10 +206,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
                 @Override
                 public int compare(long k1, long k2) {
                     int c = Double.compare(get(k2), get(k1));
-                    if (c != 0)
+                    if (c != 0) {
                         return c;
-                    else
+                    } else {
                         return Longs.compare(k1, k2);
+                    }
                 }
             };
         } else {
@@ -207,10 +218,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
                 @Override
                 public int compare(long k1, long k2) {
                     int c = Double.compare(get(k1), get(k2));
-                    if (c != 0)
+                    if (c != 0) {
                         return c;
-                    else
+                    } else {
                         return Longs.compare(k1, k2);
+                    }
                 }
             };
         }
@@ -221,13 +233,14 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Get the collection of values of this vector.
+     *
      * @return The collection of all values in this vector.
      */
     public abstract DoubleCollection values();
 
     /**
      * Get the size of this vector (the number of keys).
-     * 
+     *
      * @return The number of keys in the vector. This is at most the size of the
      *         key domain.
      */
@@ -235,6 +248,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Query whether this vector is empty.
+     *
      * @return <tt>true</tt> if the vector is empty.
      */
     public boolean isEmpty() {
@@ -243,6 +257,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Compute and return the L2 norm (Euclidian length) of the vector.
+     *
      * @return The L2 norm of the vector
      */
     public double norm() {
@@ -260,6 +275,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Compute and return the L1 norm (sum) of the vector
+     *
      * @return the sum of the vector's values
      */
     public double sum() {
@@ -276,12 +292,13 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Compute and return the mean of the vector's values
+     *
      * @return the mean of the vector
      */
     public double mean() {
         if (mean == null) {
             final int sz = size();
-            mean = sz > 0 ? sum() / sz: 0;
+            mean = sz > 0 ? sum() / sz : 0;
         }
         return mean;
     }
@@ -301,7 +318,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
         }
         return n;
     }
-    
+
     @Override
     public String toString() {
         Function<VectorEntry, String> label = new Function<VectorEntry, String>() {
@@ -343,7 +360,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key
      * domain will be equal to the {@link #keySet()} of this vector.
-     * 
+     *
      * @return An immutable sparse vector whose contents are the same as this
      *         vector. If the vector is already immutable, the returned object
      *         may be identical.
@@ -353,7 +370,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     /**
      * Return a mutable copy of this sparse vector. The key domain of the
      * mutable vector will be the same as this vector's key domain.
-     * 
+     *
      * @return A mutable sparse vector which can be modified without modifying
      *         this vector.
      */

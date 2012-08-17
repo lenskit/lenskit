@@ -26,8 +26,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Abstract vector normalizer implementation.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractVectorNormalizer implements VectorNormalizer {
 

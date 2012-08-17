@@ -40,7 +40,7 @@ import java.util.Collection;
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
@@ -48,10 +48,16 @@ public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     protected final ItemItemModel model;
-    protected @Nonnull UserVectorNormalizer normalizer;
+    protected
+    @Nonnull
+    UserVectorNormalizer normalizer;
     protected UserHistorySummarizer summarizer;
-    protected @Nonnull NeighborhoodScorer scorer;
-    protected @Nonnull ItemScoreAlgorithm algorithm;
+    protected
+    @Nonnull
+    NeighborhoodScorer scorer;
+    protected
+    @Nonnull
+    ItemScoreAlgorithm algorithm;
 
     @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
@@ -78,7 +84,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Set the normalizer to apply to user summaries.
-     * 
+     *
      * @param norm The normalizer.
      * @see UserVectorNormalizer
      */
@@ -89,6 +95,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Score items by computing predicted ratings.
+     *
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
      * @see #makeTransform(long, SparseVector)
      */
@@ -104,7 +111,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
         algorithm.scoreItems(model, normed, scores, scorer);
 
-		// untransform the scores
+        // untransform the scores
         transform.unapply(scores);
     }
 
@@ -118,11 +125,11 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * baseline. The vector passed to unapply the transformation will contain
      * all items to be predicted in the key domain, and will have values for all
      * predictable items.
-     * 
+     *
      * <p>
      * The default implementation delegates to the normalizer
      * ({@link #setNormalizer(UserVectorNormalizer)}).
-     * 
+     *
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */

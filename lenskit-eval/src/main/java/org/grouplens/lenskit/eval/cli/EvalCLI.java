@@ -31,16 +31,16 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class EvalCLI {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
-    
+
     /**
      * Run the evaluator from the command line.
+     *
      * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
@@ -48,9 +48,9 @@ public class EvalCLI {
         EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
-    
+
     EvalCLIOptions options;
-    
+
     public EvalCLI(EvalCLIOptions opts) {
         options = opts;
     }

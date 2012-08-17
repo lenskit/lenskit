@@ -42,6 +42,7 @@ import java.util.*;
 /**
  * Load and process configuration files. Also provides helper methods used by the
  * configuration scripts to locate & invoke methods.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -51,7 +52,7 @@ public class EvalConfigEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-    
+
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> commands = new HashMap<Class, Class>();
 
@@ -80,18 +81,20 @@ public class EvalConfigEngine {
 
     /**
      * Load a script from a file.
+     *
      * @param file The file to read.
      * @return The script as parsed and compiled by Groovy.
      * @throws IOException if the file cannot be read.
      */
     protected EvalConfigScript loadScript(File file) throws IOException {
-        EvalConfigScript script =  (EvalConfigScript) shell.parse(file);
+        EvalConfigScript script = (EvalConfigScript) shell.parse(file);
         script.setEngine(this);
         return script;
     }
 
     /**
      * Load a script from a reader.
+     *
      * @param in The reader to read.
      * @return The script as parsed and compiled by Groovy.
      */
@@ -103,11 +106,14 @@ public class EvalConfigEngine {
 
     /**
      * Run an evaluation config script and get the evaluations it produces.
+     *
      * @param script The script to run (as loaded by Groovy)
      * @return A list of evaluations produced by {@code script}.
      * @throws CommandException if the script is invalid or produces an error.
      */
-    protected @Nullable Object runScript(EvalConfigScript script) throws CommandException {
+    protected
+    @Nullable
+    Object runScript(EvalConfigScript script) throws CommandException {
         Object result = null;
         try {
             result = script.run();
@@ -121,32 +127,40 @@ public class EvalConfigEngine {
 
     /**
      * Load a set of evaluations from a script file.
+     *
      * @param file A Groovy script to configure the evaluator.
      * @return A list of evaluations to run.
      * @throws CommandException if there is a configuration error
-     * @throws IOException if there is an error reading the file
+     * @throws IOException      if there is an error reading the file
      */
-    public @Nullable Object execute(File file) throws CommandException, IOException {
+    public
+    @Nullable
+    Object execute(File file) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file));
     }
 
     /**
      * Load a set of evaluations from an input stream.
+     *
      * @param in The input stream
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error
      */
-    public @Nullable Object execute(Reader in) throws CommandException {
+    public
+    @Nullable
+    Object execute(Reader in) throws CommandException {
         return runScript(loadScript(in));
     }
 
     /**
      * Find a command with a particular name if it exists.
+     *
      * @param name The name of the command
      * @return The command factory or {@code null} if no such factory exists.
      */
-    @CheckForNull @Nullable
+    @CheckForNull
+    @Nullable
     public Class<? extends Command> getCommand(@Nonnull String name) {
         String path = METHOD_PATH + name + ".properties";
         logger.debug("loading method {} from {}", name, path);
@@ -161,7 +175,9 @@ public class EvalConfigEngine {
             props.load(istr);
             Object pv = props.get("command").toString();
             String className = pv == null ? null : pv.toString();
-            if (className == null) return null;
+            if (className == null) {
+                return null;
+            }
 
             return Class.forName(className).asSubclass(Command.class);
         } catch (IOException e) {
@@ -176,6 +192,7 @@ public class EvalConfigEngine {
     /**
      * Get a command for a type. It consults registered commands and looks for the
      * {@link BuilderCommand} annotation.
+     *
      * @param type A type that needs to be built.
      * @return A command class to build {@code type}, or {@code null} if none can be found.
      * @see #registerCommand
@@ -196,9 +213,10 @@ public class EvalConfigEngine {
     /**
      * Register a command class for a type. Used to allow commands to be found for types where
      * the type cannot be augmented with the {@code DefaultBuilder} annotation.
-     * @param type The type to build.
+     *
+     * @param type    The type to build.
      * @param command A class that can build instances of {@code type}.
-     * @param <T> The type to build (type parameter).
+     * @param <T>     The type to build (type parameter).
      */
     public <T> void registerCommand(Class<T> type, Class<? extends Command> command) {
         Preconditions.checkNotNull(type, "type cannot be null");
@@ -213,7 +231,7 @@ public class EvalConfigEngine {
     protected void loadCommands() {
         Properties props = new Properties();
         try {
-            for (URL url: Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
+            for (URL url : Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
                 InputStream istr = url.openStream();
                 try {
                     props.load(istr);
@@ -224,7 +242,7 @@ public class EvalConfigEngine {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        for (Map.Entry<Object,Object> prop: props.entrySet()) {
+        for (Map.Entry<Object, Object> prop : props.entrySet()) {
             String name = prop.getKey().toString();
             String command = prop.getValue().toString();
             Class cls;

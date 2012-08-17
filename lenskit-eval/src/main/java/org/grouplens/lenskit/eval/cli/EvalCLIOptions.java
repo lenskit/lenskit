@@ -32,8 +32,9 @@ import java.util.List;
 
 /**
  * Parse & present command line options for running the evaluator.
- * @since 0.10
+ *
  * @author Michael Ekstrand
+ * @since 0.10
  */
 public class EvalCLIOptions {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLIOptions.class);
@@ -65,7 +66,7 @@ public class EvalCLIOptions {
         }
 
         tasks = new ArrayList<String>();
-        for (String s: cmd.getArgs()) {
+        for (String s : cmd.getArgs()) {
             tasks.add(s);
         }
     }

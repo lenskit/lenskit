@@ -22,6 +22,7 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 
 /**
  * Abstract base implementation of {@link TestUserMetric}.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */

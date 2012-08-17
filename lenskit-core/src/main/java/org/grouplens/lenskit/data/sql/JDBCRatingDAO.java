@@ -42,7 +42,6 @@ import java.util.Properties;
  * no other events are supported.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class JDBCRatingDAO extends AbstractDataAccessObject {
     public static final int COL_EVENT_ID = 1;
@@ -63,7 +62,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         private final SQLStatementFactory factory;
         private volatile boolean takeSnapshot = false;
         private final Properties properties;
-        
+
         public Factory(String url, SQLStatementFactory config) {
             this(url, config, null);
         }
@@ -90,7 +89,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
          * code while open, set this to <tt>true</tt>.
          *
          * @param take Whether to take an in-memory snapshot of the database in
-         *            the {@link #snapshot()} method.
+         *             the {@link #snapshot()} method.
          * @return The factory (for chaining)
          */
         public Factory setSnapshotting(boolean take) {
@@ -100,8 +99,9 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public JDBCRatingDAO create() {
-            if (cxnUrl == null)
+            if (cxnUrl == null) {
                 throw new UnsupportedOperationException("Cannot open session w/o URL");
+            }
 
             Connection dbc;
             try {
@@ -133,6 +133,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         /**
          * Wrap an existing database connection in a DAO.
+         *
          * @param cxn A database connection to use.
          * @return A DAO backed by the connection.
          */
@@ -153,8 +154,9 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
     @Override
     public void close() {
-        if (!ownsSession)
+        if (!ownsSession) {
             return;
+        }
 
         try {
             session.close();
@@ -307,8 +309,9 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public long nextLong() {
-            if (!hasNext())
+            if (!hasNext()) {
                 throw new NoSuchElementException();
+            }
             advanced = false;
             try {
                 return rset.getLong(1);

@@ -21,10 +21,9 @@ package org.grouplens.lenskit.eval;
 /**
  * A single evaluation job.  This is typically building and evaluating a single
  * recommender on a single data set.
- * 
- * @since 0.8 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public interface Job extends Runnable {
     /**
@@ -32,11 +31,11 @@ public interface Job extends Runnable {
      * the user know what is being run.  More specific descriptors identifying
      * this job to allow its output to be processed should be output directly
      * to the output handler when the job is run.
-     * 
+     *
      * @return The name for this job.
      */
     String getName();
-    
+
     /**
      * Run this job.
      */

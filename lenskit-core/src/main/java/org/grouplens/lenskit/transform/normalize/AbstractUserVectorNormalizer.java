@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 
 /**
  * Abstract user vector normalizer implementation.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.11
  */

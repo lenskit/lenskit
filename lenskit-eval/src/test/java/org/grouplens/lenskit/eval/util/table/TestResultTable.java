@@ -51,14 +51,14 @@ public class TestResultTable {
         assertEquals(result.filter("a", "r123").size(), 0);
         assertEquals(result.filter("b", 1).size(), 2);
         assertEquals(result.filter("end", 22.2).size(), 1);
-        assertEquals(result.filter("d",10).filter("b", 1).size(), 1);
+        assertEquals(result.filter("d", 10).filter("b", 1).size(), 1);
     }
 
     @Test
     public void TestValues() {
         assertEquals(result.column("b").size(), 4);
         assertEquals(result.column("b").get(1), 1);
-        assertEquals(result.filter("d",10).column("a").get(0), "r1");
+        assertEquals(result.filter("d", 10).column("a").get(0), "r1");
         assertEquals(result.column("None").size(), 0);
     }
 
@@ -72,7 +72,7 @@ public class TestResultTable {
 
     @Test
     public void TestAverage() {
-        assertEquals(result.column("b").average(), Double.valueOf(5/4.0));
+        assertEquals(result.column("b").average(), Double.valueOf(5 / 4.0));
         assertTrue(result.column("a").average().isNaN());
         assertTrue(result.column("NONE").average().isNaN());
     }

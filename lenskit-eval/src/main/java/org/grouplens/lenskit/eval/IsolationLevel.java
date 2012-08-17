@@ -20,9 +20,9 @@ package org.grouplens.lenskit.eval;
 
 /**
  * Isolation level for evaluation runs.
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public enum IsolationLevel {
     /**

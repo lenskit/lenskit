@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 /**
  * Utility methods for interacting with vectors.
+ *
  * @compat Public
  */
 public class Vectors {
@@ -33,10 +34,12 @@ public class Vectors {
      * Private constructor. This class is meant to be used
      * via its static methods, not instantiated.
      */
-    private Vectors() {}
+    private Vectors() {
+    }
 
     /**
      * Provides an Iterable over EntryPairs based off of a fast Iterator.
+     *
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
@@ -53,10 +56,11 @@ public class Vectors {
     /**
      * Returns a fast Iterator over the value pairs of the parameter
      * SparseVectors that share common keys.
+     *
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return a fast Iterator over EntryPairs, representing a shared
-     * key and the paired values for that key.
+     *         key and the paired values for that key.
      */
     public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
@@ -69,6 +73,7 @@ public class Vectors {
 
     /**
      * Provides an Iterable over EntryPairs.
+     *
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
@@ -85,15 +90,15 @@ public class Vectors {
     /**
      * Returns an Iterator over the value pairs of the parameter
      * SparseVectors that share common keys.
+     *
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return an Iterator over EntryPairs, representing a shared
-     * key and the paired values for that key.
+     *         key and the paired values for that key.
      */
     public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
         return new IteratorImpl(v1, v2);
     }
-
 
 
     private static final class IteratorImpl implements Iterator<EntryPair> {
@@ -201,18 +206,23 @@ public class Vectors {
         double value1;
         double value2;
 
-        public EntryPair() {}
+        public EntryPair() {
+        }
+
         public EntryPair(long key, double value1, double value2) {
             this.key = key;
             this.value1 = value1;
             this.value2 = value2;
         }
+
         public Long getKey() {
             return key;
         }
+
         public double getValue1() {
             return value1;
         }
+
         public Double getValue2() {
             return value2;
         }

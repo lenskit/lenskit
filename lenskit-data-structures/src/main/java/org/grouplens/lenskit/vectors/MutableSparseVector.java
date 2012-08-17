@@ -40,18 +40,19 @@ import java.util.Iterator;
 
 /**
  * Mutable sparse vector interface
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * <p>This extends the sparse vector with support for imperative mutation
- * operations on their values, but
- * once created the set of keys remains immutable.  Addition and subtraction are
- * supported.  Mutation operations also operate in-place to reduce the
- * reallocation and copying required.  Therefore, a common pattern is:
+ *         <p>This extends the sparse vector with support for imperative mutation
+ *         operations on their values, but
+ *         once created the set of keys remains immutable.  Addition and subtraction are
+ *         supported.  Mutation operations also operate in-place to reduce the
+ *         reallocation and copying required.  Therefore, a common pattern is:
  *
- * <pre>
- * MutableSparseVector normalized = MutableSparseVector.copy(vector);
- * normalized.subtract(normFactor);
- * </pre>
+ *         <pre>
+ *                 MutableSparseVector normalized = MutableSparseVector.copy(vector);
+ *                 normalized.subtract(normFactor);
+ *                 </pre>
  * @compat Public
  */
 public class MutableSparseVector extends SparseVector implements Serializable {
@@ -136,7 +137,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * are sorted and duplicate-free, and that the values is the same length.
      * The key set and key domain is the keys array, and both are the keys
      * array.
-     * 
+     *
      * @param keys The array of keys backing the vector. It must be sorted.
      * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
@@ -150,13 +151,13 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             usedKeys.set(i);
         }
     }
-    
+
     /**
      * Construct a new vector from existing arrays. It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length.
      * The key set and key domain is the keys array, and both are the keys
      * array.
-     * 
+     *
      * @param keys The array of keys backing the vector.
      * @param values The array of values backing the vector.
      * @param length Number of items to actually use.
@@ -174,7 +175,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             throw new IllegalStateException("Vector is frozen");
         }
     }
-    
+
     protected int findIndex(long key) {
         return Arrays.binarySearch(keys, 0, domainSize, key);
     }
@@ -183,17 +184,17 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     public int size() {
         return usedKeys.cardinality();
     }
-    
+
     @Override
     public LongSortedSet keyDomain() {
         return LongSortedArraySet.wrap(keys, domainSize);
     }
-    
+
     @Override
     public LongSortedSet keySet() {
         return LongSortedArraySet.wrap(keys, domainSize, usedKeys);
     }
-    
+
     @Override
     public DoubleCollection values() {
         checkValid();
@@ -205,35 +206,35 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
         return lst;
     }
-    
+
     @Override
     public Iterator<VectorEntry> iterator() {
         return new IterImpl();
     }
-    
+
     @Override
     public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
         IntIterator iter;
         switch (state) {
-            case SET:
-                iter = new BitSetIterator(usedKeys, 0, domainSize);
-                break;
-            case UNSET: {
-                BitSet unused = (BitSet) usedKeys.clone();
-                unused.flip(0, domainSize);
-                iter = new BitSetIterator(unused, 0, domainSize);
-                break;
-            }
-            case EITHER: {
-                iter = new IntIntervalList(0, domainSize).iterator();
-                break;
-            }
-            default:
-                throw new IllegalArgumentException("invalid entry state");
+        case SET:
+            iter = new BitSetIterator(usedKeys, 0, domainSize);
+            break;
+        case UNSET: {
+            BitSet unused = (BitSet) usedKeys.clone();
+            unused.flip(0, domainSize);
+            iter = new BitSetIterator(unused, 0, domainSize);
+            break;
+        }
+        case EITHER: {
+            iter = new IntIntervalList(0, domainSize).iterator();
+            break;
+        }
+        default:
+            throw new IllegalArgumentException("invalid entry state");
         }
         return new FastIterImpl(iter);
     }
-    
+
     @Override
     public final boolean containsKey(long key) {
         final int idx = findIndex(key);
@@ -269,7 +270,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Set a value in the vector.
-     * 
+     *
      * @param key The key of the value to set.
      * @param value The value to set.
      * @return The original value, or {@link Double#NaN} if the key had no value
@@ -309,11 +310,11 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         DoubleArrays.fill(values, 0, domainSize, value);
         usedKeys.set(0, domainSize);
     }
-    
+
     /**
      * Clear the value for a key.  The key remains in the key domain, but is
      * removed from the key set.
-     * 
+     *
      * @param key The key to clear.
      */
     public final void clear(long key) {
@@ -362,14 +363,15 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     /**
      * Add a value to the specified entry, setting the value if the key is not
      * in the key set.
-     * 
+     *
      * @param key The key whose value should be added.
      * @param value The value to increase it by.
      * @return The new value. If the key is not in the key domain,
      *         {@link Double#NaN} is returned.
      * @deprecated Generally not wanted. Will be removed by LensKit 1.0.
      */
-    @Deprecated @SuppressWarnings("unused")
+    @Deprecated
+    @SuppressWarnings("unused")
     public final double addOrSet(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
@@ -393,7 +395,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * <p>After calling this method, every element of this vector has been
      * decreased by the corresponding element in <var>other</var>.  Elements
      * with no corresponding element are unchanged.
-     * 
+     *
      * @param other The vector to subtract.
      */
     public final void subtract(final SparseVector other) {
@@ -470,7 +472,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             } // otherwise, key is greater; advance outer 
         }
     }
-    
+
     /**
      * Multiply the vector by a scalar. This multiples every element in the
      * vector by <var>s</var>.
@@ -492,19 +494,19 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     public final MutableSparseVector copy() {
         return mutableCopy();
     }
-    
+
     @Override
     public final MutableSparseVector mutableCopy() {
         double[] nvs = Arrays.copyOf(values, domainSize);
         BitSet nbs = (BitSet) usedKeys.clone();
         return new MutableSparseVector(keys, nvs, domainSize, nbs);
     }
-    
+
     @Override
     public ImmutableSparseVector immutable() {
         return immutable(false);
     }
-    
+
     /**
      * Construct an immutable sparse vector from this vector's data,
      * invalidating this vector in the process. Any subsequent use of this
@@ -516,7 +518,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     public ImmutableSparseVector freeze() {
         return immutable(true);
     }
-    
+
     private ImmutableSparseVector immutable(boolean freeze) {
         checkValid();
         ImmutableSparseVector isv;
@@ -548,19 +550,23 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
         return isv;
     }
-    
+
     final class IterImpl implements Iterator<VectorEntry> {
         BitSetIterator iter = new BitSetIterator(usedKeys);
+
         @Override
         public boolean hasNext() {
             return iter.hasNext();
         }
-        @Override @Nonnull
+
+        @Override
+        @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
             return new VectorEntry(MutableSparseVector.this, pos,
                                    keys[pos], values[pos], true);
         }
+
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -570,6 +576,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     final class FastIterImpl implements Iterator<VectorEntry> {
         VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
         IntIterator iter;
+
         public FastIterImpl(IntIterator positions) {
             iter = positions;
         }
@@ -578,7 +585,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         public boolean hasNext() {
             return iter.hasNext();
         }
-        @Override @Nonnull
+
+        @Override
+        @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
             boolean set = usedKeys.get(pos);
@@ -586,6 +595,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
             entry.set(pos, keys[pos], v, set);
             return entry;
         }
+
         @Override
         public void remove() {
             throw new UnsupportedOperationException();

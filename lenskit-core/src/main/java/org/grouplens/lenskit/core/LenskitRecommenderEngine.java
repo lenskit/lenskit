@@ -37,16 +37,15 @@ import java.io.*;
  * the {@link LenskitRecommenderEngineFactory} to set up recommender sessions.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  * @see LenskitRecommenderEngineFactory
  * @see LenskitRecommender
- * @compat Public
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
     final Graph dependencies;
     private final Node rootNode;
     private final Node daoPlaceholder;
-    
+
     private final InjectSPI spi;
 
     private final DAOFactory factory;
@@ -68,7 +67,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * created by using {@link #write(File)}.
      *
      * @param factory The DAO factory.
-     * @param file The file from which to load the recommender engine.
+     * @param file    The file from which to load the recommender engine.
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -125,9 +124,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * Open a recommender with a specific data connection. The client code must
      * close the recommender when it is finished with it.
      *
-     * @param dao The DAO to connect the recommender to.
+     * @param dao         The DAO to connect the recommender to.
      * @param shouldClose If <tt>true</tt>, then the recommender should close the
-     * DAO when it is closed.
+     *                    DAO when it is closed.
      * @return A recommender ready for use and backed by <var>dao</var>.
      */
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {

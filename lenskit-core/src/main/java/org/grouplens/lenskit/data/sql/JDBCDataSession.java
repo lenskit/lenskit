@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JDBC session, wrapped to provide access to statements, etc.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class JDBCDataSession implements Closeable {

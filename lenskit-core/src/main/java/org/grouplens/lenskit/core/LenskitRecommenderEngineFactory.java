@@ -41,7 +41,7 @@ import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
  * <p>
- *     This class is final for copying safety. This decision can be revisited.
+ * This class is final for copying safety. This decision can be revisited.
  * </p>
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

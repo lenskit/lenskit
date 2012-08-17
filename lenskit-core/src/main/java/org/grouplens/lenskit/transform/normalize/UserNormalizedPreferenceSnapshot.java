@@ -142,13 +142,19 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
             return new Iterator<IndexedPreference>() {
                 private Iterator<IndexedPreference> biter = base.fastIterator();
                 IndirectPreference preference = new IndirectPreference();
-                @Override public void remove() {
+
+                @Override
+                public void remove() {
                     throw new UnsupportedOperationException();
                 }
-                @Override public boolean hasNext() {
+
+                @Override
+                public boolean hasNext() {
                     return biter.hasNext();
                 }
-                @Override public IndexedPreference next() {
+
+                @Override
+                public IndexedPreference next() {
                     preference.base = biter.next();
                     return preference;
                 }
@@ -189,10 +195,12 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
             }
         }
 
-        @Override @Deprecated
+        @Override
+        @Deprecated
         public Iterable<IndexedPreference> fast() {
             return new Iterable<IndexedPreference>() {
-                @Override public Iterator<IndexedPreference> iterator() {
+                @Override
+                public Iterator<IndexedPreference> iterator() {
                     return fastIterator();
                 }
             };
@@ -202,19 +210,25 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
         public Iterator<IndexedPreference> iterator() {
             return new Iterator<IndexedPreference>() {
                 Iterator<IndexedPreference> biter = base.fastIterator();
-                @Override public void remove() {
+
+                @Override
+                public void remove() {
                     throw new UnsupportedOperationException();
                 }
-                @Override public boolean hasNext() {
+
+                @Override
+                public boolean hasNext() {
                     return biter.hasNext();
                 }
-                @Override public IndexedPreference next() {
+
+                @Override
+                public IndexedPreference next() {
                     IndexedPreference r = biter.next();
                     long iid = r.getItemId();
                     int uidx = r.getUserIndex();
                     return IndexedPreferenceBuilder.copy(r)
-                            .setValue(normedData[uidx].get(iid))
-                            .build();
+                                                   .setValue(normedData[uidx].get(iid))
+                                                   .build();
                 }
             };
         }

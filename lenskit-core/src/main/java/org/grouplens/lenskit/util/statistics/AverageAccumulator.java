@@ -23,10 +23,9 @@ package org.grouplens.lenskit.util.statistics;
  * An implementation of a moving average.<br/>
  * Only the sum and the item count is stored, not the values them self.
  * </p>
- * 
+ *
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
  * @since 0.11
- * 
  */
 public class AverageAccumulator {
 
@@ -44,10 +43,9 @@ public class AverageAccumulator {
     /**
      * Initialize the {@link AverageAccumulator} with a pre-calculated sum and
      * the amount of values included.
-     * 
-     * @param sum pre-calculated sum
+     *
+     * @param sum   pre-calculated sum
      * @param count amount of values that where used to build this sum
-     * 
      */
     public AverageAccumulator(double sum, long count) {
         this.count = count;
@@ -56,7 +54,7 @@ public class AverageAccumulator {
 
     /**
      * Add a new datum to the {@link AverageAccumulator}
-     * 
+     *
      * @param datum new datum to include into the average.
      */
     public void add(double datum) {
@@ -65,7 +63,6 @@ public class AverageAccumulator {
     }
 
     /**
-     * 
      * @return average over all added datums
      */
     public double getAverage() {

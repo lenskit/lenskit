@@ -45,6 +45,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
 
     /**
      * Initialize the recommender.
+     *
      * @param dao The DAO.
      */
     protected AbstractItemRecommender(DataAccessObject dao) {

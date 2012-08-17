@@ -25,10 +25,12 @@ public class EvalOptions {
     private boolean force = false;
     private int threadCount = 1;
 
-    public EvalOptions() {}
+    public EvalOptions() {
+    }
 
     /**
      * Set force mode.
+     *
      * @param on {@code true} to turn on force mode.
      * @return The options (for chaining).
      * @see #isForce()
@@ -41,6 +43,7 @@ public class EvalOptions {
     /**
      * Query whether this run is in "force" mode. In force mode, tasks should do their
      * work irregardless of whether files are already up-to-date.
+     *
      * @return {@code true} if the evaluation is running in force mode.
      */
     public boolean isForce() {
@@ -49,6 +52,7 @@ public class EvalOptions {
 
     /**
      * Get the thread count for this run.
+     *
      * @return The number of threads to use.
      */
     public int getThreadCount() {
@@ -58,6 +62,7 @@ public class EvalOptions {
     /**
      * Set the number of threads for tasks to use. At present, tasks are run sequentially, so this
      * is only an instruction for how tasks are to do internal parallelism.
+     *
      * @param threadCount The number of threads to use.
      * @return The options (for chaining).
      */

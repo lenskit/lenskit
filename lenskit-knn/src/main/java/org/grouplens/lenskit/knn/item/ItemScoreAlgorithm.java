@@ -25,6 +25,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 /**
  * Algorithm for scoring items given an item-item model and neighborhood scorer.
  * Used by {@link ItemItemScorer} and {@link ItemItemGlobalScorer} to score items.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -32,11 +33,12 @@ import org.grouplens.lenskit.vectors.SparseVector;
 public interface ItemScoreAlgorithm {
     /**
      * Score items for a user.
-     * @param model The item-tiem model.
+     *
+     * @param model    The item-tiem model.
      * @param userData The user's rating data.
-     * @param scores The score vector (key domain is items to score). Unscoreable
-     *               items will be left unchanged.
-     * @param scorer The scorer to use.
+     * @param scores   The score vector (key domain is items to score). Unscoreable
+     *                 items will be left unchanged.
+     * @param scorer   The scorer to use.
      */
     void scoreItems(ItemItemModel model, SparseVector userData,
                     MutableSparseVector scores,

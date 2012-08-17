@@ -39,7 +39,8 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     /**
      * The DAO passed to the constructor.
      */
-    protected final @Nonnull DataAccessObject dao;
+    @Nonnull
+    protected final DataAccessObject dao;
 
     /**
      * Initialize the abstract item scorer.

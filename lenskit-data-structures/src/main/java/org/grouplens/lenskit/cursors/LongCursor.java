@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 
 /**
  * {@link Cursor} iterating over primitive longs.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */

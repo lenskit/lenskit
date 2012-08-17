@@ -35,6 +35,7 @@ import java.util.Comparator;
 
 /**
  * Rating-only data source backed by a simple delimited file.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
@@ -50,9 +51,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
         /**
          * Create a new DAO factory from a file.
-         * @param file The name of the file toopen.
+         *
+         * @param file      The name of the file toopen.
          * @param delimiter The delimiter to use.
-         * @param comp Whether the file is compressed.
+         * @param comp      Whether the file is compressed.
          */
         public Factory(File file, String delimiter, CompressionMode comp) {
             compression = comp;
@@ -62,7 +64,8 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
         /**
          * Create a factory inferring compression from the file name.
-         * @param file The file name to read from.
+         *
+         * @param file      The file name to read from.
          * @param delimiter The delimiter.
          * @see #Factory(File, String, CompressionMode)
          */
@@ -73,9 +76,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         /**
          * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
          * property (defaults to "\t" if not found).
+         *
          * @param file The file to read.
-         * @see #Factory(File,String,CompressionMode)
          * @throws java.io.FileNotFoundException if {@code file} is not found.
+         * @see #Factory(File, String, CompressionMode)
          */
         public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
@@ -104,9 +108,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
     /**
      * Create a URL reading from the specified file/URL and delimiter.
-     * @param file The file (if <tt>null</tt>, the URL is used).
+     *
+     * @param file      The file (if <tt>null</tt>, the URL is used).
      * @param delimiter The delimiter to look for in the file.
-     * @param comp Whether the input is compressed.
+     * @param comp      Whether the input is compressed.
      */
     public SimpleFileRatingDAO(File file, String delimiter, CompressionMode comp) {
         this.file = file;
@@ -127,8 +132,9 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         // if they don't want ratings, they get nothing
-        if (!type.isAssignableFrom(Rating.class))
+        if (!type.isAssignableFrom(Rating.class)) {
             return Cursors.empty();
+        }
 
         @SuppressWarnings("rawtypes")
         Comparator comp = getComparator(order);

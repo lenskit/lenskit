@@ -42,6 +42,7 @@ public @interface ConfigDelegate {
     /**
      * The delegate implementation to use. The class must have a no-arg public
      * constructor.
+     *
      * @return The delegate class.
      */
     Class<?> value();

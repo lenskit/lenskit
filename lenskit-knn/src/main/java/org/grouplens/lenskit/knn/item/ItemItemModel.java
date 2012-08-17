@@ -40,6 +40,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 public interface ItemItemModel {
     /**
      * Get the set of all items in the model.
+     *
      * @return The set of item IDs for all items in the model.
      */
     LongSortedSet getItemUniverse();
@@ -47,9 +48,10 @@ public interface ItemItemModel {
     /**
      * Get the neighbors of an item scored by similarity. This is the corresponding
      * <em>row</em> of the item-item similarity matrix (see {@link org.grouplens.lenskit.knn.item}).
+     *
      * @param item The item to get the neighborhood for.
      * @return The row of the similarity matrix. If the item is unknown, an empty
-     * list is returned.
+     *         list is returned.
      */
     @Nonnull
     ScoredLongList getNeighbors(long item);

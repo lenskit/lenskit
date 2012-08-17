@@ -224,6 +224,7 @@ public final class Cursors {
 
     /**
      * Wrap a long iterator in a cursor.
+     *
      * @param iter An iterator.
      * @return A cursor backed by {@code iter}. Closing the cursor is a no-op.
      */
@@ -233,6 +234,7 @@ public final class Cursors {
 
     /**
      * Construct a cursor over a collection.
+     *
      * @param collection A collection.
      * @return A cursor over the collection. Closing the cursor is a no-op.
      */
@@ -242,6 +244,7 @@ public final class Cursors {
 
     /**
      * Make a fast long cursor.
+     *
      * @param cursor A cursor.
      * @return A {@link LongCursor}. If {@code cursor} is a LongCursor, it is returned.
      */
@@ -299,7 +302,7 @@ public final class Cursors {
      * Sort a cursor.  This reads the original cursor into a list, sorts it, and
      * returns a new cursor backed by the list (after closing the original cursor).
      *
-     * @param <T> The type of value in the cursor.
+     * @param <T>    The type of value in the cursor.
      * @param cursor The cursor to sort.
      * @param comp   The comparator to use to sort the cursor.
      * @return A cursor iterating over the sorted results.

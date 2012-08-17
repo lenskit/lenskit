@@ -41,6 +41,6 @@ import org.grouplens.grapht.annotation.DefaultDouble;
 @Documented
 @DefaultDouble(0.0)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Damping { }
+public @interface Damping {}

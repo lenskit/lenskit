@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
  *
@@ -42,7 +43,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
-    
+
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
@@ -68,7 +69,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
-    
+
 
     public TrainTestEvalCommand() {
         this("Traintest");
@@ -117,7 +118,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         isolationLevel = level;
         return this;
     }
-    
+
     public TrainTestEvalCommand setThread(int n) {
         nThread = n;
         return this;
@@ -156,11 +157,12 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
      * Run the evaluation on the train test data source files
      *
      * @return For now, return nothing
-     * @throws org.grouplens.lenskit.eval.CommandException  Failure of the evaluation
+     * @throws org.grouplens.lenskit.eval.CommandException
+     *          Failure of the evaluation
      */
     @Override
     public TableImpl call() throws CommandException {
-    	this.setupJobs();
+        this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
             nthreads = Runtime.getRuntime().availableProcessors();
@@ -170,17 +172,17 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
         switch (isolationLevel) {
-            case NONE:
-                exec = new MergedJobGroupExecutor(nthreads);
-                break;
-            case JOB_GROUP:
-                exec = new SequentialJobGroupExecutor(nthreads);
-                break;
-            default:
-                throw new RuntimeException("Invalid isolation level " + isolationLevel);
+        case NONE:
+            exec = new MergedJobGroupExecutor(nthreads);
+            break;
+        case JOB_GROUP:
+            exec = new SequentialJobGroupExecutor(nthreads);
+            break;
+        default:
+            throw new RuntimeException("Invalid isolation level " + isolationLevel);
         }
 
-        for (JobGroup group: this.getJobGroups()) {
+        for (JobGroup group : this.getJobGroups()) {
             exec.add(group);
         }
         try {
@@ -199,8 +201,8 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
-        for (TTDataSet ds: dataSources) {
-            for (String attr: ds.getAttributes().keySet()) {
+        for (TTDataSet ds : dataSources) {
+            for (String attr : ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
                     dataColumns.put(attr, master.addColumn(attr));
                 }
@@ -208,8 +210,8 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         }
 
         algoColumns = new HashMap<String, Integer>();
-        for (AlgorithmInstance algo: algorithms) {
-            for (String attr: algo.getAttributes().keySet()) {
+        for (AlgorithmInstance algo : algorithms) {
+            for (String attr : algo.getAttributes().keySet()) {
                 if (!algoColumns.containsKey(attr)) {
                     algoColumns.put(attr, master.addColumn(attr));
                 }
@@ -218,7 +220,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
         jobGroups = new ArrayList<JobGroup>(dataSources.size());
         int idx = 0;
-        for (TTDataSet dataset: dataSources) {
+        for (TTDataSet dataset : dataSources) {
             TrainTestEvalJobGroup group;
             group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
             jobGroups.add(group);
@@ -235,17 +237,17 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         String[] columnLabels;
         String[] userColumnLabels;
 
-        for (TestUserMetric ev: metrics) {
+        for (TestUserMetric ev : metrics) {
             columnLabels = ev.getColumnLabels();
-            if (columnLabels != null){
-                for (String c: columnLabels) {
+            if (columnLabels != null) {
+                for (String c : columnLabels) {
                     output.addColumn(c);
                 }
             }
 
             userColumnLabels = ev.getUserColumnLabels();
-            if (userColumnLabels != null){
-                for (String c: userColumnLabels) {
+            if (userColumnLabels != null) {
+                for (String c : userColumnLabels) {
                     perUser.addColumn(c);
                 }
             }
@@ -270,13 +272,13 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
         outputInMemory = new InMemoryWriter(outputLayout);
         tableWriters.add(outputInMemory);
-        if (outputFile != null)  {
-        	try {
-        		tableWriters.add(CSVWriter.open(outputFile, outputLayout));
-        	} catch (IOException e) {
-        		throw new RuntimeException("Error opening output table", e);
-        	}
-        }        
+        if (outputFile != null) {
+            try {
+                tableWriters.add(CSVWriter.open(outputFile, outputLayout));
+            } catch (IOException e) {
+                throw new RuntimeException("Error opening output table", e);
+            }
+        }
         output = new MultiplexedTableWriter(outputLayout, tableWriters);
         if (userOutputFile != null) {
             try {
@@ -295,13 +297,13 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (TestUserMetric metric: predictMetrics) {
+        for (TestUserMetric metric : predictMetrics) {
             metric.startEvaluation(this);
         }
     }
 
     private void cleanUp() {
-        for (TestUserMetric metric: predictMetrics) {
+        for (TestUserMetric metric : predictMetrics) {
             metric.finishEvaluation();
         }
         if (output == null) {
@@ -330,7 +332,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
      *
      * @return A supplier for the table writer for this evaluation.
      * @throws IllegalStateException if the job has not been started or is
-     *         finished.
+     *                               finished.
      */
     @Nonnull
     Supplier<TableWriter> outputTableSupplier() {
@@ -345,12 +347,14 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
     /**
      * Get the prediction output table.
+     *
      * @return The table writer for the prediction output.
      */
     @Nonnull
     Supplier<TableWriter> predictTableSupplier() {
         return new Supplier<TableWriter>() {
-            @Override public TableWriter get() {
+            @Override
+            public TableWriter get() {
                 return predictOutput;
             }
         };
@@ -358,12 +362,14 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
     /**
      * Get the user output table.
+     *
      * @return The table writer for the prediction output.
      */
     @Nonnull
     Supplier<TableWriter> userTableSupplier() {
         return new Supplier<TableWriter>() {
-            @Override public TableWriter get() {
+            @Override
+            public TableWriter get() {
                 return userOutput;
             }
         };
@@ -376,12 +382,12 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
     /**
      * Function version of {@link #prefixTable(TableWriter, AlgorithmInstance, TTDataSet)}. Intended
-     * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function,Supplier)}.
+     * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function, Supplier)}.
      */
-    public Function<TableWriter,TableWriter> prefixFunction(
+    public Function<TableWriter, TableWriter> prefixFunction(
             final AlgorithmInstance algorithm,
             final TTDataSet dataSet) {
-        return new Function<TableWriter,TableWriter>() {
+        return new Function<TableWriter, TableWriter>() {
             @Override
             public TableWriter apply(TableWriter base) {
                 return prefixTable(base, algorithm, dataSet);
@@ -391,23 +397,26 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
     /**
      * Prefix a table for a particular algorithm and data set.
-     * @param base The table to prefix.
+     *
+     * @param base      The table to prefix.
      * @param algorithm The algorithm to prefix for.
-     * @param dataSet The data set to prefix for.
+     * @param dataSet   The data set to prefix for.
      * @return A prefixed table, suitable for outputting the results of evaluating
-     * {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
+     *         {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
      */
     public TableWriter prefixTable(TableWriter base,
                                    AlgorithmInstance algorithm, TTDataSet dataSet) {
-        if (base == null) return null;
+        if (base == null) {
+            return null;
+        }
 
         Object[] prefix = new Object[commonColumnCount];
         prefix[0] = algorithm.getName();
-        for (Map.Entry<String,Object> attr: dataSet.getAttributes().entrySet()) {
+        for (Map.Entry<String, Object> attr : dataSet.getAttributes().entrySet()) {
             int idx = dataColumns.get(attr.getKey());
             prefix[idx] = attr.getValue();
         }
-        for (Map.Entry<String,Object> attr: algorithm.getAttributes().entrySet()) {
+        for (Map.Entry<String, Object> attr : algorithm.getAttributes().entrySet()) {
             int idx = algoColumns.get(attr.getKey());
             prefix[idx] = attr.getValue();
         }

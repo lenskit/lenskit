@@ -23,6 +23,7 @@ package org.grouplens.lenskit.baseline;
 
 
 import static org.junit.Assert.assertEquals;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
@@ -44,8 +45,8 @@ import org.junit.Test;
 
 /**
  * Test baseline predictors that compute means from data.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;

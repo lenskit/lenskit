@@ -38,6 +38,7 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
 
     /**
      * Create the half-open interval [0,size).
+     *
      * @param size The size of the interval.
      */
     public IntIntervalList(int size) {
@@ -45,18 +46,21 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
     }
 
     private static void checkIndex(int idx, int start, int end) {
-        if (idx < 0 || start + idx >= end)
+        if (idx < 0 || start + idx >= end) {
             throw new IndexOutOfBoundsException(String.format("%d not in [%d,%d)", idx, start, end));
+        }
     }
 
     /**
      * Create the half-open interval [start,end).
+     *
      * @param start The interval start point (inclusive).
-     * @param end The interval end point (exclusive).
+     * @param end   The interval end point (exclusive).
      */
     public IntIntervalList(int start, int end) {
-        if (end < start)
+        if (end < start) {
             throw new IllegalArgumentException("end < start");
+        }
         this.start = start;
         this.end = end;
     }

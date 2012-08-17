@@ -41,14 +41,13 @@ import java.util.concurrent.Callable;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class TrainTestEvalJobGroup implements JobGroup {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJobGroup.class);
-    
+
     private TTDataSet dataSet;
     private List<Job> jobs;
 
@@ -77,9 +76,9 @@ public class TrainTestEvalJobGroup implements JobGroup {
                         return snap;
                     }
                 });
-        
+
         jobs = new ArrayList<Job>(algos.size());
-        for (AlgorithmInstance algo: algos) {
+        for (AlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, data, snap,
@@ -110,7 +109,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     public List<Job> getJobs() {
         return jobs;
     }
-    
+
     private SharedPreferenceSnapshot loadSnapshot() {
         DataAccessObject dao = dataSet.getTrainFactory().create();
         try {

@@ -24,25 +24,26 @@ import java.util.List;
 
 /**
  * Partition a list by holding out a fixed number of elements.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * @param <E>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class CountPartition<E> implements PartitionAlgorithm<E> {
-	
-	private int count;
 
-	/**
-	 * Create a count partitioner.
-	 * @param n The number of items to put in the second partition.
-	 */
-	public CountPartition(int n) {
-		count = n;
-	}
+    private int count;
 
-	@Override
-	public int partition(List<E> data) {
-		return max(0, data.size() - count);
-	}
+    /**
+     * Create a count partitioner.
+     *
+     * @param n The number of items to put in the second partition.
+     */
+    public CountPartition(int n) {
+        count = n;
+    }
+
+    @Override
+    public int partition(List<E> data) {
+        return max(0, data.size() - count);
+    }
 
 }

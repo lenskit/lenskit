@@ -198,6 +198,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
 
     /**
      * Get the mean for a particular item.
+     *
      * @param id The item ID.
      * @return The item's mean rating.
      */

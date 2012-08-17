@@ -20,18 +20,21 @@ package org.grouplens.lenskit.collections;
 
 /**
  * Additional array utilities.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class MoreArrays {
 
     /**
      * Check that the array is sorted.
+     *
      * @return <code>true</code> iff the array is sorted.
      */
     public static boolean isSorted(final long[] data, final int start, final int end) {
         for (int i = start; i < end - 1; i++) {
-            if (data[i] > data[i+1]) return false;
+            if (data[i] > data[i + 1]) {
+                return false;
+            }
         }
         return true;
     }
@@ -39,18 +42,23 @@ public class MoreArrays {
     /**
      * Remove duplicate elements in the backing store. The array should be
      * unsorted.
+     *
      * @return the new end index of the array
      */
     public static int deduplicate(final long[] data, final int start, final int end) {
-        if (start == end) return end;   // special-case empty arrays
-    
+        if (start == end) {
+            return end;   // special-case empty arrays
+        }
+
         // Since we have a non-empty array, the nextPos will always be where the
         // end is if we find no more unique elements.
         int pos = start + 1;
         for (int i = pos; i < end; i++) {
-            if (data[i] != data[i-1]) { // we have a non-duplicate item
+            if (data[i] != data[i - 1]) { // we have a non-duplicate item
                 if (i != pos)           // indices out of alignment, must copy
+                {
                     data[pos] = data[i];
+                }
                 pos++;                  // increment nextPos since we have a new non-dup
             }
             // if data[i] is a duplicate, then i steps forward and nextPos doesn't,

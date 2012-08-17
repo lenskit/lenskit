@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestConstantPredictor {
 

@@ -22,14 +22,15 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Accumulates the results of a single test pass on a single algorithm.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface AlgorithmTestAccumulator {
     /**
      * Start the algorithm's build timer.
      */
     void startBuildTimer();
+
     /**
      * Stop the algorithm's build timer.
      */

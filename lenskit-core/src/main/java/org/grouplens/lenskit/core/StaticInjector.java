@@ -137,13 +137,13 @@ class StaticInjector implements Injector {
                 pol = lbl.getSatisfaction().getDefaultCachePolicy();
             }
             switch (pol) {
-                case NEW_INSTANCE:
-                    provider = np;
-                    break;
-                default:
-                    // TODO allow default policy to be specified
-                    provider = new MemoizingProvider(np);
-                    break;
+            case NEW_INSTANCE:
+                provider = np;
+                break;
+            default:
+                // TODO allow default policy to be specified
+                provider = new MemoizingProvider(np);
+                break;
             }
             providerCache.put(node, provider);
         }

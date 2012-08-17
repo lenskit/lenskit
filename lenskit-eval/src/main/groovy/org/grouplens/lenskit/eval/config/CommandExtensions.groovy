@@ -111,7 +111,7 @@ class CommandExtensions {
         def arg
         Class[] atypes
         arg = args[0]
-        if(!List.class.isAssignableFrom(arg.class)) {
+        if (!List.class.isAssignableFrom(arg.class)) {
             return null
         }
         def type = arg[0].class
@@ -131,56 +131,56 @@ class CommandExtensions {
     static List<Method> getMethods(Command self, String name) {
         self.class.methods.findAll {it.name == name}
     }
-		
-	/**
-	* Find a setter method compatible with a specific property name and arguments.
-	* @param self The command.
-	* @param name The property name.
-	* @param args The arguments.
-	* @return A no-argument closure that either invokes the method if it is found
-	* or throws an exception if there is no matching method.
-	*/
-	static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
-        name = "set" + name.capitalize()
-		def methods = getMethods(self, name)
-		
-		if (args.length == 1 && args[0] == null) {
-			if (methods.size() == 1) {
-				def method = methods[0]
-				def formals = method.parameterTypes
-				if (formals.size() == 1 && !formals[0].isPrimitive()) {
-					return {
-						method.invoke(self, args)
-					}
-				} else {
-					return {
-						throw new IllegalArgumentException("multiple methods found matching ${name}")
-					}
-				}
-			}
-		} else {						
-	        def method = findMethod(self, name, args)
-	        if (method == null) {
-	            method = findBuildableMethod(self, engine, methods, args)
-	            if (method == null && !methods.isEmpty()) {
-	                return {
-	                    throw new IllegalArgumentException("no compatible method ${name} found")
-	                }
-	            }
-	        }
-	        return method
-	    }
-	}
 
-	/**
-	* Find an adder method compatible with a specific property name and arguments.
-	* @param self The command.
-	* @param name The property name.
-	* @param args The arguments.
-	* @return A no-argument closure that either invokes the method if it is found
-	* or throws an exception if there is no matching method.
-	*/
-	static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
+    /**
+     * Find a setter method compatible with a specific property name and arguments.
+     * @param self The command.
+     * @param name The property name.
+     * @param args The arguments.
+     * @return A no-argument closure that either invokes the method if it is found
+     * or throws an exception if there is no matching method.
+     */
+    static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
+        name = "set" + name.capitalize()
+        def methods = getMethods(self, name)
+
+        if (args.length == 1 && args[0] == null) {
+            if (methods.size() == 1) {
+                def method = methods[0]
+                def formals = method.parameterTypes
+                if (formals.size() == 1 && !formals[0].isPrimitive()) {
+                    return {
+                        method.invoke(self, args)
+                    }
+                } else {
+                    return {
+                        throw new IllegalArgumentException("multiple methods found matching ${name}")
+                    }
+                }
+            }
+        } else {
+            def method = findMethod(self, name, args)
+            if (method == null) {
+                method = findBuildableMethod(self, engine, methods, args)
+                if (method == null && !methods.isEmpty()) {
+                    return {
+                        throw new IllegalArgumentException("no compatible method ${name} found")
+                    }
+                }
+            }
+            return method
+        }
+    }
+
+    /**
+     * Find an adder method compatible with a specific property name and arguments.
+     * @param self The command.
+     * @param name The property name.
+     * @param args The arguments.
+     * @return A no-argument closure that either invokes the method if it is found
+     * or throws an exception if there is no matching method.
+     */
+    static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)

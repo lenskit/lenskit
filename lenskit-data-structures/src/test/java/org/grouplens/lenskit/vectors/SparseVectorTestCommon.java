@@ -20,6 +20,7 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+
 import static org.junit.Assert.assertNull;
 
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
@@ -38,27 +39,30 @@ import static org.junit.Assert.*;
 public abstract class SparseVectorTestCommon {
     /**
      * Create an empty vector.
+     *
      * @return An empty sparse vector.
      */
     protected abstract SparseVector emptyVector();
-    
+
     /**
      * @return A singleton rating vector mapping 5 to PI.
      */
     protected abstract SparseVector singleton();
-    
+
     /**
      * Construct a simple rating vector with three ratings.
+     *
      * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
      */
     protected abstract SparseVector simpleVector();
-    
+
     /**
      * Construct a simple rating vector with three ratings.
+     *
      * @return A rating vector mapping {3, 5, 8} to {2, 2.3, 1.7}.
      */
     protected abstract SparseVector simpleVector2();
-    
+
     @Test
     public void testDot() {
         assertThat(emptyVector().dot(emptyVector()), closeTo(0));
@@ -69,7 +73,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(simpleVector().dot(simpleVector2()), closeTo(6.4));
         assertThat(simpleVector().dot(simpleVector2().immutable()), closeTo(6.4));
     }
-    
+
     @Test
     public void testCountCommonKeys() {
         assertThat(emptyVector().countCommonKeys(emptyVector()),
@@ -83,6 +87,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(simpleVector().countCommonKeys(simpleVector2()),
                    equalTo(2));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#get(long)}.
      */
@@ -92,7 +97,7 @@ public abstract class SparseVectorTestCommon {
         SparseVector v = singleton();
         assertThat(v.get(5), closeTo(Math.PI));
         assertThat(v.get(2), notANumber());
-    
+
         v = simpleVector();
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(7), closeTo(3.5));
@@ -103,6 +108,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(9), notANumber());
         assertThat(v.get(42), notANumber());
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#get(long, double)}.
      */
@@ -113,7 +119,7 @@ public abstract class SparseVectorTestCommon {
         SparseVector v = singleton();
         assertThat(v.get(5, -1), closeTo(Math.PI));
         assertThat(v.get(2, -1), closeTo(-1));
-    
+
         v = simpleVector();
         assertThat(v.get(7, -1), closeTo(3.5));
         assertThat(v.get(3, -1), closeTo(1.5));
@@ -123,6 +129,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(9, -7), closeTo(-7));
         assertThat(v.get(42, Math.E), closeTo(Math.E));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#containsKey(long)}.
      */
@@ -131,11 +138,11 @@ public abstract class SparseVectorTestCommon {
         assertFalse(emptyVector().containsKey(5));
         assertFalse(emptyVector().containsKey(42));
         assertFalse(emptyVector().containsKey(-1));
-    
+
         assertTrue(singleton().containsKey(5));
         assertFalse(singleton().containsKey(3));
         assertFalse(singleton().containsKey(7));
-    
+
         assertFalse(simpleVector().containsKey(1));
         assertFalse(simpleVector().containsKey(5));
         assertFalse(simpleVector().containsKey(42));
@@ -143,6 +150,7 @@ public abstract class SparseVectorTestCommon {
         assertTrue(simpleVector().containsKey(7));
         assertTrue(simpleVector().containsKey(8));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#iterator()}.
      */
@@ -155,7 +163,7 @@ public abstract class SparseVectorTestCommon {
         } catch (NoSuchElementException x) {
             /* no-op */
         }
-    
+
         Iterator<VectorEntry> iter = singleton().iterator();
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
@@ -168,7 +176,7 @@ public abstract class SparseVectorTestCommon {
         } catch (NoSuchElementException x) {
             /* no-op */
         }
-    
+
         VectorEntry[] entries =
                 Iterators.toArray(simpleVector().iterator(),
                                   VectorEntry.class);
@@ -180,6 +188,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(entries[1].getValue(), closeTo(3.5));
         assertThat(entries[2].getValue(), closeTo(2));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#fastIterator()}.
      */
@@ -192,7 +201,7 @@ public abstract class SparseVectorTestCommon {
         } catch (NoSuchElementException x) {
             /* no-op */
         }
-    
+
         Iterator<VectorEntry> iter = singleton().fastIterator();
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
@@ -205,10 +214,10 @@ public abstract class SparseVectorTestCommon {
         } catch (NoSuchElementException x) {
             /* no-op */
         }
-    
+
         Long[] keys = Iterators.toArray(
                 Iterators.transform(simpleVector().fastIterator(),
-                                    new Function<VectorEntry,Long>() {
+                                    new Function<VectorEntry, Long>() {
                                         @Override
                                         public Long apply(VectorEntry e) {
                                             return e.getKey();
@@ -216,6 +225,7 @@ public abstract class SparseVectorTestCommon {
                                     }), Long.class);
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
     }
+
     @Test
     public void testVectorsGetPairedValues() {
         Iterator<Vectors.EntryPair> noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
@@ -240,6 +250,7 @@ public abstract class SparseVectorTestCommon {
         assertFalse(pairIter.hasNext());
         assertNull(pairIter.next());
     }
+
     @Test
     public void testVectorsGetPairedValuesFast() {
         Iterator<Vectors.EntryPair> noPairs =
@@ -266,35 +277,39 @@ public abstract class SparseVectorTestCommon {
         assertFalse(pairIter.hasNext());
         assertNull(pairIter.next());
     }
+
     @Test
     public void testFast() {
         assertThat(emptyVector().fast(), notNullValue());
     }
+
     @Test
     public void testKeysSet() {
         LongSortedSet set = emptyVector().keySet();
         assertTrue(set.isEmpty());
-    
+
         long[] keys = singleton().keySet().toLongArray();
         assertThat(keys, equalTo(new long[]{5}));
-    
+
         keys = simpleVector().keySet().toLongArray();
         assertThat(keys, equalTo(new long[]{3, 7, 8}));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#values()}.
      */
     @Test
     public void testValues() {
         assertTrue(emptyVector().values().isEmpty());
-    
+
         double[] vals = singleton().values().toDoubleArray();
         assertThat(vals.length, equalTo(1));
         assertThat(vals[0], closeTo(Math.PI));
-    
+
         DoubleRBTreeSet s = new DoubleRBTreeSet(simpleVector().values());
         assertThat(s, equalTo(new DoubleRBTreeSet(new double[]{1.5, 3.5, 2})));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#size()}.
      */
@@ -304,6 +319,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(singleton().size(), equalTo(1));
         assertThat(simpleVector().size(), equalTo(3));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#isEmpty()}.
      */
@@ -313,6 +329,7 @@ public abstract class SparseVectorTestCommon {
         assertFalse(singleton().isEmpty());
         assertFalse(simpleVector().isEmpty());
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#norm()}.
      */
@@ -322,6 +339,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(singleton().norm(), closeTo(Math.PI));
         assertThat(simpleVector().norm(), closeTo(4.301162634));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#sum()}.
      */
@@ -331,6 +349,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(singleton().sum(), closeTo(Math.PI));
         assertThat(simpleVector().sum(), closeTo(7));
     }
+
     /**
      * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#mean()}.
      */
@@ -338,12 +357,13 @@ public abstract class SparseVectorTestCommon {
     public void testMean() {
         assertThat(emptyVector().mean(), closeTo(0));
         assertThat(singleton().mean(), closeTo(Math.PI));
-        assertThat(simpleVector().mean(), closeTo(7.0/3));
+        assertThat(simpleVector().mean(), closeTo(7.0 / 3));
     }
+
     @Test
     public void testSortedKeys() {
-        assertArrayEquals(new long[]{3,8,7}, simpleVector().keysByValue().toLongArray());
-        assertArrayEquals(new long[]{7,8,3}, simpleVector().keysByValue(true).toLongArray());
-        assertArrayEquals(new long[]{5,3,8}, simpleVector2().keysByValue(true).toLongArray());
+        assertArrayEquals(new long[]{3, 8, 7}, simpleVector().keysByValue().toLongArray());
+        assertArrayEquals(new long[]{7, 8, 3}, simpleVector().keysByValue(true).toLongArray());
+        assertArrayEquals(new long[]{5, 3, 8}, simpleVector2().keysByValue(true).toLongArray());
     }
 }

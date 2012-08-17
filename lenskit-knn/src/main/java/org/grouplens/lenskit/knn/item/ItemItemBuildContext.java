@@ -33,19 +33,22 @@ import java.util.Iterator;
  * provides access to item vectors and the item universe for use in  building
  * up the model in the accumulator.
  *
- * @see ItemItemModelProvider
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @see ItemItemModelProvider
  */
 public class ItemItemBuildContext {
-    private @Nonnull LongSortedSet items;
-    private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
+    private
+    @Nonnull
+    LongSortedSet items;
+    private
+    @Nonnull
+    Long2ObjectMap<SparseVector> itemVectors;
 
     /**
      * Set up a new item build context.
+     *
      * @param universe The set of items for the model.
-     * @param vectors Map of item IDs to item rating vectors.
+     * @param vectors  Map of item IDs to item rating vectors.
      */
     public ItemItemBuildContext(@Nonnull LongSortedSet universe,
                                 @Nonnull Long2ObjectMap<SparseVector> vectors) {
@@ -55,6 +58,7 @@ public class ItemItemBuildContext {
 
     /**
      * Get the set of items.
+     *
      * @return The set of all items to build a model over.
      */
     @Nonnull
@@ -65,6 +69,7 @@ public class ItemItemBuildContext {
     /**
      * Get the rating vector for an item. Rating vectors contain normalized ratings,
      * using the applicable {@link VectorNormalizer} on the user rating vectors.
+     *
      * @param item The item to query.
      * @return The rating vector for {@code item}.
      * @throws IllegalArgumentException if {@code item} is not a valid item.
@@ -78,8 +83,9 @@ public class ItemItemBuildContext {
 
     /**
      * Provides an Iterable over ItemVecPairs
+     *
      * @return An Iterable over ItemVecPairs, objects
-     * pairing item ids and their corresponding vectors.
+     *         pairing item ids and their corresponding vectors.
      */
     public Iterable<ItemVecPair> getItemPairs() {
         return new Iterable<ItemVecPair>() {
@@ -92,9 +98,10 @@ public class ItemItemBuildContext {
 
     /**
      * Returns an Iterator over all item vector pairs.
+     *
      * @return An Iterator over ItemVecPairs, an object
-     * offering public access to the item ids and their
-     * corresponding vectors.
+     *         offering public access to the item ids and their
+     *         corresponding vectors.
      */
     public Iterator<ItemVecPair> getItemPairIterator() {
         return new FastIteratorImpl(items, items);
@@ -117,10 +124,12 @@ public class ItemItemBuildContext {
             this.list2 = list2;
             iter2 = list2.iterator();
         }
+
         @Override
         public boolean hasNext() {
             return iter2.hasNext() || iter1.hasNext();
         }
+
         @Override
         public ItemVecPair next() {
             if (!iter2.hasNext()) {
@@ -130,6 +139,7 @@ public class ItemItemBuildContext {
             itemVecPair.setItem2(iter2.nextLong());
             return itemVecPair;
         }
+
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -150,6 +160,7 @@ public class ItemItemBuildContext {
             this.itemId1 = itemId1;
             vec1 = itemVector(itemId1);
         }
+
         public void setItem2(long itemId2) {
             this.itemId2 = itemId2;
             vec2 = itemVector(itemId2);

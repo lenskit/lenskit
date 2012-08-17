@@ -33,12 +33,12 @@ import static java.lang.Math.sqrt;
 
 /**
  * Evaluate a recommender's prediction accuracy with RMSE.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
+    private static final String[] COLUMNS = {"RMSE.ByRating", "RMSE.ByUser"};
     private static final String[] USER_COLUMNS = {"RMSE"};
 
     @Override
@@ -50,7 +50,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
     public String[] getColumnLabels() {
         return COLUMNS;
     }
-    
+
     @Override
     public String[] getUserColumnLabels() {
         return USER_COLUMNS;
@@ -68,8 +68,10 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
             SparseVector predictions = user.getPredictions();
             double usse = 0;
             int n = 0;
-            for (VectorEntry e: predictions.fast()) {
-                if (Double.isNaN(e.getValue())) continue;
+            for (VectorEntry e : predictions.fast()) {
+                if (Double.isNaN(e.getValue())) {
+                    continue;
+                }
 
                 double err = e.getValue() - ratings.get(e.getKey());
                 usse += err * err;
@@ -80,7 +82,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
             if (n > 0) {
                 double rmse = sqrt(usse / n);
                 totalRMSE += rmse;
-                nusers ++;
+                nusers++;
                 return new Object[]{rmse};
             } else {
                 return null;
@@ -91,7 +93,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
         public Object[] finalResults() {
             double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
-            return new Object[] {v,totalRMSE / nusers};
+            return new Object[]{v, totalRMSE / nusers};
         }
     }
 }

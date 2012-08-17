@@ -47,13 +47,13 @@ class TestTrainTestBuilderConfig {
     TrainTestEvalCommand command
     CommandDelegate delegate
 
-	def file = File.createTempFile("tempRatings", "csv")
-	def trainTestDir = Files.createTempDir()
-    
+    def file = File.createTempFile("tempRatings", "csv")
+    def trainTestDir = Files.createTempDir()
+
     @Before
     void prepareFile() {
-		file.deleteOnExit()
-		file.append('19,242,3,881250949\n')
+        file.deleteOnExit()
+        file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -71,13 +71,13 @@ class TestTrainTestBuilderConfig {
         command = new TrainTestEvalCommand("TTcommand")
         delegate = new CommandDelegate(engine, command)
     }
-	
-	@After
-	void cleanUpFiles() {
-		file.delete()
-		trainTestDir.deleteDir()
-	}
-    
+
+    @After
+    void cleanUpFiles() {
+        file.delete()
+        trainTestDir.deleteDir()
+    }
+
     def eval(Closure cl) {
         cl.setDelegate(delegate)
         cl.setResolveStrategy(Closure.DELEGATE_FIRST)
@@ -177,8 +177,8 @@ class TestTrainTestBuilderConfig {
             crossfold("tempRatings") {
                 source file
                 partitions 7
-				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
         assertThat(dat.size(), equalTo(7))

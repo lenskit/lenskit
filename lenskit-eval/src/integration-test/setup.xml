@@ -35,7 +35,9 @@ information is available at &lt;http://www.grouplens.org/node/73&gt;.">
   <target name="copy-100k" if="data.movielens.100k">
     <fail message="${data.movielens.100k} does not seem to contain the ML100K data set.">
       <condition>
-        <not><available file="${data.movielens.100k}/u.data"/></not>
+        <not>
+          <available file="${data.movielens.100k}/u.data"/>
+        </not>
       </condition>
     </fail>
     <mkdir dir="${mldata.directory}"/>

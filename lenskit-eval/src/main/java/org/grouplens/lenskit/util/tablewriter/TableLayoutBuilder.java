@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 /**
  * Construct a layout for a table.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -33,6 +34,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
 
     /**
      * Add a column to the table layout.
+     *
      * @param header The column header.
      * @return The index of the column. Columns are indexed from 0.
      */
@@ -44,6 +46,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
 
     /**
      * Get the number of columns currently in the layout.
+     *
      * @return The number of columns in the layout.
      */
     public int getColumnCount() {
@@ -53,6 +56,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
     /**
      * Clone this layout command. Used to build multiple layouts from the same initial
      * columns.
+     *
      * @return An independent copy of this table layout command.
      */
     @Override

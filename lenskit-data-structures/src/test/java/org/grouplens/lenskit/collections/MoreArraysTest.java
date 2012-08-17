@@ -25,8 +25,8 @@ import org.junit.Test;
 
 /**
  * Test the array utility methods.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class MoreArraysTest {
 
@@ -37,17 +37,17 @@ public class MoreArraysTest {
 
     @Test
     public void testIsSortedTrue() {
-        assertTrue(MoreArrays.isSorted(new long[]{1,2,3}, 0, 3));
+        assertTrue(MoreArrays.isSorted(new long[]{1, 2, 3}, 0, 3));
     }
 
     @Test
     public void testIsSortedFalse() {
-        assertFalse(MoreArrays.isSorted(new long[]{1,3,2}, 0, 3));
+        assertFalse(MoreArrays.isSorted(new long[]{1, 3, 2}, 0, 3));
     }
 
     @Test
     public void testIsSortedSubset() {
-        assertTrue(MoreArrays.isSorted(new long[]{5,1,2,3,-4}, 1, 4));
+        assertTrue(MoreArrays.isSorted(new long[]{5, 1, 2, 3, -4}, 1, 4));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class MoreArraysTest {
         long[] data = {1, 2, 3};
         int end = MoreArrays.deduplicate(data, 0, 3);
         assertEquals(3, end);
-        assertThat(data, equalTo(new long[]{1,2,3}));
+        assertThat(data, equalTo(new long[]{1, 2, 3}));
     }
 
     @Test
@@ -84,8 +84,9 @@ public class MoreArraysTest {
         assertEquals(2, data[1]);
         assertEquals(3, data[2]);
     }
+
     @
-    Test
+            Test
     public void testDeduplicateSubset() {
         long[] data = {1, 1, 2, 2, 3, 3};
         int end = MoreArrays.deduplicate(data, 1, 6);

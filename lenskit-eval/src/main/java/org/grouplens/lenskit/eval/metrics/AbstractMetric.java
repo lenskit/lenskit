@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.metrics;
 
 /**
  * A simple metric base class that tracks the current evaluation.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -36,6 +37,7 @@ public abstract class AbstractMetric<E> implements Metric<E> {
 
     /**
      * Get the current evaluation, or {@code null} none is in progress.
+     *
      * @return The current evaluation.
      */
     protected E getCurrentEvaluation() {

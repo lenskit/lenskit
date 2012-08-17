@@ -24,7 +24,6 @@ import javax.annotation.concurrent.Immutable;
  * Basic preference implementation that stores data in fields.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Immutable
 public final class SimplePreference extends Preference {
@@ -34,9 +33,10 @@ public final class SimplePreference extends Preference {
 
     /**
      * Construct a new preference object.
+     *
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param v The preference value.
+     * @param v   The preference value.
      */
     public SimplePreference(long uid, long iid, double v) {
         userId = uid;
@@ -47,6 +47,7 @@ public final class SimplePreference extends Preference {
     /**
      * Copy a preference object. This provides a convenient means of disconnecting
      * a preference from a mutable or indirect preference with less boilerplate.
+     *
      * @param pref The preference object to copy.
      */
     public SimplePreference(Preference pref) {
@@ -57,10 +58,12 @@ public final class SimplePreference extends Preference {
     public long getUserId() {
         return userId;
     }
+
     @Override
     public long getItemId() {
         return itemId;
     }
+
     @Override
     public double getValue() {
         return value;

@@ -27,8 +27,8 @@ import javax.inject.Singleton;
 
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 @Singleton
@@ -40,7 +40,7 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer {
         while (nIter.hasNext()) {
             @SuppressWarnings("unused")
             long i = nIter.nextLong();
-            
+
             double sim = nIter.getScore();
             sum += sim;
         }

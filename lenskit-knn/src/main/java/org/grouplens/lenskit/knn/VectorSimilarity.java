@@ -28,12 +28,12 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * exact interpretation of the similarity function when comparing items and users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultImplementation(CosineVectorSimilarity.class)
 public interface VectorSimilarity {
     /**
      * Compute the similarity between two vectors.
+     *
      * @param vec1 The left vector to compare.
      * @param vec2 The right vector to compare.
      * @return The similarity, in the range [-1,1].
@@ -43,14 +43,16 @@ public interface VectorSimilarity {
     /**
      * Query whether this similarity function is sparse (returns 0 for vectors with
      * disjoint key sets).
+     *
      * @return {@code true} iff {@link #similarity(SparseVector, SparseVector)} will always return
-     * true when applied to two vectors with no keys in common.
+     *         true when applied to two vectors with no keys in common.
      */
     boolean isSparse();
 
     /**
      * Query whether this similarity function is symmetric. Symmetric similarity functions
      * return the same result when called on (A,B) and (B,A).
+     *
      * @return {@code true} if the function is symmetric.
      */
     boolean isSymmetric();

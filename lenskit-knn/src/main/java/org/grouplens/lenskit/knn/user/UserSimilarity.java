@@ -23,6 +23,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Compute the similarity between two users.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 public interface UserSimilarity {
     /**
      * Compute the similarity between two users.
+     *
      * @param u1 The first user ID.
      * @param v1 The first user vector.
      * @param u2 The second user ID.
@@ -40,6 +42,7 @@ public interface UserSimilarity {
 
     /**
      * Query whether this similarity is sparse.
+     *
      * @return {@code true} if the similarity function is sparse.
      * @see org.grouplens.lenskit.knn.VectorSimilarity#isSparse()
      */
@@ -47,6 +50,7 @@ public interface UserSimilarity {
 
     /**
      * Query whether this similarity is symmetric.
+     *
      * @return {@code true} if the similarity function is symmetric.
      * @see org.grouplens.lenskit.knn.VectorSimilarity#isSymmetric()
      */

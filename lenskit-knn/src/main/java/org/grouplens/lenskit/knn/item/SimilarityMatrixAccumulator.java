@@ -64,8 +64,9 @@ public class SimilarityMatrixAccumulator {
 
     /**
      * Store an entry in the similarity matrix.
-     * @param i The matrix row (an item ID).
-     * @param j The matrix column (an item ID).
+     *
+     * @param i   The matrix row (an item ID).
+     * @param j   The matrix column (an item ID).
      * @param sim The similarity between items {@code j} and {@code i}. As documented in the
      *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
      */
@@ -73,7 +74,9 @@ public class SimilarityMatrixAccumulator {
     public void put(long i, long j, double sim) {
         Preconditions.checkState(rows != null, "model already built");
 
-        if (!threshold.retain(sim)) return;
+        if (!threshold.retain(sim)) {
+            return;
+        }
 
         // concurrent read-only array access permitted
         ScoredItemAccumulator q = rows.get(i);
@@ -85,11 +88,12 @@ public class SimilarityMatrixAccumulator {
 
     /**
      * Moves the result matrix into a SimilarityMatrixModel.
+     *
      * @return The resulting SimilarityMatrixModel.
      */
     public SimilarityMatrixModel build() {
         Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
-        for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
+        for (Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
             data.put(row.getLongKey(), row.getValue().finish());
         }
         SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);

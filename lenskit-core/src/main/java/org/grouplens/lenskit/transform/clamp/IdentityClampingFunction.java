@@ -25,6 +25,7 @@ import java.io.Serializable;
 
 /**
  * Identity clamping function.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */

@@ -23,20 +23,21 @@ import java.util.concurrent.ExecutionException;
 /**
  * Execute job groups. {@link JobGroup}s are added to the executor, and then
  * they are all run when {@link #run()} is called.
- * 
- * @since 0.8
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @since 0.8
  */
 public interface JobGroupExecutor {
     /**
      * Add a job group to be executed by this executor.
+     *
      * @param group The job group to execute.
      */
     void add(JobGroup group);
-    
+
     /**
      * Run the job groups.
+     *
      * @throws ExecutionException if one of the jobs fails.
      */
     void run() throws ExecutionException;

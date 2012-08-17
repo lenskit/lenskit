@@ -24,15 +24,14 @@ import java.util.NoSuchElementException;
 
 /**
  * A pointer wrapping an iterator.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 class IteratorPointer<E> implements Pointer<E> {
     private Iterator<E> iterator;
     private E element;
     private boolean atEnd;
-    
+
     public IteratorPointer(Iterator<E> iter) {
         iterator = iter;
         if (iter.hasNext()) {

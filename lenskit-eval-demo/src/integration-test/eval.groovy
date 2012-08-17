@@ -111,7 +111,7 @@ trainTest("mutli-algorithm") {
 //        set(SimilarityDamping, 100)
 //        set(NeighborhoodSize, 30);
     }
-    
+
     algorithm("WeightedSlopeOne") {
         within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to GlobalMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer

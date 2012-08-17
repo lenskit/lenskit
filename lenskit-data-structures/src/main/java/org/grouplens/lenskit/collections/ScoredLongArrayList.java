@@ -61,6 +61,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Create a new list with a specified initial capacity.
+     *
      * @param capacity the initial capacity of the list.
      */
     public ScoredLongArrayList(int capacity) {
@@ -71,6 +72,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Create a new scored list with items from the given array and no scores.
+     *
      * @param items An array of items to copy into the list.
      */
     public ScoredLongArrayList(long[] items) {
@@ -79,12 +81,14 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Create a new scored list with items and scores from the given arrays.
-     * @param items An array of items to copy into the list.
+     *
+     * @param items  An array of items to copy into the list.
      * @param scores An array of scores corresponding to the items.
      */
     public ScoredLongArrayList(long[] items, double[] scores) {
-        if (scores.length != items.length)
+        if (scores.length != items.length) {
             throw new IllegalArgumentException("array length mismatch");
+        }
         this.items = new LongArrayList(items);
         this.scores = new DoubleArrayList(scores);
     }
@@ -110,8 +114,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             }
             final int sz = size();
             for (int i = 0; i < sz; i++) {
-                if (getLong(i) != oll.getLong(i))
+                if (getLong(i) != oll.getLong(i)) {
                     return false;
+                }
                 double s = getScore(i);
                 double os = oll.getScore(i);
                 if (Double.isNaN(s) ^ Double.isNaN(os)) {
@@ -120,9 +125,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
                     return false;
                 }
             }
-            
+
             return true;
-            
+
         } else {
             return false;
         }
@@ -146,12 +151,14 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         return b.toString();
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public LongListIterator longListIterator() {
         return iterator();
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public LongListIterator longListIterator(int index) {
         return listIterator(index);
     }
@@ -166,7 +173,8 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         return new Iter(lit, sit);
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public LongList longSubList(int from, int to) {
         return subList(from, to);
     }
@@ -210,8 +218,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     @Override
     public void removeElements(int from, int to) {
         items.removeElements(from, to);
-        if (scores != null)
+        if (scores != null) {
             scores.removeElements(from, to);
+        }
     }
 
     @Override
@@ -272,8 +281,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public long removeLong(int index) {
-        if (scores != null)
+        if (scores != null) {
             scores.removeDouble(index);
+        }
         return items.removeLong(index);
     }
 
@@ -346,7 +356,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     @Override
     public boolean removeAll(Collection<?> c) {
         boolean removed = false;
-        for (Object o: c) {
+        for (Object o : c) {
             removed |= remove(o);
         }
         return removed;
@@ -380,8 +390,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public Long remove(int index) {
-        if (scores != null)
+        if (scores != null) {
             scores.remove(index);
+        }
         return items.remove(index);
     }
 
@@ -401,7 +412,8 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         return items.compareTo(o);
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public LongIterator longIterator() {
         return iterator();
     }
@@ -473,8 +485,9 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             ensureScoreList();
         }
         items.add(index, item);
-        if (scores != null)
+        if (scores != null) {
             scores.add(index, score);
+        }
     }
 
     private void ensureScoreList() {
@@ -568,6 +581,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Sort the entries of this list by score.
+     *
      * @param comp The comparator for odering by score.
      */
     public void sort(final DoubleComparator comp) {
@@ -593,7 +607,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
             ((DoubleArrayList) scores).trim();
         }
     }
-    
+
     class Swap implements Swapper {
         @Override
         public void swap(int a, int b) {

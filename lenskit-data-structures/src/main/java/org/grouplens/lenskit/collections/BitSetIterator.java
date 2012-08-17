@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Iterator over the set bits in a {@link BitSet}.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.9
  */
@@ -52,6 +52,7 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
 
     /**
      * Construct an iterator over a bit set.
+     *
      * @param set The set to iterate.
      */
     public BitSetIterator(BitSet set) {
@@ -60,7 +61,8 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
 
     /**
      * Construct an iterator over a bit set.
-     * @param set The set to iterate.
+     *
+     * @param set   The set to iterate.
      * @param start The first bit to return.
      */
     public BitSetIterator(BitSet set, int start) {
@@ -69,10 +71,10 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
 
     /**
      * Create an iterator starting at a particular bit.
-     * 
-     * @param set The bit set to wrap.
+     *
+     * @param set   The bit set to wrap.
      * @param start The start index, inclusive.
-     * @param end The end index, exclusive.
+     * @param end   The end index, exclusive.
      */
     public BitSetIterator(BitSet set, int start, int end) {
         bitSet = set;

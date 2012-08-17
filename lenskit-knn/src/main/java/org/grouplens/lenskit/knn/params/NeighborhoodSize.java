@@ -35,6 +35,7 @@ import org.grouplens.grapht.annotation.DefaultInteger;
 @Documented
 @DefaultInteger(30)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NeighborhoodSize { }
+public @interface NeighborhoodSize {
+}

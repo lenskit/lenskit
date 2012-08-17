@@ -45,20 +45,19 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Global recommendation with item-item CF.
- * 
+ *
  * @author Shuo Chang <schang@cs.umn.edu>
- * 
  */
 public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
-	protected final ItemItemModelBackedGlobalScorer scorer;
+    protected final ItemItemModelBackedGlobalScorer scorer;
 
-	@Inject
-	public ItemItemGlobalRecommender(DataAccessObject dao,
+    @Inject
+    public ItemItemGlobalRecommender(DataAccessObject dao,
                                      ItemItemModelBackedGlobalScorer scorer) {
-		super(dao, scorer);
-		this.scorer = scorer;
-	}
-	
+        super(dao, scorer);
+        this.scorer = scorer;
+    }
+
     @Override
     public LongSet getPredictableItems(LongSet items) {
         return scorer.getScoreableItems(items);

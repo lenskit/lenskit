@@ -39,13 +39,13 @@ public class IteratorPointerTest {
         assertTrue(ptr.isAtEnd());
         assertFalse(ptr.advance());
     }
-    
-    @Test(expected=NoSuchElementException.class)
+
+    @Test(expected = NoSuchElementException.class)
     public void testEmptyGet() {
         Pointer<?> ptr = new IteratorPointer<Object>(Iterators.emptyIterator());
         ptr.get();
     }
-    
+
     @Test
     public void testBasic() {
         List<String> strings = Lists.newArrayList("foo", "bar");

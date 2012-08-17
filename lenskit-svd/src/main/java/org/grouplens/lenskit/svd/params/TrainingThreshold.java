@@ -39,6 +39,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelProvider;
 @Documented
 @DefaultDouble(1e-3)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TrainingThreshold { }
+public @interface TrainingThreshold {
+}

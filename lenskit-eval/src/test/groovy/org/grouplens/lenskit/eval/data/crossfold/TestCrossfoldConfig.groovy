@@ -36,13 +36,13 @@ import org.grouplens.lenskit.data.dao.DAOFactory
  */
 class TestCrossfoldConfig extends ConfigTestBase {
 
-	def file = File.createTempFile("tempRatings", "csv")
-	def trainTestDir = Files.createTempDir()
-	
+    def file = File.createTempFile("tempRatings", "csv")
+    def trainTestDir = Files.createTempDir()
+
     @Before
     void prepareFile() {
         file.deleteOnExit()
-		file.append('19,242,3,881250949\n')
+        file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -53,23 +53,23 @@ class TestCrossfoldConfig extends ConfigTestBase {
         file.append('196,242,3,881250949\n')
         file.append('196,242,3,881250949\n')
     }
-	
-	@After
-	void cleanUpFiles() {
-		file.delete()
-		trainTestDir.deleteDir()
-	}
+
+    @After
+    void cleanUpFiles() {
+        file.delete()
+        trainTestDir.deleteDir()
+    }
 
     @Test
     void testBasicCrossfold() {
-        def obj = eval{
+        def obj = eval {
             crossfold("tempRatings") {
                 source file
                 partitions 10
                 holdout 0.5
                 order RandomOrder
-				train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-				test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
         assertThat(obj.size(), equalTo(10))
@@ -88,8 +88,8 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 wrapper {
                     it
                 }
-				train "${buildDir}/temp/ratings.train.%d.csv"
-				test "${buildDir}/temp/ratings.test.%d.csv"
+                train "${buildDir}/temp/ratings.train.%d.csv"
+                test "${buildDir}/temp/ratings.test.%d.csv"
             }
         }
         obj = obj as List<TTDataSet>

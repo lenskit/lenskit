@@ -56,7 +56,7 @@ public class TestItemItemModelAccumulator {
         assertThat(model, notNullValue());
         assertThat(model.getItemUniverse(), equalTo(universe));
     }
-    
+
     @Test
     public void testAccum() {
         accum.put(1, 2, Math.PI);

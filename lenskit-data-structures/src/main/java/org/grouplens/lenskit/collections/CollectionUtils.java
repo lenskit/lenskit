@@ -306,6 +306,7 @@ public final class CollectionUtils {
 
     /**
      * Create an empty, immutable fast collection.
+     *
      * @param <E> The type of fast collection.
      * @return An empty fast collection.
      */

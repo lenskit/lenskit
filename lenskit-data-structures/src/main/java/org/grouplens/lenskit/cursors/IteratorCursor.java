@@ -24,36 +24,38 @@ import java.util.NoSuchElementException;
 
 /**
  * Implementation of {@link Cursor} that simply wraps an iterator.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 class IteratorCursor<T> extends AbstractCursor<T> {
-	private Iterator<? extends T> iterator;
+    private Iterator<? extends T> iterator;
 
-	public IteratorCursor(Iterator<? extends T> iter, int size) {
-	    super(size);
-		iterator = iter;
-	}
+    public IteratorCursor(Iterator<? extends T> iter, int size) {
+        super(size);
+        iterator = iter;
+    }
 
-	@Override
-	public boolean hasNext() {
-		return iterator != null && iterator.hasNext();
-	}
-
-	@Nonnull
     @Override
-	public T next() {
-	    if (iterator == null)
-	        throw new NoSuchElementException();
-	    
-		return iterator.next();
-	}
-	
-	@Override
-	public Iterator<T> iterator() {
-	    if (iterator == null)
-	        throw new IllegalStateException("cursor closed");
-		return new Iterator<T>() {
+    public boolean hasNext() {
+        return iterator != null && iterator.hasNext();
+    }
+
+    @Nonnull
+    @Override
+    public T next() {
+        if (iterator == null) {
+            throw new NoSuchElementException();
+        }
+
+        return iterator.next();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        if (iterator == null) {
+            throw new IllegalStateException("cursor closed");
+        }
+        return new Iterator<T>() {
             @Override
             public boolean hasNext() {
                 return iterator.hasNext();
@@ -69,11 +71,11 @@ class IteratorCursor<T> extends AbstractCursor<T> {
                 throw new UnsupportedOperationException();
             }
         };
-	}
-	
-	@Override
-	public void close() {
-	    super.close();
-	    iterator = null;
-	}
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        iterator = null;
+    }
 }

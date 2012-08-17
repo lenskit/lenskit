@@ -44,9 +44,10 @@ import java.util.Collection;
 public interface BaselinePredictor extends Serializable {
     /**
      * Generate baseline predictions for several items into a new vector.
-     * @param user The user ID.
+     *
+     * @param user    The user ID.
      * @param ratings The user's ratings.
-     * @param items The items to score.
+     * @param items   The items to score.
      * @return A new sparse vector containing the baseline predictions for {@code items}.
      * @deprecated Use {@link #predict(long, SparseVector, MutableSparseVector)} instead.
      */
@@ -55,18 +56,20 @@ public interface BaselinePredictor extends Serializable {
 
     /**
      * Predict method that scores into an existing mutable sparse vector.
-     * @param user The user ID.
+     *
+     * @param user    The user ID.
      * @param ratings The user's ratings.
-     * @param output The output vector. All items in the key domain are scored.
+     * @param output  The output vector. All items in the key domain are scored.
      * @see RatingPredictor#score(UserHistory, MutableSparseVector)
      */
     void predict(long user, SparseVector ratings, MutableSparseVector output);
 
     /**
      * Predict method that scores into an existing mutable sparse vector.
-     * @param user The user ID.
-     * @param ratings The user's ratings.
-     * @param output The output vector. All items in the key domain are scored
+     *
+     * @param user       The user ID.
+     * @param ratings    The user's ratings.
+     * @param output     The output vector. All items in the key domain are scored
      * @param predictSet If {@code true}, predict all items; otherwise, only predict
      *                   items that are not set..
      * @see RatingPredictor#score(UserHistory, MutableSparseVector)

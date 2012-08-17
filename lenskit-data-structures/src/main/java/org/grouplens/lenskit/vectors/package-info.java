@@ -22,7 +22,7 @@
  * stored efficiently and have a key domain fixed at create time. Storage is
  * linear in the size of the key domain. See
  * {@link org.grouplens.lenskit.vectors.SparseVector} for more details.
- * 
+ *
  * <p>
  * To allow the type system to communicate valuable information about how
  * vectors are used while still preserving efficiency, sparse vectors come in
@@ -35,13 +35,13 @@
  * {@link org.grouplens.lenskit.vectors.ImmutableSparseVector}, where the vector
  * is guaranteed to be unchanging and can be safely stored or shared across
  * threads without concern about the caller mutating it later.
- * 
+ *
  * <p>
  * There are further versions of immutable vectors with particular information
  * associated with them: {@link org.grouplens.lenskit.data.history.ItemVector},
  * {@link org.grouplens.lenskit.data.history.UserVector}, and their subclasses.
  * These classes are used for vectors of data associated with particular users.
- * 
+ *
  * <p>
  * The {@link org.grouplens.lenskit.vectors.SparseVector SparseVector} class
  * also provides utility methods for manipulating sparse vectors (e.g. the

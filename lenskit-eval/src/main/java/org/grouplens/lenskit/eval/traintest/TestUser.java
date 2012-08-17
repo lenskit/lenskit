@@ -27,6 +27,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * A user in a test set, with the results of their recommendations or predictions.
+ *
  * @author Michael Ekstrand
  */
 public class TestUser {
@@ -38,10 +39,11 @@ public class TestUser {
 
     /**
      * Construct a new test user.
-     * @param id The user ID.
-     * @param ratings The user's test ratings.
-     * @param hist Access to the user's training history.
-     * @param predictions Supplier of predictions (will be memoized)
+     *
+     * @param id              The user ID.
+     * @param ratings         The user's test ratings.
+     * @param hist            Access to the user's training history.
+     * @param predictions     Supplier of predictions (will be memoized)
      * @param recommendations Supplier of recommendations (will be memoized)
      */
     public TestUser(long id, SparseVector ratings,
@@ -57,6 +59,7 @@ public class TestUser {
 
     /**
      * Get the ID of this user.
+     *
      * @return The user's ID.
      */
     public long getUserId() {
@@ -65,6 +68,7 @@ public class TestUser {
 
     /**
      * Return this user's training history.
+     *
      * @return The history of the user from the training/query set.
      */
     public UserHistory<Rating> getHistory() {
@@ -73,6 +77,7 @@ public class TestUser {
 
     /**
      * Get the user's test ratings.
+     *
      * @return The user's ratings for the test items.
      */
     public SparseVector getTestRatings() {
@@ -81,6 +86,7 @@ public class TestUser {
 
     /**
      * Get the user's predictions.
+     *
      * @return The predictions of the user's preference for items.
      */
     public SparseVector getPredictions() {
@@ -89,6 +95,7 @@ public class TestUser {
 
     /**
      * Get the user's recommendations.
+     *
      * @return Some recommendations for the user.
      */
     public ScoredLongList getRecommendations() {

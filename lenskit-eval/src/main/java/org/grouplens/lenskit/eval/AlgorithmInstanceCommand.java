@@ -29,11 +29,12 @@ import java.util.Map;
 
 /**
  * Command to get a algorithm instances.
+ *
  * @author Michael Ekstrand
  */
 @ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
-public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>  {
-    private Map<String,Object> attributes = new HashMap<String, Object>();
+public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance> {
+    private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
     private LenskitRecommenderEngineFactory factory;
 
@@ -59,6 +60,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
 
     /**
      * Get whether this algorithm will require ratings to be pre-loaded.
+     *
      * @return {@code true} if the algorithm should have ratings pre-loaded into memory.
      */
     public Boolean getPreload() {
@@ -68,6 +70,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
     /**
      * Set whether the algorithm wants ratings pre-loaded. Use this for algorithms that
      * are too slow reading on a CSV file if you have enough memory to load them all.
+     *
      * @param pl {@code true} to pre-load input data when running this algorithm.
      * @return The command for chaining.
      */
@@ -79,7 +82,8 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
     /**
      * Set an attribute for this algorithm instance. Used for distinguishing similar
      * instances in an algorithm family.
-     * @param attr The attribute name.
+     *
+     * @param attr  The attribute name.
      * @param value The attribute value.
      * @return The command for chaining.
      */
@@ -92,16 +96,18 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
 
     /**
      * Get the attributes of this algorithm instance.
+     *
      * @return A map of user-defined attributes for this algorithm instance.
      */
-    public Map<String,Object> getAttributes() {
+    public Map<String, Object> getAttributes() {
         return attributes;
     }
 
     /**
      * Get the factory for this instance.
+     *
      * @return The factory for this recommender instance. Each instance has the factory
-     * instantiated to a fresh, empty factory.
+     *         instantiated to a fresh, empty factory.
      */
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;

@@ -47,6 +47,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
 
         /**
          * Construct a new provider.
+         *
          * @param dao The DAO.
          */
         @Inject

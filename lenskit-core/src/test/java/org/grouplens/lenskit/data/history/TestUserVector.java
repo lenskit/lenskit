@@ -32,10 +32,9 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestUserVector {
-    private final static double EPSILON = 1.0e-6; 
+    private final static double EPSILON = 1.0e-6;
 
     /**
      * Test method for {@link org.grouplens.lenskit.data.event.Ratings#userRatingVector(java.util.Collection)}.
@@ -50,7 +49,7 @@ public class TestUserVector {
         SparseVector v = Ratings.userRatingVector(ratings);
         assertEquals(3, v.size());
         assertEquals(7, v.sum(), EPSILON);
-        
+
         long[] keys = {3, 7, 8};
         double[] values = {1.5, 3.5, 2};
         SparseVector sv = MutableSparseVector.wrap(keys, values);

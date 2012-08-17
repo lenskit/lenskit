@@ -43,7 +43,7 @@ public class CSVDataSource implements DataSource {
     final String delimiter;
 
     CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom,
-                  @Nullable Function<DAOFactory,DAOFactory> wrap) {
+                  @Nullable Function<DAOFactory, DAOFactory> wrap) {
         this.name = name;
         sourceFile = file;
         domain = pdom;

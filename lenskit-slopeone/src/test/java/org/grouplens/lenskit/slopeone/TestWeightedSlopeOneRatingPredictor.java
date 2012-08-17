@@ -37,7 +37,7 @@ import org.junit.Test;
 public class TestWeightedSlopeOneRatingPredictor {
 
     private static final double EPSILON = 1.0e-6;
-    
+
     private SlopeOneModel getModel(DataAccessObject dao) {
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
@@ -65,12 +65,12 @@ public class TestWeightedSlopeOneRatingPredictor {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         EventCollectionDAO dao = manager.create();
         SlopeOneModel model = getModel(dao);
         WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-        
+
         assertEquals(2.6, predictor.score(2, 9), EPSILON);
         assertEquals(4.2, predictor.score(3, 6), EPSILON);
         assertEquals(2, predictor.score(4, 6), EPSILON);
@@ -93,12 +93,12 @@ public class TestWeightedSlopeOneRatingPredictor {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         EventCollectionDAO dao = manager.create();
         SlopeOneModel model = getModel(dao);
         WeightedSlopeOneRatingPredictor predictor = new WeightedSlopeOneRatingPredictor(dao, model);
-        
+
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);
         assertEquals(5, predictor.score(2, 5), EPSILON);

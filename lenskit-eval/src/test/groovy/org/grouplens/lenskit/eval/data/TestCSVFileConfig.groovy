@@ -35,6 +35,7 @@ class TestCSVFileConfig extends ConfigTestBase {
         assertThat(cmdClass, notNullValue())
         assertThat(cmdClass, equalTo(CSVDataSourceCommand))
     }
+
     @Test
     void testBasic() {
         def source = eval {

@@ -27,8 +27,8 @@ import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
+ * User vector normalizer that subtracts a user's baseline predictions.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Shareable
 public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {

@@ -81,7 +81,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
             // old data for a user-item pair with new data.
             Cursor<Rating> ratings = dao.getEvents(Rating.class, SortOrder.TIMESTAMP);
             try {
-                for (Rating r: ratings.fast()) {
+                for (Rating r : ratings.fast()) {
                     final long user = r.getUserId();
                     final long item = r.getItemId();
                     final Preference p = r.getPreference();
@@ -125,7 +125,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
             return new PackedPreferenceSnapshot(data);
         }
     }
-    
+
     private PackedPreferenceData data;
     private volatile List<? extends IntList> userIndices;
 
@@ -135,8 +135,9 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     }
 
     private void requireValid() {
-        if (data == null)
+        if (data == null) {
             throw new IllegalStateException("build context closed");
+        }
     }
 
     private List<? extends IntList> computeUserIndices() {
@@ -145,12 +146,12 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
         for (int i = 0; i < nusers; i++) {
             userLists.add(new IntArrayList());
         }
-        for (IndexedPreference pref: CollectionUtils.fast(getRatings())) {
+        for (IndexedPreference pref : CollectionUtils.fast(getRatings())) {
             final int uidx = pref.getUserIndex();
             final int idx = pref.getIndex();
             userLists.get(uidx).add(idx);
         }
-        for (IntArrayList lst: userLists) {
+        for (IntArrayList lst : userLists) {
             lst.trim();
         }
         return userLists;

@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn;
 
 import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.junit.Assert.assertThat;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -29,7 +30,6 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestPearsonCorrelation {
     VectorSimilarity sim;
@@ -48,7 +48,7 @@ public class TestPearsonCorrelation {
     @Test
     public void testSelfSimilarity() {
         long keys[] = {1, 5, 7};
-        double values[] = { 1.5, 2.5, 2 };
+        double values[] = {1.5, 2.5, 2};
         SparseVector v = ImmutableSparseVector.wrap(keys, values);
         assertThat(sim.similarity(v, v), closeTo(1));
         assertThat(sim.similarity(v, v.mutableCopy().freeze()), closeTo(1));

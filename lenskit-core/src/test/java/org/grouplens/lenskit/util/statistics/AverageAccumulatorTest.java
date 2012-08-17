@@ -24,7 +24,6 @@ import org.junit.Test;
 /**
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
  * @since 0.11
- * 
  */
 public class AverageAccumulatorTest {
 

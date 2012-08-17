@@ -25,7 +25,6 @@ import org.grouplens.lenskit.data.pref.Preference;
  * {@link org.grouplens.lenskit.data.dao.DelimitedTextRatingCursor} and similar places.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class MutableRating implements Rating {
     private long eid;
@@ -40,10 +39,12 @@ public class MutableRating implements Rating {
         public long getUserId() {
             return uid;
         }
+
         @Override
         public long getItemId() {
             return iid;
         }
+
         @Override
         public double getValue() {
             return value;
@@ -54,6 +55,7 @@ public class MutableRating implements Rating {
     public long getId() {
         return eid;
     }
+
     public void setId(long eid) {
         this.eid = eid;
     }
@@ -62,6 +64,7 @@ public class MutableRating implements Rating {
     public long getUserId() {
         return uid;
     }
+
     public void setUserId(long uid) {
         this.uid = uid;
     }
@@ -70,21 +73,24 @@ public class MutableRating implements Rating {
     public long getItemId() {
         return iid;
     }
+
     public void setItemId(long iid) {
         this.iid = iid;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public double getRating() {
         return value;
     }
 
     @Override
     public Preference getPreference() {
-        if (Double.isNaN(value))
+        if (Double.isNaN(value)) {
             return null;
-        else
+        } else {
             return preference;
+        }
     }
 
     /**
@@ -101,13 +107,17 @@ public class MutableRating implements Rating {
     public long getTimestamp() {
         return timestamp;
     }
+
     public void setTimestamp(long ts) {
         timestamp = ts;
     }
 
     @Override
     public Rating copy() {
-        if (Double.isNaN(value)) return new SimpleNullRating(eid, uid, iid, timestamp);
-        else return new SimpleRating(eid, uid, iid, value, timestamp);
+        if (Double.isNaN(value)) {
+            return new SimpleNullRating(eid, uid, iid, timestamp);
+        } else {
+            return new SimpleRating(eid, uid, iid, value, timestamp);
+        }
     }
 }

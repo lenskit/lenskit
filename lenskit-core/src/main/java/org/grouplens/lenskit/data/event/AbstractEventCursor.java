@@ -24,8 +24,8 @@ import org.grouplens.lenskit.data.Event;
 /**
  * Helper for making event cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @param <E> The type of event the cursor returns.
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractEventCursor<E extends Event> extends AbstractPollingCursor<E> {
     /**
@@ -37,6 +37,7 @@ public abstract class AbstractEventCursor<E extends Event> extends AbstractPolli
 
     /**
      * Construct a cursor with a known number of rows.
+     *
      * @param rowCount The number of rows.
      */
     public AbstractEventCursor(int rowCount) {
@@ -45,6 +46,7 @@ public abstract class AbstractEventCursor<E extends Event> extends AbstractPolli
 
     /**
      * Copy an event using {@link Event#copy()}.
+     *
      * @param event The event to copy.
      * @return A copy of {@code event}.
      */

@@ -39,7 +39,7 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
 
     public GenericTTDataCommand(String name) {
         this();
-        if(name != null) {
+        if (name != null) {
             setName(name);
         }
     }
@@ -57,7 +57,7 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     public Map<String, Object> getAttributes() {
         return attributes;
     }
-    
+
     public GenericTTDataCommand setAttribute(String name, Object value) {
         attributes.put(name, value);
         return this;

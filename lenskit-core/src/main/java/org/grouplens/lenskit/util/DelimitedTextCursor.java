@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 /**
  * Cursor that reads rows of delimited text from a scanner.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -39,7 +40,8 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
 
     /**
      * Construct a cursor reading text from a scanner with a regex delimiter.
-     * @param in The input scanner.
+     *
+     * @param in    The input scanner.
      * @param delim The delimiter.
      */
     public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
@@ -50,7 +52,8 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
 
     /**
      * Construct a cursor reading text from a scanner with a fixed delimiter.
-     * @param in The scanner to read from.
+     *
+     * @param in    The scanner to read from.
      * @param delim The delimiter string.
      */
     public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
@@ -76,6 +79,7 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
 
     /**
      * Return the number of the line returned by the last call to {@link #next()}.
+     *
      * @return The number of the last line retrieved.
      */
     public int getLineNumber() {

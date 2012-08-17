@@ -34,7 +34,6 @@ import javax.inject.Singleton;
  * Summarize a history by extracting a rating vector.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Shareable
 @ThreadSafe

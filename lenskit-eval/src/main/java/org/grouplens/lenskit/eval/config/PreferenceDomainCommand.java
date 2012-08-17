@@ -25,10 +25,11 @@ import org.grouplens.lenskit.eval.CommandException;
 
 /**
  * Builder for {@link PreferenceDomain} objects.
- * @review Should this be here, or do we want to provide it in the standard core?
+ *
  * @author Michael Ekstrand
+ * @review Should this be here, or do we want to provide it in the standard core?
  */
-public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain>{
+public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain> {
     private Double min;
     private Double max;
     private Double precision;

@@ -28,7 +28,6 @@ import java.util.List;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class SparseMatrix implements Serializable {
     private static final long serialVersionUID = -2396174756253967431L;
@@ -38,7 +37,7 @@ public class SparseMatrix implements Serializable {
         data = new ObjectArrayList<Int2DoubleMap>();
     }
 
-    public SparseMatrix (int nrows) {
+    public SparseMatrix(int nrows) {
         data = new ObjectArrayList<Int2DoubleMap>(nrows);
         for (int i = 0; i < nrows; i++) {
             Int2DoubleMap m = new Int2DoubleOpenHashMap();

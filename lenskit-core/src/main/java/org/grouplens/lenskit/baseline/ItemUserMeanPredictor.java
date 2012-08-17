@@ -63,9 +63,10 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 
         /**
          * Construct a new provider.
+         *
          * @param dao The DAO.
-         * @param d The Bayesian mean damping term. A positive value biases means
-         *          towards the global mean.
+         * @param d   The Bayesian mean damping term. A positive value biases means
+         *            towards the global mean.
          */
         @Inject
         public Provider(@Transient DataAccessObject dao,
@@ -90,9 +91,9 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * Create a new scorer, this assumes ownership of the given map.
      *
-     * @param itemMeans The map of item means.
+     * @param itemMeans  The map of item means.
      * @param globalMean The global mean rating.
-     * @param damping The damping term.
+     * @param damping    The damping term.
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
         // FIXME Make this use a sparse vector

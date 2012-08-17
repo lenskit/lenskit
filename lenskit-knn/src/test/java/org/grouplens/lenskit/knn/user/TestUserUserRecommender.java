@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -292,7 +293,7 @@ public class TestUserUserRecommender {
         assertEquals(3, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
-        assertEquals(6,recs.getLong(2));
+        assertEquals(6, recs.getLong(2));
 
         recs = recommender.recommend(getUserRatings(5), 2, null, LongSets.EMPTY_SET);
         assertEquals(2, recs.size());

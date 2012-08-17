@@ -18,7 +18,6 @@
  */
 package org.grouplens.lenskit.eval.config;
 
-import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.AbstractCommand;
 
 import java.lang.annotation.*;
@@ -27,6 +26,7 @@ import java.lang.annotation.*;
  * Specify the command for the default type of this class/interface to which
  * it is applied. Used to build objects when the user doesn't specify the
  * particular command factory to use.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
@@ -34,7 +34,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 // FIXME Make this apply to methods as well
 @Target(ElementType.TYPE)
+@SuppressWarnings("rawtypes")
 public @interface BuilderCommand {
-    @SuppressWarnings("rawtypes")
     Class<? extends AbstractCommand> value();
 }

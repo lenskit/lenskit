@@ -33,6 +33,7 @@ public class CursorIterator<T> implements Iterator<T> {
 
     /**
      * Construct a new iterator from a cursor.
+     *
      * @param cur The cursor to wrap.
      */
     public CursorIterator(Cursor<T> cur) {

@@ -42,6 +42,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
 
     /**
      * Initialize the recommender.
+     *
      * @param dao The DAO.
      */
     protected AbstractGlobalItemRecommender(DataAccessObject dao) {
@@ -105,6 +106,5 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     protected abstract ScoredLongList globalRecommend(LongSet items, int n,
                                                       @Nullable LongSet candidates,
                                                       @Nullable LongSet exclude);
-
 
 }

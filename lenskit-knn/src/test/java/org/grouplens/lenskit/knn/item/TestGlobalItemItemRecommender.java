@@ -43,6 +43,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -91,39 +92,39 @@ public class TestGlobalItemItemRecommender {
         session = engine.open();
         gRecommender = session.getGlobalItemRecommender();
     }
-    
+
     /**
      * Check that we score items but do not provide rating scores.
      */
     @Test
     public void testGlobalItemScorerNoRating() {
         long[] queryItems = {1, 10};
-        long[] items = { 5, 10 };
+        long[] items = {5, 10};
         ItemItemGlobalScorer scorer = session.get(ItemItemGlobalScorer.class);
         assertThat(scorer, notNullValue());
         SparseVector scores = scorer.globalScore(LongArrayList.wrap(queryItems), LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(2));
         assertThat(scores.get(5), not(notANumber()));
-       // assertThat(scores.get(10), equalTo(0.0));
+        // assertThat(scores.get(10), equalTo(0.0));
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(long)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender1() {
         LongList recs = gRecommender.globalRecommend(LongSets.singleton(1));
-        assertThat(recs.size(),notNullValue());
+        assertThat(recs.size(), notNullValue());
         recs = gRecommender.globalRecommend(LongSets.singleton(2));
         assertTrue(recs.isEmpty());
         recs = gRecommender.globalRecommend(LongSets.singleton(5));
-        assertThat(recs.size(),notNullValue());
+        assertThat(recs.size(), notNullValue());
         recs = gRecommender.globalRecommend(LongSets.singleton(1));
-        assertThat(recs.size(),notNullValue());
+        assertThat(recs.size(), notNullValue());
         recs = gRecommender.globalRecommend(LongSets.singleton(10));
-        assertThat(recs.size(),notNullValue());
+        assertThat(recs.size(), notNullValue());
 
     }
 
@@ -132,108 +133,108 @@ public class TestGlobalItemItemRecommender {
      */
     @Test
     public void testGlobalItemItemRecommender2() {
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1),2);
-        assertEquals(recs.size(),2);
-        recs = gRecommender.globalRecommend(LongSets.singleton(2),1);
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 2);
+        assertEquals(recs.size(), 2);
+        recs = gRecommender.globalRecommend(LongSets.singleton(2), 1);
         assertTrue(recs.isEmpty());
-        recs = gRecommender.globalRecommend(LongSets.singleton(5),3);
-        assertEquals(recs.size(),3);
+        recs = gRecommender.globalRecommend(LongSets.singleton(5), 3);
+        assertEquals(recs.size(), 3);
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(long, Set<Long>)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender3() {
-    	HashSet<Long> candidates = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1),candidates);
-        assertEquals(recs.size(),0);
+        HashSet<Long> candidates = new HashSet<Long>();
+        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
+        assertEquals(recs.size(), 0);
         candidates.add(new Long(1));
-    	candidates.add(new Long(5));
-        recs = gRecommender.globalRecommend(LongSets.singleton(1),candidates);
-        assertEquals(recs.size(),1);
+        candidates.add(new Long(5));
+        recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
+        assertEquals(recs.size(), 1);
         assertTrue(recs.contains(5));
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(long, int, Set<Long>, Set<Long>)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender4() {
-    	HashSet<Long> candidates = new HashSet<Long>();
-    	HashSet<Long> excludes = new HashSet<Long>();
+        HashSet<Long> candidates = new HashSet<Long>();
+        HashSet<Long> excludes = new HashSet<Long>();
         LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
-        assertEquals(recs.size(),0);
+        assertEquals(recs.size(), 0);
         candidates.add(new Long(1));
         candidates.add(new Long(5));
         excludes.add(new Long(5));
         recs = gRecommender.globalRecommend(LongSets.singleton(1), 2, candidates, excludes);
-        assertEquals(recs.size(),1);
+        assertEquals(recs.size(), 1);
         recs = gRecommender.globalRecommend(LongSets.singleton(1), -1, candidates, excludes);
-        assertEquals(recs.size(),1);
+        assertEquals(recs.size(), 1);
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(Set<Long>, int)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender5() {
-    	HashSet<Long> basket = new HashSet<Long>();
-    	basket.add(new Long(1));
-    	basket.add(new Long(7));
+        HashSet<Long> basket = new HashSet<Long>();
+        basket.add(new Long(1));
+        basket.add(new Long(7));
         LongList recs = gRecommender.globalRecommend(basket, -1);
-        assertEquals(recs.size(),2);
+        assertEquals(recs.size(), 2);
         recs = gRecommender.globalRecommend(basket, 1);
-        assertEquals(recs.size(),1);
+        assertEquals(recs.size(), 1);
         assertTrue(recs.contains(5));
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(Set<Long>, Set<Long>)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender6() {
-    	HashSet<Long> basket = new HashSet<Long>();
-    	basket.add(new Long(1));
-    	HashSet<Long> candidates = new HashSet<Long>();
-    	candidates.add(new Long(5));
-    	candidates.add(new Long(10));
-    	LongList recs = gRecommender.globalRecommend(basket, candidates);
-        assertEquals(recs.size(),2);
+        HashSet<Long> basket = new HashSet<Long>();
+        basket.add(new Long(1));
+        HashSet<Long> candidates = new HashSet<Long>();
+        candidates.add(new Long(5));
+        candidates.add(new Long(10));
+        LongList recs = gRecommender.globalRecommend(basket, candidates);
+        assertEquals(recs.size(), 2);
         assertTrue(recs.contains(5));
         assertTrue(recs.contains(10));
         candidates.add(new Long(7));
         recs = gRecommender.globalRecommend(basket, candidates);
-        assertEquals(recs.size(),3);
+        assertEquals(recs.size(), 3);
 
     }
-    
+
     /**
      * Tests <tt>globalRecommend(Set<Long>, int, Set<Long>, Set<Long>)</tt>.
      */
     @Test
     public void testGlobalItemItemRecommender7() {
-    	HashSet<Long> basket = new HashSet<Long>();
-    	basket.add(new Long(5));
-    	basket.add(new Long(10));
-    	HashSet<Long> candidates = new HashSet<Long>();
-    	candidates.add(new Long(1));
-    	candidates.add(new Long(7));
-    	HashSet<Long> excludes = new HashSet<Long>();
-    	LongList recs = gRecommender.globalRecommend(basket, 1, candidates, excludes);
-        assertEquals(recs.size(),1);
+        HashSet<Long> basket = new HashSet<Long>();
+        basket.add(new Long(5));
+        basket.add(new Long(10));
+        HashSet<Long> candidates = new HashSet<Long>();
+        candidates.add(new Long(1));
+        candidates.add(new Long(7));
+        HashSet<Long> excludes = new HashSet<Long>();
+        LongList recs = gRecommender.globalRecommend(basket, 1, candidates, excludes);
+        assertEquals(recs.size(), 1);
         excludes.add(new Long(5));
-    	recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertEquals(recs.size(),2);
+        recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
+        assertEquals(recs.size(), 2);
         assertTrue(recs.contains(1));
         assertTrue(recs.contains(7));
         excludes.add(new Long(1));
-    	recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertEquals(recs.size(),1);
+        recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
+        assertEquals(recs.size(), 1);
         assertTrue(recs.contains(7));
 
     }

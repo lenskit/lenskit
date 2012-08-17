@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Similarity function using cosine similarity.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
@@ -58,8 +58,9 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double dot = vec1.dot(vec2);
         final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-        if (denom == 0)
+        if (denom == 0) {
             return 0;
+        }
 
         return dot / denom;
     }

@@ -42,9 +42,8 @@ public abstract class AbstractItemScorer implements ItemScorer {
     /**
      * The DAO passed to the constructor.
      */
-    protected final
     @Nonnull
-    DataAccessObject dao;
+    protected final DataAccessObject dao;
 
     /**
      * Initialize the abstract item scorer.

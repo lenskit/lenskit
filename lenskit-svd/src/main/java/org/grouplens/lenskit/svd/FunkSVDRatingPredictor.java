@@ -47,43 +47,42 @@ import java.util.Collection;
  * user's ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class FunkSVDRatingPredictor extends AbstractItemScorer implements RatingPredictor {
-	
-	protected final FunkSVDModel model;
+
+    protected final FunkSVDModel model;
     private DataAccessObject dao;
     private final int featureCount;
     private final ClampingFunction clamp;
-    
+
     private UpdateRule trainer;
-    
-    
+
+
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model, UpdateRule trainer) {
         super(dao);
         this.dao = dao;
         this.model = model;
         this.trainer = trainer;
-        
+
         featureCount = model.featureCount;
         clamp = model.clampingFunction;
     }
 
-    
+
     /**
      * Predict for a user using their preference array and history vector.
-     * 
-     * @param user The user's ID
+     *
+     * @param user   The user's ID
      * @param uprefs The user's preference array from the model.
      * @param output The output vector, whose key domain is the items to predict for. It must
      *               be initialized to the user's baseline predictions.
      */
     private void predict(long user, double[] uprefs, MutableSparseVector output) {
-        for (VectorEntry e: output.fast()) {
+        for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
             final int iidx = model.itemIndex.getIndex(item);
-            
+
             if (iidx < 0) {
                 continue;
             }
@@ -99,11 +98,12 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     /**
      * Get estimates for all a user's ratings and the target items.
-     * @param user The user ID.
+     *
+     * @param user    The user ID.
      * @param ratings The user's ratings.
-     * @param items The target items.
+     * @param items   The target items.
      * @return Baseline predictions for all items either in the target set or the set of
-     * rated items.
+     *         rated items.
      */
     private MutableSparseVector initialEstimates(long user, SparseVector ratings, LongSet items) {
         LongSet allItems = new LongOpenHashSet(items);
@@ -129,54 +129,54 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         }
 
         double[] uprefs;
-        if (uidx < 0){
+        if (uidx < 0) {
             uprefs = DoubleArrays.copy(model.averUserFeatures);
-    	} else {
+        } else {
             uprefs = new double[featureCount];
-    		for (int i = 0; i < featureCount; i++) {
-        		uprefs[i] = model.userFeatures[i][uidx];
-        	}
-    	}
-        
+            for (int i = 0; i < featureCount; i++) {
+                uprefs[i] = model.userFeatures[i][uidx];
+            }
+        }
+
         if (!ratings.isEmpty()) {
-        	for (int f = 0; f < featureCount; f++){
-	    		trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
-	    	}
-		}
+            for (int f = 0; f < featureCount; f++) {
+                trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
+            }
+        }
 
         // scores are the estimates, uprefs are trained up.
         predict(user, uprefs, scores);
     }
 
     private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
-                                  MutableSparseVector estimates, int feature, UpdateRule trainer){
+                                  MutableSparseVector estimates, int feature, UpdateRule trainer) {
         trainer.reset();
-    	while (trainer.nextEpoch()) {
-        	for (VectorEntry itemId: ratings.fast()) {
-        		final long item = itemId.getKey();
-        		final int iidx = model.itemIndex.getIndex(item);
-        		
-        		// Step 1: Compute the trailing value for this item-feature pair
-            	double trailingValue = 0.0;
-            	for (int f = feature + 1; f < featureCount; f++) {
-            		trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
-            	}
-        	
-        		// Step 2: Save the old feature values before computing the new ones 
-            	final double ouf = uprefs[feature];
-            	final double oif = model.itemFeatures[feature][iidx];
-            
-            	// Step 3: Compute the err
-            	// Notice the trainer.compute method should always be called before
+        while (trainer.nextEpoch()) {
+            for (VectorEntry itemId : ratings.fast()) {
+                final long item = itemId.getKey();
+                final int iidx = model.itemIndex.getIndex(item);
+
+                // Step 1: Compute the trailing value for this item-feature pair
+                double trailingValue = 0.0;
+                for (int f = feature + 1; f < featureCount; f++) {
+                    trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
+                }
+
+                // Step 2: Save the old feature values before computing the new ones
+                final double ouf = uprefs[feature];
+                final double oif = model.itemFeatures[feature][iidx];
+
+                // Step 3: Compute the err
+                // Notice the trainer.compute method should always be called before
                 // 	updating the feature values in step 4, since this method
                 //  renew the internal feature values that will be used in step 4
-            	final double ratingValue = itemId.getValue();
-            	final double estimate = estimates.get(item);
-            	trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
+                final double ratingValue = itemId.getValue();
+                final double estimate = estimates.get(item);
+                trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
 
-            	// Step 4: Return updated user feature value
-            	uprefs[feature] += trainer.getUserUpdate(); 
-        	}
+                // Step 4: Return updated user feature value
+                uprefs[feature] += trainer.getUserUpdate();
+            }
         }
 
         // After training this feature, we need to update each rating's cached

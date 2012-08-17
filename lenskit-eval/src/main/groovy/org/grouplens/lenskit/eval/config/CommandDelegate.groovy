@@ -58,7 +58,7 @@ class CommandDelegate<T> {
 
     def methodMissing(String name, args) {
         Closure method = null
-        use (CommandExtensions) {
+        use(CommandExtensions) {
             method = command.findSetter(engine, name, args)
 
             if (method == null) {
