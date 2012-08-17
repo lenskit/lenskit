@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Function;
@@ -46,6 +47,7 @@ class TransformedCursor<S,T> extends AbstractCursor<T> {
         return cursor.hasNext();
     }
     
+    @Nonnull
     @Override
     public T next() {
         return function.apply(cursor.next());

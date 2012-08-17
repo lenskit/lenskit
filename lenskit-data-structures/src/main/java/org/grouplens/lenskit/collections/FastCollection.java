@@ -33,6 +33,7 @@ import java.util.Iterator;
  * loops only observe the object and then discard it before the next iteration.
  * Those loops benefit from fast iterators.
  *
+ * @param <E> The type of value in the fast collection.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
@@ -43,6 +44,7 @@ public interface FastCollection<E> extends Collection<E> {
      * return distinct objects every time.  However, that is usually in cases
      * where the underlying collection is storing distinct objects anyway so no
      * overhead is introduced.
+     *
      * @return An iterator that may not return distinct objects.
      */
     Iterator<E> fastIterator();
@@ -51,8 +53,9 @@ public interface FastCollection<E> extends Collection<E> {
      * Make a fast iterable from the collection.  This method returns an iterable
      * whose iterator may be fast.  It allows fast iterators to be used in
      * for-each loops.
+     *
      * @return An {@link Iterable} whose {@link Iterable#iterator()} method calls
-     * {@link #fastIterator()}.
+     *         {@link #fastIterator()}.
      * @deprecated Use {@link CollectionUtils#fast(Iterable)} instead.
      */
     @Deprecated

@@ -18,30 +18,15 @@
  */
 package org.grouplens.lenskit.cursors;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterable;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
 import javax.annotation.WillCloseWhenClosed;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
+import java.util.*;
 
 /**
  * Utility methods for cursors.
@@ -49,8 +34,9 @@ import com.google.common.base.Predicates;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
-public class Cursors {
-    private static final Logger logger = LoggerFactory.getLogger(Cursors.class);
+public final class Cursors {
+    private Cursors() {
+    }
 
     /**
      * Wrap an iterator in a cursor.
@@ -93,6 +79,7 @@ public class Cursors {
      * {@link Predicates#instanceOf(Class)}, this method also transforms the
      * cursor to be of the target type.
      *
+     * @param <T>    The type of value in the cursor.
      * @param cursor The source cursor.
      * @param type   The type to filter.
      * @return A cursor returning all elements in <var>cursor</var> which are
@@ -104,7 +91,7 @@ public class Cursors {
             @Override
             protected T poll() {
                 while (cursor.hasNext()) {
-                    Object obj = cursor.next();
+                    final Object obj = cursor.next();
                     if (type.isInstance(obj)) {
                         return (T) obj;
                     }
@@ -120,7 +107,7 @@ public class Cursors {
     }
 
     /**
-     * Transform a cursor's values
+     * Transform a cursor's values.
      *
      * @param <S>      The type of source cursor rows
      * @param <T>      The type of output cursor rows
@@ -134,6 +121,9 @@ public class Cursors {
 
     /**
      * Create an empty cursor.
+     *
+     * @param <T> The type of value in the cursor.
+     * @return An empty cursor.
      */
     public static <T> Cursor<T> empty() {
         return new AbstractCursor<T>() {
@@ -184,10 +174,11 @@ public class Cursors {
 
     /**
      * Read a LongCursor into a LongArrayList, closing the cursor when done.
+     *
      * @param cursor The LongCursor to be read into a list.
      * @return A new list containing the elements of the cursor. The list has been
-     * allocated with a capacity of {@link Cursor#getRowCount()} if possible,
-     * but has not been trimmed.
+     *         allocated with a capacity of {@link Cursor#getRowCount()} if possible,
+     *         but has not been trimmed.
      */
     public static LongArrayList makeList(@WillClose LongCursor cursor) {
         LongArrayList list = null;
@@ -200,10 +191,6 @@ public class Cursors {
             while (cursor.hasNext()) {
                 list.add(cursor.nextLong());
             }
-        } catch (OutOfMemoryError e) {
-            logger.error("Ran out of memory with {} users",
-                         list == null ? -1 : list.size());
-            throw e;
         } finally {
             cursor.close();
         }
@@ -213,6 +200,7 @@ public class Cursors {
 
     /**
      * Read a LongCursor into a LongSet, closing the cursor when done.
+     *
      * @param cursor The LongCursor to be read into a set.
      * @return A LongSet containing the elements of the cursor.
      */
@@ -227,10 +215,6 @@ public class Cursors {
             while (cursor.hasNext()) {
                 set.add(cursor.nextLong());
             }
-        } catch (OutOfMemoryError e) {
-            logger.error("Ran out of memory with {} users",
-                         set == null ? -1 : set.size());
-            throw e;
         } finally {
             cursor.close();
         }
@@ -238,14 +222,29 @@ public class Cursors {
         return set;
     }
 
+    /**
+     * Wrap a long iterator in a cursor.
+     * @param iter An iterator.
+     * @return A cursor backed by {@code iter}. Closing the cursor is a no-op.
+     */
     public static LongCursor wrap(LongIterator iter) {
         return new LongIteratorCursor(iter);
     }
 
+    /**
+     * Construct a cursor over a collection.
+     * @param collection A collection.
+     * @return A cursor over the collection. Closing the cursor is a no-op.
+     */
     public static LongCursor wrap(LongCollection collection) {
         return new LongCollectionCursor(collection);
     }
 
+    /**
+     * Make a fast long cursor.
+     * @param cursor A cursor.
+     * @return A {@link LongCursor}. If {@code cursor} is a LongCursor, it is returned.
+     */
     public static LongCursor makeLongCursor(@WillCloseWhenClosed final Cursor<Long> cursor) {
         if (cursor instanceof LongCursor) {
             return (LongCursor) cursor;
@@ -300,13 +299,14 @@ public class Cursors {
      * Sort a cursor.  This reads the original cursor into a list, sorts it, and
      * returns a new cursor backed by the list (after closing the original cursor).
      *
+     * @param <T> The type of value in the cursor.
      * @param cursor The cursor to sort.
      * @param comp   The comparator to use to sort the cursor.
      * @return A cursor iterating over the sorted results.
      */
-    public static <T> Cursor<T> sort(@WillCloseWhenClosed Cursor<T> cursor,
+    public static <T> Cursor<T> sort(@WillClose Cursor<T> cursor,
                                      Comparator<? super T> comp) {
-        ArrayList<T> list = makeList(cursor);
+        final ArrayList<T> list = makeList(cursor);
         Collections.sort(list, comp);
         return wrap(list);
     }

@@ -50,10 +50,19 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
 
     private BitSet bitSet;
 
+    /**
+     * Construct an iterator over a bit set.
+     * @param set The set to iterate.
+     */
     public BitSetIterator(BitSet set) {
         this(set, 0);
     }
 
+    /**
+     * Construct an iterator over a bit set.
+     * @param set The set to iterate.
+     * @param start The first bit to return.
+     */
     public BitSetIterator(BitSet set, int start) {
         this(set, start, set.size());
     }
@@ -68,7 +77,8 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     public BitSetIterator(BitSet set, int start, int end) {
         bitSet = set;
         firstBit = start;
-        bit = nextBit = start - 1;
+        nextBit = start - 1;
+        bit = nextBit;
         lastBit = end;
     }
 
@@ -102,11 +112,12 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     public int previousInt() {
         // previous is slow
         if (bit >= firstBit && bit < lastBit) {
-            int ret = bit;
+            final int ret = bit;
             // we have successfully returned at least 1 bit
             for (int i = bit - 1; i >= firstBit; i--) {
                 if (bitSet.get(i)) {
-                    nextBit = bit = i;
+                    nextBit = i;
+                    bit = i;
                     break;
                 }
             }

@@ -68,7 +68,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
             throw new NoSuchElementException();
         }
         
-        T n = polled;
+        final T n = polled;
         polled = null;
         hasNextCalled = false;
         return n;

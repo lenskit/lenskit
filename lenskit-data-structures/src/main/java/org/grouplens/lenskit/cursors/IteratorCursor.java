@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -39,7 +40,8 @@ class IteratorCursor<T> extends AbstractCursor<T> {
 		return iterator != null && iterator.hasNext();
 	}
 
-	@Override
+	@Nonnull
+    @Override
 	public T next() {
 	    if (iterator == null)
 	        throw new NoSuchElementException();

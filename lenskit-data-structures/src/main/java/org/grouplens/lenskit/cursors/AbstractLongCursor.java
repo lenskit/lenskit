@@ -23,18 +23,26 @@ package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
+import javax.annotation.Nonnull;
+
 
 /**
+ * Abstract implementation of long cursors.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
-public abstract class AbstractLongCursor extends AbstractCursor<Long> implements
-        LongCursor {
+public abstract class AbstractLongCursor
+        extends AbstractCursor<Long>
+        implements LongCursor {
 
     /**
      * Implement {@link org.grouplens.lenskit.cursors.Cursor#next() Cursor.next()}
      * by delegating to {@link #nextLong()}.
+     *
+     * @return The next value in the cursor.
      */
+    @Nonnull
     @Override
     public Long next() {
         return nextLong();

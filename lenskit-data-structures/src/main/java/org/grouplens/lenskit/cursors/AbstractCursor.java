@@ -23,6 +23,8 @@ import java.util.Iterator;
 
 /**
  * Base class to make {@link Cursor}s easier to implement.
+ *
+ * @param <T> The type of value returned by this cursor.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
@@ -39,10 +41,10 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
     /**
      * Construct a cursor.
      *
-     * @param rowCount The number of rows, or -1 for unknown size.
+     * @param nrows The number of rows, or -1 for unknown size.
      */
-    public AbstractCursor(int rowCount) {
-        this.rowCount = Math.max(rowCount, -1); // Just a convenience to make all neg. #s map to -1
+    public AbstractCursor(int nrows) {
+        rowCount = Math.max(nrows, -1); // Just a convenience to make all neg. #s map to -1
     }
 
     @Override
@@ -97,6 +99,7 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
      * Get the iterator.  This method just returns <tt>this</tt>, so for-each
      * loops can be used over cursors.
      *
+     * @return The cursor as an iterator.
      * @see java.lang.Iterable#iterator()
      */
     @Override

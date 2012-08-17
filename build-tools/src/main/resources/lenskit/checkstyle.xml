@@ -22,7 +22,7 @@
     <module name="EmptyBlock"/>
     <module name="LeftCurly">
       <property name="maxLineLength" value="100"/>
-      <property name="option" value="nlow"/>
+      <property name="option" value="eol"/>
     </module>
     <module name="NeedBraces">&error;</module>
     <module name="RightCurly"/>
@@ -48,9 +48,9 @@
     <module name="EqualsHashCode">&error;</module>
     <module name="FinalLocalVariable"/>
     <module name="HiddenField"/>
-    <module name="IllegalToken">
-      <property name="tokens" value="LITERAL_CONTINUE, LITERAL_BREAK"/>
-    </module>
+    <!--<module name="IllegalToken">-->
+      <!--<property name="tokens" value="LITERAL_CONTINUE, LITERAL_BREAK"/>-->
+    <!--</module>-->
     <module name="InnerAssignment">&error;</module>
     <module name="MagicNumber"/>
     <module name="MissingSwitchDefault"/>
@@ -71,7 +71,6 @@
     <module name="IllegalThrows"/>
     <module name="PackageDeclaration">&error;</module>
     <module name="ParameterAssignment">&error;</module>
-    <module name="ExplicitInitialization"/>
     <module name="DefaultComesLast">&error;</module>
     <module name="FallThrough"/>
     <module name="MultipleStringLiterals"/>
@@ -79,7 +78,7 @@
     <module name="OneStatementPerLine"/>
 
     <!-- import checks -->
-    <module name="AvoidStarImport"/>
+    <!--<module name="AvoidStarImport"/>-->
     <module name="IllegalImport">&error;</module>
     <module name="RedundantImport"/>
     <module name="UnusedImports">
