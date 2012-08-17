@@ -87,7 +87,7 @@ public class TestFunkSVDRecommender {
 
 
     /**
-     * Tests <tt>recommend(long)</tt>.
+     * Tests {@code recommend(long)}.
      */
     @Test
     public void testRecommend1() {
@@ -122,7 +122,7 @@ public class TestFunkSVDRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, int)</tt>.
+     * Tests {@code recommend(long, int)}.
      */
     @Test
     public void testRecommend2() {
@@ -159,7 +159,7 @@ public class TestFunkSVDRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, Set)</tt>.
+     * Tests {@code recommend(long, Set)}.
      */
     @Test
     public void testRecommend3() {
@@ -209,7 +209,7 @@ public class TestFunkSVDRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, int, Set, Set)</tt>.
+     * Tests {@code recommend(long, int, Set, Set)}.
      */
     @Test
     public void testRecommend4() {

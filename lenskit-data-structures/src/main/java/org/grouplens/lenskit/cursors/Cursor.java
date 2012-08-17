@@ -58,7 +58,7 @@ public interface Cursor<T> extends Iterable<T>, Closeable {
      * source has been closed, this may return even if the end has not been
      * reached.
      *
-     * @return <tt>true</tt> if there remains another item to fetch.
+     * @return {@code true} if there remains another item to fetch.
      */
     boolean hasNext();
 
@@ -95,7 +95,7 @@ public interface Cursor<T> extends Iterable<T>, Closeable {
 
     /**
      * Close the cursor.  This invalidates the cursor; no more elements may be
-     * fetched after a call to <tt>close()</tt> (although implementations are
+     * fetched after a call to {@code close()} (although implementations are
      * not required to enforce this).  It is not an error to close a cursor
      * multiple times.
      */

@@ -54,7 +54,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
      * Factory for creating JDBC DAOs. If the underlying database may be
      * modified by other processes while a build is running, this factory can be
      * configured to take an in-memory snapshot of the database (see
-     * {@link #setSnapshotting(boolean)}). By default, this is <tt>false</tt>
+     * {@link #setSnapshotting(boolean)}). By default, this is {@code false}
      * and the database is assumed to be immutable.
      */
     public static class Factory implements DAOFactory {
@@ -76,7 +76,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         /**
          * Query whether this factory takes in-memory snapshots.
          *
-         * @return <tt>true</tt> if the factory is configured to take in-memory
+         * @return {@code true} if the factory is configured to take in-memory
          *         snapshots of the database.
          */
         public boolean isSnapshotting() {
@@ -86,7 +86,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         /**
          * Set whether the {@link #snapshot()} method should take a snapshot or
          * just return a collection. If the database may be modified by other
-         * code while open, set this to <tt>true</tt>.
+         * code while open, set this to {@code true}.
          *
          * @param take Whether to take an in-memory snapshot of the database in
          *             the {@link #snapshot()} method.

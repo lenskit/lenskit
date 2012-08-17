@@ -38,13 +38,13 @@ import com.google.common.collect.Sets;
 public class TypeUtils {
     /**
      * Build the set of types implemented by the objects' classes. This includes
-     * all supertypes which are themselves subclasses of <var>parent</var>.  The
-     * resulting set is the set of all subclasses of <var>parent</var> such that
-     * there exists some object in <var>objects</var> assignable to one of them.
+     * all supertypes which are themselves subclasses of {@var parent}.  The
+     * resulting set is the set of all subclasses of {@var parent} such that
+     * there exists some object in {@var objects} assignable to one of them.
      *
      * @param objects A collection of objects.
      * @param parent  The parent type of interest.
-     * @return The set of types applicable to objects in <var>objects</var>.
+     * @return The set of types applicable to objects in {@var objects}.
      */
     public static <T> Set<Class<? extends T>>
     findTypes(Iterable<? extends T> objects, Class<T> parent) {

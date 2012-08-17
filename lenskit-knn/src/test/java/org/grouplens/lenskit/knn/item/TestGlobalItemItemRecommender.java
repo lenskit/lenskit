@@ -111,7 +111,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(long)</tt>.
+     * Tests {@code globalRecommend(long)}.
      */
     @Test
     public void testGlobalItemItemRecommender1() {
@@ -129,7 +129,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(long, int)</tt>.
+     * Tests {@code globalRecommend(long, int)}.
      */
     @Test
     public void testGlobalItemItemRecommender2() {
@@ -143,7 +143,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(long, Set<Long>)</tt>.
+     * Tests {@code globalRecommend(long, Set<Long>)}.
      */
     @Test
     public void testGlobalItemItemRecommender3() {
@@ -159,7 +159,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(long, int, Set<Long>, Set<Long>)</tt>.
+     * Tests {@code globalRecommend(long, int, Set<Long>, Set<Long>)}.
      */
     @Test
     public void testGlobalItemItemRecommender4() {
@@ -178,7 +178,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(Set<Long>, int)</tt>.
+     * Tests {@code globalRecommend(Set<Long>, int)}.
      */
     @Test
     public void testGlobalItemItemRecommender5() {
@@ -194,7 +194,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(Set<Long>, Set<Long>)</tt>.
+     * Tests {@code globalRecommend(Set<Long>, Set<Long>)}.
      */
     @Test
     public void testGlobalItemItemRecommender6() {
@@ -214,7 +214,7 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Tests <tt>globalRecommend(Set<Long>, int, Set<Long>, Set<Long>)</tt>.
+     * Tests {@code globalRecommend(Set<Long>, int, Set<Long>, Set<Long>)}.
      */
     @Test
     public void testGlobalItemItemRecommender7() {

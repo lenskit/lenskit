@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.
+ * A {@code RatingPredictor} that implements a weighted Slope One algorithm.
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
     @Inject

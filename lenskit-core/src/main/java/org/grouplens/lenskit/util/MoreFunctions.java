@@ -34,7 +34,7 @@ public class MoreFunctions {
      *
      * @param target The target type for arguments.
      * @return A function which, when applied to an object, casts it to type
-     *         <var>target</var>.
+     *         {@var target}.
      */
     public static <F, T> Function<F, T> cast(final Class<T> target) {
         return new Function<F, T>() {

@@ -101,7 +101,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector)</tt>.
+     * Tests {@code recommend(long, SparseVector)}.
      */
     @Test
     public void testItemItemRecommender1() {
@@ -135,7 +135,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int)</tt>.
+     * Tests {@code recommend(long, SparseVector, int)}.
      */
     @Test
     public void testItemItemRecommender2() {
@@ -154,7 +154,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, Set)}.
      */
     @Test
     public void testItemItemRecommender3() {
@@ -211,7 +211,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, int, Set, Set)}.
      */
     @Test
     public void testItemItemRecommender4() {

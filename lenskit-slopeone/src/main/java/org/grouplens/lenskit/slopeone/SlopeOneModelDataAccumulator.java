@@ -39,7 +39,7 @@ public class SlopeOneModelDataAccumulator {
 
     /**
      * Creates an accumulator to process rating data and generate the necessary data for
-     * a <tt>SlopeOneRatingPredictor</tt>.
+     * a {@code SlopeOneRatingPredictor}.
      *
      * @param damping   A damping term for deviation calculations.
      * @param itemIndex An Index for items in the model
@@ -93,7 +93,7 @@ public class SlopeOneModelDataAccumulator {
 
     /**
      * @return A matrix of item deviation values to be used by
-     *         a <tt>SlopeOneRatingPredictor</tt>.
+     *         a {@code SlopeOneRatingPredictor}.
      */
     public Long2DoubleOpenHashMap[] buildDeviationMatrix() {
         for (int i = 0; i < coratingMatrix.length; i++) {
@@ -111,7 +111,7 @@ public class SlopeOneModelDataAccumulator {
 
     /**
      * @return A matrix, containing the number of co-rating users for each item
-     *         pair, to be used by a <tt>SlopeOneRatingPredictor</tt>.
+     *         pair, to be used by a {@code SlopeOneRatingPredictor}.
      */
     public Long2IntOpenHashMap[] buildCoratingMatrix() {
         return coratingMatrix;

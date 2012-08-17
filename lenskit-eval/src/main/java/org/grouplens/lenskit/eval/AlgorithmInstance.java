@@ -80,7 +80,7 @@ public class AlgorithmInstance {
     /**
      * Query whether this algorithm is to operate on in-memory data.
      *
-     * @return <tt>true</tt> if the ratings database should be loaded in-memory
+     * @return {@code true} if the ratings database should be loaded in-memory
      *         prior to running.
      */
     public boolean getPreload() {

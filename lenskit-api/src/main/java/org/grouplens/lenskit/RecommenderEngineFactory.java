@@ -19,7 +19,7 @@
 package org.grouplens.lenskit;
 
 /**
- * Interface for creating recommender engines.  <tt>lenskit-core</tt> provides
+ * Interface for creating recommender engines.  {@code lenskit-core} provides
  * an implementation of this class that builds a recommender from a data source.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

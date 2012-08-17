@@ -40,7 +40,7 @@ public class ExecHelpers {
      * Extract the cause exception for an execution exception if possible.
      *
      * @param e The execution exception.
-     * @return The cause of <var>e</var>, if set; otherwise, <var>e</var>.
+     * @return The cause of {@var e}, if set; otherwise, {@var e}.
      */
     public static Throwable unwrapExecutionException(ExecutionException e) {
         if (e.getCause() != null) {

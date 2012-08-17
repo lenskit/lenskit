@@ -68,7 +68,7 @@ public interface ItemRecommender {
     ScoredLongList recommend(long user);
 
     /**
-     * Recommend up to <var>n</var> items for a user using the default exclude
+     * Recommend up to {@var n} items for a user using the default exclude
      * set.
      *
      * @param user The user ID.
@@ -95,14 +95,14 @@ public interface ItemRecommender {
      * recommendation method, allowing the recommendations to be constrained by
      * both a candidate set and an exclude set. The exclude set is applied to
      * the candidate set, so the final effective candidate set is
-     * <var>canditates</var> minus <var>exclude</var>.
+     * {@var canditates} minus {@var exclude}.
      *
      * @param user       The user's ID
      * @param n          The number of ratings to return. If negative, recommend all
      *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *                   <tt>null</tt>, all items are considered candidates.
-     * @param exclude    A set of items to be excluded. If <tt>null</tt>, a default
+     *                   {@code null}, all items are considered candidates.
+     * @param exclude    A set of items to be excluded. If {@code null}, a default
      *                   exclude set is used.
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For
@@ -116,8 +116,8 @@ public interface ItemRecommender {
     /**
      * Query whether this recommender can take advantage of user history.
      *
-     * @return <tt>true</tt> if the history-based methods can use the history,
-     *         or <tt>false</tt> if they will ignore it in favor of model-based
+     * @return {@code true} if the history-based methods can use the history,
+     *         or {@code false} if they will ignore it in favor of model-based
      *         data.
      */
     boolean canUseHistory();
@@ -132,7 +132,7 @@ public interface ItemRecommender {
     public ScoredLongList recommend(UserHistory<? extends Event> profile);
 
     /**
-     * Recommend up to <var>n</var> items for a user using the default exclude
+     * Recommend up to {@var n} items for a user using the default exclude
      * set.
      *
      * @param profile The user profile.
@@ -162,12 +162,12 @@ public interface ItemRecommender {
      * @param n          The number of ratings to return. If negative, recommend all
      *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *                   <tt>null</tt>, the candidate set is considered to contain the
+     *                   {@code null}, the candidate set is considered to contain the
      *                   universe.
-     * @param exclude    A set of items to be excluded. If <tt>null</tt>, the
+     * @param exclude    A set of items to be excluded. If {@code null}, the
      *                   default exclude set is used. Exclusions are applied to the
-     *                   candidate set, so the final candidate set is <var>candidates</var>
-     *                   minus <var>exclude</var>.
+     *                   candidate set, so the final candidate set is {@var candidates}
+     *                   minus {@var exclude}.
      * @return a list of scored recommendations, sorted in nondecreasing order
      *         of score.
      * @see ItemRecommender#recommend(long, int, Set, Set)

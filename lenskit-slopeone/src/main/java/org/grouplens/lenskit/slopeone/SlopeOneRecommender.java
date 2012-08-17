@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 
 /**
- * A <tt>RatingRecommender</tt> that uses the Slope One algorithm.
+ * A {@code RatingRecommender} that uses the Slope One algorithm.
  */
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
     private SlopeOneRatingPredictor predictor;

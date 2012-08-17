@@ -102,7 +102,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     /**
      * Find the neighbors for a user with respect to a collection of items.
-     * For each item, the <var>neighborhoodSize</var> users closest to the
+     * For each item, the {@var neighborhoodSize} users closest to the
      * provided user are returned.
      *
      * @param user  The user's rating vector.
@@ -166,7 +166,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      *
      * @param user    The current user's ID (excluded from the returned set).
      * @param itemSet The set of items to look for.
-     * @return The set of all users who have rated at least one item in <var>itemSet</var>.
+     * @return The set of all users who have rated at least one item in {@var itemSet}.
      */
     private LongSet findRatingUsers(long user, LongCollection itemSet) {
         LongSet users = new LongOpenHashSet(100);

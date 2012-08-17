@@ -86,7 +86,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector)</tt>.
+     * Tests {@code recommend(long, SparseVector)}.
      */
     @Test
     public void testUserUserRecommender1() {
@@ -117,7 +117,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int)</tt>.
+     * Tests {@code recommend(long, SparseVector, int)}.
      */
     @Test
     public void testUserUserRecommender2() {
@@ -169,7 +169,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, Set)}.
      */
     @Test
     public void testUserUserRecommender3() {
@@ -243,7 +243,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, int, Set, Set)}.
      */
     @Test
     public void testUserUserRecommender4() {

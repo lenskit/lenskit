@@ -50,7 +50,7 @@ public interface Pointer<E> {
     /**
      * Query whether the pointer has reached its endpoint.
      *
-     * @return <tt>true</tt> if the pointer is at the end.
+     * @return {@code true} if the pointer is at the end.
      */
     boolean isAtEnd();
 }

@@ -29,7 +29,7 @@ public interface ScoredItemAccumulator {
     /**
      * Query whether the accumulator is empty.
      *
-     * @return <tt>true</tt> if the accumulator has no items.
+     * @return {@code true} if the accumulator has no items.
      */
     boolean isEmpty();
 

@@ -28,7 +28,7 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
  * This class is not intended to be derived, so its key methods are
- * <code>final</code>.
+ * {@code final}.
  *
  * <p>This implementation only supports set ratings; for null ratings (unrate
  * events), use {@link SimpleNullRating}.

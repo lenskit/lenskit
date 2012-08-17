@@ -125,9 +125,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * close the recommender when it is finished with it.
      *
      * @param dao         The DAO to connect the recommender to.
-     * @param shouldClose If <tt>true</tt>, then the recommender should close the
+     * @param shouldClose If {@code true}, then the recommender should close the
      *                    DAO when it is closed.
-     * @return A recommender ready for use and backed by <var>dao</var>.
+     * @return A recommender ready for use and backed by {@var dao}.
      */
     public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
         Preconditions.checkNotNull(dao, "Cannot open with null DAO");
