@@ -14,7 +14,6 @@
   <module name="FileTabCharacter"/>
   <module name="TreeWalker">
     <module name="FileContentsHolder"/>
-    <!-- Whitespace checks -->
     <module name="MissingDeprecated"/>
     <module name="MissingOverride">
       &error;
@@ -175,6 +174,7 @@
     <module name="TypecastParenPad"/>
     <module name="WhitespaceAfter"/>
     <module name="WhitespaceAround">
+      <property name="tokens" value="ASSIGN"/>
       <property name="allowEmptyConstructors" value="true"/>
       <property name="allowEmptyMethods" value="true"/>
     </module>

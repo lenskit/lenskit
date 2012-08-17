@@ -35,8 +35,9 @@ import java.util.*;
  * @compat Public
  */
 public final class Cursors {
-    private Cursors() {
-    }
+    private static final int DEFAULT_LIST_SIZE = 20;
+
+    private Cursors() {}
 
     /**
      * Wrap an iterator in a cursor.
@@ -67,7 +68,7 @@ public final class Cursors {
      * @param cursor    The source cursor.
      * @param predicate A predicate indicating which rows to return.
      * @return A cursor returning all rows for which <var>predicate</var> returns
-     *         <tt>true</tt>.
+     *         {@code true}.
      */
     public static <T> Cursor<T> filter(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> predicate) {
         return new FilteredCursor<T>(cursor, predicate);
@@ -159,7 +160,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 20;
+                n = DEFAULT_LIST_SIZE;
             }
             list = new ArrayList<T>(n);
             for (T item : cursor) {
@@ -185,7 +186,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 10;
+                n = DEFAULT_LIST_SIZE;
             }
             list = new LongArrayList(n);
             while (cursor.hasNext()) {
@@ -209,7 +210,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 10;
+                n = DEFAULT_LIST_SIZE;
             }
             set = new LongOpenHashSet(n);
             while (cursor.hasNext()) {

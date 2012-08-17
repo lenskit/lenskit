@@ -200,7 +200,6 @@ public final class CollectionUtils {
         }
 
         @Override
-        @Deprecated
         public LongIterator longIterator() {
             return iterator();
         }
@@ -276,35 +275,6 @@ public final class CollectionUtils {
     }
 
     /**
-     * Get a {@link LongIterator} which to iterate over a collection.
-     * This facilitiates iteration without boxing if the underlying collection
-     * is a Fastutil {@link LongCollection}.
-     *
-     * @param col The collection of longs.
-     * @return A Fastutil iterator for the collection.
-     * @see #fastIterator(Iterator)
-     */
-    @Deprecated
-    public static LongIterator fastIterator(final Collection<Long> col) {
-        return fastIterator(col.iterator());
-    }
-
-    /**
-     * Cast or wrap an iterator to a Fastutil {@link LongIterator}.
-     *
-     * @param iter An iterator of longs.
-     * @return A Fastutil iterator wrapping {@code iter}.  If {@code iter}
-     *         is already a Fastutil iterator (an instance of {@link LongIterator}), this
-     *         is simply {@code iter} cast to {@link LongIterator}.  Otherwise, it is
-     *         a wrapper object.
-     * @deprecated Use {@link LongIterators#asLongIterator(Iterator)} instead.
-     */
-    @Deprecated
-    public static LongIterator fastIterator(final Iterator<Long> iter) {
-        return LongIterators.asLongIterator(iter);
-    }
-
-    /**
      * Create an empty, immutable fast collection.
      *
      * @param <E> The type of fast collection.
@@ -327,7 +297,7 @@ public final class CollectionUtils {
         return new IteratorPointer<E>(iter);
     }
 
-    static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
+    private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
 
         @Override
         public Iterator<E> fastIterator() {
@@ -335,7 +305,6 @@ public final class CollectionUtils {
         }
 
         @Override
-        @Deprecated
         public Iterable<E> fast() {
             return this;
         }

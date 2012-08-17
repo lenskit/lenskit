@@ -226,7 +226,7 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
 
     private final class IterImpl implements Iterator<VectorEntry> {
-        int pos = 0;
+        private int pos = 0;
 
         @Override
         public boolean hasNext() {
@@ -251,8 +251,8 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
 
     final class FastIterImpl implements Iterator<VectorEntry> {
-        int pos;
-        VectorEntry entry = new VectorEntry(0, 0);
+        private int pos;
+        private VectorEntry entry = new VectorEntry(0, 0);
 
         @Override
         public boolean hasNext() {
@@ -277,15 +277,32 @@ public class ImmutableSparseVector extends SparseVector implements Serializable 
     }
 
     /**
+     * Create an immutable sparse vector backed by the specified keys and values.
+     *
+     * @param keys   The key array.
+     * @param values The value array
+     * @return An immutable sparse vector backed by the provided arrays.
      * @see MutableSparseVector#wrap(long[], double[])
+     * @deprecated Only used in tests - will be going away. Mutable sparse vectors
+     *             can be used instead.
      */
+    @Deprecated
     public static ImmutableSparseVector wrap(long[] keys, double[] values) {
         return MutableSparseVector.wrap(keys, values).freeze();
     }
 
     /**
+     * Create an immutable sparse vector backed by the specified keys and values.
+     *
+     * @param keys   The key array.
+     * @param values The value array
+     * @param size   The number of entries from the arrays to use.
+     * @return An immutable sparse vector backed by the provided arrays.
      * @see MutableSparseVector#wrap(long[], double[], int)
+     * @deprecated Only used in tests - will be going away. Mutable sparse vectors
+     *             can be used instead.
      */
+    @Deprecated
     public static ImmutableSparseVector wrap(long[] keys, double[] values, int size) {
         return MutableSparseVector.wrap(keys, values, size).freeze();
     }
