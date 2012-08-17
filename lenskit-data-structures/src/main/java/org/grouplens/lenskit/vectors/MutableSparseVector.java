@@ -39,23 +39,24 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Mutable sparse vector interface
+ * Mutable version of sparse vector.
+ *
+ *
+ * <p>This extends the sparse vector with support for imperative mutation
+ * operations on their values, but
+ * once created the set of keys remains immutable.  Addition and subtraction are
+ * supported.  Mutation operations also operate in-place to reduce the
+ * reallocation and copying required.  Therefore, a common pattern is:
+ *
+ * <pre>
+ * MutableSparseVector normalized = vector.mutableCopy();
+ * normalized.subtract(normFactor);
+ * </pre>
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
- *         <p>This extends the sparse vector with support for imperative mutation
- *         operations on their values, but
- *         once created the set of keys remains immutable.  Addition and subtraction are
- *         supported.  Mutation operations also operate in-place to reduce the
- *         reallocation and copying required.  Therefore, a common pattern is:
- *
- *         <pre>
- *                 MutableSparseVector normalized = MutableSparseVector.copy(vector);
- *                 normalized.subtract(normFactor);
- *                 </pre>
  * @compat Public
  */
-public class MutableSparseVector extends SparseVector implements Serializable {
+public final class MutableSparseVector extends SparseVector implements Serializable {
 
     private static final long serialVersionUID = 1L;
     protected final long[] keys;
@@ -74,6 +75,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     /**
      * Construct a new vector from the contents of a map. The key domain is the
      * key set of the map.
+     *
      * @param ratings A map providing the values for the vector.
      */
     public MutableSparseVector(Long2DoubleMap ratings) {
@@ -93,6 +95,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Construct a new empty vector with specified key domain.
+     *
      * @param domain The key domain.
      */
     public MutableSparseVector(Collection<Long> domain) {
@@ -112,8 +115,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     /**
      * Construct a new vector with specified keys, setting all values to a constant
      * value.
+     *
      * @param keySet The keys to include in the vector.
-     * @param value The value to assign for all keys.
+     * @param value  The value to assign for all keys.
      */
     public MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
@@ -125,11 +129,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values is the same length. The
      * key array is the key domain, and all keys are considered used.
-     * @param keys The array of keys backing this vector. They must be sorted.
-     * @param values The array of values backing this vector.
+     *
+     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param vs The array of values backing this vector.
      */
-    protected MutableSparseVector(long[] keys, double[] values) {
-        this(keys, values, keys.length);
+    protected MutableSparseVector(long[] ks, double[] vs) {
+        this(ks, vs, ks.length);
     }
 
     /**
@@ -138,13 +143,13 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      *
-     * @param keys The array of keys backing the vector. It must be sorted.
-     * @param values The array of values backing the vector.
+     * @param ks     The array of keys backing the vector. It must be sorted.
+     * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
      */
-    protected MutableSparseVector(long[] keys, double[] values, int length) {
-        this.keys = keys;
-        this.values = values;
+    protected MutableSparseVector(long[] ks, double[] vs, int length) {
+        keys = ks;
+        values = vs;
         domainSize = length;
         usedKeys = new BitSet(length);
         for (int i = 0; i < length; i++) {
@@ -158,25 +163,33 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * The key set and key domain is the keys array, and both are the keys
      * array.
      *
-     * @param keys The array of keys backing the vector.
-     * @param values The array of values backing the vector.
+     * @param ks     The array of keys backing the vector.
+     * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
-     * @param used The entries in use.
+     * @param used   The entries in use.
      */
-    protected MutableSparseVector(long[] keys, double[] values, int length, BitSet used) {
-        this.keys = keys;
-        this.values = values;
+    protected MutableSparseVector(long[] ks, double[] vs, int length, BitSet used) {
+        keys = ks;
+        values = vs;
         domainSize = length;
         usedKeys = used;
     }
 
-    protected void checkValid() {
+    /**
+     * Check if this vector is valid.
+     */
+    private void checkValid() {
         if (values == null) {
             throw new IllegalStateException("Vector is frozen");
         }
     }
 
-    protected int findIndex(long key) {
+    /**
+     * Find the index of a particular key.
+     * @param key The key to search for.
+     * @return The index, or a negative value if the key is not in the key domain.
+     */
+    private int findIndex(long key) {
         return Arrays.binarySearch(keys, 0, domainSize, key);
     }
 
@@ -271,7 +284,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     /**
      * Set a value in the vector.
      *
-     * @param key The key of the value to set.
+     * @param key   The key of the value to set.
      * @param value The value to set.
      * @return The original value, or {@link Double#NaN} if the key had no value
      *         (or if the original value was {@link Double#NaN}).
@@ -304,6 +317,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Set the values for all items in the key domain to {@code value}.
+     *
      * @param value The value to set.
      */
     public final void fill(double value) {
@@ -326,6 +340,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Clear the value for a vector entry.
+     *
      * @param e The entry to clear.
      * @see #clear(long)
      */
@@ -345,7 +360,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Add a value to the specified entry. The value must be in the key set.
-     * @param key The key whose value should be added.
+     *
+     * @param key   The key whose value should be added.
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
@@ -354,36 +370,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         final int idx = findIndex(key);
         if (idx >= 0 && usedKeys.get(idx)) {
             clearCachedValues();
-            return values[idx] += value;
-        } else {
-            return Double.NaN;
-        }
-    }
-
-    /**
-     * Add a value to the specified entry, setting the value if the key is not
-     * in the key set.
-     *
-     * @param key The key whose value should be added.
-     * @param value The value to increase it by.
-     * @return The new value. If the key is not in the key domain,
-     *         {@link Double#NaN} is returned.
-     * @deprecated Generally not wanted. Will be removed by LensKit 1.0.
-     */
-    @Deprecated
-    @SuppressWarnings("unused")
-    public final double addOrSet(long key, double value) {
-        checkValid();
-        final int idx = findIndex(key);
-        if (idx >= 0) {
-            clearCachedValues();
-            if (usedKeys.get(idx)) {
-                return values[idx] += value;
-            } else {
-                values[idx] = value;
-                usedKeys.set(idx);
-                return Double.NaN;
-            }
+            values[idx] += value;
+            return values[idx];
         } else {
             return Double.NaN;
         }
@@ -393,7 +381,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * Subtract another rating vector from this one.
      *
      * <p>After calling this method, every element of this vector has been
-     * decreased by the corresponding element in <var>other</var>.  Elements
+     * decreased by the corresponding element in {@var other}.  Elements
      * with no corresponding element are unchanged.
      *
      * @param other The vector to subtract.
@@ -420,8 +408,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * Add another rating vector to this one.
      *
      * <p>After calling this method, every element of this vector has been
-     * increased by the corresponding element in <var>other</var>.  Elements
+     * increased by the corresponding element in {@var other}.  Elements
      * with no corresponding element are unchanged.
+     *
      * @param other The vector to add.
      */
     public final void add(final SparseVector other) {
@@ -444,12 +433,12 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Set the values in this SparseVector to equal the values in
-     * <var>other</var> for each key that is present in both vectors.
+     * {@var other} for each key that is present in both vectors.
      *
      * <p>After calling this method, every element in this vector that has a key
-     * in <var>other</var> has its value set to the corresponding value in
-     * <var>other</var>. Elements with no corresponding key are unchanged, and
-     * elements in <var>other</var> that are not in this vector are not
+     * in {@var other} has its value set to the corresponding value in
+     * {@var other}. Elements with no corresponding key are unchanged, and
+     * elements in {@var other} that are not in this vector are not
      * inserted.
      *
      * @param other The vector to blit its values into this vector
@@ -475,7 +464,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Multiply the vector by a scalar. This multiples every element in the
-     * vector by <var>s</var>.
+     * vector by {@var s}.
+     *
      * @param s The scalar to rescale the vector by.
      */
     public final void scale(double s) {
@@ -489,6 +479,7 @@ public class MutableSparseVector extends SparseVector implements Serializable {
 
     /**
      * Copy the rating vector.
+     *
      * @return A new rating vector which is a copy of this one.
      */
     public final MutableSparseVector copy() {
@@ -551,8 +542,8 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         return isv;
     }
 
-    final class IterImpl implements Iterator<VectorEntry> {
-        BitSetIterator iter = new BitSetIterator(usedKeys);
+    private final class IterImpl implements Iterator<VectorEntry> {
+        private BitSetIterator iter = new BitSetIterator(usedKeys);
 
         @Override
         public boolean hasNext() {
@@ -573,9 +564,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
         }
     }
 
-    final class FastIterImpl implements Iterator<VectorEntry> {
-        VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
-        IntIterator iter;
+    private final class FastIterImpl implements Iterator<VectorEntry> {
+        private VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
+        private IntIterator iter;
 
         public FastIterImpl(IntIterator positions) {
             iter = positions;
@@ -607,14 +598,14 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      *
      * <p>This method allows a new vector to be constructed from
      * pre-created arrays.  After wrapping arrays in a rating vector, client
-     * code should not modify them (particularly the <var>items</var> array).
+     * code should not modify them (particularly the {@var items} array).
      *
-     * @param keys Array of entry keys. This array must be in sorted order and
-     * be duplicate-free.
+     * @param keys   Array of entry keys. This array must be in sorted order and
+     *               be duplicate-free.
      * @param values The values for the vector.
      * @return A sparse vector backed by the provided arrays.
      * @throws IllegalArgumentException if there is a problem with the provided
-     * arrays (length mismatch, <var>keys</var> not sorted, etc.).
+     *                                  arrays (length mismatch, {@var keys} not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values) {
         return wrap(keys, values, keys.length);
@@ -626,16 +617,16 @@ public class MutableSparseVector extends SparseVector implements Serializable {
      * <p>
      * This method allows a new vector to be constructed from pre-created
      * arrays. After wrapping arrays in a rating vector, client code should not
-     * modify them (particularly the <var>items</var> array).
+     * modify them (particularly the {@var items} array).
      *
-     * @param keys Array of entry keys. This array must be in sorted order and
-     *            be duplicate-free.
+     * @param keys   Array of entry keys. This array must be in sorted order and
+     *               be duplicate-free.
      * @param values The values for the vector.
-     * @param size The size of the vector; only the first <var>size</var>
-     *            entries from each array are actually used.
+     * @param size   The size of the vector; only the first {@var size}
+     *               entries from each array are actually used.
      * @return A sparse vector backed by the provided arrays.
      * @throws IllegalArgumentException if there is a problem with the provided
-     *             arrays (length mismatch, <var>keys</var> not sorted, etc.).
+     *                                  arrays (length mismatch, {@var keys} not sorted, etc.).
      */
     public static MutableSparseVector wrap(long[] keys, double[] values, int size) {
         if (values.length < size) {
@@ -650,6 +641,9 @@ public class MutableSparseVector extends SparseVector implements Serializable {
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
      * the original lists once this has been called!
+     * @param keyList The list of keys
+     * @param valueList The list of values
+     * @return A backed by the backing stores of the provided lists.
      */
     public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
         if (valueList.size() < keyList.size()) {

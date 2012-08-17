@@ -42,7 +42,7 @@ import org.grouplens.lenskit.collections.MoreArrays;
  * @compat Public
  */
 @Immutable
-public class ImmutableSparseVector extends SparseVector implements Serializable {
+public final class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -4740588973577998934L;
 
     protected final long[] keys;

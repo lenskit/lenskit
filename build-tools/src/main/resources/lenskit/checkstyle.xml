@@ -53,7 +53,7 @@
     <module name="ThrowsCount"/>
 
     <!-- coding checks -->
-    <module name="AvoidInlineConditionals"/>
+    <!--<module name="AvoidInlineConditionals"/>-->
     <module name="CovariantEquals">
       &error;
     </module>
@@ -61,7 +61,7 @@
     <module name="EqualsHashCode">
       &error;
     </module>
-    <module name="FinalLocalVariable"/>
+    <!--<module name="FinalLocalVariable"/>-->
     <module name="HiddenField"/>
     <!--<module name="IllegalToken">-->
     <!--<property name="tokens" value="LITERAL_CONTINUE, LITERAL_BREAK"/>-->
