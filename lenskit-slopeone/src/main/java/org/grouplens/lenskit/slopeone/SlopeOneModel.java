@@ -18,8 +18,8 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -37,13 +37,13 @@ import org.grouplens.lenskit.util.Index;
 @Shareable
 public class SlopeOneModel {
 
-    private final Long2IntOpenHashMap[] coMatrix;
-    private final Long2DoubleOpenHashMap[] devMatrix;
+    private final Long2IntMap[] coMatrix;
+    private final Long2DoubleMap[] devMatrix;
     private final BaselinePredictor baseline;
     private final Index itemIndex;
     private final PreferenceDomain domain;
 
-    public SlopeOneModel(Long2IntOpenHashMap[] coMatrix,Long2DoubleOpenHashMap[] devMatrix,
+    public SlopeOneModel(Long2IntMap[] coMatrix,Long2DoubleMap[] devMatrix,
     	BaselinePredictor predictor, Index itemIndex, PreferenceDomain dom) {
 
         this.coMatrix = coMatrix;

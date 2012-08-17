@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.model;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -35,18 +34,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Accumulator for item similarities that go into the item-item CF model.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * This accumulator gathers and truncates similarity values on the fly.
  */
-public class SimilarityMatrixAccumulator {
-    private static final Logger logger = LoggerFactory.getLogger(SimilarityMatrixAccumulator.class);
+public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleSimilarityMatrixAccumulator.class);
 
     private final Threshold threshold;
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private LongSortedSet itemUniverse;
 
-    public SimilarityMatrixAccumulator(int modelSize, LongSortedSet entities, Threshold threshold) {
-        logger.debug("Using model size of {} for {} items", modelSize, entities.size());
+    public SimpleSimilarityMatrixAccumulator(int modelSize, LongSortedSet entities, Threshold threshold) {
+        logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
         this.threshold = threshold;
         itemUniverse = entities;
 
@@ -69,6 +67,7 @@ public class SimilarityMatrixAccumulator {
      * @param sim The similarity between items {@code j} and {@code i}. As documented in the
      *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
      */
+    @Override
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
         Preconditions.checkState(rows != null, "model already built");
@@ -84,9 +83,20 @@ public class SimilarityMatrixAccumulator {
     }
 
     /**
+     * Does nothing. Similarity values were accumulated and truncated
+     * upon receipt, no further processing is done here upon the result.
+     * @param rowId The long id of the row which has been completed.
+     */
+    @Override
+    public void completeRow(long rowId) {
+        // no-op
+    }
+
+    /**
      * Moves the result matrix into a SimilarityMatrixModel.
      * @return The resulting SimilarityMatrixModel.
      */
+    @Override
     public SimilarityMatrixModel build() {
         Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
         for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {

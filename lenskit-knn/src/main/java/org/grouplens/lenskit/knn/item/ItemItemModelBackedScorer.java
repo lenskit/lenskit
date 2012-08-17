@@ -24,6 +24,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.knn.model.ItemItemModel;
 
 /**
  * Item scorer specific to item-item recommenders. It exposes the item-item

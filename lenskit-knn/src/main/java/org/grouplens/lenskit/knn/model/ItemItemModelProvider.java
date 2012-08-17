@@ -16,9 +16,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.model;
 
 import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,9 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                 if (itemSimilarity.isSymmetric()) {
                     accumulator.put(pair.itemId2, pair.itemId1, sim);
                 }
+            }
+            if (pair.lastInRow) {
+                accumulator.completeRow(pair.itemId1);
             }
         }
 

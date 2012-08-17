@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;

@@ -22,6 +22,10 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.knn.model.ItemItemModel;
+import org.grouplens.lenskit.knn.model.SimilarityMatrixAccumulator;
+import org.grouplens.lenskit.knn.model.SimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.knn.model.SimpleSimilarityMatrixAccumulatorFactory;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +50,7 @@ public class TestItemItemModelAccumulator {
             universe.add(i);
         }
         SimilarityMatrixAccumulatorFactory accumFactory =
-                new SimilarityMatrixAccumulatorFactory(5, new RealThreshold(0.0));
+                new SimpleSimilarityMatrixAccumulatorFactory(5, new RealThreshold(0.0));
         accum = accumFactory.create(universe);
     }
 

@@ -22,8 +22,8 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.knn.item.ItemItemBuildContext;
-import org.grouplens.lenskit.knn.item.ItemItemBuildContextFactory;
+import org.grouplens.lenskit.knn.model.ItemItemBuildContext;
+import org.grouplens.lenskit.knn.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.util.Indexer;
 

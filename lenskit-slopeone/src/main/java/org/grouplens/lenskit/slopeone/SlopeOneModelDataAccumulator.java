@@ -18,7 +18,9 @@
  */
 package org.grouplens.lenskit.slopeone;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -32,8 +34,8 @@ import org.grouplens.lenskit.vectors.Vectors;
 
 public class SlopeOneModelDataAccumulator {
 
-    private Long2DoubleOpenHashMap[] deviationMatrix;
-    private Long2IntOpenHashMap[] coratingMatrix;
+    private Long2DoubleMap[] deviationMatrix;
+    private Long2IntMap[] coratingMatrix;
     private double damping;
     private Index itemIndex;
 
@@ -57,14 +59,6 @@ public class SlopeOneModelDataAccumulator {
             deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
             coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
         }
-        for (int i = 0; i < items.size()-1; i++) {
-            for (int j = i; j < items.size(); j++) {
-                // to profit from matrix symmetry, always store by minId
-                long minId = Math.min(items.getLong(i), items.getLong(j));
-                long maxId = Math.max(items.getLong(i), items.getLong(j));
-                deviationMatrix[itemIndex.getIndex(minId)].put(maxId, Double.NaN);
-            }
-        }
     }
 
     /**
@@ -75,6 +69,7 @@ public class SlopeOneModelDataAccumulator {
      * @param itemVec2 The rating vector of the second item.
      */
     public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+        // to profit from matrix symmetry, always store by the lesser id
         if (id1 < id2) {
             int corating = 0;
             double deviation = 0.0;
@@ -93,7 +88,7 @@ public class SlopeOneModelDataAccumulator {
      * @return A matrix of item deviation values to be used by
      * a <tt>SlopeOneRatingPredictor</tt>.
      */
-    public Long2DoubleOpenHashMap[] buildDeviationMatrix() {
+    public Long2DoubleMap[] buildDeviationMatrix() {
         for (int i = 0; i < coratingMatrix.length; i++) {
             LongIterator itemIter = coratingMatrix[i].keySet().iterator();
     		while (itemIter.hasNext()) {
@@ -111,7 +106,7 @@ public class SlopeOneModelDataAccumulator {
      * @return A matrix, containing the number of co-rating users for each item
      * pair, to be used by a <tt>SlopeOneRatingPredictor</tt>.
      */
-    public Long2IntOpenHashMap[] buildCoratingMatrix() {
+    public Long2IntMap[] buildCoratingMatrix() {
         return coratingMatrix;
     }
 }

@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.model;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -119,7 +119,7 @@ public class ItemItemBuildContext {
         }
         @Override
         public boolean hasNext() {
-            return iter2.hasNext() || iter1.hasNext();
+            return iter1.hasNext() || iter2.hasNext();
         }
         @Override
         public ItemVecPair next() {
@@ -128,6 +128,7 @@ public class ItemItemBuildContext {
                 iter2 = list2.iterator();
             }
             itemVecPair.setItem2(iter2.nextLong());
+            itemVecPair.lastInRow = !iter2.hasNext();
             return itemVecPair;
         }
         @Override
@@ -142,9 +143,10 @@ public class ItemItemBuildContext {
      */
     public final class ItemVecPair {
         public long itemId1;
-        public SparseVector vec1;
         public long itemId2;
+        public SparseVector vec1;
         public SparseVector vec2;
+        public boolean lastInRow;
 
         public void setItem1(long itemId1) {
             this.itemId1 = itemId1;

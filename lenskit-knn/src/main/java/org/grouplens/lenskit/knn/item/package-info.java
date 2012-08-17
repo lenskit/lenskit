@@ -20,10 +20,10 @@
  * Implementation of item-item collaborative filtering.
  * <p/>
  * The item-item CF implementation is built up of several pieces. The
- * {@linkplain ItemItemModelProvider model builder} takes the rating data
+ * {@linkplain org.grouplens.lenskit.knn.model.ItemItemModelProvider model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain org.grouplens.lenskit.knn.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
- * and computes the {@linkplain SimilarityMatrixModel similarity matrix}. The
+ * and computes the {@linkplain org.grouplens.lenskit.knn.model.SimilarityMatrixModel similarity matrix}. The
  * {@linkplain ItemItemScorer scorer} (or {@linkplain ItemItemRatingPredictor predictor})
  * use this model to score items, and the {@linkplain ItemItemRecommender} uses a scorer
  * to recommend items.
@@ -49,7 +49,7 @@
  * (see <a href="http://dev.grouplens.org/trac/lenskit/wiki/ItemItemTruncateDirection">writeup</a>).
  * Computation against a particular item the user has rated is done down that item's column.
  * <p/>
- * The scorers and recommenders actually operate on a generic {@link ItemItemModel}, so the
+ * The scorers and recommenders actually operate on a generic {@link org.grouplens.lenskit.knn.model.ItemItemModel}, so the
  * item-based scoring algorithm can be used against other sources of similarity, such as
  * similarities stored in a database or text index.
  *

@@ -16,33 +16,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.model;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.params.ModelSize;
-import org.grouplens.lenskit.transform.threshold.Threshold;
-
-import javax.inject.Inject;
 
 /**
- * Factory for use in instantiating a {@link SimilarityMatrixAccumulator}.
+ * Interface of factories providing which provide a {@link SimilarityMatrixAccumulator}.
+ * This interface allows for choosing between the {@link SimilarityMatrixAccumulator} options.
  */
-@Shareable
-public class SimilarityMatrixAccumulatorFactory {
+@DefaultImplementation(SimpleSimilarityMatrixAccumulatorFactory.class)
+public interface SimilarityMatrixAccumulatorFactory {
 
-    private final int modelSize;
-    private final Threshold threshold;
-
-    @Inject
-    public SimilarityMatrixAccumulatorFactory(@ModelSize int modelSize,
-                                              Threshold threshold) {
-        this.modelSize = modelSize;
-        this.threshold = threshold;
-    }
-
-    public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
-        return new SimilarityMatrixAccumulator(modelSize, itemUniverse, threshold);
-    }
+    /**
+     * Creates and returns a SimilarityMatrixModel.
+     * @param itemUniverse The universe of items the accumulator will accumulate.
+     * @return A SimilarityMatrixAccumulator.
+     */
+    public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse);
 
 }

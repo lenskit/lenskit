@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.knn.model.ItemItemModel;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -44,7 +45,7 @@ import javax.inject.Inject;
  * item based on their other ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see ItemItemModelProvider
+ * @see org.grouplens.lenskit.knn.model.ItemItemModelProvider
  * @see ItemItemScorer
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
