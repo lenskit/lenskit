@@ -50,7 +50,7 @@ public interface GlobalItemRecommender {
     ScoredLongList globalRecommend(Set<Long> items);
 
     /**
-     * Recommend up to <var>n</var> items for a basket of items using the default exclude
+     * Recommend up to {@var n} items for a basket of items using the default exclude
      * set.
      *
      * @param items The items value.
@@ -77,14 +77,14 @@ public interface GlobalItemRecommender {
      * recommendation method, allowing the recommendations to be constrained by
      * both a candidate set and an exclude set. The exclude set is applied to
      * the candidate set, so the final effective candidate set is
-     * <var>canditates</var> minus <var>exclude</var>.
+     * {@var canditates} minus {@var exclude}.
      *
      * @param items      The items value
      * @param n          The number of ratings to return. If negative, recommend all
      *                   possible items.
      * @param candidates A set of candidate items which can be recommended. If
-     *                   <tt>null</tt>, all items are considered candidates.
-     * @param exclude    A set of items to be excluded. If <tt>null</tt>, a default
+     *                   {@code null}, all items are considered candidates.
+     * @param exclude    A set of items to be excluded. If {@code null}, a default
      *                   exclude set is used.
      * @return A list of recommended items. If the recommender cannot assign
      *         meaningful scores, the scores will be {@link Double#NaN}. For

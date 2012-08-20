@@ -97,11 +97,11 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     }
 
     /**
-     * Pick the top <var>n</var> items from a score vector.
+     * Pick the top {@var n} items from a score vector.
      *
      * @param n      The number of items to recommend.
      * @param scores The scored item vector.
-     * @return The top <var>n</var> items from <var>scores</var>, in descending
+     * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
     protected ScoredLongList recommend(int n, SparseVector scores) {

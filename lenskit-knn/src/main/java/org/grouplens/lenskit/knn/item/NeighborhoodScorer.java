@@ -39,7 +39,7 @@ public interface NeighborhoodScorer {
      *
      * @param neighbors A list of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
-     *                  every item in <var>neighbors</var>.
+     *                  every item in {@var neighbors}.
      * @return An accumulated score from the neighbors, or {@link Double#NaN} if
      *         no score could be computed.
      */

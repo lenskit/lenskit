@@ -102,7 +102,7 @@ public class LenskitRecommender implements Recommender {
     /**
      * Get the rating DAO for this recommender session.
      *
-     * @return The DAO, or <var>null</var> if this recommender is not connected
+     * @return The DAO, or {@var null} if this recommender is not connected
      *         to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
      *         from other frameworks that are adapted to the LensKit API may not be.
      */

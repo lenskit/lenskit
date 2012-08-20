@@ -96,7 +96,7 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
     }
 
     /**
-     * Get the iterator.  This method just returns <tt>this</tt>, so for-each
+     * Get the iterator.  This method just returns {@code this}, so for-each
      * loops can be used over cursors.
      *
      * @return The cursor as an iterator.

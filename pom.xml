@@ -172,10 +172,6 @@
               <version>${project.version}</version>
             </dependency>
           </dependencies>
-          <configuration>
-            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-            <configLocation>lenskit/checkstyle.xml</configLocation>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -280,6 +276,9 @@
                         <artifactId>build-tools</artifactId>
                         <version>${project.version}</version>
                       </tagletArtifact>
+                    </taglet>
+                    <taglet>
+                      <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
                     </taglet>
                   </taglets>
 
@@ -712,6 +711,8 @@
                 <configuration>
                   <failOnViolation>false</failOnViolation>
                   <failOnError>false</failOnError>
+                  <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                  <configLocation>lenskit/checkstyle.xml</configLocation>
                 </configuration>
               </execution>
             </executions>

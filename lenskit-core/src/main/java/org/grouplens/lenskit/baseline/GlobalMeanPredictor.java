@@ -79,7 +79,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * contained in the given collection of ratings.
      *
      * @param dao The DAO to average.
-     * @return The average of the rating values stored in <var>ratings</var>.
+     * @return The average of the rating values stored in {@var ratings}.
      */
     public static double computeMeanRating(DataAccessObject dao) {
         double total = 0;

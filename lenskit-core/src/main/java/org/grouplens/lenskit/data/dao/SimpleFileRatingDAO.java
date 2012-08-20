@@ -74,7 +74,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         }
 
         /**
-         * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
+         * Open a file with the delimiter read from the {@code lenskit.delimiter}
          * property (defaults to "\t" if not found).
          *
          * @param file The file to read.
@@ -109,7 +109,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     /**
      * Create a URL reading from the specified file/URL and delimiter.
      *
-     * @param file      The file (if <tt>null</tt>, the URL is used).
+     * @param file      The file (if {@code null}, the URL is used).
      * @param delimiter The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
      */

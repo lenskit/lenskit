@@ -57,7 +57,7 @@ public final class Ratings {
 
     /**
      * Construct a rating vector that contains the ratings provided by each user.
-     * If all ratings in <var>ratings</var> are for the same item, then this
+     * If all ratings in {@var ratings} are for the same item, then this
      * will be a valid item rating vector.  If multiple ratings are by the same
      * user, the one with the highest timestamp is retained.  If two ratings
      * by the same user have identical timestamps, then the one that occurs last
@@ -88,7 +88,7 @@ public final class Ratings {
 
     /**
      * Construct a rating vector that contains the ratings provided for each
-     * item. If all ratings in <var>ratings</var> are by the same user, then
+     * item. If all ratings in {@var ratings} are by the same user, then
      * this will be a valid user rating vector. If multiple ratings are provided
      * for the same item, the one with the greatest timestamp is retained. Ties
      * are broken by preferring ratings which come later when iterating through

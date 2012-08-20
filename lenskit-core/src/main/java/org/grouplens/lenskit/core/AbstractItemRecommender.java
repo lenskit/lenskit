@@ -152,10 +152,9 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * @param n          The number of items to return, or negative to return all
      *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude    The set of excluded items, or <tt>null</tt> to use the
+     * @param exclude    The set of excluded items, or {@code null} to use the
      *                   default exclude set.
-     * @return A list of <tt>ScoredId</tt> objects representing recommended
-     *         items.
+     * @return A scored list of item IDs.
      * @see ItemRecommender#recommend(long, int, Set, Set)
      */
     protected ScoredLongList recommend(long user, int n, @Nullable LongSet candidates, @Nullable LongSet exclude) {
@@ -181,7 +180,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * @param n          The number of items to return, or negative to return all
      *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude    The set of excluded items, or <tt>null</tt> for the
+     * @param exclude    The set of excluded items, or {@code null} for the
      *                   default exclude set.
      * @return The recommendations with associated scores.
      * @see ItemRecommender#recommend(UserHistory, int, Set, Set)

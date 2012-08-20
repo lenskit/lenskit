@@ -38,7 +38,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * in a model for the user.  The {@link #canUseHistory()} method allows client
  * code to query whether the history can actually be used by the underlying
  * recommender.  Both methods will work, but if {@link #canUseHistory()} returns
- * <tt>false</tt>, then the history-based methods will be equivalent to calling
+ * {@code false}, then the history-based methods will be equivalent to calling
  * the ID-based methods.
  * </p>
  *
@@ -82,8 +82,8 @@ public interface ItemScorer {
     /**
      * Query whether this scorer can actually use user history.
      *
-     * @return <tt>true</tt> if the history passed to one of the history-based
-     *         methods may be used, and <tt>false</tt> if it will be ignored.
+     * @return {@code true} if the history passed to one of the history-based
+     *         methods may be used, and {@code false} if it will be ignored.
      */
     boolean canUseHistory();
 

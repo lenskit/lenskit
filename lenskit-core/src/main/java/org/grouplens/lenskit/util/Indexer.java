@@ -68,7 +68,7 @@ public class Indexer implements Index {
      * Get an index for an ID, generating a new one if necessary.
      *
      * @param id The ID.
-     * @return The index for <var>id</var>. If the ID has already been interned,
+     * @return The index for {@var id}. If the ID has already been interned,
      *         the old index is returned; otherwise, a new index is generated
      *         and returned.
      */

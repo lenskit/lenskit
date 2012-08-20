@@ -232,8 +232,8 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      * This does not guarantee that there are, but only
      *
      * @param type The type of of event to query.
-     * @return <tt>true</tt> if the data set contains some objects which are
-     *         compatible with <var>type</var>.
+     * @return {@code true} if the data set contains some objects which are
+     *         compatible with {@var type}.
      */
     protected boolean containsType(Class<? extends Event> type) {
         return types.contains(type);

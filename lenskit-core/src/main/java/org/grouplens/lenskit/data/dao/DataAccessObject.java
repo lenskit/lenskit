@@ -67,7 +67,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events from the data set. Equivalent to
-     * <code>getEvents(Event.class, SortOrder.ANY)</code>.
+     * {@code getEvents(Event.class, SortOrder.ANY)}.
      *
      * @return A cursor iterating over all events.
      * @see #getEvents(Class, SortOrder)
@@ -76,7 +76,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events with a specified sort order. Equivalent to
-     * <code>getEvents(Event.class, order)</code>.
+     * {@code getEvents(Event.class, order)}.
      *
      * @param order The sort to apply for the ratings.
      * @return The events in order.
@@ -88,12 +88,12 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events of a particular type. Equivalent to
-     * <code>getEvents(type, SortOrder.ANY)</code>.
+     * {@code getEvents(type, SortOrder.ANY)}.
      *
      * @param <E>  The type of event.
      * @param type The type of event to retrieve. All events of this type,
      *             including subclasses, are returned.
-     * @return The events of type <var>type</var>.
+     * @return The events of type {@var type}.
      * @see #getEvents(Class, SortOrder)
      */
     <E extends Event> Cursor<E> getEvents(Class<E> type);
@@ -105,7 +105,7 @@ public interface DataAccessObject extends Closeable {
      * @param type  The type of event to retrieve. All events of this type,
      *              including subclasses, are returned.
      * @param order The sort to apply for the ratings.
-     * @return The events of type <var>type</var> in order.
+     * @return The events of type {@var type} in order.
      * @throws UnsupportedQueryException if the sort order is not supported by
      *                                   this data source.
      */

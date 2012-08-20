@@ -47,7 +47,7 @@ public interface ScoredLongList extends LongList {
      *
      * @param item  The item to add.
      * @param score The item's score.
-     * @return <tt>true</tt> if the collection was modified.
+     * @return {@code true} if the collection was modified.
      * @see #add(long)
      */
     boolean add(long item, double score);
@@ -68,7 +68,7 @@ public interface ScoredLongList extends LongList {
      * @param index  The index at which to insert elements.
      * @param items  The items.
      * @param scores The scores.
-     * @param offset The offset in <var>items</var> of the first element to add.
+     * @param offset The offset in {@var items} of the first element to add.
      * @param length The number of elements to add.
      * @see #addElements(int, long[], int, int)
      */
@@ -81,7 +81,7 @@ public interface ScoredLongList extends LongList {
      * @param from   The index in the list at which to start copying.
      * @param items  The array to receive the items.
      * @param scores The array to receive the scores.
-     * @param offset The offset in <var>items</var> and <var>scores</var> at
+     * @param offset The offset in {@var items} and {@var scores} at
      *               which to start copying.
      * @param length The number of elements to copy.
      * @see #getElements(int, long[], int, int)
@@ -93,7 +93,7 @@ public interface ScoredLongList extends LongList {
      * Get the score for the item at a position.
      *
      * @param index The index.
-     * @return The score for the item at position <var>i</var>.
+     * @return The score for the item at position {@var i}.
      * @throws IndexOutOfBoundsException if the index is out of bounds.
      */
     double getScore(int index);

@@ -130,7 +130,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      * @param itemMeansResult A map in which the means should be stored.
      * @param damping         The damping term.
      * @return The global mean rating. The item means are stored in
-     *         <var>itemMeans</var>.
+     *         {@var itemMeans}.
      */
     public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping,
                                              Long2DoubleMap itemMeansResult) {

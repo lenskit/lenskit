@@ -35,8 +35,9 @@ import java.util.*;
  * @compat Public
  */
 public final class Cursors {
-    private Cursors() {
-    }
+    private static final int DEFAULT_LIST_SIZE = 20;
+
+    private Cursors() {}
 
     /**
      * Wrap an iterator in a cursor.
@@ -66,15 +67,15 @@ public final class Cursors {
      * @param <T>       The type of cursor rows.
      * @param cursor    The source cursor.
      * @param predicate A predicate indicating which rows to return.
-     * @return A cursor returning all rows for which <var>predicate</var> returns
-     *         <tt>true</tt>.
+     * @return A cursor returning all rows for which {@var predicate} returns
+     *         {@code true}.
      */
     public static <T> Cursor<T> filter(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> predicate) {
         return new FilteredCursor<T>(cursor, predicate);
     }
 
     /**
-     * Filter a cursor to only contain elements of type <var>type</var>. Unlike
+     * Filter a cursor to only contain elements of type {@var type}. Unlike
      * {@link #filter(Cursor, Predicate)} with a predicate from
      * {@link Predicates#instanceOf(Class)}, this method also transforms the
      * cursor to be of the target type.
@@ -82,8 +83,8 @@ public final class Cursors {
      * @param <T>    The type of value in the cursor.
      * @param cursor The source cursor.
      * @param type   The type to filter.
-     * @return A cursor returning all elements in <var>cursor</var> which are
-     *         instances of type <var>type</var>.
+     * @return A cursor returning all elements in {@var cursor} which are
+     *         instances of type {@var type}.
      */
     public static <T> Cursor<T> filter(@WillCloseWhenClosed final Cursor<?> cursor, final Class<T> type) {
         return new AbstractPollingCursor<T>() {
@@ -113,7 +114,7 @@ public final class Cursors {
      * @param <T>      The type of output cursor rows
      * @param cursor   The source cursor
      * @param function A function to apply to each row in the cursor.
-     * @return A new cursor iterating the results of <var>function</var>.
+     * @return A new cursor iterating the results of {@var function}.
      */
     public static <S, T> Cursor<T> transform(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
         return new TransformedCursor<S, T>(cursor, function);
@@ -159,7 +160,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 20;
+                n = DEFAULT_LIST_SIZE;
             }
             list = new ArrayList<T>(n);
             for (T item : cursor) {
@@ -185,7 +186,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 10;
+                n = DEFAULT_LIST_SIZE;
             }
             list = new LongArrayList(n);
             while (cursor.hasNext()) {
@@ -209,7 +210,7 @@ public final class Cursors {
         try {
             int n = cursor.getRowCount();
             if (n < 0) {
-                n = 10;
+                n = DEFAULT_LIST_SIZE;
             }
             set = new LongOpenHashSet(n);
             while (cursor.hasNext()) {

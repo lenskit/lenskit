@@ -44,7 +44,7 @@ public interface Index extends Serializable {
      * Get the key for an index.
      *
      * @param idx The index of the ID to retrieve.
-     * @return The ID for the given <var>idx</var>
+     * @return The ID for the given {@var idx}
      */
     long getId(int idx);
 

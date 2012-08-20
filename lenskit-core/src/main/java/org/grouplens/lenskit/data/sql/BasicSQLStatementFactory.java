@@ -135,7 +135,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Get the name of the timestamp column in the rating table (or
-     * <tt>null</tt> if there is no timestamp column).
+     * {@code null} if there is no timestamp column).
      *
      * @return the timestampColumn
      */
@@ -145,7 +145,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the timestamp column in the rating table. Set to
-     * <tt>null</tt> if there is no timestamp column.
+     * {@code null} if there is no timestamp column.
      *
      * @param timestampColumn the timestampColumn to set
      */

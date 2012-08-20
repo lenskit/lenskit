@@ -39,12 +39,12 @@ import org.grouplens.lenskit.data.UserHistory;
 @DefaultImplementation(SimpleNeighborhoodFinder.class)
 public interface NeighborhoodFinder {
     /**
-     * Find neighboring users for particular items. <var>user</var> and the
+     * Find neighboring users for particular items. {@var user} and the
      * returned rating vectors are <emph>unnormalized</emph>.  Any normalization
      * used by the neighborhood finder is only for comparing neighbors.
      *
      * @param user  The user's event history.
-     * @param items The items we're trying to recommend, or <tt>null</tt> to get
+     * @param items The items we're trying to recommend, or {@code null} to get
      *              get neighborhoods for all possible items.
      * @return A map from item IDs to user neighborhoods for all items for which
      *         we can find neighboring users.

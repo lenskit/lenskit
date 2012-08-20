@@ -22,9 +22,16 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 
 import javax.annotation.Nonnull;
 
-public class LongIteratorCursor extends AbstractLongCursor {
+/**
+ * Cursor backed by a long iterator.
+ */
+class LongIteratorCursor extends AbstractLongCursor {
     private LongIterator iterator;
 
+    /**
+     * Construct a new long iterator cursor.
+     * @param iter The iterator to wrap.
+     */
     public LongIteratorCursor(LongIterator iter) {
         iterator = iter;
     }

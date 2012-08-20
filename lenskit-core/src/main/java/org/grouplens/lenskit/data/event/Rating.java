@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 public interface Rating extends Event {
     /**
      * Get the expressed preference. If this is an "unrate" event, the
-     * preference will be <tt>null</tt>.
+     * preference will be {@code null}.
      *
      * @return The expressed preference.
      */

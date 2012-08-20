@@ -97,10 +97,9 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * @param n          The number of items to return, or negative to return all
      *                   possible items.
      * @param candidates The candidate set.
-     * @param exclude    The set of excluded items, or <tt>null</tt> to use the
+     * @param exclude    The set of excluded items, or {@code null} to use the
      *                   default exclude set.
-     * @return A list of <tt>ScoredId</tt> objects representing recommended
-     *         items.
+     * @return A scored list of item IDs.
      * @see GlobalItemRecommender#globalRecommend(Set, int, Set, Set)
      */
     protected abstract ScoredLongList globalRecommend(LongSet items, int n,

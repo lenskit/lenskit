@@ -23,8 +23,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 class LongCursorIterator implements LongIterator {
     private final LongCursor cursor;
 
-    public LongCursorIterator(LongCursor cursor) {
-        this.cursor = cursor;
+    public LongCursorIterator(LongCursor cur) {
+        cursor = cur;
     }
 
     @Override

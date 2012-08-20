@@ -55,13 +55,26 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     private static final long serialVersionUID = 885774794586510968L;
 
     private final long[] data;
-    private final int start, end;
+    private final int start;
+    private final int end;
     @Nullable
     private final BitSet mask;
 
+    private static long[] unpack(Collection<Long> items) {
+        if (items instanceof LongCollection) {
+            return ((LongCollection) items).toLongArray();
+        } else {
+            return LongIterators.unwrap(LongIterators.asLongIterator(items.iterator()));
+        }
+    }
+
+    /**
+     * Construct a new array set from a collection of items.
+     *
+     * @param items The set's contents.
+     */
     public LongSortedArraySet(@Nonnull Collection<Long> items) {
-        this(items instanceof LongCollection ? ((LongCollection) items).toLongArray()
-                     : LongIterators.unwrap(LongIterators.asLongIterator(items.iterator())));
+        this(unpack(items));
     }
 
     /**
@@ -85,7 +98,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @param fromIndex The index of the first item in the array to use.
      * @param toIndex   The end of the array to use (last index + 1).
      *                  set, behavior is undefined.
-     * @throws IndexOutOfBoundsException if <var>start</var> or <var>end</var>
+     * @throws IndexOutOfBoundsException if {@var start} or {@var end}
      *                                   is out of range.
      */
     public LongSortedArraySet(@Nonnull long[] items, int fromIndex, int toIndex) {
@@ -102,10 +115,10 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @param toIndex   The end of the array to use (last index + 1). set,
      *                  behavior is undefined.
      * @param clean     Assume the array is sorted and has no duplicates.
-     * @param used      A mask of indices into <var>items</var> indicating which ones
+     * @param used      A mask of indices into {@var items} indicating which ones
      *                  are actually used. Indices are with respect to the underlying
-     *                  array, <b>not</b> <var>fromIndex</var>.
-     * @throws IndexOutOfBoundsException if <var>start</var> or <var>end</var>
+     *                  array, <b>not</b> {@var fromIndex}.
+     * @throws IndexOutOfBoundsException if {@var start} or {@var end}
      *                                   is out of range.
      */
     private LongSortedArraySet(@Nonnull long[] items, int fromIndex, int toIndex,
@@ -129,7 +142,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * Find the index for a key.
      *
      * @param key The key to find.
-     * @return The index at which <var>key</var> is stored.
+     * @return The index at which {@var key} is stored.
      * @see Arrays#binarySearch(long[], int, int, long)
      */
     private int findIndex(long key) {
@@ -137,11 +150,11 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     }
 
     /**
-     * Find the index where <var>key</var> would appear if it exists.
+     * Find the index where {@var key} would appear if it exists.
      *
      * @param key The search key.
      * @return The index in the array of the key, if it exists; otherwise, the
-     *         index of the first element greater than <var>key</var> (or the end of the
+     *         index of the first element greater than {@var key} (or the end of the
      *         array).
      */
     private int findIndexAlways(long key) {
@@ -163,7 +176,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             if (mask == null) {
                 return data[start];
             } else {
-                int first = mask.nextSetBit(start);
+                final int first = mask.nextSetBit(start);
                 if (first >= 0) {
                     return data[first];
                 }
@@ -249,9 +262,6 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         return idx >= 0 && (mask == null || mask.get(idx));
     }
 
-    /**
-     * Unsupported remove operation.
-     */
     @Override
     public boolean rem(long k) {
         throw new UnsupportedOperationException();
@@ -261,11 +271,12 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     public long[] toLongArray(long[] a) {
         if (mask == null) {
             final int sz = size();
-            if (a == null || a.length < sz) {
-                a = new long[sz];
+            long[] array = a;
+            if (array == null || array.length < sz) {
+                array = new long[sz];
             }
-            System.arraycopy(data, start, a, 0, sz);
-            return a;
+            System.arraycopy(data, start, array, 0, sz);
+            return array;
         } else {
             return super.toLongArray(a);
         }
@@ -289,10 +300,14 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
 
     /**
      * Compute the set difference of two sets.
+     *
+     * @param items   The initial set
+     * @param exclude The items to remove
+     * @return The elements of {@var items} that are not in {@var exclude}.
      */
     public static LongSortedSet setDifference(LongSet items, LongSet exclude) {
         long[] data = new long[items.size()];
-        LongIterator iter = items.iterator();
+        final LongIterator iter = items.iterator();
         int i = 0;
         while (iter.hasNext()) {
             final long x = iter.nextLong();
@@ -313,7 +328,12 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     /**
      * Convert a {@link LongArrayList} to a sorted array set. The array list's
      * internal storage will be sorted and re-used.
+     *
+     * @param list The list to use as the initial contents.
+     * @return A set built from the list's backing store.
+     * @deprecated This method is unused in LensKit and may go away.
      */
+    @Deprecated
     public static LongSortedSet ofList(LongArrayList list) {
         return new LongSortedArraySet(list.elements(), 0, list.size());
     }
@@ -334,6 +354,8 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     /**
      * Wrap an existing array without change.
      *
+     * @param data The data to wrap
+     * @return A set backed by {@var data}.
      * @see #wrap(long[], int)
      */
     public static LongSortedArraySet wrap(@Nonnull long[] data) {
@@ -343,6 +365,9 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     /**
      * Wrap an existing array with a mask.
      *
+     * @param data The array to wrap.
+     * @param used The mask of used items.
+     * @return A set backed by {@var data}.
      * @see #wrap(long[], int, BitSet)
      */
     public static LongSortedArraySet wrap(@Nonnull long[] data, @Nullable BitSet used) {
@@ -356,7 +381,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @param data The array of data.
      * @param size The number of elements from the beginning of the array to
      *             use.
-     * @param used The bitset of indices in <var>data</var> actually in use.
+     * @param used The bitset of indices in {@var data} actually in use.
      * @return A set backed by the array.
      */
     public static LongSortedArraySet wrap(@Nonnull long[] data, int size,
@@ -402,7 +427,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     }
 
     private final class MaskedIterImpl extends AbstractLongBidirectionalIterator {
-        BitSetIterator iter;
+        private BitSetIterator iter;
 
         public MaskedIterImpl(int spos) {
             iter = new BitSetIterator(mask, spos, end);

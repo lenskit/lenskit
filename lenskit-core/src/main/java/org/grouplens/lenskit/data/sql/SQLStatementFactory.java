@@ -49,7 +49,7 @@ public interface SQLStatementFactory {
      * Querying the statement should return one column per row containing the
      * numeric user ID.
      *
-     * @return A <tt>PreparedStatement</tt> containing user ID data.
+     * @return A {@code PreparedStatement} containing user ID data.
      */
     PreparedStatement prepareUsers(Connection dbc) throws SQLException;
 
@@ -58,7 +58,7 @@ public interface SQLStatementFactory {
      * The result set should contain a single row whose first column contains
      * the number of users.
      *
-     * @return A <tt>PreparedStatement</tt> containing the total number of
+     * @return A {@code PreparedStatement} containing the total number of
      *         users.
      */
     PreparedStatement prepareUserCount(Connection dbc) throws SQLException;
@@ -68,7 +68,7 @@ public interface SQLStatementFactory {
      * Querying the statement should return one column per row containing the
      * numeric item ID.
      *
-     * @return A <tt>PreparedStatement</tt> containing item ID data.
+     * @return A {@code PreparedStatement} containing item ID data.
      */
     PreparedStatement prepareItems(Connection dbc) throws SQLException;
 
@@ -77,7 +77,7 @@ public interface SQLStatementFactory {
      * The result set should contain a single row whose first column contains
      * the number of items.
      *
-     * @return A <tt>PreparedStatement</tt> containing the total number of
+     * @return A {@code PreparedStatement} containing the total number of
      *         items.
      */
     PreparedStatement prepareItemCount(Connection dbc) throws SQLException;
@@ -103,7 +103,7 @@ public interface SQLStatementFactory {
      * statement should take a single parameter for the user ID.
      *
      * @param dbc
-     * @return A <tt>PreparedStatement</tt> returning user rating data. The
+     * @return A {@code PreparedStatement} returning user rating data. The
      *         ratings must be in timestamp order.
      */
     PreparedStatement prepareUserEvents(Connection dbc) throws SQLException;
@@ -115,7 +115,7 @@ public interface SQLStatementFactory {
      * statement should take a single parameter for the item ID.
      *
      * @param dbc
-     * @return A <tt>PreparedStatement</tt> returning item rating data. The
+     * @return A {@code PreparedStatement} returning item rating data. The
      *         ratings must be ordered first by user ID, then by timestamp.
      */
     PreparedStatement prepareItemEvents(Connection dbc) throws SQLException;

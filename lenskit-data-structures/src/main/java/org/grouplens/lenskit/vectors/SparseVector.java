@@ -80,7 +80,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the rating for <var>key</var>.
+     * Get the rating for {@var key}.
      *
      * @param key the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
@@ -91,11 +91,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the rating for <var>key</var>.
+     * Get the rating for {@var key}.
      *
      * @param key the key to look up
      * @param dft The value to return if the key is not in the vector
-     * @return the value (or <var>dft</var> if no such key exists)
+     * @return the value (or {@var dft} if no such key exists)
      */
     public abstract double get(long key, double dft);
 
@@ -103,7 +103,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      * Query whether the vector contains an entry for the key in question.
      *
      * @param key The key to search for.
-     * @return <tt>true</tt> if the key exists.
+     * @return {@code true} if the key exists.
      */
     public abstract boolean containsKey(long key);
 
@@ -192,7 +192,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     /**
      * Get the keys of this vector sorted by value.
      *
-     * @param decreasing If <var>true</var>, sort in decreasing order.
+     * @param decreasing If {@var true}, sort in decreasing order.
      * @return The sorted list of keys of this vector.
      */
     public LongArrayList keysByValue(boolean decreasing) {
@@ -249,7 +249,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     /**
      * Query whether this vector is empty.
      *
-     * @return <tt>true</tt> if the vector is empty.
+     * @return {@code true} if the vector is empty.
      */
     public boolean isEmpty() {
         return size() == 0;

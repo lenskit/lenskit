@@ -39,7 +39,7 @@ public class LazyValue<T> implements Supplier<T> {
      *
      * @param f The callable responsible for providing the lazy value. The
      *          callable's {@link Callable#call()} method cannot return
-     *          <tt>null</tt>.
+     *          {@code null}.
      */
     public LazyValue(@Nonnull Callable<T> f) {
         provider = f;

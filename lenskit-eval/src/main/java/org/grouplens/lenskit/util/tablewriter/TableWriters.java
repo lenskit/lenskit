@@ -32,8 +32,8 @@ public final class TableWriters {
      * @param base   The base table writer for output.
      * @param prefix The values of the leading columns in this table writer.
      * @return A table writer with
-     *         <code>base.getColumnCount() - prefix.length</code> columns. Each
-     *         row is prefixed with the values in <var>prefix</var>.
+     *         {@code base.getColumnCount() - prefix.length} columns. Each
+     *         row is prefixed with the values in {@var prefix}.
      * @since 0.8
      */
     public static TableWriter prefixed(TableWriter base, Object[] prefix) {
