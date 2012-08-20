@@ -22,12 +22,10 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
-import org.grouplens.lenskit.knn.model.ItemItemModel;
-import org.grouplens.lenskit.knn.model.SimilarityMatrixAccumulator;
-import org.grouplens.lenskit.knn.model.SimilarityMatrixAccumulatorFactory;
-import org.grouplens.lenskit.knn.model.SimpleSimilarityMatrixAccumulatorFactory;
+import org.grouplens.lenskit.knn.model.*;
+import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
@@ -38,33 +36,51 @@ import static org.junit.Assert.assertThat;
  */
 public class TestItemItemModelAccumulator {
     LongSortedSet universe;
-    /**
-     * An accumulator with a size of 5 and universe of [1,10].
-     */
-    SimilarityMatrixAccumulator accum;
 
-    @Before
-    public void newAccumulator() {
+    public SimilarityMatrixAccumulator simpleAccumulator() {
         universe = new LongAVLTreeSet();
         for (long i = 1; i <= 10; i++) {
             universe.add(i);
         }
         SimilarityMatrixAccumulatorFactory accumFactory =
-                new SimpleSimilarityMatrixAccumulatorFactory(5, new RealThreshold(0.0));
-        accum = accumFactory.create(universe);
+                new SimpleSimilarityMatrixAccumulatorFactory(new RealThreshold(0.0), 5);
+        return accumFactory.create(universe);
+    }
+
+    public SimilarityMatrixAccumulator normalizingAccumulator() {
+        universe = new LongAVLTreeSet();
+        for (long i = 1; i <= 10; i++) {
+            universe.add(i);
+        }
+        ItemVectorNormalizer normalizer = new DefaultItemVectorNormalizer();
+        SimilarityMatrixAccumulatorFactory accumFactory =
+                new NormalizingSimilarityMatrixAccumulatorFactory(new RealThreshold(0.0), normalizer, 5);
+        return accumFactory.create(universe);
     }
 
     @Test
-    public void testEmpty() {
+    public void testSimpleEmpty() {
+        SimilarityMatrixAccumulator accum = simpleAccumulator();
         ItemItemModel model = accum.build();
         assertThat(model, notNullValue());
         assertThat(model.getItemUniverse(), equalTo(universe));
     }
 
     @Test
-    public void testAccum() {
+    public void testNormalizingEmpty() {
+        SimilarityMatrixAccumulator accum = normalizingAccumulator();
+        ItemItemModel model = accum.build();
+        assertThat(model, notNullValue());
+        assertThat(model.getItemUniverse(), equalTo(universe));
+    }
+
+    @Test
+    public void testSimpleAccum() {
+        SimilarityMatrixAccumulator accum = simpleAccumulator();
         accum.put(1, 2, Math.PI);
         accum.put(7, 3, Math.E);
+        accum.completeRow(1);
+        accum.completeRow(7);
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
@@ -77,11 +93,53 @@ public class TestItemItemModelAccumulator {
     }
 
     @Test
-    public void testTruncate() {
+    public void testNormalizingAccum() {
+        SimilarityMatrixAccumulator accum = normalizingAccumulator();
+        accum.put(1, 2, Math.PI);
+        accum.put(7, 3, Math.E);
+        accum.completeRow(1);
+        accum.completeRow(7);
+        ItemItemModel model = accum.build();
+        ScoredLongList nbrs = model.getNeighbors(1);
+        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs.get(0), equalTo(2L));
+        assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
+        nbrs = model.getNeighbors(7);
+        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs.get(0), equalTo(3L));
+        assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
+    }
+
+    @Test
+    public void testSimpleTruncate() {
+        SimilarityMatrixAccumulator accum = simpleAccumulator();
         for (long i = 1; i <= 10; i++) {
             for (long j = 1; j <= 10; j += (i % 3) + 1) {
                 accum.put(i, j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
             }
+            accum.completeRow(i);
+        }
+        ItemItemModel model = accum.build();
+        ScoredLongList nbrs = model.getNeighbors(1);
+        assertThat(nbrs.size(), equalTo(5));
+        nbrs = model.getNeighbors(4);
+        assertThat(nbrs.size(), equalTo(5));
+        ScoredLongListIterator iter = nbrs.iterator();
+        while (iter.hasNext()) {
+            long j = iter.nextLong();
+            double s = iter.getScore();
+            assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
+        }
+    }
+
+    @Test
+    public void testNormalizingTruncate() {
+        SimilarityMatrixAccumulator accum = normalizingAccumulator();
+        for (long i = 1; i <= 10; i++) {
+            for (long j = 1; j <= 10; j += (i % 3) + 1) {
+                accum.put(i, j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
+            }
+            accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);

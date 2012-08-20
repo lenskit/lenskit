@@ -21,6 +21,7 @@ package org.grouplens.lenskit.knn.model;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 
 import javax.inject.Inject;
@@ -32,14 +33,18 @@ import javax.inject.Inject;
 @Shareable
 public class NormalizingSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory {
 
-    private final int modelSize;
     private final Threshold threshold;
+    private final ItemVectorNormalizer normalizer;
+    private final int modelSize;
+
 
     @Inject
-    public NormalizingSimilarityMatrixAccumulatorFactory(@ModelSize int modelSize,
-                                                        Threshold threshold) {
-        this.modelSize = modelSize;
+    public NormalizingSimilarityMatrixAccumulatorFactory(Threshold threshold,
+                                                         ItemVectorNormalizer normalizer,
+                                                         @ModelSize int modelSize) {
         this.threshold = threshold;
+        this.normalizer = normalizer;
+        this.modelSize = modelSize;
     }
 
     /**
@@ -48,7 +53,7 @@ public class NormalizingSimilarityMatrixAccumulatorFactory implements Similarity
      * @return a normalizing SimilarityMatrixAccumulator
      */
     public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
-        return new NormalizingSimilarityMatrixAccumulator(modelSize, itemUniverse, threshold);
+        return new NormalizingSimilarityMatrixAccumulator(itemUniverse, threshold, normalizer, modelSize);
     }
 
 }

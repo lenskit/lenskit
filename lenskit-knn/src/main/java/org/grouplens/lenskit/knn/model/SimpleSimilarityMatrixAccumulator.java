@@ -43,10 +43,10 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private LongSortedSet itemUniverse;
 
-    public SimpleSimilarityMatrixAccumulator(int modelSize, LongSortedSet entities, Threshold threshold) {
+    public SimpleSimilarityMatrixAccumulator(LongSortedSet entities, Threshold threshold, int modelSize) {
         logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
-        this.threshold = threshold;
         itemUniverse = entities;
+        this.threshold = threshold;
 
         rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
         LongIterator it = entities.iterator();

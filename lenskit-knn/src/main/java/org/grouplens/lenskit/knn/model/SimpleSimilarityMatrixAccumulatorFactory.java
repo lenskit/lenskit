@@ -32,14 +32,15 @@ import javax.inject.Inject;
 @Shareable
 public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory {
 
-    private final int modelSize;
     private final Threshold threshold;
+    private final int modelSize;
 
     @Inject
-    public SimpleSimilarityMatrixAccumulatorFactory(@ModelSize int modelSize,
-                                                    Threshold threshold) {
-        this.modelSize = modelSize;
+    public SimpleSimilarityMatrixAccumulatorFactory(Threshold threshold,
+                                                    @ModelSize int modelSize) {
+
         this.threshold = threshold;
+        this.modelSize = modelSize;
     }
 
     /**
@@ -48,7 +49,7 @@ public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatri
      * @return a simple SimilarityMatrixAccumulator
      */
     public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
-        return new SimpleSimilarityMatrixAccumulator(modelSize, itemUniverse, threshold);
+        return new SimpleSimilarityMatrixAccumulator(itemUniverse, threshold, modelSize);
     }
 
 }

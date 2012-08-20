@@ -557,13 +557,6 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     }
 
     @Override
-    public ScoredLongList truncate(int size) {
-        items = items.subList(0, size);
-        scores = scores.subList(0, size);
-        return this;
-    }
-
-    @Override
     public ScoredLongListIterator iterator() {
         return listIterator();
     }

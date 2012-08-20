@@ -24,12 +24,16 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * Accumulator for item similarities that go into the item-item CF model.
@@ -40,21 +44,27 @@ import org.slf4j.LoggerFactory;
 public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
     private static final Logger logger = LoggerFactory.getLogger(NormalizingSimilarityMatrixAccumulator.class);
 
+    private final LongSortedSet itemUniverse;
     private final Threshold threshold;
-    private Long2ObjectMap<ScoredItemAccumulator> rows;
-    private LongSortedSet itemUniverse;
+    private final ItemVectorNormalizer normalizer;
     private final int modelSize;
 
-    public NormalizingSimilarityMatrixAccumulator(int modelSize, LongSortedSet entities, Threshold threshold) {
+    private Long2ObjectMap<MutableSparseVector> unfinishedRows;
+    private Long2ObjectMap<ImmutableSparseVector> completedRows;
+
+    public NormalizingSimilarityMatrixAccumulator(LongSortedSet entities, Threshold threshold,
+                                                  ItemVectorNormalizer normalizer, int modelSize) {
         logger.debug("Using normalizing accumulator with modelSize {} for {} items", modelSize, entities.size());
-        this.threshold = threshold;
         itemUniverse = entities;
+        this.threshold = threshold;
+        this.normalizer = normalizer;
         this.modelSize = modelSize;
 
-        rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
+        unfinishedRows = new Long2ObjectOpenHashMap<MutableSparseVector>(entities.size());
+        completedRows = new Long2ObjectOpenHashMap<ImmutableSparseVector>(entities.size());
         LongIterator it = entities.iterator();
         while (it.hasNext()) {
-            rows.put(it.nextLong(), new UnlimitedScoredItemAccumulator());
+            unfinishedRows.put(it.nextLong(), new MutableSparseVector(entities));
         }
     }
 
@@ -68,15 +78,15 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
     @Override
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
-        Preconditions.checkState(rows != null, "model already built");
+        Preconditions.checkState(unfinishedRows != null, "model already built");
 
         if (!threshold.retain(sim)) return;
 
         // concurrent read-only array access permitted
-        ScoredItemAccumulator row = rows.get(i);
+        MutableSparseVector row = unfinishedRows.get(i);
         // synchronize on this row to add item
         synchronized (row) {
-            row.put(j, sim);
+            row.set(j, sim);
         }
     }
 
@@ -85,10 +95,12 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
      * @param rowId The long id of the row which has been completed.
      */
     @Override
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void completeRow(long rowId) {
-        ScoredItemAccumulator row = rows.get(rowId);
+        MutableSparseVector row = unfinishedRows.get(rowId);
         synchronized (row) {
-            row.normalize();
+            completedRows.put(rowId, normalizer.normalize(rowId, row, null).immutable());
+            unfinishedRows.remove(rowId);
         }
     }
 
@@ -98,12 +110,21 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
      */
     @Override
     public SimilarityMatrixModel build() {
-        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
-        for (Entry<ScoredItemAccumulator> row: rows.long2ObjectEntrySet()) {
-            data.put(row.getLongKey(), row.getValue().finish().truncate(modelSize));
+        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(completedRows.size());
+        for (Entry<ImmutableSparseVector> row: completedRows.long2ObjectEntrySet()) {
+            ImmutableSparseVector rowVec = row.getValue();
+            long[] keys = rowVec.keysByValue(true).toLongArray();
+            double[] values = rowVec.values().toDoubleArray();
+            if (modelSize != 0 && keys.length > modelSize) {
+                // truncate the parallel arrays
+                keys = Arrays.copyOf(keys, modelSize);
+                values = Arrays.copyOf(values, modelSize);
+            }
+            data.put(row.getLongKey(), new ScoredLongArrayList(keys, values));
         }
         SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-        rows = null;
+        unfinishedRows = null;
+        completedRows = null;
         return model;
     }
 

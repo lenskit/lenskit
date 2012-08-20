@@ -48,21 +48,6 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         scores.add(item, score);
     }
 
-    /**
-     * Normalizes the scores held by this accumulator.
-     */
-    @Override
-    public void normalize() {
-        double ssq = 0;
-        for (double score : scores) {
-            ssq += score * score;
-        }
-        double norm = Math.sqrt(ssq);
-        for (int i = 0; i < scores.size(); i++) {
-            scores.setScore(i, scores.getScore(i) / norm);
-        }
-    }
-
     @Override
     public ScoredLongList finish() {
         if (scores == null) {

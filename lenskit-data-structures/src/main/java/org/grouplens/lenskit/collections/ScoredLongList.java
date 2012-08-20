@@ -107,13 +107,6 @@ public interface ScoredLongList extends LongList {
      */
     double setScore(int index, double score);
 
-    /**
-     * Truncates the list to the parameter size.
-     * @param size The size to truncate the list to.
-     * @return The modified ScoredLongList.
-     */
-    ScoredLongList truncate(int size);
-
     @Override
     ScoredLongListIterator iterator();
 

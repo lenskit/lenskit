@@ -52,11 +52,6 @@ public interface ScoredItemAccumulator {
     void put(long item, double score);
 
     /**
-     * Normalizes the accumulated item scores.
-     */
-    void normalize();
-
-    /**
      * Accumulate the scores into a sorted scored list and reset the
      * accumulator.  Items are sorted in decreasing order of score.
      *

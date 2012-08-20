@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 /**
  * Normalize a user's vector. This vector is typically a rating or purchase vector.
  * <p>
- * This interface is esentially a user-aware version of {@link VectorNormalizer}. The
+ * This interface is essentially a user-aware version of {@link VectorNormalizer}. The
  * default implementation, {@link DefaultUserVectorNormalizer}, delegates to a
  * {@link VectorNormalizer}. Implement this interface directly to create a normalizer
  * that is aware of the fact that it is normalizing a user and e.g. uses user properties
