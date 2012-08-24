@@ -307,7 +307,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if {@code entry} does not come from this vector.
      */
     public final double set(VectorEntry entry, double value) {
-        if (entry.vector != this) {
+        if (entry.getVector() != this) {
             throw new IllegalArgumentException("entry not from correct vector");
         }
         final int idx = entry.getIndex();
@@ -345,7 +345,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @see #clear(long)
      */
     public final void clear(VectorEntry e) {
-        if (e.vector != this) {
+        if (e.getVector() != this) {
             throw new IllegalArgumentException("clearing vector from wrong entry");
         }
         usedKeys.clear(e.getIndex());

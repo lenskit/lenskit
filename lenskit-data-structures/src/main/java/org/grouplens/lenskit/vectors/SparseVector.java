@@ -63,10 +63,10 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry> {
-    private volatile transient Double norm;
-    private volatile transient Double sum;
-    private volatile transient Double mean;
-    private volatile transient Integer hashCode;
+    private transient volatile Double norm;
+    private transient volatile Double sum;
+    private transient volatile Double mean;
+    private transient volatile Integer hashCode;
 
     /**
      * Clear all cached/memoized values. This must be called any time the vector
@@ -152,6 +152,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     /**
      * Return an iterable view of this vector using a fast iterator.
      *
+     * @param state The entries the resulting iterable should return.
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator(State)
      * @since 0.11
@@ -274,7 +275,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Compute and return the L1 norm (sum) of the vector
+     * Compute and return the L1 norm (sum) of the vector.
      *
      * @return the sum of the vector's values
      */
@@ -291,7 +292,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Compute and return the mean of the vector's values
+     * Compute and return the mean of the vector's values.
      *
      * @return the mean of the vector
      */
@@ -303,6 +304,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
         return mean;
     }
 
+    /**
+     * Compute the dot product between two vectors.
+     * @param o The other vector.
+     * @return The dot (inner) product between this vector and {@var o}.
+     */
     public double dot(SparseVector o) {
         double dot = 0;
         for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
@@ -311,6 +317,11 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
         return dot;
     }
 
+    /**
+     * Count the common keys between two vectors.
+     * @param o The other vector.
+     * @return The number of keys appearing in both this and the other vector.
+     */
     public int countCommonKeys(SparseVector o) {
         int n = 0;
         for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
