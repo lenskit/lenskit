@@ -227,10 +227,10 @@
                 <version>2.5</version>
                 <reports>
                   <report>index</report>
-                  <report>dependencies</report>
-                  <report>dependency-convergence</report>
-                  <report>dependency-management</report>
-                  <report>plugins</report>
+                  <!--<report>dependencies</report>-->
+                  <!--<report>dependency-convergence</report>-->
+                  <!--<report>dependency-management</report>-->
+                  <!--<report>plugins</report>-->
                 </reports>
               </plugin>
 
