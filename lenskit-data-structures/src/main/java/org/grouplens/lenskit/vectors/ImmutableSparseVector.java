@@ -94,7 +94,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-    public final double get(long key, double dft) {
+    public double get(long key, double dft) {
         final int idx = Arrays.binarySearch(keys, 0, size, key);
         if (idx >= 0) {
             return values[idx];
@@ -104,7 +104,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-    public final boolean containsKey(long key) {
+    public boolean containsKey(long key) {
         return Arrays.binarySearch(keys, 0, size, key) >= 0;
     }
 
@@ -225,7 +225,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
     }
 
-    private final class IterImpl implements Iterator<VectorEntry> {
+    private class IterImpl implements Iterator<VectorEntry> {
         private int pos = 0;
 
         @Override
@@ -250,7 +250,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         }
     }
 
-    final class FastIterImpl implements Iterator<VectorEntry> {
+    private class FastIterImpl implements Iterator<VectorEntry> {
         private int pos;
         private VectorEntry entry = new VectorEntry(0, 0);
 

@@ -24,22 +24,16 @@ import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.*;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntComparator;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongListIterator;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
@@ -250,8 +244,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     public boolean addAll(int index, LongCollection c) {
         itemList.addAll(index, c);
         if (scoreList != null) {
-            // FIXME Don't allocate a new array
-            scoreList.addElements(index, makeNaNArray(c.size()));
+            scoreList.addAll(index, CollectionUtils.repeat(Double.NaN, c.size()));
             assert itemList.size() == scoreList.size();
         }
         return true;
@@ -411,7 +404,6 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public int compareTo(List<? extends Long> o) {
-        // FIXME Evaluate a real comparison function.
         return itemList.compareTo(o);
     }
 
@@ -490,10 +482,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     private void ensureScoreList() {
         if (scoreList == null) {
             final int sz = size();
-            scoreList = new DoubleArrayList(sz);
-            for (int i = 0; i < sz; i++) {
-                scoreList.add(Double.NaN);
-            }
+            scoreList = new DoubleArrayList(CollectionUtils.repeat(Double.NaN, sz));
         }
     }
 
@@ -511,9 +500,11 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     @Override
     public void addElements(int index, @Nonnull long[] items, @Nonnull double[] scores,
                             int offset, int length) {
-        // FIXME don't need to always do this
         ensureScoreList();
 
+        if (items.length < offset + length) {
+            throw new ArrayIndexOutOfBoundsException(offset + length);
+        }
         if (scores.length < offset + length) {
             throw new ArrayIndexOutOfBoundsException(offset + length);
         }
@@ -528,8 +519,12 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     @Override
     public void getElements(int from, long[] items, double[] scores,
                             int offset, int length) {
-        this.itemList.getElements(from, items, offset, length);
-        this.scoreList.getElements(from, scores, offset, length);
+        itemList.getElements(from, items, offset, length);
+        if (scoreList != null) {
+            scoreList.getElements(from, scores, offset, length);
+        } else {
+            DoubleArrays.fill(scores, offset, length, Double.NaN);
+        }
     }
 
     @Override
@@ -565,7 +560,6 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     @Override
     public SparseVector scoreVector() {
-        // FIXME Extra array copies to do this
         MutableSparseVector v = new MutableSparseVector(new LongSortedArraySet(itemList), Double.NaN);
         if (scoreList != null) {
             final int sz = size();
@@ -634,7 +628,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     }
     //CHECKSTYLE:ON
 
-    class Swap implements Swapper {
+    private class Swap implements Swapper {
         @Override
         public void swap(int a, int b) {
             long old = itemList.set(a, itemList.getLong(b));
@@ -644,7 +638,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         }
     }
 
-    class Iter implements ScoredLongListIterator {
+    private static class Iter implements ScoredLongListIterator {
         private final LongListIterator bitems;
         private final DoubleListIterator bscores;
         private double score = Double.NaN;

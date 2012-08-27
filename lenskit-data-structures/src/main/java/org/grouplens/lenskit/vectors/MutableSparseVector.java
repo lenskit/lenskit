@@ -107,8 +107,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             set = new LongSortedArraySet(domain);
         }
         keys = set.unsafeArray();
-        values = new double[keys.length];
-        domainSize = keys.length;
+        domainSize = domain.size();
+        values = new double[domainSize];
         usedKeys = new BitSet(domainSize);
     }
 
@@ -249,13 +249,13 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     @Override
-    public final boolean containsKey(long key) {
+    public boolean containsKey(long key) {
         final int idx = findIndex(key);
         return idx >= 0 && usedKeys.get(idx);
     }
 
     @Override
-    public final double get(long key, double dft) {
+    public double get(long key, double dft) {
         checkValid();
         final int idx = findIndex(key);
         if (idx >= 0) {
@@ -289,7 +289,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return The original value, or {@link Double#NaN} if the key had no value
      *         (or if the original value was {@link Double#NaN}).
      */
-    public final double set(long key, double value) {
+    public double set(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
         return setAt(idx, value);
@@ -306,7 +306,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return The old value.
      * @throws IllegalArgumentException if {@code entry} does not come from this vector.
      */
-    public final double set(VectorEntry entry, double value) {
+    public double set(VectorEntry entry, double value) {
         if (entry.getVector() != this) {
             throw new IllegalArgumentException("entry not from correct vector");
         }
@@ -320,7 +320,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param value The value to set.
      */
-    public final void fill(double value) {
+    public void fill(double value) {
         DoubleArrays.fill(values, 0, domainSize, value);
         usedKeys.set(0, domainSize);
     }
@@ -331,7 +331,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param key The key to clear.
      */
-    public final void clear(long key) {
+    public void clear(long key) {
         final int idx = findIndex(key);
         if (idx >= 0) {
             usedKeys.clear(idx);
@@ -344,7 +344,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param e The entry to clear.
      * @see #clear(long)
      */
-    public final void clear(VectorEntry e) {
+    public void clear(VectorEntry e) {
         if (e.getVector() != this) {
             throw new IllegalArgumentException("clearing vector from wrong entry");
         }
@@ -365,7 +365,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param value The value to increase it by.
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
-    public final double add(long key, double value) {
+    public double add(long key, double value) {
         checkValid();
         final int idx = findIndex(key);
         if (idx >= 0 && usedKeys.get(idx)) {
@@ -386,7 +386,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param other The vector to subtract.
      */
-    public final void subtract(final SparseVector other) {
+    public void subtract(final SparseVector other) {
         checkValid();
         clearCachedValues();
         int i = 0;
@@ -413,7 +413,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param other The vector to add.
      */
-    public final void add(final SparseVector other) {
+    public void add(final SparseVector other) {
         checkValid();
         clearCachedValues();
         int i = 0;
@@ -443,7 +443,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param other The vector to blit its values into this vector
      */
-    public final void set(final SparseVector other) {
+    public void set(final SparseVector other) {
         checkValid();
         clearCachedValues();
         int i = 0;
@@ -468,7 +468,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param s The scalar to rescale the vector by.
      */
-    public final void scale(double s) {
+    public void scale(double s) {
         clearCachedValues();
         BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
         while (iter.hasNext()) {
@@ -482,12 +482,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @return A new rating vector which is a copy of this one.
      */
-    public final MutableSparseVector copy() {
+    public MutableSparseVector copy() {
         return mutableCopy();
     }
 
     @Override
-    public final MutableSparseVector mutableCopy() {
+    public MutableSparseVector mutableCopy() {
         double[] nvs = Arrays.copyOf(values, domainSize);
         BitSet nbs = (BitSet) usedKeys.clone();
         return new MutableSparseVector(keys, nvs, domainSize, nbs);
@@ -542,7 +542,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return isv;
     }
 
-    private final class IterImpl implements Iterator<VectorEntry> {
+    private class IterImpl implements Iterator<VectorEntry> {
         private BitSetIterator iter = new BitSetIterator(usedKeys);
 
         @Override
@@ -564,7 +564,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
     }
 
-    private final class FastIterImpl implements Iterator<VectorEntry> {
+    private class FastIterImpl implements Iterator<VectorEntry> {
         private VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
         private IntIterator iter;
 

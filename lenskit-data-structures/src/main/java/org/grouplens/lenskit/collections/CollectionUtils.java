@@ -21,19 +21,14 @@
  */
 package org.grouplens.lenskit.collections;
 
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.collect.Iterators;
+import sun.management.counter.LongArrayCounter;
 
 import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
 
@@ -119,6 +114,17 @@ public final class CollectionUtils {
         } else {
             return new LongSetWrapper(longs);
         }
+    }
+
+    /**
+     * Return a list that repeats a single object multiple times.
+     * @param obj The object.
+     * @param n The size of the list.
+     * @param <T> The type of list elements.
+     * @return A list containing {@var obj} {@var n} times.
+     */
+    public static <T> List<T> repeat(T obj, int n) {
+        return new RepeatedList<T>(obj, n);
     }
 
     /**
@@ -222,8 +228,11 @@ public final class CollectionUtils {
             if (output.length < size()) {
                 output = new long[size()];
             }
-            LongIterators.unwrap(iterator(), a);
-            return a;
+            final int sz = LongIterators.unwrap(iterator(), output);
+            if (sz < output.length) {
+                output = Arrays.copyOf(output, sz);
+            }
+            return output;
         }
 
         @Override
