@@ -36,6 +36,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  *
  * @author Steven Chang <schang@cs.umn.edu>
  * @compat Public
+ * @since 0.10
  */
 public interface GlobalItemRecommender {
 

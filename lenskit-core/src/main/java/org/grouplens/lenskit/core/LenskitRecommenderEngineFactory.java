@@ -193,7 +193,7 @@ public final class LenskitRecommenderEngineFactory implements RecommenderEngineF
         // because they could not have created any Nodes.
         Graph original = solver.getGraph();
 
-        // Get the set of shareable instances.
+        // Get the set of shareable nodes
         Set<Node> shared = getShareableNodes(original);
 
         // Instantiate and replace shareable nodes

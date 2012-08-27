@@ -28,14 +28,12 @@ import java.util.Iterator;
  *
  * @compat Public
  */
-public class Vectors {
-
+public final class Vectors {
     /**
      * Private constructor. This class is meant to be used
      * via its static methods, not instantiated.
      */
-    private Vectors() {
-    }
+    private Vectors() {}
 
     /**
      * Provides an Iterable over EntryPairs based off of a fast Iterator.
@@ -64,11 +62,6 @@ public class Vectors {
      */
     public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
-    }
-
-    @Deprecated
-    public static Iterator<EntryPair> pairedIteratorFast(SparseVector v1, SparseVector v2) {
-        return pairedFastIterator(v1, v2);
     }
 
     /**
@@ -202,27 +195,44 @@ public class Vectors {
      * Wraps a pair of values that share a common key.
      */
     public static final class EntryPair {
-        long key;
-        double value1;
-        double value2;
+        private long key;
+        private double value1;
+        private double value2;
 
-        public EntryPair() {
+        EntryPair() {}
+
+        /**
+         * Construct an entry pair with a key & values.
+         * @param k The key.
+         * @param v1 The first vector's value for {@var key}.
+         * @param v2 The second vector's value for {@var key}.
+         */
+        public EntryPair(long k, double v1, double v2) {
+            key = k;
+            value1 = v1;
+            value2 = v2;
         }
 
-        public EntryPair(long key, double value1, double value2) {
-            this.key = key;
-            this.value1 = value1;
-            this.value2 = value2;
-        }
-
+        /**
+         * Get the pair's key.
+         * @return The key.
+         */
         public Long getKey() {
             return key;
         }
 
+        /**
+         * Get the first vector's value.
+         * @return The first vector's value for the {@link #getKey() key}.
+         */
         public double getValue1() {
             return value1;
         }
 
+        /**
+         * Get the second vector's value.
+         * @return The second vector's value for the {@link #getKey() key}.
+         */
         public Double getValue2() {
             return value2;
         }

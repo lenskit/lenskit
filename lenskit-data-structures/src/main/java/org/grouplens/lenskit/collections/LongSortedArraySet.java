@@ -393,8 +393,8 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     private final class IterImpl extends AbstractLongBidirectionalIterator {
         private int pos;
 
-        public IterImpl(int start) {
-            pos = start;
+        public IterImpl(int initial) {
+            pos = initial;
         }
 
         @Override

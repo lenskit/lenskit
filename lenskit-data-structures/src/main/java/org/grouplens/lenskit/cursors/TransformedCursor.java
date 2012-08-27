@@ -24,16 +24,25 @@ import javax.annotation.WillCloseWhenClosed;
 import com.google.common.base.Function;
 
 /**
+ * Implementation of transformed cursors.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @see Cursors#transform(Cursor, Function)
  */
 class TransformedCursor<S, T> extends AbstractCursor<T> {
     private final Cursor<S> cursor;
     private final Function<? super S, ? extends T> function;
 
-    public TransformedCursor(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
-        super(cursor.getRowCount());
-        this.cursor = cursor;
-        this.function = function;
+    /**
+     * Construct a transformed cursor.
+     *
+     * @param cur The underlying cursor.
+     * @param fun The transformation function.
+     */
+    public TransformedCursor(@WillCloseWhenClosed Cursor<S> cur, Function<? super S, ? extends T> fun) {
+        super(cur.getRowCount());
+        cursor = cur;
+        function = fun;
     }
 
     @Override

@@ -55,7 +55,7 @@ public final class VectorEntry {
     }
 
     @Nullable
-    final SparseVector vector;
+    private final SparseVector vector;
     private int index;
     private long key;
     private double value;
@@ -157,5 +157,13 @@ public final class VectorEntry {
      */
     void setValue(double v) {
         value = v;
+    }
+
+    /**
+     * Get the sparse vector associated with this entry.
+     * @return The associated vector, or {@code null} if no vector is linked.
+     */
+    SparseVector getVector() {
+        return vector;
     }
 }
