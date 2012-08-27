@@ -28,8 +28,12 @@ import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +101,7 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
     @Override
     public synchronized void completeRow(long rowId) {
         MutableSparseVector row = unfinishedRows.get(rowId);
-        completedRows.put(rowId, normalizer.normalize(rowId, row, null).immutable());
+        completedRows.put(rowId, normalizer.normalize(rowId, row, null).freeze());
         unfinishedRows.remove(rowId);
     }
 
@@ -108,16 +112,18 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
     @Override
     public SimilarityMatrixModel build() {
         Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(completedRows.size());
+        ScoredItemAccumulator accum;
+        if (modelSize > 0) {
+            accum = new TopNScoredItemAccumulator(modelSize);
+        } else {
+            accum = new UnlimitedScoredItemAccumulator();
+        }
         for (Entry<ImmutableSparseVector> row: completedRows.long2ObjectEntrySet()) {
             ImmutableSparseVector rowVec = row.getValue();
-            long[] keys = rowVec.keysByValue(true).toLongArray();
-            double[] values = rowVec.values().toDoubleArray();
-            if (modelSize != 0 && keys.length > modelSize) {
-                // truncate the parallel arrays
-                keys = Arrays.copyOf(keys, modelSize);
-                values = Arrays.copyOf(values, modelSize);
+            for (VectorEntry e: rowVec.fast()) {
+                accum.put(e.getKey(), e.getValue());
             }
-            data.put(row.getLongKey(), new ScoredLongArrayList(keys, values));
+            data.put(row.getLongKey(), accum.finish());
         }
         SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
         unfinishedRows = null;
