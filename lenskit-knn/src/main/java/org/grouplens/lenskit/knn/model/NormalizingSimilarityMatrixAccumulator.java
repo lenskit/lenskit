@@ -95,13 +95,10 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
      * @param rowId The long id of the row which has been completed.
      */
     @Override
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    public void completeRow(long rowId) {
+    public synchronized void completeRow(long rowId) {
         MutableSparseVector row = unfinishedRows.get(rowId);
-        synchronized (row) {
-            completedRows.put(rowId, normalizer.normalize(rowId, row, null).immutable());
-            unfinishedRows.remove(rowId);
-        }
+        completedRows.put(rowId, normalizer.normalize(rowId, row, null).immutable());
+        unfinishedRows.remove(rowId);
     }
 
     /**
