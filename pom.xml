@@ -601,6 +601,7 @@
         </plugins>
       </build>
     </profile>
+
     <profile>
       <id>develop</id>
       <activation>
@@ -631,10 +632,15 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <showWarnings>true</showWarnings>
-              <showDeprecation>true</showDeprecation>
-            </configuration>
+            <executions>
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <showWarnings>true</showWarnings>
+                  <showDeprecation>true</showDeprecation>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
         </plugins>
@@ -656,12 +662,16 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArguments>
-                <Xlint/>
-              </compilerArguments>
-              <fork>true</fork>
-            </configuration>
+            <executions>
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <compilerArguments>
+                    <Xlint/>
+                  </compilerArguments>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
           <plugin>
