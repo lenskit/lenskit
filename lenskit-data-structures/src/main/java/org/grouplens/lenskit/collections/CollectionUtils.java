@@ -21,14 +21,15 @@
  */
 package org.grouplens.lenskit.collections;
 
-import it.unimi.dsi.fastutil.longs.*;
+import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-
-import com.google.common.collect.Iterators;
-import sun.management.counter.LongArrayCounter;
 
 import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
 
