@@ -35,6 +35,7 @@ public abstract class AbstractBaselinePredictor implements BaselinePredictor {
      * {@link #predict(long, SparseVector, MutableSparseVector)}.
      */
     @Override
+    @Deprecated
     public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
         MutableSparseVector v = new MutableSparseVector(items);
         predict(user, ratings, v);
