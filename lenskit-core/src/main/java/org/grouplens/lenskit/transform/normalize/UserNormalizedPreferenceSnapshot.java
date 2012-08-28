@@ -196,17 +196,6 @@ public class UserNormalizedPreferenceSnapshot extends AbstractPreferenceSnapshot
         }
 
         @Override
-        @Deprecated
-        public Iterable<IndexedPreference> fast() {
-            return new Iterable<IndexedPreference>() {
-                @Override
-                public Iterator<IndexedPreference> iterator() {
-                    return fastIterator();
-                }
-            };
-        }
-
-        @Override
         public Iterator<IndexedPreference> iterator() {
             return new Iterator<IndexedPreference>() {
                 Iterator<IndexedPreference> biter = base.fastIterator();

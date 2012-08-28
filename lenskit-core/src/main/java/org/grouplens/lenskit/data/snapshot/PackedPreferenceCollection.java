@@ -78,17 +78,6 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
     }
 
     @Override
-    @Deprecated
-    public Iterable<IndexedPreference> fast() {
-        return new Iterable<IndexedPreference>() {
-            @Override
-            public Iterator<IndexedPreference> iterator() {
-                return fastIterator();
-            }
-        };
-    }
-
-    @Override
     public Iterator<IndexedPreference> fastIterator() {
         return new FastIteratorImpl();
     }

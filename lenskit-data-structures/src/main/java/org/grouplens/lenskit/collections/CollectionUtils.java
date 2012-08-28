@@ -315,11 +315,6 @@ public final class CollectionUtils {
         }
 
         @Override
-        public Iterable<E> fast() {
-            return this;
-        }
-
-        @Override
         public Iterator<E> iterator() {
             return Iterators.emptyIterator();
         }
