@@ -212,7 +212,6 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         if (mask == null) {
             return new IterImpl(index);
         } else {
-            // FIXME Support reversing masked iterators
             return new MaskedIterImpl(index);
         }
     }
