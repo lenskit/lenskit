@@ -206,7 +206,12 @@ public final class CollectionUtils {
             return base.toArray();
         }
 
+        /**
+         * {@inheritDoc}
+         * @deprecated see {@link LongCollection#longIterator()}
+         */
         @Override
+        @Deprecated
         public LongIterator longIterator() {
             return iterator();
         }
