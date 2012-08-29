@@ -81,18 +81,6 @@ public class LenskitRecommender implements Recommender {
     }
 
     @Override
-    @Deprecated
-    public RatingPredictor getDynamicRatingPredictor() {
-        return getRatingPredictor();
-    }
-
-    @Override
-    @Deprecated
-    public ItemRecommender getDynamicItemRecommender() {
-        return getItemRecommender();
-    }
-
-    @Override
     public void close() {
         if (shouldCloseDao) {
             dao.close();

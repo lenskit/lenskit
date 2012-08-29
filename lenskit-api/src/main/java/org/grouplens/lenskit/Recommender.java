@@ -64,13 +64,6 @@ public interface Recommender {
     RatingPredictor getRatingPredictor();
 
     /**
-     * @deprecated Use {@link #getRatingPredictor()} instead.
-     */
-    @Nullable
-    @Deprecated
-    RatingPredictor getDynamicRatingPredictor();
-
-    /**
      * Get the recommender's item recommender.
      *
      * @return The item recommender for this recommender configuration, or
@@ -87,13 +80,6 @@ public interface Recommender {
      */
     @Nullable
     GlobalItemRecommender getGlobalItemRecommender();
-
-    /**
-     * @deprecated Use {@link #getItemRecommender()} instead.
-     */
-    @Nullable
-    @Deprecated
-    ItemRecommender getDynamicItemRecommender();
 
     /**
      * Close the recommender session.  Underlying data connections are released
