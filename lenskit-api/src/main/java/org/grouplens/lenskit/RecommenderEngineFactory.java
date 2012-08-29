@@ -27,5 +27,10 @@ package org.grouplens.lenskit;
  * @see RecommenderEngine
  */
 public interface RecommenderEngineFactory {
+    /**
+     * Create a new recommender engine.
+     *
+     * @return A new recommender engine, ready to open recommenders.
+     */
     RecommenderEngine create();
 }
