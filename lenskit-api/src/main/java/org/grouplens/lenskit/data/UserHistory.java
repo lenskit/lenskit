@@ -33,6 +33,7 @@ import com.google.common.base.Predicate;
  * events are in timestamp order. Histories also can memoize summaries and other
  * computed properties of themselves.
  *
+ * @param <E> The type of event this history contains.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
@@ -48,6 +49,7 @@ public interface UserHistory<E extends Event> extends List<E> {
     /**
      * Filter the user history to only contain elements of a particular type.
      *
+     * @param <T>  The type of element to include.
      * @param type The type of elements to include.
      * @return A user history containing only the elements of the specified
      *         type.
@@ -72,20 +74,21 @@ public interface UserHistory<E extends Event> extends List<E> {
     LongSet itemSet();
 
     /**
-     * Call a function on this history, memoizing its return value. Used for
+     * Apply a function to this history, memoizing its return value. Used for
      * caching things like summaries. The function should appropriately define
      * its {@link Function#equals(Object)} and {@link Object#hashCode()} methods
      * in order for memoization to work well.
      *
      * <p>
-     * This method is not synchronized. It is safe to memoize distinct function
-     * in parallel, but potentially-parallel use of the same function must be
-     * synchronized by client code or the function may be called twice. The
-     * implementation in {@link AbstractUserHistory} uses a
+     * This method is not guaranteed to be synchronized. It is safe to memoize
+     * distinct functions in parallel, but potentially-parallel use of the same
+     * function must be synchronized by client code or the function may be called
+     * twice. The implementation in {@link AbstractUserHistory} uses a
      * {@link ConcurrentHashMap}.  Multiple calls are therefore safe, but may
      * result in extra work.  All implementations must maintain this safety
      * guarantee, although they may do so by synchronizing this method.
      *
+     * @param <T>  The return type of the function.
      * @param func The function to call and memoize.
      */
     <T> T memoize(Function<? super UserHistory<E>, ? extends T> func);
