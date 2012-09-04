@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.config
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
 import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.grouplens.lenskit.eval.Command
+import org.codehaus.groovy.runtime.GroovyCategorySupport
 
 /**
  * Helper methods for invoking configuration methods.
@@ -67,7 +68,8 @@ class ConfigHelpers {
             def delegate = makeCommandDelegate(engine, command)
             closure.setDelegate(delegate)
             closure.setResolveStrategy(Closure.DELEGATE_FIRST)
-            closure.run()
+            // FIXME Do this configurably, perhaps in the delegate
+            GroovyCategorySupport.use(ContextExtensions, closure)
         }
         command.call()
     }

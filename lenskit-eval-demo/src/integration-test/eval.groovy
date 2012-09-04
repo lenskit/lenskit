@@ -87,29 +87,16 @@ trainTest("mutli-algorithm") {
         bind BaselinePredictor to ItemUserMeanPredictor
         within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within UserSimilarity bind Double withQualifier Damping to 100.0d
-        bind Integer withQualifier NeighborhoodSize to 30
-//        setComponent(RatingPredictor, UserUserRatingPredictor)
-//        setComnponent(PredictNormalizer, VectorNormalizer, MeanVarianceNormalizer)
-//        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        setComponent(NormalizerBaseline, BaselinePredictor, UserMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
-//        setComponent(UserSimilarity, Similarity, CosineSimilarity)
-//        set(SimilarityDamping, 100)
-//        set(NeighborhoodSize, 30)
+        within UserSimilarity bind Damping, Double to 100.0d
+        bind NeighborhoodSize, Integer to 30
     }
 
     algorithm("ItemItem") {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within ItemSimilarity bind Double withQualifier Damping to 100.0d
-        bind Integer withQualifier NeighborhoodSize to 30
-//        setComponent(RatingPredictor, ItemItemRatingPredictor)
-//        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
-//        set(SimilarityDamping, 100)
-//        set(NeighborhoodSize, 30);
+        within ItemSimilarity bind Damping, Double to 100.0d
+        bind NeighborhoodSize, Integer to 30
     }
 
     algorithm("WeightedSlopeOne") {
@@ -117,12 +104,7 @@ trainTest("mutli-algorithm") {
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to WeightedSlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        within SlopeOneModel bind Integer withQualifier Damping to 0
-//        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
-//        setComponent(RatingPredictor, WeightedSlopeOneRatingPredictor)
-//        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        set(DeviationDamping, 0)
+        within SlopeOneModel bind Damping, Integer to 0
     }
 
     algorithm("SlopeOne") {
@@ -130,23 +112,14 @@ trainTest("mutli-algorithm") {
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to SlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        within SlopeOneModel bind Integer withQualifier Damping to 0
-//        setComponent(NormalizerBaseline, BaselinePredictor, GlobalMeanPredictor)
-//        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingUserVectorNormalizer)
-//        setComponent(RatingPredictor, SlopeOneRatingPredictor)
-//        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        set(DeviationDamping, 0)
+        within SlopeOneModel bind Damping, Integer to 0
     }
 
     algorithm("FunkSVD") {
         bind RatingPredictor to FunkSVDRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind Integer withQualifier FeatureCount to 30
-        within FunkSVDModelProvider bind Integer withQualifier IterationCount to 100
-        within FunkSVDRatingPredictor bind Integer withQualifier IterationCount to 30
-//        setComponent(RatingPredictor, FunkSVDRatingPredictor)
-//        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-//        set(FeatureCount, 30)
-//        set(IterationCount, 100)
+        within FunkSVDModelProvider bind IterationCount, Integer to 100
+        within FunkSVDRatingPredictor bind IterationCount, Integer to 30
     }
 }
