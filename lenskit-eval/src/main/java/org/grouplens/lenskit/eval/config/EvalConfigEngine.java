@@ -113,8 +113,9 @@ public class EvalConfigEngine {
      */
     protected
     @Nullable
-    Object runScript(EvalConfigScript script) throws CommandException {
-        Object result = null;
+    Object runScript(EvalConfigScript script, String[] args) throws CommandException {
+        script.setBinding(new Binding(args));
+    	Object result = null;
         try {
             result = script.run();
         } catch (RuntimeException e) {
@@ -137,7 +138,23 @@ public class EvalConfigEngine {
     @Nullable
     Object execute(File file) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
-        return runScript(loadScript(file));
+        return execute(file, new String[]{});
+    }
+    
+    /**
+     * Load a set of evaluations from a script file.
+     *
+     * @param file A Groovy script to configure the evaluator.
+     * @param args The command line arguments for the script.
+     * @return A list of evaluations to run.
+     * @throws CommandException if there is a configuration error
+     * @throws IOException      if there is an error reading the file
+     */
+    public
+    @Nullable
+    Object execute(File file, String[] args) throws CommandException, IOException {
+        logger.debug("loading script file {}", file);
+        return runScript(loadScript(file), args);
     }
 
     /**
@@ -150,7 +167,21 @@ public class EvalConfigEngine {
     public
     @Nullable
     Object execute(Reader in) throws CommandException {
-        return runScript(loadScript(in));
+        return execute(in, new String[]{});
+    }
+    
+    /**
+     * Load a set of evaluations from an input stream.
+     *
+     * @param in The input stream
+     * @param args The command line arguments for the script.
+     * @return A list of evaluations
+     * @throws CommandException if there is a configuration error
+     */
+    public
+    @Nullable
+    Object execute(Reader in, String[] args) throws CommandException {
+        return runScript(loadScript(in), args);
     }
 
     /**

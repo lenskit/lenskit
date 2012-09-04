@@ -69,31 +69,40 @@ class CommandExtensions {
     }
 
     /**
-     * Search for a single-argument method with a parameter that can be built.
+     * Search for a method with a specified BuilderCommand, or a single-argument
+     * method with a parameter that can be built.
      * @param self The command to search.
      * @param engine The config engine.
-     * @param name The method name.
+     * @param methods The group of methods to search
      * @param args The arguments.
-     * @return A closure using a command to build an object and then pass it to a single-parameter
-     * method, or {@code null} if no such method can be found.
+     * @return A closure to prepare and invoke the method, or {@code null} if no
+     * such method can be found.
      * @see EvalConfigEngine#getCommandForType(Class)
      */
     static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
         // FIXME this is messy and unreadable
         def buildables = methods.collect({ method ->
-            def formals = method.parameterTypes
-            if (formals.length == 1) {
-                def type = formals[0]
-                logger.debug("looking for command of type {}", type)
-                Class cmd = engine.getCommandForType(type)
-                def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
-                if (ctor != null) {
-                    return {
-                        method.invoke(self, ctor(it))
-                    }
-                }
-            }
-            return null
+            BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)			
+			if (builderAnnotation != null) {
+				Class<? extends Command> builder = builderAnnotation.value()
+				return {
+					builder.call().invoke(self)
+				}
+			} else {
+				def formals = method.parameterTypes
+	            if (formals.length == 1) {
+	                def type = formals[0]
+	                logger.debug("looking for command of type {}", type)
+	                Class cmd = engine.getCommandForType(type)
+	                def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
+	                if (ctor != null) {
+	                    return {
+	                        method.invoke(self, ctor(it))
+	                    }
+	                }
+	            }
+	            return null
+			}
         }).findAll()
 
         if (buildables.size() == 1) {

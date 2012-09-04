@@ -45,14 +45,16 @@ public class EvalCLI {
      */
     public static void main(String[] args) {
         EvalCLIOptions options = EvalCLIOptions.parse(args);
-        EvalCLI cli = new EvalCLI(options);
+        EvalCLI cli = new EvalCLI(options, args);
         cli.run();
     }
 
     EvalCLIOptions options;
+    String[] clArgs;
 
-    public EvalCLI(EvalCLIOptions opts) {
+    public EvalCLI(EvalCLIOptions opts, String[] args) {
         options = opts;
+        clArgs = args;
     }
 
     public void run() {
@@ -62,7 +64,7 @@ public class EvalCLI {
         File f = options.getConfigFile();
         logger.info("loading evaluation from {}", f);
         try {
-            config.execute(f);
+            config.execute(f, clArgs);
         } catch (CommandException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
