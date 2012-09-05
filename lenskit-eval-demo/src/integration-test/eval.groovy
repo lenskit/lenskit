@@ -87,16 +87,16 @@ trainTest("mutli-algorithm") {
         bind BaselinePredictor to ItemUserMeanPredictor
         within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within UserSimilarity bind Damping, Double to 100.0d
-        bind NeighborhoodSize, Integer to 30
+        within UserSimilarity set Damping to 100.0d
+        set NeighborhoodSize to 30
     }
 
     algorithm("ItemItem") {
         bind RatingPredictor to ItemItemRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        within ItemSimilarity bind Damping, Double to 100.0d
-        bind NeighborhoodSize, Integer to 30
+        within ItemSimilarity set Damping to 100.0d
+        set NeighborhoodSize to 30
     }
 
     algorithm("WeightedSlopeOne") {
@@ -104,7 +104,7 @@ trainTest("mutli-algorithm") {
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to WeightedSlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        within SlopeOneModel bind Damping, Integer to 0
+        within SlopeOneModel set Damping to 0
     }
 
     algorithm("SlopeOne") {
@@ -112,14 +112,14 @@ trainTest("mutli-algorithm") {
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         bind RatingPredictor to SlopeOneRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        within SlopeOneModel bind Damping, Integer to 0
+        within SlopeOneModel set Damping to 0
     }
 
     algorithm("FunkSVD") {
         bind RatingPredictor to FunkSVDRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
-        bind Integer withQualifier FeatureCount to 30
-        within FunkSVDModelProvider bind IterationCount, Integer to 100
-        within FunkSVDRatingPredictor bind IterationCount, Integer to 30
+        set FeatureCount to 30
+        within FunkSVDModelProvider set IterationCount to 100
+        within FunkSVDRatingPredictor set IterationCount to 30
     }
 }

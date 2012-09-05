@@ -59,7 +59,7 @@ class AlgorithmInstanceCommandDelegate {
     }
 
     def methodMissing(String name, args) {
-        if (name in ["bind", "in", "within"]) {
+        if (name in ["bind", "in", "within", "set"]) {
             factory.metaClass.invokeMethod(factory, name, args)
         } else {
             null

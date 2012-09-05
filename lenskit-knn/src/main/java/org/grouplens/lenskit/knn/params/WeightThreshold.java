@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.grapht.annotation.Parameter;
 
 /**
  * The weight threshold for significance weighting.  If the vectors in question
@@ -37,6 +38,7 @@ import org.grouplens.grapht.annotation.DefaultInteger;
  */
 @Documented
 @DefaultInteger(0)
+@Parameter(Parameter.PrimitiveType.INT)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

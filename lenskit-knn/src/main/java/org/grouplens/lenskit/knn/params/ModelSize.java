@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.grapht.annotation.Parameter;
 
 /**
  * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
@@ -35,6 +36,7 @@ import org.grouplens.grapht.annotation.DefaultInteger;
  */
 @Documented
 @DefaultInteger(250)
+@Parameter(Parameter.PrimitiveType.INT)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

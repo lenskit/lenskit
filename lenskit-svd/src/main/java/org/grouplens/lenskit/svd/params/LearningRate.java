@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.Parameter;
 import org.grouplens.lenskit.svd.FunkSVDModelProvider;
 
 /**
@@ -36,6 +37,7 @@ import org.grouplens.lenskit.svd.FunkSVDModelProvider;
  */
 @Documented
 @DefaultDouble(1e-3)
+@Parameter(Parameter.PrimitiveType.DOUBLE)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
