@@ -35,6 +35,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -67,8 +68,10 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
 
     @Inject
-    public FunkSVDModelProvider(@Transient PreferenceSnapshot snapshot, @Transient UpdateRule trainer,
-                                BaselinePredictor baseline, @FeatureCount int featureCount) {
+    public FunkSVDModelProvider(@Transient @Nonnull PreferenceSnapshot snapshot,
+                                @Transient @Nonnull UpdateRule trainer,
+                                @Nonnull BaselinePredictor baseline,
+                                @FeatureCount int featureCount) {
         this.featureCount = featureCount;
         this.baseline = baseline;
         this.snapshot = snapshot;
