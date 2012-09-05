@@ -34,9 +34,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Do recommendations and predictions based on SVD matrix factorization.
@@ -55,11 +54,12 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final int featureCount;
     private final ClampingFunction clamp;
 
-    private UpdateRule trainer;
+    @Nullable private UpdateRule trainer;
 
 
     @Inject
-    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model, UpdateRule trainer) {
+    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
+                                  @Nullable UpdateRule trainer) {
         super(dao);
         this.dao = dao;
         this.model = model;
@@ -138,7 +138,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             }
         }
 
-        if (!ratings.isEmpty()) {
+        if (!ratings.isEmpty() && trainer != null) {
             for (int f = 0; f < featureCount; f++) {
                 trainUserFeature(user, uprefs, ratings, estimates, f, trainer);
             }
@@ -149,7 +149,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     }
 
     private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
-                                  MutableSparseVector estimates, int feature, UpdateRule trainer) {
+                                  MutableSparseVector estimates, int feature,
+                                  @Nonnull UpdateRule trainer) {
         trainer.reset();
         while (trainer.nextEpoch()) {
             for (VectorEntry itemId : ratings.fast()) {
