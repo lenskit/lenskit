@@ -94,11 +94,6 @@ public final class LenskitRecommenderEngineFactory implements RecommenderEngineF
         return config.getRootContext().bind(type);
     }
 
-    @Override
-    public void bind(Class<? extends Annotation> param, Object value) {
-        config.getRootContext().bind(param, value);
-    }
-
     public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
         return bind(type).withQualifier(qualifier);
     }

@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.grapht.annotation.Parameter;
+import org.grouplens.lenskit.core.Parameter;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both
@@ -35,7 +35,7 @@ import org.grouplens.grapht.annotation.Parameter;
  */
 @Documented
 @DefaultInteger(30)
-@Parameter(Parameter.PrimitiveType.INT)
+@Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

@@ -4,8 +4,8 @@ import org.grouplens.grapht.Binding
 import org.grouplens.grapht.Context
 
 import java.lang.annotation.Annotation
-import org.grouplens.grapht.annotation.Parameter
 import com.google.common.base.Preconditions
+import org.grouplens.lenskit.core.Parameter
 
 /**
  * Category to extend {@link org.grouplens.grapht.Context} with additional methods.
@@ -29,7 +29,7 @@ class ContextExtensions {
         if (pdef == null) {
             throw new IllegalArgumentException("${param} has no Parameter annotation")
         }
-        def ptype = pdef.value().getType()
+        def ptype = pdef.value()
         return ctx.bind(ptype).withQualifier(param)
     }
 }

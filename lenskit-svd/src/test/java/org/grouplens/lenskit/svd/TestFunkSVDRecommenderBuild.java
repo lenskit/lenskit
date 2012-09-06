@@ -60,7 +60,7 @@ public class TestFunkSVDRecommenderBuild {
         factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
-        factory.bind(IterationCount.class, 10);
+        factory.bind(Integer.class).withQualifier(IterationCount.class).to(10);
 
         engine = factory.create();
     }

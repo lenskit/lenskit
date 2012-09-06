@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.grapht.annotation.Parameter;
+import org.grouplens.lenskit.core.Parameter;
 
 /**
  * Smoothing parameter for mean baselines.
@@ -41,7 +41,7 @@ import org.grouplens.grapht.annotation.Parameter;
  */
 @Documented
 @DefaultDouble(0.0)
-@Parameter(Parameter.PrimitiveType.DOUBLE)
+@Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

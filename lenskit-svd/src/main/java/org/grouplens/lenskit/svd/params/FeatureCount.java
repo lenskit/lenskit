@@ -27,14 +27,14 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.grapht.annotation.Parameter;
+import org.grouplens.lenskit.core.Parameter;
 
 /**
  * The number of latent features to use in an SVD-based recommender.
  */
 @Documented
 @DefaultInteger(40)
-@Parameter(Parameter.PrimitiveType.INT)
+@Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

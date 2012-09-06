@@ -22,7 +22,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.grapht.annotation.Parameter;
+import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -49,7 +49,7 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
     @Documented
     @DefaultDouble(0.0)
     @Qualifier
-    @Parameter(Parameter.PrimitiveType.DOUBLE)
+    @Parameter(Double.class)
     @Target({ElementType.METHOD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Value {
