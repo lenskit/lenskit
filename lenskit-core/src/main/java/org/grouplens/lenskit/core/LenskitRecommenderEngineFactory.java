@@ -181,6 +181,7 @@ public final class LenskitRecommenderEngineFactory implements RecommenderEngineF
                               config.build(RuleSet.INTERMEDIATE_TYPES),
                               config.build(RuleSet.SUPER_TYPES),
                               new DefaultDesireBindingFunction(config.getSPI())),
+                CachePolicy.MEMOIZE,
                 100);
 
         // Resolve all required types to complete a Recommender
