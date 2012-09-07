@@ -22,6 +22,11 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
+/**
+ * Computes updates for FunkSVD feature training rounds.
+ *
+ * @since 1.0
+ */
 @NotThreadSafe
 public final class FunkSVDFeatureTrainer {
     private int epoch;
@@ -31,7 +36,7 @@ public final class FunkSVDFeatureTrainer {
     private double oldRmse;
     private double rmse;
     private final double MIN_EPOCHS;
-    
+
     private double err;
     private double ufv;
     private double ifv;
@@ -42,9 +47,8 @@ public final class FunkSVDFeatureTrainer {
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
 
-
     public FunkSVDFeatureTrainer(double rate, double threshold, double gradientDescent,
-    								ClampingFunction clamp, int iterCount) {
+                                 ClampingFunction clamp, int iterCount) {
         epoch = 0;
         ratingCount = 0;
         err = 0.0;
@@ -54,7 +58,7 @@ public final class FunkSVDFeatureTrainer {
         ufv = 0.0;
         ifv = 0.0;
         MIN_EPOCHS = 50;
-        
+
         learningRate = rate;
         trainingThreshold = threshold;
         trainingRegularization = gradientDescent;
@@ -107,12 +111,6 @@ public final class FunkSVDFeatureTrainer {
 
     public double getLastRMSE() {
         return rmse;
-    }
-
-    public void reset() {
-        epoch = 0;
-        err = 0.0;
-        ssq = 0.0;
     }
 
     public boolean nextEpoch() {

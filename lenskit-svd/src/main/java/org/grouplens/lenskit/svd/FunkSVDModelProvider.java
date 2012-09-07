@@ -64,12 +64,12 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
     private double[][] userFeatures;
     private double[][] itemFeatures;
-    private FunkSVDUpdateRule rule;
+    private FunkSVDTrainingConfig rule;
 
 
     @Inject
     public FunkSVDModelProvider(@Transient @Nonnull PreferenceSnapshot snapshot,
-                                @Transient @Nonnull FunkSVDUpdateRule rule,
+                                @Transient @Nonnull FunkSVDTrainingConfig rule,
                                 @Nonnull BaselinePredictor baseline,
                                 @FeatureCount int featureCount) {
         this.featureCount = featureCount;
@@ -117,7 +117,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
 
     private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings, int feature) {
-    	FunkSVDFeatureTrainer trainer = rule.getTrainer();
+    	FunkSVDFeatureTrainer trainer = rule.newTrainer();
     	
         logger.trace("Training feature {}", feature);
 

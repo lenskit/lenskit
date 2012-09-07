@@ -54,12 +54,12 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final int featureCount;
     private final ClampingFunction clamp;
 
-    @Nullable private FunkSVDUpdateRule rule;
+    @Nullable private FunkSVDTrainingConfig rule;
 
 
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
-                                  @Nullable FunkSVDUpdateRule rule) {
+                                  @Nullable FunkSVDTrainingConfig rule) {
         super(dao);
         this.dao = dao;
         this.model = model;
@@ -150,7 +150,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
-        FunkSVDFeatureTrainer trainer = rule.getTrainer();
+        assert rule != null;
+        FunkSVDFeatureTrainer trainer = rule.newTrainer();
         
         while (trainer.nextEpoch()) {
             for (VectorEntry itemId : ratings.fast()) {
