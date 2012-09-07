@@ -20,8 +20,8 @@ package org.grouplens.lenskit.eval;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.config.AlgorithmInstanceCommandDelegate;
-import org.grouplens.lenskit.eval.config.ConfigDelegate;
+import org.grouplens.lenskit.eval.config.AlgorithmInstanceCommandRunner;
+import org.grouplens.lenskit.eval.config.ConfigRunner;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import java.util.Map;
  *
  * @author Michael Ekstrand
  */
-@ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
+@ConfigRunner(AlgorithmInstanceCommandRunner.class)
 public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance> {
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;

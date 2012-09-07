@@ -30,10 +30,6 @@ import org.grouplens.lenskit.core.Parameter
  * @author Michael Ekstrand
  */
 class ContextExtensions {
-    static <T> Binding<T> bind(Context ctx, Class<? extends Annotation> qual, Class<T> cls) {
-        return ctx.bind(cls).withQualifier(qual)
-    }
-
     /**
      * Create a binding that sets a parameter.
      * @param ctx The context.

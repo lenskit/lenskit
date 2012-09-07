@@ -41,8 +41,6 @@ import org.grouplens.lenskit.eval.Command
  * @author Michael Ekstrand
  * @since 0.10
  */
-
-
 class CommandDelegate<T> {
     protected final EvalConfigEngine engine
     protected final Command<T> command

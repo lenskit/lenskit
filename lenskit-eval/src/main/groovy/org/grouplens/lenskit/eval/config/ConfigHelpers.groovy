@@ -57,24 +57,6 @@ class ConfigHelpers {
     }
 
     /**
-     * Invoke a command to configure an object.
-     * @param command The command to use.
-     * @param closure A closure to configure the command. Can be {@code null}. If non-null,
-     * this closure is invoked with a {@link CommandDelegate} to configure the command.
-     * @return The object resulting from the command.
-     */
-    static <T> Object invokeCommand(EvalConfigEngine engine, Command<T> command, Closure closure) {
-        if (closure != null) {
-            def delegate = makeCommandDelegate(engine, command)
-            closure.setDelegate(delegate)
-            closure.setResolveStrategy(Closure.DELEGATE_FIRST)
-            // FIXME Do this configurably, perhaps in the delegate
-            GroovyCategorySupport.use(ContextExtensions, closure)
-        }
-        command.call()
-    }
-
-    /**
      * Resolve a method invocation with a command factory. Takes the name of a method and its
      * arguments and, if possible, constructs a closure that returns the result of configuring
      * a command and running it.
@@ -115,10 +97,17 @@ class ConfigHelpers {
             ConstructorUtils.getMatchingAccessibleConstructor(cmd, it)
         }
         if (bestCtor != null) {
+            def runCfg = cmd.getAnnotation(ConfigRunner)
+            def runner = null
+            if (runCfg != null) {
+                runner = runCfg.value().newInstance(engine)
+            } else {
+                runner = new DefaultCommandRunner(engine)
+            }
             return {
                 Object[] txargs = bestCtor.right.collect({it.get()})
                 def command = bestCtor.left.newInstance(txargs)
-                ConfigHelpers.invokeCommand(engine, command, block)
+                runner.invoke(command, block)
             }
         } else {
             return null
