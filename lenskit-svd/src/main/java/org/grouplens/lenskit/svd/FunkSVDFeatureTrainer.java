@@ -21,6 +21,7 @@ package org.grouplens.lenskit.svd;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.util.iterative.StoppingCondition;
 
 /**
  * Computes updates for FunkSVD feature training rounds.
@@ -41,14 +42,12 @@ public final class FunkSVDFeatureTrainer {
     private double ufv;
     private double ifv;
 
-    private final int iterationCount;
     private final double learningRate;
-    private final double trainingThreshold;
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
+    private final StoppingCondition stopper;
 
-    public FunkSVDFeatureTrainer(double rate, double threshold, double gradientDescent,
-                                 ClampingFunction clamp, int iterCount) {
+    public FunkSVDFeatureTrainer(FunkSVDTrainingConfig conf) {
         epoch = 0;
         ratingCount = 0;
         err = 0.0;
@@ -59,12 +58,10 @@ public final class FunkSVDFeatureTrainer {
         ifv = 0.0;
         MIN_EPOCHS = 50;
 
-        learningRate = rate;
-        trainingThreshold = threshold;
-        trainingRegularization = gradientDescent;
-        clampingFunction = clamp;
-        iterationCount = iterCount;
-
+        learningRate = conf.getLearningRate();
+        trainingRegularization = conf.getTrainingRegularization();
+        clampingFunction = conf.getClampingFunction();
+        stopper = conf.getStoppingCondition();
     }
 
 
@@ -120,20 +117,12 @@ public final class FunkSVDFeatureTrainer {
             ssq = 0;
         }
 
-        if (!isDone(epoch, rmse, oldRmse)) {
+        if (!stopper.isFinished(epoch, oldRmse - rmse)) {
             epoch += 1;
             ratingCount = 0;
             return true;
         }
 
         return false;
-    }
-
-    private boolean isDone(int epoch, double rmse, double oldRmse) {
-        if (iterationCount > 0) {
-            return epoch >= iterationCount;
-        } else {
-            return epoch >= MIN_EPOCHS && (oldRmse - rmse) < trainingThreshold;
-        }
     }
 }

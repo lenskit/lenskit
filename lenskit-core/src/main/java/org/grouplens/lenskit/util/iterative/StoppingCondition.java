@@ -16,31 +16,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd.params;
+package org.grouplens.lenskit.util.iterative;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.svd.FunkSVDModelProvider;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
- * The number of iterations to use per feature.  If 0, then each feature is
- * trained to convergence (defined by {@link TrainingThreshold}).
- *
- * @see FunkSVDModelProvider
+ * Stopping condition for iterative updates
  */
-@Documented
-@DefaultInteger(0)
-@Parameter(Integer.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface IterationCount {
+@DefaultImplementation(IterationCountStoppingCondition.class)
+public interface StoppingCondition {
+    /**
+     * Query whether the computation should stop.
+     * @param niters The number of iterations done so far.
+     * @param delta The last delta.
+     * @return {@code true} if the computation is finished.
+     */
+    boolean isFinished(int niters, double delta);
 }

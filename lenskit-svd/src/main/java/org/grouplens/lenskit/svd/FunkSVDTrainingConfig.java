@@ -20,11 +20,12 @@ package org.grouplens.lenskit.svd;
 
 import javax.inject.Inject;
 
-import org.grouplens.lenskit.svd.params.IterationCount;
+import org.grouplens.lenskit.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
 import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.util.iterative.StoppingCondition;
 
 /**
  * Configuration for computing FunkSVD updates. The config produces
@@ -34,32 +35,28 @@ import org.grouplens.lenskit.transform.clamp.ClampingFunction;
  */
 public class FunkSVDTrainingConfig {
 
-    private final int iterationCount;
     private final double learningRate;
-    private final double trainingThreshold;
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
+    private StoppingCondition stoppingCondition;
 
     /**
      * Construct a new FunkSVD configuration.
      *
      * @param lrate The learning rate.
-     * @param threshold The training threshold (stop after delta RMSE drops below this).
      * @param reg The regularization term.
      * @param clamp The clamping function.
-     * @param iterCount The max iteration count.
+     * @param stop The stopping condition.
      */
     @Inject
     public FunkSVDTrainingConfig(@LearningRate double lrate,
-                                 @TrainingThreshold double threshold,
                                  @RegularizationTerm double reg,
                                  ClampingFunction clamp,
-                                 @IterationCount int iterCount) {
+                                 StoppingCondition stop) {
         learningRate = lrate;
-        trainingThreshold = threshold;
         trainingRegularization = reg;
         clampingFunction = clamp;
-        iterationCount = iterCount;
+        stoppingCondition = stop;
     }
 
     /**
@@ -69,20 +66,11 @@ public class FunkSVDTrainingConfig {
      *         FunkSVD feature.
      */
     public FunkSVDFeatureTrainer newTrainer() {
-        return new FunkSVDFeatureTrainer(learningRate, trainingThreshold,
-                                         trainingRegularization, clampingFunction, iterationCount);
-    }
-
-    public double getIterationCount() {
-        return iterationCount;
+        return new FunkSVDFeatureTrainer(this);
     }
 
     public double getLearningRate() {
         return learningRate;
-    }
-
-    public double getTrainingThreshold() {
-        return trainingThreshold;
     }
 
     public double getTrainingRegularization() {
@@ -91,5 +79,9 @@ public class FunkSVDTrainingConfig {
 
     public ClampingFunction getClampingFunction() {
         return clampingFunction;
+    }
+
+    public StoppingCondition getStoppingCondition() {
+        return stoppingCondition;
     }
 }

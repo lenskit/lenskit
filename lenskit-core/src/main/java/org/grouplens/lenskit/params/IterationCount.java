@@ -16,32 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd.params;
+package org.grouplens.lenskit.params;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.svd.FunkSVDModelProvider;
+import java.lang.annotation.*;
 
 /**
- * Threshold for convergence to stop training a feature.  If no {@link org.grouplens.lenskit.params.IterationCount}
- * is specified, then each feature is trained until the difference in RMSE between
- * two subsequent iterations is less than this value.
- *
- * @see FunkSVDModelProvider
+ * The number of iterations to use in an iterative update.
  */
 @Documented
-@DefaultDouble(1e-3)
-@Parameter(Double.class)
+@DefaultInteger(100)
+@Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TrainingThreshold {
+public @interface IterationCount {
 }

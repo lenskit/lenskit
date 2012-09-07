@@ -92,12 +92,6 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
 
-        if (rule.getIterationCount() > 0) {
-            logger.debug("Training each epoch for {} iterations", rule.getIterationCount());
-        } else {
-            logger.debug("Error epsilon is {}", rule.getTrainingThreshold());
-        }
-
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
         logger.debug("Building SVD with {} features for {} ratings", featureCount, ratings.size());
 
@@ -117,8 +111,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
 
     private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings, int feature) {
-    	FunkSVDFeatureTrainer trainer = rule.newTrainer();
-    	
+        FunkSVDFeatureTrainer trainer = rule.newTrainer();
+
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature

@@ -38,7 +38,7 @@ import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
 import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor
 import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
 import org.grouplens.lenskit.svd.params.FeatureCount
-import org.grouplens.lenskit.svd.params.IterationCount
+import org.grouplens.lenskit.params.IterationCount
 import org.grouplens.lenskit.baseline.*
 import org.grouplens.lenskit.svd.FunkSVDModelProvider
 
