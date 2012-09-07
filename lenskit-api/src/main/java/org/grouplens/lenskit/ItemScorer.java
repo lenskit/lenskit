@@ -54,6 +54,7 @@ public interface ItemScorer {
      * @param item The item ID to score.
      * @return The preference, or {@link Double#NaN} if no preference can be
      *         predicted.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     double score(long user, long item);
 
@@ -64,6 +65,7 @@ public interface ItemScorer {
      * @param items The item to score.
      * @return A mapping from item IDs to predicted preference. This mapping may
      *         not contain all requested items.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     @Nonnull
     SparseVector score(long user, @Nonnull Collection<Long> items);
@@ -76,6 +78,7 @@ public interface ItemScorer {
      *
      * @param user   The user ID.
      * @param scores The score vector.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     void score(long user, @Nonnull MutableSparseVector scores);
 
@@ -95,6 +98,7 @@ public interface ItemScorer {
      * @param profile The user's profile.
      * @param item    The item to score.
      * @return The score, or {@link Double#NaN} if no score can be computed.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     double score(@Nonnull UserHistory<? extends Event> profile, long item);
 
@@ -108,6 +112,7 @@ public interface ItemScorer {
      * @return A mapping from item IDs to scores. This mapping may not contain
      *         all requested items — ones for which the scorer cannot compute a
      *         score will be omitted.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     @Nonnull
     SparseVector score(@Nonnull UserHistory<? extends Event> profile,
@@ -118,6 +123,11 @@ public interface ItemScorer {
      * items to score, and the score method sets the values for each item to
      * its score (or unsets it, if no score can be provided). The previous
      * values are discarded.
+     * <p>
+     * If the user has rated any items to be scored, the algorithm should not
+     * just use their rating as the score — it should compute a score in the
+     * normal fashion. If client code wants to substitute ratings, it is easy
+     * to do so as a separate step or wrapper interface.
      *
      * @param profile The user history.
      * @param scores  The score vector.
