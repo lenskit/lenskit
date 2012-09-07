@@ -41,6 +41,11 @@ import org.grouplens.lenskit.svd.params.FeatureCount
 import org.grouplens.lenskit.params.IterationCount
 import org.grouplens.lenskit.baseline.*
 import org.grouplens.lenskit.svd.FunkSVDModelProvider
+import org.grouplens.lenskit.util.iterative.StoppingCondition
+import org.grouplens.lenskit.util.iterative.IterationCountStoppingCondition
+import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
+import org.grouplens.lenskit.params.ThresholdValue
+import org.grouplens.lenskit.params.MinimumIterations
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
@@ -119,7 +124,14 @@ trainTest("mutli-algorithm") {
         bind RatingPredictor to FunkSVDRatingPredictor
         bind BaselinePredictor to ItemUserMeanPredictor
         set FeatureCount to 30
-        within FunkSVDModelProvider set IterationCount to 100
-        within FunkSVDRatingPredictor set IterationCount to 30
+        within(FunkSVDModelProvider) {
+            bind StoppingCondition to IterationCountStoppingCondition
+            set IterationCount to 100
+        }
+        within(FunkSVDRatingPredictor) {
+            bind StoppingCondition to ThresholdStoppingCondition
+            set ThresholdValue to 0.01
+            set MinimumIterations to 10
+        }
     }
 }
