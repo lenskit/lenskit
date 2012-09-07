@@ -19,39 +19,36 @@
 package org.grouplens.lenskit.svd;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import javax.inject.Inject;
 
-import org.grouplens.lenskit.svd.params.IterationCount;
-import org.grouplens.lenskit.svd.params.LearningRate;
-import org.grouplens.lenskit.svd.params.RegularizationTerm;
-import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
+/**
+ * Computes updates for FunkSVD feature training rounds.
+ *
+ * @since 1.0
+ */
 @NotThreadSafe
-public final class UpdateRule {
+public final class FunkSVDFeatureTrainer {
     private int epoch;
 
     private int ratingCount;
     private double ssq;
     private double oldRmse;
     private double rmse;
+    private final double MIN_EPOCHS;
 
     private double err;
     private double ufv;
     private double ifv;
 
-    private final double MIN_EPOCHS;
-    private final double iterationCount;
+    private final int iterationCount;
     private final double learningRate;
     private final double trainingThreshold;
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
 
-
-    @Inject
-    public UpdateRule(@LearningRate double rate, @TrainingThreshold double threshold,
-                      @RegularizationTerm double gradientDescent, ClampingFunction clamp,
-                      @IterationCount int iterCount) {
+    public FunkSVDFeatureTrainer(double rate, double threshold, double gradientDescent,
+                                 ClampingFunction clamp, int iterCount) {
         epoch = 0;
         ratingCount = 0;
         err = 0.0;
@@ -60,8 +57,8 @@ public final class UpdateRule {
         rmse = Double.MAX_VALUE;
         ufv = 0.0;
         ifv = 0.0;
-
         MIN_EPOCHS = 50;
+
         learningRate = rate;
         trainingThreshold = threshold;
         trainingRegularization = gradientDescent;
@@ -114,32 +111,6 @@ public final class UpdateRule {
 
     public double getLastRMSE() {
         return rmse;
-    }
-
-    public double getIterationCount() {
-        return iterationCount;
-    }
-
-    public double getLearningRate() {
-        return learningRate;
-    }
-
-    public double getTrainingThreshold() {
-        return trainingThreshold;
-    }
-
-    public double getTrainingRegularization() {
-        return trainingRegularization;
-    }
-
-    public ClampingFunction getClampingFunction() {
-        return clampingFunction;
-    }
-
-    public void reset() {
-        epoch = 0;
-        err = 0.0;
-        ssq = 0.0;
     }
 
     public boolean nextEpoch() {

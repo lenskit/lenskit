@@ -64,18 +64,18 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
 
     private double[][] userFeatures;
     private double[][] itemFeatures;
-    private UpdateRule trainer;
+    private FunkSVDTrainingConfig rule;
 
 
     @Inject
     public FunkSVDModelProvider(@Transient @Nonnull PreferenceSnapshot snapshot,
-                                @Transient @Nonnull UpdateRule trainer,
+                                @Transient @Nonnull FunkSVDTrainingConfig rule,
                                 @Nonnull BaselinePredictor baseline,
                                 @FeatureCount int featureCount) {
         this.featureCount = featureCount;
         this.baseline = baseline;
         this.snapshot = snapshot;
-        this.trainer = trainer;
+        this.rule = rule;
 
         userFeatures = new double[featureCount][snapshot.getUserIds().size()];
         itemFeatures = new double[featureCount][snapshot.getItemIds().size()];
@@ -89,38 +89,36 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     public FunkSVDModel get() {
 
         logger.debug("Setting up to build SVD recommender with {} features", featureCount);
-        logger.debug("Learning rate is {}", trainer.getLearningRate());
-        logger.debug("Regularization term is {}", trainer.getTrainingRegularization());
+        logger.debug("Learning rate is {}", rule.getLearningRate());
+        logger.debug("Regularization term is {}", rule.getTrainingRegularization());
 
-        if (trainer.getIterationCount() > 0) {
-            logger.debug("Training each epoch for {} iterations", trainer.getIterationCount());
+        if (rule.getIterationCount() > 0) {
+            logger.debug("Training each epoch for {} iterations", rule.getIterationCount());
         } else {
-            logger.debug("Error epsilon is {}", trainer.getTrainingThreshold());
+            logger.debug("Error epsilon is {}", rule.getTrainingThreshold());
         }
 
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
         logger.debug("Building SVD with {} features for {} ratings", featureCount, ratings.size());
 
         double[] estimates = initializeEstimates(snapshot, baseline);
-        ClampingFunction clamp = trainer.getClampingFunction();
+        ClampingFunction clamp = rule.getClampingFunction();
 
         for (int f = 0; f < featureCount; f++) {
-            // Reset and reuse the same UpdateRule object trainer in every iteration
-            trainer.reset();
-            trainFeature(estimates, ratings, f, trainer);
+            trainFeature(estimates, ratings, f);
 
             // Update each rating's cached value to accommodate the feature values.
             updateRatingEstimates(estimates, ratings, f, clamp);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
-                                trainer.getClampingFunction(), snapshot.itemIndex(), snapshot.userIndex(), baseline);
+                                rule.getClampingFunction(), snapshot.itemIndex(), snapshot.userIndex(), baseline);
     }
 
 
-    private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings,
-                              int feature, UpdateRule trainer) {
-
+    private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings, int feature) {
+    	FunkSVDFeatureTrainer trainer = rule.newTrainer();
+    	
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
