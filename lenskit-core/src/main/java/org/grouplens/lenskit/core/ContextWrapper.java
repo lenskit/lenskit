@@ -56,6 +56,11 @@ public class ContextWrapper extends AbstractConfigContext {
     }
 
     @Override
+    public <T> Binding<T> bind(Class <? extends Annotation> qualifier, Class<T> type) {
+        return base.bind(type).withQualifier(qualifier);
+    }
+
+    @Override
     public LenskitConfigContext in(Class<?> type) {
         return coerce(base.in(type));
     }
