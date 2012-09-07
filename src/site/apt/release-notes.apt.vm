@@ -18,11 +18,17 @@ LensKit Release Notes
   This release includes many documentation improvements and general cleanups from
   the 0.11.
 
-** Evaluator
-
-   * Evaluation scripts now have access to command line arguments (#issue(138))
+** Core
 
    * Added <<<set>>> method for setting parameters.
+
+   []
+
+** Evaluator
+
+   * Evaluation scripts now have access to command line arguments (#issue(138)).
+
+   * Added support for a block form of the <<<within>>> directive.
 
    []
 

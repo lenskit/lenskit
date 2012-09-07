@@ -26,6 +26,11 @@ import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.baseline.BaselineRatingPredictor
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
+import org.grouplens.lenskit.transform.threshold.RealThreshold
+import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
+import org.grouplens.lenskit.params.ThresholdValue
+import org.grouplens.lenskit.params.MinimumIterations
+import org.grouplens.lenskit.data.dao.EventCollectionDAO
 
 /**
  * @author Michael Ekstrand
@@ -45,5 +50,38 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         def algo = obj as AlgorithmInstance
         assertThat(algo.name, equalTo("GlobalMean"))
         assertThat(algo.attributes["wombat"] as String, equalTo("global"))
+    }
+
+    @Test
+    void testWithinBlock() {
+        def obj = eval {
+            algorithm("TestFoo") {
+                root RealThreshold
+                root ThresholdStoppingCondition
+                within(RealThreshold) {
+                    set ThresholdValue to 0.1d
+                }
+                within(ThresholdStoppingCondition) {
+                    set ThresholdValue to 0.001d
+                    set MinimumIterations to 42
+                }
+            }
+        }
+        def algo = obj as AlgorithmInstance
+        def fact = algo.getFactory()
+        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
+        def engine = fact.create()
+        def rec = engine.open()
+        try {
+            def stop = rec.get(ThresholdStoppingCondition)
+            assertThat(stop.threshold,
+                       closeTo(0.001d, 1.0e-1))
+            assertThat(stop.minimumIterations, equalTo(42))
+            def thresh = rec.get(RealThreshold)
+            assertThat(thresh.value,
+                       closeTo(0.1d, 1.0e-1));
+        } finally {
+            rec.close()
+        }
     }
 }

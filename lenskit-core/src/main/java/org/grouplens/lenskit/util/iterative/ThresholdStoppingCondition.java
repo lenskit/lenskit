@@ -69,4 +69,12 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
     public double getThreshold() {
         return threshold;
     }
+
+    /**
+     * Get the minimum iteration count.
+     * @return The number of iterations to require.
+     */
+    public int getMinimumIterations() {
+        return minIterations;
+    }
 }

@@ -113,4 +113,10 @@ class ConfigHelpers {
             return null
         }
     }
+
+    static def callWithDelegate(Closure closure, delegate, Object... args) {
+        closure.setDelegate(delegate)
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST)
+        closure.call(args)
+    }
 }

@@ -27,10 +27,11 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
  * @author Michael Ekstrand
  * @since 0.10
  */
-class AlgorithmInstanceCommandDelegate {
+class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
     private AlgorithmInstanceCommand command
 
     AlgorithmInstanceCommandDelegate(AlgorithmInstanceCommand builder) {
+        super(builder.getFactory())
         this.command = builder
     }
 
@@ -58,11 +59,7 @@ class AlgorithmInstanceCommandDelegate {
         command.setName(name)
     }
 
-    def methodMissing(String name, args) {
-        if (name in ["bind", "in", "within", "set"]) {
-            factory.metaClass.invokeMethod(factory, name, args)
-        } else {
-            null
-        }
+    void root(Class type) {
+        factory.addRoot(type)
     }
 }

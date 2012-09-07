@@ -22,13 +22,15 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.ThresholdValue;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Checks similarity values to ensure their real values are
  * over the {@link ThresholdValue}.
  */
 @Shareable
-public class RealThreshold implements Threshold {
+public class RealThreshold implements Threshold, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final double thresholdValue;
 
@@ -37,6 +39,15 @@ public class RealThreshold implements Threshold {
         this.thresholdValue = thresholdValue;
     }
 
+    /**
+     * Get the threshold value.
+     * @return The threshold value.
+     */
+    public double getValue() {
+        return thresholdValue;
+    }
+
+    @Override
     public boolean retain(double sim) {
         return sim > thresholdValue;
     }

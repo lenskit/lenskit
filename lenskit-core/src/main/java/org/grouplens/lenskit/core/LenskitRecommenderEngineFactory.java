@@ -58,7 +58,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     };
 
     private final BindingFunctionBuilder config;
-    private final DAOFactory factory;
+    private DAOFactory factory;
     private final Set<Class<?>> roots;
 
     public LenskitRecommenderEngineFactory() {
@@ -95,6 +95,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return config.getRootContext().bind(type);
     }
 
+    @Override
     public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
         return bind(type).withQualifier(qualifier);
     }
@@ -145,6 +146,22 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     @Override
     public LenskitRecommenderEngineFactory clone() {
         return new LenskitRecommenderEngineFactory(this);
+    }
+
+    /**
+     * Get the DAO factory.
+     * @return The DAO factory.
+     */
+    public DAOFactory getDAOFactory() {
+        return factory;
+    }
+
+    /**
+     * Set the DAO factory.
+     * @param f The new DAO factory.
+     */
+    public void setDAOFactory(DAOFactory f) {
+        factory = f;
     }
 
     @Override
