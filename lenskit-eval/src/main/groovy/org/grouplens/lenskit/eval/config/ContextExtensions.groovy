@@ -30,20 +30,4 @@ import org.grouplens.lenskit.core.Parameter
  * @author Michael Ekstrand
  */
 class ContextExtensions {
-    /**
-     * Create a binding that sets a parameter.
-     * @param ctx The context.
-     * @param param The parameter annotation.
-     * @return A binding ready to set the parameter, using the type from its
-     *         {@link Parameter} annotation.
-     */
-    static Binding set(Context ctx, Class<? extends Annotation> param) {
-        Preconditions.checkNotNull(param);
-        def pdef = param.getAnnotation(Parameter)
-        if (pdef == null) {
-            throw new IllegalArgumentException("${param} has no Parameter annotation")
-        }
-        def ptype = pdef.value()
-        return ctx.bind(ptype).withQualifier(param)
-    }
 }

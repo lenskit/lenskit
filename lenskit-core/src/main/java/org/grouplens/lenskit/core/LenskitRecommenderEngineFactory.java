@@ -37,6 +37,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
+import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
@@ -47,7 +48,7 @@ import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
-public final class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Context {
+public final class LenskitRecommenderEngineFactory extends AbstractConfigContext implements RecommenderEngineFactory {
     private static final Class<?>[] INITIAL_ROOTS = {
             RatingPredictor.class,
             ItemScorer.class,
@@ -99,18 +100,18 @@ public final class LenskitRecommenderEngineFactory implements RecommenderEngineF
     }
 
     @Override
-    public Context in(Class<?> type) {
-        return config.getRootContext().in(type);
+    public LenskitConfigContext in(Class<?> type) {
+        return coerce(config.getRootContext().in(type));
     }
 
     @Override
-    public Context in(Class<? extends Annotation> qualifier, Class<?> type) {
-        return config.getRootContext().in(qualifier, type);
+    public LenskitConfigContext in(Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(config.getRootContext().in(qualifier, type));
     }
 
     @Override
-    public Context in(Annotation qualifier, Class<?> type) {
-        return config.getRootContext().in(qualifier, type);
+    public LenskitConfigContext in(Annotation qualifier, Class<?> type) {
+        return coerce(config.getRootContext().in(qualifier, type));
     }
 
     public Context in(String name, Class<?> type) {

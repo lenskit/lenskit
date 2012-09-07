@@ -22,7 +22,8 @@ import java.lang.annotation.*;
 
 /**
  * Annotation for component parameters. A parameter is a simple value, usually a primitive,
- * string (discouraged), or enum. Parameters have a shortcut configuration syntax.
+ * string (discouraged), or enum. Parameters have a shortcut configuration syntax
+ * ({@link LenskitConfigContext#set(Class)}).
  * @author Michael Ekstrand
  * @since 1.0
  */
