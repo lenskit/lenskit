@@ -26,7 +26,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
  * @author Michael Ekstrand
  * @since 0.10
- * @see AlgorithmInstanceCommandRunner
  */
 class AlgorithmInstanceCommandDelegate {
     private AlgorithmInstanceCommand command

@@ -45,15 +45,12 @@ import java.util.Map;
 @BuilderCommand(AlgorithmInstanceCommand.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-    private final
     @Nullable
-    String algoName;
-    private final
+    private final String algoName;
     @Nonnull
-    LenskitRecommenderEngineFactory factory;
-    private final
+    private final LenskitRecommenderEngineFactory factory;
     @Nonnull
-    Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
     private final boolean preload;
 
     public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
@@ -98,7 +95,7 @@ public class AlgorithmInstance {
     }
 
     public Recommender buildRecommender(DataAccessObject dao,
-                                        final @Nullable Supplier<? extends PreferenceSnapshot> sharedSnapshot,
+                                        @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
                                         PreferenceDomain dom) {
         // Copy the factory & set up a shared rating snapshot
         LenskitRecommenderEngineFactory fac2 = factory.clone();
