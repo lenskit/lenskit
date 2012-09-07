@@ -18,14 +18,12 @@
  */
 package org.grouplens.lenskit.svd;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.params.IterationCount;
 import org.grouplens.lenskit.svd.params.LearningRate;
 import org.grouplens.lenskit.svd.params.RegularizationTerm;
-import org.grouplens.lenskit.svd.params.TrainingThreshold;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.iterative.StoppingCondition;
+
+import javax.inject.Inject;
 
 /**
  * Configuration for computing FunkSVD updates. The config produces
