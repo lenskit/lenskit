@@ -18,10 +18,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.google.common.collect.Sets;
-import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -31,11 +27,12 @@ import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.params.ThresholdValue;
+import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -121,5 +118,18 @@ public class LenskitRecommenderEngineTest {
             rec1.close();
             rec2.close();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testParameter() {
+        factory.set(ThresholdValue.class).to(0.01);
+        factory.addRoot(ThresholdStoppingCondition.class);
+        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommender rec = engine.open();
+        ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
+        assertThat(stop, notNullValue());
+        assertThat(stop.getThreshold(),
+                   closeTo(0.01, 1.0e-6));
     }
 }

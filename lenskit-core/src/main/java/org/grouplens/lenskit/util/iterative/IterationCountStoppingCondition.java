@@ -20,14 +20,19 @@ package org.grouplens.lenskit.util.iterative;
 
 import org.grouplens.lenskit.params.IterationCount;
 
+import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Stop once the iteration count has reached a value.
  * @author Michael Ekstrand
  */
-public class IterationCountStoppingCondition implements StoppingCondition {
-    private int iterCount;
+@Immutable
+public class IterationCountStoppingCondition implements StoppingCondition, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final int iterCount;
 
     /**
      * Construct a new iteration count stopping condition
@@ -36,6 +41,14 @@ public class IterationCountStoppingCondition implements StoppingCondition {
     @Inject
     public IterationCountStoppingCondition(@IterationCount int niter) {
         iterCount = niter;
+    }
+
+    /**
+     * Get the number of iterations the stopper requires.
+     * @return The number of iterations.
+     */
+    public int getIterationCount() {
+        return iterCount;
     }
 
     @Override

@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.params;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.lenskit.core.Parameter;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -34,6 +35,7 @@ import javax.inject.Qualifier;
  */
 @Documented
 @DefaultDouble(0.0)
+@Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)

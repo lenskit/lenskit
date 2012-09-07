@@ -21,16 +21,21 @@ package org.grouplens.lenskit.util.iterative;
 import org.grouplens.lenskit.params.MinimumIterations;
 import org.grouplens.lenskit.params.ThresholdValue;
 
+import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Stop when absolute delta drops below a threshold.
  * @author Michael Ekstrand
  * @since 0.11
  */
-public class ThresholdStoppingCondition implements StoppingCondition {
-    private double threshold;
-    private int minIterations;
+@Immutable
+public class ThresholdStoppingCondition implements StoppingCondition, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final double threshold;
+    private final int minIterations;
 
     /**
      * Construct a new threshold stop.
@@ -55,5 +60,13 @@ public class ThresholdStoppingCondition implements StoppingCondition {
     @Override
     public boolean isFinished(int n, double d) {
         return n >= minIterations && Math.abs(d) < threshold;
+    }
+
+    /**
+     * Get the stopper's threshold.
+     * @return The stopper's threshold.
+     */
+    public double getThreshold() {
+        return threshold;
     }
 }
