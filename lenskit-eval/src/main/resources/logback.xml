@@ -7,6 +7,9 @@
     <target>System.err</target>
   </appender>
 
+  <logger name="org.grouplens.grapht"
+          level="WARN"/>
+
   <root level="${logging.level:-INFO}">
     <appender-ref ref="STDERR"/>
   </root>
