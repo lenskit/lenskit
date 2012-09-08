@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -54,7 +55,7 @@ public class TestItemItemRecommender {
     private ItemRecommender recommender;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
         rs.add(Ratings.make(2, 6, 2));

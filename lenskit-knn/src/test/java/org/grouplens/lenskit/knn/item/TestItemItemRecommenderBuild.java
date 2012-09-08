@@ -41,7 +41,7 @@ public class TestItemItemRecommenderBuild {
     private LenskitRecommenderEngine engine;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 5, 2));
         rs.add(Ratings.make(1, 7, 4));

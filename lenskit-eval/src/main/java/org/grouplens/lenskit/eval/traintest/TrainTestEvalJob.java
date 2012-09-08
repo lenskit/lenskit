@@ -24,6 +24,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.UserHistory;
@@ -219,6 +220,9 @@ public class TrainTestEvalJob implements Job {
             } catch (IOException e) {
                 logger.error("Error writing output", e);
             }
+        } catch (RecommenderBuildException e) {
+            logger.error("error building recommender {}: {}", algorithm, e);
+            throw new RuntimeException(e);
         } finally {
             LKFileUtils.close(userTable, predictTable);
             dao.close();

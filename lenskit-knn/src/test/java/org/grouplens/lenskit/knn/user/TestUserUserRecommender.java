@@ -28,10 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -48,7 +45,7 @@ public class TestUserUserRecommender {
     private EventCollectionDAO dao;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
         rs.add(Ratings.make(2, 6, 2));

@@ -27,10 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -54,7 +51,7 @@ public class TestFunkSVDRecommender {
     private static DataAccessObject dao;
 
     @BeforeClass
-    public static void setup() {
+    public static void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
         rs.add(Ratings.make(2, 6, 2));
@@ -79,7 +76,7 @@ public class TestFunkSVDRecommender {
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
-        RecommenderEngine engine = factory.create();
+        RecommenderEngine engine = factory.create/();
         svdRecommender = engine.open();
         recommender = svdRecommender.getItemRecommender();
         dao = manager.create();

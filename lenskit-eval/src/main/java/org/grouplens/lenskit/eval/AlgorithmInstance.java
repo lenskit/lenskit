@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -96,7 +97,7 @@ public class AlgorithmInstance {
 
     public Recommender buildRecommender(DataAccessObject dao,
                                         @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                        PreferenceDomain dom) {
+                                        PreferenceDomain dom) throws RecommenderBuildException {
         // Copy the factory & set up a shared rating snapshot
         LenskitRecommenderEngineFactory fac2 = factory.clone();
 

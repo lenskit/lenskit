@@ -22,6 +22,8 @@ LensKit Release Notes
 
    * Added <<<set>>> method for setting parameters.
 
+   * Recommender engine factories now throw a checked <<<RecommenderBuildException>>>.
+
    []
 
 ** Algorithms

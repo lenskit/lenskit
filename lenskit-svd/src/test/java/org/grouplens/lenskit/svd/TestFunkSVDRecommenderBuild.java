@@ -21,6 +21,7 @@ package org.grouplens.lenskit.svd;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
@@ -46,7 +47,7 @@ public class TestFunkSVDRecommenderBuild {
     private LenskitRecommenderEngine engine;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 5, 2));
         rs.add(Ratings.make(1, 7, 4));

@@ -20,6 +20,7 @@ package org.grouplens.lenskit.core;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.BaselineRatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
@@ -50,7 +51,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
-    public void testBasicRec() {
+    public void testBasicRec() throws RecommenderBuildException {
         factory.bind(RatingPredictor.class)
                .to(BaselineRatingPredictor.class);
         factory.bind(ItemRecommender.class)
@@ -75,7 +76,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
-    public void testArbitraryRoot() {
+    public void testArbitraryRoot() throws RecommenderBuildException {
         factory.bind(BaselinePredictor.class)
                .to(ConstantPredictor.class);
         factory.addRoot(BaselinePredictor.class);
@@ -91,7 +92,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
-    public void testSeparatePredictor() {
+    public void testSeparatePredictor() throws RecommenderBuildException {
         factory.bind(BaselinePredictor.class)
                .to(GlobalMeanPredictor.class);
         factory.bind(RatingPredictor.class)
@@ -122,7 +123,7 @@ public class LenskitRecommenderEngineTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testParameter() {
+    public void testParameter() throws RecommenderBuildException {
         factory.set(ThresholdValue.class).to(0.01);
         factory.addRoot(ThresholdStoppingCondition.class);
         LenskitRecommenderEngine engine = factory.create();

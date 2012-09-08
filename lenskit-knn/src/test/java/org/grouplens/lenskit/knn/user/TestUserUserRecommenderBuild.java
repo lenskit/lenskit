@@ -18,10 +18,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -41,7 +38,7 @@ public class TestUserUserRecommenderBuild {
     private static RecommenderEngine engine;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 5, 2));
         rs.add(Ratings.make(1, 7, 4));

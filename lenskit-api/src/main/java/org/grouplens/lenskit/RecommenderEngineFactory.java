@@ -31,6 +31,7 @@ public interface RecommenderEngineFactory {
      * Create a new recommender engine.
      *
      * @return A new recommender engine, ready to open recommenders.
+     * @throws RecommenderBuildException if there is an error building the recommender.
      */
-    RecommenderEngine create();
+    RecommenderEngine create() throws RecommenderBuildException;
 }

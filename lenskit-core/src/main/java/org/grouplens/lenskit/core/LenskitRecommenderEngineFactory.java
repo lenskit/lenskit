@@ -166,7 +166,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     @Override
-    public LenskitRecommenderEngine create() {
+    public LenskitRecommenderEngine create() throws RecommenderBuildException {
         if (factory == null) {
             throw new IllegalStateException("create() called with no DAOFactory");
         }
@@ -186,15 +186,26 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         }
     }
 
-    public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) {
-        Graph original = buildGraph(dao);
+    public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) throws RecommenderBuildException {
+        Graph original;
+        try {
+            original = buildGraph(dao);
+        } catch (RuntimeException ex) {
+            throw new RecommenderConfigurationException("could not build recommender graph", ex);
+        }
 
         // Get the set of shareable instances.
         Set<Node> shared = getShareableNodes(original);
 
         // Instantiate and replace shareable nodes
         Graph modified = original.clone();
-        Set<Node> sharedInstances = instantiate(modified, shared);
+
+        Set<Node> sharedInstances;
+        try {
+            sharedInstances = instantiate(modified, shared);
+        } catch (RuntimeException ex) {
+            throw new RecommenderBuildException("could not instantiate shared components", ex);
+        }
 
         // Remove transient edges and orphaned subgraphs
         Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
@@ -280,9 +291,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     /**
      * Simulate an instantiation of the shared objects in a graph.
      *
-     * @param graph     The complete configuration graph.
-     * @param toReplace The shared nodes to replace.
-     * @return             A new graph that is identical to the original graph if it were
+     * @param graph The complete configuration graph.
+     * @return A new graph that is identical to the original graph if it were
      * subjected to the instantiation process.
      */
     private Graph simulateInstantiation(Graph graph) {
