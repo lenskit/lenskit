@@ -32,6 +32,7 @@ import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -185,29 +186,10 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         }
     }
 
-    public LenskitRecommenderEngine create(DataAccessObject dao) {
-        BindingFunctionBuilder config = this.config.clone();
-        config.getRootContext().bind(DataAccessObject.class).to(dao);
+    public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) {
+        Graph original = buildGraph(dao);
 
-        DependencySolver solver = new DependencySolver(
-                Arrays.asList(config.build(RuleSet.EXPLICIT),
-                              config.build(RuleSet.INTERMEDIATE_TYPES),
-                              config.build(RuleSet.SUPER_TYPES),
-                              new DefaultDesireBindingFunction(config.getSPI())),
-                CachePolicy.MEMOIZE,
-                100);
-
-        // Resolve all required types to complete a Recommender
-        for (Class<?> root : roots) {
-            resolve(root, solver);
-        }
-
-        // At this point the graph contains the dependency state to build a
-        // recommender with the current DAO. Any extra bind rules don't matter
-        // because they could not have created any Nodes.
-        Graph original = solver.getGraph();
-
-        // Get the set of shareable nodes
+        // Get the set of shareable instances.
         Set<Node> shared = getShareableNodes(original);
 
         // Instantiate and replace shareable nodes
@@ -294,6 +276,30 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         }
         return replacements;
     }
+   
+    /**
+     * Simulate an instantiation of the shared objects in a graph.
+     *
+     * @param graph     The complete configuration graph.
+     * @param toReplace The shared nodes to replace.
+     * @return             A new graph that is identical to the original graph if it were
+     * subjected to the instantiation process.
+     */
+    private Graph simulateInstantiation(Graph graph) {
+        Graph modified = graph.clone();
+        Set<Node> toReplace = getShareableNodes(modified);
+        InjectSPI spi = config.getSPI();
+        for (Node node : toReplace) {
+            CachedSatisfaction label = node.getLabel();
+            assert label != null;
+            if (!label.getSatisfaction().hasInstance()) {
+                Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
+                Node repl = new Node(instanceSat, label.getCachePolicy());
+                modified.replaceNode(node, repl);
+            }
+        }
+        return modified;
+    }
 
     /**
      * Remove transient edges from a graph.
@@ -342,5 +348,40 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
                 graph.removeNode(candidate);
             }
         }
+    }
+   
+    private Graph buildGraph(DataAccessObject dao) {
+        BindingFunctionBuilder cfg = config.clone();
+        if (dao == null) {
+            cfg.getRootContext().bind(DataAccessObject.class).toNull();
+        } else {
+            cfg.getRootContext().bind(DataAccessObject.class).to(dao);
+        }
+
+        DependencySolver solver = new DependencySolver(
+                Arrays.asList(cfg.build(RuleSet.EXPLICIT),
+                              cfg.build(RuleSet.INTERMEDIATE_TYPES),
+                              cfg.build(RuleSet.SUPER_TYPES),
+                              new DefaultDesireBindingFunction(config.getSPI())),
+                CachePolicy.MEMOIZE,
+                100);
+
+        // Resolve all required types to complete a Recommender
+        for (Class<?> root : roots) {
+            resolve(root, solver);
+        }
+
+        // At this point the graph contains the dependency state to build a
+        // recommender with the current DAO. Any extra bind rules don't matter
+        // because they could not have created any Nodes.
+        return solver.getGraph();
+    }
+   
+    public Graph getInitialGraph() {
+        return buildGraph(null);
+    }
+   
+    public Graph getInstantiatedGraph() {
+        return simulateInstantiation(buildGraph(null));
     }
 }
