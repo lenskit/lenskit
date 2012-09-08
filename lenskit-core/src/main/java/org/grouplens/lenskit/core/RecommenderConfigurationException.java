@@ -40,8 +40,4 @@ public class RecommenderConfigurationException extends RecommenderBuildException
     public RecommenderConfigurationException(Throwable cause) {
         super(cause);
     }
-
-    public RecommenderConfigurationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }

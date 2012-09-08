@@ -38,8 +38,4 @@ public class RecommenderBuildException extends Exception {
     public RecommenderBuildException(Throwable cause) {
         super(cause);
     }
-
-    public RecommenderBuildException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }
