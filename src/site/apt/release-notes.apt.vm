@@ -24,6 +24,20 @@ LensKit Release Notes
 
    []
 
+** Algorithms
+
+   * Factored out FunkSVD stopping conditions, made default now 100 iterations. If you
+     want a delta RMSE threshold, use <<<ThresholdStoppingCondition>>> and set the
+     <<<ThresholdValue>>> parameter.
+
+   * Made Slope-One use k-NN, specifically item-item, as the base framework rather than
+     being standalone. Future tasks will further harness and develop this merger.
+
+   * Support item vector normalizers for the item-item similarity matrix (see
+     <<<NormalizingSimilarityMatrixAccumulatorFactory>>>.
+
+   []
+
 ** Evaluator
 
    * Evaluation scripts now have access to command line arguments (#issue(138)).
@@ -37,12 +51,6 @@ LensKit Release Notes
    * Removed all deprecated methods.
 
    []
-
-** Algorithms
-
-   * Factored out FunkSVD stopping conditions, made default now 100 iterations. If you
-     want a delta RMSE threshold, use <<<ThresholdStoppingCondition>>> and set the
-     <<<ThresholdValue>>> parameter.
 
 * Release 0.11
 
