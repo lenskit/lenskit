@@ -76,7 +76,7 @@ public class TestFunkSVDRecommender {
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
-        RecommenderEngine engine = factory.create/();
+        RecommenderEngine engine = factory.create();
         svdRecommender = engine.open();
         recommender = svdRecommender.getItemRecommender();
         dao = manager.create();
