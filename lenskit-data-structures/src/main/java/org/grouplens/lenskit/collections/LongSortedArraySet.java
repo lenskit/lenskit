@@ -326,19 +326,6 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
     }
 
     /**
-     * Convert a {@link LongArrayList} to a sorted array set. The array list's
-     * internal storage will be sorted and re-used.
-     *
-     * @param list The list to use as the initial contents.
-     * @return A set built from the list's backing store.
-     * @deprecated This method is unused in LensKit and may go away.
-     */
-    @Deprecated
-    public static LongSortedSet ofList(LongArrayList list) {
-        return new LongSortedArraySet(list.elements(), 0, list.size());
-    }
-
-    /**
      * Wrap an array set around an array of values. The values must already be
      * sorted and de-duplicated.
      *
