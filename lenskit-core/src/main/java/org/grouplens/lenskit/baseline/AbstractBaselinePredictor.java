@@ -31,11 +31,10 @@ import java.util.Collection;
 public abstract class AbstractBaselinePredictor implements BaselinePredictor {
     /**
      * {@inheritDoc}
-     * <p>Implemented new-vector predict in terms of
+     * <p>Implements new-vector predict in terms of
      * {@link #predict(long, SparseVector, MutableSparseVector)}.
      */
     @Override
-    @Deprecated
     public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
         MutableSparseVector v = new MutableSparseVector(items);
         predict(user, ratings, v);
