@@ -87,12 +87,6 @@ public class SimpleNullRating implements Rating {
     }
 
     @Override
-    @Deprecated
-    public double getRating() {
-        return Double.NaN;
-    }
-
-    @Override
     public Rating copy() {
         /* this object is immutable. Just return it. */
         return this;

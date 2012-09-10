@@ -79,12 +79,6 @@ public class MutableRating implements Rating {
     }
 
     @Override
-    @Deprecated
-    public double getRating() {
-        return value;
-    }
-
-    @Override
     public Preference getPreference() {
         if (Double.isNaN(value)) {
             return null;

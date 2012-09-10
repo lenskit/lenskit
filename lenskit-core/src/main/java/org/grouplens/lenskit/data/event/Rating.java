@@ -38,17 +38,6 @@ public interface Rating extends Event {
     @Nullable
     Preference getPreference();
 
-    /**
-     * Get the rating's preference value.
-     *
-     * @return The value of the expressed preference (or {@link Double#NaN} if
-     *         the preference is unset).
-     * @deprecated Use {@link Preference#getValue()} on the output of
-     *             {@link #getPreference()} instead.
-     */
-    @Deprecated
-    double getRating();
-
     @Override
     Rating copy();
 }

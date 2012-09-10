@@ -119,16 +119,6 @@ public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
         return timestamp;
     }
 
-    /**
-     * Implement {@link Rating#getRating()} by delegating to
-     * {@link #getPreference()}.
-     */
-    @Override
-    @Deprecated
-    public double getRating() {
-        return preference.getValue();
-    }
-
     @Override
     public Rating copy() {
         return clone();
