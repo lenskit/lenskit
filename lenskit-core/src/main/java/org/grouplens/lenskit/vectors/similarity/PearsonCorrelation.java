@@ -16,17 +16,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn;
+package org.grouplens.lenskit.vectors.similarity;
 
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
-import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.util.Iterator;
 
 import static java.lang.Math.sqrt;
 

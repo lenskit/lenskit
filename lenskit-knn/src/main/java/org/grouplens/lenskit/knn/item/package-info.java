@@ -22,7 +22,7 @@
  * The item-item CF implementation is built up of several pieces. The
  * {@linkplain org.grouplens.lenskit.knn.model.ItemItemModelProvider model builder} takes the rating data
  * and several parameters and components, such as the
- * {@linkplain org.grouplens.lenskit.knn.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
+ * {@linkplain org.grouplens.lenskit.vectors.similarity.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
  * and computes the {@linkplain org.grouplens.lenskit.knn.model.SimilarityMatrixModel similarity matrix}. The
  * {@linkplain ItemItemScorer scorer} (or {@linkplain ItemItemRatingPredictor predictor})
  * use this model to score items, and the {@linkplain ItemItemRecommender} uses a scorer

@@ -16,16 +16,17 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn;
+package org.grouplens.lenskit.vectors.similarity;
+
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.junit.Assert.assertThat;
-
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-
-import org.grouplens.lenskit.vectors.*;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

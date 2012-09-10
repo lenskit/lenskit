@@ -40,6 +40,8 @@ LensKit Release Notes
    * Support item vector normalizers for the item-item similarity matrix (see
      <<<NormalizingSimilarityMatrixAccumulatorFactory>>>.
 
+   * Move vector similarity code into <<<o.g.l.vectors.similarity>>>.
+
    []
 
 ** Evaluator

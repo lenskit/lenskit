@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.VectorSimilarity;
+import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
