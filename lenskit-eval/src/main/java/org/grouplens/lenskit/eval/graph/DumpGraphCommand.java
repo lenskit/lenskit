@@ -22,6 +22,8 @@ import java.io.File;
 
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CommandException;
@@ -31,6 +33,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     private AlgorithmInstance algorithm;
     private GraphWriter writer;
     private File output;
+    private PreferenceDomain domain = null;
 
 
     public DumpGraphCommand() {
@@ -39,11 +42,6 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
     public DumpGraphCommand(String name) {
         super(name);
-    }
-
-    public DumpGraphCommand setName(String name) {
-        this.name = name;
-        return this;
     }
 
     public DumpGraphCommand setAlgorithm(AlgorithmInstance algorithm) {
@@ -62,13 +60,22 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         return this;
     }
 
+    public DumpGraphCommand setDomain(PreferenceDomain dom) {
+        domain = dom;
+        return this;
+    }
+
     @Override
     public File call() throws CommandException {
-        Graph initial = algorithm.getFactory().getInitialGraph();
+        LenskitRecommenderEngineFactory factory = algorithm.getFactory().clone();
+        if (domain != null) {
+            factory.bind(PreferenceDomain.class).to(domain);
+        }
+        Graph initial = factory.getInitialGraph();
         Node root = initial.getNode(null);
         writer.start();
         writer.addGraph("Initial Graph", initial, root);
-        Graph instantiated = algorithm.getFactory().getInstantiatedGraph();
+        Graph instantiated = factory.getInstantiatedGraph();
         root = instantiated.getNode(null);
         writer.addGraph("Instantiated Graph", instantiated, root);
         writer.finish();

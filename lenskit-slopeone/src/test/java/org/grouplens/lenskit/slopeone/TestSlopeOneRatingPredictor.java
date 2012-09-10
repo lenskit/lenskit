@@ -18,11 +18,6 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -34,6 +29,11 @@ import org.grouplens.lenskit.knn.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
 public class TestSlopeOneRatingPredictor {
 
     private static final double EPSILON = 1.0e-6;
@@ -43,7 +43,7 @@ public class TestSlopeOneRatingPredictor {
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
                 dao, new DefaultUserVectorNormalizer(), summarizer);
         SlopeOneModelProvider provider = new SlopeOneModelProvider(
-                dao, null, new PreferenceDomain(1, 5), contextFactory, 0);
+                dao, null, contextFactory, 0);
         return provider.get();
     }
 
@@ -69,7 +69,8 @@ public class TestSlopeOneRatingPredictor {
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
+        SlopeOneRatingPredictor predictor =
+                new SlopeOneRatingPredictor(dao, model, null);
 
         assertEquals(7 / 3.0, predictor.score(2, 9), EPSILON);
         assertEquals(13 / 3.0, predictor.score(3, 6), EPSILON);
@@ -97,7 +98,8 @@ public class TestSlopeOneRatingPredictor {
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
+        SlopeOneRatingPredictor predictor =
+                new SlopeOneRatingPredictor(dao, model, new PreferenceDomain(1,5,1));
 
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);

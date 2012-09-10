@@ -20,11 +20,9 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.util.Index;
 
 /**
@@ -41,16 +39,14 @@ public class SlopeOneModel {
     private final Long2DoubleMap[] devMatrix;
     private final BaselinePredictor baseline;
     private final Index itemIndex;
-    private final PreferenceDomain domain;
 
     public SlopeOneModel(Long2IntMap[] coMatrix, Long2DoubleMap[] devMatrix,
-                         BaselinePredictor predictor, Index itemIndex, PreferenceDomain dom) {
+                         BaselinePredictor predictor, Index itemIndex) {
 
         this.coMatrix = coMatrix;
         this.devMatrix = devMatrix;
         baseline = predictor;
         this.itemIndex = itemIndex;
-        domain = dom;
     }
 
     public double getDeviation(long item1, long item2) {
@@ -99,9 +95,5 @@ public class SlopeOneModel {
 
     public Index getItemIndex() {
         return itemIndex;
-    }
-
-    public PreferenceDomain getDomain() {
-        return domain;
     }
 }

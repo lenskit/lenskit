@@ -24,11 +24,13 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -36,8 +38,9 @@ import javax.inject.Inject;
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
     @Inject
-    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
-        super(dao, model);
+    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model,
+                                           @Nullable PreferenceDomain dom) {
+        super(dao, model, dom);
     }
 
     @Override
@@ -66,7 +69,9 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
                     scores.clear(e);
                 } else {
                     double predValue = total / nusers;
-                    predValue = model.getDomain().clampValue(predValue);
+                    if (domain != null) {
+                        predValue = domain.clampValue(predValue);
+                    }
                     scores.set(e, predValue);
                 }
             }

@@ -19,9 +19,8 @@
 package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.model.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.params.Damping;
@@ -42,19 +41,16 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
 
     private final BaselinePredictor predictor;
-    private final PreferenceDomain domain;
     private final ItemItemBuildContextFactory contextFactory;
     private final Indexer itemIndex;
 
     @Inject
     public SlopeOneModelProvider(@Transient @Nonnull DataAccessObject dao,
                                  @Nullable BaselinePredictor predictor,
-                                 @Nonnull PreferenceDomain domain,
                                  @Transient ItemItemBuildContextFactory contextFactory,
                                  @Damping double damping) {
 
         this.predictor = predictor;
-        this.domain = domain;
         this.contextFactory = contextFactory;
         itemIndex = new Indexer();
         accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
@@ -72,6 +68,6 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
             }
         }
         return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
-                                 predictor, itemIndex, domain);
+                                 predictor, itemIndex);
     }
 }

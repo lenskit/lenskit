@@ -26,11 +26,13 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -39,11 +41,15 @@ import javax.inject.Inject;
 public class SlopeOneRatingPredictor extends AbstractItemScorer implements RatingPredictor {
 
     protected SlopeOneModel model;
+    protected final PreferenceDomain domain;
 
     @Inject
-    public SlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
+    public SlopeOneRatingPredictor(DataAccessObject dao,
+                                   SlopeOneModel model,
+                                   @Nullable PreferenceDomain dom) {
         super(dao);
         this.model = model;
+        domain = dom;
     }
 
     @Override
@@ -69,7 +75,9 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
                 }
                 if (nitems != 0) {
                     double predValue = total / nitems;
-                    predValue = model.getDomain().clampValue(predValue);
+                    if (domain != null) {
+                        predValue = domain.clampValue(predValue);
+                    }
                     scores.set(e, predValue);
                 } else {
                     nUnpred += 1;
