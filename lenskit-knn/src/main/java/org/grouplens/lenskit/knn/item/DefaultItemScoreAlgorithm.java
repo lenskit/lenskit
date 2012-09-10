@@ -21,7 +21,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.model.ItemItemModel;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;

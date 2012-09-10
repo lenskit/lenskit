@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.knn.model.ItemItemModel;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 

@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
-import org.grouplens.lenskit.knn.model.*;
+import org.grouplens.lenskit.knn.item.model.*;
 import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;

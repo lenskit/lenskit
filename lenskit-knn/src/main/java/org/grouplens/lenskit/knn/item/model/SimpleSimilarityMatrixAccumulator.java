@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.model;
+package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -24,51 +24,39 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-
 /**
  * Accumulator for item similarities that go into the item-item CF model.
- * This accumulator gathers a full row of similarity values and normalizes this
- * row to a unit vector. If truncation is to be performed, it is handled
- * as a post processing step.
+ * This accumulator gathers and truncates similarity values on the fly.
  */
-public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
-    private static final Logger logger = LoggerFactory.getLogger(NormalizingSimilarityMatrixAccumulator.class);
+public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumulator {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleSimilarityMatrixAccumulator.class);
 
-    private final LongSortedSet itemUniverse;
     private final Threshold threshold;
-    private final ItemVectorNormalizer normalizer;
-    private final int modelSize;
+    private Long2ObjectMap<ScoredItemAccumulator> rows;
+    private LongSortedSet itemUniverse;
 
-    private Long2ObjectMap<MutableSparseVector> unfinishedRows;
-    private Long2ObjectMap<ImmutableSparseVector> completedRows;
-
-    public NormalizingSimilarityMatrixAccumulator(LongSortedSet entities, Threshold threshold,
-                                                  ItemVectorNormalizer normalizer, int modelSize) {
-        logger.debug("Using normalizing accumulator with modelSize {} for {} items", modelSize, entities.size());
+    public SimpleSimilarityMatrixAccumulator(LongSortedSet entities, Threshold threshold, int modelSize) {
+        logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
         itemUniverse = entities;
         this.threshold = threshold;
-        this.normalizer = normalizer;
-        this.modelSize = modelSize;
 
-        unfinishedRows = new Long2ObjectOpenHashMap<MutableSparseVector>(entities.size());
-        completedRows = new Long2ObjectOpenHashMap<ImmutableSparseVector>(entities.size());
+        rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
         LongIterator it = entities.iterator();
         while (it.hasNext()) {
-            unfinishedRows.put(it.nextLong(), new MutableSparseVector(entities));
+            if (modelSize == 0) {
+                rows.put(it.nextLong(), new UnlimitedScoredItemAccumulator());
+            } else {
+                rows.put(it.nextLong(), new TopNScoredItemAccumulator(modelSize));
+            }
+
         }
     }
 
@@ -83,30 +71,29 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
     @Override
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
-        Preconditions.checkState(unfinishedRows != null, "model already built");
+        Preconditions.checkState(rows != null, "model already built");
 
         if (!threshold.retain(sim)) {
             return;
         }
 
         // concurrent read-only array access permitted
-        MutableSparseVector row = unfinishedRows.get(i);
+        ScoredItemAccumulator q = rows.get(i);
         // synchronize on this row to add item
-        synchronized (row) {
-            row.set(j, sim);
+        synchronized (q) {
+            q.put(j, sim);
         }
     }
 
     /**
-     * Normalizes the accumulated row.
+     * Does nothing. Similarity values were accumulated and truncated
+     * upon receipt, no further processing is done here upon the result.
      *
      * @param rowId The long id of the row which has been completed.
      */
     @Override
-    public synchronized void completeRow(long rowId) {
-        MutableSparseVector row = unfinishedRows.get(rowId);
-        completedRows.put(rowId, normalizer.normalize(rowId, row, null).freeze());
-        unfinishedRows.remove(rowId);
+    public void completeRow(long rowId) {
+        // no-op
     }
 
     /**
@@ -116,23 +103,12 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
      */
     @Override
     public SimilarityMatrixModel build() {
-        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(completedRows.size());
-        ScoredItemAccumulator accum;
-        if (modelSize > 0) {
-            accum = new TopNScoredItemAccumulator(modelSize);
-        } else {
-            accum = new UnlimitedScoredItemAccumulator();
-        }
-        for (Entry<ImmutableSparseVector> row : completedRows.long2ObjectEntrySet()) {
-            ImmutableSparseVector rowVec = row.getValue();
-            for (VectorEntry e : rowVec.fast()) {
-                accum.put(e.getKey(), e.getValue());
-            }
-            data.put(row.getLongKey(), accum.finish());
+        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
+        for (Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
+            data.put(row.getLongKey(), row.getValue().finish());
         }
         SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-        unfinishedRows = null;
-        completedRows = null;
+        rows = null;
         return model;
     }
 

@@ -21,8 +21,8 @@ package org.grouplens.lenskit.slopeone;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.knn.model.ItemItemBuildContext;
-import org.grouplens.lenskit.knn.model.ItemItemBuildContextFactory;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.util.Indexer;
 

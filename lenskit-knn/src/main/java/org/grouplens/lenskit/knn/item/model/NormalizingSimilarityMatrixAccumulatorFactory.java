@@ -16,41 +16,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.model;
+package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 
 import javax.inject.Inject;
 
 /**
  * Implementation of {@link SimilarityMatrixAccumulatorFactory} which creates
- * and returns a {@link SimpleSimilarityMatrixAccumulator}
+ * and returns a {@link NormalizingSimilarityMatrixAccumulator}.
  */
 @Shareable
-public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory {
+public class NormalizingSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory {
 
     private final Threshold threshold;
+    private final ItemVectorNormalizer normalizer;
     private final int modelSize;
 
-    @Inject
-    public SimpleSimilarityMatrixAccumulatorFactory(Threshold threshold,
-                                                    @ModelSize int modelSize) {
 
+    @Inject
+    public NormalizingSimilarityMatrixAccumulatorFactory(Threshold threshold,
+                                                         ItemVectorNormalizer normalizer,
+                                                         @ModelSize int modelSize) {
         this.threshold = threshold;
+        this.normalizer = normalizer;
         this.modelSize = modelSize;
     }
 
     /**
-     * Creates and returns a SimpleSimilarityMatrixAccumulator.
+     * Creates and returns a NormalizingSimilarityMatrixAccumulator.
      *
      * @param itemUniverse The universe items the accumulator will accumulate.
-     * @return a simple SimilarityMatrixAccumulator
+     * @return a normalizing SimilarityMatrixAccumulator
      */
     public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
-        return new SimpleSimilarityMatrixAccumulator(itemUniverse, threshold, modelSize);
+        return new NormalizingSimilarityMatrixAccumulator(itemUniverse, threshold, normalizer, modelSize);
     }
 
 }

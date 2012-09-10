@@ -16,11 +16,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.model;
+package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.core.Shareable;
 
 /**
  * Interface of factories providing which provide a {@link SimilarityMatrixAccumulator}.
