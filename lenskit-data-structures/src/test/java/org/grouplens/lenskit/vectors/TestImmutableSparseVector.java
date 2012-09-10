@@ -41,19 +41,19 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     protected ImmutableSparseVector simpleVector() {
         long[] keys = {3, 7, 8};
         double[] values = {1.5, 3.5, 2};
-        return ImmutableSparseVector.wrap(keys, values);
+        return MutableSparseVector.wrap(keys, values).freeze();
     }
 
     @Override
     protected ImmutableSparseVector simpleVector2() {
         long[] keys = {3, 5, 8};
         double[] values = {2, 2.3, 1.7};
-        return ImmutableSparseVector.wrap(keys, values);
+        return MutableSparseVector.wrap(keys, values).freeze();
     }
 
     @Override
     protected ImmutableSparseVector singleton() {
-        return ImmutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
+        return MutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI}).freeze();
     }
 
     @Test
@@ -73,7 +73,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     public void testOverSize() {
         long[] keys = {3, 7, 9};
         double[] values = {Math.PI, Math.E, 0.42};
-        ImmutableSparseVector v = ImmutableSparseVector.wrap(keys, values, 2);
+        ImmutableSparseVector v = MutableSparseVector.wrap(keys, values, 2).freeze();
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());

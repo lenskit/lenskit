@@ -52,7 +52,7 @@ public class TestSimilaritySumNeighborhoodScorer {
     @Test
     public void testEmptyNbrs() {
         ScoredLongList nbrs = new ScoredLongArrayList();
-        SparseVector scores = ImmutableSparseVector.wrap(new long[]{5}, new double[]{3.7});
+        SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(0));
     }
 
@@ -60,7 +60,7 @@ public class TestSimilaritySumNeighborhoodScorer {
     public void testOneNbr() {
         ScoredLongList nbrs = new ScoredLongArrayList();
         nbrs.add(5, 1.0);
-        SparseVector scores = ImmutableSparseVector.wrap(new long[]{5}, new double[]{3.7});
+        SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
 
@@ -72,7 +72,7 @@ public class TestSimilaritySumNeighborhoodScorer {
         nbrs.add(2, 0.5);
         long[] keys = {2, 3, 5, 7};
         double[] ratings = {3.7, 4.2, 1.2, 7.8};
-        SparseVector scores = ImmutableSparseVector.wrap(keys, ratings);
+        SparseVector scores = MutableSparseVector.wrap(keys, ratings).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(2.42));
     }
 }

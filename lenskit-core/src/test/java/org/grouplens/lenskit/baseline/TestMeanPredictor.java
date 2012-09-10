@@ -38,6 +38,7 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.After;
 import org.junit.Before;
@@ -85,7 +86,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = new UserMeanPredictor.Provider(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
-        SparseVector map = ImmutableSparseVector.wrap(items, ratings);
+        SparseVector map = MutableSparseVector.wrap(items, ratings).freeze();
         // unseen item
         SparseVector pv = pred.predict(10L, map, itemSet(2l));
         assertEquals(4.33333, pv.get(2l), 0.001);
@@ -110,7 +111,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = new ItemMeanPredictor.Provider(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
-        SparseVector map = ImmutableSparseVector.wrap(items, values);
+        SparseVector map = MutableSparseVector.wrap(items, values).freeze();
         // unseen item, should be global mean
         SparseVector pv = pred.predict(10l, map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
@@ -132,7 +133,7 @@ public class TestMeanPredictor {
         BaselinePredictor pred = new ItemUserMeanPredictor.Provider(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
-        SparseVector map = ImmutableSparseVector.wrap(items, ratings);
+        SparseVector map = MutableSparseVector.wrap(items, ratings).freeze();
         final double avgOffset = 0.75;
 
         // unseen item, should be global mean + user offset

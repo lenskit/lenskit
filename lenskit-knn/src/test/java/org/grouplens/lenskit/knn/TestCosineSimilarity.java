@@ -60,8 +60,8 @@ public class TestCosineSimilarity {
         long[] k2 = {3, 4, 7};
         double[] val2 = {1, 3, 2};
         SparseVector v1, v2;
-        v1 = ImmutableSparseVector.wrap(k1, val1);
-        v2 = ImmutableSparseVector.wrap(k2, val2);
+        v1 = MutableSparseVector.wrap(k1, val1).freeze();
+        v2 = MutableSparseVector.wrap(k2, val2).freeze();
         assertEquals(0, similarity.similarity(v1, v2), EPSILON);
         assertEquals(0, dampedSimilarity.similarity(v1, v2), EPSILON);
     }
@@ -71,8 +71,8 @@ public class TestCosineSimilarity {
         long[] keys = {2, 5, 6};
         double[] val1 = {1, 2, 1};
         double[] val2 = {1, 2, 5};
-        SparseVector v1 = ImmutableSparseVector.wrap(keys, val1);
-        SparseVector v2 = ImmutableSparseVector.wrap(keys, val2);
+        SparseVector v1 = MutableSparseVector.wrap(keys, val1).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(keys, val2).freeze();
         assertEquals(1, similarity.similarity(v1, v1), EPSILON);
         assertEquals(0.745355993, similarity.similarity(v1, v2), EPSILON);
     }
@@ -82,8 +82,8 @@ public class TestCosineSimilarity {
         long[] keys = {2, 5, 6};
         double[] val1 = {1, 2, 1};
         double[] val2 = {1, 2, 5};
-        SparseVector v1 = ImmutableSparseVector.wrap(keys, val1);
-        SparseVector v2 = ImmutableSparseVector.wrap(keys, val2);
+        SparseVector v1 = MutableSparseVector.wrap(keys, val1).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(keys, val2).freeze();
         assertEquals(0.375, dampedSimilarity.similarity(v1, v1), EPSILON);
         assertEquals(0.42705098, dampedSimilarity.similarity(v1, v2), EPSILON);
     }
@@ -94,8 +94,8 @@ public class TestCosineSimilarity {
         double[] val1 = {3, 1, 2, 1};
         long[] k2 = {2, 3, 5, 6, 7};
         double[] val2 = {1, 7, 2, 5, 0};
-        SparseVector v1 = ImmutableSparseVector.wrap(k1, val1);
-        SparseVector v2 = ImmutableSparseVector.wrap(k2, val2);
+        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
         assertEquals(1, similarity.similarity(v1, v1), EPSILON);
         assertEquals(1, similarity.similarity(v2, v2), EPSILON);
         assertEquals(0.29049645, similarity.similarity(v1, v2), EPSILON);

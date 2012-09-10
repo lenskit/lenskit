@@ -18,7 +18,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 
@@ -35,13 +35,13 @@ public class TestHLU {
     double[] predictions2 = {4, 4, 5, 2, 3, 2, 3, 4, 4, 3};
     double[] predictions3 = {4, 4, 5, 3, 3, 4, 5, 4, 4, 4};
 
-    SparseVector rv1 = ImmutableSparseVector.wrap(items, ratings1);
-    SparseVector rv2 = ImmutableSparseVector.wrap(items, ratings2);
-    SparseVector rv3 = ImmutableSparseVector.wrap(items, ratings3);
+    SparseVector rv1 = MutableSparseVector.wrap(items, ratings1).freeze();
+    SparseVector rv2 = MutableSparseVector.wrap(items, ratings2).freeze();
+    SparseVector rv3 = MutableSparseVector.wrap(items, ratings3).freeze();
 
-    SparseVector pv1 = ImmutableSparseVector.wrap(items, predictions1);
-    SparseVector pv2 = ImmutableSparseVector.wrap(items, predictions2);
-    SparseVector pv3 = ImmutableSparseVector.wrap(items, predictions3);
+    SparseVector pv1 = MutableSparseVector.wrap(items, predictions1).freeze();
+    SparseVector pv2 = MutableSparseVector.wrap(items, predictions2).freeze();
+    SparseVector pv3 = MutableSparseVector.wrap(items, predictions3).freeze();
 
     @Test
     public void testComputeHLU() {

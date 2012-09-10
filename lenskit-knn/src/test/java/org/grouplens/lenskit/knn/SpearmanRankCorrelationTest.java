@@ -50,7 +50,7 @@ public class SpearmanRankCorrelationTest {
     public void testRankSeveral() {
         long[] keys = {1, 2, 3, 4, 5};
         double[] values = {7, 2, 3, 1, 5};
-        SparseVector v = ImmutableSparseVector.wrap(keys, values);
+        SparseVector v = MutableSparseVector.wrap(keys, values).freeze();
         SparseVector r = rank(v);
         assertEquals(5, r.size());
         assertEquals(1, r.get(1), 1.0e-6);
@@ -64,7 +64,7 @@ public class SpearmanRankCorrelationTest {
     public void testRankTie() {
         long[] keys = {1, 2, 3, 4, 5};
         double[] values = {7, 2, 3, 1, 3};
-        SparseVector v = ImmutableSparseVector.wrap(keys, values);
+        SparseVector v = MutableSparseVector.wrap(keys, values).freeze();
         SparseVector r = rank(v);
         assertEquals(5, r.size());
         assertEquals(1, r.get(1), 1.0e-6);

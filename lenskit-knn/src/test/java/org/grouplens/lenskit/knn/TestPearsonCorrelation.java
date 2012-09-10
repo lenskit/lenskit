@@ -23,8 +23,7 @@ import static org.junit.Assert.assertThat;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,7 +48,7 @@ public class TestPearsonCorrelation {
     public void testSelfSimilarity() {
         long keys[] = {1, 5, 7};
         double values[] = {1.5, 2.5, 2};
-        SparseVector v = ImmutableSparseVector.wrap(keys, values);
+        SparseVector v = MutableSparseVector.wrap(keys, values).freeze();
         assertThat(sim.similarity(v, v), closeTo(1));
         assertThat(sim.similarity(v, v.mutableCopy().freeze()), closeTo(1));
     }
@@ -59,8 +58,8 @@ public class TestPearsonCorrelation {
         long keys[] = {1, 5, 7};
         double values[] = {1.5, 2.5, 2};
         long keys2[] = {2, 4, 8};
-        SparseVector v1 = ImmutableSparseVector.wrap(keys, values);
-        SparseVector v2 = ImmutableSparseVector.wrap(keys2, values);
+        SparseVector v1 = MutableSparseVector.wrap(keys, values).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(keys2, values).freeze();
         assertThat(sim.similarity(v1, v2), closeTo(0));
     }
 
@@ -70,8 +69,8 @@ public class TestPearsonCorrelation {
         double val1[] = {1.5, 2.5, 2};
         long k2[] = {1, 5, 6};
         double val2[] = {2, 2.5, 1.7};
-        SparseVector v1 = ImmutableSparseVector.wrap(k1, val1);
-        SparseVector v2 = ImmutableSparseVector.wrap(k2, val2);
+        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
         assertThat(sim.similarity(v1, v2), closeTo(.806404996));
     }
 }
