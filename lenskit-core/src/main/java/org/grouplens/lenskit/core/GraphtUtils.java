@@ -44,7 +44,8 @@ import java.util.Set;
  * @since 0.11
  */
 class GraphtUtils {
-    private GraphtUtils() {}
+    private GraphtUtils() {
+    }
 
     public static boolean isDAONode(@Nullable Node n) {
         CachedSatisfaction label = n == null ? null : n.getLabel();

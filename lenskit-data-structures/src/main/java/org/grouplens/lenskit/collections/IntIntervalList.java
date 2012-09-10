@@ -55,7 +55,7 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
      * Create the half-open interval [start,end).
      *
      * @param start The interval start point (inclusive).
-     * @param end The interval end point (exclusive).
+     * @param end   The interval end point (exclusive).
      */
     public IntIntervalList(int start, int end) {
         if (end < start) {

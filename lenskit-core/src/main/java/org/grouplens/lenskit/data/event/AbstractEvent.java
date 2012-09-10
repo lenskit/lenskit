@@ -24,6 +24,7 @@ import com.google.common.primitives.Longs;
 
 /**
  * Abstract base class for implementing events.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class AbstractEvent implements Event {

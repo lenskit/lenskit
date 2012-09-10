@@ -30,6 +30,7 @@ class LongIteratorCursor extends AbstractLongCursor {
 
     /**
      * Construct a new long iterator cursor.
+     *
      * @param iter The iterator to wrap.
      */
     public LongIteratorCursor(LongIterator iter) {

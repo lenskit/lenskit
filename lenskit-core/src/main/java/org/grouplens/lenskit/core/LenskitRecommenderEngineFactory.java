@@ -151,6 +151,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
     /**
      * Get the DAO factory.
+     *
      * @return The DAO factory.
      */
     public DAOFactory getDAOFactory() {
@@ -159,6 +160,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
     /**
      * Set the DAO factory.
+     *
      * @param f The new DAO factory.
      */
     public void setDAOFactory(DAOFactory f) {
@@ -287,13 +289,13 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         }
         return replacements;
     }
-   
+
     /**
      * Simulate an instantiation of the shared objects in a graph.
      *
      * @param graph The complete configuration graph.
      * @return A new graph that is identical to the original graph if it were
-     * subjected to the instantiation process.
+     *         subjected to the instantiation process.
      */
     private Graph simulateInstantiation(Graph graph) {
         Graph modified = graph.clone();
@@ -359,7 +361,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             }
         }
     }
-   
+
     private Graph buildGraph(DataAccessObject dao) {
         BindingFunctionBuilder cfg = config.clone();
         if (dao == null) {
@@ -386,11 +388,11 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         // because they could not have created any Nodes.
         return solver.getGraph();
     }
-   
+
     public Graph getInitialGraph() {
         return buildGraph(null);
     }
-   
+
     public Graph getInstantiatedGraph() {
         return simulateInstantiation(buildGraph(null));
     }

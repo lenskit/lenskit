@@ -119,8 +119,9 @@ public final class CollectionUtils {
 
     /**
      * Return a list that repeats a single object multiple times.
+     *
      * @param obj The object.
-     * @param n The size of the list.
+     * @param n   The size of the list.
      * @param <T> The type of list elements.
      * @return A list containing {@var obj} {@var n} times.
      */
@@ -208,6 +209,7 @@ public final class CollectionUtils {
 
         /**
          * {@inheritDoc}
+         *
          * @deprecated see {@link LongCollection#longIterator()}
          */
         @Override

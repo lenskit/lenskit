@@ -186,6 +186,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Find the index of a particular key.
+     *
      * @param key The key to search for.
      * @return The index, or a negative value if the key is not in the key domain.
      */
@@ -641,7 +642,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
      * the original lists once this has been called!
-     * @param keyList The list of keys
+     *
+     * @param keyList   The list of keys
      * @param valueList The list of values
      * @return A backed by the backing stores of the provided lists.
      */

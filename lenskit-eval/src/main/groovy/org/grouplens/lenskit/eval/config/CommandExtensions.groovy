@@ -82,27 +82,27 @@ class CommandExtensions {
     static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
         // FIXME this is messy and unreadable
         def buildables = methods.collect({ method ->
-            BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)			
-			if (builderAnnotation != null) {
-				Class<? extends Command> builder = builderAnnotation.value()
-				return {
-					builder.call().invoke(self)
-				}
-			} else {
-				def formals = method.parameterTypes
-	            if (formals.length == 1) {
-	                def type = formals[0]
-	                logger.debug("looking for command of type {}", type)
-	                Class cmd = engine.getCommandForType(type)
-	                def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
-	                if (ctor != null) {
-	                    return {
-	                        method.invoke(self, ctor(it))
-	                    }
-	                }
-	            }
-	            return null
-			}
+            BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)
+            if (builderAnnotation != null) {
+                Class<? extends Command> builder = builderAnnotation.value()
+                return {
+                    builder.call().invoke(self)
+                }
+            } else {
+                def formals = method.parameterTypes
+                if (formals.length == 1) {
+                    def type = formals[0]
+                    logger.debug("looking for command of type {}", type)
+                    Class cmd = engine.getCommandForType(type)
+                    def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
+                    if (ctor != null) {
+                        return {
+                            method.invoke(self, ctor(it))
+                        }
+                    }
+                }
+                return null
+            }
         }).findAll()
 
         if (buildables.size() == 1) {

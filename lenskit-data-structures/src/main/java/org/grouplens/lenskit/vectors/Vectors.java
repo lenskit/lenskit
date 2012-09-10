@@ -33,7 +33,8 @@ public final class Vectors {
      * Private constructor. This class is meant to be used
      * via its static methods, not instantiated.
      */
-    private Vectors() {}
+    private Vectors() {
+    }
 
     /**
      * Provides an Iterable over EntryPairs based off of a fast Iterator.
@@ -199,11 +200,13 @@ public final class Vectors {
         private double value1;
         private double value2;
 
-        EntryPair() {}
+        EntryPair() {
+        }
 
         /**
          * Construct an entry pair with a key & values.
-         * @param k The key.
+         *
+         * @param k  The key.
          * @param v1 The first vector's value for {@var key}.
          * @param v2 The second vector's value for {@var key}.
          */
@@ -215,6 +218,7 @@ public final class Vectors {
 
         /**
          * Get the pair's key.
+         *
          * @return The key.
          */
         public Long getKey() {
@@ -223,6 +227,7 @@ public final class Vectors {
 
         /**
          * Get the first vector's value.
+         *
          * @return The first vector's value for the {@link #getKey() key}.
          */
         public double getValue1() {
@@ -231,6 +236,7 @@ public final class Vectors {
 
         /**
          * Get the second vector's value.
+         *
          * @return The second vector's value for the {@link #getKey() key}.
          */
         public Double getValue2() {

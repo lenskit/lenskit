@@ -49,6 +49,7 @@ public class NormalizingSimilarityMatrixAccumulatorFactory implements Similarity
 
     /**
      * Creates and returns a NormalizingSimilarityMatrixAccumulator.
+     *
      * @param itemUniverse The universe items the accumulator will accumulate.
      * @return a normalizing SimilarityMatrixAccumulator
      */

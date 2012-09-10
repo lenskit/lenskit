@@ -22,6 +22,7 @@ import java.util.AbstractList;
 
 /**
  * List consisting of multiple occurrences of one element.
+ *
  * @author Michael Ekstrand
  */
 class RepeatedList<T> extends AbstractList<T> {

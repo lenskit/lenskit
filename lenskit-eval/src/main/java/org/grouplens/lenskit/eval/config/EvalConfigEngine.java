@@ -115,7 +115,7 @@ public class EvalConfigEngine {
     @Nullable
     Object runScript(EvalConfigScript script, String[] args) throws CommandException {
         script.setBinding(new Binding(args));
-    	Object result = null;
+        Object result = null;
         try {
             result = script.run();
         } catch (RuntimeException e) {
@@ -140,7 +140,7 @@ public class EvalConfigEngine {
         logger.debug("loading script file {}", file);
         return execute(file, new String[]{});
     }
-    
+
     /**
      * Load a set of evaluations from a script file.
      *
@@ -169,11 +169,11 @@ public class EvalConfigEngine {
     Object execute(Reader in) throws CommandException {
         return execute(in, new String[]{});
     }
-    
+
     /**
      * Load a set of evaluations from an input stream.
      *
-     * @param in The input stream
+     * @param in   The input stream
      * @param args The command line arguments for the script.
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error

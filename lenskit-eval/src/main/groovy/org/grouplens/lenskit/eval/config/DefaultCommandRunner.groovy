@@ -82,7 +82,7 @@ class DefaultCommandRunner implements CommandRunner {
      * Invoke the command. This implementation:
      * <ol>
      * <li>gets a delegate with {@link #getDelegate(Command)}
-     * <li>attaches the delegate with {@link #attachDelegate(Closure,Object)}
+     * <li>attaches the delegate with {@link #attachDelegate(Closure, Object)}
      * <li>invokes the closure with {@link #invokeClosure(Closure)}
      * <li>calls the command with {@link #callCommand(Command)}
      * </ol>

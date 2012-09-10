@@ -306,6 +306,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Compute the dot product between two vectors.
+     *
      * @param o The other vector.
      * @return The dot (inner) product between this vector and {@var o}.
      */
@@ -319,6 +320,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Count the common keys between two vectors.
+     *
      * @param o The other vector.
      * @return The number of keys appearing in both this and the other vector.
      */

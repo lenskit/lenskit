@@ -26,7 +26,8 @@ package org.grouplens.lenskit.eval;
 public class CommandException extends Exception {
     private static final long serialVersionUID = -9073424874249517829L;
 
-    public CommandException() {}
+    public CommandException() {
+    }
 
     public CommandException(String message) {
         super(message);

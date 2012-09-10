@@ -91,7 +91,7 @@ public class ExtraInlineTaglet implements Taglet {
     @Override
     public String toString(Tag[] tags) {
         StringBuilder bld = new StringBuilder();
-        for (Tag tag: tags) {
+        for (Tag tag : tags) {
             bld.append(toString(tag));
         }
         return bld.toString();

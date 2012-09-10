@@ -25,10 +25,10 @@ import java.util.NoSuchElementException;
  * in certain cases where advance/get is a more meaningful abstraction than
  * hasNext/next.
  *
+ * @param <E> The type of element in the pointer.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  * @since 0.9
- * @param <E> The type of element in the pointer.
  */
 public interface Pointer<E> {
     /**

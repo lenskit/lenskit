@@ -33,7 +33,7 @@ public interface ItemVectorNormalizer {
     /**
      * Normalize a vector with respect to an item vector.
      *
-     * @param itemId   The item id to normalize a vector for.
+     * @param itemId The item id to normalize a vector for.
      * @param vector The item's vector for reference.
      * @param target The vector to normalize. If {@code null}, the item vector is normalized.
      * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
@@ -46,7 +46,7 @@ public interface ItemVectorNormalizer {
      * Make a vector transformation for an item. The resulting transformation will be applied
      * to item vectors to normalize and denormalize them.
      *
-     * @param itemId   The item id to normalize for.
+     * @param itemId The item id to normalize for.
      * @param vector The item's vector to use as the reference vector.
      * @return The vector transformaition normalizing for this item.
      */

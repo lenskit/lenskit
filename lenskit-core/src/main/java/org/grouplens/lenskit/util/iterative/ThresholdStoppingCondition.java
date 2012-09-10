@@ -27,6 +27,7 @@ import java.io.Serializable;
 
 /**
  * Stop when absolute delta drops below a threshold.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -39,7 +40,8 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
 
     /**
      * Construct a new threshold stop.
-     * @param thresh The threshold.
+     *
+     * @param thresh  The threshold.
      * @param minIter The minimum number of iterations.
      */
     @Inject
@@ -51,6 +53,7 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
 
     /**
      * Create a new threshold stop with no minimum iteration count.
+     *
      * @param thresh The threshold value.
      */
     public ThresholdStoppingCondition(double thresh) {
@@ -64,6 +67,7 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
 
     /**
      * Get the stopper's threshold.
+     *
      * @return The stopper's threshold.
      */
     public double getThreshold() {
@@ -72,6 +76,7 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
 
     /**
      * Get the minimum iteration count.
+     *
      * @return The number of iterations to require.
      */
     public int getMinimumIterations() {

@@ -26,8 +26,8 @@ import java.lang.annotation.Annotation;
 /**
  * Helper for implementing Lenskit config contexts.
  *
- * @since 1.0
  * @author Michael Ekstrand
+ * @since 1.0
  */
 public abstract class AbstractConfigContext implements LenskitConfigContext {
     @Override

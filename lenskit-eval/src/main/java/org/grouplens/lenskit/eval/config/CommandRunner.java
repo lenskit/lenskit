@@ -27,15 +27,16 @@ import javax.annotation.Nullable;
 /**
  * Invoke a configuration block.
  *
- * @since 1.0
  * @author Michael Ekstrand
+ * @since 1.0
  */
 public interface CommandRunner {
     /**
      * Invoke a command, possibly using a configuration closure.
+     *
      * @param command The command to run.
      * @param closure The closure to configure it with.
-     * @param <V> The return type of the command.
+     * @param <V>     The return type of the command.
      * @return The results of the command's {@link Command#call()} method.
      */
     <V> V invoke(@Nonnull Command<V> command, @Nullable Closure<?> closure);

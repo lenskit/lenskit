@@ -28,6 +28,7 @@ class LongCollectionCursor extends LongIteratorCursor {
 
     /**
      * Construct a new cursor around a collection.
+     *
      * @param collection The collection to wrap.
      */
     public LongCollectionCursor(LongCollection collection) {

@@ -31,6 +31,7 @@ public interface SimilarityMatrixAccumulatorFactory {
 
     /**
      * Creates and returns a SimilarityMatrixModel.
+     *
      * @param itemUniverse The universe of items the accumulator will accumulate.
      * @return A SimilarityMatrixAccumulator.
      */

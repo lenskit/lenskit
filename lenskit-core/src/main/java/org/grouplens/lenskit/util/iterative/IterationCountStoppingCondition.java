@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 /**
  * Stop once the iteration count has reached a value.
+ *
  * @author Michael Ekstrand
  */
 @Immutable
@@ -36,6 +37,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
 
     /**
      * Construct a new iteration count stopping condition
+     *
      * @param niter The number of iterations to run.
      */
     @Inject
@@ -45,6 +47,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
 
     /**
      * Get the number of iterations the stopper requires.
+     *
      * @return The number of iterations.
      */
     public int getIterationCount() {

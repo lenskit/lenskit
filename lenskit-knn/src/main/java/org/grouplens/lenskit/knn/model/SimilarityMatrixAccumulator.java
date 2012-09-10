@@ -41,6 +41,7 @@ public interface SimilarityMatrixAccumulator {
      * Tells the accumulator that the row being constructed
      * has been completed, allowing the accumulator to process
      * the row as a whole if it so desires.
+     *
      * @param rowId The long id of the row which has been completed.
      */
     public void completeRow(long rowId);

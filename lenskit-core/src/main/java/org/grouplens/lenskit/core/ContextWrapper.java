@@ -27,8 +27,8 @@ import java.lang.annotation.Annotation;
 /**
  * Wrap a Grapht context to make a LensKit context.
  *
- * @see 1.0
  * @author Michael Ekstrand
+ * @see 1.0
  */
 public class ContextWrapper extends AbstractConfigContext {
     private Context base;
@@ -39,6 +39,7 @@ public class ContextWrapper extends AbstractConfigContext {
 
     /**
      * Coerce a Grapht context to a LensKit context.
+     *
      * @param ctx The context.
      * @return A LensKit context, as a wrapper if necessary.
      */
@@ -56,7 +57,7 @@ public class ContextWrapper extends AbstractConfigContext {
     }
 
     @Override
-    public <T> Binding<T> bind(Class <? extends Annotation> qualifier, Class<T> type) {
+    public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
         return base.bind(type).withQualifier(qualifier);
     }
 

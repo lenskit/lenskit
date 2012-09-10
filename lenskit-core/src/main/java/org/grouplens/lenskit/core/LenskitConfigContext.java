@@ -28,8 +28,8 @@ import java.lang.annotation.Annotation;
  * LensKit-specific augmentations of the Grapht context interface.
  *
  * @author Michael Ekstrand
- * @since 1.0
  * @compat Public
+ * @since 1.0
  */
 public interface LenskitConfigContext extends Context {
     /**

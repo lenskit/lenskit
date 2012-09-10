@@ -42,7 +42,7 @@ class ContextConfigDelegate {
         }
         LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "in", reals)
         if (block != null) {
-            use (ConfigHelpers) {
+            use(ConfigHelpers) {
                 block.callWithDelegate(new ContextConfigDelegate(ctx))
             }
         }

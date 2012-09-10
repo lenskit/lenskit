@@ -43,7 +43,7 @@ public class SlopeOneModel {
     private final Index itemIndex;
     private final PreferenceDomain domain;
 
-    public SlopeOneModel(Long2IntMap[] coMatrix,Long2DoubleMap[] devMatrix,
+    public SlopeOneModel(Long2IntMap[] coMatrix, Long2DoubleMap[] devMatrix,
                          BaselinePredictor predictor, Index itemIndex, PreferenceDomain dom) {
 
         this.coMatrix = coMatrix;

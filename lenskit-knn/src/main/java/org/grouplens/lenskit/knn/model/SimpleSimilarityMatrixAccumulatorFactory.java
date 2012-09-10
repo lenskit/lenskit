@@ -45,6 +45,7 @@ public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatri
 
     /**
      * Creates and returns a SimpleSimilarityMatrixAccumulator.
+     *
      * @param itemUniverse The universe items the accumulator will accumulate.
      * @return a simple SimilarityMatrixAccumulator
      */

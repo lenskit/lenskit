@@ -37,7 +37,8 @@ import java.util.*;
 public final class Cursors {
     private static final int DEFAULT_LIST_SIZE = 20;
 
-    private Cursors() {}
+    private Cursors() {
+    }
 
     /**
      * Wrap an iterator in a cursor.

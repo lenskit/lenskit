@@ -54,7 +54,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final int featureCount;
     private final ClampingFunction clamp;
 
-    @Nullable private FunkSVDTrainingConfig rule;
+    @Nullable
+    private FunkSVDTrainingConfig rule;
 
 
     @Inject
@@ -152,7 +153,7 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
         FunkSVDFeatureTrainer trainer = rule.newTrainer();
-        
+
         while (trainer.nextEpoch()) {
             for (VectorEntry itemId : ratings.fast()) {
                 final long item = itemId.getKey();

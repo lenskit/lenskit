@@ -24,8 +24,8 @@ import java.lang.annotation.*;
  * Specify the default runner to run a command. The default is
  * {@link DefaultCommandRunner}.
  *
- * @since 1.0
  * @author Michael Ekstrand
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

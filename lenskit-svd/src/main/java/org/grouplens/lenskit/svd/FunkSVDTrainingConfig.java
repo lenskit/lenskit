@@ -42,9 +42,9 @@ public class FunkSVDTrainingConfig {
      * Construct a new FunkSVD configuration.
      *
      * @param lrate The learning rate.
-     * @param reg The regularization term.
+     * @param reg   The regularization term.
      * @param clamp The clamping function.
-     * @param stop The stopping condition.
+     * @param stop  The stopping condition.
      */
     @Inject
     public FunkSVDTrainingConfig(@LearningRate double lrate,

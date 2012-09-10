@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 public interface LongCursor extends Cursor<Long>, LongIterable {
     /**
      * Get the next value as a primitive long.
+     *
      * @return The next value in the cursor.
      * @see #next()
      */

@@ -161,6 +161,7 @@ public final class VectorEntry {
 
     /**
      * Get the sparse vector associated with this entry.
+     *
      * @return The associated vector, or {@code null} if no vector is linked.
      */
     SparseVector getVector() {

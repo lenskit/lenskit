@@ -74,8 +74,9 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
 
     /**
      * Store an entry in the similarity matrix.
-     * @param i The matrix row (an item ID).
-     * @param j The matrix column (an item ID).
+     *
+     * @param i   The matrix row (an item ID).
+     * @param j   The matrix column (an item ID).
      * @param sim The similarity between items {@code j} and {@code i}. As documented in the
      *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
      */
@@ -84,7 +85,9 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
     public void put(long i, long j, double sim) {
         Preconditions.checkState(unfinishedRows != null, "model already built");
 
-        if (!threshold.retain(sim)) return;
+        if (!threshold.retain(sim)) {
+            return;
+        }
 
         // concurrent read-only array access permitted
         MutableSparseVector row = unfinishedRows.get(i);
@@ -96,6 +99,7 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
 
     /**
      * Normalizes the accumulated row.
+     *
      * @param rowId The long id of the row which has been completed.
      */
     @Override
@@ -107,6 +111,7 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
 
     /**
      * Moves the result matrix into a SimilarityMatrixModel.
+     *
      * @return The resulting SimilarityMatrixModel.
      */
     @Override
@@ -118,9 +123,9 @@ public class NormalizingSimilarityMatrixAccumulator implements SimilarityMatrixA
         } else {
             accum = new UnlimitedScoredItemAccumulator();
         }
-        for (Entry<ImmutableSparseVector> row: completedRows.long2ObjectEntrySet()) {
+        for (Entry<ImmutableSparseVector> row : completedRows.long2ObjectEntrySet()) {
             ImmutableSparseVector rowVec = row.getValue();
-            for (VectorEntry e: rowVec.fast()) {
+            for (VectorEntry e : rowVec.fast()) {
                 accum.put(e.getKey(), e.getValue());
             }
             data.put(row.getLongKey(), accum.finish());

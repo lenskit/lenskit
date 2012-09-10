@@ -94,7 +94,8 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
 
     /**
      * Construct a new scored list backed by pre-existing lists.
-     * @param items The item list.
+     *
+     * @param items  The item list.
      * @param scores The score list. If not {@code null}, must have the same size
      *               as {@var items}.
      */
@@ -109,6 +110,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
     /**
      * Compare two lists for equality. {@link Double#NaN} is considered equal to
      * itself for the purpose of this comparison.
+     *
      * @param o The object to compare with.
      * @return {@code true} iff this object is equal to {@var o}.
      */

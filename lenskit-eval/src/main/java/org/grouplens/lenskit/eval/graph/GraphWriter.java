@@ -26,23 +26,23 @@ import org.grouplens.grapht.graph.Node;
  * stored in memory to a permanent representation.
  */
 public interface GraphWriter {
-	
+
     /**
      * Perform any preparations necessary to begin constructing the representation.
      */
-	void start();
-	
-	/**
+    void start();
+
+    /**
      * Add the entirety of a graph to the underlying representation.
-     * 
-     * @param g The graph to add.
+     *
+     * @param g    The graph to add.
      * @param root The root node of the graph.
      */
-	void addGraph(String label, Graph g, Node root);	
-			
-	/**
-	 * Complete the representation and perform any required cleanup.
-	 */
-	void finish();
-	
+    void addGraph(String label, Graph g, Node root);
+
+    /**
+     * Complete the representation and perform any required cleanup.
+     */
+    void finish();
+
 }

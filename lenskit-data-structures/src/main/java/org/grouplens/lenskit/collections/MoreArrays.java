@@ -24,7 +24,8 @@ package org.grouplens.lenskit.collections;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public final class MoreArrays {
-    private MoreArrays() {}
+    private MoreArrays() {
+    }
 
     /**
      * Check that the array is sorted.

@@ -27,8 +27,9 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 public interface StoppingCondition {
     /**
      * Query whether the computation should stop.
+     *
      * @param niters The number of iterations done so far.
-     * @param delta The last delta.
+     * @param delta  The last delta.
      * @return {@code true} if the computation is finished.
      */
     boolean isFinished(int niters, double delta);

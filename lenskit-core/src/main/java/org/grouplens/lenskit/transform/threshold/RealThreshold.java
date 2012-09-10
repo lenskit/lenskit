@@ -41,6 +41,7 @@ public class RealThreshold implements Threshold, Serializable {
 
     /**
      * Get the threshold value.
+     *
      * @return The threshold value.
      */
     public double getValue() {

@@ -37,8 +37,12 @@ import java.util.Iterator;
  * @see ItemItemModelProvider
  */
 public class ItemItemBuildContext {
-    private @Nonnull LongSortedSet items;
-    private @Nonnull Long2ObjectMap<SparseVector> itemVectors;
+    private
+    @Nonnull
+    LongSortedSet items;
+    private
+    @Nonnull
+    Long2ObjectMap<SparseVector> itemVectors;
 
     /**
      * Set up a new item build context.
