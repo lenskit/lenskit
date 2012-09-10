@@ -49,7 +49,6 @@ public interface BaselinePredictor extends Serializable {
      * @param ratings The user's ratings.
      * @param items   The items to score.
      * @return A new sparse vector containing the baseline predictions for {@code items}.
-     * @deprecated Use {@link #predict(long, SparseVector, MutableSparseVector)} instead.
      */
     MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items);
 
