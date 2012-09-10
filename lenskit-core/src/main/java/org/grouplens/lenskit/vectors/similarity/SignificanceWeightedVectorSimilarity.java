@@ -18,15 +18,14 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
-import static java.lang.Math.max;
-
-import java.io.Serializable;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.params.SigWeightThreshold;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.params.WeightThreshold;
-import org.grouplens.lenskit.vectors.SparseVector;
+import static java.lang.Math.max;
 
 /**
  * Apply significance weighting to a similarity function. The threshold
@@ -55,7 +54,7 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
     private final VectorSimilarity delegate;
 
     @Inject
-    public SignificanceWeightedVectorSimilarity(@WeightThreshold int thresh,
+    public SignificanceWeightedVectorSimilarity(@SigWeightThreshold int thresh,
                                                 VectorSimilarity sim) {
         threshold = thresh;
         delegate = sim;
