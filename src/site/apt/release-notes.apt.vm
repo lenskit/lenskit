@@ -46,6 +46,8 @@ LensKit Release Notes
 
    * Added support for a block form of the <<<within>>> directive.
 
+   * Added the <<<dumpGraph>>> command to dump recommender configurations to GraphViz.
+
    []
 
 ** Cleanup
