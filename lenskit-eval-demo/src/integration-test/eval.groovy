@@ -36,11 +36,11 @@ import org.grouplens.lenskit.params.Damping
 import org.grouplens.lenskit.slopeone.SlopeOneModel
 import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
 import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor
-import org.grouplens.lenskit.svd.FunkSVDRatingPredictor
-import org.grouplens.lenskit.svd.params.FeatureCount
+import org.grouplens.lenskit.mf.funksvd.FunkSVDRatingPredictor
+import org.grouplens.lenskit.mf.funksvd.params.FeatureCount
 import org.grouplens.lenskit.params.IterationCount
 import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.svd.FunkSVDModelProvider
+import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider
 import org.grouplens.lenskit.util.iterative.StoppingCondition
 import org.grouplens.lenskit.util.iterative.IterationCountStoppingCondition
 import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition

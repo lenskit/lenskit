@@ -16,10 +16,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd;
+package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.svd.params.LearningRate;
-import org.grouplens.lenskit.svd.params.RegularizationTerm;
+import org.grouplens.lenskit.mf.funksvd.params.LearningRate;
+import org.grouplens.lenskit.mf.funksvd.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.iterative.StoppingCondition;
 

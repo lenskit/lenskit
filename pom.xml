@@ -375,7 +375,7 @@
             <!--</group>-->
             <!--<group>-->
             <!--<title>Recommender Implementations</title>-->
-            <!--<packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.svd*:org.grouplens.slopeone*</packages>-->
+            <!--<packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.mf.funksvdksvd*:org.grouplens.slopeone*</packages>-->
             <!--</group>-->
             <!--<group>-->
             <!--<title>Recommender Evaluation</title>-->

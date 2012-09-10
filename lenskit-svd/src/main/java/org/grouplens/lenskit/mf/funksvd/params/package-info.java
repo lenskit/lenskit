@@ -19,4 +19,4 @@
 /**
  * Parameters for SVD-based recommenders.
  */
-package org.grouplens.lenskit.svd.params;
+package org.grouplens.lenskit.mf.funksvd.params;

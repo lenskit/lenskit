@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd.params;
+package org.grouplens.lenskit.mf.funksvd.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

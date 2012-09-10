@@ -32,6 +32,8 @@ LensKit Release Notes
      want a delta RMSE threshold, use <<<ThresholdStoppingCondition>>> and set the
      <<<ThresholdValue>>> parameter.
 
+   * Moved FunkSVD to the <<<o.g.l.mf.funksvd>>> package.
+
    * Made Slope-One use k-NN, specifically item-item, as the base framework rather than
      being standalone. Future tasks will further harness and develop this merger.
 

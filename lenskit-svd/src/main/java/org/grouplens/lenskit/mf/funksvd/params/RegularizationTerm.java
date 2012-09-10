@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.svd.params;
+package org.grouplens.lenskit.mf.funksvd.params;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -28,7 +28,7 @@ import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.svd.FunkSVDModelProvider;
+import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider;
 
 /**
  * The regularization factor applied in the gradient descent update for learning
