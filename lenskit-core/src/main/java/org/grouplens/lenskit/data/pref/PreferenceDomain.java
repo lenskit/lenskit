@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
  * An object describing the domain of preference data, used in ratings and predictions.
  *
  * @author Michael Ekstrand
- * @review Should this be called RatingDomain?
  */
 @Shareable
 public final class PreferenceDomain implements Serializable {

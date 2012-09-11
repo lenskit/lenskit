@@ -106,7 +106,6 @@ public class AlgorithmInstance {
         }
 
         if (sharedSnapshot != null) {
-            // FIXME Bind this to a provider
             Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
                 @Override
                 public PreferenceSnapshot get() {

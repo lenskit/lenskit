@@ -70,7 +70,8 @@ class CommandExtensions {
 
     /**
      * Search for a method with a specified BuilderCommand, or a single-argument
-     * method with a parameter that can be built.
+     * method with a parameter that can be built. Used when we have a closure to
+     * build a directive argument.
      * @param self The command to search.
      * @param engine The config engine.
      * @param methods The group of methods to search
@@ -80,22 +81,26 @@ class CommandExtensions {
      * @see EvalConfigEngine#getCommandForType(Class)
      */
     static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
-        // FIXME this is messy and unreadable
+        // collect all buildable methods
         def buildables = methods.collect({ method ->
             BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)
             if (builderAnnotation != null) {
+                // if it has a builder annotation, it is buildable.
                 Class<? extends Command> builder = builderAnnotation.value()
                 return {
+                    // REVIEW Does this really work?
                     builder.call().invoke(self)
                 }
             } else {
                 def formals = method.parameterTypes
                 if (formals.length == 1) {
+                    // has a single param, that has a builder command?
                     def type = formals[0]
                     logger.debug("looking for command of type {}", type)
                     Class cmd = engine.getCommandForType(type)
                     def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
                     if (ctor != null) {
+                        // we can build the argument
                         return {
                             method.invoke(self, ctor(it))
                         }
@@ -106,6 +111,7 @@ class CommandExtensions {
         }).findAll()
 
         if (buildables.size() == 1) {
+            // there is a unique builder
             return buildables.get(0)
         } else if (buildables.size() > 1) {
             throw new RuntimeException("too many buildable options")

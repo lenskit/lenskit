@@ -27,7 +27,6 @@ import org.grouplens.lenskit.eval.CommandException;
  * Builder for {@link PreferenceDomain} objects.
  *
  * @author Michael Ekstrand
- * @review Should this be here, or do we want to provide it in the standard core?
  */
 public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain> {
     private Double min;
