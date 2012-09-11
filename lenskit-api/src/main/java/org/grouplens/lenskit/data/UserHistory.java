@@ -90,6 +90,7 @@ public interface UserHistory<E extends Event> extends List<E> {
      *
      * @param <T>  The return type of the function.
      * @param func The function to call and memoize.
+     * @return The return value of {@var func}.
      */
     <T> T memoize(Function<? super UserHistory<E>, ? extends T> func);
 }

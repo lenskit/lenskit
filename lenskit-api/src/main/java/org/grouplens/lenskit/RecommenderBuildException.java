@@ -24,17 +24,33 @@ package org.grouplens.lenskit;
  * @since 1.0
  */
 public class RecommenderBuildException extends Exception {
+    /**
+     * Consruct a new recommender build exception.
+     */
     public RecommenderBuildException() {
     }
 
+    /**
+     * Construct exception with a message.
+     * @param message The exception's message.
+     */
     public RecommenderBuildException(String message) {
         super(message);
     }
 
+    /**
+     * Construct exception with a message and cause.
+     * @param message The exception message.
+     * @param cause The exception cause.
+     */
     public RecommenderBuildException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * Construct an exception with a cause.
+     * @param cause The underlying cause of the build exception.
+     */
     public RecommenderBuildException(Throwable cause) {
         super(cause);
     }
