@@ -441,7 +441,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
-                    .setFiles(trainFiles[i]);
+                    .setFile(trainFiles[i]);
             CSVDataSourceCommand testCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())

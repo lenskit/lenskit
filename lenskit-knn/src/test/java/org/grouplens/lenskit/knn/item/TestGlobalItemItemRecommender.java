@@ -36,22 +36,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSets;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -61,9 +48,23 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.*;
 
 public class TestGlobalItemItemRecommender {
     private LenskitRecommender session;
@@ -86,9 +87,10 @@ public class TestGlobalItemItemRecommender {
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
-        // FIXME Let this work @mludwig
-        /*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
-                             IdentityVectorNormalizer.class);*/
+        factory.bind(UserVectorNormalizer.class)
+                .to(DefaultUserVectorNormalizer.class);
+        factory.bind(VectorNormalizer.class)
+               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = factory.create();
         session = engine.open();
         gRecommender = session.getGlobalItemRecommender();
