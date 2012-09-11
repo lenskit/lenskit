@@ -116,11 +116,6 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return coerce(config.getRootContext().in(qualifier, type));
     }
 
-    public Context in(String name, Class<?> type) {
-        // REVIEW: Do we want to keep this method? Do we want to add it to Grapht?
-        return config.getRootContext().in(Names.named(name), type);
-    }
-
     /**
      * Groovy-compatible alias for {@link #in(Class)}.
      */
@@ -135,13 +130,6 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
     public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
         return in(qualifier, type);
-    }
-
-    /**
-     * Groovy-compatible alias for {@link #in(String, Class)}.
-     */
-    public Context within(String name, Class<?> type) {
-        return in(name, type);
     }
 
     @Override
