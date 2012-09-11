@@ -29,31 +29,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Similarity function using cosine similarity.
+ * Cosine similarity for vectors.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @Shareable
 public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
-
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = LoggerFactory.getLogger(CosineVectorSimilarity.class);
 
     private final double dampingFactor;
 
+    /**
+     * Construct an undamped cosine similarity function.
+     */
     public CosineVectorSimilarity() {
         this(0.0);
     }
 
+    /**
+     * Construct a new cosine similarity function.
+     *
+     * @param damping The Bayesian damping term (added to denominator), to bias the
+     *                similarity towards 0 for low-cooccurance vectors.
+     */
     @Inject
-    public CosineVectorSimilarity(@Damping double dampingFactor) {
-        this.dampingFactor = dampingFactor;
-        logger.debug("Using smoothing factor {}", dampingFactor);
+    public CosineVectorSimilarity(@Damping double damping) {
+        dampingFactor = damping;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.Similarity#similarity(java.lang.Object, java.lang.Object)
-     */
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double dot = vec1.dot(vec2);

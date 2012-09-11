@@ -29,15 +29,15 @@ package org.grouplens.lenskit.util.statistics;
  */
 public class AverageAccumulator {
 
-    private double sum;
-    private long count;
+    private double accSum;
+    private long accCount;
 
     /**
      * Construct a new, zeroed average accumulator.
      */
     public AverageAccumulator() {
-        count = 0;
-        sum = 0;
+        accCount = 0;
+        accSum = 0;
     }
 
     /**
@@ -48,36 +48,36 @@ public class AverageAccumulator {
      * @param count amount of values that where used to build this sum
      */
     public AverageAccumulator(double sum, long count) {
-        this.count = count;
-        this.sum = sum;
+        accCount = count;
+        accSum = sum;
     }
 
     /**
-     * Add a new datum to the {@link AverageAccumulator}
+     * Add a new datum to the {@link AverageAccumulator}.
      *
      * @param datum new datum to include into the average.
      */
     public void add(double datum) {
-        sum += datum;
-        count++;
+        accSum += datum;
+        accCount++;
     }
 
     /**
      * @return average over all added datums
      */
     public double getAverage() {
-        if (count == 0 || sum == 0) {
+        if (accCount == 0 || accSum == 0) {
             return 0;
         }
 
-        return sum / count;
+        return accSum / accCount;
     }
 
     /**
      * @return amount of values this average is based on
      */
     public long getCount() {
-        return count;
+        return accCount;
     }
 
     @Override

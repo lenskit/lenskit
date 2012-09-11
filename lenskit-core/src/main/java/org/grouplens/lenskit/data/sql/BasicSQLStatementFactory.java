@@ -27,6 +27,9 @@ import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Default implementation of the SQL statement factory.
  *
@@ -36,11 +39,17 @@ import org.slf4j.LoggerFactory;
 public class BasicSQLStatementFactory implements SQLStatementFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(BasicSQLStatementFactory.class);
+    @Nonnull
     private String tableName = "ratings";
+    @Nonnull
     private String idColumn = "id";
+    @Nonnull
     private String userColumn = "user";
+    @Nonnull
     private String itemColumn = "item";
+    @Nonnull
     private String ratingColumn = "rating";
+    @Nullable
     private String timestampColumn = "timestamp";
 
     /**
@@ -55,10 +64,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating table.
      *
-     * @param tableName the tableName to set
+     * @param name The name of the rating table.
      */
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public void setTableName(@Nonnull String name) {
+        tableName = name;
     }
 
     /**
@@ -75,7 +84,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      *
      * @param col The name of the event ID column.
      */
-    public void setIdColumn(String col) {
+    public void setIdColumn(@Nonnull String col) {
         idColumn = col;
     }
 
@@ -91,10 +100,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the user ID column in the rating table.
      *
-     * @param userColumn the userColumn to set
+     * @param col The name of the user column.
      */
-    public void setUserColumn(String userColumn) {
-        this.userColumn = userColumn;
+    public void setUserColumn(@Nonnull String col) {
+        userColumn = col;
     }
 
     /**
@@ -109,10 +118,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the item ID column in the rating table.
      *
-     * @param itemColumn the itemColumn to set
+     * @param col The name of the item column.
      */
-    public void setItemColumn(String itemColumn) {
-        this.itemColumn = itemColumn;
+    public void setItemColumn(@Nonnull String col) {
+        itemColumn = col;
     }
 
     /**
@@ -127,10 +136,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating column in the rating table.
      *
-     * @param ratingColumn the ratingColumn to set
+     * @param col The name of the rating column.
      */
-    public void setRatingColumn(String ratingColumn) {
-        this.ratingColumn = ratingColumn;
+    public void setRatingColumn(@Nonnull String col) {
+        ratingColumn = col;
     }
 
     /**
@@ -147,10 +156,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      * Set the name of the timestamp column in the rating table. Set to
      * {@code null} if there is no timestamp column.
      *
-     * @param timestampColumn the timestampColumn to set
+     * @param col The name of the timestamp column, or {@code null}.
      */
-    public void setTimestampColumn(String timestampColumn) {
-        this.timestampColumn = timestampColumn;
+    public void setTimestampColumn(@Nullable String col) {
+        timestampColumn = col;
     }
 
     @Override
@@ -184,7 +193,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     /**
-     * Add the SELECT and FROM clauses to the query
+     * Add the SELECT and FROM clauses to the query.
      *
      * @param query The query accumulator.
      */

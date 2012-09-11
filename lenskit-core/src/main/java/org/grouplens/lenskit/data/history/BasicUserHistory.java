@@ -46,13 +46,13 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
     /**
      * Construct a new basic user profile.
      *
-     * @param user   The user ID.
-     * @param events The list of events in this user's history. All events must
-     *               be for the user.
+     * @param u  The user ID.
+     * @param es The list of events in this user's history. All events must
+     *           be for the user.
      */
-    public BasicUserHistory(long user, List<E> events) {
-        this.user = user;
-        this.events = events;
+    public BasicUserHistory(long u, List<E> es) {
+        this.user = u;
+        this.events = es;
     }
 
     @Override
@@ -97,8 +97,8 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      */
     @Override
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
-        List<T> events = Lists.newArrayList(Iterables.filter(this, type));
-        return new BasicUserHistory<T>(getUserId(), events);
+        List<T> evts = Lists.newArrayList(Iterables.filter(this, type));
+        return new BasicUserHistory<T>(getUserId(), evts);
     }
 
     /**
@@ -108,7 +108,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      */
     @Override
     public UserHistory<E> filter(Predicate<? super E> pred) {
-        List<E> events = Lists.newArrayList(Iterables.filter(this, pred));
-        return new BasicUserHistory<E>(getUserId(), events);
+        List<E> evts = Lists.newArrayList(Iterables.filter(this, pred));
+        return new BasicUserHistory<E>(getUserId(), evts);
     }
 }

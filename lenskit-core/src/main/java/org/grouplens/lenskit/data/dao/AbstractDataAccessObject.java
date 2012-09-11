@@ -289,8 +289,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
         private Cursor<? extends E> cursor;
         private E lastEvent;
 
-        public UserHistoryCursor(@WillCloseWhenClosed Cursor<? extends E> cursor) {
-            this.cursor = cursor;
+        public UserHistoryCursor(@WillCloseWhenClosed Cursor<? extends E> cur) {
+            cursor = cur;
             lastEvent = null;
         }
 

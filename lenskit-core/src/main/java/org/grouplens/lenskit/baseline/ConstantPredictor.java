@@ -63,11 +63,11 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
      * Construct a new constant scorer.  This is exposed so other code
      * can use it as a fallback.
      *
-     * @param value The value to use.
+     * @param val The value to use.
      */
     @Inject
-    public ConstantPredictor(@Value double value) {
-        this.value = value;
+    public ConstantPredictor(@Value double val) {
+        this.value = val;
     }
 
     @Override

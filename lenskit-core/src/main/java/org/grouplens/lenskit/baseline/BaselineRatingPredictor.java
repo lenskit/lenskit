@@ -18,11 +18,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -31,6 +26,10 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * {@link RatingPredictor} that delegates to the baseline predictor. This allows

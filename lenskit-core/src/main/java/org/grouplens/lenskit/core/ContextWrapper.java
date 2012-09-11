@@ -33,6 +33,10 @@ import java.lang.annotation.Annotation;
 public class ContextWrapper extends AbstractConfigContext {
     private Context base;
 
+    /**
+     * Construct a new wrapper around a Grapht context.
+     * @param ctx The Grapht context.
+     */
     public ContextWrapper(Context ctx) {
         base = ctx;
     }

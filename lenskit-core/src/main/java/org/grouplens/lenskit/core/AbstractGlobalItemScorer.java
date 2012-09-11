@@ -53,7 +53,7 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
 
     /**
      * {@inheritDoc}
-     * <p>Delegate to {@link #globalScore(Collection, Collection)}
+     * <p>Delegate to {@link #globalScore(Collection, Collection)}.
      */
     @Override
     public double globalScore(@Nonnull Collection<Long> queryItems, long item) {

@@ -118,7 +118,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(UserHistory, Collection)}
+     * <p>Delegates to {@link #score(UserHistory, Collection)}.
      */
     @Override
     public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
