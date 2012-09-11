@@ -30,6 +30,7 @@ import java.util.Map;
  * @author Michael Ekstrand
  */
 public class ExtraInlineTaglet implements Taglet {
+    private static final String[] INLINE_TAGS = {"var"};
 
     private String tagName;
 
@@ -47,7 +48,9 @@ public class ExtraInlineTaglet implements Taglet {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void register(Map map) {
-        map.put("var", new ExtraInlineTaglet("var"));
+        for (String tag: INLINE_TAGS) {
+            map.put(tag, new ExtraInlineTaglet(tag));
+        }
     }
 
     @Override
