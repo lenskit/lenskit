@@ -31,10 +31,17 @@ import java.util.Map;
 public class CompatTaglet implements Taglet {
     private String versionUrl;
 
+    /**
+     * Construct new taglet.
+     */
     public CompatTaglet() {
         versionUrl = System.getProperty("grouplens.javadoc.versioning.url");
     }
 
+    /**
+     * Register the taglet.
+     * @param tagletMap The taglet map to register in.
+     */
     @SuppressWarnings({"rawtypes", "unchecked", "unused"})
     public static void register(Map tagletMap) {
         Taglet tag = new CompatTaglet();

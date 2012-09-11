@@ -24,16 +24,27 @@ import com.sun.tools.doclets.Taglet;
 import java.util.Map;
 
 /**
+ * Taglet for arbitrary inline elements. This taglet simply wraps its argument
+ * in the HTML tag corresponding to the taglet name.
+ *
  * @author Michael Ekstrand
  */
 public class ExtraInlineTaglet implements Taglet {
 
     private String tagName;
 
+    /**
+     * Register the extra inline taglet.
+     * @param name The tag name.
+     */
     public ExtraInlineTaglet(String name) {
         tagName = name;
     }
 
+    /**
+     * Register the taglet.
+     * @param map The taglet map to register in.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void register(Map map) {
         map.put("var", new ExtraInlineTaglet("var"));
