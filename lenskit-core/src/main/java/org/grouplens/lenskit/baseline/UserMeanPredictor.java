@@ -56,6 +56,12 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         private double smoothing = 0;
         private DataAccessObject dao;
 
+        /**
+         * Create a new user mean predictor.
+         *
+         * @param dao     The DAO.
+         * @param damping The damping term.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -67,7 +73,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
-            logger.debug("smoothing = {}", smoothing);
+            logger.debug("damping = {}", smoothing);
             double mean = GlobalMeanPredictor.computeMeanRating(dao);
             logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
@@ -77,24 +83,18 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final long serialVersionUID = 1L;
 
     private final double globalMean;
-    private final double smoothing;
-
-    @Inject
-    public UserMeanPredictor(@Transient DataAccessObject dao,
-                             @Damping double damping) {
-        this(computeMeanRating(dao), damping);
-    }
+    private final double damping;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
      *
-     * @param globalMean The mean rating value for all items.
-     * @param damping    A damping term for the calculations.
+     * @param mean The global mean rating.
+     * @param damp A damping term for the calculations.
      */
-    public UserMeanPredictor(double globalMean, double damping) {
-        super(globalMean);
-        this.globalMean = globalMean;
-        this.smoothing = damping;
+    public UserMeanPredictor(double mean, double damp) {
+        super(mean);
+        globalMean = mean;
+        damping = damp;
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
@@ -110,9 +110,9 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     @Override
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector output, boolean predictSet) {
-        double mean = average(ratings, globalMean, smoothing);
+        double mean = average(ratings, globalMean, damping);
         //noinspection AssertWithSideEffects
-        assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
+        assert damping != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
         if (predictSet) {
             output.fill(mean);
         } else {
@@ -125,7 +125,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     @Override
     public String toString() {
         String cls = getClass().getSimpleName();
-        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, smoothing);
+        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
     }
 
 }
