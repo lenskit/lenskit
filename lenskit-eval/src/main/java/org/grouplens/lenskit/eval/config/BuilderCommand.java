@@ -32,7 +32,6 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// FIXME Make this apply to methods as well
 @Target({ElementType.TYPE, ElementType.METHOD})
 @SuppressWarnings("rawtypes")
 public @interface BuilderCommand {
