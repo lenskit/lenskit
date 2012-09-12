@@ -14,13 +14,13 @@ a dependency on LensKit:
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-core</artifactId>
-      <version>0.9</version>
+      <version>1.0</version>
     </dependency>
     <dependency>
       <!-- to get the k-NN recommenders -->
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-knn</artifactId>
-      <version>0.9</version>
+      <version>1.0</version>
     </dependency>
 
 ## Installation and Dependency Management
