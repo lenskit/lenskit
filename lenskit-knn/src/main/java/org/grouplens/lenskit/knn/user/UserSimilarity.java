@@ -50,6 +50,10 @@ public interface UserSimilarity {
 
     /**
      * Query whether this similarity is symmetric.
+     * <p>
+     * <b>Warning:</b> At present, asymmetric similarity functions may not produce
+     * correct results. In practice, this is not a problem, as most similarity functions
+     * are symmetric. Watch {@bug 151} for updates on this issue.
      *
      * @return {@code true} if the similarity function is symmetric.
      * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSymmetric()

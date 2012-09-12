@@ -281,6 +281,9 @@
                     <taglet>
                       <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
                     </taglet>
+                    <taglet>
+                      <tagletClass>org.grouplens.javadoc.taglets.TracIssueTaglet</tagletClass>
+                    </taglet>
                   </taglets>
 
                   <footer><![CDATA[
