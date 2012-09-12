@@ -8,17 +8,8 @@
 
 Versioning and API change policy
 
-  Until LensKit reaches version 1.0, APIs are liable to change.
-
-  Once LensKit reaches 1.0, we will be making certain guarantees about
-  the stability of certain interfaces. Component types and interfaces
-  are labelled with their compatibility (using the <<<@compat>>> JavaDoc
-  tag). Since LensKit APIs are intended both to be used and extended or
-  implemented, compatibility also depends on the use case.
-
-  LensKit version numbers have three components, <Major.Minor.Patch>. The
-  versioning is based on {{{http://semver.org}Semantic Versioning}}, adapted
-  for the needs of a framework and toolkit.
+  LensKit strives to maintain a high degree of compatibility, particularly
+  for client code (code using the recommenders).
 
   We define the following use cases:
 
@@ -37,8 +28,12 @@ Versioning and API change policy
 
   []
 
+  LensKit version numbers have three components, <Major.Minor.Patch>. The
+  versioning is based on {{{http://semver.org}Semantic Versioning}}, adapted
+  for the needs of a framework and toolkit.
+
   * For all components, binary- and source-incompatible changes will result in
-    at least a point version increase (1.x). 1.x.y releases, where y>1, will only
+    at least a minor version increase (1.x). 1.x.y releases, where y>1, will only
     be bug fixes.
 
   * Client code may need to update its recommender configurations across minor (1.x)
