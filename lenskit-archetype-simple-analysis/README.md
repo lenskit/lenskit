@@ -40,7 +40,7 @@ Then create the project with:
     mvn archetype:generate \
       -DarchetypeGroupId=org.grouplens.lenskit \
       -DarchetypeArtifactId=lenskit-archetype-simple-analysis \
-      -DarchetypeVersion=1.0-SNAPSHOT \
+      -DarchetypeVersion=1.0 \
       -DgroupId=org.your-org \
       -DartifactId=new-directory-name \
       -Dversion=0.1
