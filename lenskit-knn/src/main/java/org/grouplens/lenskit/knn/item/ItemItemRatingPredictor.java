@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -49,9 +50,10 @@ import javax.inject.Inject;
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected
     @Nullable
-    BaselinePredictor baseline;
+    protected BaselinePredictor baseline;
+    @Nullable
+    protected PreferenceDomain domain;
 
     @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
@@ -60,6 +62,10 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         super(dao, model, summarizer, new WeightedAverageNeighborhoodScorer(), algo);
     }
 
+    /**
+     * Get the predictor's baseline.
+     * @return
+     */
     @Nullable
     public BaselinePredictor getBaseline() {
         return baseline;
@@ -81,6 +87,17 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
     }
 
     /**
+     * Set the preference domain for the rating predictor. If specified,
+     * predictions will be clamped to this domain.
+     *
+     * @param dom The preference domain.
+     */
+    @Inject
+    public void setPreferenceDomain(@Nullable PreferenceDomain dom) {
+        domain = dom;
+    }
+
+    /**
      * Configure a neighborhood scorer. The default scorer is
      * {@link WeightedAverageNeighborhoodScorer}.
      *
@@ -98,11 +115,16 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      */
     @Override
     protected VectorTransformation makeTransform(long user, SparseVector userData) {
+        VectorTransformation tx;
         if (baseline == null) {
-            return normalizer.makeTransformation(user, userData);
+            tx = normalizer.makeTransformation(user, userData);
         } else {
-            return new BaselineAddingTransform(user, userData);
+            tx = new BaselineAddingTransform(user, userData);
         }
+        if (domain != null) {
+            tx = new DomainClampingTransform(tx);
+        }
+        return tx;
     }
 
     /**
@@ -135,6 +157,30 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
             return norm.apply(vector);
+        }
+    }
+
+    /**
+     * Vector transform that, on unapply, clamps the vector to the domain.
+     */
+    protected class DomainClampingTransform implements VectorTransformation {
+        private VectorTransformation baseTransform;
+
+        public DomainClampingTransform(VectorTransformation base) {
+            baseTransform = base;
+        }
+
+        @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            baseTransform.apply(vector);
+            return vector;
+        }
+
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            baseTransform.unapply(vector);
+            domain.clampVector(vector);
+            return vector;
         }
     }
 
