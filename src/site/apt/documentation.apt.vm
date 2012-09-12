@@ -12,6 +12,8 @@ LensKit Documentation
 
     * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted}Getting Started}}
 
+    * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Configuration}Configuring Recommenders}}
+
     * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Evaluator}Using the Evaluator}}
 
     []
