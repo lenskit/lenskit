@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>${groupId}</groupId>
-  <artifactId>${artifactId}</artifactId>
-  <version>${version}</version>
+  <groupId>\${groupId}</groupId>
+  <artifactId>\${artifactId}</artifactId>
+  <version>\${version}</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,7 +17,7 @@
      <dependency>
 	<groupId>org.grouplens.lenskit</groupId>
 	<artifactId>lenskit-core</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>${project.version}</version>
      </dependency>
 
      <!-- The recommender algorithms you would like to use in your
@@ -25,7 +25,7 @@
      <dependency>
 	<groupId>org.grouplens.lenskit</groupId>
 	<artifactId>lenskit-knn</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>${project.version}</version>
      </dependency>
 
     <!-- Even if we're not doing classic "evaluation", the
@@ -34,7 +34,7 @@
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-eval</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Dependencies to software other than LensKit -->
@@ -82,9 +82,9 @@
 	    <configuration>
 	      <target>
 		<property name="project.build.directory"
-			  value="${project.build.directory}"/>
+			  value="\${project.build.directory}"/>
 		<property name="grouplens.mldata.acknowledge"
-			  value="${grouplens.mldata.acknowledge}"/>
+			  value="\${grouplens.mldata.acknowledge}"/>
 		<ant antfile="get-data.xml" target="prepare-100k"/>
 	      </target>
 	    </configuration>
@@ -110,8 +110,8 @@
 	    <configuration>
 	      <executable>java</executable>
 	      <arguments>
-		<argument>-Dscripts.directory=${basedir}</argument>
-		<argument>-Dproject.build.directory=${project.build.directory}</argument>
+		<argument>-Dscripts.directory=\${basedir}</argument>
+		<argument>-Dproject.build.directory=\${project.build.directory}</argument>
 		<argument>-Dlenskit.eval.throwErrors=true</argument>
 		<argument>-classpath</argument>
 		<classpath/>
@@ -130,9 +130,9 @@
 	    </goals>
 	    <configuration>
 	      <executable>Rscript</executable>
-	      <workingDirectory>${basedir}</workingDirectory>
+	      <workingDirectory>\${basedir}</workingDirectory>
 	      <arguments>
-		<argument>${basedir}/chart.R</argument>
+		<argument>\${basedir}/chart.R</argument>
 	      </arguments>
 	    </configuration>
 	  </execution>
@@ -147,7 +147,7 @@
 	<configuration>
 	  <filesets>
 	    <fileset>
-	      <directory>${basedir}</directory>
+	      <directory>\${basedir}</directory>
 	      <includes>
 		<include>ml-100k.test.*.csv</include>
 		<include>ml-100k.train.*.csv</include>
