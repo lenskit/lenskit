@@ -16,7 +16,7 @@ import org.grouplens.lenskit.params.Damping
 import org.grouplens.lenskit.baseline.*
 
 def ml100k = crossfold("ml-100k") {
-   source csvfile("ml-100k/u.data") {
+   source csvfile("data/ml-100k/u.data") {
       delimiter "\t"
       domain {
          minimum 1.0
@@ -24,6 +24,8 @@ def ml100k = crossfold("ml-100k") {
          precision 1.0
       }
    }
+   train "target/ml-100k.%d.train.csv"
+   test "target/ml-100k.%d.test.csv"
    order RandomOrder
    holdout 10
    partitions 5
@@ -33,9 +35,9 @@ trainTest("item-item vs. user-user algorithm") {
    dataset ml100k
    
    // Three different types of output for analysis.
-   output "eval-results.csv"
-   predictOutput "eval-preds.csv"
-   userOutput "eval-user.csv"
+   output "target/eval-results.csv"
+   predictOutput "target/eval-preds.csv"
+   userOutput "target/eval-user.csv"
    
    metric CoveragePredictMetric
    metric RMSEPredictMetric
