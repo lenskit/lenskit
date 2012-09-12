@@ -32,9 +32,8 @@ import com.google.common.util.concurrent.Uninterruptibles;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class ExecHelpers {
-    private ExecHelpers() {
-    }
+public final class ExecHelpers {
+    private ExecHelpers() {}
 
     /**
      * Extract the cause exception for an execution exception if possible.

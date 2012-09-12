@@ -33,7 +33,7 @@ import java.util.ArrayList;
 final class IndexManager {
     // Things are stored as an array list mapping uidx's to maps, which in turn
     // map iidx's to global indices.
-    final private ArrayList<Int2IntMap> mapping;
+    private final ArrayList<Int2IntMap> mapping;
 
     public IndexManager() {
         mapping = new ArrayList<Int2IntMap>();

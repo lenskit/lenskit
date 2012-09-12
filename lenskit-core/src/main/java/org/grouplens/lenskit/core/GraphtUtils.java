@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Michael Ekstrand
  * @since 0.11
  */
-class GraphtUtils {
+final class GraphtUtils {
     private GraphtUtils() {
     }
 
@@ -168,7 +168,7 @@ class GraphtUtils {
     }
 
     private static class EdgeTail implements Function<Edge, Node> {
-        public static EdgeTail instance = new EdgeTail();
+        public static final EdgeTail instance = new EdgeTail();
 
         @Override
         public Node apply(@Nullable Edge input) {

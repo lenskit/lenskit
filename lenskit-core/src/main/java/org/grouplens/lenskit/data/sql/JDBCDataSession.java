@@ -125,6 +125,7 @@ public class JDBCDataSession implements Closeable {
 
     /**
      * Close the connection and all open statements.
+     * @throws IOException if there is an error shutting down the database resources.
      */
     @Override
     public void close() throws IOException {

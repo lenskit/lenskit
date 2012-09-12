@@ -34,6 +34,11 @@ public final class IndexedPreferenceBuilder implements Builder<IndexedPreference
     private int itemIndex;
     private double value;
 
+    /**
+     * Create a new preference builder initialized as a copy of a preference.
+     * @param pref The preference to copy.
+     * @return A new builder initialized with a copy of {@var pref}'s data.
+     */
     public static IndexedPreferenceBuilder copy(IndexedPreference pref) {
         return new IndexedPreferenceBuilder()
                 .setIndex(pref.getIndex())
@@ -44,36 +49,70 @@ public final class IndexedPreferenceBuilder implements Builder<IndexedPreference
                 .setValue(pref.getValue());
     }
 
+    /**
+     * Set the preference's index.
+     * @param i The index.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setIndex(int i) {
         index = i;
         return this;
     }
 
+    /**
+     * Set the preference's user ID.
+     * @param u The user ID.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setUserId(long u) {
         user = u;
         return this;
     }
 
+    /**
+     * Set the preference's user index.
+     * @param uidx The user index.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setUserIndex(int uidx) {
         userIndex = uidx;
         return this;
     }
 
+    /**
+     * Set the preference's item ID.
+     * @param i The item ID.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setItemId(long i) {
         item = i;
         return this;
     }
 
+    /**
+     * Set the preference's item index.
+     * @param iidx The item index.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setItemIndex(int iidx) {
         itemIndex = iidx;
         return this;
     }
 
+    /**
+     * Set the preference's value.
+     * @param v The preference value.
+     * @return The preference builder (for chaining).
+     */
     public IndexedPreferenceBuilder setValue(double v) {
         value = v;
         return this;
     }
 
+    /**
+     * Build the indexed preference.
+     * @return The newly-constructed indexed preference.
+     */
     public IndexedPreference build() {
         return new SimpleIndexedPreference(user, item, value,
                                            index, userIndex, itemIndex);
