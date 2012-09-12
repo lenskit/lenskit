@@ -108,7 +108,6 @@ m2e settings only. It has no influence on the Maven build itself. -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-	    <version>1.5</version>
             <executions>
               <execution>
                 <id>fetch-mldata</id>
