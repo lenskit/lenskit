@@ -747,6 +747,9 @@
                 <include>*/src/**/*.java</include>
                 <include>*/src/**/*.groovy</include>
               </includes>
+              <excludes>
+                <exclude>lenskit-archetype*/src/**</exclude>
+              </excludes>
               <mapping>
                 <java>SLASHSTAR_STYLE</java>
                 <groovy>SLASHSTAR_STYLE</groovy>
