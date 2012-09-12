@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.sonatype.oss</groupId>
@@ -9,7 +7,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -33,7 +31,7 @@
     <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
     <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
     <url>https://bitbucket.org/grouplens/lenskit</url>
-    <tag>HEAD</tag>
+    <tag>release-1.0</tag>
   </scm>
 
   <properties>
@@ -672,7 +670,7 @@
                 <id>default-compile</id>
                 <configuration>
                   <compilerArguments>
-                    <Xlint/>
+                    <Xlint />
                   </compilerArguments>
                 </configuration>
               </execution>

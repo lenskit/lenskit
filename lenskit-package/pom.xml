@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-package</artifactId>
@@ -120,17 +118,14 @@
               <target>
                 <chmod perm="a+x">
                   <fileset dir="${project.build.directory}/dist/lenskit">
-                    <include name="bin/*"/>
+                    <include name="bin/*" />
                   </fileset>
                 </chmod>
-                <tar destfile="${project.build.directory}/site/lenskit-${project.version}.tar.gz"
-                     compression="gzip">
-                  <tarfileset dir="${project.build.directory}/dist/lenskit"
-                              prefix="lenskit-${project.version}/"/>
+                <tar destfile="${project.build.directory}/site/lenskit-${project.version}.tar.gz" compression="gzip">
+                  <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                 </tar>
                 <zip destfile="${project.build.directory}/site/lenskit-${project.version}.zip">
-                  <zipfileset dir="${project.build.directory}/dist/lenskit"
-                              prefix="lenskit-${project.version}/"/>
+                  <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                 </zip>
               </target>
             </configuration>
