@@ -54,6 +54,8 @@ LensKit Release Notes
 
    * Added the <<<dumpGraph>>> command to dump recommender configurations to GraphViz.
 
+   * Added new archetype to aid in creating evaluation projects.
+
    []
 
 ** Cleanup
