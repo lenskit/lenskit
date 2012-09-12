@@ -8,17 +8,19 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.data.directory>\${project.basedir}/data</project.data.directory>
+
+    <!-- The version of LensKit for your project -->
+    <!-- Note that we use project.version to pick up the version from
+	 the source tree this archetype is being built from. -->
+    <lenskit.version>${project.version}</lenskit.version>
   </properties>
 
   <dependencies>
 
-     <!-- A version of LensKit for your project -->
-     <!-- Note that we use project.version to pick up the version from
-	  the source tree this archetype is being built from. -->
      <dependency>
 	<groupId>org.grouplens.lenskit</groupId>
 	<artifactId>lenskit-core</artifactId>
-	<version>${project.version}</version>
+	<version>\${lenskit.version}</version>
      </dependency>
 
      <!-- The recommender algorithms you would like to use in your
@@ -26,7 +28,7 @@
      <dependency>
 	<groupId>org.grouplens.lenskit</groupId>
 	<artifactId>lenskit-knn</artifactId>
-	<version>${project.version}</version>
+	<version>\${lenskit.version}</version>
      </dependency>
 
     <!-- Even if we're not doing classic "evaluation", the
@@ -35,7 +37,7 @@
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-eval</artifactId>
-      <version>${project.version}</version>
+      <version>\${lenskit.version}</version>
     </dependency>
 
     <!-- Dependencies to software other than LensKit -->
