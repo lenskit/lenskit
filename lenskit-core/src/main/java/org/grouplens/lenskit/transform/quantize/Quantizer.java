@@ -23,7 +23,6 @@ package org.grouplens.lenskit.transform.quantize;
  * ratings or predictions to discrete rating values.
  *
  * @author Michael Ekstrand
- * @review Is this the right package for this interface?
  */
 public interface Quantizer {
     /**

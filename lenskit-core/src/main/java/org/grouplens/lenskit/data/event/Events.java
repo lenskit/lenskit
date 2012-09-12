@@ -29,15 +29,14 @@ import com.google.common.primitives.Longs;
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class Events {
-    private Events() {
-    }
+public final class Events {
+    private Events() {}
 
     /**
      * Integer to generate sequential IDs for fresh events.  Used mostly in
      * test cases.
      */
-    static AtomicLong nextEventId = new AtomicLong();
+    static final AtomicLong nextEventId = new AtomicLong();
 
     /**
      * Compare two events by timestamp.

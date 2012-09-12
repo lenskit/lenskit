@@ -166,7 +166,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         }
     }
 
-    private Collection<? extends Event> ratings;
+    private Collection<? extends Event> events;
     private Set<Class<? extends Event>> types;
     private Long2ObjectMap<UserHistory<Event>> users;
     private Long2ObjectMap<ArrayList<Event>> items;
@@ -174,14 +174,14 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
     /**
      * Construct a new data source from a collection of events.
      *
-     * @param events The events to use.
+     * @param evts The events to use.
      */
-    public EventCollectionDAO(Collection<? extends Event> events) {
-        logger.debug("Creating event collection DAO for {} events", events.size());
-        this.ratings = events;
+    public EventCollectionDAO(Collection<? extends Event> evts) {
+        logger.debug("Creating event collection DAO for {} events", evts.size());
+        events = evts;
 
         // Scan for the types in the data source. Since this scans
-        types = TypeUtils.findTypes(fast(events), Event.class);
+        types = TypeUtils.findTypes(fast(evts), Event.class);
     }
 
     private synchronized void requireUserCache() {
@@ -189,11 +189,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
             logger.debug("Caching user histories");
             Long2ObjectMap<ArrayList<Event>> ratingCs =
                     new Long2ObjectOpenHashMap<ArrayList<Event>>();
-            for (Event r : ratings) {
+            for (Event r : events) {
                 final long uid = r.getUserId();
                 ArrayList<Event> userRatings = ratingCs.get(uid);
                 if (userRatings == null) {
-                    userRatings = new ArrayList<Event>(20);
+                    userRatings = new ArrayList<Event>();
                     ratingCs.put(uid, userRatings);
                 }
                 userRatings.add(r);
@@ -211,11 +211,11 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
         if (items == null) {
             logger.debug("Caching item event collections");
             items = new Long2ObjectOpenHashMap<ArrayList<Event>>();
-            for (Event r : ratings) {
+            for (Event r : events) {
                 final long iid = r.getItemId();
                 ArrayList<Event> itemRatings = items.get(iid);
                 if (itemRatings == null) {
-                    itemRatings = new ArrayList<Event>(20);
+                    itemRatings = new ArrayList<Event>();
                     items.put(iid, itemRatings);
                 }
                 itemRatings.add(r);
@@ -268,20 +268,28 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Event> Cursor<UserHistory<E>> getUserHistories(final Class<E> type) {
-        Function<UserHistory<Event>, UserHistory<E>> function;
-        function = new Function<UserHistory<Event>, UserHistory<E>>() {
-            @Override
-            public UserHistory<E> apply(UserHistory<Event> input) {
-                List<E> events;
-                if (containsType(type)) {
-                    events = Lists.newArrayList(filter(input, type));
-                } else {
-                    events = Collections.emptyList();
+        if (containsType(type)) {
+            Function<UserHistory<Event>, UserHistory<E>> function;
+            function = new Function<UserHistory<Event>, UserHistory<E>>() {
+                @Override
+                public UserHistory<E> apply(UserHistory<Event> input) {
+                    List<E> filtered = Lists.newArrayList(filter(input, type));
+                    return new BasicUserHistory<E>(input.getUserId(), filtered);
                 }
-                return new BasicUserHistory<E>(input.getUserId(), events);
-            }
-        };
-        return Cursors.transform(getUserHistories(), function);
+            };
+            return Cursors.transform(getUserHistories(), function);
+        } else {
+            /* don't bother with histories */
+            Function<Long, UserHistory<E>> function;
+            function = new Function<Long, UserHistory<E>>() {
+                @Override
+                public UserHistory<E> apply(Long uid) {
+                    assert uid != null;
+                    return new BasicUserHistory<E>(uid, Collections.<E>emptyList());
+                }
+            };
+            return Cursors.transform(getUsers(), function);
+        }
     }
 
     @Override
@@ -302,7 +310,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public Cursor<Event> getEvents() {
-        return Cursors.wrap(ratings);
+        return Cursors.wrap(events);
     }
 
     @Override

@@ -18,15 +18,12 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Cosine similarity for vectors.
