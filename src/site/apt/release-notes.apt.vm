@@ -8,7 +8,7 @@
 
 LensKit Release Notes
 
-* Release 1.0-SNAPSHOT
+* Release 1.0
 
   The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
   {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=1.0}list
@@ -41,6 +41,8 @@ LensKit Release Notes
      <<<NormalizingSimilarityMatrixAccumulatorFactory>>>.
 
    * Move vector similarity code into <<<o.g.l.vectors.similarity>>>.
+
+   * Made item-item clamp predictions to the preference domain, if it is available.
 
    []
 
