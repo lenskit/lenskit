@@ -1,0 +1,168 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>${groupId}</groupId>
+  <artifactId>${artifactId}</artifactId>
+  <version>${version}</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+
+     <!-- A version of LensKit for your project -->
+     <!-- Note that we use project.version to pick up the version from
+	  the source tree this archetype is being built from. -->
+     <dependency>
+	<groupId>org.grouplens.lenskit</groupId>
+	<artifactId>lenskit-core</artifactId>
+	<version>1.0-SNAPSHOT</version>
+     </dependency>
+
+     <!-- The recommender algorithms you would like to use in your
+     project -->
+     <dependency>
+	<groupId>org.grouplens.lenskit</groupId>
+	<artifactId>lenskit-knn</artifactId>
+	<version>1.0-SNAPSHOT</version>
+     </dependency>
+
+    <!-- Even if we're not doing classic "evaluation", the
+    lenskit-eval package includes some important stuff, including the
+    EvalCLI class that we use to run our Groovy code.  -->
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-eval</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+    <!-- Dependencies to software other than LensKit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>runtime</scope>
+      <version>1.0.6</version>
+    </dependency>
+
+  </dependencies>
+
+  <!-- Now we specify the build that will actually execute to make
+       our project do something cool.  The build is a collection of
+       plugins that we execute to do the work.  Note that we run the
+       evaluations at the integration-phase of Maven.  That's because
+       this phase seems most appropriate in the default life-cycle of
+       a Maven project: everything is compiled and prepared for
+       execution, but we don't really need to deploy our project like
+       we would in a web site.  -->
+
+  <build>
+    <plugins>
+
+      <!-- This plugin fetches the ml-100k dataset we need for these
+	   evaluations. -->
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-antrun-plugin</artifactId>
+	<version>1.5</version>
+	<executions>
+	  <execution>
+	    <id>fetch-mldata</id>
+	    <phase>pre-integration-test</phase>
+	    <goals>
+	      <goal>run</goal>
+	    </goals>
+	    <configuration>
+	      <target>
+		<property name="project.build.directory"
+			  value="${project.build.directory}"/>
+		<property name="grouplens.mldata.acknowledge"
+			  value="${grouplens.mldata.acknowledge}"/>
+		<ant antfile="get-data.xml" target="prepare-100k"/>
+	      </target>
+	    </configuration>
+	  </execution>
+	</executions>
+      </plugin>
+
+      <!-- This plugin executes our Groovy script that actually
+	   runs the evaluations we have planned.  The second execution
+           of the same plugin runs the R data analysis to produce the
+           graphs from our runs.-->
+      <plugin>
+	<artifactId>exec-maven-plugin</artifactId>
+	<groupId>org.codehaus.mojo</groupId>
+	<version>1.2.1</version>
+	<executions>
+	  <execution>
+	    <id>run-eval</id>
+	    <phase>integration-test</phase>
+	    <goals>
+	      <goal>exec</goal>
+	    </goals>
+	    <configuration>
+	      <executable>java</executable>
+	      <arguments>
+		<argument>-Dscripts.directory=${basedir}</argument>
+		<argument>-Dproject.build.directory=${project.build.directory}</argument>
+		<argument>-Dlenskit.eval.throwErrors=true</argument>
+		<argument>-classpath</argument>
+		<classpath/>
+		<argument>org.grouplens.lenskit.eval.cli.EvalCLI</argument>
+		<argument>-f</argument>
+		<argument>eval-simple.groovy</argument>
+	      </arguments>
+	    </configuration>
+	  </execution>
+
+	  <execution>
+	    <id>analyze-eval</id>
+	    <phase>post-integration-test</phase>
+	    <goals>
+	      <goal>exec</goal>
+	    </goals>
+	    <configuration>
+	      <executable>Rscript</executable>
+	      <workingDirectory>${basedir}</workingDirectory>
+	      <arguments>
+		<argument>${basedir}/chart.R</argument>
+	      </arguments>
+	    </configuration>
+	  </execution>
+
+	</executions>
+      </plugin>
+
+      <!-- This plugin cleans out files that are no longer needed. -->
+      <plugin>
+	<artifactId>maven-clean-plugin</artifactId>
+	<version>2.5</version>
+	<configuration>
+	  <filesets>
+	    <fileset>
+	      <directory>${basedir}</directory>
+	      <includes>
+		<include>ml-100k.test.*.csv</include>
+		<include>ml-100k.train.*.csv</include>
+		<include>ml-100k/</include>
+		<include>eval-*.csv</include>
+		<include>ml-100k.zip</include>
+		<include>speed.pdf</include>
+		<include>accuracy.pdf</include>
+	      </includes>
+	    </fileset>
+	  </filesets>
+	</configuration>
+      </plugin>
+      
+    </plugins>
+  </build>
+</project>
+
