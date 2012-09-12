@@ -20,11 +20,11 @@ are:
 If you are working from the source tree, you can build the archetype
 and install it into your local deployment with:
 
-    maven install
+    mvn install
 
 If you run the command from the top-level of the source tree it will
 install all of LensKit, including this archetype.  If for some reason
-you only need the archetype, it is much faster to run `maven install`
+you only need the archetype, it is much faster to run `mvn install`
 from the archetype subdirectory.
 
 

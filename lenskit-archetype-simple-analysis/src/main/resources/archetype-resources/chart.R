@@ -29,10 +29,10 @@ chart.test <- ggplot(all.data, aes(Algorithm, TestTime / 1000)) +
 
 print("Outputting to accuracy.pdf")
 pdf("accuracy.pdf", paper="letter", width=0, height=0)
-error.layout <- grid.layout(nrow=3, heights=unit(0.333, "npc"))
+error.layout <- grid.layout(nrow=2, heights=unit(0.5, "npc"))
 pushViewport(viewport(layout=error.layout, layout.pos.col=1))
-print(chart.rmse, vp=viewport(layout.pos.row=2))
-print(chart.ndcg, vp=viewport(layout.pos.row=3))
+print(chart.rmse, vp=viewport(layout.pos.row=1))
+print(chart.ndcg, vp=viewport(layout.pos.row=2))
 popViewport()
 dev.off()
 
