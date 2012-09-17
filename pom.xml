@@ -67,6 +67,7 @@
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
