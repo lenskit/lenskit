@@ -24,6 +24,8 @@ def ml100k = crossfold("ml-100k") {
          precision 1.0
       }
    }
+   train "split/ml-100k.%d.train.dat"
+   test "split/ml-100k.%d.test.dat"
    order RandomOrder
    holdout 10
    partitions 5
