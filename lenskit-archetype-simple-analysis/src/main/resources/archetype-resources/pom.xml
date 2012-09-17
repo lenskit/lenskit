@@ -7,7 +7,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.data.directory>\${project.basedir}/data</project.data.directory>
 
     <!-- The version of LensKit for your project -->
     <!-- Note that we use project.version to pick up the version from
@@ -86,8 +85,6 @@
 	      <target>
 		<property name="project.build.directory"
 			  value="\${project.build.directory}"/>
-		<property name="project.data.directory"
-			  value="\${project.data.directory}"/>
 		<property name="grouplens.mldata.acknowledge"
 			  value="\${grouplens.mldata.acknowledge}"/>
 		<ant antfile="get-data.xml" target="prepare-100k"/>
@@ -117,7 +114,6 @@
 	      <arguments>
 		<argument>-Dscripts.directory=\${basedir}</argument>
 		<argument>-Dproject.build.directory=\${project.build.directory}</argument>
-                <argument>-Dproject.data.directory=\${project.data.directory}</argument>
 		<argument>-Dlenskit.eval.throwErrors=true</argument>
 		<argument>-classpath</argument>
 		<classpath/>
@@ -136,7 +132,7 @@
 	    </goals>
 	    <configuration>
 	      <executable>Rscript</executable>
-	      <workingDirectory>\${project.build.directory}</workingDirectory>
+	      <workingDirectory>\${basedir}</workingDirectory>
 	      <arguments>
 		<argument>\${basedir}/chart.R</argument>
 	      </arguments>
