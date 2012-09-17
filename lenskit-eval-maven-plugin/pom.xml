@@ -1,20 +1,25 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
     <artifactId>lenskit</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
+
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-eval-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>LensKit Evaluation Maven Plugin</name>
+
   <dependencies>
     <dependency>
+      <!-- REVIEW Is this the right version for this dependency? -->
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>2.2.1</version>
+      <version>3.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
@@ -23,25 +28,26 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>org.apache.maven</groupId>
-    	<artifactId>maven-project</artifactId>
-    	<version>2.2.1</version>
-    	<type>jar</type>
-    	<scope>provided</scope>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.2.1</version>
+      <type>jar</type>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-    	<groupId>org.apache.maven.shared</groupId>
-    	<artifactId>file-management</artifactId>
-    	<version>1.2.1</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
+      <!-- TODO Delete this dependency when the eval plugin is fully updated. -->
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>file-management</artifactId>
+      <version>1.2.1</version>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-    	<groupId>org.grouplens.common</groupId>
-    	<artifactId>slf4j-maven-shim</artifactId>
-    	<version>0.2-SNAPSHOT</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
+      <groupId>org.grouplens.common</groupId>
+      <artifactId>slf4j-maven-shim</artifactId>
+      <version>0.2-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 
@@ -67,5 +73,5 @@
     <dependencies>
     </dependencies>
   </dependencyManagement>
-        
+
 </project>
