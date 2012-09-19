@@ -1,18 +1,38 @@
 <?xml version="1.0"?>
 <component-set>
   <components>
-    <!-- Define a custom lifecycle for LensKit evaluation projects -->
+    <!-- Define a custom lifecycle for LensKit evaluation projects. --
+         This happens in two parts: (1) we define the lifecycle
+	 mapping which names the lifecycle ("lenskit").  This name
+	 must then be used in the packaging tag in the pom of anyone
+	 who wants to use it.  (2) we define the phases of the
+	 lifecycle, and the default actions to be run in those phases.
+	 -->
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>lenskit</role-hint>
+      <implementation>
+	org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping
+      </implementation>
+    </component>
     <component>
       <role>org.apache.maven.lifecycle.Lifecycle</role>
       <implementation>org.apache.maven.lifecycle.Lifecycle</implementation>
-      <role-hint>lenskit-eval</role-hint>
+      <role-hint>lenskit</role-hint>
       <configuration>
         <id>lenskit-eval</id>
         <phases>
-          <phase>lk-pre-eval</phase>
-          <phase>lk-eval</phase>
-          <phase>lk-post-eval</phase>
+          <phase>lenskit-pre-eval</phase>
+          <phase>lenskit-eval</phase>
+          <phase>lenskit-post-eval</phase>
+	  <phase>lenskit-analyze</phase>
         </phases>
+	<default-phases>
+	  <lenskit-pre-eval></lenskit-pre-eval>
+	  <lenskit-eval>org.lenskit.grouplens:lenskit-eval-maven-plugin:eval</eval>
+	  <lenskit-post-eval></lenskit-post-eval>
+	  <lenskit-analyze></analyze>
+	</default-phases>
       </configuration>
     </component>
   </components>
