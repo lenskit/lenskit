@@ -71,9 +71,13 @@ def UserUser = algorithm("UserUser") {
     bind RatingPredictor to UserUserRatingPredictor
     bind VectorNormalizer to MeanVarianceNormalizer
     bind BaselinePredictor to ItemUserMeanPredictor
-    within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
+    within(BaselineSubtractingUserVectorNormalizer) {
+        bind BaselinePredictor to UserMeanPredictor
+    }
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-    within UserSimilarity set Damping to 100.0d
+    within(UserSimilarity) {
+        set Damping to 100.0d
+    }
     set NeighborhoodSize to 30
 }
 
@@ -81,7 +85,9 @@ def ItemItem = algorithm("ItemItem") {
     bind RatingPredictor to ItemItemRatingPredictor
     bind BaselinePredictor to ItemUserMeanPredictor
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-    within ItemSimilarity set Damping to 100.0d
+    within(ItemSimilarity) {
+        set Damping to 100.0d
+    }
     set NeighborhoodSize to 30
 }
 
@@ -109,11 +115,15 @@ def SlopeOne = algorithm("SlopeOne") {
 }
 
 def WeightedSlopeOne = algorithm("WeightedSlopeOne") {
-    within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to GlobalMeanPredictor
+    within(BaselineSubtractingUserVectorNormalizer) {
+        bind BaselinePredictor to GlobalMeanPredictor
+    }
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
     bind RatingPredictor to WeightedSlopeOneRatingPredictor
     bind BaselinePredictor to ItemUserMeanPredictor
-    within SlopeOneModel set Damping to 0
+    within(SlopeOneModel) {
+        set Damping to 0
+    }
 }
 
 def algorithms = []
