@@ -20,8 +20,14 @@ LensKit Release Notes
   #header(1.1)
 
   * Made <<<Recommender>>> extend <<<Closeable>>>.
-
+  
   []
+
+* Release 1.0.1
+  
+  This release contains bug fixes against 1.0.1.
+  
+  #header(1.0.1)
 
 * Release 1.0
 
