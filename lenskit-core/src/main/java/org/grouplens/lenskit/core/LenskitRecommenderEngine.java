@@ -25,6 +25,7 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
+import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -77,7 +78,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         this.factory = factory;
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
         try {
-            spi = (InjectSPI) in.readObject();
+            spi = new ReflectionInjectSPI();
             dependencies = (Graph) in.readObject();
             rootNode = dependencies.getNode(null);
             daoPlaceholder = GraphtUtils.findDAONode(dependencies);
@@ -99,7 +100,6 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public void write(@Nonnull File file) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
         try {
-            out.writeObject(spi);
             out.writeObject(dependencies);
         } finally {
             out.close();

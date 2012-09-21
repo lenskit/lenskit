@@ -33,6 +33,8 @@ import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
@@ -43,24 +45,32 @@ import static org.junit.Assert.assertThat;
  */
 public class LenskitRecommenderEngineTest {
     private LenskitRecommenderEngineFactory factory;
+    private DAOFactory daoFactory;
 
     @Before
     public void setup() {
-        DAOFactory dao = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
-        factory = new LenskitRecommenderEngineFactory(dao);
+        daoFactory = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
+        factory = new LenskitRecommenderEngineFactory(daoFactory);
     }
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
+        configureBasicRecommender();
+
+        LenskitRecommenderEngine engine = factory.create();
+        verifyBasicRecommender(engine);
+    }
+
+    private void configureBasicRecommender() {
         factory.bind(RatingPredictor.class)
                .to(BaselineRatingPredictor.class);
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(BaselinePredictor.class)
                .to(ConstantPredictor.class);
+    }
 
-        LenskitRecommenderEngine engine = factory.create();
-        LenskitRecommender rec = engine.open();
+    private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.getItemRecommender(),
                        instanceOf(ScoreBasedItemRecommender.class));
@@ -132,5 +142,20 @@ public class LenskitRecommenderEngineTest {
         assertThat(stop, notNullValue());
         assertThat(stop.getThreshold(),
                    closeTo(0.01, 1.0e-6));
+    }
+
+    @Test
+    public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        configureBasicRecommender();
+
+        LenskitRecommenderEngine engine = factory.create();
+        File tfile = File.createTempFile("lenskit", "engine");
+        try {
+            engine.write(tfile);
+            LenskitRecommenderEngine e2 = new LenskitRecommenderEngine(daoFactory, tfile);
+            verifyBasicRecommender(e2);
+        } finally {
+            tfile.delete();
+        }
     }
 }
