@@ -6,7 +6,22 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+#macro ( header $ver )##
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=$ver}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+#end
+
 LensKit Release Notes
+
+* Release 1.1
+
+  #header(1.1)
+
+  * Made <<<Recommender>>> extend <<<Closeable>>>.
+
+  []
 
 * Release 1.0
 
