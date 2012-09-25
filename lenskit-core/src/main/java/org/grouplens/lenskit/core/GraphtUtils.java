@@ -21,20 +21,21 @@ package org.grouplens.lenskit.core;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.spi.Attributes;
-import org.grouplens.grapht.spi.CachePolicy;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.Desire;
+import org.grouplens.grapht.spi.*;
+import org.grouplens.grapht.spi.reflect.ReflectionDesire;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,6 +53,30 @@ final class GraphtUtils {
         return label != null &&
                 DataAccessObject.class.isAssignableFrom(
                         label.getSatisfaction().getErasedType());
+    }
+
+    public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
+        // replace it with a null satisfaction
+        final CachedSatisfaction daoLbl = node.getLabel();
+        assert daoLbl != null;
+        final Satisfaction oldSat = daoLbl.getSatisfaction();
+        final Class<?> type = oldSat.getErasedType();
+        final Satisfaction sat = spi.satisfyWithNull(type);
+        final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
+        graph.replaceNode(node, placeholder);
+
+        // replace desires on edges
+        for (Edge e: graph.getIncomingEdges(placeholder)) {
+            Desire d = e.getDesire();
+            List<Desire> lbl = null;
+            if (d != null) {
+                lbl = Collections.singletonList(d);
+            }
+            Edge e2 = new Edge(e.getHead(), e.getTail(), lbl);
+            graph.replaceEdge(e, e2);
+        }
+
+        return placeholder;
     }
 
     /**

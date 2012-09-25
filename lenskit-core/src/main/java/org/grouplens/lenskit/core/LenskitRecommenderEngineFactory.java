@@ -205,13 +205,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         Node daoNode = GraphtUtils.findDAONode(modified);
         Node daoPlaceholder = null;
         if (daoNode != null) {
-            // replace it with a null satisfaction
-            CachedSatisfaction daoLbl = daoNode.getLabel();
-            assert daoLbl != null;
-            Class<?> type = daoLbl.getSatisfaction().getErasedType();
-            Satisfaction sat = config.getSPI().satisfyWithNull(type);
-            daoPlaceholder = new Node(sat, CachePolicy.MEMOIZE);
-            modified.replaceNode(daoNode, daoPlaceholder);
+            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(config.getSPI(),
+                                                                    modified, daoNode);
         }
 
         return new LenskitRecommenderEngine(factory, modified, daoPlaceholder,
