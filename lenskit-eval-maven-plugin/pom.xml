@@ -1,85 +1,100 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.grouplens.lenskit</groupId>
-    <artifactId>lenskit</artifactId>
-    <version>1.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
-  </parent>
-
-  <groupId>org.grouplens.lenskit</groupId>
-  <artifactId>lenskit-eval-maven-plugin</artifactId>
-  <packaging>maven-plugin</packaging>
-  <name>LensKit Evaluation Maven Plugin</name>
-
-  <dependencies>
-    <dependency>
-      <!-- REVIEW Is this the right version for this dependency? 
-	   JTR: it's the latest; why wouldn't it be right?-->
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>3.0.4</version>
-    </dependency>
-    <dependency>
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
       <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-eval</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.2.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!-- TODO Delete this dependency when the eval plugin is fully
-    updated. 
-	   JTR: What is this used for?  It seems to be a way to create
-    filesets in maven poms, somewhat like ant filesets. -->
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>file-management</artifactId>
-      <version>1.2.1</version>
-      <scope>compile</scope>
-    </dependency>
-    <!-- TODO: this is the potentially problematic dependency, because 
-         it depends on the deprecated shim.  Need to figure out how we 
-         want logging to happen from the script. 
-    <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>slf4j-maven-shim</artifactId>
-      <version>0.7-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>  -->
-  </dependencies>
+      <artifactId>lenskit</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <relativePath>..</relativePath>
+   </parent>
 
-  <!-- The configuration of the reportPlugins with
-       combine.children="append" is a hack to work around a bug in
-       maven 3.0 inheritance of maven-site-plugin configuration from
-       the parent.  We should check whether this is still needed. -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <reportPlugins combine.children="append">
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-plugin-plugin</artifactId>
-              <version>2.7</version>
-            </plugin>
-          </reportPlugins>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+   <groupId>org.grouplens.lenskit</groupId>
+   <artifactId>lenskit-eval-maven-plugin</artifactId>
+   <packaging>maven-plugin</packaging>
+   <name>LensKit Evaluation Maven Plugin</name>
 
-  <dependencyManagement>
-    <dependencies>
-    </dependencies>
-  </dependencyManagement>
+   <dependencies>
+      <dependency>
+	 <!-- REVIEW Is this the right version for this dependency? 
+	      JTR: it's the latest; why wouldn't it be right?-->
+	 <groupId>org.apache.maven</groupId>
+	 <artifactId>maven-plugin-api</artifactId>
+	 <version>3.0.4</version>
+      </dependency>
+      <dependency>
+	 <groupId>org.grouplens.lenskit</groupId>
+	 <artifactId>lenskit-core</artifactId>
+	 <version>${project.version}</version>
+      </dependency>
+      <dependency>
+	 <groupId>org.grouplens.lenskit</groupId>
+	 <artifactId>lenskit-eval</artifactId>
+	 <version>${project.version}</version>
+	 <scope>compile</scope>
+      </dependency>
+      <dependency>
+	 <groupId>org.apache.maven</groupId>
+	 <artifactId>maven-project</artifactId>
+	 <version>2.2.1</version>
+	 <scope>provided</scope>
+      </dependency>
+      <dependency>
+	 <!-- TODO Delete this dependency when the eval plugin is fully
+	      updated. 
+	      JTR: What is this used for?  It seems to be a way to create
+	      filesets in maven poms, somewhat like ant filesets. 
+	      The fileset dependency was used in the original version of
+	      the plugin, to enable users to specify filesets rather than just a
+	      list of names of scripts.  I've taken it out for now, but will
+	      leave the dependency here in case we want it later. -->
+	 <groupId>org.apache.maven.shared</groupId>
+	 <artifactId>file-management</artifactId>
+	 <version>1.2.1</version>
+	 <scope>compile</scope>
+      </dependency>
+      <dependency>
+	 <groupId>ch.qos.logback</groupId>
+	 <artifactId>logback-classic</artifactId>
+	 <scope>runtime</scope>
+	 <version>1.0.6</version>
+      </dependency>
+      <!-- TODO: this is the potentially problematic dependency, because 
+	   it depends on the deprecated shim.  Need to figure out how we 
+	   want logging to happen from the script. 
+	   <dependency>
+	      <groupId>org.grouplens.common</groupId>
+	      <artifactId>slf4j-maven-shim</artifactId>
+	      <version>0.7-SNAPSHOT</version>
+	      <scope>compile</scope>
+	   </dependency>  -->
+   </dependencies>
+
+   <!-- The configuration of the reportPlugins with
+	combine.children="append" is a hack to work around a bug in
+	maven 3.0 inheritance of maven-site-plugin configuration from
+	the parent.  We should check whether this is still needed. -->
+   <build>
+      <plugins>
+	 <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-site-plugin</artifactId>
+	    <configuration>
+	       <reportPlugins combine.children="append">
+		  <plugin>
+		     <groupId>org.apache.maven.plugins</groupId>
+		     <artifactId>maven-plugin-plugin</artifactId>
+		     <version>2.7</version>
+		  </plugin>
+	       </reportPlugins>
+	    </configuration>
+	 </plugin>
+      </plugins>
+   </build>
+
+   <dependencyManagement>
+      <dependencies>
+      </dependencies>
+   </dependencyManagement>
 
 </project>

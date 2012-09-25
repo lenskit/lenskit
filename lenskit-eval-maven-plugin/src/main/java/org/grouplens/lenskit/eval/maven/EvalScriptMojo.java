@@ -53,7 +53,7 @@ import com.google.common.primitives.Longs;
  * Do a train-test evaluation of a set of algorithms.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
- * @goal train-test
+ * @goal run-eval
  * @requiresDependencyResolution runtime
  */
 public class EvalScriptMojo extends AbstractMojo {
@@ -74,10 +74,15 @@ public class EvalScriptMojo extends AbstractMojo {
     
     /**
      * Set of recommender scripts.
-     * @parameter expression="${lenskit.recommenderScripts}"
-     * @required
+     * @parameter default="eval"
      */
-    private FileSet recommenderScripts;
+   private String scriptDirectory;
+
+    /**
+     * Set of recommender scripts.
+     * @parameter default="{eval.groovy}"
+     */
+   private String[] scripts;
     
     /**
      * The number of evaluation threads to run.
@@ -87,6 +92,8 @@ public class EvalScriptMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         getLog().info("Running with thread count " + threadCount);
+        getLog().info("The scripts are " + scripts.toString());
+        getLog().info("The scripts directory is " + scriptDirectory);
 
         // Before we can run, we get a new class loader that is a copy
         // of our class loader, with the build directory added to it.
@@ -95,24 +102,21 @@ public class EvalScriptMojo extends AbstractMojo {
         URL buildUrl;
         try {
             buildUrl = buildDirectory.toURI().toURL();
+	    getLog().info("build directory " + buildUrl.toString());
         } catch (MalformedURLException e1) {
             throw new MojoExecutionException("Cannot build URL for build directory");
         }
         ClassLoader loader = new URLClassLoader(new URL[]{buildUrl},
 						getClass().getClassLoader());
         EvalConfigEngine engine = new EvalConfigEngine(loader);
-	FileSetManager fsmgr = new FileSetManager();
 
         try {
-	   if (recommenderScripts != null) {
-	      getLog().debug("Loading multiple evaluation scripts");
-	      String[] scriptNames = fsmgr.getIncludedFiles(recommenderScripts);
-	      File dir = new File(recommenderScripts.getDirectory());
-	      for (String name: scriptNames) {
+	   File dir = new File(scriptDirectory);
+
+	   for (String name: scripts) {
 		 File f = new File(dir, name);
 		 getLog().info("Loading evalution script from " + f.getPath());
 		 engine.execute(f);
-	      }
 	   }
 	} catch (CommandException e) {
 	   throw new MojoExecutionException("Invalid recommender", e);

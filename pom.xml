@@ -5,7 +5,7 @@
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
-  <groupId>org.lenskit.grouplens</groupId>
+  <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
   <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
