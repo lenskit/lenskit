@@ -29,6 +29,10 @@ LensKit Release Notes
   
   #header(1.0.1)
 
+  * Fix broken rec. engine factory serialization (#issue(221)).
+
+  []
+
 * Release 1.0
 
   The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
