@@ -22,3 +22,9 @@
 
 - make properties a setProperties object in EvalConfigEngine
 
+----------------
+- should there be a dependency on the eval-plugin in poms for projects
+  that use it?  If not, why not?
+- if the components.xml file is invalid xml (e.g., an extra -- in a
+  comment), the build silently fails, but the new lifecycle is not
+  recognized. 
