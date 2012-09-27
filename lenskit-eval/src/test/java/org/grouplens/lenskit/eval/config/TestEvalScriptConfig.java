@@ -62,25 +62,22 @@ public class TestEvalScriptConfig {
 
     @Test
     public void TestSpecialNamesDefaults() {
-        assertEquals(esc.getScriptDir(), ".");
-        assertEquals(esc.getScriptName(), "eval.groovy");
-        assertEquals(esc.getOutputDir(), ".");
+        assertEquals(esc.getScript(), "eval.groovy");
+        assertEquals(esc.getAnalysisDir(), ".");
         assertEquals(esc.getDataDir(), ".");
     }
 
     @Test
     public void TestSpecialNames() {
-	props.setProperty("lenskit.eval.scriptDir", "../src/eval/");
+	props.setProperty("lenskit.eval.script", "../src/eval/eval.groovy");
 	props.setProperty("lenskit.eval.dataDir", "../target/data/");
-	props.setProperty("lenskit.eval.outputDir", "../target/analysis/");
-	props.setProperty("lenskit.eval.scriptName", "my-eval.groovy");
+	props.setProperty("lenskit.eval.analysisDir", "../target/analysis/");
 
 	esc = new EvalScriptConfig(props);
 
-        assertEquals(esc.getScriptDir(), "../src/eval/");
         assertEquals(esc.getDataDir(), "../target/data/");
-        assertEquals(esc.getOutputDir(), "../target/analysis/");
-        assertEquals(esc.getScriptName(), "my-eval.groovy");
+        assertEquals(esc.getAnalysisDir(), "../target/analysis/");
+        assertEquals(esc.getScript(), "../src/eval/eval.groovy");
     }
 
 }

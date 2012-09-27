@@ -63,7 +63,7 @@ public class EvalConfigEngine {
 
     public EvalConfigEngine(ClassLoader loader) {
         this(Thread.currentThread().getContextClassLoader(),
-	     new Properties());
+	     new Properties(System.getProperties()));
     }
 
     public EvalConfigEngine(ClassLoader loader, Properties configProperties) {
