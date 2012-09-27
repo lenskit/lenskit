@@ -78,7 +78,7 @@ public class EvalScriptConfig {
      * @return The script directory, or "." if none has been set.
      */
     public String getScriptDir() {
-	return properties.getProperty("scriptDir", ".");
+	return properties.getProperty("lenskit.eval.scriptDir", ".");
     }
     
     /**
@@ -87,7 +87,7 @@ public class EvalScriptConfig {
      * @return The script name, or "eval.groovy" if none has been set.
      */
     public String getScriptName() {
-	return properties.getProperty("scriptName", "eval.groovy");
+	return properties.getProperty("lenskit.eval.scriptName", "eval.groovy");
     }
 
     /**
@@ -96,7 +96,7 @@ public class EvalScriptConfig {
      * @return The data directory, or "." if none has been set.
      */
     public String getDataDir() {
-	return properties.getProperty("dataDir", ".");
+	return properties.getProperty("lenskit.eval.dataDir", ".");
     }
 
     /**
@@ -105,7 +105,7 @@ public class EvalScriptConfig {
      * @return The output directory, or "." if none has been set.
      */
     public String getOutputDir() {
-	return properties.getProperty("outputDir", ".");
+	return properties.getProperty("lenskit.eval.outputDir", ".");
     }
 
 }

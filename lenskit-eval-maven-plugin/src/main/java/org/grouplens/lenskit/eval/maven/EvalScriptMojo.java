@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -64,7 +65,7 @@ public class EvalScriptMojo extends AbstractMojo {
      * @readonly
      */
     @SuppressWarnings("unused")
-    private MavenProject project;
+	private MavenProject project;
     
     /**
      * Location of the output class directory for this project's build.
@@ -73,16 +74,35 @@ public class EvalScriptMojo extends AbstractMojo {
     private File buildDirectory;
     
     /**
-     * Set of recommender scripts.
-     * @parameter default="eval"
+     * Location of recommender scripts.
+     * @parameter expression="${lenskit.eval.scriptDir} default="."
      */
-   private String scriptDirectory;
+    private String scriptDir;
+
+    /**
+     * Name of recommender script.
+     * @parameter default="eval.groovy"
+     */
+    private String scriptName;
+
+    /**
+     * Location of input data; any train-test sets will be placed
+     * here, too.
+     * @parameter default="."
+     */
+    private String dataDir;
+
+    /**
+     * Location of output data from the eval script.
+     * @parameter default="."
+     */
+    private String outputDir;
 
     /**
      * Set of recommender scripts.
      * @parameter default="{eval.groovy}"
      */
-   private String[] scripts;
+    private String[] scripts;
     
     /**
      * The number of evaluation threads to run.
@@ -92,8 +112,10 @@ public class EvalScriptMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
         getLog().info("Running with thread count " + threadCount);
-        getLog().info("The scripts are " + scripts.toString());
-        getLog().info("The scripts directory is " + scriptDirectory);
+        getLog().info("The scripts are " + Arrays.toString(scripts));
+        getLog().info("The scripts directory is " + scriptDir);
+        getLog().info("The data directory is " + dataDir);
+        getLog().info("The output directory is " + outputDir);
 
         // Before we can run, we get a new class loader that is a copy
         // of our class loader, with the build directory added to it.
@@ -108,20 +130,23 @@ public class EvalScriptMojo extends AbstractMojo {
         }
         ClassLoader loader = new URLClassLoader(new URL[]{buildUrl},
 						getClass().getClassLoader());
-        EvalConfigEngine engine = new EvalConfigEngine(loader);
+	Properties properties = new Properties(project.getProperties());
+	properties.setProperty("lenskit.eval.dataDir", dataDir);
+	properties.setProperty("lenskit.eval.outputDir", outputDir);
+        EvalConfigEngine engine = new EvalConfigEngine(loader, properties);
 
         try {
-	   File dir = new File(scriptDirectory);
+	    File dir = new File(scriptDir);
 
-	   for (String name: scripts) {
-		 File f = new File(dir, name);
-		 getLog().info("Loading evalution script from " + f.getPath());
-		 engine.execute(f);
-	   }
+	    for (String name: scripts) {
+		File f = new File(dir, name);
+		getLog().info("Loading evalution script from " + f.getPath());
+		engine.execute(f);
+	    }
 	} catch (CommandException e) {
-	   throw new MojoExecutionException("Invalid recommender", e);
+	    throw new MojoExecutionException("Invalid recommender", e);
 	} catch (IOException e) {
-	   throw new MojoExecutionException("IO Exception on script", e);
+	    throw new MojoExecutionException("IO Exception on script", e);
 	}
     }            
     

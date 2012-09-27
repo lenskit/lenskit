@@ -70,10 +70,10 @@ public class TestEvalScriptConfig {
 
     @Test
     public void TestSpecialNames() {
-	props.setProperty("scriptDir", "../src/eval/");
-	props.setProperty("dataDir", "../target/data/");
-	props.setProperty("outputDir", "../target/analysis/");
-	props.setProperty("scriptName", "my-eval.groovy");
+	props.setProperty("lenskit.eval.scriptDir", "../src/eval/");
+	props.setProperty("lenskit.eval.dataDir", "../target/data/");
+	props.setProperty("lenskit.eval.outputDir", "../target/analysis/");
+	props.setProperty("lenskit.eval.scriptName", "my-eval.groovy");
 
 	esc = new EvalScriptConfig(props);
 

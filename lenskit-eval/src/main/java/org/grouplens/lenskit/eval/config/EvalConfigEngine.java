@@ -52,6 +52,7 @@ public class EvalConfigEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
+    protected EvalScriptConfig config;
 
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> commands = new HashMap<Class, Class>();
@@ -61,8 +62,15 @@ public class EvalConfigEngine {
     }
 
     public EvalConfigEngine(ClassLoader loader) {
-        CompilerConfiguration config = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        config.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
+        this(Thread.currentThread().getContextClassLoader(),
+	     new Properties());
+    }
+
+    public EvalConfigEngine(ClassLoader loader, Properties configProperties) {
+        CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
+	config = new EvalScriptConfig(configProperties);
+	
+        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
 
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("org.grouplens.lenskit",
@@ -71,9 +79,9 @@ public class EvalConfigEngine {
                                "org.grouplens.lenskit.norm",
                                "org.grouplens.lenskit.eval.metrics.predict",
                                "org.grouplens.lenskit.eval.metrics.recommend");
-        config.addCompilationCustomizers(imports);
-
-        shell = new GroovyShell(loader, new Binding(), config);
+	imports.addImports("org.grouplens.lenskit.eval.config.EvalScriptConfig");
+        compConfig.addCompilationCustomizers(imports);
+        shell = new GroovyShell(loader, new Binding(), compConfig);
         classLoader = loader;
 
         loadCommands();
@@ -89,6 +97,7 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(File file) throws IOException {
         EvalConfigScript script = (EvalConfigScript) shell.parse(file);
         script.setEngine(this);
+	script.setConfig(config);
         return script;
     }
 
@@ -101,6 +110,7 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(Reader in) {
         EvalConfigScript script = (EvalConfigScript) shell.parse(in);
         script.setEngine(this);
+	script.setConfig(config);
         return script;
     }
 
