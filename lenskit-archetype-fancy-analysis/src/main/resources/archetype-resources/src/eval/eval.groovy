@@ -1,4 +1,3 @@
-import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
@@ -12,11 +11,8 @@ import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 
-import org.grouplens.lenskit.params.Damping
-import org.grouplens.lenskit.baseline.*
-
-def ml100k = crossfold("ml-100k") {
-   source csvfile("../data/ml-100k/u.data") {
+def ml100k = crossfold {
+   source csvfile("${config.dataDir}/ml100k/u.data") {
       delimiter "\t"
       domain {
          minimum 1.0
@@ -24,18 +20,20 @@ def ml100k = crossfold("ml-100k") {
          precision 1.0
       }
    }
+   test "${config.dataDir}/ml100k-crossfold/test.%d.csv"
+   train "${config.dataDir}/ml100k-crossfold/train.%d.csv" 
    order RandomOrder
    holdout 10
    partitions 5
 }
 
-trainTest("item-item vs. user-user algorithm") {
+trainTest {
    dataset ml100k
    
    // Three different types of output for analysis.
-   output "eval-results.csv"
-   predictOutput "eval-preds.csv"
-   userOutput "eval-user.csv"
+   output "${config.analysisDir}/eval-results.csv"
+   predictOutput "${config.analysisDir}/eval-preds.csv"
+   userOutput "${config.analysisDir}/eval-user.csv"
    
    metric CoveragePredictMetric
    metric RMSEPredictMetric

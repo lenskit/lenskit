@@ -27,9 +27,14 @@ archetype is intended to be used with the following structure:
 * lenskit-analysis
 
 The key user files that you are likely to want to edit are:
-: runs an R script from src/eval/chart.R on the output data 
-  in target/analysis, and generates charts as PDF files in that same
-  directory.
+* pom.xml: to change the value of grouplens.mldata.acknowledgement, 
+  or to change the dataset that is downloaded.
+* src/eval/get-data.xml: to change the dataset that is downloaded.  
+  May require changes in pom.xml as well.
+* src/eval/eval.groovy: to change the lenskit evaluation that is run, 
+  perhaps by configuring different recommenders.
+* src/eval/chart.R: to change the analysis of the output data in target/analysis,  
+  perhaps including the charts that are generated.
 
 This structure fits the Maven model: all input files are in the src
 tree, and all generated files are in the target tree, where they may
@@ -58,11 +63,12 @@ Anywhere else is fine.)
 Then create the project with:
 
     mvn archetype:generate \
+      -DinteractiveMode=no \
       -DarchetypeGroupId=org.grouplens.lenskit \
       -DarchetypeArtifactId=lenskit-archetype-fancy-analysis \
-      -DarchetypeVersion=1.0-SNAPSHOT \
+      -DarchetypeVersion=1.1-SNAPSHOT \
       -DgroupId=org.your-org \
-      -DartifactId=new-directory-name \
+      -DartifactId=your-directory-name \
       -Dversion=0.1
 
 The first three definitions are the specification of the archetype you
@@ -103,6 +109,10 @@ will fetch the dataset, run the eval script, and do any post eval
 operations you wish.
 
 The resulting graphs will be the .pdf files in the analysis directory.
+
+If you're tired of typing -Dgrouplens-mldata-acknowledge-yes each
+time, you can uncomment the grouplens.mldata.acknowledgement property
+in pom.xml, and change the value to "yes".  
 
 ## Next steps
 

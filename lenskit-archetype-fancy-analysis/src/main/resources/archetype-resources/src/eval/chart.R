@@ -3,7 +3,7 @@
 library("ggplot2")
 library("grid")
 
-all.data <- read.csv("../eval/eval-results.csv")
+all.data <- read.csv("eval-results.csv")
 
 all.agg <- aggregate(cbind(RMSE.ByRating, RMSE.ByUser, nDCG)
                      ~ Algorithm,

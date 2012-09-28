@@ -23,9 +23,9 @@
     <fileSet filtered="true">
       <directory></directory>
       <includes>
-	<include>data/get-data.xml</include>
-	<include>eval/eval.groovy</include>
-	<include>analysis/chart.R</include>
+	<include>src/eval/*.xml</include>
+	<include>src/eval/*.groovy</include>
+	<include>src/eval/*.R</include>
       </includes>
     </fileSet>
   </fileSets>
