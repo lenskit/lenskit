@@ -63,10 +63,10 @@ Anywhere else is fine.)
 Then create the project with:
 
     mvn archetype:generate \
-      -DinteractiveMode=no \
       -DarchetypeGroupId=org.grouplens.lenskit \
       -DarchetypeArtifactId=lenskit-archetype-fancy-analysis \
       -DarchetypeVersion=1.1-SNAPSHOT \
+      -DinteractiveMode=no \
       -DgroupId=org.your-org \
       -DartifactId=your-directory-name \
       -Dversion=0.1
@@ -77,7 +77,7 @@ typed above, except possibly for archetypeVersion, which should be the
 current version of the archetype.  (Hint: this is the same as the
 current LensKit version.)
 
-The next three definitions are the specification of the new project
+The last three definitions are the specification of the new project
 you are creating.  In general they can be anything you want.
 
 Maven will run for a while, after which your new-directory-name will
