@@ -26,11 +26,21 @@ import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
 
 import org.grouplens.lenskit.mf.funksvd.FunkSVDRatingPredictor
+import org.grouplens.lenskit.mf.funksvd.params.FeatureCount
+import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider
+
+import org.grouplens.lenskit.slopeone.SlopeOneModel
+import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
+import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor
 
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+
+import org.grouplens.lenskit.util.iterative.StoppingCondition
+import org.grouplens.lenskit.util.iterative.IterationCountStoppingCondition
+import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
