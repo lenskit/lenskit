@@ -25,6 +25,8 @@ import org.grouplens.lenskit.knn.params.NeighborhoodSize
 import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
 
+import org.grouplens.lenskit.mf.funksvd.FunkSVDRatingPredictor
+
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
