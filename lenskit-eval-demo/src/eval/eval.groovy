@@ -44,6 +44,11 @@ import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
+/* 
+   Create a crossfold of the ml100k dataset.  This crossfold will be
+   used later in the trainTest step to perform the evaluations.
+   */
+
 def ml100k = crossfold {
     source csvfile("${config.dataDir}/ml100k/u.data") {
         delimiter "\t"
@@ -59,6 +64,14 @@ def ml100k = crossfold {
     holdout 10
     partitions 5
 }
+
+/*
+  Create each of the algorithms, with appropriate bindings to
+  normalizers and constants.  In a simpler evaluation we might just
+  define and use the algorithms in the trainTest step, but by naming
+  them, we can also dump the graphs for each of the algorithms, which
+  is useful for ensuring that the correct bindings occurred.
+*/
 
 def UserUser = algorithm("UserUser") {
     bind RatingPredictor to UserUserRatingPredictor
@@ -109,7 +122,18 @@ def WeightedSlopeOne = algorithm("WeightedSlopeOne") {
     within SlopeOneModel set Damping to 0
 }
 
+/*
+  We'll use the list of algorithms both to produce the set of
+  configuration graphs and to run the algorithms in the trainTest
+  step. 
+*/
+
 def algorithms = []
+
+/*
+  We create a baseline predictor from each one of the baselines
+  defined above.
+*/
 
 for (bl in baselines) {
     algorithms += algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {
@@ -124,6 +148,17 @@ algorithms += FunkSVD
 algorithms += SlopeOne
 algorithms += WeightedSlopeOne
 
+/*
+  For each of the algorithms in the list, create an appropriately
+  named configuration graph.  This graph shows how the various
+  components were plugged together by the dependency injector (grapht)
+  to create a working recommender.
+  If you install the graphviz software you can generate viewable forms
+  of these graphs.  For instance: 
+     dot -Tpdf SlopeOne.dot > SlopeOne.pdf
+  will create a pdf for the SlopeOne configuration.  graphviz is very
+  powerful, and has many other ways you can view the graphs.
+*/
 for (a in algorithms) {
     dumpGraph {
         domain {
@@ -131,11 +166,16 @@ for (a in algorithms) {
             maximum 5.0
             precision 1.0
         }
-        output "${config.analysisDir}/${a.name}.csv"
+        output "${config.analysisDir}/${a.name}.dot"
         algorithm a
     }
 }
 
+/*
+  Now we actually run the analysis, creating the different output
+  files.  These output files can then be processed with your favorite
+  visualization or statistics tools. 
+*/
 trainTest {
     dataset ml100k
     
