@@ -12,7 +12,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 
 def ml100k = crossfold {
-   source csvfile("ml100k/u.data") {
+   source csvfile("${config.dataDir}/ml100k/u.data") {
       delimiter "\t"
       domain {
          minimum 1.0
@@ -20,8 +20,8 @@ def ml100k = crossfold {
          precision 1.0
       }
    }
-   train "ml100k-crossfold/train.%d.csv"
-   test "ml100k-crossfold/test.%d.csv"
+   test "${config.dataDir}/ml100k-crossfold/test.%d.csv"
+   train "${config.dataDir}/ml100k-crossfold/train.%d.csv" 
    order RandomOrder
    holdout 10
    partitions 5
@@ -31,9 +31,9 @@ trainTest {
    dataset ml100k
    
    // Three different types of output for analysis.
-   output "eval-results.csv"
-   predictOutput "eval-preds.csv"
-   userOutput "eval-user.csv"
+   output "${config.analysisDir}/eval-results.csv"
+   predictOutput "${config.analysisDir}/eval-preds.csv"
+   userOutput "${config.analysisDir}/eval-user.csv"
    
    metric CoveragePredictMetric
    metric RMSEPredictMetric

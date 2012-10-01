@@ -1,15 +1,22 @@
 # LensKit-archetype-simple-analysis
 
 This archetype is to build simple projects for doing analysis of
-recommender algorithms.  The phases of recommendation are:
+recommender algorithms.  The phases of analysis are:
 
-* get-data: retrieve a dataset
-* evaluation: prepare the dataset for analysis by creating cross-validation samples, and run the algorithms on the dataset, producing evaluation summaries in csv files. 
-* analysis: run R scripts against the results of the evaluation, producing statistical analyses or graphics files.
+* lenskit-pre-eval: retrieve a dataset
+* lenskit-eval: prepare the dataset for analysis by creating cross-validation samples, 
+  and run the algorithms on the dataset, producing evaluation summaries in csv files. 
+* lenskit-post-eval: whatever else you want to do
+* lenvkit-analyze: run R scripts against the results of the evaluation, producing 
+  statistical analyses or graphics files.
 
-This archetype is for projects that do all three phases, but that put
-all of the user files in the top-level directory.  The key user files
-are:
+This archetype is for projects that do all of these phases, but that put
+all of the user files in the top-level directory.  This sort of
+structure might be suitable for a student who want to use lenskit for
+a class project, but who doesn't want to hunt around to see where all
+the files go in a properly designed maven build.
+
+The key user files are:
 
 * get-data.xml: an ant script that fetches one of the datasets from MovieLens, and unzips it.  Run automatically by Maven when needed.
 * eval-simple.groovy: a groovy script that runs against the fetched dataset performing simple evaluations of some recommender algorithms.
@@ -40,9 +47,10 @@ Then create the project with:
     mvn archetype:generate \
       -DarchetypeGroupId=org.grouplens.lenskit \
       -DarchetypeArtifactId=lenskit-archetype-simple-analysis \
-      -DarchetypeVersion=1.0 \
+      -DarchetypeVersion=1.1-SNAPSHOT \
+      -DinteractiveMode=no \
       -DgroupId=org.your-org \
-      -DartifactId=new-directory-name \
+      -DartifactId=your-directory-name \
       -Dversion=0.1
 
 The first three definitions are the specification of the archetype you
@@ -51,7 +59,7 @@ typed above, except possibly for archetypeVersion, which should be the
 current version of the archetype.  (Hint: this is the same as the
 current LensKit version.)
 
-The next three definitions are the specification of the new project
+The last three definitions are the specification of the new project
 you are creating.  In general they can be anything you want.
 
 Maven will run for a while, after which your new-directory-name will
@@ -61,19 +69,17 @@ exist, already populated with your new project!
 
 You can run your project with:
 
-    mvn verify -Dgrouplens-mldata-acknowledge=yes
+    mvn lenskit-analyze -Dgrouplens-mldata-acknowledge=yes
 
-This runs the mvn process through the `verify` stage of the lifecycle,
-which is a bit bogus, but works because it comes after the three
-stages the project cares about.  Those stages are:
+This runs the mvn process through all of the phases of the lifecycle.
+The resulting graphs will be the .pdf files in the analysis directory.
 
-* pre-installation-test: fetches the MovieLens data
-* installation-test: runs the evaluation
-* post-installation-test: runs the R script
+You can run those stages by hand if you prefer.  Running one stage
+will run all earlier stages as well.
 
-You can run those stages by hand if you prefer, rather than using
-verify to run them all.
-
+If you're tired of typing -Dgrouplens-mldata-acknowledge-yes each
+time, you can uncomment the grouplens.mldata.acknowledgement property
+in pom.xml, and change the value to "yes".  
 
 ## Next steps
 

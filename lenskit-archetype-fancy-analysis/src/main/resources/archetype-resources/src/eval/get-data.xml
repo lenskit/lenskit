@@ -4,8 +4,8 @@
        as the location of the data; otherwise, it is downloaded from the GroupLens
        web site. -->
 
-   <property name="mldata.zipfile" value="ml100k.zip"/>
-   <property name="mldata.directory" value="ml100k"/>
+   <property name="mldata.zipfile" value="${lenskit.eval.dataDir}/ml100k.zip"/>
+   <property name="mldata.directory" value="${lenskit.eval.dataDir}/ml100k"/>
 
    <target name="download-100k" unless="data.movielens.100k">
 
@@ -25,7 +25,8 @@
 	 </condition>
       </fail>
       <get src="http://www.grouplens.org/system/files/ml-100k.zip"
-	   dest="${mldata.zipfile}" skipexisting="true"/>
+	   dest="${mldata.zipfile}"
+	   skipexisting="true"/>
       <unzip src="${mldata.zipfile}" dest="${mldata.directory}">
 	 <patternset>
 	    <include name="ml-100k/*"/>

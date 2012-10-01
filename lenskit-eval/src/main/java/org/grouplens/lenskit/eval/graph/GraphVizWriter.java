@@ -42,6 +42,8 @@ import org.grouplens.grapht.spi.reflect.ProviderClassSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderInstanceSatisfaction;
 import org.grouplens.lenskit.core.Parameter;
 
+import com.google.common.io.Files;
+
 public class GraphVizWriter implements GraphWriter {
 
     private File outputFile;
@@ -64,6 +66,7 @@ public class GraphVizWriter implements GraphWriter {
     @Override
     public void start() {
         try {
+ 	    Files.createParentDirs(outputFile);
             writer = new BufferedWriter(new FileWriter(outputFile));
             writer.write("digraph G {");
             writer.newLine();

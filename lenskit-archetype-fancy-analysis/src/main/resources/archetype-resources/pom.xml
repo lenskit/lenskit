@@ -2,21 +2,21 @@
 	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <groupId>org.grouplens.lenskit</groupId>
-   <artifactId>lenskit-eval-demo</artifactId>
-   <version>1.1-SNAPSHOT</version>
+   <groupId>\${groupId}</groupId>
+   <artifactId>\${artifactId}</artifactId>
+   <version>\${version}</version>
    <packaging>lenskit-lifecycle</packaging>
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <lenskit.eval.scriptDir>${basedir}/src/eval/</lenskit.eval.scriptDir>
-      <lenskit.eval.dataDir>${basedir}/target/data/</lenskit.eval.dataDir>
-      <lenskit.eval.analysisDir>${basedir}/target/analysis/</lenskit.eval.analysisDir>
+      <lenskit.eval.scriptDir>\${basedir}/src/eval/</lenskit.eval.scriptDir>
+      <lenskit.eval.dataDir>\${basedir}/target/data/</lenskit.eval.dataDir>
+      <lenskit.eval.analysisDir>\${basedir}/target/analysis/</lenskit.eval.analysisDir>
 
       <!-- The version of LensKit for your project -->
       <!-- Note that we use project.version to pick up the version from
 	   the source tree this archetype is being built from. -->
-      <lenskit.version>1.1-SNAPSHOT</lenskit.version>
+      <lenskit.version>${project.version}</lenskit.version>
 
       <!-- Uncomment and change below to 'yes' if you accept the MovieLens data
 	   terms of service. 
@@ -32,6 +32,7 @@
       <!-- You will probably want some other parts of lenskit, such as
            specific recommender algorithms.  Specify those as
            dependencies in the lenskit-eval-maven-plugin, below. -->
+      <!-- You may not need any dependencies here. -->
 
    </dependencies>
 
@@ -59,7 +60,7 @@
 		  <phase>lenskit-pre-eval</phase>
 		  <configuration>
 		     <tasks>
-			<mkdir dir="${lenskit.eval.dataDir}"/>
+			<mkdir dir="\${lenskit.eval.dataDir}"/>
 		     </tasks>
 		  </configuration>
 		  <goals>
@@ -75,9 +76,9 @@
 		  <configuration>
 		     <target>
 			<property name="grouplens.mldata.acknowledge"
-				  value="${grouplens.mldata.acknowledge}"/>
+				  value="\${grouplens.mldata.acknowledge}"/>
 			<ant antfile="get-data.xml" target="prepare-100k"
-			     dir="${lenskit.eval.scriptDir}"/>
+			     dir="\${lenskit.eval.scriptDir}"/>
 		     </target>
 		  </configuration>
 	       </execution>
@@ -90,7 +91,7 @@
 	 <plugin>
 	    <artifactId>lenskit-eval-maven-plugin</artifactId>
 	    <groupId>org.grouplens.lenskit</groupId>
-	    <version>${lenskit.version}</version>
+	    <version>\${lenskit.version}</version>
 	    <extensions>true</extensions>
 	    <dependencies>
 	       <!-- The recommender algorithms you would like to use in your
@@ -98,23 +99,13 @@
 	       <dependency>
 		  <groupId>org.grouplens.lenskit</groupId>
 		  <artifactId>lenskit-knn</artifactId>
-		  <version>${lenskit.version}</version>
-	       </dependency>
-	       <dependency>
-		  <groupId>org.grouplens.lenskit</groupId>
-		  <artifactId>lenskit-svd</artifactId>
-		  <version>${lenskit.version}</version>
-	       </dependency>
-	       <dependency>
-		  <groupId>org.grouplens.lenskit</groupId>
-		  <artifactId>lenskit-slopeone</artifactId>
-		  <version>${lenskit.version}</version>
+		  <version>\${lenskit.version}</version>
 	       </dependency>
 	    </dependencies>
 	    <configuration>
-	       <script>${lenskit.eval.scriptDir}/eval.groovy</script>
-	       <dataDir>${lenskit.eval.dataDir}</dataDir>
-	       <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
+	       <script>\${lenskit.eval.scriptDir}/eval.groovy</script>
+	       <dataDir>\${lenskit.eval.dataDir}</dataDir>
+	       <analysisDir>\${lenskit.eval.analysisDir}</analysisDir>
 	    </configuration>
 	 </plugin>
 
@@ -136,9 +127,9 @@
 		  </goals>
 		  <configuration>
 		     <executable>Rscript</executable>
-		     <workingDirectory>${lenskit.eval.analysisDir}</workingDirectory>
+		     <workingDirectory>\${lenskit.eval.analysisDir}</workingDirectory>
 		     <arguments>
-			<argument>${lenskit.eval.scriptDir}/chart.R</argument>
+			<argument>\${lenskit.eval.scriptDir}/chart.R</argument>
 		     </arguments>
 		  </configuration>
 	       </execution>
