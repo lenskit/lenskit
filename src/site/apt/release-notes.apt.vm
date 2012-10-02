@@ -29,6 +29,9 @@ LensKit Release Notes
   
   #header(1.0.1)
 
+  <<Note>>: recommender engines serialized with LensKit 1.0 are not compatible with
+  LensKit 1.0.1. You will need to re-build and re-serialize your engines.
+
   * Fix broken rec. engine factory serialization (#issue(221)).
 
   []
