@@ -16,4 +16,4 @@
 \.rej$
 \.conflict\~$
 
-TAGS
+(^|/)TAGS$
