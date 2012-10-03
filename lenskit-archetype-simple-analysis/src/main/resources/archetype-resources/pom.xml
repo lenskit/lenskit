@@ -56,8 +56,6 @@
 		  </goals>
 		  <configuration>
 		     <target>
-			<property name="grouplens.mldata.acknowledge"
-				  value="\${grouplens.mldata.acknowledge}"/>
 			<ant antfile="get-data.xml" target="prepare-100k"
 			     dir="\${basedir}"/>
 		     </target>

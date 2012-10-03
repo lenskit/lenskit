@@ -129,7 +129,7 @@ public class EvalScriptMojo extends AbstractMojo {
 	    getLog().info("Loading evalution script from " + f.getPath());
 	    engine.execute(f);
 	} catch (CommandException e) {
-	    throw new MojoExecutionException("Invalid recommender", e);
+	    throw new MojoExecutionException("Invalid evaluation script", e);
 	} catch (IOException e) {
 	    throw new MojoExecutionException("IO Exception on script", e);
 	}
