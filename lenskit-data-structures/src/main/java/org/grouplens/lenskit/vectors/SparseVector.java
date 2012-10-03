@@ -67,7 +67,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     private transient volatile Double sum;
     private transient volatile Double mean;
     private transient volatile Integer hashCode;
-    private Map<, V> channelMap;
+    private Map<Symbol, SparseVector> channelMap;
 
     /**
      * Clear all cached/memoized values. This must be called any time the vector
@@ -356,9 +356,9 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
             if (sz != osz) {
                 return false;
             } else {
-		for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
-		    if (pair.getKey1() != pair.getKey2() ||
-			pair.getValue1() != pair.getValue2()) return false;
+		if (! this.keySet().equals(vo.keySet())) return false;        // same keys
+		for (Vectors.EntryPair pair : Vectors.pairedFast(this, vo)) { // same values
+		    if (pair.getValue1() != pair.getValue2()) return false;
 		}
                 return true;
             }
@@ -394,5 +394,5 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      */
     public abstract MutableSparseVector mutableCopy();
 
-    public hasChannel(ChannelName channelName) {}
+    //    public hasChannel(ChannelName channelName) {}
 }
