@@ -1,75 +1,74 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.grouplens.lenskit</groupId>
+    <artifactId>lenskit</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <groupId>org.grouplens.lenskit</groupId>
+  <artifactId>lenskit-eval-maven-plugin</artifactId>
+  <packaging>maven-plugin</packaging>
+  <name>LensKit Evaluation Maven Plugin</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.0.4</version>
+    </dependency>
+    <dependency>
       <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <relativePath>..</relativePath>
-   </parent>
+      <artifactId>lenskit-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-eval</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <version>2.2.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+  </dependencies>
 
-   <groupId>org.grouplens.lenskit</groupId>
-   <artifactId>lenskit-eval-maven-plugin</artifactId>
-   <packaging>maven-plugin</packaging>
-   <name>LensKit Evaluation Maven Plugin</name>
+  <!-- The configuration of the reportPlugins with
+  combine.children="append" is a hack to work around a bug in
+  maven 3.0 inheritance of maven-site-plugin configuration from
+  the parent.  We should check whether this is still needed. -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <reportPlugins combine.children="append">
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-plugin-plugin</artifactId>
+              <version>2.7</version>
+            </plugin>
+          </reportPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-   <dependencies>
-      <dependency>
-	 <groupId>org.apache.maven</groupId>
-	 <artifactId>maven-plugin-api</artifactId>
-	 <version>3.0.4</version>
-      </dependency>
-      <dependency>
-	 <groupId>org.grouplens.lenskit</groupId>
-	 <artifactId>lenskit-core</artifactId>
-	 <version>${project.version}</version>
-      </dependency>
-      <dependency>
-	 <groupId>org.grouplens.lenskit</groupId>
-	 <artifactId>lenskit-eval</artifactId>
-	 <version>${project.version}</version>
-	 <scope>compile</scope>
-      </dependency>
-      <dependency>
-	 <groupId>org.apache.maven</groupId>
-	 <artifactId>maven-project</artifactId>
-	 <version>2.2.1</version>
-	 <scope>provided</scope>
-      </dependency>
-      <dependency>
-	 <groupId>ch.qos.logback</groupId>
-	 <artifactId>logback-classic</artifactId>
-	 <scope>runtime</scope>
-	 <version>1.0.6</version>
-      </dependency>
-   </dependencies>
-
-   <!-- The configuration of the reportPlugins with
-	combine.children="append" is a hack to work around a bug in
-	maven 3.0 inheritance of maven-site-plugin configuration from
-	the parent.  We should check whether this is still needed. -->
-   <build>
-      <plugins>
-	 <plugin>
-	    <groupId>org.apache.maven.plugins</groupId>
-	    <artifactId>maven-site-plugin</artifactId>
-	    <configuration>
-	       <reportPlugins combine.children="append">
-		  <plugin>
-		     <groupId>org.apache.maven.plugins</groupId>
-		     <artifactId>maven-plugin-plugin</artifactId>
-		     <version>2.7</version>
-		  </plugin>
-	       </reportPlugins>
-	    </configuration>
-	 </plugin>
-      </plugins>
-   </build>
-
-   <dependencyManagement>
-      <dependencies>
-      </dependencies>
-   </dependencyManagement>
+  <dependencyManagement>
+    <dependencies>
+    </dependencies>
+  </dependencyManagement>
 
 </project>

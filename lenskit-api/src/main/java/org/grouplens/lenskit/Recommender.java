@@ -19,6 +19,7 @@
 package org.grouplens.lenskit;
 
 import javax.annotation.Nullable;
+import java.io.Closeable;
 
 /**
  * Main entry point for accessing recommender components.  A recommender object
@@ -35,7 +36,7 @@ import javax.annotation.Nullable;
  * @compat Public
  * @see RecommenderEngine
  */
-public interface Recommender {
+public interface Recommender extends Closeable {
     /**
      * Get the recommender's item scorer.
      *
@@ -85,6 +86,7 @@ public interface Recommender {
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
      */
+    @Override
     void close();
 
 }
