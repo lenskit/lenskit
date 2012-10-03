@@ -63,20 +63,14 @@ public class EvalConfigEngine {
 
     public EvalConfigEngine(ClassLoader loader) {
         this(Thread.currentThread().getContextClassLoader(),
-	     new Properties(System.getProperties()));
+             new Properties(System.getProperties()));
     }
 
     public EvalConfigEngine(ClassLoader loader, Properties configProperties) {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-	config = new EvalScriptConfig(configProperties);
-	
+        config = new EvalScriptConfig(configProperties);
+
         compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
-
-        ImportCustomizer imports = new ImportCustomizer();
-        imports.addStarImports("org.grouplens.lenskit",
-
-        ImportCustomizer imports = new ImportCustomizer();
-        imports.addStarImports("org.grouplens.lenskit",
 
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("org.grouplens.lenskit",
@@ -102,7 +96,7 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(File file) throws IOException {
         EvalConfigScript script = (EvalConfigScript) shell.parse(file);
         script.setEngine(this);
-	script.setConfig(config);
+        script.setConfig(config);
         return script;
     }
 
@@ -115,7 +109,7 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(Reader in) {
         EvalConfigScript script = (EvalConfigScript) shell.parse(in);
         script.setEngine(this);
-	script.setConfig(config);
+        script.setConfig(config);
         return script;
     }
 
