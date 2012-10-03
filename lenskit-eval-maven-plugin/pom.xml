@@ -25,6 +25,11 @@
       <version>${target.maven.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>3.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${target.maven.version}</version>
@@ -70,6 +75,23 @@
             </plugin>
           </reportPlugins>
         </configuration>
+      </plugin>
+
+      <!-- extra setup needed to make the annotation-based mojo
+           configuration work. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+        </configuration>
+        <executions>
+          <execution>
+            <id>mojo-descriptor</id>
+            <goals><goal>descriptor</goal></goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

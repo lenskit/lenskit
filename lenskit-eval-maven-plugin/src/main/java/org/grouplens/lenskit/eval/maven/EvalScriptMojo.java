@@ -21,6 +21,9 @@ package org.grouplens.lenskit.eval.maven;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfigEngine;
@@ -38,18 +41,17 @@ import java.util.Properties;
  * Run a LensKit evaluation script.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @goal run-eval
- * @requiresDependencyResolution runtime
- * @threadSafe
  */
+@Mojo(name = "run-eval",
+      requiresDependencyResolution = ResolutionScope.RUNTIME,
+      threadSafe = true)
 public class EvalScriptMojo extends AbstractMojo {
     /**
      * The project.  Gives access to Maven state.
-     *
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project",
+               required=true,
+               readonly=true)
     @SuppressWarnings("unused")
     private MavenProject project;
 
@@ -57,38 +59,36 @@ public class EvalScriptMojo extends AbstractMojo {
      * Location of the output class directory for this project's
      * build.  Used to extend the ClassLoader so it can find the
      * compiled classes when the script is running.
-     *
-     * @parameter expression="${project.build.outputDirectory}"
      */
+    @Parameter(property="project.build.outputDirectory")
     private File buildDirectory;
 
     /**
      * Name of recommender script.
-     *
-     * @parameter expression="${lenskit.eval.script}" default-value="eval.groovy"
      */
+    @Parameter(property="lenskit.eval.script",
+               defaultValue="eval.groovy")
     private String script;
 
     /**
      * Location of input data; any train-test sets will be placed
      * here, too.
-     *
-     * @parameter expression="${lenskit.eval.dataDir}" default-value="."
      */
+    @Parameter(property="lenskit.eval.dataDir",
+               defaultValue=".")
     private String dataDir;
 
     /**
      * Location of output data from the eval script.
-     *
-     * @parameter expression="$lenskit.eval.analysisDir" default-value="."
      */
+    @Parameter(property="lenskit.eval.analysisDir",
+               defaultValue=".")
     private String analysisDir;
 
     /**
      * The number of evaluation threads to run.
-     *
-     * @parameter expression="${lenskit.threadCount}"
      */
+    @Parameter(property="lenskit.threadCount")
     private int threadCount = 1;
 
     @Override
