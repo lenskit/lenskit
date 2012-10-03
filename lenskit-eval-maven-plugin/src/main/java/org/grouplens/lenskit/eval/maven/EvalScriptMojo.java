@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.eval.maven;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -29,6 +30,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -37,6 +40,7 @@ import java.util.Properties;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @goal run-eval
  * @requiresDependencyResolution runtime
+ * @threadSafe
  */
 public class EvalScriptMojo extends AbstractMojo {
     /**
@@ -102,7 +106,8 @@ public class EvalScriptMojo extends AbstractMojo {
         }
     }
 
-    private void doExecute() throws MojoExecutionException {// Before we can run, we get a new class loader that is a copy
+    private void doExecute() throws MojoExecutionException {
+        // Before we can run, we get a new class loader that is a copy
         // of our class loader, with the build directory added to it.
         // That way the scripts can use classes that are compiled into
         // the build directory.
@@ -113,11 +118,11 @@ public class EvalScriptMojo extends AbstractMojo {
         } catch (MalformedURLException e1) {
             throw new MojoExecutionException("Cannot build URL for build directory");
         }
-        ClassLoader loader = new URLClassLoader(new URL[]{buildUrl},
-                                                getClass().getClassLoader());
+        ClassLoader loader = makeClassLoader();
         Properties properties = new Properties(project.getProperties());
         properties.setProperty("lenskit.eval.dataDir", dataDir);
         properties.setProperty("lenskit.eval.analysisDir", analysisDir);
+        dumpClassLoader(loader);
         EvalConfigEngine engine = new EvalConfigEngine(loader, properties);
 
         try {
@@ -125,9 +130,43 @@ public class EvalScriptMojo extends AbstractMojo {
             getLog().info("Loading evalution script from " + f.getPath());
             engine.execute(f);
         } catch (CommandException e) {
-	    throw new MojoExecutionException("Invalid evaluation script", e);
+            throw new MojoExecutionException("Invalid evaluation script", e);
         } catch (IOException e) {
             throw new MojoExecutionException("IO Exception on script", e);
+        }
+    }
+
+    /**
+     * Compute the class loader we need in order to run. This is the class's class loader,
+     * with the project dependencies added.
+     * @return The class loader.
+     */
+    private ClassLoader makeClassLoader() throws MojoExecutionException {
+        final List<URL> urls = new ArrayList<URL>();
+        try {
+            for (String cp: project.getRuntimeClasspathElements()) {
+                urls.add(new File(cp).toURI().toURL());
+            }
+        } catch (DependencyResolutionRequiredException e) {
+            throw new MojoExecutionException("dependencies not resolved", e);
+        } catch (MalformedURLException e) {
+            throw new MojoExecutionException("invalid classpath element", e);
+        }
+        return new URLClassLoader(urls.toArray(new URL[urls.size()]),
+                                  getClass().getClassLoader());
+    }
+
+    private void dumpClassLoader(ClassLoader loader) {
+        getLog().debug("class loader: " + loader);
+        if (loader instanceof URLClassLoader) {
+            URLClassLoader urls = (URLClassLoader) loader;
+            for (URL url: urls.getURLs()) {
+                getLog().debug("  - " + url.toString());
+            }
+        }
+        ClassLoader parent = loader.getParent();
+        if (parent != null) {
+            dumpClassLoader(parent);
         }
     }
 
