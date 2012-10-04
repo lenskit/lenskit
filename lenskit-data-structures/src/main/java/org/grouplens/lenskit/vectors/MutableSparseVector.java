@@ -661,4 +661,31 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
         return new MutableSparseVector(keys, values, keyList.size());
     }
+
+    /**
+     *  Remove the channel stored under a particular symbol.
+     *
+     * @param channelSymbol the symbol under which the channel was
+     * stored in the vector.
+     * @return the channel, which is itself a sparse vector.
+     * @throws IllegalArgumentException if this vector does not have
+     * such a channel at this time.
+     */
+    public SparseVector removeChannel(Symbol channelSymbol) {
+	SparseVector retval;
+	if (hasChannel(channelSymbol)) {
+	    retval = channelMap.remove(channelSymbol);
+	    return retval;
+	}
+	throw new IllegalArgumentException("No existing channel under name " +
+					   channelSymbol.getName());
+    }
+
+    /**
+     *  Remove all channels stored in this vector.
+     */
+    public void removeAllChannels() {
+	channelMap.clear();
+    }	
+    
 }

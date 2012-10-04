@@ -168,14 +168,16 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the set of keys of this vector. It is a subset of the key domain.
+     * Get the set of keys of this vector. It is a subset of the key
+     * domain.  The keys will be in sorted order.
      *
      * @return The set of keys used in this vector.
      */
     public abstract LongSortedSet keySet();
 
     /**
-     * Get the key domain for this vector. All keys used are in this set.
+     * Get the key domain for this vector. All keys used are in this
+     * set.  The keys will be in sorted order.
      *
      * @return The key domain for this vector.
      */
@@ -394,5 +396,36 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      */
     public abstract MutableSparseVector mutableCopy();
 
-    //    public hasChannel(ChannelName channelName) {}
+    /**
+     * Return whether this sparse vector has a channel stored under a
+     * particular symbol.  (Symbols are sort of like names, but more
+     * efficient.) 
+     *
+     * @param channelSymbol the symbol under which the channel was
+     * stored in the vector.
+     * @return whether this vector has such a channel right now.
+     */
+    public boolean hasChannel(Symbol channelSymbol) {
+	return channelMap.hasKey(channelSymbol);
+    }
+
+    /**
+     * Fetch the channel stored under a particular symbol.  If there
+     * is no such channel, create a new empty one, and return it.
+     *
+     * @param channelSymbol the symbol under which the channel was/is
+     * stored in the vector.
+     * @return the channel, which is itself a sparse vector.
+     * TODO: write addChannel, which creates a channel and stores it
+     * in the map, only in MutableSparseVector.  Then this channel
+     * implementation stays the same here.
+     */
+    public SparseVector channel(Symbol channelSymbol) {
+	if (hasChannel(channelSymbol)) {
+	    return channelMap.get(channelSymbol);
+	}
+	throw new IllegalArgumentException("No existing channel under name " +
+					   channelSymbol.getName());
+    }
+
 }
