@@ -18,6 +18,12 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.grapht.graph.Edge;
+import org.grouplens.grapht.graph.Graph;
+import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.spi.CachedSatisfaction;
+import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -33,7 +39,10 @@ import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -43,24 +52,32 @@ import static org.junit.Assert.assertThat;
  */
 public class LenskitRecommenderEngineTest {
     private LenskitRecommenderEngineFactory factory;
+    private DAOFactory daoFactory;
 
     @Before
     public void setup() {
-        DAOFactory dao = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
-        factory = new LenskitRecommenderEngineFactory(dao);
+        daoFactory = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
+        factory = new LenskitRecommenderEngineFactory(daoFactory);
     }
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
+        configureBasicRecommender();
+
+        LenskitRecommenderEngine engine = factory.create();
+        verifyBasicRecommender(engine);
+    }
+
+    private void configureBasicRecommender() {
         factory.bind(RatingPredictor.class)
                .to(BaselineRatingPredictor.class);
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(BaselinePredictor.class)
                .to(ConstantPredictor.class);
+    }
 
-        LenskitRecommenderEngine engine = factory.create();
-        LenskitRecommender rec = engine.open();
+    private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.getItemRecommender(),
                        instanceOf(ScoreBasedItemRecommender.class));
@@ -132,5 +149,55 @@ public class LenskitRecommenderEngineTest {
         assertThat(stop, notNullValue());
         assertThat(stop.getThreshold(),
                    closeTo(0.01, 1.0e-6));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void assertNodeNotEVDao(Node node) {
+        CachedSatisfaction lbl = node.getLabel();
+        if (lbl == null) {
+            return;
+        }
+        Satisfaction sat = lbl.getSatisfaction();
+        if (sat instanceof InstanceSatisfaction) {
+            assertThat((Class) sat.getErasedType(),
+                       not(equalTo((Class) EventCollectionDAO.class)));
+        }
+    }
+
+    /**
+     * Test that no instance satisfaction contains an event collection DAO reference.
+     */
+    @Test
+    public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        configureBasicRecommender();
+
+        LenskitRecommenderEngine engine = factory.create();
+
+        Graph g = engine.dependencies;
+        // make sure we have no record of an instance dao
+        for (Node n: g.getNodes()) {
+            assertNodeNotEVDao(n);
+            for (Edge e: g.getOutgoingEdges(n)) {
+                assertNodeNotEVDao(e.getTail());
+            }
+            for (Edge e: g.getIncomingEdges(n)) {
+                assertNodeNotEVDao(e.getHead());
+            }
+        }
+    }
+
+    @Test
+    public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        configureBasicRecommender();
+
+        LenskitRecommenderEngine engine = factory.create();
+        File tfile = File.createTempFile("lenskit", "engine");
+        try {
+            engine.write(tfile);
+            LenskitRecommenderEngine e2 = new LenskitRecommenderEngine(daoFactory, tfile);
+            verifyBasicRecommender(e2);
+        } finally {
+            tfile.delete();
+        }
     }
 }

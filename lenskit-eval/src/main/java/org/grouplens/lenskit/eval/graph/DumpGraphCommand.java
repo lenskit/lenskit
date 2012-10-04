@@ -23,6 +23,7 @@ import java.io.File;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -34,6 +35,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     private GraphWriter writer;
     private File output;
     private PreferenceDomain domain = null;
+    private Class<? extends DataAccessObject> daoType;
 
 
     public DumpGraphCommand() {
@@ -64,6 +66,11 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         domain = dom;
         return this;
     }
+    
+    public DumpGraphCommand setDaoType(Class<? extends DataAccessObject> daoType) {
+    	this.daoType = daoType;
+    	return this;
+    }
 
     @Override
     public File call() throws CommandException {
@@ -71,11 +78,11 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         if (domain != null) {
             factory.bind(PreferenceDomain.class).to(domain);
         }
-        Graph initial = factory.getInitialGraph();
+        Graph initial = factory.getInitialGraph(daoType);
         Node root = initial.getNode(null);
         writer.start();
         writer.addGraph("Initial Graph", initial, root);
-        Graph instantiated = factory.getInstantiatedGraph();
+        Graph instantiated = factory.getInstantiatedGraph(daoType);
         root = instantiated.getNode(null);
         writer.addGraph("Instantiated Graph", instantiated, root);
         writer.finish();

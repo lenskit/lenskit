@@ -205,13 +205,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         Node daoNode = GraphtUtils.findDAONode(modified);
         Node daoPlaceholder = null;
         if (daoNode != null) {
-            // replace it with a null satisfaction
-            CachedSatisfaction daoLbl = daoNode.getLabel();
-            assert daoLbl != null;
-            Class<?> type = daoLbl.getSatisfaction().getErasedType();
-            Satisfaction sat = config.getSPI().satisfyWithNull(type);
-            daoPlaceholder = new Node(sat, CachePolicy.MEMOIZE);
-            modified.replaceNode(daoNode, daoPlaceholder);
+            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(config.getSPI(),
+                                                                    modified, daoNode);
         }
 
         return new LenskitRecommenderEngine(factory, modified, daoPlaceholder,
@@ -357,11 +352,26 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         } else {
             cfg.getRootContext().bind(DataAccessObject.class).to(dao);
         }
-
+        
+        return finishBuild(cfg);
+    }
+    
+    private Graph buildGraph(Class<? extends DataAccessObject> daoType) {
+    	BindingFunctionBuilder cfg = config.clone();
+        if (daoType == null) {
+        	cfg.getRootContext().bind(DataAccessObject.class).toNull();
+        } else {
+        	cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
+        	cfg.getRootContext().bind(daoType).toNull();
+        }
+        return finishBuild(cfg);
+    }
+    
+    private Graph finishBuild(BindingFunctionBuilder config) {
         DependencySolver solver = new DependencySolver(
-                Arrays.asList(cfg.build(RuleSet.EXPLICIT),
-                              cfg.build(RuleSet.INTERMEDIATE_TYPES),
-                              cfg.build(RuleSet.SUPER_TYPES),
+                Arrays.asList(config.build(RuleSet.EXPLICIT),
+                              config.build(RuleSet.INTERMEDIATE_TYPES),
+                              config.build(RuleSet.SUPER_TYPES),
                               new DefaultDesireBindingFunction(config.getSPI())),
                 CachePolicy.MEMOIZE,
                 100);
@@ -377,11 +387,11 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return solver.getGraph();
     }
 
-    public Graph getInitialGraph() {
-        return buildGraph(null);
+    public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
+        return buildGraph(daoType);
     }
 
-    public Graph getInstantiatedGraph() {
-        return simulateInstantiation(buildGraph(null));
+    public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
+        return simulateInstantiation(buildGraph(daoType));
     }
 }
