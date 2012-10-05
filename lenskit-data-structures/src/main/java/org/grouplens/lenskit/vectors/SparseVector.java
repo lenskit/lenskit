@@ -37,25 +37,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
-// TODO: test whether the length parameter is actually tested by any
-// of the unit tests.  (in the special test for length)
-
 // TODO: make the Immutable vector have a key domain.
+
+// TODO: make the mutable vector have a bit that identifies whether it
+// is immutable or not, and throw exceptions if it is immutable but a
+// mutation operation is attempted.
 
 // TODO: make sure to copy the channels when creating an Immutable
 // vector from a Mutable vector.
 
 // TODO: Make sure that all constructors and copiers correctly deal
 // with the channels
-// - mutable
+// x mutable
 // - immutable
 
-// Figure out what domainSize = length does in the MutableSparseVector
+// DONE: test whether the length parameter is actually tested by any
+// of the unit tests.  (in the special test for length)
+
+// DONE: Figure out what domainSize = length does in the MutableSparseVector
 // constructor
 
-// Write tests for Mutable
+// DONE Write tests for Mutable
 
-// Figure out why in TestMutableSparseVector.java:
+// DONE Figure out why in TestMutableSparseVector.java:
          // And this should fail...
 //        v.get(7);
 

@@ -76,6 +76,13 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     protected double[] values;
     protected final int domainSize;
 
+    // It is possible for this variable to be converted to an
+    // ImmutableSparseVector.  For efficiency, rather than copy the
+    // data, we can "freeze" this implementation so it can no longer
+    // be changed.  Setting this variable to be false causes all
+    // mutation methods to throw an exception if they are called.
+    protected boolean isMutable = true;   
+
     private Map<Symbol, MutableSparseVector> channelMap;
 
     /**
@@ -223,10 +230,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Check if this vector is valid.
+     * Check if this vector is Mutable.
      */
-    private void checkValid() {
-        if (values == null) {
+    private void checkMutable() {
+        if (! isMutable) {
             throw new IllegalStateException("Vector is frozen");
         }
     }
@@ -258,7 +265,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public DoubleCollection values() {
-        checkValid();
+        checkMutable();
         DoubleArrayList lst = new DoubleArrayList(size());
         BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
         while (iter.hasNext()) {
@@ -304,7 +311,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public double get(long key, double dft) {
-        checkValid();
+        checkMutable();
         final int idx = findIndex(key);
         if (idx >= 0) {
             if (usedKeys.get(idx)) {
@@ -340,7 +347,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * domain for this sparse vector.
      */
     public double set(long key, double value) {
-        checkValid();
+        checkMutable();
         final int idx = findIndex(key);
 	if (idx < 0) throw new IllegalArgumentException("Cannot set a key that is not in the domain.  key="
 							+ key);
@@ -419,7 +426,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return The new value (or {@link Double#NaN} if no such key existed).
      */
     public double add(long key, double value) {
-        checkValid();
+        checkMutable();
         final int idx = findIndex(key);
         if (idx >= 0 && usedKeys.get(idx)) {
             clearCachedValues();
@@ -440,7 +447,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param other The vector to subtract.
      */
     public void subtract(final SparseVector other) {
-        checkValid();
+        checkMutable();
         clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
@@ -467,7 +474,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param other The vector to add.
      */
     public void add(final SparseVector other) {
-        checkValid();
+        checkMutable();
         clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
@@ -497,7 +504,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param other The vector to blit its values into this vector
      */
     public void set(final SparseVector other) {
-        checkValid();
+        checkMutable();
         clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
@@ -561,6 +568,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return immutable(false);
     }
 
+    // Mark a mutable sparse vector as immutable, so it can be safely
+    // returned in contexts in which it must not be changed by the
+    // client.  Currently used to return channels from a mutable
+    // vector that has been itself frozen.
+    private MutableSparseVector partialFreeze() {
+	isMutable = false;
+	return this;
+    }
+
     /**
      * Construct an immutable sparse vector from this vector's data,
      * invalidating this vector in the process. Any subsequent use of this
@@ -585,7 +601,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return An immutable vector built from this vector's data.
      */
     private ImmutableSparseVector immutable(boolean freeze) {
-        checkValid();
+        checkMutable();
         ImmutableSparseVector isv;
         final int sz = size();
         if (sz == domainSize) {
@@ -611,7 +627,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             isv = new ImmutableSparseVector(nkeys, nvalues, sz);
         }
         if (freeze) {
-            values = null;
+            isMutable = false;
         }
         return isv;
     }
@@ -748,6 +764,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * such a channel at this time.
      */
     public SparseVector removeChannel(Symbol channelSymbol) {
+	checkMutable();
 	SparseVector retval;
 	if (hasChannel(channelSymbol)) {
 	    retval = channelMap.remove(channelSymbol);
@@ -761,6 +778,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *  Remove all channels stored in this vector.
      */
     public void removeAllChannels() {
+	checkMutable();
 	channelMap.clear();
     }	
 
@@ -775,6 +793,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * with that symbol
      */
     public SparseVector addChannel(Symbol channelSymbol) {
+	checkMutable();
 	if (hasChannel(channelSymbol)) {
 	    throw new IllegalArgumentException("There is already a channel with name " +
 					       channelSymbol.getName());
@@ -783,14 +802,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     @Override
-	public boolean hasChannel(Symbol channelSymbol) {
+    public boolean hasChannel(Symbol channelSymbol) {
 	return channelMap.containsKey(channelSymbol);
     }
 
     @Override
     public MutableSparseVector channel(Symbol channelSymbol) {
 	if (hasChannel(channelSymbol)) {
-	    return channelMap.get(channelSymbol);
+	    if (isMutable) return channelMap.get(channelSymbol);
+	    else return channelMap.get(channelSymbol).partialFreeze();
 	}
 	throw new IllegalArgumentException("No existing channel under name " +
 					   channelSymbol.getName());
