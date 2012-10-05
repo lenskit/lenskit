@@ -85,13 +85,11 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(iv.get(7), closeTo(3.5));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testFreeze() {
         MutableSparseVector v = simpleVector();
         ImmutableSparseVector iv = v.freeze();
         assertThat(iv, equalTo((SparseVector) simpleVector()));
-        // And this should fail...
-        v.get(7);
     }
 
     @Test
@@ -186,7 +184,10 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test
     public void testSet() {
-        assertThat(emptyVector().set(5, 5), notANumber());
+	try {
+	    emptyVector().set(5, 5);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
         MutableSparseVector v = simpleVector();
         assertThat(v.set(7, 2), closeTo(3.5));
         assertThat(v.get(7), closeTo(2));
@@ -208,14 +209,23 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         MutableSparseVector v = MutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-        assertThat(v.get(9), notANumber());
+	try {
+	    v.get(9);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */ }
         assertThat(v.get(3), closeTo(Math.PI));
         v.clear(3);
         assertThat(v.size(), equalTo(1));
         assertArrayEquals(new Long[]{7L}, v.keySet().toArray(new Long[0]));
         assertThat(v.get(7), closeTo(Math.E));
-        assertThat(v.set(9, 1.0), notANumber());
-        assertThat(v.get(9), notANumber());
+	try {
+	    v.set(9, 1.0);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */ }
+	try {
+	    v.get(9);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
         assertThat(v.containsKey(9), equalTo(false));
     }
 
@@ -232,6 +242,20 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(f.get(3), closeTo(Math.PI));
         assertThat(f.get(9), closeTo(0.42));
         assertThat(f.containsKey(7), equalTo(false));
-        assertThat(f.get(7), notANumber());
+	try {
+	    f.get(7);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */ }
     }
+
+    @Test
+    public void testWithDefaultCleared() {
+	MutableSparseVector v = simpleVector();
+	v.clear(8);
+        assertThat(v.get(8, -1), closeTo(-1));
+        assertThat(v.get(8, 42), closeTo(42));
+        assertThat(v.get(8, -7), closeTo(-7));
+        assertThat(v.get(8, Math.E), closeTo(Math.E));
+    }
+
 }

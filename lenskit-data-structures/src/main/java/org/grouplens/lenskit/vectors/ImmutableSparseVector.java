@@ -23,16 +23,20 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleLists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.symbols.Symbol;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
@@ -48,6 +52,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     protected final long[] keys;
     protected double[] values;
     protected final int size;
+
+    private Map<Symbol, ImmutableSparseVector> channelMap;
 
     /**
      * Create a new, empty immutable sparse vector.
@@ -99,7 +105,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         if (idx >= 0) {
             return values[idx];
         } else {
-            return dft;
+            throw new IllegalArgumentException("Get on a key not in the key domain. key=" + key);
         }
     }
 
@@ -275,4 +281,19 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
             throw new UnsupportedOperationException();
         }
     }
+
+    @Override
+	public boolean hasChannel(Symbol channelSymbol) {
+	return channelMap.containsKey(channelSymbol);
+    }
+
+    @Override
+    public ImmutableSparseVector channel(Symbol channelSymbol) {
+	if (hasChannel(channelSymbol)) {
+	    return channelMap.get(channelSymbol);
+	}
+	throw new IllegalArgumentException("No existing channel under name " +
+					   channelSymbol.getName());
+    }
+    
 }

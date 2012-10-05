@@ -30,10 +30,35 @@ import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.grouplens.lenskit.symbols.Symbol;
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
+// TODO: test whether the length parameter is actually tested by any
+// of the unit tests.  (in the special test for length)
+
+// TODO: make the Immutable vector have a key domain.
+
+// TODO: make sure to copy the channels when creating an Immutable
+// vector from a Mutable vector.
+
+// TODO: Make sure that all constructors and copiers correctly deal
+// with the channels
+// - mutable
+// - immutable
+
+// Figure out what domainSize = length does in the MutableSparseVector
+// constructor
+
+// Write tests for Mutable
+
+// Figure out why in TestMutableSparseVector.java:
+         // And this should fail...
+//        v.get(7);
+
 
 /**
  * Read-only interface to sparse vectors.
@@ -67,7 +92,6 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     private transient volatile Double sum;
     private transient volatile Double mean;
     private transient volatile Integer hashCode;
-    private Map<Symbol, SparseVector> channelMap;
 
     /**
      * Clear all cached/memoized values. This must be called any time the vector
@@ -81,10 +105,13 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the rating for {@var key}.
+     * Get the value for {@var key}.
      *
      * @param key the key to look up
-     * @return the key's value (or {@link Double#NaN} if no such value exists)
+     * @return the key's value (or {@link Double#NaN} if no such value
+     * exists)
+     * @throws IllegalArgumentException if the key is not in the key
+     * domain for this sparse vector
      * @see #get(long, double)
      */
     public double get(long key) {
@@ -96,7 +123,9 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      *
      * @param key the key to look up
      * @param dft The value to return if the key is not in the vector
-     * @return the value (or {@var dft} if no such key exists)
+     * @return the value (or {@var dft} if the key is not set to a value)
+     * @throws IllegalArgumentException if the key is not in the key
+     * domain for this vector
      */
     public abstract double get(long key, double dft);
 
@@ -405,27 +434,17 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      * stored in the vector.
      * @return whether this vector has such a channel right now.
      */
-    public boolean hasChannel(Symbol channelSymbol) {
-	return channelMap.hasKey(channelSymbol);
-    }
+    public abstract boolean hasChannel(Symbol channelSymbol);
 
     /**
-     * Fetch the channel stored under a particular symbol.  If there
-     * is no such channel, create a new empty one, and return it.
+     * Fetch the channel stored under a particular symbol.  
      *
      * @param channelSymbol the symbol under which the channel was/is
      * stored in the vector.
      * @return the channel, which is itself a sparse vector.
-     * TODO: write addChannel, which creates a channel and stores it
-     * in the map, only in MutableSparseVector.  Then this channel
-     * implementation stays the same here.
+     * @throws IllegalArgumentException if there is no channel under
+     * that symbol
      */
-    public SparseVector channel(Symbol channelSymbol) {
-	if (hasChannel(channelSymbol)) {
-	    return channelMap.get(channelSymbol);
-	}
-	throw new IllegalArgumentException("No existing channel under name " +
-					   channelSymbol.getName());
-    }
+    public abstract SparseVector channel(Symbol channelSymbol);
 
 }

@@ -84,9 +84,9 @@ public class Symbol {
      * @param symbol the symbol
      * @return the string name that was used to create the symbol
      */
-    public synchronized String getName(Symbol symbol) {
+    public synchronized String getName() {
 	for (Map.Entry<String, Symbol> entry : name2SymbolMap.entrySet()) {
-	    if (entry.getValue().equals(symbol)) {
+	    if (entry.getValue().equals(this)) {
 		return entry.getKey();
 	    }
 	}
@@ -95,7 +95,7 @@ public class Symbol {
 
     @Override
     public String toString() {
-	return String.format("Symbol based on name '%s'", getName(this));
+	return String.format("Symbol based on name '%s'", this.getName());
     }
 
     @Override

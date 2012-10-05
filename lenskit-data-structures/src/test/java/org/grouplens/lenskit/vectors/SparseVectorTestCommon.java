@@ -93,20 +93,22 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGet() {
-        assertThat(emptyVector().get(5), notANumber());
+	try {
+	    emptyVector().get(5);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
         SparseVector v = singleton();
         assertThat(v.get(5), closeTo(Math.PI));
-        assertThat(v.get(2), notANumber());
+	try {
+	    v.get(2);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
 
         v = simpleVector();
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(3), closeTo(1.5));
         assertThat(v.get(8), closeTo(2));
-        assertThat(v.get(1), notANumber());
-        assertThat(v.get(4), notANumber());
-        assertThat(v.get(9), notANumber());
-        assertThat(v.get(42), notANumber());
     }
 
     /**
@@ -114,20 +116,25 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGetWithDft() {
-        assertThat(emptyVector().get(5, Double.NaN), notANumber());
-        assertThat(emptyVector().get(5, -1), closeTo(-1));
+	try {
+	    emptyVector().get(5, Double.NaN);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
+	try {
+	    emptyVector().get(5, -1);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
         SparseVector v = singleton();
         assertThat(v.get(5, -1), closeTo(Math.PI));
-        assertThat(v.get(2, -1), closeTo(-1));
+	try {
+	    v.get(2, -1);
+	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+	} catch(IllegalArgumentException iae) { /* skip */}
 
         v = simpleVector();
         assertThat(v.get(7, -1), closeTo(3.5));
         assertThat(v.get(3, -1), closeTo(1.5));
         assertThat(v.get(8, -1), closeTo(2));
-        assertThat(v.get(1, -1), closeTo(-1));
-        assertThat(v.get(4, 42), closeTo(42));
-        assertThat(v.get(9, -7), closeTo(-7));
-        assertThat(v.get(42, Math.E), closeTo(Math.E));
     }
 
     /**
