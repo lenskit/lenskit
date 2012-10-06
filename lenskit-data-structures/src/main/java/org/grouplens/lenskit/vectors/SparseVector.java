@@ -37,9 +37,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
-// TODO: make the Immutable vector have a key domain.
+// TODO: convert the Immutable vector to be more like the Mutable
+// vector, and make the channels work for Immutables
+// - make the Immutable vector have a key domain.
 
-// TODO: make the mutable vector have a bit that identifies whether it
+// TODO: write test cases for Immutable vectors with channels
+
+// DONE: make the mutable vector have a bit that identifies whether it
 // is immutable or not, and throw exceptions if it is immutable but a
 // mutation operation is attempted.
 

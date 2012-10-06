@@ -105,7 +105,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         if (idx >= 0) {
             return values[idx];
         } else {
-            throw new IllegalArgumentException("Get on a key not in the key domain. key=" + key);
+	    return dft;
         }
     }
 

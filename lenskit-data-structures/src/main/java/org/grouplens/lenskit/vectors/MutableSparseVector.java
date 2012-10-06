@@ -320,7 +320,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                 return dft;
             }
         } else {
-            throw new IllegalArgumentException("Get on a key not in the key domain. key=" + key);
+	    return dft;
         }
     }
 

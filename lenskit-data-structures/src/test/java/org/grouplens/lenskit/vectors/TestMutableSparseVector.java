@@ -209,10 +209,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         MutableSparseVector v = MutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-	try {
-	    v.get(9);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */ }
+	assertTrue(Double.isNaN(v.get(9)));
         assertThat(v.get(3), closeTo(Math.PI));
         v.clear(3);
         assertThat(v.size(), equalTo(1));
@@ -222,10 +219,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 	    v.set(9, 1.0);
 	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
 	} catch(IllegalArgumentException iae) { /* skip */ }
-	try {
-	    v.get(9);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(v.get(9)));
         assertThat(v.containsKey(9), equalTo(false));
     }
 
@@ -242,10 +236,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(f.get(3), closeTo(Math.PI));
         assertThat(f.get(9), closeTo(0.42));
         assertThat(f.containsKey(7), equalTo(false));
-	try {
-	    f.get(7);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */ }
+	assertTrue(Double.isNaN(f.get(7)));
     }
 
     @Test

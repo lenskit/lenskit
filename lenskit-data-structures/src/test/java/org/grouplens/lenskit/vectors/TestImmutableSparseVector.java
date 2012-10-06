@@ -22,6 +22,8 @@ import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -61,10 +63,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     public void testEmptyConstructor() {
         SparseVector v = new ImmutableSparseVector();
         assertThat(v.isEmpty(), equalTo(true));
-	try {
-	    v.get(15);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(v.get(15)));
     }
 
     @Test
@@ -80,10 +79,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         ImmutableSparseVector v = MutableSparseVector.wrap(keys, values, 2).freeze();
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-	try {
-	    v.get(9);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(v.get(9)));
         assertThat(v.get(3), closeTo(Math.PI));
         assertThat(v.containsKey(9), equalTo(false));
     }

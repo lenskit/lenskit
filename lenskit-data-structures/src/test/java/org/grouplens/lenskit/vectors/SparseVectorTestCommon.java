@@ -21,6 +21,7 @@ package org.grouplens.lenskit.vectors;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
@@ -93,16 +94,10 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGet() {
-	try {
-	    emptyVector().get(5);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(emptyVector().get(5)));
         SparseVector v = singleton();
         assertThat(v.get(5), closeTo(Math.PI));
-	try {
-	    v.get(2);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(v.get(2)));
 
         v = simpleVector();
         assertThat(v.get(7), closeTo(3.5));
@@ -116,20 +111,11 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGetWithDft() {
-	try {
-	    emptyVector().get(5, Double.NaN);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
-	try {
-	    emptyVector().get(5, -1);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertTrue(Double.isNaN(emptyVector().get(5, Double.NaN)));
+	assertThat(emptyVector().get(5, -1), closeTo(-1));
         SparseVector v = singleton();
         assertThat(v.get(5, -1), closeTo(Math.PI));
-	try {
-	    v.get(2, -1);
-	    fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
-	} catch(IllegalArgumentException iae) { /* skip */}
+	assertThat(v.get(2, -1), closeTo(-1));
 
         v = simpleVector();
         assertThat(v.get(7, -1), closeTo(3.5));
