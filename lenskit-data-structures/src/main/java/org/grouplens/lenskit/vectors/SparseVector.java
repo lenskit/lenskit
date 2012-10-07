@@ -21,6 +21,7 @@ package org.grouplens.lenskit.vectors;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
@@ -28,14 +29,29 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.BitSet;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
+import org.grouplens.lenskit.collections.BitSetIterator;
+
+// TODO: add a test case using the return value from addChannel, which
+// should be the channel just added.
+
+// TODO: Figure out what to do at mutablecopy of channels
+// - make sure any way that copies from immutable -> mutable copies
+// channels
+// - make sure any way that copies from mutable -> immutable copies channels
 
 // TODO: convert the Immutable vector to be more like the Mutable
 // vector, and make the channels work for Immutables
@@ -96,6 +112,13 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry> {
+
+    protected final long[] keys;
+    protected final BitSet usedKeys;
+    protected double[] values;
+    protected final int domainSize; // How much of the key space is
+				    // actually used by this vector.
+
     private transient volatile Double norm;
     private transient volatile Double sum;
     private transient volatile Double mean;
@@ -113,13 +136,129 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
+     * Construct a new vector from existing arrays.  It is assumed that the keys
+     * are sorted and duplicate-free, and that the values is the same length. The
+     * key array is the key domain, and all keys are considered used.
+     * No new keys can be added to this vector.  Clients should call
+     * the wrap() method rather than directly calling this constructor.
+     *
+     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param vs The array of values backing this vector.
+     */
+    protected SparseVector(long[] ks, double[] vs) {
+        this(ks, vs, ks.length);
+    }
+
+    /**
+     * Construct a new vector from existing arrays. It is assumed that
+     * the keys are sorted and duplicate-free, and that the keys and
+     * values both have at least {@var length} items.  The key set
+     * and key domain are both set to the keys array.  Clients should
+     * call the wrap() method rather than directly calling this
+     * constructor.
+     *
+     * @param ks     The array of keys backing the vector. It must be sorted.
+     * @param vs     The array of values backing the vector.
+     * @param length Number of items to actually use.
+     */
+    protected SparseVector(long[] ks, double[] vs, int length) {
+        assert MoreArrays.isSorted(ks, 0, length);
+        keys = ks;
+	values = vs;
+	domainSize = length;
+	usedKeys = new BitSet(length);
+        for (int i = 0; i < length; i++) {
+            usedKeys.set(i);
+        }
+    }
+
+    /**
+     * Construct a new vector from existing arrays. It is assumed that
+     * the keys are sorted and duplicate-free, and that the keys and
+     * values both have at least {@var length} items.  The key set
+     * and key domain are both set to the keys array.  Clients should
+     * call the wrap() method rather than directly calling this
+     * constructor.
+     *
+     * @param ks     The array of keys backing the vector. It must be sorted.
+     * @param vs     The array of values backing the vector.
+     * @param length Number of items to actually use.
+     */
+    protected SparseVector(long[] ks, double[] vs, int length, BitSet used) {
+        assert MoreArrays.isSorted(ks, 0, length);
+        keys = ks;
+        values = vs;
+        domainSize = length;
+        usedKeys = used;
+    }
+
+    /**
+     * Construct a new vector from the contents of a map. The key domain is the
+     * key set of the map.  Therefore, no new keys can be added to this vector.
+     *
+     * @param ratings A map providing the values for the vector.
+     */
+    public SparseVector(Long2DoubleMap ratings) {
+        keys = ratings.keySet().toLongArray();
+        domainSize = keys.length;
+        Arrays.sort(keys);
+        assert keys.length == ratings.size();
+        assert MoreArrays.isSorted(keys, 0, domainSize);
+        values = new double[keys.length];
+        final int len = keys.length;
+        for (int i = 0; i < len; i++) {
+            values[i] = ratings.get(keys[i]);
+        }
+        usedKeys = new BitSet(domainSize);
+        usedKeys.set(0, domainSize);
+    }
+
+    /**
+     * Construct a new empty vector with the specified key domain.
+     *
+     * @param domain The key domain.
+     */
+    public SparseVector(Collection<Long> domain) {
+        LongSortedArraySet set;
+        // since LSAS is immutable, we'll use its array if we can!
+        if (domain instanceof LongSortedArraySet) {
+            set = (LongSortedArraySet) domain;
+        } else {
+            set = new LongSortedArraySet(domain);
+        }
+        keys = set.unsafeArray();
+        domainSize = domain.size();
+        values = new double[domainSize];
+        usedKeys = new BitSet(domainSize);
+    }
+
+    /**
+     * Find the index of a particular key.
+     *
+     * @param key The key to search for.
+     * @return The index, or a negative value if the key is not in the key domain.
+     */
+    protected int findIndex(long key) {
+        return Arrays.binarySearch(keys, 0, domainSize, key);
+    }
+
+    /**
+     * Query whether the vector contains an entry for the key in question.
+     *
+     * @param key The key to search for.
+     * @return {@code true} if the key exists.
+     */
+    public boolean containsKey(long key) {
+        final int idx = findIndex(key);
+        return idx >= 0 && usedKeys.get(idx);
+    }
+
+    /**
      * Get the value for {@var key}.
      *
      * @param key the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value
      * exists)
-     * @throws IllegalArgumentException if the key is not in the key
-     * domain for this sparse vector
      * @see #get(long, double)
      */
     public double get(long key) {
@@ -132,18 +271,19 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      * @param key the key to look up
      * @param dft The value to return if the key is not in the vector
      * @return the value (or {@var dft} if the key is not set to a value)
-     * @throws IllegalArgumentException if the key is not in the key
-     * domain for this vector
      */
-    public abstract double get(long key, double dft);
-
-    /**
-     * Query whether the vector contains an entry for the key in question.
-     *
-     * @param key The key to search for.
-     * @return {@code true} if the key exists.
-     */
-    public abstract boolean containsKey(long key);
+    public double get(long key, double dft) {
+        final int idx = findIndex(key);
+        if (idx >= 0) {
+            if (usedKeys.get(idx)) {
+                return values[idx];
+            } else {
+                return dft;
+            }
+        } else {
+	    return dft;
+        }
+    }
 
     /**
      * Iterate over all entries.
@@ -205,20 +345,24 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the set of keys of this vector. It is a subset of the key
-     * domain.  The keys will be in sorted order.
-     *
-     * @return The set of keys used in this vector.
-     */
-    public abstract LongSortedSet keySet();
-
-    /**
      * Get the key domain for this vector. All keys used are in this
      * set.  The keys will be in sorted order.
      *
      * @return The key domain for this vector.
      */
-    public abstract LongSortedSet keyDomain();
+    public LongSortedSet keyDomain() {
+        return LongSortedArraySet.wrap(keys, domainSize);
+    }
+
+    /**
+     * Get the set of keys of this vector. It is a subset of the key
+     * domain.  The keys will be in sorted order.
+     *
+     * @return The set of keys used in this vector.
+     */
+    public LongSortedSet keySet() {
+        return LongSortedArraySet.wrap(keys, domainSize, usedKeys);
+    }
 
     /**
      * Return the keys of this vector sorted by value.
@@ -228,6 +372,21 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      */
     public LongArrayList keysByValue() {
         return keysByValue(false);
+    }
+
+    /**
+     * Get the collection of values of this vector.
+     *
+     * @return The collection of all values in this vector.
+     */
+    public DoubleCollection values() {
+        DoubleArrayList lst = new DoubleArrayList(size());
+        BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
+        while (iter.hasNext()) {
+            int idx = iter.nextInt();
+            lst.add(values[idx]);
+        }
+        return lst;
     }
 
     /**
@@ -273,19 +432,14 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Get the collection of values of this vector.
-     *
-     * @return The collection of all values in this vector.
-     */
-    public abstract DoubleCollection values();
-
-    /**
      * Get the size of this vector (the number of keys).
      *
      * @return The number of keys in the vector. This is at most the size of the
      *         key domain.
      */
-    public abstract int size();
+    public int size() {
+        return usedKeys.cardinality();
+    }
 
     /**
      * Query whether this vector is empty.

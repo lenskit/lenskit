@@ -64,6 +64,36 @@ public class TestMutableSparseVectorChannels {
     }
 
     @Test
+    public void testAdd() {
+	MutableSparseVector empty = emptyVector();
+	try {
+	    empty.addChannel(fooSymbol).set(3, 77);
+	    fail("The channel on an empty vector cannot have any keys set;"
+		 + " should throw IllegalArgumentException.");
+	} catch(IllegalArgumentException iae) { /*ignore */ }
+	MutableSparseVector simple = simpleVector();
+	simple.addChannel(fooSymbol).set(3, 77);
+	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+	try {
+	    simple.channel(fooSymbol).set(5, 77);
+	    fail("Should throw illegal argument exception because of bogus key 5.");
+	} catch(IllegalArgumentException iae) { /*ignore */ }
+    }
+	
+    @Test
+    public void testAddAlreadyExisting() {
+	// test adding a channel directly, with values already in it
+	MutableSparseVector simple = simpleVector();
+	MutableSparseVector simple2 = simpleVector();
+	simple.addChannel(fooSymbol, simple2).set(3, 77);
+	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+	try {
+	    simple.addChannel(fooSymbol, simpleVector2());
+	    fail("Should throw illegal argument exception because of incompatible key domains.");
+	} catch(IllegalArgumentException iae) { /*ignore */ }
+    }
+
+    @Test
     public void testCreate() {
 	MutableSparseVector empty = emptyVector();
 	empty.addChannel(fooSymbol);

@@ -49,19 +49,13 @@ import org.grouplens.lenskit.symbols.Symbol;
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -4740588973577998934L;
 
-    protected final long[] keys;
-    protected double[] values;
-    protected final int size;
-
-    private Map<Symbol, ImmutableSparseVector> channelMap;
+    private final Map<Symbol, ImmutableSparseVector> channelMap;
 
     /**
      * Create a new, empty immutable sparse vector.
      */
     public ImmutableSparseVector() {
-        keys = new long[0];
-        values = null;
-        size = 0;
+	this(new long[0], new double[0]);
     }
 
     /**
@@ -71,16 +65,22 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      *                the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
-        keys = ratings.keySet().toLongArray();
-        size = keys.length;
-        Arrays.sort(keys);
-        assert keys.length == ratings.size();
-        assert MoreArrays.isSorted(keys, 0, size);
-        values = new double[keys.length];
-        final int len = keys.length;
-        for (int i = 0; i < len; i++) {
-            values[i] = ratings.get(keys[i]);
-        }
+	super(ratings);
+	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+    }
+
+    /**
+     * Construct a new vector from existing arrays.  It is assumed that the keys
+     * are sorted and duplicate-free, and that the values is the same length. The
+     * key array is the key domain, and all keys are considered used.
+     * No new keys can be added to this vector.  Clients should call
+     * the wrap() method rather than directly calling this constructor.
+     *
+     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param vs The array of values backing this vector.
+     */
+    protected ImmutableSparseVector(long[] ks, double[] vs) {
+        this(ks, vs, ks.length);
     }
 
     /**
@@ -93,25 +93,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * @param sz The length to actually use.
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
-        keys = ks;
-        values = vs;
-        size = sz;
-        assert MoreArrays.isSorted(ks, 0, sz);
-    }
-
-    @Override
-    public double get(long key, double dft) {
-        final int idx = Arrays.binarySearch(keys, 0, size, key);
-        if (idx >= 0) {
-            return values[idx];
-        } else {
-	    return dft;
-        }
-    }
-
-    @Override
-    public boolean containsKey(long key) {
-        return Arrays.binarySearch(keys, 0, size, key) >= 0;
+	super(ks, vs, sz);
+	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
 
     @Override
@@ -129,26 +112,6 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         return fastIterator();
     }
 
-    @Override
-    public LongSortedSet keySet() {
-        return LongSortedArraySet.wrap(keys, size);
-    }
-
-    @Override
-    public LongSortedSet keyDomain() {
-        return keySet();
-    }
-
-    @Override
-    public DoubleList values() {
-        return DoubleLists.unmodifiable(new DoubleArrayList(values, 0, size));
-    }
-
-    @Override
-    public int size() {
-        return size;
-    }
-
     /**
      * {@inheritDoc}
      * <p>This implementation uses an optimized implementation when computing
@@ -161,8 +124,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
             final ImmutableSparseVector iv = (ImmutableSparseVector) o;
             double dot = 0;
 
-            final int sz = size;
-            final int osz = iv.size;
+            final int sz = domainSize;
+            final int osz = iv.domainSize;
             int i = 0;
             int j = 0;
             while (i < sz && j < osz) {
@@ -197,8 +160,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
             final ImmutableSparseVector iv = (ImmutableSparseVector) o;
             int n = 0;
 
-            final int sz = size;
-            final int osz = iv.size;
+            final int sz = domainSize;
+            final int osz = iv.domainSize;
             int i = 0;
             int j = 0;
             while (i < sz && j < osz) {
@@ -228,7 +191,11 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @Override
     public MutableSparseVector mutableCopy() {
-        return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
+        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize), domainSize);
+	for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
+	    result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
+	}
+	return result;
     }
 
     private class IterImpl implements Iterator<VectorEntry> {
@@ -236,7 +203,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
         @Override
         public boolean hasNext() {
-            return pos < size;
+            return pos < domainSize;
         }
 
         @Override
@@ -262,7 +229,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
         @Override
         public boolean hasNext() {
-            return pos < size;
+            return pos < domainSize;
         }
 
         @Override
@@ -283,7 +250,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-	public boolean hasChannel(Symbol channelSymbol) {
+    public boolean hasChannel(Symbol channelSymbol) {
 	return channelMap.containsKey(channelSymbol);
     }
 
