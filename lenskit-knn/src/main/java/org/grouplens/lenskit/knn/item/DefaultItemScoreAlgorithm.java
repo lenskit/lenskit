@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -41,7 +42,9 @@ import javax.inject.Inject;
  * @author Michael Ekstrand
  */
 @Shareable
-public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
+public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
     private int neighborhoodSize;
 

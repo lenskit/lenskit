@@ -21,6 +21,7 @@ package org.grouplens.lenskit.transform.threshold;
 import org.grouplens.lenskit.core.Shareable;
 
 import javax.inject.Singleton;
+import java.io.Serializable;
 
 /**
  * Represents the absence of a threshold function, choosing
@@ -28,8 +29,10 @@ import javax.inject.Singleton;
  */
 @Shareable
 @Singleton
-public class NoThreshold implements Threshold {
+public class NoThreshold implements Threshold, Serializable {
+    private static final long serialVersionUID = 1;
 
+    @Override
     public boolean retain(double sim) {
         return true;
     }
