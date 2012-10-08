@@ -22,13 +22,16 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.params.ThresholdValue;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Checks similarity values to ensure their absolute values are
  * over the {@link ThresholdValue}.
  */
 @Shareable
-public class AbsoluteThreshold implements Threshold {
+public class AbsoluteThreshold implements Threshold, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final double value;
 
     /**
