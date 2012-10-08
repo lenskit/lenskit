@@ -1,6 +1,6 @@
 /*
- * LensKit, a reference implementation of recommender algorithms.
- * Copyright 2010-2011 Regents of the University of Minnesota
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2012 Regents of the University of Minnesota and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
