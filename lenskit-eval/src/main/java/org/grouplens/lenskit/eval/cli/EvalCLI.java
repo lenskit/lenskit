@@ -59,7 +59,7 @@ public class EvalCLI {
 
     public void run() {
         ClassLoader loader = options.getClassLoader();
-        EvalConfigEngine config = new EvalConfigEngine(loader);
+        EvalConfigEngine config = new EvalConfigEngine(loader, options.getProperties());
 
         File f = options.getConfigFile();
         logger.info("loading evaluation from {}", f);

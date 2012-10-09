@@ -70,6 +70,11 @@ public class EvalScriptConfig {
         return properties.getProperty(key, null);
     }
 
+    /**
+     * Query whether the script should run in “force” mode.
+     *
+     * @return {@code true} if the script should run in force mode.
+     */
     public boolean force() {
         return BooleanUtils.toBoolean(getProperty(FORCE_PROPERTY));
     }
