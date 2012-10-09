@@ -96,7 +96,6 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(File file) throws IOException {
         EvalConfigScript script = (EvalConfigScript) shell.parse(file);
         script.setEngine(this);
-        script.setConfig(config);
         return script;
     }
 
@@ -109,7 +108,6 @@ public class EvalConfigEngine {
     protected EvalConfigScript loadScript(Reader in) {
         EvalConfigScript script = (EvalConfigScript) shell.parse(in);
         script.setEngine(this);
-        script.setConfig(config);
         return script;
     }
 
@@ -191,6 +189,14 @@ public class EvalConfigEngine {
     @Nullable
     Object execute(Reader in, String[] args) throws CommandException {
         return runScript(loadScript(in), args);
+    }
+
+    /**
+     * Get the eval script config.
+     * @return The eval configuration.
+     */
+    public EvalScriptConfig getConfig() {
+        return config;
     }
 
     /**

@@ -28,6 +28,9 @@ import org.grouplens.lenskit.eval.Command
 
 /**
  * Utilities for searching for methods of {@link Command}s.
+ * <p>
+ * <b>Warning:</b> here be dragons.
+ *
  * @author Michael Ekstrand
  */
 class CommandExtensions {

@@ -25,6 +25,12 @@ import org.codehaus.groovy.runtime.GroovyCategorySupport
 
 /**
  * Helper methods for invoking configuration methods.
+ * <p>
+ * These methods often work by returning closures which, when invoked, will perform the
+ * correct action.
+ * <p>
+ * <b>Warning</b>: here be dragons!
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
