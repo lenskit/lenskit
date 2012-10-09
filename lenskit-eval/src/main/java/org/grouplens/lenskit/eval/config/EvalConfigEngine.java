@@ -118,9 +118,8 @@ public class EvalConfigEngine {
      * @return A list of evaluations produced by {@code script}.
      * @throws CommandException if the script is invalid or produces an error.
      */
-    protected
     @Nullable
-    Object runScript(EvalConfigScript script, String[] args) throws CommandException {
+    protected Object runScript(EvalConfigScript script, String[] args) throws CommandException {
         script.setBinding(new Binding(args));
         Object result = null;
         try {
@@ -141,9 +140,8 @@ public class EvalConfigEngine {
      * @throws CommandException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
-    public
     @Nullable
-    Object execute(File file) throws CommandException, IOException {
+    public Object execute(File file) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return execute(file, new String[]{});
     }
@@ -157,9 +155,8 @@ public class EvalConfigEngine {
      * @throws CommandException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
-    public
     @Nullable
-    Object execute(File file, String[] args) throws CommandException, IOException {
+    public Object execute(File file, String[] args) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file), args);
     }
@@ -171,9 +168,8 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error
      */
-    public
     @Nullable
-    Object execute(Reader in) throws CommandException {
+    public Object execute(Reader in) throws CommandException {
         return execute(in, new String[]{});
     }
 
@@ -185,9 +181,8 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error
      */
-    public
     @Nullable
-    Object execute(Reader in, String[] args) throws CommandException {
+    public Object execute(Reader in, String[] args) throws CommandException {
         return runScript(loadScript(in), args);
     }
 
@@ -205,6 +200,7 @@ public class EvalConfigEngine {
      * @param name The name of the command
      * @return The command factory or {@code null} if no such factory exists.
      */
+    @SuppressWarnings("rawtypes")
     @CheckForNull
     @Nullable
     public Class<? extends Command> getCommand(@Nonnull String name) {
@@ -243,7 +239,7 @@ public class EvalConfigEngine {
      * @return A command class to build {@code type}, or {@code null} if none can be found.
      * @see #registerCommand
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> Class<? extends Command> getCommandForType(Class<T> type) {
         @SuppressWarnings("rawtypes")
         Class command = commands.get(type);
@@ -264,6 +260,7 @@ public class EvalConfigEngine {
      * @param command A class that can build instances of {@code type}.
      * @param <T>     The type to build (type parameter).
      */
+    @SuppressWarnings("rawtypes")
     public <T> void registerCommand(Class<T> type, Class<? extends Command> command) {
         Preconditions.checkNotNull(type, "type cannot be null");
         Preconditions.checkNotNull(command, "command cannot be null");
