@@ -38,8 +38,8 @@ public class EvalScriptConfig {
         this(new Properties());
     }
 
-    public EvalScriptConfig(Properties in_properties) {
-        properties = (Properties) in_properties.clone();
+    public EvalScriptConfig(Properties props) {
+        properties = (Properties) props.clone();
     }
 
     /**
