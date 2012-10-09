@@ -18,13 +18,6 @@
  */
 package org.grouplens.lenskit.eval.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import java.util.Properties;
 
 /**
@@ -39,37 +32,35 @@ import java.util.Properties;
  * @since 1.1
  */
 public class EvalScriptConfig {
-    private static Logger logger;
     private Properties properties;
 
     public EvalScriptConfig() {
-	this(new Properties());
+        this(new Properties());
     }
 
     public EvalScriptConfig(Properties in_properties) {
-	logger = LoggerFactory.getLogger(getClass());
-	properties = (Properties) in_properties.clone();
+        properties = (Properties) in_properties.clone();
     }
 
     /**
      * Get the value of a property.
      *
-     * @param key		The name of the property
-     * @param defaultValue	The value to return if no such key
+     * @param key          The name of the property
+     * @param defaultValue The value to return if no such key
      * @return The value of the property
      */
     public String getProperty(String key, String defaultValue) {
-	return properties.getProperty(key, defaultValue);
+        return properties.getProperty(key, defaultValue);
     }
 
     /**
      * Get the value of a property.
      *
-     * @param key		The name of the property
+     * @param key The name of the property
      * @return The value of the property, or null if there is no such key
      */
     public String getProperty(String key) {
-	return properties.getProperty(key, null);
+        return properties.getProperty(key, null);
     }
 
     /**
@@ -78,7 +69,7 @@ public class EvalScriptConfig {
      * @return The script name, or "eval.groovy" if none has been set.
      */
     public String getScript() {
-	return getProperty("lenskit.eval.script", "eval.groovy");
+        return getProperty("lenskit.eval.script", "eval.groovy");
     }
 
     /**
@@ -87,7 +78,7 @@ public class EvalScriptConfig {
      * @return The data directory, or "." if none has been set.
      */
     public String getDataDir() {
-	return getProperty("lenskit.eval.dataDir", ".");
+        return getProperty("lenskit.eval.dataDir", ".");
     }
 
     /**
@@ -96,7 +87,7 @@ public class EvalScriptConfig {
      * @return The analysis directory, or "." if none has been set.
      */
     public String getAnalysisDir() {
-	return getProperty("lenskit.eval.analysisDir", ".");
+        return getProperty("lenskit.eval.analysisDir", ".");
     }
 
 }
