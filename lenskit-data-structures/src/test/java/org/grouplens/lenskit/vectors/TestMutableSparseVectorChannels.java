@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author John Riedl <riedl@cs.umn.edu>
  */
 public class TestMutableSparseVectorChannels {
     Symbol fooSymbol = Symbol.of("foo");

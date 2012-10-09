@@ -501,16 +501,47 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * vector.  If it is okay to freeze this mutable vector, then
      * parts of the mutable vector may be used to efficiently form the
      * new immutable vector.  Otherwise, the parts of the mutable
-     * vector must be copied, to ensure immutability.
+     * vector must be copied, to ensure immutability.  freeze applies
+     * also to the channels: any channels of this mutable vector may
+     * also be frozen if the vector is frozen, to avoid copying them.
      * @return An immutable vector built from this vector's data.
      */
     private ImmutableSparseVector immutable(boolean freeze) {
-        checkMutable();
+        ImmutableSparseVector isv;
+	double[] nvs = freeze ? values : Arrays.copyOf(values, domainSize);
+	Map<Symbol, ImmutableSparseVector> newChannelMap =
+	    new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+	// We freeze all entries in the channep map, so we don't have
+	// to make copies of them.
+	for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
+	    if (freeze) {
+		newChannelMap.put(entry.getKey(), entry.getValue().freeze());
+	    } else {
+		newChannelMap.put(entry.getKey(), entry.getValue().copy().freeze());
+	    }		
+	}
+	isv = new ImmutableSparseVector(keys, nvs, domainSize, usedKeys, newChannelMap);
+
+        if (freeze) {
+            isMutable = false;
+        }
+        return isv;
+    }
+
+    /**
+     * Construct another version of this sparse vector that has the
+     * same keys and data as the current vector, but that removes the
+     * storage for any unused keys.
+     * @return The new MutableSparseVector.
+    private ImmutableSparseVector shrink() {
         ImmutableSparseVector isv;
         final int sz = size();
         if (sz == domainSize) {
             double[] nvs = freeze ? values : Arrays.copyOf(values, domainSize);
             isv = new ImmutableSparseVector(keys, nvs, domainSize);
+	    for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
+		isv.addChannel(entry.getKey(), entry.getValue().freeze());
+	    }
         } else {
             long[] nkeys = new long[sz];
             double[] nvalues = new double[sz];
@@ -535,6 +566,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
         return isv;
     }
+     */
 
     private class IterImpl implements Iterator<VectorEntry> {
         private BitSetIterator iter = new BitSetIterator(usedKeys);
@@ -702,7 +734,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	    throw new IllegalArgumentException("There is already a channel with name " +
 					       channelSymbol.getName());
 	}
-	return channelMap.put(channelSymbol, new MutableSparseVector(keyDomain()));
+	MutableSparseVector theChannel = new MutableSparseVector(keyDomain());
+	channelMap.put(channelSymbol, theChannel);
+	return theChannel;
     }
 
     /**
@@ -727,7 +761,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	    throw new IllegalArgumentException("The channel you are trying to add to this vector "
 					       + "has an incompatible key domain.");
 	}
-	return channelMap.put(channelSymbol, theChannel.mutableCopy());
+	MutableSparseVector theChannelCopy = theChannel.mutableCopy();
+	channelMap.put(channelSymbol, theChannelCopy);
+	return theChannelCopy;
     }
 
     @Override

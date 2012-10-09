@@ -161,7 +161,7 @@ public abstract class SparseVectorTestCommon {
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), closeTo(5));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
@@ -173,10 +173,10 @@ public abstract class SparseVectorTestCommon {
         VectorEntry[] entries =
                 Iterators.toArray(simpleVector().iterator(),
                                   VectorEntry.class);
-        assertEquals(3, entries.length);
-        assertEquals(3, entries[0].getKey());
-        assertEquals(7, entries[1].getKey());
-        assertEquals(8, entries[2].getKey());
+        assertThat(entries.length, closeTo(3));
+        assertThat(entries[0].getKey(), closeTo(3));
+        assertThat(entries[1].getKey(), closeTo(7));
+        assertThat(entries[2].getKey(), closeTo(8));
         assertThat(entries[0].getValue(), closeTo(1.5));
         assertThat(entries[1].getValue(), closeTo(3.5));
         assertThat(entries[2].getValue(), closeTo(2));
@@ -199,7 +199,7 @@ public abstract class SparseVectorTestCommon {
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), closeTo(5));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();

@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Map;
+import java.util.BitSet;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -95,6 +96,23 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
 	super(ks, vs, sz);
 	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+    }
+
+    /**
+     * Construct a new sparse vector from pre-existing arrays. These arrays must
+     * be sorted in key order and cannot contain duplicate keys; this condition
+     * is not checked.  The new vector will have a copy of the
+     * channels that are passed into it.
+     *
+     * @param ks the key array (will be the key domain).
+     * @param vs the value array.
+     * @param sz the length to actually use.
+     * @param used the keys that actually have values currently.
+     */
+    protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
+				    Map<Symbol, ImmutableSparseVector> inChannelMap) {
+	super(ks, vs, sz, used);
+	channelMap = inChannelMap;
     }
 
     @Override
@@ -191,7 +209,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @Override
     public MutableSparseVector mutableCopy() {
-        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize), domainSize);
+        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
+							     domainSize, (BitSet) usedKeys.clone());
 	for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
 	    result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
 	}

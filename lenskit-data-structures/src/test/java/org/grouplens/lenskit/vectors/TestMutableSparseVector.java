@@ -62,6 +62,17 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         return MutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
     }
 
+    // Ensure that the way we're constructing the vectors leaves their
+    // parts independent.
+    @Test
+    public void testIndependentMakers() {
+	MutableSparseVector v1 = simpleVector();
+	MutableSparseVector v2 = simpleVector();
+	assertThat(v1.set(3, 77), closeTo(1.5));
+	assertThat(v1.get(3), closeTo(77));
+	assertThat(v2.get(3), closeTo(1.5));
+    }
+
     @Test
     public void testCopy() {
         assertTrue(emptyVector().copy().isEmpty());
@@ -118,7 +129,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
         v = simpleVector();
         v.subtract(singleton());
-        assertEquals(simpleVector(), v);
+        assertEquals(v, simpleVector());
     }
 
     @Test

@@ -36,12 +36,9 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 /**
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class TestImmutableSparseVectorChannels {
-    Symbol fooSymbol = Symbol.of("foo");
-    Symbol barSymbol = Symbol.of("bar");
-    Symbol foobarSymbol = Symbol.of("foobar");
+public class TestMutabilityConversions {
 
     protected MutableSparseVector emptyVector() {
         return new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
@@ -64,34 +61,46 @@ public class TestImmutableSparseVectorChannels {
     }
 
     @Test
-    public void testImmutable() {
+    public void testClear() {
 	MutableSparseVector simple = simpleVector();
-	simple.addChannel(fooSymbol).set(3, 77);
-	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+	assertThat(simple.size(), equalTo(3));
+	simple.clear(3);
+	assertThat(simple.size(), equalTo(2));
 
-	ImmutableSparseVector simpleImm = simple.immutable();
-	assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
+	ImmutableSparseVector isvSimple = simple.immutable();
+	assertThat(isvSimple.size(), equalTo(2));
+
+	MutableSparseVector reSimple = isvSimple.mutableCopy();
+	assertThat(reSimple.size(), equalTo(2));
+	assertTrue(Double.isNaN(reSimple.set(3, 77)));
+	assertThat(reSimple.size(), equalTo(3));  // changed!
+	assertThat(isvSimple.size(), equalTo(2)); // unchanged
+	assertThat(simple.size(), equalTo(2));	   // unchanged
     }
 
     @Test
-    public void testCopy() {
+    public void testIterate() {
 	MutableSparseVector simple = simpleVector();
-	simple.addChannel(fooSymbol).set(3, 77);
-	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+	assertThat(simple.size(), equalTo(3));
+	simple.clear(3);
+	assertThat(simple.size(), equalTo(2));
 
-	ImmutableSparseVector simpleImm = simple.immutable();
-	MutableSparseVector reSimple = simpleImm.mutableCopy();
-	assertThat(reSimple.channel(fooSymbol).get(3), closeTo(77));
-	reSimple.channel(fooSymbol).set(7, 55);
-	assertThat(reSimple.channel(fooSymbol).get(7), closeTo(55));
+	// Check that iteration on simple goes through the right
+	// number of items.
+	int count = 0;
+	for (VectorEntry entry : simple) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
 
-	ImmutableSparseVector reSimpleImm = reSimple.immutable();
-	assertThat(reSimpleImm.channel(fooSymbol).get(3), closeTo(77));
-	assertThat(reSimpleImm.channel(fooSymbol).get(7), closeTo(55));
-
-	// Now we check that the original immutable copy is unchanged
-	assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
-	assertThat(simpleImm.channel(fooSymbol).get(7, -1), closeTo(-1));
+	// Check that iteration on isvSimple goes through the right
+	// number of items.
+	ImmutableSparseVector isvSimple = simple.immutable();
+	assertThat(isvSimple.size(), equalTo(2));
+	count = 0;
+	for (VectorEntry entry : isvSimple) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
     }
-
 }
