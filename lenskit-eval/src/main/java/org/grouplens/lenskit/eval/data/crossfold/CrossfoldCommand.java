@@ -188,7 +188,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         return this;
     }
 
-    public CrossfoldCommand build() {
+    private CrossfoldCommand initialize() {
         if (trainFilePattern == null) {
             trainFilePattern = name + ".train.%d.csv";
         }
@@ -204,6 +204,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *
      * @return The name of the crossfold split.
      */
+    @Override
     public String getName() {
         if (name.equals("Crossfold")) {
             return source.getName();
@@ -255,7 +256,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
-        this.build();
+        this.initialize();
         if (!isForced) {
             long mtime = lastModified();
             long srcMtime = source.lastModified();
