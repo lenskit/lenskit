@@ -18,6 +18,8 @@
  */
 package org.grouplens.lenskit.eval.config;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 import java.util.Properties;
 
 /**
@@ -32,6 +34,11 @@ import java.util.Properties;
  * @since 1.1
  */
 public class EvalScriptConfig {
+    public static final String FORCE_PROPERTY = "lenskit.eval.force";
+    public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
+    public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
+    public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
+
     private Properties properties;
 
     public EvalScriptConfig() {
@@ -63,13 +70,17 @@ public class EvalScriptConfig {
         return properties.getProperty(key, null);
     }
 
+    public boolean force() {
+        return BooleanUtils.toBoolean(getProperty(FORCE_PROPERTY));
+    }
+
     /**
      * Get the script for this evaluation.  Will often include a path.
      *
      * @return The script name, or "eval.groovy" if none has been set.
      */
     public String getScript() {
-        return getProperty("lenskit.eval.script", "eval.groovy");
+        return getProperty(EVAL_SCRIPT_PROPERTY, "eval.groovy");
     }
 
     /**
@@ -78,7 +89,7 @@ public class EvalScriptConfig {
      * @return The data directory, or "." if none has been set.
      */
     public String getDataDir() {
-        return getProperty("lenskit.eval.dataDir", ".");
+        return getProperty(DATA_DIR_PROPERTY, ".");
     }
 
     /**
@@ -87,7 +98,7 @@ public class EvalScriptConfig {
      * @return The analysis directory, or "." if none has been set.
      */
     public String getAnalysisDir() {
-        return getProperty("lenskit.eval.analysisDir", ".");
+        return getProperty(ANALYSIS_DIR_PROPERTY, ".");
     }
 
 }
