@@ -103,4 +103,20 @@ public class TestMutabilityConversions {
 	}
 	assertThat(count, equalTo(2));
     }
+
+    @Test
+    public void testEquals() {
+	MutableSparseVector simple = simpleVector();
+	simple.clear(3);
+	ImmutableSparseVector isvSimple = simple.immutable();
+	assertTrue(isvSimple.equals(simple));
+	assertTrue(simple.equals(isvSimple));
+
+	MutableSparseVector reSimple = isvSimple.mutableCopy();
+	assertTrue(isvSimple.equals(reSimple));
+	assertTrue(reSimple.equals(isvSimple));
+	assertTrue(reSimple.equals(simple));
+	assertTrue(simple.equals(reSimple));
+    }
+
 }

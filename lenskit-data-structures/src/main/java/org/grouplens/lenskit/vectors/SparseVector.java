@@ -23,6 +23,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -31,6 +32,7 @@ import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.BitSet;
@@ -39,50 +41,12 @@ import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.grouplens.lenskit.collections.BitSetIterator;
+import org.grouplens.lenskit.collections.IntIntervalList;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
-import org.grouplens.lenskit.collections.BitSetIterator;
-
-// TODO: add a test case using the return value from addChannel, which
-// should be the channel just added.
-
-// TODO: Figure out what to do at mutablecopy of channels
-// - make sure any way that copies from immutable -> mutable copies
-// channels
-// - make sure any way that copies from mutable -> immutable copies channels
-
-// TODO: convert the Immutable vector to be more like the Mutable
-// vector, and make the channels work for Immutables
-// - make the Immutable vector have a key domain.
-
-// TODO: write test cases for Immutable vectors with channels
-
-// DONE: make the mutable vector have a bit that identifies whether it
-// is immutable or not, and throw exceptions if it is immutable but a
-// mutation operation is attempted.
-
-// TODO: make sure to copy the channels when creating an Immutable
-// vector from a Mutable vector.
-
-// TODO: Make sure that all constructors and copiers correctly deal
-// with the channels
-// x mutable
-// - immutable
-
-// DONE: test whether the length parameter is actually tested by any
-// of the unit tests.  (in the special test for length)
-
-// DONE: Figure out what domainSize = length does in the MutableSparseVector
-// constructor
-
-// DONE Write tests for Mutable
-
-// DONE Figure out why in TestMutableSparseVector.java:
-         // And this should fail...
-//        v.get(7);
-
 
 /**
  * Read-only interface to sparse vectors.
@@ -286,14 +250,6 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
     }
 
     /**
-     * Iterate over all entries.
-     *
-     * @return an iterator over all key/value pairs.
-     */
-    @Override
-    public abstract Iterator<VectorEntry> iterator();
-
-    /**
      * Fast iterator over all set entries (it can reuse entry objects).
      *
      * @return a fast iterator over all key/value pairs
@@ -362,6 +318,70 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
                 return fastIterator(state);
             }
         };
+    }
+
+    // The default iterator for this SparseVector iterates over
+    // entries that are "used".  It uses an IterImpl class that
+    // generates a new VectorEntry for every element returned, so the
+    // client can safely keep around the VectorEntrys without concern
+    // they will mutate, at some cost in speed.
+    public Iterator<VectorEntry> iterator() {
+        return new IterImpl();
+    }
+
+    private class IterImpl implements Iterator<VectorEntry> {
+        private BitSetIterator iter = new BitSetIterator(usedKeys);
+
+        @Override
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        @Override
+        @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            return new VectorEntry(SparseVector.this, pos,
+                                   keys[pos], values[pos], true);
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    // Given an int iterator, iterates over the elements of the <key,
+    // value> pairs indexed by the int iterator.  For efficiency, may
+    // reuse the VectorEntry returned at one step for a later step, so
+    // the client should not keep around old VectorEntrys.
+    private class FastIterImpl implements Iterator<VectorEntry> {
+        private VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
+        private IntIterator iter;
+
+        public FastIterImpl(IntIterator positions) {
+            iter = positions;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        @Override
+        @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            boolean is_set = usedKeys.get(pos);
+            double v = is_set ? values[pos] : Double.NaN;
+            entry.set(pos, keys[pos], v, is_set);
+            return entry;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -586,61 +606,6 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
             hashCode = keySet().hashCode() ^ values().hashCode();
         }
         return hashCode;
-    }
-
-    public Iterator<VectorEntry> iterator() {
-        return new IterImpl();
-    }
-
-    private class IterImpl implements Iterator<VectorEntry> {
-        private BitSetIterator iter = new BitSetIterator(usedKeys);
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        @Nonnull
-        public VectorEntry next() {
-            int pos = iter.nextInt();
-            return new VectorEntry(MutableSparseVector.this, pos,
-                                   keys[pos], values[pos], true);
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private class FastIterImpl implements Iterator<VectorEntry> {
-        private VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
-        private IntIterator iter;
-
-        public FastIterImpl(IntIterator positions) {
-            iter = positions;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        @Nonnull
-        public VectorEntry next() {
-            int pos = iter.nextInt();
-            boolean set = usedKeys.get(pos);
-            double v = set ? values[pos] : Double.NaN;
-            entry.set(pos, keys[pos], v, set);
-            return entry;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**
