@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>lenskit</artifactId>
+    <groupId>org.grouplens.lenskit</groupId>
+    <version>1.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>lenskit-integration-tests</artifactId>
+  <name>LensKit Integration Tests</name>
+  <description>
+    End-to-end integration tests for the core LensKit code.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-knn</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Download the MovieLens 100K data set -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-ml-data</id>
+            <goals><goal>run</goal></goals>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <target>
+                <ant antfile="${basedir}/src/test/ant/get-data.xml"
+                     target="download-100k"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+
+        <configuration>
+          <systemPropertyVariables>
+            <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
+            <buildDirectory>${project.build.directory}</buildDirectory>
+          </systemPropertyVariables>
+        </configuration>
+
+        <executions>
+          <!-- turn off the default test execution. -->
+          <execution>
+            <id>default-test</id>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+
+          <!-- run the tests at the integration-test phase. -->
+          <execution>
+            <id>integration-tests</id>
+            <goals><goal>test</goal></goals>
+            <phase>integration-test</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
