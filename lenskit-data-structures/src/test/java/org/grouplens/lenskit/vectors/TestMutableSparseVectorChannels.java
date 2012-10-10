@@ -168,4 +168,51 @@ public class TestMutableSparseVectorChannels {
 	} catch(IllegalArgumentException iae) { /* ignore */ }
     }
 
+    @Test
+    public void testWithDomainChannels() {
+	MutableSparseVector simple = simpleVector();
+	
+	simple.addChannel(fooSymbol);   // domain is 3, 7, 8
+	simple.channel(fooSymbol).set(3, 77.7);
+	simple.channel(fooSymbol).set(7, 22.2);
+	assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
+
+	simple.clear(3);
+	assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
+
+	// We shrink the domain to 7, 8
+	MutableSparseVector msvShrunk = simple.withDomain();
+	assertTrue(Double.isNaN(msvShrunk.channel(fooSymbol).get(3)));
+	assertThat(msvShrunk.channel(fooSymbol).get(7), closeTo(22.2));
+	assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
+
+	// The channel should shrink to only 2 items total, one of
+	// which is set
+	int count = 0;
+	for (VectorEntry entry : msvShrunk.channel(fooSymbol).fast(VectorEntry.State.EITHER)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
+
+	count = 0;
+	for (VectorEntry entry : msvShrunk.channel(fooSymbol).fast(VectorEntry.State.UNSET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(1));
+
+	// The original channel should still have 1 unset, and 2 set.
+	count = 0;
+	for (VectorEntry entry : simple.channel(fooSymbol).fast(VectorEntry.State.UNSET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(1));
+
+	count = 0;
+	for (VectorEntry entry : simple.channel(fooSymbol).fast(VectorEntry.State.SET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
+    }
+
+
 }

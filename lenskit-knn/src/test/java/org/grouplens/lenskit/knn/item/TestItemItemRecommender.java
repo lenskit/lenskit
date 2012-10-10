@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.not;
@@ -87,7 +88,9 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Check that we score items but do not provide rating scores.
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously. 
      */
     @Test
     public void testItemScorerNoRating() {
@@ -99,6 +102,8 @@ public class TestItemItemRecommender {
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
+	assertThat(scores.channel(ItemItemScorer.neighborhoodsizeSymbol).
+		   get(7), closeTo(5.0));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
     }

@@ -260,4 +260,56 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(8, Math.E), closeTo(Math.E));
     }
 
+    @Test
+    public void testWithDomain() {
+	MutableSparseVector simple = simpleVector();
+	
+	// Check that iteration on simple goes through the right
+	// number of items.
+	int count = 0;
+	for (VectorEntry entry : simple) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(3));
+
+	simple.clear(8);
+
+	count = 0;
+	for (VectorEntry entry : simple) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
+
+	count = 0;
+	for (VectorEntry entry : simple.fast(VectorEntry.State.EITHER)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(3));
+
+	count = 0;
+	for (VectorEntry entry : simple.fast(VectorEntry.State.UNSET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(1));
+
+	MutableSparseVector msvShrunk = simple.withDomain();
+	count = 0;
+	for (VectorEntry entry : msvShrunk.fast(VectorEntry.State.UNSET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(0));
+
+	count = 0;
+	for (VectorEntry entry : msvShrunk.fast(VectorEntry.State.EITHER)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
+
+	count = 0;
+	for (VectorEntry entry : msvShrunk.fast(VectorEntry.State.SET)) {
+	    count += 1;
+	}
+	assertThat(count, equalTo(2));
+    }
+
 }

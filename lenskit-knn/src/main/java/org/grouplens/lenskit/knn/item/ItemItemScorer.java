@@ -31,6 +31,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ import java.util.Collection;
 public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
-    public static final neighborhoodsizeSymbol =
+    public static final Symbol neighborhoodsizeSymbol =
 	Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
     protected
@@ -111,10 +112,6 @@ public class ItemItemScorer extends AbstractItemScorer implements
         transform.apply(normed);
 
         scores.clear();
-
-	// TODO add neighborhood size as a side channel to scores that
-	// actually knows how many items were in the neighborhood.
-	// For now, we'll add this information *always*.
         algorithm.scoreItems(model, normed, scores, scorer);
 
         // untransform the scores

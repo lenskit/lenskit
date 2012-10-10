@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -190,8 +191,45 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	channelMap = chs;
     }
 
-    //    public MutableSparseVector withDomain()
-    //    public MutableSparseVector withDomain(LongSet keySet)
+    /**
+     * Create a new version of this MutableSparseVector that has a
+     * different domain from the current version of the vector.  All
+     * elements in the current vector that are also in the new keyDomain
+     * are copied over into the new vector.  
+     * Channels from the current vector are copied over to the new
+     * vector, all with the changed keyDomain.
+     * 
+     * @param keyDomain the set of keys to use for the domain of the
+     * new vector.
+     * @returns the new copy of the vector.
+     */
+    public MutableSparseVector withDomain(LongSet keyDomain) {
+	MutableSparseVector msvNew = new MutableSparseVector(keyDomain);
+	msvNew.set(this); // copy appropriate elements from "this"
+	for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
+	    msvNew.addChannel(entry.getKey(), entry.getValue().withDomain(keyDomain));
+	}
+	return msvNew;
+    }
+
+    /**
+     * Create a new version of this MutableSparseVector that has
+     * keyDomain equal to the current set of items that are set in
+     * "this" vector.  All elements in the current vector that are
+     * also in the new keyDomain are copied over into the new vector.
+     * Channels from the current vector are copied over to the new
+     * vector, all with the changed keyDomain.
+     * 
+     * @returns the new copy of the vector.
+     */
+
+    public MutableSparseVector withDomain() {
+	LongSet newDomain = new LongArraySet();
+	for (VectorEntry entry : this) {
+	    newDomain.add(entry.getKey());
+	}
+	return this.withDomain(newDomain);
+    }
 
     /**
      * Check if this vector is Mutable.
@@ -503,46 +541,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Construct another version of this sparse vector that has the
-     * same keys and data as the current vector, but that removes the
-     * storage for any unused keys.
-     * @return The new MutableSparseVector.
-    private ImmutableSparseVector shrink() {
-        ImmutableSparseVector isv;
-        final int sz = size();
-        if (sz == domainSize) {
-            double[] nvs = freeze ? values : Arrays.copyOf(values, domainSize);
-            isv = new ImmutableSparseVector(keys, nvs, domainSize);
-	    for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-		isv.addChannel(entry.getKey(), entry.getValue().freeze());
-	    }
-        } else {
-            long[] nkeys = new long[sz];
-            double[] nvalues = new double[sz];
-            int i = 0;
-            int j = 0;
-            while (j < sz) {
-                i = usedKeys.nextSetBit(i);
-                assert i >= 0; // since j < sz, this is always good!
-                int k = usedKeys.nextClearBit(i);
-                // number of bits to copy
-                int n = k - i;
-                // blit the data and advance
-                System.arraycopy(keys, i, nkeys, j, n);
-                System.arraycopy(values, i, nvalues, j, n);
-                j += n;
-                i = k;
-            }
-            isv = new ImmutableSparseVector(nkeys, nvalues, sz);
-        }
-        if (freeze) {
-            isMutable = false;
-        }
-        return isv;
-    }
-     */
-
-    /**
      * Wrap key and value arrays in a sparse vector.
      *
      * <p>This method allows a new vector to be constructed from
@@ -663,6 +661,23 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Add a channel to thie vector, even if there is already a
+     * channel with the same symbol.  The new channel will be empty,
+     * and will have the same key domain as this vector.
+     *
+     * @param channelSymbol the symbol under which this new channel
+     * should be created.
+     * @returns the newly created channel
+     */
+    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
+	if (! hasChannel(channelSymbol)) {
+	    addChannel(channelSymbol);
+	}
+	return channelMap.get(channelSymbol);
+    }
+	
+
+    /**
      * Add a channel to thie vector, and set it equal to a given
      * value.  The input channel must have a compatible key domain to
      * this channel.  The input channel should not be changed after it
@@ -688,6 +703,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	channelMap.put(channelSymbol, theChannelCopy);
 	return theChannelCopy;
     }
+
+
 
     @Override
     public boolean hasChannel(Symbol channelSymbol) {
