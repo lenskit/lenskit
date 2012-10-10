@@ -29,6 +29,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
+import java.io.Serializable;
 
 /**
  * Summarize a history by extracting a rating vector.
@@ -38,8 +39,10 @@ import javax.inject.Singleton;
 @Shareable
 @ThreadSafe
 @Singleton
-public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector> {
+public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector>, Serializable {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
+
+    private static final long serialVersionUID = 1L;
 
     @Override
     public Class<? extends Event> eventTypeWanted() {
