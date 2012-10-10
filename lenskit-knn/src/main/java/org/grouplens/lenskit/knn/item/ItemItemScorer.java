@@ -48,6 +48,8 @@ import java.util.Collection;
 public class ItemItemScorer extends AbstractItemScorer implements
         ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
+    public static final neighborhoodsizeSymbol =
+	Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
     protected
     @Nonnull
@@ -110,6 +112,9 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
         scores.clear();
 
+	// TODO add neighborhood size as a side channel to scores that
+	// actually knows how many items were in the neighborhood.
+	// For now, we'll add this information *always*.
         algorithm.scoreItems(model, normed, scores, scorer);
 
         // untransform the scores

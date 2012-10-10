@@ -190,6 +190,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	channelMap = chs;
     }
 
+    //    public MutableSparseVector withDomain()
+    //    public MutableSparseVector withDomain(LongSet keySet)
+
     /**
      * Check if this vector is Mutable.
      */
