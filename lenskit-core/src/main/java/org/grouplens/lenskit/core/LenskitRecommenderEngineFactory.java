@@ -31,6 +31,8 @@ import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,6 +59,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             ItemRecommender.class,
             GlobalItemRecommender.class
     };
+
+    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineFactory.class);
 
     private final BindingFunctionBuilder config;
     private DAOFactory factory;
@@ -186,6 +190,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
         // Get the set of shareable instances.
         Set<Node> shared = getShareableNodes(original);
+        logger.debug("found {} shared nodes", shared.size());
 
         // Instantiate and replace shareable nodes
         Graph modified = original.clone();
@@ -196,6 +201,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         } catch (RuntimeException ex) {
             throw new RecommenderBuildException("could not instantiate shared components", ex);
         }
+        logger.debug("found {} shared instances", sharedInstances.size());
 
         // Remove transient edges and orphaned subgraphs
         Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
@@ -337,6 +343,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             if (incoming != null && incoming.isEmpty()) {
                 // No other node depends on this node, so we can remove it,
                 // we must also flag its dependencies as removal candidates
+                // Flag each multiple times, as it could become a candidate late
                 for (Edge e : graph.getOutgoingEdges(candidate)) {
                     removeQueue.add(e.getTail());
                 }
