@@ -200,34 +200,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
     }
 
-    @Override
-    public Iterator<VectorEntry> iterator() {
-        return new IterImpl();
-    }
-
-    @Override
-    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
-        IntIterator iter;
-        switch (state) {
-        case SET:
-            iter = new BitSetIterator(usedKeys, 0, domainSize);
-            break;
-        case UNSET: {
-            BitSet unused = (BitSet) usedKeys.clone();
-            unused.flip(0, domainSize);
-            iter = new BitSetIterator(unused, 0, domainSize);
-            break;
-        }
-        case EITHER: {
-            iter = new IntIntervalList(0, domainSize).iterator();
-            break;
-        }
-        default:
-            throw new IllegalArgumentException("invalid entry state");
-        }
-        return new FastIterImpl(iter);
-    }
-
     private double setAt(int idx, double value) {
         if (idx >= 0) {
             final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
@@ -567,57 +539,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return isv;
     }
      */
-
-    private class IterImpl implements Iterator<VectorEntry> {
-        private BitSetIterator iter = new BitSetIterator(usedKeys);
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        @Nonnull
-        public VectorEntry next() {
-            int pos = iter.nextInt();
-            return new VectorEntry(MutableSparseVector.this, pos,
-                                   keys[pos], values[pos], true);
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private class FastIterImpl implements Iterator<VectorEntry> {
-        private VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
-        private IntIterator iter;
-
-        public FastIterImpl(IntIterator positions) {
-            iter = positions;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        @Nonnull
-        public VectorEntry next() {
-            int pos = iter.nextInt();
-            boolean set = usedKeys.get(pos);
-            double v = set ? values[pos] : Double.NaN;
-            entry.set(pos, keys[pos], v, set);
-            return entry;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
 
     /**
      * Wrap key and value arrays in a sparse vector.

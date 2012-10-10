@@ -314,7 +314,27 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      *      Long2DoubleMap.FastEntrySet.fastIterator()
      * @since 0.11
      */
-    public abstract Iterator<VectorEntry> fastIterator(State state);
+    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
+        IntIterator iter;
+        switch (state) {
+        case SET:
+            iter = new BitSetIterator(usedKeys, 0, domainSize);
+            break;
+        case UNSET: {
+            BitSet unused = (BitSet) usedKeys.clone();
+            unused.flip(0, domainSize);
+            iter = new BitSetIterator(unused, 0, domainSize);
+            break;
+        }
+        case EITHER: {
+            iter = new IntIntervalList(0, domainSize).iterator();
+            break;
+        }
+        default:
+            throw new IllegalArgumentException("invalid entry state");
+        }
+        return new FastIterImpl(iter);
+    }
 
     /**
      * Return an iterable view of this vector using a fast iterator. This method
@@ -566,6 +586,61 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
             hashCode = keySet().hashCode() ^ values().hashCode();
         }
         return hashCode;
+    }
+
+    public Iterator<VectorEntry> iterator() {
+        return new IterImpl();
+    }
+
+    private class IterImpl implements Iterator<VectorEntry> {
+        private BitSetIterator iter = new BitSetIterator(usedKeys);
+
+        @Override
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        @Override
+        @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            return new VectorEntry(MutableSparseVector.this, pos,
+                                   keys[pos], values[pos], true);
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class FastIterImpl implements Iterator<VectorEntry> {
+        private VectorEntry entry = new VectorEntry(MutableSparseVector.this, -1, 0, 0, false);
+        private IntIterator iter;
+
+        public FastIterImpl(IntIterator positions) {
+            iter = positions;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        @Override
+        @Nonnull
+        public VectorEntry next() {
+            int pos = iter.nextInt();
+            boolean set = usedKeys.get(pos);
+            double v = set ? values[pos] : Double.NaN;
+            entry.set(pos, keys[pos], v, set);
+            return entry;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
