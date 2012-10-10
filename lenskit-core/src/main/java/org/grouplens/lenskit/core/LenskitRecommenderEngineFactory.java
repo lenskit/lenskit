@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -205,7 +206,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
         // Remove transient edges and orphaned subgraphs
         Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
-        removeOrphanSubgraphs(modified, transientTargets);
+        Set<Node> removed = removeOrphanSubgraphs(modified, transientTargets);
+        logger.debug("removed {} orphaned nodes", removed.size());
 
         // Find the DAO node
         Node daoNode = GraphtUtils.findDAONode(modified);
@@ -259,7 +261,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @param toReplace The shared nodes to replace.
      * @return The new instance nodes, in iteration order from {@code toReplace}.
      */
-    private LinkedHashSet<Node> instantiate(Graph graph, Set<Node> toReplace) {
+    private Set<Node> instantiate(Graph graph, Set<Node> toReplace) {
         InjectSPI spi = config.getSPI();
         StaticInjector injector = new StaticInjector(spi, graph);
         LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
@@ -275,6 +277,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             }
             Node repl = new Node(instanceSat, label.getCachePolicy());
             graph.replaceNode(node, repl);
+            replacements.add(repl);
         }
         return replacements;
     }
@@ -335,7 +338,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return targets;
     }
 
-    private void removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
+    private Set<Node> removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
+        Set<Node> removed = new HashSet<Node>();
         Queue<Node> removeQueue = new LinkedList<Node>(candidates);
         while (!removeQueue.isEmpty()) {
             Node candidate = removeQueue.poll();
@@ -347,9 +351,12 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
                 for (Edge e : graph.getOutgoingEdges(candidate)) {
                     removeQueue.add(e.getTail());
                 }
+                logger.debug("removing orphan node {}", candidate);
                 graph.removeNode(candidate);
+                removed.add(candidate);
             }
         }
+        return removed;
     }
 
     private Graph buildGraph(DataAccessObject dao) {
