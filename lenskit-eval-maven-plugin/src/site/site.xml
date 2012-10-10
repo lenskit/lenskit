@@ -8,7 +8,7 @@
     <menu name="LensKit Maven plugin">
       <item name="About" href="index.html"/>
       <item name="Goals" href="plugin-info.html"/>
-      <item ref="reports" inherit="bottom"/>
     </menu>
+    <menu ref="reports" inherit="bottom"/>
   </body>
 </project>
