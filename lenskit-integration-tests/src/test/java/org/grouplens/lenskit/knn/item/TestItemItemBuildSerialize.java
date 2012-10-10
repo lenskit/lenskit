@@ -35,7 +35,7 @@ public class TestItemItemBuildSerialize {
 
     @Before
     public void createDAOFactory() {
-        daoFactory = new SimpleFileRatingDAO.Factory(inputFile, "\t");
+        daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }
 
     @Test

@@ -21,6 +21,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Supplier;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Rating-only data source backed by a simple delimited file.
@@ -83,6 +85,29 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
          */
         public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
+        }
+
+        /**
+         * Create a caching DAO factory.
+         * @param file The input file
+         * @param delimiter The text delimiter
+         * @return A factory that caches the data in memory.
+         * @see #Factory(java.io.File, String)
+         */
+        public static DAOFactory caching(File file, String delimiter) {
+            final Factory f = new Factory(file, delimiter);
+            Supplier<List<Rating>> sup = new Supplier<List<Rating>>() {
+                @Override
+                public List<Rating> get() {
+                    DataAccessObject dao = f.create();
+                    try {
+                        return Cursors.makeList(dao.getEvents(Rating.class));
+                    } finally {
+                        dao.close();
+                    }
+                }
+            };
+            return new EventCollectionDAO.SoftFactory(sup);
         }
 
         public String getDelimiter() {
