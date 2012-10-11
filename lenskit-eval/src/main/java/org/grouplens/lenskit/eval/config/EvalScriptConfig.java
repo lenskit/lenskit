@@ -20,6 +20,7 @@ package org.grouplens.lenskit.eval.config;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 /**
@@ -56,7 +57,7 @@ public class EvalScriptConfig {
      * @param defaultValue The value to return if no such key
      * @return The value of the property
      */
-    public String getProperty(String key, String defaultValue) {
+    public String get(String key, @Nullable String defaultValue) {
         return properties.getProperty(key, defaultValue);
     }
 
@@ -64,10 +65,10 @@ public class EvalScriptConfig {
      * Get the value of a property.
      *
      * @param key The name of the property
-     * @return The value of the property, or null if there is no such key
+     * @return The value of the property, or {@code null} if there is no such key
      */
-    public String getProperty(String key) {
-        return properties.getProperty(key, null);
+    public String get(String key) {
+        return get(key, null);
     }
 
     /**
@@ -76,7 +77,7 @@ public class EvalScriptConfig {
      * @return {@code true} if the script should run in force mode.
      */
     public boolean force() {
-        return BooleanUtils.toBoolean(getProperty(FORCE_PROPERTY));
+        return BooleanUtils.toBoolean(get(FORCE_PROPERTY));
     }
 
     /**
@@ -85,7 +86,7 @@ public class EvalScriptConfig {
      * @return The script name, or "eval.groovy" if none has been set.
      */
     public String getScript() {
-        return getProperty(EVAL_SCRIPT_PROPERTY, "eval.groovy");
+        return get(EVAL_SCRIPT_PROPERTY, "eval.groovy");
     }
 
     /**
@@ -94,7 +95,7 @@ public class EvalScriptConfig {
      * @return The data directory, or "." if none has been set.
      */
     public String getDataDir() {
-        return getProperty(DATA_DIR_PROPERTY, ".");
+        return get(DATA_DIR_PROPERTY, ".");
     }
 
     /**
@@ -103,7 +104,7 @@ public class EvalScriptConfig {
      * @return The analysis directory, or "." if none has been set.
      */
     public String getAnalysisDir() {
-        return getProperty(ANALYSIS_DIR_PROPERTY, ".");
+        return get(ANALYSIS_DIR_PROPERTY, ".");
     }
 
 }

@@ -47,18 +47,18 @@ public class TestEvalScriptConfig {
      */
     @Test
     public void testClone() {
-        assertEquals("bar", esc.getProperty("foo"));
+        assertEquals("bar", esc.get("foo"));
         props.setProperty("foo", "foobar");
-        assertEquals("bar", esc.getProperty("foo"));
+        assertEquals("bar", esc.get("foo"));
     }
 
     @Test
     public void testGet() {
-        assertEquals("bar", esc.getProperty("foo"));
-        assertEquals("bar", esc.getProperty("foo2"));
-        assertEquals("bar3", esc.getProperty("foo3"));
-        assertEquals(null, esc.getProperty("foo4"));
-        assertEquals("bar5", esc.getProperty("foo5", "bar5"));
+        assertEquals("bar", esc.get("foo"));
+        assertEquals("bar", esc.get("foo2"));
+        assertEquals("bar3", esc.get("foo3"));
+        assertEquals(null, esc.get("foo4"));
+        assertEquals("bar5", esc.get("foo5", "bar5"));
     }
 
     @Test
