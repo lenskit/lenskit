@@ -102,10 +102,37 @@ public class TestItemItemRecommender {
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
-	assertThat(scores.channel(ItemItemScorer.neighborhoodsizeSymbol).
-		   get(7), closeTo(5.0));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
+    }
+
+    /**
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously. 
+     */
+    @Test
+    public void testItemScorerChannels() {
+        UserHistory<Rating> history = getRatings(5);
+        long[] items = {7, 8};
+        ItemItemScorer scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        assertThat(scores, notNullValue());
+        assertThat(scores.size(), equalTo(1));
+        assertThat(scores.get(7), not(notANumber()));
+	assertThat(scores.channel(ItemItemScorer.neighborhoodsizeSymbol).
+		   get(7), closeTo(1.0));
+        assertThat(scores.get(8), notANumber());
+        assertThat(scores.containsKey(8), equalTo(false));
+
+	history = getRatings(2);  // has rated 7, and 8
+        long [] items2 = {7, 8, 9};
+        scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        scores = scorer.score(history, LongArrayList.wrap(items2));
+	assertThat(scores.channel(ItemItemScorer.neighborhoodsizeSymbol).
+		   get(9), closeTo(3.0));  // 1, 7, 8
     }
 
     /**
