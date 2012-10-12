@@ -96,7 +96,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            final int index = iter.next();
+            final int index = iter.nextInt();
             return data.preference(index);
         }
 
@@ -122,7 +122,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            preference.setIndex(iter.next());
+            preference.setIndex(iter.nextInt());
             assert preference.isValid();
             return preference;
         }
