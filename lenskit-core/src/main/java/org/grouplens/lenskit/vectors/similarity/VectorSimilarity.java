@@ -23,9 +23,8 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Compute the similarity between two objects (typically rating vectors). See
- * the specific annotations {@link ItemSimilarity} and {@link UserSimilarity} for the
- * exact interpretation of the similarity function when comparing items and users.
+ * Compute the similarity between two objects (typically rating vectors). It is often
+ * composed with an {@link ItemVectorSimilarity} or {@link UserVectorSimilarity}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */

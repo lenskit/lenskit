@@ -17,42 +17,40 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
-import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+
 import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
 import org.grouplens.lenskit.knn.item.ItemSimilarity
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
 import org.grouplens.lenskit.knn.user.UserSimilarity
 import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
+
+import org.grouplens.lenskit.mf.funksvd.FunkSVDRatingPredictor
+import org.grouplens.lenskit.mf.funksvd.params.FeatureCount
+import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider
+
+import org.grouplens.lenskit.slopeone.SlopeOneModel
+import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
+import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor
+
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
-import org.grouplens.lenskit.params.Damping
-import org.grouplens.lenskit.slopeone.SlopeOneModel
-import org.grouplens.lenskit.slopeone.SlopeOneRatingPredictor
-import org.grouplens.lenskit.slopeone.WeightedSlopeOneRatingPredictor
-import org.grouplens.lenskit.mf.funksvd.FunkSVDRatingPredictor
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount
-import org.grouplens.lenskit.params.IterationCount
-import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider
+
 import org.grouplens.lenskit.util.iterative.StoppingCondition
 import org.grouplens.lenskit.util.iterative.IterationCountStoppingCondition
 import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
-import org.grouplens.lenskit.params.ThresholdValue
-import org.grouplens.lenskit.params.MinimumIterations
 
 def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
 
-def buildDir = System.getProperty("project.build.directory", ".")
+/* 
+   Create a crossfold of the ml100k dataset.  This crossfold will be
+   used later in the trainTest step to perform the evaluations.
+   */
 
-def ml100k = crossfold("ml-100k") {
-    source csvfile("${buildDir}/ml-100k/u.data") {
+def ml100k = crossfold {
+    source csvfile("${config.dataDir}/ml100k/u.data") {
         delimiter "\t"
         domain {
             minimum 1.0
@@ -60,24 +58,28 @@ def ml100k = crossfold("ml-100k") {
             precision 1.0
         }
     }
+    test "${config.dataDir}/ml100k-crossfold/test.%d.csv"
+    train "${config.dataDir}/ml100k-crossfold/train.%d.csv" 
     order RandomOrder
     holdout 10
     partitions 5
-    train "${buildDir}/ml-100k.train.%d.csv"
-    test "${buildDir}/ml-100k.test.%d.csv"
 }
+
+/*
+  Create each of the algorithms, with appropriate bindings to
+  normalizers and constants.  In a simpler evaluation we might just
+  define and use the algorithms in the trainTest step, but by naming
+  them, we can also dump the graphs for each of the algorithms, which
+  is useful for ensuring that the correct bindings occurred.
+*/
 
 def UserUser = algorithm("UserUser") {
     bind RatingPredictor to UserUserRatingPredictor
     bind VectorNormalizer to MeanVarianceNormalizer
     bind BaselinePredictor to ItemUserMeanPredictor
-    within(BaselineSubtractingUserVectorNormalizer) {
-        bind BaselinePredictor to UserMeanPredictor
-    }
+    within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to UserMeanPredictor
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-    within(UserSimilarity) {
-        set Damping to 100.0d
-    }
+    within UserSimilarity set Damping to 100.0d
     set NeighborhoodSize to 30
 }
 
@@ -85,9 +87,7 @@ def ItemItem = algorithm("ItemItem") {
     bind RatingPredictor to ItemItemRatingPredictor
     bind BaselinePredictor to ItemUserMeanPredictor
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-    within(ItemSimilarity) {
-        set Damping to 100.0d
-    }
+    within ItemSimilarity set Damping to 100.0d
     set NeighborhoodSize to 30
 }
 
@@ -115,18 +115,25 @@ def SlopeOne = algorithm("SlopeOne") {
 }
 
 def WeightedSlopeOne = algorithm("WeightedSlopeOne") {
-    within(BaselineSubtractingUserVectorNormalizer) {
-        bind BaselinePredictor to GlobalMeanPredictor
-    }
+    within BaselineSubtractingUserVectorNormalizer bind BaselinePredictor to GlobalMeanPredictor
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
     bind RatingPredictor to WeightedSlopeOneRatingPredictor
     bind BaselinePredictor to ItemUserMeanPredictor
-    within(SlopeOneModel) {
-        set Damping to 0
-    }
+    within SlopeOneModel set Damping to 0
 }
 
+/*
+  We'll use the list of algorithms both to produce the set of
+  configuration graphs and to run the algorithms in the trainTest
+  step. 
+*/
+
 def algorithms = []
+
+/*
+  We create a baseline predictor from each one of the baselines
+  defined above.
+*/
 
 for (bl in baselines) {
     algorithms += algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {
@@ -141,6 +148,17 @@ algorithms += FunkSVD
 algorithms += SlopeOne
 algorithms += WeightedSlopeOne
 
+/*
+  For each of the algorithms in the list, create an appropriately
+  named configuration graph.  This graph shows how the various
+  components were plugged together by the dependency injector (grapht)
+  to create a working recommender.
+  If you install the graphviz software you can generate viewable forms
+  of these graphs.  For instance: 
+     dot -Tpdf SlopeOne.dot > SlopeOne.pdf
+  will create a pdf for the SlopeOne configuration.  graphviz is very
+  powerful, and has many other ways you can view the graphs.
+*/
 for (a in algorithms) {
     dumpGraph {
         domain {
@@ -148,23 +166,29 @@ for (a in algorithms) {
             maximum 5.0
             precision 1.0
         }
-        output "${buildDir}/${a.name}.dot"
+        output "${config.analysisDir}/${a.name}.dot"
         algorithm a
     }
 }
 
-trainTest("mutli-algorithm") {
+/*
+  Now we actually run the analysis, creating the different output
+  files.  These output files can then be processed with your favorite
+  visualization or statistics tools. 
+*/
+trainTest {
     dataset ml100k
-
-    output "${buildDir}/eval-results.csv"
-    predictOutput "${buildDir}/eval-preds.csv"
-    userOutput "${buildDir}/eval-user.csv"
-
+    
+    // Three different types of output for analysis.
+    output "${config.analysisDir}/eval-results.csv"
+    predictOutput "${config.analysisDir}/eval-preds.csv"
+    userOutput "${config.analysisDir}/eval-user.csv"
+    
     metric CoveragePredictMetric
     metric MAEPredictMetric
     metric RMSEPredictMetric
     metric NDCGPredictMetric
-
+    
     for (a in algorithms) {
         algorithm a
     }

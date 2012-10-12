@@ -4,8 +4,8 @@
        as the location of the data; otherwise, it is downloaded from the GroupLens
        web site. -->
 
-   <property name="mldata.zipfile" value="ml-100k.zip"/>
-   <property name="mldata.directory" value="ml-100k"/>
+   <property name="mldata.zipfile" value="ml100k.zip"/>
+   <property name="mldata.directory" value="ml100k"/>
 
    <target name="download-100k" unless="data.movielens.100k">
 

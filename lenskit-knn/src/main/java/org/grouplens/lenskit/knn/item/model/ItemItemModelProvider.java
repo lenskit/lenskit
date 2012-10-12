@@ -44,7 +44,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     @Inject
     public ItemItemModelProvider(ItemSimilarity similarity,
                                  @Transient ItemItemBuildContextFactory contextFactory,
-                                 SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
+                                 @Transient SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
         itemSimilarity = similarity;
         this.contextFactory = contextFactory;
         this.simMatrixAccumulatorFactory = simMatrixAccumulatorFactory;

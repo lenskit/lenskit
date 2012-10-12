@@ -25,6 +25,7 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
+import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -62,25 +63,73 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
 
     /**
      * Create a new LenskitRecommenderEngine by reading a previously serialized
-     * engine from the given file. The new engine will be identical to the old
-     * except it will use the new DAOFactory. It is assumed that the file was
-     * created by using {@link #write(File)}.
+     * engine from the given file.
      *
      * @param factory The DAO factory.
      * @param file    The file from which to load the recommender engine.
      * @throws IOException
      * @throws ClassNotFoundException
+     * @deprecated Use {@link #load(DAOFactory, File)} instead.
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public LenskitRecommenderEngine(DAOFactory factory,
                                     File file) throws IOException, ClassNotFoundException {
+        // TODO Make this delegate to load
         this.factory = factory;
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
         try {
-            spi = (InjectSPI) in.readObject();
+            spi = new ReflectionInjectSPI();
             dependencies = (Graph) in.readObject();
             rootNode = dependencies.getNode(null);
             daoPlaceholder = GraphtUtils.findDAONode(dependencies);
+        } finally {
+            in.close();
+        }
+    }
+
+    /**
+     * Create a new LenskitRecommenderEngine by reading a previously serialized
+     * engine from the given file. The new engine will be identical to the old
+     * except it will use the new DAOFactory. It is assumed that the file was
+     * created by using {@link #write(OutputStream)}.
+     *
+     * @param factory The DAO factory.
+     * @param file The file from which to load the engine.
+     * @return The loaded recommender engine.
+     * @throws IOException If there is an error reading from the file.
+     * @throws RecommenderConfigurationException If the configuration cannot be used.
+     */
+    public static LenskitRecommenderEngine load(DAOFactory factory, File file) throws IOException, RecommenderConfigurationException {
+        FileInputStream input = new FileInputStream(file);
+        try {
+            return load(factory, input);
+        } finally {
+            input.close();
+        }
+    }
+
+    /**
+     * Create a new LenskitRecommenderEngine by reading a previously serialized
+     * engine from the given input stream. The new engine will be identical to the old
+     * except it will use the new DAOFactory. It is assumed that the file was
+     * created by using {@link #write(OutputStream)}.
+     *
+     * @param factory The DAO factory.
+     * @param input The stream from which to load the engine.
+     * @return The loaded recommender engine.
+     * @throws IOException If there is an error reading from the file.
+     * @throws RecommenderConfigurationException If the configuration cannot be used.
+     */
+    public static LenskitRecommenderEngine load(DAOFactory factory, InputStream input) throws IOException, RecommenderConfigurationException {
+        InjectSPI spi = new ReflectionInjectSPI();
+        ObjectInputStream in = new ObjectInputStream(input);
+        try {
+            Graph dependencies = (Graph) in.readObject();
+            Node daoNode = GraphtUtils.findDAONode(dependencies);
+            return new LenskitRecommenderEngine(factory, dependencies, daoNode, spi);
+        } catch (ClassNotFoundException e) {
+            throw new RecommenderConfigurationException(e);
         } finally {
             in.close();
         }
@@ -94,12 +143,30 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @param file The file to write the rec engine to.
      * @throws IOException
-     * @see #LenskitRecommenderEngine(DAOFactory, File)
+     * @see #write(java.io.OutputStream)
      */
     public void write(@Nonnull File file) throws IOException {
-        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+        OutputStream out = new FileOutputStream(file);
         try {
-            out.writeObject(spi);
+            write(out);
+        } finally {
+            out.close();
+        }
+    }
+
+    /**
+     * Write the state of this LenskitRecommenderEngine to the given stream so
+     * that it can be recreated later using another DAOFactory. This uses
+     * default object serialization so if the factory has session bindings
+     * containing non-serializable types, this will fail.
+     *
+     * @param stream The file to write the rec engine to.
+     * @throws IOException
+     * @see #load(DAOFactory, InputStream)
+     */
+    public void write(@Nonnull OutputStream stream) throws IOException {
+        ObjectOutputStream out = new ObjectOutputStream(stream);
+        try {
             out.writeObject(dependencies);
         } finally {
             out.close();

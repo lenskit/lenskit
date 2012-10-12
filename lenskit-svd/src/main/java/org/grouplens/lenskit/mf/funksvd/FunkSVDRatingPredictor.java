@@ -29,6 +29,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.util.iterative.StoppingCondition;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -55,15 +56,18 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final ClampingFunction clamp;
 
     @Nullable
-    private FunkSVDTrainingConfig rule;
+    private final FunkSVDTrainingConfig rule;
+    private final StoppingCondition trainingStop;
 
 
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
+                                  StoppingCondition stop,
                                   @Nullable FunkSVDTrainingConfig rule) {
         super(dao);
         this.dao = dao;
         this.model = model;
+        trainingStop = stop;
         this.rule = rule;
 
         featureCount = model.featureCount;
@@ -152,34 +156,14 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
-        FunkSVDFeatureTrainer trainer = rule.newTrainer();
 
-        while (trainer.nextEpoch()) {
-            for (VectorEntry itemId : ratings.fast()) {
-                final long item = itemId.getKey();
-                final int iidx = model.itemIndex.getIndex(item);
-
-                // Step 1: Compute the trailing value for this item-feature pair
-                double trailingValue = 0.0;
-                for (int f = feature + 1; f < featureCount; f++) {
-                    trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
-                }
-
-                // Step 2: Save the old feature values before computing the new ones
-                final double ouf = uprefs[feature];
-                final double oif = model.itemFeatures[feature][iidx];
-
-                // Step 3: Compute the err
-                // Notice the trainer.compute method should always be called before
-                // 	updating the feature values in step 4, since this method
-                //  renew the internal feature values that will be used in step 4
-                final double ratingValue = itemId.getValue();
-                final double estimate = estimates.get(item);
-                trainer.compute(user, item, trailingValue, estimate, ratingValue, ouf, oif);
-
-                // Step 4: Return updated user feature value
-                uprefs[feature] += trainer.getUserUpdate();
-            }
+        double oldRMSE = Double.NaN;
+        double rmse = Double.MAX_VALUE;
+        int niters = 0;
+        while (!trainingStop.isFinished(niters, oldRMSE - rmse)) {
+            oldRMSE = rmse;
+            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
+            niters += 1;
         }
 
         // After training this feature, we need to update each rating's cached
@@ -192,5 +176,39 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
             est = clamp.apply(user, iid, est + offset);
             estimates.set(iid, est);
         }
+    }
+
+    private double doFeatureIteration(long user, double[] uprefs,
+                                      SparseVector ratings, MutableSparseVector estimates,
+                                      int feature) {
+        assert rule != null;
+        double sse = 0;
+        int n = 0;
+        for (VectorEntry e: ratings.fast()) {
+            final long iid = e.getKey();
+            final int iidx = model.itemIndex.getIndex(iid);
+
+            // Step 1: Compute the trailing value for this item-feature pair
+            double trailingValue = 0.0;
+            for (int f = feature + 1; f < featureCount; f++) {
+                trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
+            }
+
+            // Step 2: Save the old feature values before computing the new ones
+            final double ouf = uprefs[feature];
+            final double oif = model.itemFeatures[feature][iidx];
+
+            // Step 3: Compute the error
+            final double err = rule.computeError(user, iid, trailingValue,
+                                                 estimates.get(iid), e.getValue(),
+                                                 ouf, oif);
+
+            // Step 4: update user preferences
+            uprefs[feature] += rule.userUpdate(err, ouf, oif);
+
+            sse += err * err;
+            n += 1;
+        }
+        return Math.sqrt(sse / n);
     }
 }

@@ -1,155 +1,149 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>lenskit</artifactId>
-    <groupId>org.grouplens.lenskit</groupId>
-    <version>1.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
-  </parent>
-  <artifactId>lenskit-eval-demo</artifactId>
-  <name>LensKit Evaluation Demo</name>
-  <packaging>pom</packaging>
-  <description>
-    Project demonstrating LensKit evaluations on the ML-100K data set.
-  </description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <properties>
-    <eval.java.executable>java</eval.java.executable>
-  </properties>
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.grouplens.lenskit</groupId>
+   <artifactId>lenskit-eval-demo</artifactId>
+   <version>1.1-SNAPSHOT</version>
+   <packaging>lenskit-lifecycle</packaging>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-eval</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-knn</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-svd</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-slopeone</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-  </dependencies>
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <lenskit.eval.scriptDir>${basedir}/src/eval/</lenskit.eval.scriptDir>
+      <lenskit.eval.dataDir>${basedir}/target/data/</lenskit.eval.dataDir>
+      <lenskit.eval.analysisDir>${basedir}/target/analysis/</lenskit.eval.analysisDir>
 
-  <profiles>
-    <profile>
-      <id>demo</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>fetch-mldata</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <property name="project.build.directory" value="${project.build.directory}" />
-                    <property name="grouplens.mldata.acknowledge" value="${grouplens.mldata.acknowledge}" />
-                    <ant antfile="src/integration-test/setup.xml" target="prepare-100k" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+      <!-- The version of LensKit for your project -->
+      <!-- Note that we use project.version to pick up the version from
+	   the source tree this archetype is being built from. -->
+      <lenskit.version>1.1-SNAPSHOT</lenskit.version>
 
-          <!-- Run the evaluation using the eval.xml in src/integration-test -->
-          <plugin>
-            <artifactId>exec-maven-plugin</artifactId>
-            <groupId>org.codehaus.mojo</groupId>
-            <version>1.2.1</version>
+      <!-- Uncomment and change below to 'yes' if you accept the MovieLens data
+	   terms of service. 
+      <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
+   </properties>
 
-            <executions>
-              <execution>
-                <id>run-eval</id>
-                <phase>integration-test</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>${eval.java.executable}</executable>
-                  <arguments>
-                    <argument>-Dscripts.directory=${basedir}/src/integration-test</argument>
-                    <argument>-Dproject.build.directory=${project.build.directory}</argument>
-                    <argument>-Dlenskit.eval.throwErrors=true</argument>
-                    <argument>-classpath</argument>
-                    <classpath />
-                    <argument>org.grouplens.lenskit.eval.cli.EvalCLI</argument>
-                    <argument>-f</argument>
-                    <argument>${basedir}/src/integration-test/eval.groovy</argument>
-                  </arguments>
-                </configuration>
-              </execution>
+   <dependencies>
 
-              <execution>
-                <id>analyze-eval</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>Rscript</executable>
-                  <workingDirectory>${project.build.directory}</workingDirectory>
-                  <arguments>
-                    <argument>${basedir}/src/integration-test/chart.R</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+      <!-- You will automatically get a version of LensKit for your
+	   project, pulled in transitively by the
+	   lenskit-eval-maven-plugin.  The version you specify for the
+	   plugin will decide the version of lenskit you get.  -->
+      <!-- You will probably want some other parts of lenskit, such as
+           specific recommender algorithms.  Specify those as
+           dependencies in the lenskit-eval-maven-plugin, below. -->
 
-    <profile>
-      <id>jenkins</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>print-attachments</id>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <phase>post-integration-test</phase>
-                <configuration>
-                  <target>
-                    <echo message="[[ATTACHMENT|${project.build.directory}/error.pdf]]" />
-                    <echo message="[[ATTACHMENT|${project.build.directory}/times.pdf]]" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+   </dependencies>
 
+   <!-- Now we specify the build that will actually execute to make
+        our project do something cool.  The build is a collection of
+        plugins that we execute to do the work.  Note that we run the
+        evaluations using the lenskit-lifecycle, because we use the
+        lenskit-eval-maven-plugin, and because we use
+        lenskit-lifecycle as our packaging.  The phases of this
+        lifecycle are lenskit-pre-eval, lenskit-eval,
+        lenskit-post-eval, and lenskit-analyze, in that order. -->
+
+   <build>
+      <plugins>
+
+	 <!-- This use of the ant plugin first creates the data
+              directory and then fetches the ml-100k dataset. -->
+	 <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-antrun-plugin</artifactId>
+	    <version>1.5</version>
+	    <executions>
+	       <execution>
+		  <id>create-dirs</id>
+		  <phase>lenskit-pre-eval</phase>
+		  <configuration>
+		     <tasks>
+			<mkdir dir="${lenskit.eval.dataDir}"/>
+		     </tasks>
+		  </configuration>
+		  <goals>
+		     <goal>run</goal>
+		  </goals>
+	       </execution>
+	       <execution>
+		  <id>fetch-mldata</id>
+		  <phase>lenskit-pre-eval</phase>
+		  <goals>
+		     <goal>run</goal>
+		  </goals>
+		  <configuration>
+		     <target>
+			<ant antfile="get-data.xml" target="prepare-100k"
+			     dir="${lenskit.eval.scriptDir}"/>
+		     </target>
+		  </configuration>
+	       </execution>
+	    </executions>
+	 </plugin>
+
+	 <!-- Run the lenskit eval plugin that does the work of
+              evaluating the recommenders you are comparing, by
+              running your Groovy script. -->
+	 <plugin>
+	    <artifactId>lenskit-eval-maven-plugin</artifactId>
+	    <groupId>org.grouplens.lenskit</groupId>
+	    <version>${lenskit.version}</version>
+	    <extensions>true</extensions>
+	    <dependencies>
+	       <!-- The recommender algorithms you would like to use in your
+		    project -->
+	       <dependency>
+		  <groupId>org.grouplens.lenskit</groupId>
+		  <artifactId>lenskit-knn</artifactId>
+		  <version>${lenskit.version}</version>
+	       </dependency>
+	       <dependency>
+		  <groupId>org.grouplens.lenskit</groupId>
+		  <artifactId>lenskit-svd</artifactId>
+		  <version>${lenskit.version}</version>
+	       </dependency>
+	       <dependency>
+		  <groupId>org.grouplens.lenskit</groupId>
+		  <artifactId>lenskit-slopeone</artifactId>
+		  <version>${lenskit.version}</version>
+	       </dependency>
+	    </dependencies>
+	    <configuration>
+	       <script>${lenskit.eval.scriptDir}/eval.groovy</script>
+	       <dataDir>${lenskit.eval.dataDir}</dataDir>
+	       <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
+	    </configuration>
+	 </plugin>
+
+
+	 <!-- This plugin executes the R data analysis to produce the
+              graphs from our runs.  We use an execution so we can tie
+              this plugin to the appropriate phase of the lenskit
+              lifecycle. -->
+	 <plugin>
+	    <artifactId>exec-maven-plugin</artifactId>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <version>1.2.1</version>
+	    <executions>
+	       <execution>
+		  <id>default-cli</id>
+		  <phase>lenskit-analyze</phase>
+		  <goals>
+		     <goal>exec</goal>
+		  </goals>
+		  <configuration>
+		     <executable>Rscript</executable>
+		     <workingDirectory>${lenskit.eval.analysisDir}</workingDirectory>
+		     <arguments>
+			<argument>${lenskit.eval.scriptDir}/chart.R</argument>
+		     </arguments>
+		  </configuration>
+	       </execution>
+	    </executions>
+	 </plugin>
+
+      </plugins>
+   </build>
 </project>
+

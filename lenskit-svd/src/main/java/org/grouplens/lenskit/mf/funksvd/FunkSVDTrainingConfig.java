@@ -26,12 +26,11 @@ import org.grouplens.lenskit.util.iterative.StoppingCondition;
 import javax.inject.Inject;
 
 /**
- * Configuration for computing FunkSVD updates. The config produces
- * {@link FunkSVDFeatureTrainer}s to train individual features.
+ * Configuration for computing FunkSVD updates.
  *
  * @since 1.0
  */
-public class FunkSVDTrainingConfig {
+public final class FunkSVDTrainingConfig {
 
     private final double learningRate;
     private final double trainingRegularization;
@@ -57,16 +56,6 @@ public class FunkSVDTrainingConfig {
         stoppingCondition = stop;
     }
 
-    /**
-     * Create a new trainer using this configuration.
-     *
-     * @return A new feature trainer for iteratively training a single
-     *         FunkSVD feature.
-     */
-    public FunkSVDFeatureTrainer newTrainer() {
-        return new FunkSVDFeatureTrainer(this);
-    }
-
     public double getLearningRate() {
         return learningRate;
     }
@@ -81,5 +70,56 @@ public class FunkSVDTrainingConfig {
 
     public StoppingCondition getStoppingCondition() {
         return stoppingCondition;
+    }
+
+    /**
+     * Compute the error in the current estimate of a rating.
+     * @param uid The user ID.
+     * @param iid The item ID.
+     * @param trail The trailing value (contribution of remaining features).
+     * @param estimate The estimate through the previous feature.
+     * @param rating The rating value.
+     * @param ufv The user feature value.
+     * @param ifv The item feature value.
+     * @return The error in predicting the rating.
+     */
+    public double computeError(long uid, long iid, double trail,
+                               double estimate, double rating,
+                               double ufv, double ifv) {
+        // Compute prediction
+        double pred = estimate + ufv * ifv;
+
+        // Clamp the prediction first
+        pred = clampingFunction.apply(uid, iid, pred);
+
+        // Add the trailing value, then clamp the result again
+        pred = clampingFunction.apply(uid, iid, pred + trail);
+
+        // Compute the err and store this value
+        return rating - pred;
+    }
+
+    /**
+     * Compute the update for a user feature value from error & feature values.
+     * @param err The error.
+     * @param ufv The user feature value.
+     * @param ifv The item feature value.
+     * @return The adjustment to be made to the user feature value.
+     */
+    public double userUpdate(double err, double ufv, double ifv) {
+        double delta = err * ifv - trainingRegularization * ufv;
+        return delta * learningRate;
+    }
+
+    /**
+     * Compute the update for an item feature value from error & feature values.
+     * @param err The error.
+     * @param ufv The user feature value.
+     * @param ifv The item feature value.
+     * @return The adjustment to be made to the item feature value.
+     */
+    public double itemUpdate(double err, double ufv, double ifv) {
+        double delta = err * ufv - trainingRegularization * ifv;
+        return delta * learningRate;
     }
 }

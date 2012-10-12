@@ -43,7 +43,7 @@
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.7</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
-    <grapht.version>0.4.1</grapht.version>
+    <grapht.version>0.4.3-SNAPSHOT</grapht.version>
     <grouplens.common.version>0.6.1</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
@@ -67,10 +67,10 @@
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
-    <module>lenskit-eval-demo</module>
     <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
   </modules>
@@ -766,6 +766,19 @@
 
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>integration-tests</id>
+      <activation>
+        <!-- REVIEW: Do we really want to auto-activate on .hg/branch? -->
+        <file>
+          <exists>.hg/branch</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>lenskit-integration-tests</module>
+      </modules>
     </profile>
   </profiles>
 </project>

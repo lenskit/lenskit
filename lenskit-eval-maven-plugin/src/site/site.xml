@@ -5,8 +5,9 @@
   <version position="right"/>
   <publishDate position="right"/>
   <body>
-    <menu name="LensKit Eval Demo">
+    <menu name="LensKit Maven plugin">
       <item name="About" href="index.html"/>
+      <item name="Goals" href="plugin-info.html"/>
     </menu>
     <menu ref="reports" inherit="bottom"/>
   </body>
