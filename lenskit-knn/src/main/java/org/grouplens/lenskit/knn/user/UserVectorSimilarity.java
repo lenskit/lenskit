@@ -23,6 +23,7 @@ import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Implementation of {@link UserSimilarity} that delegates to a vector similarity.
@@ -31,7 +32,9 @@ import javax.inject.Inject;
  * @since 0.11
  */
 @Shareable
-public class UserVectorSimilarity implements UserSimilarity {
+public class UserVectorSimilarity implements UserSimilarity, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private VectorSimilarity delegate;
 
     @Inject

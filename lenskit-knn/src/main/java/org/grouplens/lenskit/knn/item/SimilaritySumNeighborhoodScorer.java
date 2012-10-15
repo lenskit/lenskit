@@ -24,6 +24,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Singleton;
+import java.io.Serializable;
 
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.
@@ -32,7 +33,9 @@ import javax.inject.Singleton;
  */
 @Shareable
 @Singleton
-public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer {
+public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public double score(ScoredLongList neighbors, SparseVector scores) {
         double sum = 0;

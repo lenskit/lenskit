@@ -31,9 +31,12 @@ import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -57,6 +60,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             ItemRecommender.class,
             GlobalItemRecommender.class
     };
+
+    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineFactory.class);
 
     private final BindingFunctionBuilder config;
     private DAOFactory factory;
@@ -186,6 +191,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
         // Get the set of shareable instances.
         Set<Node> shared = getShareableNodes(original);
+        logger.debug("found {} shared nodes", shared.size());
 
         // Instantiate and replace shareable nodes
         Graph modified = original.clone();
@@ -196,10 +202,12 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         } catch (RuntimeException ex) {
             throw new RecommenderBuildException("could not instantiate shared components", ex);
         }
+        logger.debug("found {} shared instances", sharedInstances.size());
 
         // Remove transient edges and orphaned subgraphs
         Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
-        removeOrphanSubgraphs(modified, transientTargets);
+        Set<Node> removed = removeOrphanSubgraphs(modified, transientTargets);
+        logger.debug("removed {} orphaned nodes", removed.size());
 
         // Find the DAO node
         Node daoNode = GraphtUtils.findDAONode(modified);
@@ -253,7 +261,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @param toReplace The shared nodes to replace.
      * @return The new instance nodes, in iteration order from {@code toReplace}.
      */
-    private LinkedHashSet<Node> instantiate(Graph graph, Set<Node> toReplace) {
+    private Set<Node> instantiate(Graph graph, Set<Node> toReplace) {
         InjectSPI spi = config.getSPI();
         StaticInjector injector = new StaticInjector(spi, graph);
         LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
@@ -269,6 +277,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             }
             Node repl = new Node(instanceSat, label.getCachePolicy());
             graph.replaceNode(node, repl);
+            replacements.add(repl);
         }
         return replacements;
     }
@@ -329,7 +338,8 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return targets;
     }
 
-    private void removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
+    private Set<Node> removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
+        Set<Node> removed = new HashSet<Node>();
         Queue<Node> removeQueue = new LinkedList<Node>(candidates);
         while (!removeQueue.isEmpty()) {
             Node candidate = removeQueue.poll();
@@ -337,12 +347,16 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             if (incoming != null && incoming.isEmpty()) {
                 // No other node depends on this node, so we can remove it,
                 // we must also flag its dependencies as removal candidates
+                // Flag each multiple times, as it could become a candidate late
                 for (Edge e : graph.getOutgoingEdges(candidate)) {
                     removeQueue.add(e.getTail());
                 }
+                logger.debug("removing orphan node {}", candidate);
                 graph.removeNode(candidate);
+                removed.add(candidate);
             }
         }
+        return removed;
     }
 
     private Graph buildGraph(DataAccessObject dao) {
