@@ -15,11 +15,23 @@
 
 LensKit Release Notes
 
-* Release 1.0.1
+* Release 1.0.2
 
-  #header($ver)
+  #header(1.0.2)
 
   This release contains bug fixes against 1.0.1.
+
+  * Fix graph pruning so transient dependencies aren't serialized.
+
+  * Fix transient tags and serializability of item-item recommender models.
+
+  []
+
+* Release 1.0.1
+
+  #header(1.0.1)
+
+  This release contains bug fixes against 1.0.
 
   <<Note>>: recommender engines serialized with LensKit 1.0 are not compatible with
   LensKit 1.0.1. You will need to re-build and re-serialize your engines.
