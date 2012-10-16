@@ -4,7 +4,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-archetype-simple-analysis</artifactId>
