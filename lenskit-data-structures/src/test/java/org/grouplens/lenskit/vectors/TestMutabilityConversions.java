@@ -72,7 +72,7 @@ public class TestMutabilityConversions {
 
 	MutableSparseVector reSimple = isvSimple.mutableCopy();
 	assertThat(reSimple.size(), equalTo(2));
-	assertTrue(Double.isNaN(reSimple.set(3, 77)));
+	assertThat(reSimple.set(3, 77), notANumber());
 	assertThat(reSimple.size(), equalTo(3));  // changed!
 	assertThat(isvSimple.size(), equalTo(2)); // unchanged
 	assertThat(simple.size(), equalTo(2));	   // unchanged

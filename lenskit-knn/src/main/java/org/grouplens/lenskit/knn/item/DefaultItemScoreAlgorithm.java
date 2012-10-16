@@ -43,61 +43,61 @@ import java.io.Serializable;
  */
 @Shareable
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
-    private int neighborhoodSize;
+	private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
+	private int neighborhoodSize;
 
-    @Inject
-    public DefaultItemScoreAlgorithm(@NeighborhoodSize int n) {
-        neighborhoodSize = n;
-    }
+	@Inject
+	public DefaultItemScoreAlgorithm(@NeighborhoodSize int n) {
+		neighborhoodSize = n;
+	}
 
-    @Override
-    public void scoreItems(ItemItemModel model, SparseVector userData,
-                           MutableSparseVector scores,
-                           NeighborhoodScorer scorer) {
-        // We ran reuse accumulators
-        ScoredItemAccumulator accum;
-        if (neighborhoodSize > 0) {
-            accum = new TopNScoredItemAccumulator(neighborhoodSize);
-        } else {
-            accum = new UnlimitedScoredItemAccumulator();
-        }
+	@Override
+	public void scoreItems(ItemItemModel model, SparseVector userData,
+			MutableSparseVector scores,
+			NeighborhoodScorer scorer) {
+		// We ran reuse accumulators
+		ScoredItemAccumulator accum;
+		if (neighborhoodSize > 0) {
+			accum = new TopNScoredItemAccumulator(neighborhoodSize);
+		} else {
+			accum = new UnlimitedScoredItemAccumulator();
+		}
 
-	// Create a channel for recording the neighborhoodsize
-	scores.alwaysAddChannel(ItemItemScorer.neighborhoodsizeSymbol);
-        // for each item, compute its prediction
-        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
-            final long item = e.getKey();
+		// Create a channel for recording the neighborhoodsize
+		scores.alwaysAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+		// for each item, compute its prediction
+		for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+			final long item = e.getKey();
 
-            // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
-            final int nnbrs = neighbors.size();
+			// find all potential neighbors
+			// FIXME: Take advantage of the fact that the neighborhood is sorted
+			ScoredLongList neighbors = model.getNeighbors(item);
+			final int nnbrs = neighbors.size();
 
-            // filter and truncate the neighborhood
-            ScoredLongListIterator niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
-                if (userData.containsKey(oi)) {
-                    accum.put(oi, score);
-                }
-            }
-            neighbors = accum.finish();
-            if (logger.isTraceEnabled()) { // conditional to avoid alloc
-                logger.trace("using {} of {} neighbors for {}",
-                             new Object[]{neighbors.size(), nnbrs, item});
-            }
+			// filter and truncate the neighborhood
+			ScoredLongListIterator niter = neighbors.iterator();
+			while (niter.hasNext()) {
+				long oi = niter.nextLong();
+				double score = niter.getScore();
+				if (userData.containsKey(oi)) {
+					accum.put(oi, score);
+				}
+			}
+			neighbors = accum.finish();
+			if (logger.isTraceEnabled()) { // conditional to avoid alloc
+				logger.trace("using {} of {} neighbors for {}",
+						new Object[]{neighbors.size(), nnbrs, item});
+			}
 
-            // compute score & place in vector
-            final double score = scorer.score(neighbors, userData);
-	    scores.channel(ItemItemScorer.neighborhoodsizeSymbol).
-		set(e.getKey(), neighbors.size()); // set size even if no score
-            if (!Double.isNaN(score)) {
-                scores.set(e, score);
-            }
-        }
-    }
+			// compute score & place in vector
+			final double score = scorer.score(neighbors, userData);
+			scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+			set(e.getKey(), neighbors.size()); // set size even if no score
+			if (!Double.isNaN(score)) {
+				scores.set(e, score);
+			}
+		}
+	}
 }
