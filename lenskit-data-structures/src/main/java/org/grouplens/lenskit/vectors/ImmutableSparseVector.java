@@ -18,25 +18,16 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleLists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Map;
 import java.util.BitSet;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 
 /**
@@ -48,7 +39,7 @@ import org.grouplens.lenskit.symbols.Symbol;
  */
 @Immutable
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
-    private static final long serialVersionUID = -4740588973577998934L;
+    private static final long serialVersionUID = -4740588973577998935L;
 
     private final Map<Symbol, ImmutableSparseVector> channelMap;
 

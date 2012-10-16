@@ -18,10 +18,8 @@
  */
 package org.grouplens.lenskit.symbols;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -42,77 +40,76 @@ import java.util.Map;
  * needs thousands, the implementation should be changed.
  * <p>
  * Symbols cannot be constructed, but must be fetched through the "of"
- * operator. 
+ * operator.
+ * <p>
+ * Symbols are hashable, because they are singletons, so the default hashCode 
+ * based on Object address should work.
  *
  * @author John Riedl <riedl@cs.umn.edu>
  * @compat Public
  */
 public class Symbol {
-    // Variables shared by all instances
-    private static Map<String, Symbol> name2SymbolMap = new Reference2ObjectArrayMap<String, Symbol>();
-    private static int nextValue = 0;
+	// Variables shared by all instances
+	private static Map<String, Symbol> name2SymbolMap = new Reference2ObjectArrayMap<String, Symbol>();
 
-    // Variables unique to each instance
-    private int value;
+	// Variables unique to each instance
+	private Symbol theSymbol;    // There is one version of each symbol, and this object refers to that shared version
+	private String strSymbol;    // The name of the symbol, which is the string used to create it.
 
-    // The only constructor is private, so Symbols can only be created
-    // through the public interface.
-    private Symbol() {
-	value = nextValue;
-	nextValue += 1;
-    }
-
-    /**
-     * Get a unique symbol for {@var name}.
-     *
-     * @param name the name for this symbol during this execution of
-     * the program
-     * @return the new symbol
-     */
-    public static synchronized Symbol of(String name) {
-	if (name2SymbolMap.containsKey(name)) {
-	    return name2SymbolMap.get(name);
-	} 
-	Symbol newSymbol = new Symbol();
-	name2SymbolMap.put(name, newSymbol);
-	return newSymbol;
-    }
-
-    /**
-     * Get the name for a symbol
-     *
-     * @param symbol the symbol
-     * @return the string name that was used to create the symbol
-     */
-    public synchronized String getName() {
-	for (Map.Entry<String, Symbol> entry : name2SymbolMap.entrySet()) {
-	    if (entry.getValue().equals(this)) {
-		return entry.getKey();
-	    }
+	// The only constructors are private, so Symbols can only be created
+	// through the public interface.
+	private Symbol() {
+		this("");
 	}
-	throw new IllegalArgumentException("No such symbol has been created yet.");
-    }
 
-    @Override
-    public String toString() {
-	return String.format("Symbol based on name '%s'", this.getName());
-    }
+	// The only constructor is private, so Symbols can only be created
+	// through the public interface.
+	private Symbol(String name) {
+		theSymbol = this;
+		strSymbol = name;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof Symbol) {
-            Symbol so = (Symbol) o;
-	    return this.value == so.value;
-        } else {
-            return false;
-        }
-    }
 
-    @Override
-    public int hashCode() {
-        return new Integer(value).hashCode();
-    }
+	/**
+	 * Get a unique symbol for {@var name}.
+	 *
+	 * @param name the name for this symbol during this execution of
+	 * the program
+	 * @return the new symbol
+	 */
+	public static synchronized Symbol of(String name) {
+		if (name2SymbolMap.containsKey(name)) {
+			return name2SymbolMap.get(name);
+		} 
+		Symbol newSymbol = new Symbol(name);
+		name2SymbolMap.put(name, newSymbol);
+		return newSymbol;
+	}
+
+	/**
+	 * Get the name for a symbol
+	 *
+	 * @return the string name that was used to create the symbol
+	 */
+	public synchronized String getName() {
+		return this.strSymbol;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Symbol based on name '%s'", this.getName());
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		} else if (o instanceof Symbol) {
+			Symbol so = (Symbol) o;
+			return this.theSymbol == so.theSymbol;
+		} else {
+			return false;
+		}
+	}
 
 }

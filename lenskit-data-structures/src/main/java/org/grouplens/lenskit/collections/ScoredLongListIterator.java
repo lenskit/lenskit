@@ -42,7 +42,7 @@ public interface ScoredLongListIterator extends LongListIterator {
      * @param s The new score.
      * @throws UnsupportedOperationException if the set/setScore operation is
      *                                       not supported.
-     * @see #set(Long)
+     * @see it.unimi.dsi.fastutil.longs.LongListIterator#set(Long)
      */
     void setScore(double s);
 }

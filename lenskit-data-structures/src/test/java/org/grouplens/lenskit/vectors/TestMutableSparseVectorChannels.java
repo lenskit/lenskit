@@ -181,7 +181,7 @@ public class TestMutableSparseVectorChannels {
 	assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
 
 	// We shrink the domain to 7, 8
-	MutableSparseVector msvShrunk = simple.withDomain();
+	MutableSparseVector msvShrunk = simple.shrinkDomain();
 	assertTrue(Double.isNaN(msvShrunk.channel(fooSymbol).get(3)));
 	assertThat(msvShrunk.channel(fooSymbol).get(7), closeTo(22.2));
 	assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));

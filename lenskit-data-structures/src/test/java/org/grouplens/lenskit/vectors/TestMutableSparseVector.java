@@ -292,7 +292,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 	}
 	assertThat(count, equalTo(1));
 
-	MutableSparseVector msvShrunk = simple.withDomain();
+	MutableSparseVector msvShrunk = simple.shrinkDomain();
 	count = 0;
 	for (VectorEntry entry : msvShrunk.fast(VectorEntry.State.UNSET)) {
 	    count += 1;

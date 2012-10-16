@@ -18,35 +18,34 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.annotation.Nonnull;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.BitSet;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.IntIntervalList;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
-import static org.grouplens.lenskit.vectors.VectorEntry.State;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.primitives.Longs;
 
 /**
  * Read-only interface to sparse vectors.
@@ -238,14 +237,10 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      */
     public double get(long key, double dft) {
         final int idx = findIndex(key);
-        if (idx >= 0) {
-            if (usedKeys.get(idx)) {
-                return values[idx];
-            } else {
-                return dft;
-            }
-        } else {
-	    return dft;
+        if (idx >= 0 && usedKeys.get(idx)) {
+        	return values[idx];	
+        } else {	
+        	return dft;
         }
     }
 
@@ -253,12 +248,12 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      * Fast iterator over all set entries (it can reuse entry objects).
      *
      * @return a fast iterator over all key/value pairs
-     * @see #fastIterator(State)
+     * @see #fastIterator(VectorEntry.State)
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *      Long2DoubleMap.FastEntrySet.fastIterator()
      */
     public Iterator<VectorEntry> fastIterator() {
-        return fastIterator(State.SET);
+        return fastIterator(VectorEntry.State.SET);
     }
 
     /**
@@ -294,13 +289,13 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
 
     /**
      * Return an iterable view of this vector using a fast iterator. This method
-     * delegates to {@link #fast(State)} with state {@link State#SET}.
+     * delegates to {@link #fast(VectorEntry.State)} with state {@link VectorEntry.State#SET}.
      *
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
      */
     public Iterable<VectorEntry> fast() {
-        return fast(State.SET);
+        return fast(VectorEntry.State.SET);
     }
 
     /**
@@ -308,10 +303,10 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      *
      * @param state The entries the resulting iterable should return.
      * @return This object wrapped in an iterable that returns a fast iterator.
-     * @see #fastIterator(State)
+     * @see #fastIterator(VectorEntry.State)
      * @since 0.11
      */
-    public Iterable<VectorEntry> fast(final State state) {
+    public Iterable<VectorEntry> fast(final VectorEntry.State state) {
         return new Iterable<VectorEntry>() {
             @Override
             public Iterator<VectorEntry> iterator() {
@@ -560,7 +555,7 @@ public abstract class SparseVector implements Iterable<VectorEntry> {
      */
     public int countCommonKeys(SparseVector o) {
         int n = 0;
-        for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
+        for (@SuppressWarnings("unused") Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
             n++;
         }
         return n;
