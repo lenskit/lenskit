@@ -25,7 +25,7 @@ package org.grouplens.lenskit.eval.config
 class ClosureScript extends EvalConfigScript {
     Closure closure
 
-    ClosureScript(EvalConfigEngine engine, Closure cl) {
+    ClosureScript(EvalScriptEngine engine, Closure cl) {
         super(engine)
         closure = cl
     }

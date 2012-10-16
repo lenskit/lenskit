@@ -26,11 +26,11 @@ import org.junit.Before
  * @author Michael Ekstrand
  */
 abstract class ConfigTestBase {
-    protected EvalConfigEngine engine
+    protected EvalScriptEngine engine
 
     @Before
     public void createEngine() {
-        engine = new EvalConfigEngine()
+        engine = new EvalScriptEngine()
     }
 
     /**

@@ -23,18 +23,17 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 import org.junit.Ignore
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand
 
 /**
  * Test the eval config engine and make sure it can actually execute tests.
  * @author Michael Ekstrand
  */
 class TestEvalConfigEngine {
-    EvalConfigEngine engine;
+    EvalScriptEngine engine;
 
     @Before
     void createEngine() {
-        engine = new EvalConfigEngine()
+        engine = new EvalScriptEngine()
     }
 
     private def script(name) {

@@ -19,7 +19,7 @@
 package org.grouplens.lenskit.eval.cli;
 
 import org.apache.commons.cli.*;
-import org.grouplens.lenskit.eval.config.EvalScriptConfig;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ public class EvalCLIOptions {
             ps.setProperty((String) e.getKey(), (String) e.getValue());
         }
         if (force) {
-            ps.setProperty(EvalScriptConfig.FORCE_PROPERTY, "true");
+            ps.setProperty(EvalConfig.FORCE_PROPERTY, "true");
         }
         return ps;
     }

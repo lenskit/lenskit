@@ -20,7 +20,6 @@ package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
 
-import org.grouplens.lenskit.eval.config.EvalConfigEngine
 import org.grouplens.lenskit.eval.data.CSVDataSource
 
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
@@ -36,6 +35,7 @@ import static org.junit.Assert.assertTrue
 import org.grouplens.lenskit.eval.config.CommandDelegate
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.config.EvalScriptEngine
 
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
@@ -43,7 +43,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet
  * @author Michael Ekstrand
  */
 class TestTrainTestBuilderConfig {
-    EvalConfigEngine engine
+    EvalScriptEngine engine
     TrainTestEvalCommand command
     CommandDelegate delegate
 
@@ -67,7 +67,7 @@ class TestTrainTestBuilderConfig {
 
     @Before
     void setupDelegate() {
-        engine = new EvalConfigEngine()
+        engine = new EvalScriptEngine()
         command = new TrainTestEvalCommand("TTcommand")
         delegate = new CommandDelegate(engine, command)
     }

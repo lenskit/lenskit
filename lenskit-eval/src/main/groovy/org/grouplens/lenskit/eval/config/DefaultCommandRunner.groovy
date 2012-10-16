@@ -29,9 +29,9 @@ import javax.annotation.Nonnull
  * @author Michael Ekstrand
  */
 class DefaultCommandRunner implements CommandRunner {
-    protected final EvalConfigEngine engine
+    protected final EvalScriptEngine engine
 
-    DefaultCommandRunner(EvalConfigEngine eng) {
+    DefaultCommandRunner(EvalScriptEngine eng) {
         engine = eng;
     }
 

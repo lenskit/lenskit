@@ -26,7 +26,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.config.EvalConfigEngine;
+import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,7 +123,7 @@ public class EvalScriptMojo extends AbstractMojo {
         properties.setProperty("lenskit.eval.dataDir", dataDir);
         properties.setProperty("lenskit.eval.analysisDir", analysisDir);
         dumpClassLoader(loader);
-        EvalConfigEngine engine = new EvalConfigEngine(loader, properties);
+        EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
         try {
             File f = new File(script);

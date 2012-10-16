@@ -18,10 +18,8 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import com.google.common.base.Supplier
 import java.lang.reflect.Method
 
-import org.apache.commons.lang3.reflect.TypeUtils
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
 import org.grouplens.lenskit.eval.Command
@@ -81,9 +79,9 @@ class CommandExtensions {
      * @param args The arguments.
      * @return A closure to prepare and invoke the method, or {@code null} if no
      * such method can be found.
-     * @see EvalConfigEngine#getCommandForType(Class)
+     * @see EvalScriptEngine#getCommandForType(Class)
      */
-    static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
+    static def findBuildableMethod(Command self, EvalScriptEngine engine, List<Method> methods, Object[] args) {
         // collect all buildable methods
         def buildables = methods.collect({ method ->
             BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)
@@ -158,7 +156,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
+    static def findSetter(Command self, EvalScriptEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
         def methods = getMethods(self, name)
 
@@ -198,7 +196,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
+    static def findAdder(Command self, EvalScriptEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)

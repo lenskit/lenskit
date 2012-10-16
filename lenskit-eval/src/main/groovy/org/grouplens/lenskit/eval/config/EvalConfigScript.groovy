@@ -29,25 +29,25 @@ import org.apache.tools.ant.DirectoryScanner
  */
 abstract class EvalConfigScript extends Script {
     protected final def logger = LoggerFactory.getLogger(getClass())
-    private EvalConfigEngine engine
+    private EvalScriptEngine engine
 
     EvalConfigScript() {
         engine = null
     }
 
-    EvalConfigScript(EvalConfigEngine eng) {
+    EvalConfigScript(EvalScriptEngine eng) {
         engine = eng
     }
 
-    EvalScriptConfig getConfig() {
+    EvalConfig getConfig() {
         return engine.config
     }
 
-    EvalConfigEngine getEngine() {
+    EvalScriptEngine getEngine() {
         return engine
     }
 
-    void setEngine(EvalConfigEngine ece) {
+    void setEngine(EvalScriptEngine ece) {
         engine = ece
     }
 

@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Properties;
 
 public class TestEvalScriptConfig {
-    EvalScriptConfig esc;
+    EvalConfig esc;
     Properties props;
 
     @Before
@@ -38,12 +38,12 @@ public class TestEvalScriptConfig {
         props.setProperty("foo", "bar");
         props.setProperty("foo2", "bar");
         props.setProperty("foo3", "bar3");
-        esc = new EvalScriptConfig(props);
+        esc = new EvalConfig(props);
     }
 
     /**
      * Make sure that changes to the Properties object don't change
-     * the EvalScriptConfig after construction.
+     * the EvalConfig after construction.
      */
     @Test
     public void testClone() {
@@ -74,7 +74,7 @@ public class TestEvalScriptConfig {
         props.setProperty("lenskit.eval.dataDir", "../target/data/");
         props.setProperty("lenskit.eval.analysisDir", "../target/analysis/");
 
-        esc = new EvalScriptConfig(props);
+        esc = new EvalConfig(props);
 
         assertEquals("../target/data/", esc.getDataDir());
         assertEquals("../target/analysis/", esc.getAnalysisDir());
@@ -88,8 +88,8 @@ public class TestEvalScriptConfig {
 
     @Test
     public void testForce() {
-        props.setProperty(EvalScriptConfig.FORCE_PROPERTY, "yes");
-        esc = new EvalScriptConfig(props);
+        props.setProperty(EvalConfig.FORCE_PROPERTY, "yes");
+        esc = new EvalConfig(props);
         assertThat(esc.force(), equalTo(true));
     }
 }

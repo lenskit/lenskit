@@ -46,29 +46,29 @@ import java.util.*;
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class EvalConfigEngine {
-    private static Logger logger = LoggerFactory.getLogger(EvalConfigEngine.class);
+public class EvalScriptEngine {
+    private static Logger logger = LoggerFactory.getLogger(EvalScriptEngine.class);
     private static final String METHOD_PATH = "META-INF/lenskit-eval/methods/";
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-    protected EvalScriptConfig config;
+    protected EvalConfig config;
 
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> commands = new HashMap<Class, Class>();
 
-    public EvalConfigEngine() {
+    public EvalScriptEngine() {
         this(Thread.currentThread().getContextClassLoader());
     }
 
-    public EvalConfigEngine(ClassLoader loader) {
+    public EvalScriptEngine(ClassLoader loader) {
         this(Thread.currentThread().getContextClassLoader(),
              new Properties(System.getProperties()));
     }
 
-    public EvalConfigEngine(ClassLoader loader, Properties configProperties) {
+    public EvalScriptEngine(ClassLoader loader, Properties configProperties) {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        config = new EvalScriptConfig(configProperties);
+        config = new EvalConfig(configProperties);
 
         compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
 
@@ -190,7 +190,7 @@ public class EvalConfigEngine {
      * Get the eval script config.
      * @return The eval configuration.
      */
-    public EvalScriptConfig getConfig() {
+    public EvalConfig getConfig() {
         return config;
     }
 

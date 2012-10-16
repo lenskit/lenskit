@@ -34,7 +34,7 @@ import java.util.Properties;
  * @author John Riedl
  * @since 1.1
  */
-public class EvalScriptConfig {
+public class EvalConfig {
     public static final String FORCE_PROPERTY = "lenskit.eval.force";
     public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
     public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
@@ -42,11 +42,11 @@ public class EvalScriptConfig {
 
     private Properties properties;
 
-    public EvalScriptConfig() {
+    public EvalConfig() {
         this(new Properties());
     }
 
-    public EvalScriptConfig(Properties props) {
+    public EvalConfig(Properties props) {
         properties = (Properties) props.clone();
     }
 
