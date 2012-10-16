@@ -17,7 +17,7 @@ LensKit Release Notes
 
 * Release 1.0.2
 
-  #header(1.0.2)
+  #header("1.0.2")
 
   This release contains bug fixes against 1.0.1.
 
@@ -29,7 +29,7 @@ LensKit Release Notes
 
 * Release 1.0.1
 
-  #header(1.0.1)
+  #header("1.0.1")
 
   This release contains bug fixes against 1.0.
 
