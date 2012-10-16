@@ -441,6 +441,30 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>1.9.0</version>
+        <inherited>false</inherited>
+        <configuration>
+          <basedir>${basedir}</basedir>
+          <header>${basedir}/etc/header.txt</header>
+          <aggregate>true</aggregate>
+          <strictCheck>true</strictCheck>
+          <includes>
+            <include>*/src/**/*.java</include>
+            <include>*/src/**/*.groovy</include>
+          </includes>
+          <excludes>
+            <exclude>lenskit-archetype*/src/**</exclude>
+          </excludes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+            <groovy>SLASHSTAR_STYLE</groovy>
+          </mapping>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -734,25 +758,7 @@
           <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
-            <version>1.9.0</version>
             <inherited>false</inherited>
-            <configuration>
-              <basedir>${basedir}</basedir>
-              <header>${basedir}/etc/header.txt</header>
-              <aggregate>true</aggregate>
-              <strictCheck>true</strictCheck>
-              <includes>
-                <include>*/src/**/*.java</include>
-                <include>*/src/**/*.groovy</include>
-              </includes>
-              <excludes>
-                <exclude>lenskit-archetype*/src/**</exclude>
-              </excludes>
-              <mapping>
-                <java>SLASHSTAR_STYLE</java>
-                <groovy>SLASHSTAR_STYLE</groovy>
-              </mapping>
-            </configuration>
             <executions>
               <execution>
                 <id>check-headers</id>
