@@ -31,7 +31,7 @@ depending directly on it as above (consult `pom.xml` for the version to use; all
 modules share the same version).  The source code can also be checked out and used
 in most Java IDEs; NetBeans in IntelliJ both include Maven support, and the [m2e][]
 plugin for Eclipse (installable from the Eclipse Marketplace) allows the project to
-be opened in Eclipse.
+be opened in Eclipse. (More details on using Eclipse with LensKit are below.)
 
 [Maven]: http://maven.apache.org
 [m2e]: http://eclipse.org/m2e
