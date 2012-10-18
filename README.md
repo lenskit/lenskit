@@ -115,6 +115,6 @@ SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further detail
 
 while appears to be harmless.
 
-Note that on Windows the LensKit logic has some 
 
-[HGE]: http://javaforge.com/project/HGE
+At the bottom of the LensKit Code Guidelines (http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is 
+an XML file that will set your Eclipse up to follow the LensKit style.
