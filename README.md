@@ -94,9 +94,8 @@ The `lenskit-eval` project requires some additional attention to compile correct
 
 * First, right-click the `lenskit-eval` project and select "Configure" -> "Convert to 
   Groovy project" to enable Groovy support.
-* Next, right-click the `lenskit-eval` project and select "Properties" / "Java Build Path".
-  Select the "Source" tab near the top of the window and click the "Link Source..." button on
-  the left.
+* Next, right-click the `lenskit-eval` project and select "Properties" / "Build Path" /
+  "Link Source".
 * In the window that appears, select the "Browse..." button and browse to the directory that
   contains the `lenskit` project. Then, select "lenskit-eval" / "src" / "main" / "groovy".
   You may change the suggested folder name if you wish, then click "finish".
@@ -115,6 +114,13 @@ SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
 
 while appears to be harmless.
+
+A useful thing to do first is to right click on the build-tools project and select
+"Run As" / "Maven Install".  That will install the build tools in your local Maven
+repository, so they are available for any of the other projects to use.
+
+After that, you can easily run tests in any of the other projects directly from Eclipse,
+which is faster and prettier.  Just right click a project, select "Run As" / "JUnit Test".
 
 You will need to install a Java Development Kit to build some parts of LensKit.  On Linux or Mac, setting
 the Java HOME will let LensKit find it. On Windows if you install the JDK next to the JRE,
