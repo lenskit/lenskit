@@ -67,23 +67,24 @@ and dependencies.  The other modules are as follows:
 If you want to work with the LensKit sources in Eclipse, the checkout is complicated a bit
 by limitations in M2e's integration with Mercurial. You'll need the Maven support ([m2e][]),
 [MercurialEclipse][HGE] plugin, and the Groovy development tools (at least to work with the
-evaluator code).  To get the tools:
+evaluator code).  
 
-* m2e: Help / Install New Software.  m2e is in the default repository.  
-* Mercurial: Download an installer from 
-  http://mercurial.selenic.com/downloads/.  TortoiseHg works great for Windows.
-* MercurialEclipse: Help / Install New Software.  Add the repository for MercurialEclipse 
-  (http://mercurialeclipse.eclipselabs.org.codespot.com/hg.wiki/update_site/stable).  Tell MercurialEclipse 
-  where to find your Mercurial executable in Window / Preferences / Team / Mercurial.
-* Groovy: Help / Install New Software.  Add the repository for Groovy
-  (http://dist.springsource.org/release/GRECLIPSE/e4.2/), and install the Groovy plugin
-  and the m2e adapter.
+First: do Help / Check for Updates and install any updates that are available.  We have had
+problems in which the tool versions were not compatible with the Eclipse version, and those
+problems can be frustrating to debug.  To get the tools:
 
+* Maven.  Do Help / About / Installation Details / Features and check if m2e is already installed.
+  It comes with many modern eclipse distros.  If not use Help / Marketplace, and search for Maven
+  or m2e.
+* Mercurial: Help / Marketplace and search for MercurialEclipse.  Install the option for 
+  your version of Eclipse.
+* Groovy: Help / Marketplace and search for Groovy.  It's fine to install the full version 
+  including Grails from springsource, but all you need is Groovy-Eclipse.
  
 Then do the following:
 
-* Check out the LensKit source tree by selecting "Mercurial" / "Clone existing repository"
-  from the Import dialog.
+* Check out the LensKit source tree by selecting File / Import / "Clone existing repository".
+  Enter the URL and authentication information, and clone the repository into your workspace.
 * Once the project is imported, right-click it and select "Configure" -> "Convert to Maven project"
   to activate Maven support on the LensKit parent project.
 * Finally, right-click the `lenskit` project, choose "Import", and select "Maven" / "Existing
@@ -115,6 +116,9 @@ SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further detail
 
 while appears to be harmless.
 
+You will need to install a Java Development Kit to build some parts of LensKit.  On Linux or Mac, setting
+the Java HOME will let LensKit find it. On Windows if you install the JDK next to the JRE,
+LensKit will probably be able to find it.
 
 At the bottom of the LensKit Code Guidelines (http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is 
 an XML file that will set your Eclipse up to follow the LensKit style.
