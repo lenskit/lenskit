@@ -56,14 +56,14 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final ClampingFunction clamp;
 
     @Nullable
-    private final FunkSVDTrainingConfig rule;
+    private final FunkSVDUpdateRule rule;
     private final StoppingCondition trainingStop;
 
 
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
                                   StoppingCondition stop,
-                                  @Nullable FunkSVDTrainingConfig rule) {
+                                  @Nullable FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
         this.model = model;

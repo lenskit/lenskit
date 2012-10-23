@@ -29,7 +29,7 @@ import javax.inject.Inject;
  *
  * @since 1.0
  */
-public final class FunkSVDTrainingConfig {
+public final class FunkSVDUpdateRule {
 
     private final double learningRate;
     private final double trainingRegularization;
@@ -43,9 +43,9 @@ public final class FunkSVDTrainingConfig {
      * @param clamp The clamping function.
      */
     @Inject
-    public FunkSVDTrainingConfig(@LearningRate double lrate,
-                                 @RegularizationTerm double reg,
-                                 ClampingFunction clamp) {
+    public FunkSVDUpdateRule(@LearningRate double lrate,
+                             @RegularizationTerm double reg,
+                             ClampingFunction clamp) {
         learningRate = lrate;
         trainingRegularization = reg;
         clampingFunction = clamp;
