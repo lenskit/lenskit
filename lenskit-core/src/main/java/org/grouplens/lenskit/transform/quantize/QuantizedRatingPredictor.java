@@ -32,19 +32,21 @@ public class QuantizedRatingPredictor extends AbstractItemScorer implements Rati
         quantizer = q;
     }
 
+    private void quantize(MutableSparseVector scores) {
+        for (VectorEntry e: scores.fast()) {
+            scores.set(e, quantizer.getValue(quantizer.apply(e.getValue())));
+        }
+    }
+
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         basePredictor.score(user, scores);
-        for (VectorEntry e: scores.fast()) {
-            scores.set(e, quantizer.apply(e.getValue()));
-        }
+        quantize(scores);
     }
 
     @Override
     public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
         basePredictor.score(profile, scores);
-        for (VectorEntry e: scores.fast()) {
-            scores.set(e, quantizer.apply(e.getValue()));
-        }
+        quantize(scores);
     }
 }
