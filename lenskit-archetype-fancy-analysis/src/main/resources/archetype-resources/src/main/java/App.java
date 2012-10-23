@@ -1,4 +1,4 @@
-package $org.grouplens.lenskit;
+package ${package};
 
 /**
  * Hello world!
