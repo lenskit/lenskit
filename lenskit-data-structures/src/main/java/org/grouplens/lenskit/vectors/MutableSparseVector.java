@@ -272,6 +272,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	 * used in lieu of providing a {@code setValue} method on {@link VectorEntry},
 	 * and changes the value in constant time. The value on the entry is also changed
 	 * to reflect the new value.
+	 * 
+	 * Is guaranteed to work on any vector that has an identical set of keys as the
+	 * vector from which the VectorEntry was created (such as the channels of that
+	 * vector), but may throw an IllegalArgumentException if the keys are not an identical
+	 * object even if they are the same value, to permit more efficient implementations. 
 	 *
 	 * @param entry The entry to update.
 	 * @param value The new value.
@@ -280,11 +285,13 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 	 * from this vector, or if the index in the entry is corrupt.
 	 */
 	public double set(VectorEntry entry, double value) {
-		if (entry.getVector() != this) {
-			throw new IllegalArgumentException("entry not from correct vector");
+		if (entry.getVector().keys != this.keys) {
+			throw new IllegalArgumentException("entry does not have safe key domain");
 		}
 		final int idx = entry.getIndex();
-		entry.setValue(value);
+		if (entry.getVector() == this) {  // if this is the original, not a copy or channel
+			entry.setValue(value);
+		}
 		return setAt(idx, value);
 	}
 

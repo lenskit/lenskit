@@ -190,5 +190,30 @@ public class TestMutableSparseVectorChannels {
 		assertThat(Iterators.size(simple.channel(fooSymbol).fast(VectorEntry.State.SET).iterator()), equalTo(2));
 	}
 
+	// Test that VectorEntrys can safely set values in a channel
+	@Test
+	public void testChannelVectorEntry() {
+		MutableSparseVector simple = simpleVector();
+		simple.addChannel(fooSymbol);
+		simple.channel(fooSymbol).set(3, 4.5);
+		for (VectorEntry ve : simple) {
+			simple.channel(fooSymbol).set(ve, 77.7);
+		}
+		assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
+		assertThat(simple.channel(fooSymbol).get(7), closeTo(77.7));
+		assertThat(simple.channel(fooSymbol).get(8), closeTo(77.7));
+		
+		MutableSparseVector simple2 = simpleVector();
+		simple2.clear(3);
+		simple2.shrinkDomain();
+		for (VectorEntry ve : simple) {
+			if (ve.getKey() != 3) {
+				try {
+					simple2.set(ve, 88.8);
+					fail("Should have been illegal to use ve to set simple2 value!");
+				} catch(IllegalArgumentException iae) { /*expected */ }
+			}
+		}
+	}
 
 }
