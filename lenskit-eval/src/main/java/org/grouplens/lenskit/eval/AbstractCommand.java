@@ -19,6 +19,8 @@
 package org.grouplens.lenskit.eval;
 
 
+import org.grouplens.lenskit.eval.config.EvalConfig;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -28,13 +30,23 @@ import javax.annotation.Nonnull;
  */
 public abstract class AbstractCommand<T> implements Command<T> {
     protected String name;
+    private EvalConfig config;
 
     public AbstractCommand() {
-        this.name = "unnamed";
+        this("unnamed");
     }
 
     public AbstractCommand(@Nonnull String name) {
         this.name = name;
+    }
+
+    public AbstractCommand<T> setConfig(EvalConfig cfg) {
+        config = cfg;
+        return this;
+    }
+
+    public EvalConfig getConfig() {
+        return config;
     }
 
     public AbstractCommand<T> setName(String name) {
