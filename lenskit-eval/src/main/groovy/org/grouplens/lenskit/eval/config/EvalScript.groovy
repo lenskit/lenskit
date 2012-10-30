@@ -27,15 +27,15 @@ import org.apache.tools.ant.DirectoryScanner
  * @author Michael Ekstrand
  * @since 0.10
  */
-abstract class EvalConfigScript extends Script {
+abstract class EvalScript extends Script {
     protected final def logger = LoggerFactory.getLogger(getClass())
     private EvalScriptEngine engine
 
-    EvalConfigScript() {
+    EvalScript() {
         engine = null
     }
 
-    EvalConfigScript(EvalScriptEngine eng) {
+    EvalScript(EvalScriptEngine eng) {
         engine = eng
     }
 

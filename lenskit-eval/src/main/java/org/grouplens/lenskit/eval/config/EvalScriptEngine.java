@@ -70,7 +70,7 @@ public class EvalScriptEngine {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
         config = new EvalConfig(configProperties);
 
-        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
+        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalScript");
 
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("org.grouplens.lenskit",
@@ -93,8 +93,8 @@ public class EvalScriptEngine {
      * @return The script as parsed and compiled by Groovy.
      * @throws IOException if the file cannot be read.
      */
-    protected EvalConfigScript loadScript(File file) throws IOException {
-        EvalConfigScript script = (EvalConfigScript) shell.parse(file);
+    protected EvalScript loadScript(File file) throws IOException {
+        EvalScript script = (EvalScript) shell.parse(file);
         script.setEngine(this);
         return script;
     }
@@ -105,8 +105,8 @@ public class EvalScriptEngine {
      * @param in The reader to read.
      * @return The script as parsed and compiled by Groovy.
      */
-    protected EvalConfigScript loadScript(Reader in) {
-        EvalConfigScript script = (EvalConfigScript) shell.parse(in);
+    protected EvalScript loadScript(Reader in) {
+        EvalScript script = (EvalScript) shell.parse(in);
         script.setEngine(this);
         return script;
     }
@@ -119,7 +119,7 @@ public class EvalScriptEngine {
      * @throws CommandException if the script is invalid or produces an error.
      */
     @Nullable
-    protected Object runScript(EvalConfigScript script, String[] args) throws CommandException {
+    protected Object runScript(EvalScript script, String[] args) throws CommandException {
         script.setBinding(new Binding(args));
         Object result = null;
         try {
