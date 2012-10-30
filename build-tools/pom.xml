@@ -119,5 +119,17 @@
         <tools.jar>${java.home}/../Classes/classes.jar</tools.jar>
       </properties>
     </profile>
+    
+    <profile>
+      <id>win-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../jdk${java.version}/lib/tools.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../jdk${java.version}/lib/tools.jar</tools.jar>
+      </properties>
+    </profile>
   </profiles>
 </project>

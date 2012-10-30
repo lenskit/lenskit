@@ -63,12 +63,12 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     private final BaselinePredictor baseline;
     private final PreferenceSnapshot snapshot;
 
-    private FunkSVDTrainingConfig rule;
+    private FunkSVDUpdateRule rule;
     private StoppingCondition stoppingCondition;
 
     @Inject
     public FunkSVDModelProvider(@Transient @Nonnull PreferenceSnapshot snapshot,
-                                @Transient @Nonnull FunkSVDTrainingConfig rule,
+                                @Transient @Nonnull FunkSVDUpdateRule rule,
                                 @Nonnull BaselinePredictor baseline,
                                 @Transient StoppingCondition stop,
                                 @FeatureCount int featureCount) {
