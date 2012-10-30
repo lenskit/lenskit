@@ -65,7 +65,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private String testFilePattern;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
-    private Boolean isForced;
+    private boolean isForced;
 
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
@@ -245,11 +245,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public boolean getForce() {
-        if (isForced == null) {
-            return getConfig().force();
-        } else {
-            return isForced;
-        }
+        return isForced || getConfig().force();
     }
 
     /**

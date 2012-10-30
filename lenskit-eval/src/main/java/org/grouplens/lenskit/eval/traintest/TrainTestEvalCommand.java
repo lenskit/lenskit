@@ -25,6 +25,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.eval.util.table.Table;
 import org.grouplens.lenskit.eval.util.table.TableImpl;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
@@ -41,13 +42,14 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
+public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
 
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private IsolationLevel isolationLevel;
+    private Boolean always;
     private int nThread;
     private File outputFile;
     private File userOutputFile;
@@ -124,6 +126,21 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         return this;
     }
 
+    /**
+     * Set whether this should always run.
+     * @param force If {@code true}, always run. Can also be set with the <tt>force</tt>
+     *              evaluation config option.
+     * @return The command for chaining.
+     */
+    public TrainTestEvalCommand setAlwaysRun(boolean force) {
+        always = force;
+        return this;
+    }
+
+    public boolean getAlwaysRun() {
+        return always || getConfig().force();
+    }
+
     List<TTDataSet> dataSources() {
         return dataSources;
     }
@@ -156,12 +173,12 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     /**
      * Run the evaluation on the train test data source files
      *
-     * @return For now, return nothing
+     * @return The summary output table.
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Failure of the evaluation
      */
     @Override
-    public TableImpl call() throws CommandException {
+    public Table call() throws CommandException {
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {
