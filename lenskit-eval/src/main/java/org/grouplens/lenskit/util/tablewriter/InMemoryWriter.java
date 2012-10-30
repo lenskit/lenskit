@@ -18,9 +18,8 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
-import org.grouplens.lenskit.eval.util.table.TableImpl;
+import org.grouplens.lenskit.util.table.TableImpl;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**

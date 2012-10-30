@@ -16,22 +16,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.util.table;
+package org.grouplens.lenskit.util.table;
 
-import java.util.AbstractMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Row stores a data row. The user can use it as a map of header string to data object. Internally
- * it keeps the order of the data by using both a map of header string to index number and a list
- * of dat aobject.
+ * This is the interface for the in memory table which stores a list of rows. Users should be able
+ * to call the filter method to find the rows that satisfy the conditions specified by users. And
+ * table expose the functions of columns to enable users calling the functions on column.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public interface Row extends Map<String, Object> {
-    Object value(String key);
+public interface Table extends List<Row> {
+    Table filter(String header, Object data);
 
-    Object value(int idx);
+    Column column(String col);
+
+    List<String> getHeader();
 }

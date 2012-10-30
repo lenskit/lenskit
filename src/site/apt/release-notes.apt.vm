@@ -27,6 +27,8 @@ LensKit Release Notes
 
   * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
 
+  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
+
   []
 
 * Release 1.0.2
