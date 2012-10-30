@@ -25,6 +25,7 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
@@ -131,12 +132,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      *              evaluation config option.
      * @return The command for chaining.
      */
-    public TrainTestEvalCommand setAlwaysRun(boolean force) {
+    public TrainTestEvalCommand setForce(boolean force) {
         always = force;
         return this;
     }
 
-    public boolean getAlwaysRun() {
+    public boolean getForce() {
         return always || getConfig().force();
     }
 
@@ -178,6 +179,26 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      */
     @Override
     public Table call() throws CommandException {
+        if (!getForce()) {
+            UpToDateChecker check = new UpToDateChecker();
+            for (TTDataSet src: dataSources()) {
+                check.addInput(src.lastModified());
+            }
+            if (outputFile != null) {
+                check.addOutput(outputFile);
+            }
+            if (userOutputFile != null) {
+                check.addOutput(userOutputFile);
+            }
+            if (predictOutputFile != null) {
+                check.addOutput(predictOutputFile);
+            }
+            if (check.isUpToDate()) {
+                logger.info("train-test outputs up to date, not re-running");
+                // FIXME Load the output file!
+                return null;
+            }
+        }
         this.setupJobs();
         int nthreads = nThread;
         if (nthreads <= 0) {

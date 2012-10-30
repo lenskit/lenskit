@@ -84,6 +84,11 @@ public class UpToDateChecker {
      * @param file The file to add to the output files to check.
      */
     public void addOutput(File file) {
-        addOutput(file.lastModified());
+        long lm = file.lastModified();
+        if (lm == 0) {
+            // file doesn't exist, pretend it's indefinitely old
+            lm = Long.MIN_VALUE;
+        }
+        addOutput(lm);
     }
 }
