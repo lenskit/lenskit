@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.eval;
 
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 
 import javax.annotation.Nonnull;
@@ -40,12 +41,17 @@ public abstract class AbstractCommand<T> implements Command<T> {
         this.name = name;
     }
 
-    public AbstractCommand<T> setConfig(EvalConfig cfg) {
+    public AbstractCommand<T> setConfig(@Nonnull EvalConfig cfg) {
+        Preconditions.checkNotNull(cfg, "configuration cannot be null");
         config = cfg;
         return this;
     }
 
+    @Nonnull
     public EvalConfig getConfig() {
+        if (config == null) {
+            throw new IllegalStateException("no configuration is specified");
+        }
         return config;
     }
 

@@ -49,8 +49,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private IsolationLevel isolationLevel;
-    private Boolean always;
-    private int nThread;
+    private boolean always = false;
+    private int nThread = -1;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -171,6 +171,35 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     }
 
     /**
+     * Query whether the command should run at all.
+     *
+     * @return {@code true} if the command should run, {@code false} if it should
+     *         leave existing results alone.
+     */
+    private boolean shouldRun() {
+        if (getForce()) {
+            return true;
+        }
+        if (outputFile == null) {
+            return true;
+        }
+        UpToDateChecker check = new UpToDateChecker();
+        for (TTDataSet src: dataSources()) {
+            check.addInput(src.lastModified());
+        }
+        if (outputFile != null) {
+            check.addOutput(outputFile);
+        }
+        if (userOutputFile != null) {
+            check.addOutput(userOutputFile);
+        }
+        if (predictOutputFile != null) {
+            check.addOutput(predictOutputFile);
+        }
+        return !check.isUpToDate();
+    }
+
+    /**
      * Run the evaluation on the train test data source files
      *
      * @return The summary output table.
@@ -179,25 +208,9 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      */
     @Override
     public Table call() throws CommandException {
-        if (!getForce()) {
-            UpToDateChecker check = new UpToDateChecker();
-            for (TTDataSet src: dataSources()) {
-                check.addInput(src.lastModified());
-            }
-            if (outputFile != null) {
-                check.addOutput(outputFile);
-            }
-            if (userOutputFile != null) {
-                check.addOutput(userOutputFile);
-            }
-            if (predictOutputFile != null) {
-                check.addOutput(predictOutputFile);
-            }
-            if (check.isUpToDate()) {
-                logger.info("train-test outputs up to date, not re-running");
-                // FIXME Load the output file!
-                return null;
-            }
+        if (!shouldRun()) {
+            // FIXME Read the table from the output file and return it
+            return null;
         }
         this.setupJobs();
         int nthreads = nThread;

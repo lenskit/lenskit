@@ -52,7 +52,8 @@ public class EvalScriptEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-    protected EvalConfig config;
+    @Nonnull
+    protected final EvalConfig config;
 
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> commands = new HashMap<Class, Class>();
@@ -190,6 +191,7 @@ public class EvalScriptEngine {
      * Get the eval script config.
      * @return The eval configuration.
      */
+    @Nonnull
     public EvalConfig getConfig() {
         return config;
     }
