@@ -108,7 +108,7 @@ public class EvalConfig {
         return get(ANALYSIS_DIR_PROPERTY, ".");
     }
 
-    public int threadCount() {
+    public int getThreadCount() {
         return Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
     }
 

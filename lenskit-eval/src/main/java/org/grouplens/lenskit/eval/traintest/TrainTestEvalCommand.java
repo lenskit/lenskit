@@ -207,7 +207,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             return null;
         }
         this.setupJobs();
-        int nthreads = getConfig().threadCount();
+        int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
         this.initialize();
         logger.info("Running evaluator with {} threads", nthreads);

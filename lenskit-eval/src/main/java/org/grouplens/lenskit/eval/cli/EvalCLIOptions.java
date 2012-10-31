@@ -27,8 +27,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -46,6 +44,7 @@ public class EvalCLIOptions {
     private URL[] classpathUrls;
     private Properties props;
     private boolean force;
+    private int nthreads = -1;
 
     private EvalCLIOptions(CommandLine cmd) {
         String[] cpadds = cmd.getOptionValues("C");
@@ -70,6 +69,14 @@ public class EvalCLIOptions {
         }
         props = cmd.getOptionProperties("D");
         force = cmd.hasOption("F");
+        if (cmd.hasOption("j")) {
+            String n = cmd.getOptionValue("j");
+            if (n == null) {
+                nthreads = Runtime.getRuntime().availableProcessors();
+            } else {
+                nthreads = Integer.parseInt(n);
+            }
+        }
 
         args = cmd.getArgs();
     }
@@ -104,6 +111,10 @@ public class EvalCLIOptions {
         opts.addOption(OptionBuilder.withDescription("force eval tasks to run")
                                     .withLongOpt("force")
                                     .create("F"));
+        opts.addOption(OptionBuilder.withDescription("number of threads to use")
+                                    .hasOptionalArg().withArgName("N")
+                                    .withLongOpt("thread-count")
+                                    .create("j"));
         opts.addOption(OptionBuilder.withDescription("specify the eval configuration script")
                                     .hasArg().withArgName("FILE")
                                     .create("f"));
@@ -150,6 +161,9 @@ public class EvalCLIOptions {
         }
         if (force) {
             ps.setProperty(EvalConfig.FORCE_PROPERTY, "true");
+        }
+        if (nthreads >= 0) {
+            ps.setProperty(EvalConfig.THREAD_COUNT_PROPERTY, Integer.toString(nthreads));
         }
         return ps;
     }

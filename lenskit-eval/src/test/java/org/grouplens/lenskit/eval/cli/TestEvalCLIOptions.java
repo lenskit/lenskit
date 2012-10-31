@@ -56,4 +56,21 @@ public class TestEvalCLIOptions {
         EvalConfig cfg = new EvalConfig(opts.getProperties());
         assertThat(cfg.get("scroll.name"), equalTo("hackem muche"));
     }
+
+    @Test
+    public void testThreadCount() {
+        String[] args = {"-j4"};
+        EvalCLIOptions opts = parse(args);
+        EvalConfig cfg = new EvalConfig(opts.getProperties());
+        assertThat(cfg.getThreadCount(), equalTo(4));
+    }
+
+    @Test
+    public void testAutoThreadCount() {
+        String[] args = {"-j"};
+        EvalCLIOptions opts = parse(args);
+        EvalConfig cfg = new EvalConfig(opts.getProperties());
+        assertThat(cfg.getThreadCount(),
+                   equalTo(Runtime.getRuntime().availableProcessors()));
+    }
 }
