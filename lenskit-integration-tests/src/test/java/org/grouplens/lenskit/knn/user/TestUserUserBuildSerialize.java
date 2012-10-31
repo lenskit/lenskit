@@ -23,6 +23,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.test.ML100KTestSuite;
@@ -36,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -70,5 +72,13 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
         assertThat(loaded, notNullValue());
+
+        LenskitRecommender rec = loaded.open();
+        try {
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(UserUserRatingPredictor.class));
+        } finally {
+            rec.close();
+        }
     }
 }
