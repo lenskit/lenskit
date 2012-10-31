@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.symbols;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -26,33 +27,34 @@ import static org.hamcrest.Matchers.*;
  * @author John Riedl <riedl@cs.umn.edu>
  */
 public class TestSymbols {
-	@Test
-	public void testConstruction() {
-		assertSame(Symbol.of("foo"), Symbol.of("foo"));
-		assertSame(Symbol.of("bar"), Symbol.of("bar"));
-		assertNotSame(Symbol.of("foo"), Symbol.of("bar"));
-		assertNotSame(Symbol.of("bar"), Symbol.of("foo"));
-	}
+    @Test
+    public void testConstruction() {
+        assertSame(Symbol.of("foo"), Symbol.of("foo"));
+        assertSame(Symbol.of("bar"), Symbol.of("bar"));
+        assertNotSame(Symbol.of("foo"), Symbol.of("bar"));
+        assertNotSame(Symbol.of("bar"), Symbol.of("foo"));
+    }
 
-	@Test
-	public void testEquals() {
-		Symbol s1 = Symbol.of("1");
-		Symbol s2 = Symbol.of("2");
-		Symbol s3 = Symbol.of("3");
-		Symbol s4 = Symbol.of("4");
-		Symbol s11 = Symbol.of("1");
-		Symbol s12 = Symbol.of("1");
-		assertEquals(s1, s11);
-		assertEquals(s11, s12);
-		assertSame(s1, s11);
-		assertSame(s1, s12);
-	}
+    @Test
+    public void testEquals() {
+        Symbol s1 = Symbol.of("1");
+        Symbol s2 = Symbol.of("2");
+        Symbol s3 = Symbol.of("3");
+        Symbol s4 = Symbol.of("4");
+        Symbol s11 = Symbol.of("1");
+        Symbol s12 = Symbol.of("1");
+        assertEquals(s1, s11);
+        assertEquals(s11, s12);
+        assertSame(s1, s11);
+        assertSame(s1, s12);
+    }
 
-	@Test public void testToString() {
-		Symbol sbar = Symbol.of("bar");
-		Symbol sfoo = Symbol.of("foo");
-		assertThat(Symbol.of("foo").toString(), equalTo("Symbol.of(foo)"));
-		assertThat(sbar.toString(), equalTo("Symbol.of(bar)"));
-		assertThat(sfoo.toString(), equalTo("Symbol.of(foo)"));
-	}
+    @Test
+    public void testToString() {
+        Symbol sbar = Symbol.of("bar");
+        Symbol sfoo = Symbol.of("foo");
+        assertThat(Symbol.of("foo").toString(), equalTo("Symbol.of(foo)"));
+        assertThat(sbar.toString(), equalTo("Symbol.of(bar)"));
+        assertThat(sfoo.toString(), equalTo("Symbol.of(foo)"));
+    }
 }

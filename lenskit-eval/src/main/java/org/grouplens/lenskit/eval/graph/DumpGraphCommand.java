@@ -66,10 +66,10 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         domain = dom;
         return this;
     }
-    
+
     public DumpGraphCommand setDaoType(Class<? extends DataAccessObject> daoType) {
-    	this.daoType = daoType;
-    	return this;
+        this.daoType = daoType;
+        return this;
     }
 
     @Override

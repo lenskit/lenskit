@@ -81,7 +81,7 @@ public class TestItemItemRecommender {
         factory.bind(UserVectorNormalizer.class)
                .to(DefaultUserVectorNormalizer.class);
         factory.bind(VectorNormalizer.class)
-                .to(IdentityVectorNormalizer.class);
+               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = factory.create();
         session = engine.open();
         recommender = session.getItemRecommender();
@@ -90,7 +90,7 @@ public class TestItemItemRecommender {
     /**
      * Check that we score items but do not provide scores for items
      * the user has previously rated.  User 5 has rated only item 8
-     * previously. 
+     * previously.
      */
     @Test
     public void testItemScorerNoRating() {
@@ -109,7 +109,7 @@ public class TestItemItemRecommender {
     /**
      * Check that we score items but do not provide scores for items
      * the user has previously rated.  User 5 has rated only item 8
-     * previously. 
+     * previously.
      */
     @Test
     public void testItemScorerChannels() {
@@ -121,18 +121,18 @@ public class TestItemItemRecommender {
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
-	assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-		   get(7), closeTo(1.0));
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(7), closeTo(1.0));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
 
-	history = getRatings(2);  // has rated 7, and 8
-        long [] items2 = {7, 8, 9};
+        history = getRatings(2);  // has rated 7, and 8
+        long[] items2 = {7, 8, 9};
         scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
         scores = scorer.score(history, LongArrayList.wrap(items2));
-	assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-		   get(9), closeTo(3.0));  // 1, 7, 8
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(9), closeTo(3.0));  // 1, 7, 8
     }
 
     /**

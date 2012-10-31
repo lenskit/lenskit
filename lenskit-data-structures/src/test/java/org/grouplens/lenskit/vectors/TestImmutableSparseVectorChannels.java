@@ -65,33 +65,33 @@ public class TestImmutableSparseVectorChannels {
 
     @Test
     public void testImmutable() {
-	MutableSparseVector simple = simpleVector();
-	simple.addChannel(fooSymbol).set(3, 77);
-	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+        MutableSparseVector simple = simpleVector();
+        simple.addChannel(fooSymbol).set(3, 77);
+        assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
 
-	ImmutableSparseVector simpleImm = simple.immutable();
-	assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
+        ImmutableSparseVector simpleImm = simple.immutable();
+        assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
     }
 
     @Test
     public void testCopy() {
-	MutableSparseVector simple = simpleVector();
-	simple.addChannel(fooSymbol).set(3, 77);
-	assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+        MutableSparseVector simple = simpleVector();
+        simple.addChannel(fooSymbol).set(3, 77);
+        assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
 
-	ImmutableSparseVector simpleImm = simple.immutable();
-	MutableSparseVector reSimple = simpleImm.mutableCopy();
-	assertThat(reSimple.channel(fooSymbol).get(3), closeTo(77));
-	reSimple.channel(fooSymbol).set(7, 55);
-	assertThat(reSimple.channel(fooSymbol).get(7), closeTo(55));
+        ImmutableSparseVector simpleImm = simple.immutable();
+        MutableSparseVector reSimple = simpleImm.mutableCopy();
+        assertThat(reSimple.channel(fooSymbol).get(3), closeTo(77));
+        reSimple.channel(fooSymbol).set(7, 55);
+        assertThat(reSimple.channel(fooSymbol).get(7), closeTo(55));
 
-	ImmutableSparseVector reSimpleImm = reSimple.immutable();
-	assertThat(reSimpleImm.channel(fooSymbol).get(3), closeTo(77));
-	assertThat(reSimpleImm.channel(fooSymbol).get(7), closeTo(55));
+        ImmutableSparseVector reSimpleImm = reSimple.immutable();
+        assertThat(reSimpleImm.channel(fooSymbol).get(3), closeTo(77));
+        assertThat(reSimpleImm.channel(fooSymbol).get(7), closeTo(55));
 
-	// Now we check that the original immutable copy is unchanged
-	assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
-	assertThat(simpleImm.channel(fooSymbol).get(7, -1), closeTo(-1));
+        // Now we check that the original immutable copy is unchanged
+        assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
+        assertThat(simpleImm.channel(fooSymbol).get(7, -1), closeTo(-1));
     }
 
 }

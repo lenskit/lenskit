@@ -47,7 +47,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * Create a new, empty immutable sparse vector.
      */
     public ImmutableSparseVector() {
-	this(new long[0], new double[0]);
+        this(new long[0], new double[0]);
     }
 
     /**
@@ -57,8 +57,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      *                the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
-	super(ratings);
-	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+        super(ratings);
+        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
 
     /**
@@ -85,8 +85,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * @param sz The length to actually use.
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
-	super(ks, vs, sz);
-	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+        super(ks, vs, sz);
+        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
 
     /**
@@ -95,15 +95,15 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * is not checked.  The new vector will have a copy of the
      * channels that are passed into it.
      *
-     * @param ks the key array (will be the key domain).
-     * @param vs the value array.
-     * @param sz the length to actually use.
+     * @param ks   the key array (will be the key domain).
+     * @param vs   the value array.
+     * @param sz   the length to actually use.
      * @param used the keys that actually have values currently.
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
-				    Map<Symbol, ImmutableSparseVector> inChannelMap) {
-	super(ks, vs, sz, used);
-	channelMap = inChannelMap;
+                                    Map<Symbol, ImmutableSparseVector> inChannelMap) {
+        super(ks, vs, sz, used);
+        channelMap = inChannelMap;
     }
 
     @Override
@@ -114,25 +114,25 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @Override
     public MutableSparseVector mutableCopy() {
         MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
-							     domainSize, (BitSet) usedKeys.clone());
-	for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
-	    result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
-	}
-	return result;
+                                                             domainSize, (BitSet) usedKeys.clone());
+        for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
+            result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
+        }
+        return result;
     }
 
     @Override
     public boolean hasChannel(Symbol channelSymbol) {
-	return channelMap.containsKey(channelSymbol);
+        return channelMap.containsKey(channelSymbol);
     }
 
     @Override
     public ImmutableSparseVector channel(Symbol channelSymbol) {
-	if (hasChannel(channelSymbol)) {
-	    return channelMap.get(channelSymbol);
-	}
-	throw new IllegalArgumentException("No existing channel under name " +
-					   channelSymbol.getName());
+        if (hasChannel(channelSymbol)) {
+            return channelMap.get(channelSymbol);
+        }
+        throw new IllegalArgumentException("No existing channel under name " +
+                                                   channelSymbol.getName());
     }
-    
+
 }
