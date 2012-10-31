@@ -1,10 +1,9 @@
 package ${package};
 
-import org.junit.Test;
-import static org.junit.Assert.fail;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
-import org.grouplens.lenskit.symbols.Symbol;
+import org.junit.Test;
 
 /**
  * Unit test for simple App.
@@ -17,6 +16,7 @@ public class AppTest {
     @Test
     public void testApp()
     {
-        assertTrue( true );
+        assertThat(true, equalTo(true));
     }
 }
+
