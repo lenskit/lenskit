@@ -48,12 +48,11 @@ import java.util.Map;
  * @author John Riedl <riedl@cs.umn.edu>
  * @compat Public
  */
-public class Symbol {
+public final class Symbol {
 	// Variables shared by all instances
 	private static Map<String, Symbol> name2SymbolMap = new Reference2ObjectArrayMap<String, Symbol>();
 
 	// Variables unique to each instance
-	private Symbol theSymbol;    // There is one version of each symbol, and this object refers to that shared version
 	private String strSymbol;    // The name of the symbol, which is the string used to create it.
 
 	// The only constructors are private, so Symbols can only be created
@@ -65,7 +64,6 @@ public class Symbol {
 	// The only constructor is private, so Symbols can only be created
 	// through the public interface.
 	private Symbol(String name) {
-		theSymbol = this;
 		strSymbol = name;
 	}
 
@@ -97,19 +95,7 @@ public class Symbol {
 
 	@Override
 	public String toString() {
-		return String.format("Symbol based on name '%s'", this.getName());
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		} else if (o instanceof Symbol) {
-			Symbol so = (Symbol) o;
-			return this.theSymbol == so.theSymbol;
-		} else {
-			return false;
-		}
+		return String.format("Symbol.of(%s)", this.getName());
 	}
 
 }
