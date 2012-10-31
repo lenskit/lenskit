@@ -157,6 +157,7 @@ public final class VectorEntry {
      *
      * @return The associated vector, or {@code null} if no vector is linked.
      */
+    @Nullable
     SparseVector getVector() {
         return vector;
     }

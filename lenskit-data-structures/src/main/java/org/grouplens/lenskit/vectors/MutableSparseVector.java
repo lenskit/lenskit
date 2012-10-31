@@ -287,11 +287,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                                  from this vector, or if the index in the entry is corrupt.
      */
     public double set(VectorEntry entry, double value) {
-        if (entry.getVector().keys != this.keys) {
+        final SparseVector evec = entry.getVector();
+        if (evec == null) {
+            throw new IllegalArgumentException("entry is not associated with a vector");
+        } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
         }
+
         final int idx = entry.getIndex();
-        if (entry.getVector() == this) {  // if this is the original, not a copy or channel
+        if (evec == this) {  // if this is the original, not a copy or channel
             entry.setValue(value);
         }
         return setAt(idx, value);
