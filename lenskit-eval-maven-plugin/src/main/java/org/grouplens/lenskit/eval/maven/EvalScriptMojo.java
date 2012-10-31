@@ -26,6 +26,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 
 import java.io.File;
@@ -88,7 +89,7 @@ public class EvalScriptMojo extends AbstractMojo {
     /**
      * The number of evaluation threads to run.
      */
-    @Parameter(property="lenskit.threadCount")
+    @Parameter(property="lenskit.eval.threadCount")
     private int threadCount = 1;
 
     @Override
@@ -122,6 +123,8 @@ public class EvalScriptMojo extends AbstractMojo {
         Properties properties = new Properties(project.getProperties());
         properties.setProperty("lenskit.eval.dataDir", dataDir);
         properties.setProperty("lenskit.eval.analysisDir", analysisDir);
+        properties.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
+                               Integer.toString(threadCount));
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
