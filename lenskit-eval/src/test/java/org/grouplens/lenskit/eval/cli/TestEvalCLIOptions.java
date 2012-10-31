@@ -30,6 +30,7 @@ public class TestEvalCLIOptions {
 
         EvalConfig cfg = new EvalConfig(opts.getProperties());
         assertThat(cfg.force(), equalTo(false));
+        assertThat(cfg.getThreadCount(), equalTo(1));
     }
 
     @Test
@@ -72,5 +73,15 @@ public class TestEvalCLIOptions {
         EvalConfig cfg = new EvalConfig(opts.getProperties());
         assertThat(cfg.getThreadCount(),
                    equalTo(Runtime.getRuntime().availableProcessors()));
+    }
+
+    @Test
+    public void testMultiThreadCount() {
+        String[] args = {"-j", "-F"};
+        EvalCLIOptions opts = parse(args);
+        EvalConfig cfg = new EvalConfig(opts.getProperties());
+        assertThat(cfg.getThreadCount(),
+                   equalTo(Runtime.getRuntime().availableProcessors()));
+        assertThat(cfg.force(), equalTo(true));
     }
 }
