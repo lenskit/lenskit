@@ -18,21 +18,17 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleLists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.BitSet;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.symbols.Symbol;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
@@ -43,19 +39,15 @@ import org.grouplens.lenskit.collections.MoreArrays;
  */
 @Immutable
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
-    private static final long serialVersionUID = -4740588973577998934L;
+    private static final long serialVersionUID = -4740588973577998935L;
 
-    protected final long[] keys;
-    protected double[] values;
-    protected final int size;
+    private final Map<Symbol, ImmutableSparseVector> channelMap;
 
     /**
      * Create a new, empty immutable sparse vector.
      */
     public ImmutableSparseVector() {
-        keys = new long[0];
-        values = null;
-        size = 0;
+	this(new long[0], new double[0]);
     }
 
     /**
@@ -65,16 +57,22 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      *                the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
-        keys = ratings.keySet().toLongArray();
-        size = keys.length;
-        Arrays.sort(keys);
-        assert keys.length == ratings.size();
-        assert MoreArrays.isSorted(keys, 0, size);
-        values = new double[keys.length];
-        final int len = keys.length;
-        for (int i = 0; i < len; i++) {
-            values[i] = ratings.get(keys[i]);
-        }
+	super(ratings);
+	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+    }
+
+    /**
+     * Construct a new vector from existing arrays.  It is assumed that the keys
+     * are sorted and duplicate-free, and that the values is the same length. The
+     * key array is the key domain, and all keys are considered used.
+     * No new keys can be added to this vector.  Clients should call
+     * the wrap() method rather than directly calling this constructor.
+     *
+     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param vs The array of values backing this vector.
+     */
+    protected ImmutableSparseVector(long[] ks, double[] vs) {
+        this(ks, vs, ks.length);
     }
 
     /**
@@ -87,132 +85,25 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * @param sz The length to actually use.
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
-        keys = ks;
-        values = vs;
-        size = sz;
-        assert MoreArrays.isSorted(ks, 0, sz);
-    }
-
-    @Override
-    public double get(long key, double dft) {
-        final int idx = Arrays.binarySearch(keys, 0, size, key);
-        if (idx >= 0) {
-            return values[idx];
-        } else {
-            return dft;
-        }
-    }
-
-    @Override
-    public boolean containsKey(long key) {
-        return Arrays.binarySearch(keys, 0, size, key) >= 0;
-    }
-
-    @Override
-    public Iterator<VectorEntry> iterator() {
-        return new IterImpl();
-    }
-
-    @Override
-    public Iterator<VectorEntry> fastIterator() {
-        return new FastIterImpl();
-    }
-
-    @Override
-    public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
-        return fastIterator();
-    }
-
-    @Override
-    public LongSortedSet keySet() {
-        return LongSortedArraySet.wrap(keys, size);
-    }
-
-    @Override
-    public LongSortedSet keyDomain() {
-        return keySet();
-    }
-
-    @Override
-    public DoubleList values() {
-        return DoubleLists.unmodifiable(new DoubleArrayList(values, 0, size));
-    }
-
-    @Override
-    public int size() {
-        return size;
+	super(ks, vs, sz);
+	channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
 
     /**
-     * {@inheritDoc}
-     * <p>This implementation uses an optimized implementation when computing
-     * the dot product of two immutable sparse vectors.
+     * Construct a new sparse vector from pre-existing arrays. These arrays must
+     * be sorted in key order and cannot contain duplicate keys; this condition
+     * is not checked.  The new vector will have a copy of the
+     * channels that are passed into it.
+     *
+     * @param ks the key array (will be the key domain).
+     * @param vs the value array.
+     * @param sz the length to actually use.
+     * @param used the keys that actually have values currently.
      */
-    @Override
-    public double dot(SparseVector o) {
-        if (o instanceof ImmutableSparseVector) {
-            // we can speed this up a lot
-            final ImmutableSparseVector iv = (ImmutableSparseVector) o;
-            double dot = 0;
-
-            final int sz = size;
-            final int osz = iv.size;
-            int i = 0;
-            int j = 0;
-            while (i < sz && j < osz) {
-                final long k1 = keys[i];
-                final long k2 = iv.keys[j];
-                if (k1 == k2) {
-                    dot += values[i] * iv.values[j];
-                    i++;
-                    j++;
-                } else if (k1 < k2) {
-                    i++;
-                } else {
-                    j++;
-                }
-            }
-
-            return dot;
-        } else {
-            return super.dot(o);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Uses an optimized implementation when computing common keys of
-     * two immutable sparse vectors.
-     */
-    @Override
-    public int countCommonKeys(SparseVector o) {
-        if (o instanceof ImmutableSparseVector) {
-            // we can speed this up a lot
-            final ImmutableSparseVector iv = (ImmutableSparseVector) o;
-            int n = 0;
-
-            final int sz = size;
-            final int osz = iv.size;
-            int i = 0;
-            int j = 0;
-            while (i < sz && j < osz) {
-                final long k1 = keys[i];
-                final long k2 = iv.keys[j];
-                if (k1 == k2) {
-                    n += 1;
-                    i++;
-                    j++;
-                } else if (k1 < k2) {
-                    i++;
-                } else {
-                    j++;
-                }
-            }
-
-            return n;
-        } else {
-            return super.countCommonKeys(o);
-        }
+    protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
+				    Map<Symbol, ImmutableSparseVector> inChannelMap) {
+	super(ks, vs, sz, used);
+	channelMap = inChannelMap;
     }
 
     @Override
@@ -222,57 +113,26 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @Override
     public MutableSparseVector mutableCopy() {
-        return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
+        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
+							     domainSize, (BitSet) usedKeys.clone());
+	for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
+	    result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
+	}
+	return result;
     }
 
-    private class IterImpl implements Iterator<VectorEntry> {
-        private int pos = 0;
-
-        @Override
-        public boolean hasNext() {
-            return pos < size;
-        }
-
-        @Override
-        public VectorEntry next() {
-            if (hasNext()) {
-                final VectorEntry e = new VectorEntry(keys[pos], values[pos]);
-                pos++;
-                return e;
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+    @Override
+    public boolean hasChannel(Symbol channelSymbol) {
+	return channelMap.containsKey(channelSymbol);
     }
 
-    private class FastIterImpl implements Iterator<VectorEntry> {
-        private int pos;
-        private VectorEntry entry = new VectorEntry(0, 0);
-
-        @Override
-        public boolean hasNext() {
-            return pos < size;
-        }
-
-        @Override
-        public VectorEntry next() {
-            if (hasNext()) {
-                entry.set(keys[pos], values[pos]);
-                pos++;
-                return entry;
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+    @Override
+    public ImmutableSparseVector channel(Symbol channelSymbol) {
+	if (hasChannel(channelSymbol)) {
+	    return channelMap.get(channelSymbol);
+	}
+	throw new IllegalArgumentException("No existing channel under name " +
+					   channelSymbol.getName());
     }
+    
 }

@@ -35,7 +35,7 @@ public interface ItemScoreAlgorithm {
     /**
      * Score items for a user.
      *
-     * @param model    The item-tiem model.
+     * @param model    The item-item model.
      * @param userData The user's rating data.
      * @param scores   The score vector (key domain is items to score). Unscoreable
      *                 items will be left unchanged.

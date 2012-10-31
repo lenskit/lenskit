@@ -23,7 +23,6 @@ import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
-
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.junit.Test;
@@ -60,7 +59,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     public void testEmptyConstructor() {
         SparseVector v = new ImmutableSparseVector();
         assertThat(v.isEmpty(), equalTo(true));
-        assertThat(v.get(15), notANumber());
+	assertThat(v.get(15), notANumber());
     }
 
     @Test
@@ -78,7 +77,6 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
-        assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
 }

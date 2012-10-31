@@ -97,7 +97,8 @@ public class TestGlobalItemItemRecommender {
     }
 
     /**
-     * Check that we score items but do not provide rating scores.
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.
      */
     @Test
     public void testGlobalItemScorerNoRating() {

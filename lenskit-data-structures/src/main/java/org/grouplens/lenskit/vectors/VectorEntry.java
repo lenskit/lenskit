@@ -27,6 +27,11 @@ import javax.annotation.Nullable;
  * The entry class does not support a public setValue method; to set the
  * value at an entry on a mutable sparse vector, use
  * {@link MutableSparseVector#set(VectorEntry, double)}.
+ * This design allows the same VectorEntry to work for both Mutable
+ * and Immutable vectors, since the Immutable vectors can safely
+ * return the VectorEntry knowing it cannot change the (immutable)
+ * values, while the set operation on Mutable vectors allows the
+ * element to be changed.
  *
  * @author Michael Ekstrand
  * @compat Public

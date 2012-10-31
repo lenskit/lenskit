@@ -31,6 +31,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,108 +47,109 @@ import java.util.Collection;
  * @see ItemItemRatingPredictor
  */
 public class ItemItemScorer extends AbstractItemScorer implements
-        ItemItemModelBackedScorer {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
-    protected final ItemItemModel model;
-    protected
-    @Nonnull
-    UserVectorNormalizer normalizer;
-    protected UserHistorySummarizer summarizer;
-    protected
-    @Nonnull
-    NeighborhoodScorer scorer;
-    protected
-    @Nonnull
-    ItemScoreAlgorithm algorithm;
+ItemItemModelBackedScorer {
+	private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
+	public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
+			Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
+	protected final ItemItemModel model;
+	protected
+	@Nonnull
+	UserVectorNormalizer normalizer;
+	protected UserHistorySummarizer summarizer;
+	protected
+	@Nonnull
+	NeighborhoodScorer scorer;
+	protected
+	@Nonnull
+	ItemScoreAlgorithm algorithm;
 
-    @Inject
-    public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
-                          UserHistorySummarizer sum,
-                          NeighborhoodScorer scorer,
-                          ItemScoreAlgorithm algo) {
-        super(dao);
-        model = m;
-        summarizer = sum;
-        this.scorer = scorer;
-        algorithm = algo;
-        logger.info("building item-item scorer with scorer {}", scorer);
-    }
+	@Inject
+	public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
+			UserHistorySummarizer sum,
+			NeighborhoodScorer scorer,
+			ItemScoreAlgorithm algo) {
+		super(dao);
+		model = m;
+		summarizer = sum;
+		this.scorer = scorer;
+		algorithm = algo;
+		logger.info("building item-item scorer with scorer {}", scorer);
+	}
 
-    @Override
-    public ItemItemModel getModel() {
-        return model;
-    }
+	@Override
+	public ItemItemModel getModel() {
+		return model;
+	}
 
-    @Nonnull
-    public UserVectorNormalizer getNormalizer() {
-        return normalizer;
-    }
+	@Nonnull
+	public UserVectorNormalizer getNormalizer() {
+		return normalizer;
+	}
 
-    /**
-     * Set the normalizer to apply to user summaries.
-     *
-     * @param norm The normalizer.
-     * @see UserVectorNormalizer
-     */
-    @Inject
-    public void setNormalizer(UserVectorNormalizer norm) {
-        normalizer = norm;
-    }
+	/**
+	 * Set the normalizer to apply to user summaries.
+	 *
+	 * @param norm The normalizer.
+	 * @see UserVectorNormalizer
+	 */
+	@Inject
+	public void setNormalizer(UserVectorNormalizer norm) {
+		normalizer = norm;
+	}
 
-    /**
-     * Score items by computing predicted ratings.
-     *
-     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
-     * @see #makeTransform(long, SparseVector)
-     */
-    @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
-        SparseVector summary = summarizer.summarize(history);
-        VectorTransformation transform = makeTransform(history.getUserId(), summary);
-        MutableSparseVector normed = summary.mutableCopy();
-        transform.apply(normed);
+	/**
+	 * Score items by computing predicted ratings.
+	 *
+	 * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
+	 * @see #makeTransform(long, SparseVector)
+	 */
+	@Override
+	public void score(@Nonnull UserHistory<? extends Event> history,
+			@Nonnull MutableSparseVector scores) {
+		SparseVector summary = summarizer.summarize(history);
+		VectorTransformation transform = makeTransform(history.getUserId(), summary);
+		MutableSparseVector normed = summary.mutableCopy();
+		transform.apply(normed);
 
-        scores.clear();
+		scores.clear();
+		algorithm.scoreItems(model, normed, scores, scorer);
 
-        algorithm.scoreItems(model, normed, scores, scorer);
+		// untransform the scores
+		transform.unapply(scores);
+	}
 
-        // untransform the scores
-        transform.unapply(scores);
-    }
+	/**
+	 * Construct a transformation that is used to pre- and post-process
+	 * summarized user data in {@link #score(UserHistory, Collection)}. The
+	 * transformation is created from the user summary. It is then applied to
+	 * the user summary prior to scoring, and unapplied to the scores. Its
+	 * {@link VectorTransformation#unapply(MutableSparseVector)} method is
+	 * expected also to populate missing scores as appropriate from the
+	 * baseline. The vector passed to unapply the transformation will contain
+	 * all items to be predicted in the key domain, and will have values for all
+	 * predictable items.
+	 *
+	 * <p>
+	 * The default implementation delegates to the normalizer
+	 * ({@link #setNormalizer(UserVectorNormalizer)}).
+	 *
+	 * @param userData The user summary.
+	 * @return The transform to pre- and post-process user data.
+	 */
+	protected VectorTransformation makeTransform(long user, SparseVector userData) {
+		return normalizer.makeTransformation(user, userData);
+	}
 
-    /**
-     * Construct a transformation that is used to pre- and post-process
-     * summarized user data in {@link #score(UserHistory, Collection)}. The
-     * transformation is created from the user summary. It is then applied to
-     * the user summary prior to scoring, and unapplied to the scores. Its
-     * {@link VectorTransformation#unapply(MutableSparseVector)} method is
-     * expected also to populate missing scores as appropriate from the
-     * baseline. The vector passed to unapply the transformation will contain
-     * all items to be predicted in the key domain, and will have values for all
-     * predictable items.
-     *
-     * <p>
-     * The default implementation delegates to the normalizer
-     * ({@link #setNormalizer(UserVectorNormalizer)}).
-     *
-     * @param userData The user summary.
-     * @return The transform to pre- and post-process user data.
-     */
-    protected VectorTransformation makeTransform(long user, SparseVector userData) {
-        return normalizer.makeTransformation(user, userData);
-    }
-
-    @Override
-    public LongSet getScoreableItems(UserHistory<? extends Event> user) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        LongSet items = new LongOpenHashSet();
-        SparseVector summary = summarizer.summarize(user);
-        LongIterator iter = summary.keySet().iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
-        }
-        return items;
-    }
+	@Override
+	public LongSet getScoreableItems(UserHistory<? extends Event> user) {
+		// FIXME This method incorrectly assumes the model is symmetric
+		LongSet items = new LongOpenHashSet();
+		SparseVector summary = summarizer.summarize(user);
+		LongIterator iter = summary.keySet().iterator();
+		while (iter.hasNext()) {
+			final long item = iter.nextLong();
+			items.addAll(model.getNeighbors(item));
+		}
+		return items;
+	}
 }
