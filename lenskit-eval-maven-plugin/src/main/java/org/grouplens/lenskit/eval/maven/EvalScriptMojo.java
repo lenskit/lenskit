@@ -92,6 +92,12 @@ public class EvalScriptMojo extends AbstractMojo {
     @Parameter(property="lenskit.eval.threadCount")
     private int threadCount = 1;
 
+    /**
+     * Turn on to force eval steps to run.
+     */
+    @Parameter(property="lenskit.eval.force")
+    private boolean force = false;
+
     @Override
     public void execute() throws MojoExecutionException {
         getLog().info("Running with thread count " + threadCount);
@@ -125,6 +131,8 @@ public class EvalScriptMojo extends AbstractMojo {
         properties.setProperty("lenskit.eval.analysisDir", analysisDir);
         properties.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
                                Integer.toString(threadCount));
+        properties.setProperty(EvalConfig.FORCE_PROPERTY,
+                               Boolean.toString(force));
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
