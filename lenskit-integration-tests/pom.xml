@@ -58,31 +58,36 @@
         </executions>
       </plugin>
 
+      <!-- Disable Surefire. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
 
         <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <!-- Use failsafe to run the tests. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.12.4</version>
+        <configuration>
           <systemPropertyVariables>
             <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
             <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
+          <includes>
+            <include>**/Test*.java</include>
+          </includes>
         </configuration>
-
         <executions>
-          <!-- turn off the default test execution. -->
           <execution>
-            <id>default-test</id>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </execution>
-
-          <!-- run the tests at the integration-test phase. -->
-          <execution>
-            <id>integration-tests</id>
-            <goals><goal>test</goal></goals>
-            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

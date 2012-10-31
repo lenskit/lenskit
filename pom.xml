@@ -37,6 +37,7 @@
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
