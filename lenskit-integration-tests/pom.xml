@@ -30,6 +30,11 @@
       <artifactId>lenskit-knn</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-svd</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
