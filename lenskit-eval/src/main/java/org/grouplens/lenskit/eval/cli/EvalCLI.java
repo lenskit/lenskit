@@ -45,26 +45,24 @@ public class EvalCLI {
      */
     public static void main(String[] args) {
         EvalCLIOptions options = EvalCLIOptions.parse(args);
-        EvalCLI cli = new EvalCLI(options, args);
+        EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
 
-    EvalCLIOptions options;
-    String[] clArgs;
+    private final EvalCLIOptions options;
 
-    public EvalCLI(EvalCLIOptions opts, String[] args) {
+    public EvalCLI(EvalCLIOptions opts) {
         options = opts;
-        clArgs = args;
     }
 
     public void run() {
         ClassLoader loader = options.getClassLoader();
         EvalScriptEngine engine = new EvalScriptEngine(loader, options.getProperties());
 
-        File f = options.getConfigFile();
+        File f = options.getScriptFile();
         logger.info("loading evaluation from {}", f);
         try {
-            engine.execute(f, clArgs);
+            engine.execute(f, options.getArgs());
         } catch (CommandException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());

@@ -57,7 +57,7 @@ class TestEvalConfigEngine {
         def result = engine.execute(script("multiple.groovy"))
         def eval = env.defaultTask
         assertThat(eval, instanceOf(TrainTestEvalTask))
-        def evals = env.tasks
+        def evals = env.getArgs
         assertThat(evals.size(), equalTo(2))
         assertTrue(evals.contains(eval));
         assertTrue(evals.containsAll(eval.dependencies))

@@ -41,7 +41,7 @@ import java.util.Properties;
 public class EvalCLIOptions {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLIOptions.class);
 
-    private List<String> tasks;
+    private String[] args;
     private File configFile = new File("eval.groovy");
     private URL[] classpathUrls;
     private Properties props;
@@ -71,10 +71,7 @@ public class EvalCLIOptions {
         props = cmd.getOptionProperties("D");
         force = cmd.hasOption("F");
 
-        tasks = new ArrayList<String>();
-        for (String s : cmd.getArgs()) {
-            tasks.add(s);
-        }
+        args = cmd.getArgs();
     }
 
     public static EvalCLIOptions parse(String... args) {
@@ -130,12 +127,12 @@ public class EvalCLIOptions {
         return Boolean.parseBoolean(System.getProperty("lenskit.eval.throwErrors", "false"));
     }
 
-    public File getConfigFile() {
+    public File getScriptFile() {
         return configFile;
     }
 
-    public List<String> getTasks() {
-        return tasks;
+    public String[] getArgs() {
+        return args;
     }
 
     public ClassLoader getClassLoader(ClassLoader parent) {

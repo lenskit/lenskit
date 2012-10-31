@@ -50,7 +50,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private List<TestUserMetric> metrics;
     private IsolationLevel isolationLevel;
     private boolean always = false;
-    private int nThread = -1;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -118,11 +117,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
     public TrainTestEvalCommand setIsolation(IsolationLevel level) {
         isolationLevel = level;
-        return this;
-    }
-
-    public TrainTestEvalCommand setThread(int n) {
-        nThread = n;
         return this;
     }
 
@@ -213,10 +207,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             return null;
         }
         this.setupJobs();
-        int nthreads = nThread;
-        if (nthreads <= 0) {
-            nthreads = Runtime.getRuntime().availableProcessors();
-        }
+        int nthreads = getConfig().threadCount();
         logger.info("Starting evaluation");
         this.initialize();
         logger.info("Running evaluator with {} threads", nthreads);
