@@ -18,23 +18,27 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-
-import static org.junit.Assert.assertNull;
-
-import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.junit.Test;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import org.junit.Test;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 
 public abstract class SparseVectorTestCommon {
     /**
@@ -103,10 +107,6 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(3), closeTo(1.5));
         assertThat(v.get(8), closeTo(2));
-        assertThat(v.get(1), notANumber());
-        assertThat(v.get(4), notANumber());
-        assertThat(v.get(9), notANumber());
-        assertThat(v.get(42), notANumber());
     }
 
     /**
@@ -124,10 +124,6 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(7, -1), closeTo(3.5));
         assertThat(v.get(3, -1), closeTo(1.5));
         assertThat(v.get(8, -1), closeTo(2));
-        assertThat(v.get(1, -1), closeTo(-1));
-        assertThat(v.get(4, 42), closeTo(42));
-        assertThat(v.get(9, -7), closeTo(-7));
-        assertThat(v.get(42, Math.E), closeTo(Math.E));
     }
 
     /**
@@ -168,7 +164,7 @@ public abstract class SparseVectorTestCommon {
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), equalTo(5L));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
@@ -180,10 +176,10 @@ public abstract class SparseVectorTestCommon {
         VectorEntry[] entries =
                 Iterators.toArray(simpleVector().iterator(),
                                   VectorEntry.class);
-        assertEquals(3, entries.length);
-        assertEquals(3, entries[0].getKey());
-        assertEquals(7, entries[1].getKey());
-        assertEquals(8, entries[2].getKey());
+        assertThat(entries.length, equalTo(3));
+        assertThat(entries[0].getKey(), equalTo(3L));
+        assertThat(entries[1].getKey(), equalTo(7L));
+        assertThat(entries[2].getKey(), equalTo(8L));
         assertThat(entries[0].getValue(), closeTo(1.5));
         assertThat(entries[1].getValue(), closeTo(3.5));
         assertThat(entries[2].getValue(), closeTo(2));
@@ -206,7 +202,7 @@ public abstract class SparseVectorTestCommon {
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), equalTo(5L));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
@@ -366,4 +362,18 @@ public abstract class SparseVectorTestCommon {
         assertArrayEquals(new long[]{7, 8, 3}, simpleVector().keysByValue(true).toLongArray());
         assertArrayEquals(new long[]{5, 3, 8}, simpleVector2().keysByValue(true).toLongArray());
     }
+
+    @Test
+    public void testEquals() {
+        assertTrue(simpleVector().equals(simpleVector()));
+        assertTrue(singleton().equals(singleton()));
+        assertTrue(simpleVector2().equals(simpleVector2()));
+        assertTrue(emptyVector().equals(emptyVector()));
+
+        assertFalse(simpleVector().equals(simpleVector2()));
+        assertFalse(singleton().equals(simpleVector()));
+        assertFalse(simpleVector2().equals(simpleVector()));
+        assertFalse(emptyVector().equals(singleton()));
+    }
+
 }

@@ -366,21 +366,21 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         } else {
             cfg.getRootContext().bind(DataAccessObject.class).to(dao);
         }
-        
+
         return finishBuild(cfg);
     }
-    
+
     private Graph buildGraph(Class<? extends DataAccessObject> daoType) {
-    	BindingFunctionBuilder cfg = config.clone();
+        BindingFunctionBuilder cfg = config.clone();
         if (daoType == null) {
-        	cfg.getRootContext().bind(DataAccessObject.class).toNull();
+            cfg.getRootContext().bind(DataAccessObject.class).toNull();
         } else {
-        	cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
-        	cfg.getRootContext().bind(daoType).toNull();
+            cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
+            cfg.getRootContext().bind(daoType).toNull();
         }
         return finishBuild(cfg);
     }
-    
+
     private Graph finishBuild(BindingFunctionBuilder config) {
         DependencySolver solver = new DependencySolver(
                 Arrays.asList(config.build(RuleSet.EXPLICIT),

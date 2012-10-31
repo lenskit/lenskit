@@ -31,6 +31,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,20 +46,19 @@ import java.util.Collection;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
-public class ItemItemScorer extends AbstractItemScorer implements
-        ItemItemModelBackedScorer {
+public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
+    public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
+            Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
-    protected
+
     @Nonnull
-    UserVectorNormalizer normalizer;
+    protected UserVectorNormalizer normalizer;
     protected UserHistorySummarizer summarizer;
-    protected
     @Nonnull
-    NeighborhoodScorer scorer;
-    protected
+    protected NeighborhoodScorer scorer;
     @Nonnull
-    ItemScoreAlgorithm algorithm;
+    protected ItemScoreAlgorithm algorithm;
 
     @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
@@ -109,7 +109,6 @@ public class ItemItemScorer extends AbstractItemScorer implements
         transform.apply(normed);
 
         scores.clear();
-
         algorithm.scoreItems(model, normed, scores, scorer);
 
         // untransform the scores

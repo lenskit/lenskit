@@ -65,6 +65,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             accum = new UnlimitedScoredItemAccumulator();
         }
 
+        // Create a channel for recording the neighborhoodsize
+        scores.alwaysAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
@@ -91,6 +93,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
+            scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                    set(e.getKey(), neighbors.size()); // set size even if no score
             if (!Double.isNaN(score)) {
                 scores.set(e, score);
             }

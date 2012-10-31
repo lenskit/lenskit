@@ -66,7 +66,7 @@ public class GraphVizWriter implements GraphWriter {
     @Override
     public void start() {
         try {
- 	    Files.createParentDirs(outputFile);
+            Files.createParentDirs(outputFile);
             writer = new BufferedWriter(new FileWriter(outputFile));
             writer.write("digraph G {");
             writer.newLine();

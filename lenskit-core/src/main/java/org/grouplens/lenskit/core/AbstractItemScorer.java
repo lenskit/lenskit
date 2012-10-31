@@ -32,7 +32,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Base class to make item scorers easier to implement. Delegates single=item
+ * Base class to make item scorers easier to implement. Delegates single-item
  * score methods to collection-based ones, and {@link #score(long, MutableSparseVector)}
  * to {@link #score(UserHistory, MutableSparseVector)}.
  *

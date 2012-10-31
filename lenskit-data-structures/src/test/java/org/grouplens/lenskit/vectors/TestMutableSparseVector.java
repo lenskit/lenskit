@@ -32,6 +32,7 @@ import java.util.Set;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
 /**
@@ -62,6 +63,17 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         return MutableSparseVector.wrap(new long[]{5}, new double[]{Math.PI});
     }
 
+    // Ensure that the way we're constructing the vectors leaves their
+    // parts independent.
+    @Test
+    public void testIndependentMakers() {
+        MutableSparseVector v1 = simpleVector();
+        MutableSparseVector v2 = simpleVector();
+        assertThat(v1.set(3, 77), closeTo(1.5));
+        assertThat(v1.get(3), closeTo(77));
+        assertThat(v2.get(3), closeTo(1.5));
+    }
+
     @Test
     public void testCopy() {
         assertTrue(emptyVector().copy().isEmpty());
@@ -85,13 +97,11 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(iv.get(7), closeTo(3.5));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testFreeze() {
         MutableSparseVector v = simpleVector();
         ImmutableSparseVector iv = v.freeze();
         assertThat(iv, equalTo((SparseVector) simpleVector()));
-        // And this should fail...
-        v.get(7);
     }
 
     @Test
@@ -120,7 +130,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
         v = simpleVector();
         v.subtract(singleton());
-        assertEquals(simpleVector(), v);
+        assertEquals(v, simpleVector());
     }
 
     @Test
@@ -186,7 +196,10 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test
     public void testSet() {
-        assertThat(emptyVector().set(5, 5), notANumber());
+        try {
+            emptyVector().set(5, 5);
+            fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+        } catch (IllegalArgumentException iae) { /* skip */}
         MutableSparseVector v = simpleVector();
         assertThat(v.set(7, 2), closeTo(3.5));
         assertThat(v.get(7), closeTo(2));
@@ -214,7 +227,10 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.size(), equalTo(1));
         assertArrayEquals(new Long[]{7L}, v.keySet().toArray(new Long[0]));
         assertThat(v.get(7), closeTo(Math.E));
-        assertThat(v.set(9, 1.0), notANumber());
+        try {
+            v.set(9, 1.0);
+            fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
+        } catch (IllegalArgumentException iae) { /* skip */ }
         assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
@@ -234,4 +250,34 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(f.containsKey(7), equalTo(false));
         assertThat(f.get(7), notANumber());
     }
+
+    @Test
+    public void testWithDefaultCleared() {
+        MutableSparseVector v = simpleVector();
+        v.clear(8);
+        assertThat(v.get(8, -1), closeTo(-1));
+        assertThat(v.get(8, 42), closeTo(42));
+        assertThat(v.get(8, -7), closeTo(-7));
+        assertThat(v.get(8, Math.E), closeTo(Math.E));
+    }
+
+    @Test
+    public void testWithDomain() {
+        MutableSparseVector simple = simpleVector();
+
+        // Check that iteration on simple goes through the right
+        // number of items.
+        assertThat(Iterators.size(simple.iterator()), equalTo(3));
+
+        simple.clear(8);
+        assertThat(Iterators.size(simple.iterator()), equalTo(2));
+        assertThat(Iterators.size(simple.fast(VectorEntry.State.EITHER).iterator()), equalTo(3));
+        assertThat(Iterators.size(simple.fast(VectorEntry.State.UNSET).iterator()), equalTo(1));
+
+        MutableSparseVector msvShrunk = simple.shrinkDomain();
+        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.UNSET).iterator()), equalTo(0));
+        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.EITHER).iterator()), equalTo(2));
+        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.SET).iterator()), equalTo(2));
+    }
+
 }

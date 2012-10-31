@@ -73,6 +73,7 @@
     <module>lenskit-slopeone</module>
     <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
+    <module>lenskit-archetype-fancy-analysis</module>    
   </modules>
 
   <build>

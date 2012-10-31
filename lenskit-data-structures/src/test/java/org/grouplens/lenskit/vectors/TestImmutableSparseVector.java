@@ -78,7 +78,6 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
-        assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
 }
