@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * The class that represents the set of properties passed in to a
  * Groovy evaluation script.  These properties will have been created
- * a caller, who passes in a Properties object, which will be embedded
+ * by a caller, who passes in a Properties object, which will be embedded
  * in the instance of this class.  This instance will then be passed
  * in to the Groovy evaluation script under a special name, so the
  * script can use it to pull properties out.
