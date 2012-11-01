@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="lenskit-archetype-test"
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+  <macrodef name="test-archetype">
+    <attribute name="archetype" default="NOT SET"/>
+    <sequential>
+      <artifact:mvn mavenHome="${maven.home}"
+                    fork="true"
+                    failonerror="true"
+                    dir="${archetype.test.directory}">
+        <arg value="--settings=${basedir}/src/test/settings.xml"/>
+        <arg value="-Dmrm.repo=${mock.repository.url}"/>
+        <arg value="-Dtest.repo.path=${test.repo}"/>
+        <arg value="archetype:generate"/>
+        <arg value="-DarchetypeGroupId=org.grouplens.lenskit"/>
+        <arg value="-DarchetypeArtifactId=lenskit-archetype-@{archetype}"/>
+        <arg value="-DarchetypeVersion=${lenskit.version}"/>
+        <arg value="-DarchetypeCatalog=internal,local"/>
+        <arg value="-DarchetypeRepository=${mock.repository.url}"/>
+        <arg value="-DgroupId=org.grouplens.lenskit.it"/>
+        <arg value="-DartifactId=test-@{archetype}"/>
+        <arg value="-Dversion=1-SNAPSHOT"/>
+      </artifact:mvn>
+      <artifact:mvn mavenHome="${maven.home}"
+                    fork="true"
+                    failonerror="true"
+                    dir="${archetype.test.directory}/test-@{archetype}">
+        <arg value="--settings=${basedir}/src/test/settings.xml"/>
+        <arg value="-Dmrm.repo=${mock.repository.url}"/>
+        <arg value="-Dtest.repo.path=${test.repo}"/>
+        <arg value="-Dgrouplens.mldata.acknowledge=${grouplens.mldata.acknowledge}"/>
+        <arg value="lenskit-analyze"/>
+      </artifact:mvn>
+    </sequential>
+  </macrodef>
+
+  <!-- blow away and recreate archetype test directory. -->
+  <target name="init">
+    <delete dir="${archetype.test.directory}"
+            failonerror="false"/>
+    <mkdir dir="${archetype.test.directory}"/>
+  </target>
+
+  <target name="test-simple">
+    <test-archetype archetype="simple-analysis"/>
+  </target>
+
+  <target name="test-fancy">
+    <test-archetype archetype="fancy-analysis"/>
+  </target>
+
+  <target name="all-tests" depends="test-simple,test-fancy"/>
+</project>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="lenskit-eval">
+<project name="lenskit-itest-prep">
   <!-- Set up the MovieLens 100K data. If data.movielens.100k is set, it is used
        as the location of the data; otherwise, it is downloaded from the GroupLens
        web site. -->
