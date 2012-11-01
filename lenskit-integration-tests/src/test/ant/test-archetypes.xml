@@ -41,11 +41,11 @@
     <mkdir dir="${archetype.test.directory}"/>
   </target>
 
-  <target name="test-simple">
+  <target name="test-simple" depends="init">
     <test-archetype archetype="simple-analysis"/>
   </target>
 
-  <target name="test-fancy">
+  <target name="test-fancy" depends="init">
     <test-archetype archetype="fancy-analysis"/>
   </target>
 
