@@ -22,9 +22,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Closeables;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.tablewriter.*;
@@ -32,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -48,6 +51,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
+    private List<Pair<Symbol,String>> predictChannels;
     private IsolationLevel isolationLevel;
     private boolean always = false;
     private File outputFile;
@@ -81,6 +85,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
+        predictChannels = new LinkedList<Pair<Symbol, String>>();
         outputFile = new File("train-test-results.csv");
         isolationLevel = IsolationLevel.NONE;
     }
@@ -97,6 +102,36 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
     public TrainTestEvalCommand addMetric(TestUserMetric metric) {
         metrics.add(metric);
+        return this;
+    }
+
+    /**
+     * Add a channel to be recorded with predict output.
+     *
+     * @param channel The channel to output.
+     * @return The command (for chaining)
+     * @see #addPredictionChannel(Symbol, String)
+     */
+    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channel) {
+        return addPredictionChannel(channel, null);
+    }
+
+    /**
+     * Add a channel to be recorded with predict output.
+     *
+     * @param channel The channel to record, if present in the prediction output vector.
+     * @param label   The column label. If {@code null}, the channel symbol's name is used.
+     * @return The command (for chaining).
+     * @see #setPredictOutput(File)
+     */
+    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channel,
+                                                     @Nullable String label) {
+        Preconditions.checkNotNull(channel, "channel is null");
+        if (label == null) {
+            label = channel.getName();
+        }
+        Pair<Symbol, String> entry = Pair.of(channel, label);
+        predictChannels.add(entry);
         return this;
     }
 
@@ -145,6 +180,10 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
     List<TestUserMetric> getMetrics() {
         return metrics;
+    }
+
+    List<Pair<Symbol,String>> getPredictionChannels() {
+        return predictChannels;
     }
 
     File getOutput() {
