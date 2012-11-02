@@ -341,6 +341,9 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         eachPred.addColumn("Item");
         eachPred.addColumn("Rating");
         eachPred.addColumn("Prediction");
+        for (Pair<Symbol,String> channel: predictChannels) {
+            eachPred.addColumn(channel.getRight());
+        }
 
         predictLayout = eachPred.build();
 
