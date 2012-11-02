@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
@@ -26,42 +26,42 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
+import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.params.IterationCount;
 import org.grouplens.lenskit.test.ML100KTestSuite;
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
-import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Do major tests on the item-item recommender.
+ * Do major tests on the FunkSVD recommender.
  *
  * @author Michael Ekstrand
  */
-public class TestItemItemBuildSerialize extends ML100KTestSuite {
+public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
+    @SuppressWarnings("unchecked")
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ItemItemRecommender.class);
+               .to(FunkSVDRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(ItemItemRatingPredictor.class);
-        factory.within(ItemVectorSimilarity.class)
-               .bind(VectorSimilarity.class)
-               .to(CosineVectorSimilarity.class);
-        factory.bind(UserVectorNormalizer.class)
-               .to(BaselineSubtractingUserVectorNormalizer.class);
+               .to(FunkSVDRatingPredictor.class);
         factory.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
+        factory.set(FeatureCount.class).to(10);
+        factory.set(IterationCount.class).to(10);
+        factory.within(ItemUserMeanPredictor.class)
+               .set(Damping.class)
+               .to(25);
 
         LenskitRecommenderEngine engine = factory.create();
         assertThat(engine, notNullValue());
@@ -73,12 +73,11 @@ public class TestItemItemBuildSerialize extends ML100KTestSuite {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
         assertThat(loaded, notNullValue());
-
         LenskitRecommender rec = loaded.open();
         try {
             assertThat(rec.getRatingPredictor(),
-                       instanceOf(ItemItemRatingPredictor.class));
-            assertThat(rec.get(ItemItemModel.class),
+                       instanceOf(FunkSVDRatingPredictor.class));
+            assertThat(rec.get(FunkSVDModel.class),
                        notNullValue());
         } finally {
             rec.close();

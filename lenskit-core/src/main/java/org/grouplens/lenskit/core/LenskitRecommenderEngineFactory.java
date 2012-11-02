@@ -125,7 +125,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * Groovy-compatible alias for {@link #in(Class)}.
      */
     @SuppressWarnings("unused")
-    public Context within(Class<?> type) {
+    public LenskitConfigContext within(Class<?> type) {
         return in(type);
     }
 
@@ -133,7 +133,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * Groovy-compatible alias for {@link #in(Class, Class)}.
      */
 
-    public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
+    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
         return in(qualifier, type);
     }
 
