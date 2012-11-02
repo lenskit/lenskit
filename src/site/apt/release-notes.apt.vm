@@ -48,6 +48,9 @@ LensKit Release Notes
 
     []
 
+  * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
+    values out to the prediction output file.
+
   []
 
 * Release 1.0.2
