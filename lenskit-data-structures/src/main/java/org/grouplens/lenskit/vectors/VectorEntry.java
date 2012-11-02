@@ -144,18 +144,6 @@ public final class VectorEntry {
     }
 
     /**
-     * Update the entry (used for fast iteration).
-     *
-     * @param k The new key.
-     * @param v The new value.
-     */
-    void set(long k, double v) {
-        key = k;
-        value = v;
-        isSet = true;
-    }
-
-    /**
      * Update the value. Used only to implement {@link MutableSparseVector#set(VectorEntry, double)}.
      *
      * @param v The new value
@@ -169,6 +157,7 @@ public final class VectorEntry {
      *
      * @return The associated vector, or {@code null} if no vector is linked.
      */
+    @Nullable
     SparseVector getVector() {
         return vector;
     }

@@ -34,7 +34,7 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import static org.junit.Assert.assertThat
 
 import static org.hamcrest.Matchers.instanceOf
-import org.grouplens.lenskit.eval.util.table.TableImpl
+import org.grouplens.lenskit.util.table.TableImpl
 
 /**
  * Test the result returned by the trainTest

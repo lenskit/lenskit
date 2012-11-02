@@ -23,18 +23,17 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 import org.junit.Ignore
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand
 
 /**
  * Test the eval config engine and make sure it can actually execute tests.
  * @author Michael Ekstrand
  */
 class TestEvalConfigEngine {
-    EvalConfigEngine engine;
+    EvalScriptEngine engine;
 
     @Before
     void createEngine() {
-        engine = new EvalConfigEngine()
+        engine = new EvalScriptEngine()
     }
 
     private def script(name) {
@@ -58,7 +57,7 @@ class TestEvalConfigEngine {
         def result = engine.execute(script("multiple.groovy"))
         def eval = env.defaultTask
         assertThat(eval, instanceOf(TrainTestEvalTask))
-        def evals = env.tasks
+        def evals = env.getArgs
         assertThat(evals.size(), equalTo(2))
         assertTrue(evals.contains(eval));
         assertTrue(evals.containsAll(eval.dependencies))

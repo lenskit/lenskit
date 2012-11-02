@@ -20,15 +20,54 @@ LensKit Release Notes
   #header(1.1)
 
   * Made <<<Recommender>>> extend <<<Closeable>>>.
+
+  * Added side channel support to sparse vectors (#issue(185)).
   
+  []
+
+** Algorithms
+
+  * Item-item scorers now report the number of neighbors used for each score as
+    a side channel.
+
+  []
+
+** Evaluator
+
+  * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
+
+  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
+
+  * Eval configuration changes
+
+    * Force and thread count are now runtime parameters, not script parameters. Specify
+      them with <<<--force>>> and <<<--thread-count>>> command line options, or the
+      corresponding eval mojo options.
+
+    * Commands receive the eval configuration via the <<<setConfig>>> method.
+
+    []
+
+  []
+
+* Release 1.0.2
+
+  #header("1.0.2")
+
+  This release contains bug fixes against 1.0.1.
+
+  * Fix graph pruning so transient dependencies aren't serialized.
+
+  * Fix transient tags and serializability of item-item recommender models.
+
   []
 
 * Release 1.0.1
   
-  This release contains bug fixes against 1.0.1.
-  
-  #header(1.0.1)
+  #header("1.0.1")
 
+  This release contains bug fixes against 1.0.
+  
   <<Note>>: recommender engines serialized with LensKit 1.0 are not compatible with
   LensKit 1.0.1. You will need to re-build and re-serialize your engines.
 

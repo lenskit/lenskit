@@ -25,7 +25,8 @@ import com.google.common.io.Closeables;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.util.table.TableImpl;
+import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +42,14 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
+public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
 
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private IsolationLevel isolationLevel;
-    private int nThread;
+    private boolean always = false;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -119,9 +120,19 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         return this;
     }
 
-    public TrainTestEvalCommand setThread(int n) {
-        nThread = n;
+    /**
+     * Set whether this should always run.
+     * @param force If {@code true}, always run. Can also be set with the <tt>force</tt>
+     *              evaluation config option.
+     * @return The command for chaining.
+     */
+    public TrainTestEvalCommand setForce(boolean force) {
+        always = force;
         return this;
+    }
+
+    public boolean getForce() {
+        return always || getConfig().force();
     }
 
     List<TTDataSet> dataSources() {
@@ -154,19 +165,49 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     }
 
     /**
+     * Query whether the command should run at all.
+     *
+     * @return {@code true} if the command should run, {@code false} if it should
+     *         leave existing results alone.
+     */
+    private boolean shouldRun() {
+        if (getForce()) {
+            return true;
+        }
+        if (outputFile == null) {
+            return true;
+        }
+        UpToDateChecker check = new UpToDateChecker();
+        for (TTDataSet src: dataSources()) {
+            check.addInput(src.lastModified());
+        }
+        if (outputFile != null) {
+            check.addOutput(outputFile);
+        }
+        if (userOutputFile != null) {
+            check.addOutput(userOutputFile);
+        }
+        if (predictOutputFile != null) {
+            check.addOutput(predictOutputFile);
+        }
+        return !check.isUpToDate();
+    }
+
+    /**
      * Run the evaluation on the train test data source files
      *
-     * @return For now, return nothing
+     * @return The summary output table.
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Failure of the evaluation
      */
     @Override
-    public TableImpl call() throws CommandException {
-        this.setupJobs();
-        int nthreads = nThread;
-        if (nthreads <= 0) {
-            nthreads = Runtime.getRuntime().availableProcessors();
+    public Table call() throws CommandException {
+        if (!shouldRun()) {
+            // FIXME Read the table from the output file and return it
+            return null;
         }
+        this.setupJobs();
+        int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
         this.initialize();
         logger.info("Running evaluator with {} threads", nthreads);

@@ -21,15 +21,20 @@ package org.grouplens.lenskit.eval.config
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
 import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.grouplens.lenskit.eval.Command
-import org.codehaus.groovy.runtime.GroovyCategorySupport
 
 /**
  * Helper methods for invoking configuration methods.
+ * <p>
+ * These methods often work by returning closures which, when invoked, will perform the
+ * correct action.
+ * <p>
+ * <b>Warning</b>: here be dragons!
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
 class ConfigHelpers {
-    static <T> Object makeCommandDelegate(EvalConfigEngine engine, Command<T> command) {
+    static <T> Object makeCommandDelegate(EvalScriptEngine engine, Command<T> command) {
         def annot = command.class.getAnnotation(ConfigDelegate)
         if (annot == null) {
             return new CommandDelegate<T>(engine, command)
@@ -38,7 +43,7 @@ class ConfigHelpers {
             // try two-arg constructor
             def ctor = dlgClass.constructors.find {
                 def formals = it.parameterTypes
-                formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(command)
+                formals.length == 2 && formals[0].isAssignableFrom(EvalScriptEngine) && formals[1].isInstance(command)
             }
             if (ctor != null) {
                 return ctor.newInstance(engine, command)
@@ -67,7 +72,7 @@ class ConfigHelpers {
      * @throws IllegalArgumentException if the command can be found but {@code args} is
      * inappropriate.
      */
-    static Closure findCommandMethod(EvalConfigEngine engine, String name, args) {
+    static Closure findCommandMethod(EvalScriptEngine engine, String name, args) {
         Class<? extends Command> commandClass = engine.getCommand(name)
         if (commandClass == null) return null
 
@@ -84,7 +89,7 @@ class ConfigHelpers {
         }
     }
 
-    static def makeCommandClosure(Class<? extends Command> cmd, EvalConfigEngine engine, Object[] args) {
+    static def makeCommandClosure(Class<? extends Command> cmd, EvalScriptEngine engine, Object[] args) {
         Closure block = null
         Object[] trimmedArgs
         if (args.length > 0 && args[args.length - 1] instanceof Closure) {
@@ -107,6 +112,7 @@ class ConfigHelpers {
             return {
                 Object[] txargs = bestCtor.right.collect({it.get()})
                 def command = bestCtor.left.newInstance(txargs)
+                command.setConfig(engine.config)
                 runner.invoke(command, block)
             }
         } else {

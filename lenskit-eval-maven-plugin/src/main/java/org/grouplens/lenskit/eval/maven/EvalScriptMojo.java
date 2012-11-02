@@ -27,7 +27,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.config.EvalConfigEngine;
+import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 
 import java.io.File;
@@ -92,8 +93,14 @@ public class EvalScriptMojo extends AbstractMojo {
     /**
      * The number of evaluation threads to run.
      */
-    @Parameter(property="lenskit.threadCount")
+    @Parameter(property="lenskit.eval.threadCount")
     private int threadCount = 1;
+
+    /**
+     * Turn on to force eval steps to run.
+     */
+    @Parameter(property="lenskit.eval.force")
+    private boolean force = false;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -126,8 +133,12 @@ public class EvalScriptMojo extends AbstractMojo {
         Properties properties = new Properties(project.getProperties());
         properties.setProperty("lenskit.eval.dataDir", dataDir);
         properties.setProperty("lenskit.eval.analysisDir", analysisDir);
+        properties.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
+                               Integer.toString(threadCount));
+        properties.setProperty(EvalConfig.FORCE_PROPERTY,
+                               Boolean.toString(force));
         dumpClassLoader(loader);
-        EvalConfigEngine engine = new EvalConfigEngine(loader, properties);
+        EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
         try {
             File f = new File(script);

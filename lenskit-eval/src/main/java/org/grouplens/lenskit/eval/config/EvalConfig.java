@@ -18,19 +18,15 @@
  */
 package org.grouplens.lenskit.eval.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Properties;
 
 /**
  * The class that represents the set of properties passed in to a
  * Groovy evaluation script.  These properties will have been created
- * a caller, who passes in a Properties object, which will be embedded
+ * by a caller, who passes in a Properties object, which will be embedded
  * in the instance of this class.  This instance will then be passed
  * in to the Groovy evaluation script under a special name, so the
  * script can use it to pull properties out.
@@ -38,38 +34,51 @@ import java.util.Properties;
  * @author John Riedl
  * @since 1.1
  */
-public class EvalScriptConfig {
-    private static Logger logger;
+public class EvalConfig {
+    public static final String FORCE_PROPERTY = "lenskit.eval.force";
+    public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
+    public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
+    public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
+    public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
+
     private Properties properties;
 
-    public EvalScriptConfig() {
-	this(new Properties());
+    public EvalConfig() {
+        this(new Properties());
     }
 
-    public EvalScriptConfig(Properties in_properties) {
-	logger = LoggerFactory.getLogger(getClass());
-	properties = (Properties) in_properties.clone();
+    public EvalConfig(Properties props) {
+        properties = (Properties) props.clone();
     }
 
     /**
      * Get the value of a property.
      *
-     * @param key		The name of the property
-     * @param defaultValue	The value to return if no such key
+     * @param key          The name of the property
+     * @param defaultValue The value to return if no such key
      * @return The value of the property
      */
-    public String getProperty(String key, String defaultValue) {
-	return properties.getProperty(key, defaultValue);
+    public String get(String key, @Nullable String defaultValue) {
+        return properties.getProperty(key, defaultValue);
     }
 
     /**
      * Get the value of a property.
      *
-     * @param key		The name of the property
-     * @return The value of the property, or null if there is no such key
+     * @param key The name of the property
+     * @return The value of the property, or {@code null} if there is no such key
      */
-    public String getProperty(String key) {
-	return properties.getProperty(key, null);
+    public String get(String key) {
+        return get(key, null);
+    }
+
+    /**
+     * Query whether the script should run in “force” mode.
+     *
+     * @return {@code true} if the script should run in force mode.
+     */
+    public boolean force() {
+        return BooleanUtils.toBoolean(get(FORCE_PROPERTY));
     }
 
     /**
@@ -78,7 +87,7 @@ public class EvalScriptConfig {
      * @return The script name, or "eval.groovy" if none has been set.
      */
     public String getScript() {
-	return getProperty("lenskit.eval.script", "eval.groovy");
+        return get(EVAL_SCRIPT_PROPERTY, "eval.groovy");
     }
 
     /**
@@ -87,7 +96,7 @@ public class EvalScriptConfig {
      * @return The data directory, or "." if none has been set.
      */
     public String getDataDir() {
-	return getProperty("lenskit.eval.dataDir", ".");
+        return get(DATA_DIR_PROPERTY, ".");
     }
 
     /**
@@ -96,7 +105,11 @@ public class EvalScriptConfig {
      * @return The analysis directory, or "." if none has been set.
      */
     public String getAnalysisDir() {
-	return getProperty("lenskit.eval.analysisDir", ".");
+        return get(ANALYSIS_DIR_PROPERTY, ".");
+    }
+
+    public int getThreadCount() {
+        return Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
     }
 
 }

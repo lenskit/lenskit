@@ -16,48 +16,40 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.tablewriter;
+package org.grouplens.lenskit.collections;
 
-import org.grouplens.lenskit.util.table.TableImpl;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 
 import javax.annotation.Nullable;
+import java.util.AbstractCollection;
+import java.util.Iterator;
 
 /**
- * Implementation of {@link TableWriter} for in memory result table
+ * Abstract fast collection that implements {@link #iterator()} in terms of
+ * {@link #fastIterator()} and {@link #copy(E)}.
  *
- * @author Shuo Chang<schang@cs.umn.edu>.
+ * @author Michael Ekstrand
+ * @since 1.1
  */
-public class InMemoryWriter implements TableWriter {
-    private TableImpl result;
-    private TableLayout layout;
-    private Object[] buffer;
+public abstract class CopyingFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
+    private final Function<E, E> copyFunction = new Function<E, E>() {
+        @Override
+        public E apply(@Nullable E input) {
+            return copy(input);
+        }
+    };
 
     /**
-     * Construct a new in memory writer.
+     * Copy an element of the collection.
      *
-     * @param l The table layout, or {@code null} if the table has no headers.
+     * @param elt The element to copy.
+     * @return A copy of {@var elt}
      */
-    public InMemoryWriter(@Nullable TableLayout l) {
-        layout = l;
-        result = new TableImpl(layout.getColumnHeaders());
-    }
+    protected abstract E copy(E elt);
 
     @Override
-    public void close() {
-    }
-
-
-    @Override
-    public synchronized void writeRow(Object[] row) {
-        result.addResultRow(row);
-    }
-
-    @Override
-    public TableLayout getLayout() {
-        return layout;
-    }
-
-    public TableImpl getResult() {
-        return result;
+    public Iterator<E> iterator() {
+        return Iterators.transform(fastIterator(), copyFunction);
     }
 }

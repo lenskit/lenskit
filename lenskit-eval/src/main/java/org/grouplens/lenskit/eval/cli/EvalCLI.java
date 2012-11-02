@@ -20,7 +20,7 @@ package org.grouplens.lenskit.eval.cli;
 
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.config.EvalConfigEngine;
+import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,26 +45,24 @@ public class EvalCLI {
      */
     public static void main(String[] args) {
         EvalCLIOptions options = EvalCLIOptions.parse(args);
-        EvalCLI cli = new EvalCLI(options, args);
+        EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
 
-    EvalCLIOptions options;
-    String[] clArgs;
+    private final EvalCLIOptions options;
 
-    public EvalCLI(EvalCLIOptions opts, String[] args) {
+    public EvalCLI(EvalCLIOptions opts) {
         options = opts;
-        clArgs = args;
     }
 
     public void run() {
         ClassLoader loader = options.getClassLoader();
-        EvalConfigEngine config = new EvalConfigEngine(loader);
+        EvalScriptEngine engine = new EvalScriptEngine(loader, options.getProperties());
 
-        File f = options.getConfigFile();
+        File f = options.getScriptFile();
         logger.info("loading evaluation from {}", f);
         try {
-            config.execute(f, clArgs);
+            engine.execute(f, options.getArgs());
         } catch (CommandException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());

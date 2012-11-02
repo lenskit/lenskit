@@ -80,5 +80,9 @@ public interface TTDataSet {
      */
     DAOFactory getTestFactory();
 
-    long lastUpdated();
+    /**
+     * Get the last modification time of this data set.
+     * @return The last modification time, in milliseconds since the epoch.
+     */
+    long lastModified();
 }

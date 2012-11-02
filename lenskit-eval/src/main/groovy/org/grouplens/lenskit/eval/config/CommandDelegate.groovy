@@ -42,14 +42,14 @@ import org.grouplens.lenskit.eval.Command
  * @since 0.10
  */
 class CommandDelegate<T> {
-    protected final EvalConfigEngine engine
+    protected final EvalScriptEngine engine
     protected final Command<T> command
 
     /**
      * Construct a new command delegate.
      * @param command The command to use when pretending methods.
      */
-    CommandDelegate(EvalConfigEngine engine, Command command) {
+    CommandDelegate(EvalScriptEngine engine, Command command) {
         this.engine = engine
         this.command = command
     }

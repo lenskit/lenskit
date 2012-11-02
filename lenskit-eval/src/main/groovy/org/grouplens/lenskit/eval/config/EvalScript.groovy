@@ -27,33 +27,28 @@ import org.apache.tools.ant.DirectoryScanner
  * @author Michael Ekstrand
  * @since 0.10
  */
-abstract class EvalConfigScript extends Script {
+abstract class EvalScript extends Script {
     protected final def logger = LoggerFactory.getLogger(getClass())
-    private EvalConfigEngine engine
-    private EvalScriptConfig config
+    private EvalScriptEngine engine
 
-    EvalConfigScript() {
+    EvalScript() {
         engine = null
     }
 
-    EvalConfigScript(EvalConfigEngine eng) {
+    EvalScript(EvalScriptEngine eng) {
         engine = eng
     }
 
-    void setConfig(EvalScriptConfig esc) {
-        config = esc
+    EvalConfig getConfig() {
+        return engine.config
     }
 
-    EvalScriptConfig getConfig() {
-        return config
-    }
-
-    void setEngine(EvalConfigEngine eng) {
-        engine = eng
-    }
-
-    EvalConfigEngine getEngine() {
+    EvalScriptEngine getEngine() {
         return engine
+    }
+
+    void setEngine(EvalScriptEngine ece) {
+        engine = ece
     }
 
     def methodMissing(String name, args) {

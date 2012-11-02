@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.config;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -28,56 +29,67 @@ import static org.junit.Assert.assertTrue;
 import java.util.Properties;
 
 public class TestEvalScriptConfig {
-    EvalScriptConfig esc;
+    EvalConfig esc;
     Properties props;
 
     @Before
-    public void Initialize() {
-	props = new Properties();
-	props.setProperty("foo", "bar");
-	props.setProperty("foo2", "bar");
-	props.setProperty("foo3", "bar3");
-	esc = new EvalScriptConfig(props);
+    public void initialize() {
+        props = new Properties();
+        props.setProperty("foo", "bar");
+        props.setProperty("foo2", "bar");
+        props.setProperty("foo3", "bar3");
+        esc = new EvalConfig(props);
     }
 
     /**
      * Make sure that changes to the Properties object don't change
-     * the EvalScriptConfig after construction.
+     * the EvalConfig after construction.
      */
     @Test
-    public void TestClone() {
-        assertEquals(esc.getProperty("foo"), "bar");
-	props.setProperty("foo", "foobar");
-        assertEquals(esc.getProperty("foo"), "bar");
+    public void testClone() {
+        assertEquals("bar", esc.get("foo"));
+        props.setProperty("foo", "foobar");
+        assertEquals("bar", esc.get("foo"));
     }
 
     @Test
-    public void TestGet() {
-        assertEquals(esc.getProperty("foo"), "bar");
-        assertEquals(esc.getProperty("foo2"), "bar");
-        assertEquals(esc.getProperty("foo3"), "bar3");
-	assertEquals(esc.getProperty("foo4"), null);
-	assertEquals(esc.getProperty("foo5", "bar5"), "bar5");
+    public void testGet() {
+        assertEquals("bar", esc.get("foo"));
+        assertEquals("bar", esc.get("foo2"));
+        assertEquals("bar3", esc.get("foo3"));
+        assertEquals(null, esc.get("foo4"));
+        assertEquals("bar5", esc.get("foo5", "bar5"));
     }
 
     @Test
-    public void TestSpecialNamesDefaults() {
-        assertEquals(esc.getScript(), "eval.groovy");
-        assertEquals(esc.getAnalysisDir(), ".");
-        assertEquals(esc.getDataDir(), ".");
+    public void testSpecialNamesDefaults() {
+        assertEquals("eval.groovy", esc.getScript());
+        assertEquals(".", esc.getAnalysisDir());
+        assertEquals(".", esc.getDataDir());
     }
 
     @Test
-    public void TestSpecialNames() {
-	props.setProperty("lenskit.eval.script", "../src/eval/eval.groovy");
-	props.setProperty("lenskit.eval.dataDir", "../target/data/");
-	props.setProperty("lenskit.eval.analysisDir", "../target/analysis/");
+    public void testSpecialNames() {
+        props.setProperty("lenskit.eval.script", "../src/eval/eval.groovy");
+        props.setProperty("lenskit.eval.dataDir", "../target/data/");
+        props.setProperty("lenskit.eval.analysisDir", "../target/analysis/");
 
-	esc = new EvalScriptConfig(props);
+        esc = new EvalConfig(props);
 
-        assertEquals(esc.getDataDir(), "../target/data/");
-        assertEquals(esc.getAnalysisDir(), "../target/analysis/");
-        assertEquals(esc.getScript(), "../src/eval/eval.groovy");
+        assertEquals("../target/data/", esc.getDataDir());
+        assertEquals("../target/analysis/", esc.getAnalysisDir());
+        assertEquals("../src/eval/eval.groovy", esc.getScript());
     }
 
+    @Test
+    public void testDefaultNoForce() {
+        assertThat(esc.force(), equalTo(false));
+    }
+
+    @Test
+    public void testForce() {
+        props.setProperty(EvalConfig.FORCE_PROPERTY, "yes");
+        esc = new EvalConfig(props);
+        assertThat(esc.force(), equalTo(true));
+    }
 }

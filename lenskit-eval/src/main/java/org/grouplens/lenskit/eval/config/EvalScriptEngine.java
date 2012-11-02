@@ -46,31 +46,32 @@ import java.util.*;
  * @author Michael Ekstrand
  * @since 0.10
  */
-public class EvalConfigEngine {
-    private static Logger logger = LoggerFactory.getLogger(EvalConfigEngine.class);
+public class EvalScriptEngine {
+    private static Logger logger = LoggerFactory.getLogger(EvalScriptEngine.class);
     private static final String METHOD_PATH = "META-INF/lenskit-eval/methods/";
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-    protected EvalScriptConfig config;
+    @Nonnull
+    protected final EvalConfig config;
 
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> commands = new HashMap<Class, Class>();
 
-    public EvalConfigEngine() {
+    public EvalScriptEngine() {
         this(Thread.currentThread().getContextClassLoader());
     }
 
-    public EvalConfigEngine(ClassLoader loader) {
+    public EvalScriptEngine(ClassLoader loader) {
         this(Thread.currentThread().getContextClassLoader(),
              new Properties(System.getProperties()));
     }
 
-    public EvalConfigEngine(ClassLoader loader, Properties configProperties) {
+    public EvalScriptEngine(ClassLoader loader, Properties configProperties) {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        config = new EvalScriptConfig(configProperties);
+        config = new EvalConfig(configProperties);
 
-        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalConfigScript");
+        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalScript");
 
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("org.grouplens.lenskit",
@@ -93,10 +94,9 @@ public class EvalConfigEngine {
      * @return The script as parsed and compiled by Groovy.
      * @throws IOException if the file cannot be read.
      */
-    protected EvalConfigScript loadScript(File file) throws IOException {
-        EvalConfigScript script = (EvalConfigScript) shell.parse(file);
+    protected EvalScript loadScript(File file) throws IOException {
+        EvalScript script = (EvalScript) shell.parse(file);
         script.setEngine(this);
-        script.setConfig(config);
         return script;
     }
 
@@ -106,10 +106,9 @@ public class EvalConfigEngine {
      * @param in The reader to read.
      * @return The script as parsed and compiled by Groovy.
      */
-    protected EvalConfigScript loadScript(Reader in) {
-        EvalConfigScript script = (EvalConfigScript) shell.parse(in);
+    protected EvalScript loadScript(Reader in) {
+        EvalScript script = (EvalScript) shell.parse(in);
         script.setEngine(this);
-        script.setConfig(config);
         return script;
     }
 
@@ -120,9 +119,8 @@ public class EvalConfigEngine {
      * @return A list of evaluations produced by {@code script}.
      * @throws CommandException if the script is invalid or produces an error.
      */
-    protected
     @Nullable
-    Object runScript(EvalConfigScript script, String[] args) throws CommandException {
+    protected Object runScript(EvalScript script, String[] args) throws CommandException {
         script.setBinding(new Binding(args));
         Object result = null;
         try {
@@ -143,9 +141,8 @@ public class EvalConfigEngine {
      * @throws CommandException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
-    public
     @Nullable
-    Object execute(File file) throws CommandException, IOException {
+    public Object execute(File file) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return execute(file, new String[]{});
     }
@@ -159,9 +156,8 @@ public class EvalConfigEngine {
      * @throws CommandException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
-    public
     @Nullable
-    Object execute(File file, String[] args) throws CommandException, IOException {
+    public Object execute(File file, String[] args) throws CommandException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file), args);
     }
@@ -173,9 +169,8 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error
      */
-    public
     @Nullable
-    Object execute(Reader in) throws CommandException {
+    public Object execute(Reader in) throws CommandException {
         return execute(in, new String[]{});
     }
 
@@ -187,10 +182,18 @@ public class EvalConfigEngine {
      * @return A list of evaluations
      * @throws CommandException if there is a configuration error
      */
-    public
     @Nullable
-    Object execute(Reader in, String[] args) throws CommandException {
+    public Object execute(Reader in, String[] args) throws CommandException {
         return runScript(loadScript(in), args);
+    }
+
+    /**
+     * Get the eval script config.
+     * @return The eval configuration.
+     */
+    @Nonnull
+    public EvalConfig getConfig() {
+        return config;
     }
 
     /**
@@ -199,6 +202,7 @@ public class EvalConfigEngine {
      * @param name The name of the command
      * @return The command factory or {@code null} if no such factory exists.
      */
+    @SuppressWarnings("rawtypes")
     @CheckForNull
     @Nullable
     public Class<? extends Command> getCommand(@Nonnull String name) {
@@ -237,7 +241,7 @@ public class EvalConfigEngine {
      * @return A command class to build {@code type}, or {@code null} if none can be found.
      * @see #registerCommand
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> Class<? extends Command> getCommandForType(Class<T> type) {
         @SuppressWarnings("rawtypes")
         Class command = commands.get(type);
@@ -258,6 +262,7 @@ public class EvalConfigEngine {
      * @param command A class that can build instances of {@code type}.
      * @param <T>     The type to build (type parameter).
      */
+    @SuppressWarnings("rawtypes")
     public <T> void registerCommand(Class<T> type, Class<? extends Command> command) {
         Preconditions.checkNotNull(type, "type cannot be null");
         Preconditions.checkNotNull(command, "command cannot be null");

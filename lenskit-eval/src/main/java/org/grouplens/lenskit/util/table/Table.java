@@ -16,41 +16,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package $org.grouplens.lenskit;
+package org.grouplens.lenskit.util.table;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.util.List;
 
 /**
- * Unit test for simple App.
+ * This is the interface for the in memory table which stores a list of rows. Users should be able
+ * to call the filter method to find the rows that satisfy the conditions specified by users. And
+ * table expose the functions of columns to enable users calling the functions on column.
+ *
+ * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+public interface Table extends List<Row> {
+    Table filter(String header, Object data);
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+    Column column(String col);
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+    List<String> getHeader();
 }

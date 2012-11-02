@@ -34,6 +34,7 @@ import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.tablewriter.CSVWriter;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
@@ -188,7 +189,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         return this;
     }
 
-    public CrossfoldCommand build() {
+    private CrossfoldCommand initialize() {
         if (trainFilePattern == null) {
             trainFilePattern = name + ".train.%d.csv";
         }
@@ -204,6 +205,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *
      * @return The name of the crossfold split.
      */
+    @Override
     public String getName() {
         if (name.equals("Crossfold")) {
             return source.getName();
@@ -243,7 +245,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public boolean getForce() {
-        return isForced;
+        return isForced || getConfig().force();
     }
 
     /**
@@ -255,13 +257,17 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
-        this.build();
-        if (!isForced) {
-            long mtime = lastModified();
-            long srcMtime = source.lastModified();
-            logger.debug("crossfold {} last modified at {}", getName(), mtime);
-            logger.debug("source {} last modified at {}", getName(), srcMtime);
-            if (mtime >= srcMtime) {
+        this.initialize();
+        if (!getForce()) {
+            UpToDateChecker check = new UpToDateChecker();
+            check.addInput(source.lastModified());
+            for (File f: getFiles(trainFilePattern)) {
+                check.addOutput(f);
+            }
+            for (File f: getFiles(testFilePattern)) {
+                check.addOutput(f);
+            }
+            if (check.isUpToDate()) {
                 logger.info("crossfold {} up to date", getName());
                 return getTTFiles();
             }
@@ -299,40 +305,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             files[i] = new File(String.format(pattern, i));
         }
         return files;
-    }
-
-    /**
-     * Get the last modification time of all the crossfold split files. The modified time is the
-     * oldest modified time of all the files.
-     *
-     * @return The modification time
-     */
-    public long lastModified() {
-        File[] trainFiles = getFiles(trainFilePattern);
-        File[] testFiles = getFiles(testFilePattern);
-        Long mtime = null;
-        for (File f : trainFiles) {
-            if (!f.exists()) {
-                mtime = -1L;
-            } else if (mtime == null) {
-                mtime = f.lastModified();
-            } else {
-                mtime = Math.min(mtime, f.lastModified());
-            }
-        }
-        for (File f : testFiles) {
-            if (!f.exists()) {
-                mtime = -1L;
-            } else if (mtime == null) {
-                mtime = f.lastModified();
-            } else {
-                mtime = Math.min(mtime, f.lastModified());
-            }
-        }
-        if (mtime == null) {
-            mtime = -1L;
-        }
-        return mtime;
     }
 
     /**

@@ -62,61 +62,61 @@ public class TestMutabilityConversions {
 
     @Test
     public void testClear() {
-	MutableSparseVector simple = simpleVector();
-	assertThat(simple.size(), equalTo(3));
-	simple.clear(3);
-	assertThat(simple.size(), equalTo(2));
+        MutableSparseVector simple = simpleVector();
+        assertThat(simple.size(), equalTo(3));
+        simple.clear(3);
+        assertThat(simple.size(), equalTo(2));
 
-	ImmutableSparseVector isvSimple = simple.immutable();
-	assertThat(isvSimple.size(), equalTo(2));
+        ImmutableSparseVector isvSimple = simple.immutable();
+        assertThat(isvSimple.size(), equalTo(2));
 
-	MutableSparseVector reSimple = isvSimple.mutableCopy();
-	assertThat(reSimple.size(), equalTo(2));
-	assertThat(reSimple.set(3, 77), notANumber());
-	assertThat(reSimple.size(), equalTo(3));  // changed!
-	assertThat(isvSimple.size(), equalTo(2)); // unchanged
-	assertThat(simple.size(), equalTo(2));	   // unchanged
+        MutableSparseVector reSimple = isvSimple.mutableCopy();
+        assertThat(reSimple.size(), equalTo(2));
+        assertThat(reSimple.set(3, 77), notANumber());
+        assertThat(reSimple.size(), equalTo(3));  // changed!
+        assertThat(isvSimple.size(), equalTo(2)); // unchanged
+        assertThat(simple.size(), equalTo(2));       // unchanged
     }
 
     @Test
     public void testIterate() {
-	MutableSparseVector simple = simpleVector();
-	assertThat(simple.size(), equalTo(3));
-	simple.clear(3);
-	assertThat(simple.size(), equalTo(2));
+        MutableSparseVector simple = simpleVector();
+        assertThat(simple.size(), equalTo(3));
+        simple.clear(3);
+        assertThat(simple.size(), equalTo(2));
 
-	// Check that iteration on simple goes through the right
-	// number of items.
-	int count = 0;
-	for (VectorEntry entry : simple) {
-	    count += 1;
-	}
-	assertThat(count, equalTo(2));
+        // Check that iteration on simple goes through the right
+        // number of items.
+        int count = 0;
+        for (VectorEntry entry : simple) {
+            count += 1;
+        }
+        assertThat(count, equalTo(2));
 
-	// Check that iteration on isvSimple goes through the right
-	// number of items.
-	ImmutableSparseVector isvSimple = simple.immutable();
-	assertThat(isvSimple.size(), equalTo(2));
-	count = 0;
-	for (VectorEntry entry : isvSimple) {
-	    count += 1;
-	}
-	assertThat(count, equalTo(2));
+        // Check that iteration on isvSimple goes through the right
+        // number of items.
+        ImmutableSparseVector isvSimple = simple.immutable();
+        assertThat(isvSimple.size(), equalTo(2));
+        count = 0;
+        for (VectorEntry entry : isvSimple) {
+            count += 1;
+        }
+        assertThat(count, equalTo(2));
     }
 
     @Test
     public void testEquals() {
-	MutableSparseVector simple = simpleVector();
-	simple.clear(3);
-	ImmutableSparseVector isvSimple = simple.immutable();
-	assertTrue(isvSimple.equals(simple));
-	assertTrue(simple.equals(isvSimple));
+        MutableSparseVector simple = simpleVector();
+        simple.clear(3);
+        ImmutableSparseVector isvSimple = simple.immutable();
+        assertTrue(isvSimple.equals(simple));
+        assertTrue(simple.equals(isvSimple));
 
-	MutableSparseVector reSimple = isvSimple.mutableCopy();
-	assertTrue(isvSimple.equals(reSimple));
-	assertTrue(reSimple.equals(isvSimple));
-	assertTrue(reSimple.equals(simple));
-	assertTrue(simple.equals(reSimple));
+        MutableSparseVector reSimple = isvSimple.mutableCopy();
+        assertTrue(isvSimple.equals(reSimple));
+        assertTrue(reSimple.equals(isvSimple));
+        assertTrue(reSimple.equals(simple));
+        assertTrue(simple.equals(reSimple));
     }
 
 }
