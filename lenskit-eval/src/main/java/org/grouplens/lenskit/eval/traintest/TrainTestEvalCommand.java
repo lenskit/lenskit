@@ -110,10 +110,10 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      *
      * @param channelSym The channel to output.
      * @return The command (for chaining)
-     * @see #addPredictionChannel(Symbol, String)
+     * @see #addWritePredictionChannel
      */
-    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channelSym) {
-        return addPredictionChannel(channelSym, null);
+    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym) {
+        return addWritePredictionChannel(channelSym, null);
     }
 
     /**
@@ -124,8 +124,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * @return The command (for chaining).
      * @see #setPredictOutput(File)
      */
-    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channelSym,
-                                                     @Nullable String label) {
+    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym,
+                                                          @Nullable String label) {
         Preconditions.checkNotNull(channelSym, "channel is null");
         if (label == null) {
             label = channelSym.getName();

@@ -201,8 +201,8 @@ class TestTrainTestBuilderConfig {
         assertThat(command.predictionChannels.size(),
                    equalTo(0));
         eval {
-            predictionChannel Symbol.of("foo")
-            predictionChannel Symbol.of("wombat"), "woozle"
+            writePredictionChannel Symbol.of("foo")
+            writePredictionChannel Symbol.of("wombat"), "woozle"
         }
         assertThat(command.predictionChannels.size(),
                    equalTo(2));
