@@ -140,7 +140,11 @@
         </executions>
       </plugin>
 
-      <!-- Disable Surefire. -->
+      <!--
+      Disable Surefire. The Maven way is to use the failsafe plugin to run integration
+      tests, so they run in the right phase and don't fail the build until the verify
+      phase.
+       -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
