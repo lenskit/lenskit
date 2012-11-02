@@ -42,7 +42,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Do major tests on the item-item recommender.
+ * Do major tests on the user-user recommender.
  *
  * @author Michael Ekstrand
  */
