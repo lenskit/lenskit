@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <settings>
-  <localRepository>${test.repo.path}</localRepository>
+  <localRepository>${test.repo.directory}</localRepository>
   <mirrors>
     <mirror>
       <id>mrm</id>
       <name>Mock</name>
-      <url>${mrm.repo}</url>
+      <url>${mock.repository.url}</url>
       <mirrorOf>*</mirrorOf>
     </mirror>
   </mirrors>
@@ -18,7 +18,7 @@
       <repositories>
         <repository>
           <id>snapshots</id>
-          <url>${mrm.repo}</url>
+          <url>${mock.repository.url}</url>
           <releases>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
@@ -34,7 +34,7 @@
       <pluginRepositories>
         <pluginRepository>
           <id>snapshots</id>
-          <url>${mrm.repo}</url>
+          <url>${mock.repository.url}</url>
           <releases>
             <enabled>true</enabled>
             <checksumPolicy>ignore</checksumPolicy>
