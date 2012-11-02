@@ -121,17 +121,6 @@
           </execution>
 
           <execution>
-            <id>debug</id>
-            <goals><goal>run</goal></goals>
-            <phase>validate</phase>
-            <configuration>
-              <target>
-                <echo message="Maven home: ${maven.home}"/>
-              </target>
-            </configuration>
-          </execution>
-
-          <execution>
             <id>test-archetypes</id>
             <goals><goal>run</goal></goals>
             <phase>integration-test</phase>
