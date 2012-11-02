@@ -40,6 +40,16 @@
       <artifactId>lenskit-svd</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-archetype-simple-analysis</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-archetype-fancy-analysis</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -57,14 +67,6 @@
             <goals>
               <goal>install</goal>
             </goals>
-            <configuration>
-              <extraArtifacts>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-simple-analysis:${project.version}:jar</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-simple-analysis:${project.version}:pom</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-fancy-analysis:${project.version}:jar</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-fancy-analysis:${project.version}:pom</extraArtifact>
-              </extraArtifacts>
-            </configuration>
           </execution>
         </executions>
       </plugin>
