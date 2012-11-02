@@ -9,8 +9,8 @@
                     failonerror="true"
                     dir="${archetype.test.directory}">
         <arg value="--settings=${basedir}/src/test/settings.xml"/>
-        <arg value="-Dmrm.repo=${mock.repository.url}"/>
-        <arg value="-Dtest.repo.path=${test.repo}"/>
+        <arg value="-Dmock.repository.url=${mock.repository.url}"/>
+        <arg value="-Dtest.repo.directory=${test.repo.directory}"/>
         <arg value="archetype:generate"/>
         <arg value="-DarchetypeGroupId=org.grouplens.lenskit"/>
         <arg value="-DarchetypeArtifactId=lenskit-archetype-@{archetype}"/>
@@ -26,8 +26,8 @@
                     failonerror="true"
                     dir="${archetype.test.directory}/test-@{archetype}">
         <arg value="--settings=${basedir}/src/test/settings.xml"/>
-        <arg value="-Dmrm.repo=${mock.repository.url}"/>
-        <arg value="-Dtest.repo.path=${test.repo}"/>
+        <arg value="-Dmock.repository.url=${mock.repository.url}"/>
+        <arg value="-Dtest.repo.directory=${test.repo.directory}"/>
         <arg value="-Dgrouplens.mldata.acknowledge=${grouplens.mldata.acknowledge}"/>
         <arg value="lenskit-analyze"/>
       </artifact:mvn>

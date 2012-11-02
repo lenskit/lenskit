@@ -16,7 +16,7 @@
   </description>
 
   <properties>
-    <test.repo>${project.build.directory}/local-repo</test.repo>
+    <test.repo.directory>${project.build.directory}/test-repo</test.repo.directory>
     <archetype.test.directory>${project.build.directory}/archetype-test</archetype.test.directory>
   </properties>
 
@@ -40,6 +40,16 @@
       <artifactId>lenskit-svd</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-archetype-simple-analysis</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-archetype-fancy-analysis</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -50,21 +60,13 @@
         <artifactId>maven-invoker-plugin</artifactId>
         <version>1.7</version>
         <configuration>
-          <localRepositoryPath>${test.repo}</localRepositoryPath>
+          <localRepositoryPath>${test.repo.directory}</localRepositoryPath>
         </configuration>
         <executions>
           <execution>
             <goals>
               <goal>install</goal>
             </goals>
-            <configuration>
-              <extraArtifacts>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-simple-analysis:${project.version}:jar</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-simple-analysis:${project.version}:pom</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-fancy-analysis:${project.version}:jar</extraArtifact>
-                <extraArtifact>org.grouplens.lenskit:lenskit-archetype-fancy-analysis:${project.version}:pom</extraArtifact>
-              </extraArtifacts>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -81,7 +83,7 @@
               <source>src/mrm/repository</source>
             </mockRepo>
             <mockRepo>
-              <source>${test.repo}</source>
+              <source>${test.repo.directory}</source>
             </mockRepo>
             <proxyRepo/>
           </repositories>
