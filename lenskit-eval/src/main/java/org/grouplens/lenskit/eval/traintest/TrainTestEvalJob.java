@@ -250,8 +250,8 @@ public class TrainTestEvalJob implements Job {
                 row[3] = null;
             }
             int i = 4;
-            for (Pair<Symbol,String> chan: channels) {
-                Symbol c = chan.getLeft();
+            for (Pair<Symbol,String> pair: channels) {
+                Symbol c = pair.getLeft();
                 if (predictions.hasChannel(c) && predictions.channel(c).containsKey(iid)) {
                     row[i] = Double.toString(predictions.channel(c).get(iid));
                 } else {

@@ -108,29 +108,29 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     /**
      * Add a channel to be recorded with predict output.
      *
-     * @param channel The channel to output.
+     * @param channelSym The channel to output.
      * @return The command (for chaining)
      * @see #addPredictionChannel(Symbol, String)
      */
-    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channel) {
-        return addPredictionChannel(channel, null);
+    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channelSym) {
+        return addPredictionChannel(channelSym, null);
     }
 
     /**
      * Add a channel to be recorded with predict output.
      *
-     * @param channel The channel to record, if present in the prediction output vector.
+     * @param channelSym The channel to record, if present in the prediction output vector.
      * @param label   The column label. If {@code null}, the channel symbol's name is used.
      * @return The command (for chaining).
      * @see #setPredictOutput(File)
      */
-    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channel,
+    public TrainTestEvalCommand addPredictionChannel(@Nonnull Symbol channelSym,
                                                      @Nullable String label) {
-        Preconditions.checkNotNull(channel, "channel is null");
+        Preconditions.checkNotNull(channelSym, "channel is null");
         if (label == null) {
-            label = channel.getName();
+            label = channelSym.getName();
         }
-        Pair<Symbol, String> entry = Pair.of(channel, label);
+        Pair<Symbol, String> entry = Pair.of(channelSym, label);
         predictChannels.add(entry);
         return this;
     }
@@ -341,8 +341,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         eachPred.addColumn("Item");
         eachPred.addColumn("Rating");
         eachPred.addColumn("Prediction");
-        for (Pair<Symbol,String> channel: predictChannels) {
-            eachPred.addColumn(channel.getRight());
+        for (Pair<Symbol,String> pair: predictChannels) {
+            eachPred.addColumn(pair.getRight());
         }
 
         predictLayout = eachPred.build();
