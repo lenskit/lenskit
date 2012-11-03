@@ -21,6 +21,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
@@ -37,6 +38,7 @@ import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -65,6 +67,8 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
+    private final List<Pair<Symbol, String>> channels;
+    @Nonnull
     private final TTDataSet data;
     @Nonnull
     private final Supplier<TableWriter> outputSupplier;
@@ -80,6 +84,7 @@ public class TrainTestEvalJob implements Job {
      *
      * @param algo    The algorithm to test.
      * @param evals   The evaluators to use.
+     * @param chans   The list of channels to extract.
      * @param ds      The data set to use.
      * @param snap    Supplier providing access to a shared rating snapshot to use in the
      *                build process.
@@ -90,10 +95,12 @@ public class TrainTestEvalJob implements Job {
      */
     public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
+                            List<Pair<Symbol,String>> chans,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
                             Supplier<TableWriter> out, int numRecs) {
         algorithm = algo;
         evaluators = evals;
+        channels = chans;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
@@ -230,7 +237,8 @@ public class TrainTestEvalJob implements Job {
     }
 
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
-        String[] row = new String[4];
+        final int ncols = predictTable.getLayout().getColumnCount();
+        final String[] row = new String[ncols];
         row[0] = Long.toString(uid);
         for (VectorEntry e : ratings.fast()) {
             long iid = e.getKey();
@@ -240,6 +248,16 @@ public class TrainTestEvalJob implements Job {
                 row[3] = Double.toString(predictions.get(iid));
             } else {
                 row[3] = null;
+            }
+            int i = 4;
+            for (Pair<Symbol,String> pair: channels) {
+                Symbol c = pair.getLeft();
+                if (predictions.hasChannel(c) && predictions.channel(c).containsKey(iid)) {
+                    row[i] = Double.toString(predictions.channel(c).get(iid));
+                } else {
+                    row[i] = null;
+                }
+                i += 1;
             }
             try {
                 predictTable.writeRow(row);

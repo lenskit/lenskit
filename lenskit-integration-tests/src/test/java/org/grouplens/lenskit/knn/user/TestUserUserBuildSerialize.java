@@ -16,7 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
@@ -26,7 +26,6 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -43,19 +42,19 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Do major tests on the item-item recommender.
+ * Do major tests on the user-user recommender.
  *
  * @author Michael Ekstrand
  */
-public class TestItemItemBuildSerialize extends ML100KTestSuite {
+public class TestUserUserBuildSerialize extends ML100KTestSuite {
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ItemItemRecommender.class);
+               .to(UserUserRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(ItemItemRatingPredictor.class);
-        factory.within(ItemVectorSimilarity.class)
+               .to(UserUserRatingPredictor.class);
+        factory.within(UserVectorSimilarity.class)
                .bind(VectorSimilarity.class)
                .to(CosineVectorSimilarity.class);
         factory.bind(UserVectorNormalizer.class)
@@ -77,9 +76,7 @@ public class TestItemItemBuildSerialize extends ML100KTestSuite {
         LenskitRecommender rec = loaded.open();
         try {
             assertThat(rec.getRatingPredictor(),
-                       instanceOf(ItemItemRatingPredictor.class));
-            assertThat(rec.get(ItemItemModel.class),
-                       notNullValue());
+                       instanceOf(UserUserRatingPredictor.class));
         } finally {
             rec.close();
         }

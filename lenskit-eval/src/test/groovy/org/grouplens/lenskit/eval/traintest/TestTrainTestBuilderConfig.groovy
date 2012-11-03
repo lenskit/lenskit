@@ -37,6 +37,12 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.config.EvalScriptEngine
 
+import static org.hamcrest.Matchers.hasKey
+import org.grouplens.lenskit.symbols.Symbol
+import org.apache.commons.lang3.tuple.Pair
+
+import static org.hamcrest.Matchers.hasItem
+
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
  * framework.
@@ -188,5 +194,21 @@ class TestTrainTestBuilderConfig {
         }
         def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
+    }
+
+    @Test
+    void testChannelConfig() {
+        assertThat(command.predictionChannels.size(),
+                   equalTo(0));
+        eval {
+            writePredictionChannel Symbol.of("foo")
+            writePredictionChannel Symbol.of("wombat"), "woozle"
+        }
+        assertThat(command.predictionChannels.size(),
+                   equalTo(2));
+        assertThat(command.predictionChannels,
+                   hasItem(Pair.of(Symbol.of("foo"), "foo")));
+        assertThat(command.predictionChannels,
+                   hasItem(Pair.of(Symbol.of("wombat"), "woozle")));
     }
 }
