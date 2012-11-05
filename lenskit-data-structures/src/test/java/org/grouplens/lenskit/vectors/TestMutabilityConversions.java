@@ -18,22 +18,15 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
-import java.util.Set;
-
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Iterators;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -87,21 +80,13 @@ public class TestMutabilityConversions {
 
         // Check that iteration on simple goes through the right
         // number of items.
-        int count = 0;
-        for (VectorEntry entry : simple) {
-            count += 1;
-        }
-        assertThat(count, equalTo(2));
-
+        assertThat(Iterators.size(simple.iterator()), equalTo(2));
+        
         // Check that iteration on isvSimple goes through the right
         // number of items.
         ImmutableSparseVector isvSimple = simple.immutable();
         assertThat(isvSimple.size(), equalTo(2));
-        count = 0;
-        for (VectorEntry entry : isvSimple) {
-            count += 1;
-        }
-        assertThat(count, equalTo(2));
+        assertThat(Iterators.size(isvSimple.iterator()), equalTo(2));
     }
 
     @Test

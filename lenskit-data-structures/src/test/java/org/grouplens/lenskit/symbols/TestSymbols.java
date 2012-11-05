@@ -29,24 +29,25 @@ import static org.hamcrest.Matchers.*;
 public class TestSymbols {
     @Test
     public void testConstruction() {
-        assertSame(Symbol.of("foo"), Symbol.of("foo"));
-        assertSame(Symbol.of("bar"), Symbol.of("bar"));
-        assertNotSame(Symbol.of("foo"), Symbol.of("bar"));
-        assertNotSame(Symbol.of("bar"), Symbol.of("foo"));
+        assertThat(Symbol.of("foo"), sameInstance(Symbol.of("foo")));
+        assertThat(Symbol.of("bar"), sameInstance(Symbol.of("bar")));
+        assertThat(Symbol.of("foo"), not(sameInstance(Symbol.of("bar"))));
+        assertThat(Symbol.of("bar"), not(sameInstance(Symbol.of("foo"))));
     }
 
     @Test
     public void testEquals() {
         Symbol s1 = Symbol.of("1");
         Symbol s2 = Symbol.of("2");
-        Symbol s3 = Symbol.of("3");
-        Symbol s4 = Symbol.of("4");
         Symbol s11 = Symbol.of("1");
         Symbol s12 = Symbol.of("1");
-        assertEquals(s1, s11);
-        assertEquals(s11, s12);
-        assertSame(s1, s11);
-        assertSame(s1, s12);
+        Symbol s22 = Symbol.of("2");
+        assertThat(s1, equalTo(s11));
+        assertThat(s11, equalTo(s12));
+        assertThat(s1, sameInstance(s11));
+        assertThat(s1, sameInstance(s12));
+        assertThat(s2, equalTo(s22));
+        assertThat(s2, equalTo(s22));
     }
 
     @Test

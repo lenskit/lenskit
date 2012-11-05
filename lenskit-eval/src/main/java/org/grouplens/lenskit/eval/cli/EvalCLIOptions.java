@@ -102,7 +102,7 @@ public class EvalCLIOptions {
         }
     }
 
-    @SuppressWarnings({"static-access", "AccessStaticViaInstance"})
+    @SuppressWarnings({"static-access"})
     private static Options makeOptions() {
         Options opts = new Options();
         opts.addOption(OptionBuilder.withDescription("print this help")

@@ -58,7 +58,8 @@ public class TestPreferences {
         prefs.add(new SimplePreference(1, 9, 4.0));
         prefs.add(new SimplePreference(1, 5, 2.8));
         prefs.add(new SimplePreference(1, 9, Math.PI));
-        SparseVector v = Preferences.userPreferenceVector(prefs);
+        @SuppressWarnings("unused")
+		SparseVector v = Preferences.userPreferenceVector(prefs);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -67,6 +68,7 @@ public class TestPreferences {
         prefs.add(new SimplePreference(1, 3, 2.5));
         prefs.add(new SimplePreference(1, 9, 4.0));
         prefs.add(new SimplePreference(2, 5, 2.8));
-        SparseVector v = Preferences.userPreferenceVector(prefs);
+        @SuppressWarnings("unused")
+		SparseVector v = Preferences.userPreferenceVector(prefs);
     }
 }

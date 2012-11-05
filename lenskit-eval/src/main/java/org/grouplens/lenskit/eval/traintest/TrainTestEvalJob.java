@@ -274,7 +274,6 @@ public class TrainTestEvalJob implements Job {
         int col = 2;
         for (TestUserMetricAccumulator acc : accums) {
             Object[] ar = acc.finalResults();
-            int i = col;
             if (ar != null) {
                 // no aggregated output is generated
                 int n = ar.length;

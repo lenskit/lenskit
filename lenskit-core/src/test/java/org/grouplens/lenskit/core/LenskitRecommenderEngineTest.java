@@ -151,7 +151,7 @@ public class LenskitRecommenderEngineTest {
                    closeTo(0.01, 1.0e-6));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     private void assertNodeNotEVDao(Node node) {
         CachedSatisfaction lbl = node.getLabel();
         if (lbl == null) {
@@ -194,7 +194,7 @@ public class LenskitRecommenderEngineTest {
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = new LenskitRecommenderEngine(daoFactory, tfile);
+            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(daoFactory, tfile);
             verifyBasicRecommender(e2);
         } finally {
             tfile.delete();

@@ -57,7 +57,6 @@ public class EvalScriptMojo extends AbstractMojo {
     @Parameter(property="project",
                required=true,
                readonly=true)
-    @SuppressWarnings("unused")
     private MavenProject project;
 
     /**
