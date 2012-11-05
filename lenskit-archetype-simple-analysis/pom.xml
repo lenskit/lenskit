@@ -10,7 +10,6 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-archetype-simple-analysis</artifactId>
   <name>Archetype - lenskit-archetype-simple-analysis</name>
   <packaging>maven-archetype</packaging>
