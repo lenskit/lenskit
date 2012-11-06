@@ -18,71 +18,74 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.util.Index;
 
 /**
- * A model for a <tt>SlopeOneRatingPredictor</tt> or <tt>WeightedSlopeOneRatingPredictor</tt>.
+ * A model for a {@code SlopeOneRatingPredictor} or {@code WeightedSlopeOneRatingPredictor}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
- * Also contains a <tt>BaselinePredictor</tt> and the minimum and maximum rating values
+ * Also contains a {@code BaselinePredictor} and the minimum and maximum rating values
  * for use by a scorer.
  */
 @DefaultProvider(SlopeOneModelProvider.class)
+@Shareable
 public class SlopeOneModel {
 
-    private final Long2ObjectOpenHashMap<Long2IntOpenHashMap> coMatrix;
-    private final Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devMatrix;
+    private final Long2IntMap[] coMatrix;
+    private final Long2DoubleMap[] devMatrix;
     private final BaselinePredictor baseline;
-    private final LongSortedSet itemUniverse;
-    private final PreferenceDomain domain;
+    private final Index itemIndex;
 
-    public SlopeOneModel(Long2ObjectOpenHashMap<Long2IntOpenHashMap> coData,
-            Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> devData, BaselinePredictor predictor,
-            LongSortedSet universe, PreferenceDomain dom) {
+    public SlopeOneModel(Long2IntMap[] coMatrix, Long2DoubleMap[] devMatrix,
+                         BaselinePredictor predictor, Index itemIndex) {
 
-        coMatrix = coData;
-        devMatrix = devData;
+        this.coMatrix = coMatrix;
+        this.devMatrix = devMatrix;
         baseline = predictor;
-        itemUniverse = universe;
-        domain = dom;
+        this.itemIndex = itemIndex;
     }
 
     public double getDeviation(long item1, long item2) {
-        if (item1 == item2) return 0;
-        else if (item1 < item2) {
-            Long2DoubleOpenHashMap map = devMatrix.get(item1);
-            if (map == null) {
+        if (item1 == item2) {
+            return 0;
+        } else if (item1 < item2) {
+            int index = itemIndex.getIndex(item1);
+            if (index < 0) {
                 return Double.NaN;
             } else {
-                return map.get(item2);
+                return devMatrix[index].get(item2);
             }
-        }
-        else {
-            Long2DoubleOpenHashMap map = devMatrix.get(item2);
-            if (map == null) {
+        } else {
+            int index = itemIndex.getIndex(item2);
+            if (index < 0) {
                 return Double.NaN;
             } else {
-                return -map.get(item1);
+                return -devMatrix[index].get(item1);
             }
         }
     }
 
     public int getCoratings(long item1, long item2) {
-        if (item1 == item2) return 0;
-        else if (item1 < item2) {
-            Long2IntOpenHashMap map = coMatrix.get(item1);
-            if (map == null) return 0;
-            else return map.get(item2);
-        }
-        else {
-            Long2IntOpenHashMap map = coMatrix.get(item2);
-            if (map == null) return 0;
-            else return map.get(item1);
+        if (item1 == item2) {
+            return 0;
+        } else if (item1 < item2) {
+            int index = itemIndex.getIndex(item1);
+            if (index < 0) {
+                return 0;
+            } else {
+                return coMatrix[index].get(item2);
+            }
+        } else {
+            int index = itemIndex.getIndex(item2);
+            if (index < 0) {
+                return 0;
+            } else {
+                return coMatrix[index].get(item1);
+            }
         }
     }
 
@@ -90,11 +93,7 @@ public class SlopeOneModel {
         return baseline;
     }
 
-    public LongSortedSet getItemUniverse() {
-        return itemUniverse;
-    }
-
-    public PreferenceDomain getDomain() {
-        return domain;
+    public Index getItemIndex() {
+        return itemIndex;
     }
 }

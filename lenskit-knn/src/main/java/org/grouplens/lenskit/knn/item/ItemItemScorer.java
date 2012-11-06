@@ -21,17 +21,17 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,18 +42,23 @@ import java.util.Collection;
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
-public class ItemItemScorer extends AbstractItemScorer implements
-        ItemItemModelBackedScorer {
+public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelBackedScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
+    public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
+            Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
-    protected @Nonnull UserVectorNormalizer normalizer;
+
+    @Nonnull
+    protected UserVectorNormalizer normalizer;
     protected UserHistorySummarizer summarizer;
-    protected @Nonnull NeighborhoodScorer scorer;
-    protected @Nonnull ItemScoreAlgorithm algorithm;
+    @Nonnull
+    protected NeighborhoodScorer scorer;
+    @Nonnull
+    protected ItemScoreAlgorithm algorithm;
 
     @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
@@ -80,7 +85,7 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Set the normalizer to apply to user summaries.
-     * 
+     *
      * @param norm The normalizer.
      * @see UserVectorNormalizer
      */
@@ -91,29 +96,23 @@ public class ItemItemScorer extends AbstractItemScorer implements
 
     /**
      * Score items by computing predicted ratings.
-     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, LongSortedSet, NeighborhoodScorer)
+     *
+     * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
      * @see #makeTransform(long, SparseVector)
      */
     @Override
-    public SparseVector score(UserHistory<? extends Event> history,
-                              Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector summary = summarizer.summarize(history);
         VectorTransformation transform = makeTransform(history.getUserId(), summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
+        scores.clear();
+        algorithm.scoreItems(model, normed, scores, scorer);
 
-		MutableSparseVector preds = algorithm.scoreItems(model, normed, iset, scorer);
-
-		// untransform the scores
-        transform.unapply(preds);
-        return preds.freeze();
+        // untransform the scores
+        transform.unapply(scores);
     }
 
     /**
@@ -126,11 +125,11 @@ public class ItemItemScorer extends AbstractItemScorer implements
      * baseline. The vector passed to unapply the transformation will contain
      * all items to be predicted in the key domain, and will have values for all
      * predictable items.
-     * 
+     *
      * <p>
      * The default implementation delegates to the normalizer
      * ({@link #setNormalizer(UserVectorNormalizer)}).
-     * 
+     *
      * @param userData The user summary.
      * @return The transform to pre- and post-process user data.
      */

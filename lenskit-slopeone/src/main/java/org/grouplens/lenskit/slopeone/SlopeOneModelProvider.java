@@ -18,15 +18,13 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.grapht.annotation.Transient;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.util.Indexer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,57 +33,41 @@ import javax.inject.Provider;
 
 /**
  * Pre-computes the deviations and number of mutual rating users for every pair
- *  of items and stores the results in a <tt>DeviationMatrix</tt> and
- *  <tt>CoratingMatrix</tt>. These matrices are later used by a
- *  <tt>SlopeOneRatingPredictor</tt>.
+ * of items and stores the results in a {@code DeviationMatrix} and
+ * {@code CoratingMatrix}. These matrices are later used by a
+ * {@code SlopeOneRatingPredictor}.
  */
 public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
-    
-    private final BaselinePredictor baseline;
-    private final PreferenceDomain domain;
-    
-    private final PreferenceSnapshot snapshot;
-    private UserVectorNormalizer normalizer;
+
+    private final BaselinePredictor predictor;
+    private final ItemItemBuildContextFactory contextFactory;
+    private final Indexer itemIndex;
 
     @Inject
-    public SlopeOneModelProvider(@Transient @Nonnull PreferenceSnapshot snap,
-                                 @Transient @Nonnull UserVectorNormalizer norm,
+    public SlopeOneModelProvider(@Transient @Nonnull DataAccessObject dao,
                                  @Nullable BaselinePredictor predictor,
-                                 @Nonnull PreferenceDomain dom,
+                                 @Transient ItemItemBuildContextFactory contextFactory,
                                  @Damping double damping) {
-        snapshot = snap;
-        normalizer = norm;
 
-        domain = dom;
-        baseline = predictor;
-        accumulator = new SlopeOneModelDataAccumulator(damping, this.snapshot);
+        this.predictor = predictor;
+        this.contextFactory = contextFactory;
+        itemIndex = new Indexer();
+        accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
     }
 
     /**
-     * Constructs a {@link SlopeOneModel} and the necessary matrices from
-     * a {@link org.grouplens.lenskit.data.snapshot.PreferenceSnapshot}.
+     * Constructs and returns a {@link SlopeOneModel}.
      */
     @Override
     public SlopeOneModel get() {
-        for (long u: snapshot.getUserIds()) {
-            SparseVector ratings = snapshot.userRatingVector(u);
-            SparseVector normed = normalizer.normalize(u, ratings, null);
-            LongIterator iter = normed.keySet().iterator();
-            while (iter.hasNext()) {
-                long item1 = iter.nextLong();
-                LongIterator iter2 = normed.keySet().tailSet(item1).iterator();
-                if (iter2.hasNext()) {
-                    iter2.next();
-                }
-                while (iter2.hasNext()) {
-                    long item2 = iter2.next();
-                    accumulator.putRatingPair(item1, normed.get(item1), item2, normed.get(item2));
-                }
+        ItemItemBuildContext buildContext = contextFactory.buildContext();
+        for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
+            if (pair.itemId1 != pair.itemId2) {
+                accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
             }
         }
-        LongSortedArraySet items = new LongSortedArraySet(snapshot.getItemIds());
-        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(), 
-                                 baseline, items, domain);
+        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
+                                 predictor, itemIndex);
     }
 }

@@ -21,10 +21,12 @@ package org.grouplens.lenskit.baseline;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
 
 /**
  * Rating scorer that predicts the global mean rating for all items.
@@ -33,6 +35,7 @@ import org.grouplens.lenskit.data.event.Rating;
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
 @DefaultProvider(GlobalMeanPredictor.Provider.class)
+@Shareable
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.
@@ -41,12 +44,17 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      */
     public static class Provider implements javax.inject.Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;
-        
+
+        /**
+         * Construct a new provider.
+         *
+         * @param dao The DAO.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao) {
             this.dao = dao;
         }
-        
+
         @Override
         public GlobalMeanPredictor get() {
             double avg = computeMeanRating(dao);
@@ -59,7 +67,8 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * Construct a new global mean scorer where it is assumed
      * that the given value is the global mean.
-     * @param mean
+     *
+     * @param mean The global mean.
      */
     public GlobalMeanPredictor(double mean) {
         super(mean);
@@ -69,25 +78,27 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * Utility method to compute the mean or average of the rating values
      * contained in the given collection of ratings.
      *
-     * @param ratings
-     * @return The average of the rating values stored in <var>ratings</var>.
+     * @param dao The DAO to average.
+     * @return The average of the rating values stored in {@var ratings}.
      */
     public static double computeMeanRating(DataAccessObject dao) {
         double total = 0;
         long count = 0;
 
         Cursor<Rating> ratings = dao.getEvents(Rating.class);
-        for (Rating r: ratings.fast()) {
-            if (r.getPreference() != null) {
-                total += r.getPreference().getValue();
+        for (Rating r : ratings.fast()) {
+            Preference p = r.getPreference();
+            if (p != null) {
+                total += p.getValue();
                 count += 1;
             }
         }
         ratings.close();
 
         double avg = 0;
-        if (count > 0)
+        if (count > 0) {
             avg = total / count;
+        }
 
         return avg;
     }

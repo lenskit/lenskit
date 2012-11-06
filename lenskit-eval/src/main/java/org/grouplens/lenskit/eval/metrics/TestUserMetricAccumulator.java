@@ -21,26 +21,25 @@ package org.grouplens.lenskit.eval.metrics;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 
 /**
- * 
  * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.10
- *
  */
 public interface TestUserMetricAccumulator {
     /**
      * Evaluate the recommender output for a user.
+     *
      * @param user The user to evaluate.
      * @return The results of this user's evaluation, to be emitted in the
      *         per-user table (if one is configured). The output can be
      *         {@code null} if the user could not be evaluated.
      */
-    String[] evaluate(TestUser user);
+    Object[] evaluate(TestUser user);
 
     /**
      * Finalize the evaluation and return the final values.
-     * 
+     *
      * @return The column values for the final evaluation.
      */
-    String[] finalResults();
+    Object[] finalResults();
 }

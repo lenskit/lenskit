@@ -20,24 +20,23 @@ package org.grouplens.lenskit.util.tablewriter;
 
 /**
  * Utility methods for table writers.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public final class TableWriters {
     /**
      * Create a table writer that writes data with common leading columns to an
      * underlying table writer.
-     * 
-     * @param base The base table writer for output.
+     *
+     * @param base   The base table writer for output.
      * @param prefix The values of the leading columns in this table writer.
      * @return A table writer with
-     *         <code>base.getColumnCount() - prefix.length</code> columns. Each
-     *         row is prefixed with the values in <var>prefix</var>.
+     *         {@code base.getColumnCount() - prefix.length} columns. Each
+     *         row is prefixed with the values in {@var prefix}.
      * @since 0.8
      */
-    public static TableWriter prefixed(TableWriter base, String[] prefix) {
+    public static TableWriter prefixed(TableWriter base, Object[] prefix) {
         return new PrefixedTableWriter(base, prefix);
     }
 }

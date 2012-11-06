@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +33,11 @@ import org.slf4j.LoggerFactory;
  * recommender coverage over the queried items.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class CoveragePredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final String[] COLUMNS = {
-        "NUsers", "NAttempted", "NGood", "Coverage"
+            "NUsers", "NAttempted", "NGood", "Coverage"
     };
     private static final String[] USER_COLUMNS = {
             "NAttempted", "NGood", "Coverage"
@@ -48,7 +47,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
@@ -65,13 +64,13 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             int n = 0;
             int good = 0;
-            for (Long2DoubleMap.Entry e: ratings.fast()) {
-                double pv = predictions.get(e.getLongKey());
+            for (VectorEntry e : ratings.fast()) {
+                double pv = predictions.get(e.getKey());
                 n += 1;
                 if (!Double.isNaN(pv)) {
                     good += 1;
@@ -80,24 +79,17 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             npreds += n;
             ngood += good;
             nusers += 1;
-            return new String[]{
-                    Integer.toString(n),
-                    Integer.toString(good),
-                    n > 0 ? Double.toString(((double) good) / n) : null
+            return new Object[]{n, good,
+                                n > 0 ? (((double) good) / n) : null
             };
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double coverage = (double) ngood / npreds;
             logger.info("Coverage: {}", coverage);
-            
-            return new String[]{
-                    Integer.toString(nusers), 
-                    Integer.toString(npreds),
-                    Integer.toString(ngood), 
-                    Double.toString(coverage) 
-            };
+
+            return new Object[]{nusers, npreds, ngood, coverage};
         }
 
     }

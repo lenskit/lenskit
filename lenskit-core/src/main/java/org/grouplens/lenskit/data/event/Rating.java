@@ -27,28 +27,17 @@ import org.grouplens.lenskit.data.pref.Preference;
  * A rating is an expression of preference for an item by a user.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public interface Rating extends Event {
     /**
      * Get the expressed preference. If this is an "unrate" event, the
-     * preference will be <tt>null</tt>.
+     * preference will be {@code null}.
      *
      * @return The expressed preference.
      */
-    @Nullable Preference getPreference();
-
-    /**
-     * Get the rating's preference value.
-     *
-     * @return The value of the expressed preference (or {@link Double#NaN} if
-     *         the preference is unset).
-     * @deprecated Use {@link Preference#getValue()} on the output of
-     *             {@link #getPreference()} instead.
-     */
-    @Deprecated
-    double getRating();
+    @Nullable
+    Preference getPreference();
 
     @Override
-    Rating clone();
+    Rating copy();
 }

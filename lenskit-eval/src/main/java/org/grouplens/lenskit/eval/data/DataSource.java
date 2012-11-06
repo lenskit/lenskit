@@ -20,34 +20,36 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.config.DefaultBuilder;
+import org.grouplens.lenskit.eval.config.BuilderCommand;
 
 import javax.annotation.Nullable;
 
 /**
  * Data source for a single data set.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultBuilder(CSVDataSourceBuilder.class)
+@BuilderCommand(CSVDataSourceCommand.class)
 public interface DataSource {
     /**
      * Get the data source name.
+     *
      * @return The data sources's name.
      */
     String getName();
 
     /**
      * Get the preference domain of this data source.
+     *
      * @return The data source preference domain.
      */
     @Nullable
     PreferenceDomain getPreferenceDomain();
-    
+
     /**
      * Get a DAO factory for this data source. The data source must be prepared
      * before this method is called or the resulting DAO factory used.
-     * 
+     *
      * @return A DAO factory backed by this data source.
      */
     DAOFactory getDAOFactory();

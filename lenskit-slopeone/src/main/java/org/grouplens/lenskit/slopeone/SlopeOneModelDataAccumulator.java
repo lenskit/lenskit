@@ -18,82 +18,86 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.util.Index;
+
+import org.grouplens.lenskit.util.Indexer;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
 
 public class SlopeOneModelDataAccumulator {
 
-    private Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> deviationMatrix;
-    private Long2ObjectOpenHashMap<Long2IntOpenHashMap> coratingMatrix;
+    private Long2DoubleMap[] deviationMatrix;
+    private Long2IntMap[] coratingMatrix;
     private double damping;
+    private Index itemIndex;
 
     /**
      * Creates an accumulator to process rating data and generate the necessary data for
-     * a <tt>SlopeOneRatingPredictor</tt>.
-     * @param damping A damping term for deviation calculations.
-     * @param snapshot The rating data.
+     * a {@code SlopeOneRatingPredictor}.
+     *
+     * @param damping   A damping term for deviation calculations.
+     * @param itemIndex An Index for items in the model
+     * @param dao       The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, PreferenceSnapshot snapshot) {
+    public SlopeOneModelDataAccumulator(double damping, Indexer itemIndex, DataAccessObject dao) {
         this.damping = damping;
-        deviationMatrix = new Long2ObjectOpenHashMap<Long2DoubleOpenHashMap>();
-        coratingMatrix = new Long2ObjectOpenHashMap<Long2IntOpenHashMap>();
-        for (long itemId : snapshot.getItemIds()) {
-            deviationMatrix.put(itemId, new Long2DoubleOpenHashMap());
-            coratingMatrix.put(itemId, new Long2IntOpenHashMap());
-        }
-        long[] items = snapshot.getItemIds().toLongArray();
-        for (int i = 0; i < items.length-1; i++) {
-            for (int j = i; j < items.length; j++) {
-                if (items[i] < items[j]) {
-                    deviationMatrix.get(items[i]).put(items[j], Double.NaN);
-                } else {
-                    deviationMatrix.get(items[j]).put(items[i], Double.NaN);
-                }
-            }
+        this.itemIndex = itemIndex;
+        LongList items = Cursors.makeList(dao.getItems());
+        deviationMatrix = new Long2DoubleOpenHashMap[items.size()];
+        coratingMatrix = new Long2IntOpenHashMap[items.size()];
+
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            final long itemId = iter.nextLong();
+            deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
+            coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
         }
     }
 
     /**
-     * Provide a pair of ratings to the accumulator.
-     * @param id1 The id of the first item.
-     * @param rating1 The user's rating of the first item.
-     * @param id2 The id of the second item.
-     * @param rating2 The user's rating of the second item.
+     * Puts the item pair into the accumulator.
+     *
+     * @param id1      The id of the first item.
+     * @param itemVec1 The rating vector of the first item.
+     * @param id2      The id of the second item.
+     * @param itemVec2 The rating vector of the second item.
      */
-    public void putRatingPair(long id1, double rating1, long id2, double rating2) {
-        if (id1 != id2) {
-            if (id1 < id2) {
-                if (Double.isNaN(deviationMatrix.get(id1).get(id2)))
-                        deviationMatrix.get(id1).put(id2, rating1 - rating2);
-                else
-                    deviationMatrix.get(id1).put(id2, deviationMatrix.get(id1).get(id2) + (rating1 - rating2));
-
-                coratingMatrix.get(id1).put(id2, coratingMatrix.get(id1).get(id2)+1);
+    public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+        // to profit from matrix symmetry, always store by the lesser id
+        if (id1 < id2) {
+            int corating = 0;
+            double deviation = 0.0;
+            for (Vectors.EntryPair pair : Vectors.pairedFast(itemVec1, itemVec2)) {
+                corating++;
+                deviation += pair.getValue1() - pair.getValue2();
             }
-            else {
-                if (Double.isNaN(deviationMatrix.get(id2).get(id1)))
-                    deviationMatrix.get(id2).put(id1, rating2 - rating1);
-                else
-                    deviationMatrix.get(id2).put(id1, deviationMatrix.get(id2).get(id1) + (rating2 - rating1));
-
-                coratingMatrix.get(id2).put(id1, coratingMatrix.get(id2).get(id1)+1);
-            }
+            deviation = (corating == 0) ? Double.NaN : deviation;
+            deviationMatrix[itemIndex.getIndex(id1)].put(id2, deviation);
+            coratingMatrix[itemIndex.getIndex(id1)].put(id2, corating);
         }
+
     }
 
     /**
      * @return A matrix of item deviation values to be used by
-     * a <tt>SlopeOneRatingPredictor</tt>.
+     *         a {@code SlopeOneRatingPredictor}.
      */
-    public Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> buildDeviationMatrix() {
-        for (long item1 : deviationMatrix.keySet()) {
-            for (long item2 : deviationMatrix.get(item1).keySet()) {
-                if (coratingMatrix.get(item1).get(item2) != 0) {
-                    double deviation = deviationMatrix.get(item1).get(item2)/(coratingMatrix.get(item1).get(item2) + damping);
-                    deviationMatrix.get(item1).put(item2, deviation);
+    public Long2DoubleMap[] buildDeviationMatrix() {
+        for (int i = 0; i < coratingMatrix.length; i++) {
+            LongIterator itemIter = coratingMatrix[i].keySet().iterator();
+            while (itemIter.hasNext()) {
+                long curItem = itemIter.nextLong();
+                if (coratingMatrix[i].get(curItem) != 0) {
+                    double deviation = deviationMatrix[i].get(curItem) / (coratingMatrix[i].get(curItem) + damping);
+                    deviationMatrix[i].put(curItem, deviation);
                 }
             }
         }
@@ -102,9 +106,9 @@ public class SlopeOneModelDataAccumulator {
 
     /**
      * @return A matrix, containing the number of co-rating users for each item
-     * pair, to be used by a <tt>SlopeOneRatingPredictor</tt>.
+     *         pair, to be used by a {@code SlopeOneRatingPredictor}.
      */
-    public Long2ObjectOpenHashMap<Long2IntOpenHashMap> buildCoratingMatrix() {
+    public Long2IntMap[] buildCoratingMatrix() {
         return coratingMatrix;
     }
 }

@@ -21,12 +21,13 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -44,12 +45,15 @@ import javax.inject.Inject;
  * item based on their other ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see ItemItemModelProvider
+ * @see org.grouplens.lenskit.knn.item.model.ItemItemModelProvider
  * @see ItemItemScorer
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemRatingPredictor.class);
-    protected @Nullable BaselinePredictor baseline;
+    @Nullable
+    protected BaselinePredictor baseline;
+    @Nullable
+    protected PreferenceDomain domain;
 
     @Inject
     public ItemItemRatingPredictor(DataAccessObject dao, ItemItemModel model,
@@ -58,6 +62,10 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         super(dao, model, summarizer, new WeightedAverageNeighborhoodScorer(), algo);
     }
 
+    /**
+     * Get the predictor's baseline.
+     * @return
+     */
     @Nullable
     public BaselinePredictor getBaseline() {
         return baseline;
@@ -69,13 +77,24 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      * the prediction is supplied from this baseline.
      *
      * @param pred The baseline predictor. Configure this by setting the
-     *        {@link BaselinePredictor} component.
-     * @see LenskitRecommenderEngineFactory#setComponent(Class, Class)
+     *             {@link BaselinePredictor} component.
+     * @see LenskitRecommenderEngineFactory#bind(Class)
      */
     @Inject
     public void setBaseline(@Nullable BaselinePredictor pred) {
         logger.debug("using baseline {}", pred);
         baseline = pred;
+    }
+
+    /**
+     * Set the preference domain for the rating predictor. If specified,
+     * predictions will be clamped to this domain.
+     *
+     * @param dom The preference domain.
+     */
+    @Inject
+    public void setPreferenceDomain(@Nullable PreferenceDomain dom) {
+        domain = dom;
     }
 
     /**
@@ -96,26 +115,30 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
      */
     @Override
     protected VectorTransformation makeTransform(long user, SparseVector userData) {
+        VectorTransformation tx;
         if (baseline == null) {
-            return normalizer.makeTransformation(user, userData);
+            tx = normalizer.makeTransformation(user, userData);
         } else {
-            return new BaselineAddingTransform(user, userData);
+            tx = new BaselineAddingTransform(user, userData);
         }
+        if (domain != null) {
+            tx = new DomainClampingTransform(tx);
+        }
+        return tx;
     }
-    
+
     /**
      * Vector transformation that wraps the normalizer to supply baseline
      * predictions for missing values in the
      * {@link #unapply(MutableSparseVector)} method.
-     * 
+     *
      * @author Michael Ekstrand <ekstrand@cs.umn.edu>
-     * 
      */
     protected class BaselineAddingTransform implements VectorTransformation {
         final VectorTransformation norm;
         final long user;
         final SparseVector ratings;
-        
+
         public BaselineAddingTransform(long uid, SparseVector userData) {
             user = uid;
             ratings = userData;
@@ -125,22 +148,39 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
             norm.unapply(vector);
-            
+
             assert baseline != null;
-            LongSet unpredItems = LongSortedArraySet.setDifference(vector.keyDomain(), vector.keySet());
-            if (!unpredItems.isEmpty()) {
-                logger.trace("Filling {} items from baseline",
-                             unpredItems.size());
-                SparseVector basePreds = baseline.predict(user, ratings, unpredItems);
-                vector.set(basePreds);
-            }
-            
+            baseline.predict(user, ratings, vector, false);
             return vector;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
             return norm.apply(vector);
+        }
+    }
+
+    /**
+     * Vector transform that, on unapply, clamps the vector to the domain.
+     */
+    protected class DomainClampingTransform implements VectorTransformation {
+        private VectorTransformation baseTransform;
+
+        public DomainClampingTransform(VectorTransformation base) {
+            baseTransform = base;
+        }
+
+        @Override
+        public MutableSparseVector apply(MutableSparseVector vector) {
+            baseTransform.apply(vector);
+            return vector;
+        }
+
+        @Override
+        public MutableSparseVector unapply(MutableSparseVector vector) {
+            baseTransform.unapply(vector);
+            domain.clampVector(vector);
+            return vector;
         }
     }
 

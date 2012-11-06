@@ -39,7 +39,6 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestUserProfileCursor {
     private List<Rating> ratings;
@@ -62,7 +61,7 @@ public class TestUserProfileCursor {
     @Test
     public void testCursor() {
         Cursor<UserHistory<Rating>> cursor =
-            new AbstractDataAccessObject.UserHistoryCursor<Rating>(ratingCursor);
+                new AbstractDataAccessObject.UserHistoryCursor<Rating>(ratingCursor);
         assertTrue(cursor.hasNext());
         UserHistory<Rating> profile = cursor.next();
         assertTrue(cursor.hasNext());

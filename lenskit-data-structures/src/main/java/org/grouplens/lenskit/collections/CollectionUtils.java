@@ -21,6 +21,7 @@
  */
 package org.grouplens.lenskit.collections;
 
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
@@ -28,30 +29,31 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
-import com.google.common.collect.Iterators;
+import java.util.*;
 
 import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
 
 /**
  * Various helper methods for working with collections (particularly Fastutil
  * collections).
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
-public class CollectionUtils {
+public final class CollectionUtils {
+    private CollectionUtils() {
+    }
+
     /**
      * Use the fast iterator of an iterable, if available.
+     *
+     * @param <E>  The type of object to iterate.
      * @param iter An iterable to wrap
      * @return An iterable using the underlying iterable's fast iterator, if present,
-     * to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
-     * method, like is present in {@link FastEntrySet}.
+     *         to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
+     *         method, like is present in {@link FastEntrySet}.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static <E> Iterable<E> fast(final Iterable<E> iter) {
         if (iter instanceof FastCollection) {
             return new Iterable<E>() {
@@ -61,7 +63,7 @@ public class CollectionUtils {
                 }
             };
         } else {
-            Class<?> cls = iter.getClass();
+            final Class<?> cls = iter.getClass();
             try {
                 final Method fastMethod = cls.getMethod("fastIterator");
                 return new Iterable<E>() {
@@ -86,39 +88,60 @@ public class CollectionUtils {
      * Get a Fastutil {@link LongCollection} from a {@link Collection} of longs.
      * This method simply casts the collection, if possible, and returns a
      * wrapper otherwise.
+     *
      * @param longs A collection of longs.
      * @return The collection as a {@link LongCollection}.
      */
     public static LongCollection fastCollection(final Collection<Long> longs) {
-        if (longs instanceof LongCollection)
+        if (longs instanceof LongCollection) {
             return (LongCollection) longs;
-        else
+        } else {
             return new LongCollectionWrapper(longs);
+        }
     }
 
     /**
      * Get a Fastutil {@link LongSet} from a {@link Set} of longs.
+     *
+     * @param longs The set of longs.
+     * @return {@code longs} as a fastutil {@link LongSet}. If {@code longs} is already
+     *         a LongSet, it is cast.
      */
     public static LongSet fastSet(final Set<Long> longs) {
-        if (longs == null)
+        if (longs == null) {
             return null;
-        else if (longs instanceof LongSet)
+        } else if (longs instanceof LongSet) {
             return (LongSet) longs;
-        else
+        } else {
             return new LongSetWrapper(longs);
+        }
+    }
+
+    /**
+     * Return a list that repeats a single object multiple times.
+     *
+     * @param obj The object.
+     * @param n   The size of the list.
+     * @param <T> The type of list elements.
+     * @return A list containing {@var obj} {@var n} times.
+     */
+    public static <T> List<T> repeat(T obj, int n) {
+        return new RepeatedList<T>(obj, n);
     }
 
     /**
      * Wrapper class that implements a {@link LongCollection} by delegating to
      * a {@link Collection}.
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      *
+     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
      */
-    static class LongCollectionWrapper implements LongCollection {
-        final protected Collection<Long> base;
-        LongCollectionWrapper(Collection<Long> base) {
-            this.base = base;
+    private static class LongCollectionWrapper implements LongCollection {
+        protected final Collection<Long> base;
+
+        LongCollectionWrapper(Collection<Long> b) {
+            base = b;
         }
+
         @Override
         public int size() {
             return base.size();
@@ -143,83 +166,113 @@ public class CollectionUtils {
         public boolean addAll(Collection<? extends Long> items) {
             return base.addAll(items);
         }
+
         @Override
         public void clear() {
             base.clear();
         }
+
         @Override
         public boolean contains(Object item) {
             return base.contains(item);
         }
+
         @Override
         public boolean containsAll(Collection<?> items) {
             return base.containsAll(items);
         }
+
         @Override
         public boolean isEmpty() {
             return base.isEmpty();
         }
+
         @Override
         public boolean remove(Object item) {
             return base.remove(item);
         }
+
         @Override
         public boolean removeAll(Collection<?> items) {
             return base.removeAll(items);
         }
+
         @Override
         public boolean retainAll(Collection<?> items) {
             return base.retainAll(items);
         }
+
         @Override
         public Object[] toArray() {
             return base.toArray();
         }
-        @Override @Deprecated
+
+        /**
+         * {@inheritDoc}
+         *
+         * @deprecated see {@link LongCollection#longIterator()}
+         */
+        @Override
+        @Deprecated
         public LongIterator longIterator() {
             return iterator();
         }
+
         @Override
         public <T> T[] toArray(T[] a) {
             return base.toArray(a);
         }
+
         @Override
         public long[] toLongArray() {
-            long[] items = new long[size()];
+            final long[] items = new long[size()];
             LongIterators.unwrap(iterator(), items);
             return items;
         }
+
         @Override
         public long[] toLongArray(long[] a) {
-            if (a.length < size())
-                a = new long[size()];
-            LongIterators.unwrap(iterator(), a);
-            return a;
+            long[] output = a;
+            if (output.length < size()) {
+                output = new long[size()];
+            }
+            final int sz = LongIterators.unwrap(iterator(), output);
+            if (sz < output.length) {
+                output = Arrays.copyOf(output, sz);
+            }
+            return output;
         }
+
         @Override
         public long[] toArray(long[] a) {
             return toLongArray(a);
         }
+
         @Override
         public boolean add(long key) {
             return base.add(key);
         }
+
         @Override
         public boolean rem(long key) {
             return base.remove(key);
         }
+
         @Override
         public boolean addAll(LongCollection c) {
             return base.addAll(c);
         }
+
         @Override
         public boolean containsAll(LongCollection c) {
             return base.containsAll(c);
         }
+
         @Override
         public boolean removeAll(LongCollection c) {
             return base.removeAll(c);
         }
+
         @Override
         public boolean retainAll(LongCollection c) {
             return base.retainAll(c);
@@ -239,38 +292,19 @@ public class CollectionUtils {
     }
 
     /**
-     * Get a {@link LongIterator} which to iterate over a collection.
-     * This facilitiates iteration without boxing if the underlying collection
-     * is a Fastutil {@link LongCollection}.
-     * @see #fastIterator(Iterator)
-     * @param col The collection of longs.
-     * @return A Fastutil iterator for the collection.
+     * Create an empty, immutable fast collection.
+     *
+     * @param <E> The type of fast collection.
+     * @return An empty fast collection.
      */
-    @Deprecated
-    public static LongIterator fastIterator(final Collection<Long> col) {
-        return fastIterator(col.iterator());
-    }
-
-    /**
-     * Cast or wrap an iterator to a Fastutil {@link LongIterator}.
-     * @param iter An iterator of longs.
-     * @return A Fastutil iterator wrapping <var>iter</var>.  If <var>iter</var>
-     * is already a Fastutil iterator (an instance of {@link LongIterator}), this
-     * is simply <var>iter</var> cast to {@link LongIterator}.  Otherwise, it is
-     * a wrapper object.
-     * @deprecated Use {@link LongIterators#asLongIterator(Iterator)} instead.
-     */
-    @Deprecated
-    public static LongIterator fastIterator(final Iterator<Long> iter) {
-        return LongIterators.asLongIterator(iter);
-    }
-
     public static <E> FastCollection<E> emptyFastCollection() {
         return new EmptyFastCollection<E>();
     }
-    
+
     /**
      * Wrap an iterator in a pointer.
+     *
+     * @param <E>  The type of value in the iterator.
      * @param iter The iterator to wrap.
      * @return A pointer backed by the iterator.
      * @see Pointer
@@ -280,16 +314,11 @@ public class CollectionUtils {
         return new IteratorPointer<E>(iter);
     }
 
-    static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
+    private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
 
         @Override
         public Iterator<E> fastIterator() {
             return Iterators.emptyIterator();
-        }
-
-        @Override @Deprecated
-        public Iterable<E> fast() {
-            return this;
         }
 
         @Override

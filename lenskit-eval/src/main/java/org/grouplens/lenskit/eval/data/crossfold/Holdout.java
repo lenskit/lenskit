@@ -27,26 +27,27 @@ import org.grouplens.lenskit.data.event.Rating;
  * A train-test holdout method.
  */
 public class Holdout {
-	private final Order<Rating> order;
-	private final PartitionAlgorithm<Rating> partitionMethod;
+    private final Order<Rating> order;
+    private final PartitionAlgorithm<Rating> partitionMethod;
 
     public Holdout(Order<Rating> ord, PartitionAlgorithm<Rating> part) {
         order = ord;
         partitionMethod = part;
     }
-	
-	public Order<Rating> getOrder() {
-    	return order;
-    }
-	public PartitionAlgorithm<Rating> getPartitionMethod() {
-    	return partitionMethod;
+
+    public Order<Rating> getOrder() {
+        return order;
     }
 
-	public int partition(List<Rating> ratings, Random rng) {
-		if (order == null || partitionMethod == null) {
-			throw new IllegalStateException("Unconfigured holdout");
-		}
-		order.apply(ratings, rng);
-		return partitionMethod.partition(ratings);
-	}
+    public PartitionAlgorithm<Rating> getPartitionMethod() {
+        return partitionMethod;
+    }
+
+    public int partition(List<Rating> ratings, Random rng) {
+        if (order == null || partitionMethod == null) {
+            throw new IllegalStateException("Unconfigured holdout");
+        }
+        order.apply(ratings, rng);
+        return partitionMethod.partition(ratings);
+    }
 }

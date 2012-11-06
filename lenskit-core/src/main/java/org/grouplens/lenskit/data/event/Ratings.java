@@ -35,8 +35,8 @@ import java.util.Comparator;
 
 /**
  * Utilities for working with ratings.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public final class Ratings {
 
@@ -45,18 +45,19 @@ public final class Ratings {
         public int compare(Rating r1, Rating r2) {
             long i1 = r1.getItemId();
             long i2 = r2.getItemId();
-            if (i1 < i2)
+            if (i1 < i2) {
                 return -1;
-            else if (i1 > i2)
+            } else if (i1 > i2) {
                 return 1;
-            else
+            } else {
                 return Longs.compare(r1.getTimestamp(), r2.getTimestamp());
+            }
         }
     };
 
     /**
      * Construct a rating vector that contains the ratings provided by each user.
-     * If all ratings in <var>ratings</var> are for the same item, then this
+     * If all ratings in {@var ratings} are for the same item, then this
      * will be a valid item rating vector.  If multiple ratings are by the same
      * user, the one with the highest timestamp is retained.  If two ratings
      * by the same user have identical timestamps, then the one that occurs last
@@ -66,28 +67,28 @@ public final class Ratings {
      * @return A sparse vector mapping user IDs to ratings.
      */
     public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
-        Long2DoubleMap vect = new Long2DoubleOpenHashMap(ratings.size());
+        Long2DoubleMap v = new Long2DoubleOpenHashMap(ratings.size());
         Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
         tsMap.defaultReturnValue(Long.MIN_VALUE);
-        for (Rating r: ratings) {
+        for (Rating r : ratings) {
             long uid = r.getUserId();
             long ts = r.getTimestamp();
             if (ts >= tsMap.get(uid)) {
                 Preference p = r.getPreference();
                 if (p != null) {
-                    vect.put(uid, p.getValue());
+                    v.put(uid, p.getValue());
                 } else {
-                    vect.remove(uid);
+                    v.remove(uid);
                 }
                 tsMap.put(uid, ts);
             }
         }
-        return new MutableSparseVector(vect);
+        return new MutableSparseVector(v);
     }
 
     /**
      * Construct a rating vector that contains the ratings provided for each
-     * item. If all ratings in <var>ratings</var> are by the same user, then
+     * item. If all ratings in {@var ratings} are by the same user, then
      * this will be a valid user rating vector. If multiple ratings are provided
      * for the same item, the one with the greatest timestamp is retained. Ties
      * are broken by preferring ratings which come later when iterating through
@@ -106,7 +107,7 @@ public final class Ratings {
         long[] items = new long[sortedRatings.length];
         double[] values = new double[sortedRatings.length];
         int li = -1;
-        for (Rating r: sortedRatings) {
+        for (Rating r : sortedRatings) {
             long iid = r.getItemId();
             // is this an unseen item?
             if (li < 0 || items[li] != iid) {
@@ -140,6 +141,7 @@ public final class Ratings {
 
     /**
      * Make a fresh rating object with no timestamp.
+     *
      * @see #make(long, long, double, long)
      */
     public static Rating make(long uid, long iid, double value) {

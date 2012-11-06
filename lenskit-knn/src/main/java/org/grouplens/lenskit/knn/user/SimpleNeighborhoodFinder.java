@@ -56,7 +56,6 @@ import static java.lang.Math.max;
  * sometime.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;
@@ -84,9 +83,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     /**
      * Construct a new user-user recommender.
-     * @param data The data source to scan.
+     *
+     * @param data  The data source to scan.
      * @param nnbrs The number of neighbors to consider for each item.
-     * @param sim The similarity function to use.
+     * @param sim   The similarity function to use.
      */
     @Inject
     public SimpleNeighborhoodFinder(DataAccessObject data,
@@ -102,10 +102,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     /**
      * Find the neighbors for a user with respect to a collection of items.
-     * For each item, the <var>neighborhoodSize</var> users closest to the
+     * For each item, the {@var neighborhoodSize} users closest to the
      * provided user are returned.
      *
-     * @param user The user's rating vector.
+     * @param user  The user's rating vector.
      * @param items The items for which neighborhoods are requested.
      * @return A mapping of item IDs to neighborhoods.
      */
@@ -113,7 +113,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     public Long2ObjectMap<? extends Collection<Neighbor>>
     findNeighbors(UserHistory<? extends Event> user, LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
-            new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
+                new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
         SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
         final long uid1 = user.getUserId();
@@ -163,9 +163,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     /**
      * Find all users who have rated any of a set of items.
-     * @param user The current user's ID (excluded from the returned set).
+     *
+     * @param user    The current user's ID (excluded from the returned set).
      * @param itemSet The set of items to look for.
-     * @return The set of all users who have rated at least one item in <var>itemSet</var>.
+     * @return The set of all users who have rated at least one item in {@var itemSet}.
      */
     private LongSet findRatingUsers(long user, LongCollection itemSet) {
         LongSet users = new LongOpenHashSet(100);
@@ -175,9 +176,11 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             final long item = items.nextLong();
             Cursor<Rating> ratings = dataSource.getItemEvents(item, Rating.class);
             try {
-                for (Rating r: ratings) {
+                for (Rating r : ratings) {
                     long uid = r.getUserId();
-                    if (uid == user) continue;
+                    if (uid == user) {
+                        continue;
+                    }
                     users.add(uid);
                 }
             } finally {
@@ -190,6 +193,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
     /**
      * Look up the user's rating vector, using the cached version if possible.
+     *
      * @param user The user ID.
      * @return The user's rating vector.
      */
@@ -198,17 +202,19 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         CacheEntry e = userVectorCache.get(user);
 
         // check rating count
-        if (e != null && e.ratingCount != ratings.size())
+        if (e != null && e.ratingCount != ratings.size()) {
             e = null;
+        }
 
         // check max timestamp
         long ts = -1;
         if (e != null) {
-            for (Rating r: ratings) {
+            for (Rating r : ratings) {
                 ts = max(ts, r.getTimestamp());
             }
-            if (ts != e.lastRatingTimestamp)
+            if (ts != e.lastRatingTimestamp) {
                 e = null;
+            }
         }
 
         // create new cache entry

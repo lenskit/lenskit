@@ -19,31 +19,28 @@
 package org.grouplens.lenskit.eval.cli;
 
 import org.codehaus.groovy.runtime.StackTraceUtils;
-import org.grouplens.lenskit.eval.*;
-import org.grouplens.lenskit.eval.config.EvalConfigEngine;
+import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
  * Main entry point to run the evaluator from the command line
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class EvalCLI {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
-    
+
     /**
      * Run the evaluator from the command line.
+     *
      * @param args The command line arguments to the evaluator.
      */
     public static void main(String[] args) {
@@ -51,63 +48,28 @@ public class EvalCLI {
         EvalCLI cli = new EvalCLI(options);
         cli.run();
     }
-    
-    EvalCLIOptions options;
-    
+
+    private final EvalCLIOptions options;
+
     public EvalCLI(EvalCLIOptions opts) {
         options = opts;
     }
 
     public void run() {
         ClassLoader loader = options.getClassLoader();
-        EvalConfigEngine config = new EvalConfigEngine(loader);
+        EvalScriptEngine engine = new EvalScriptEngine(loader, options.getProperties());
 
-        EvalOptions taskOptions = options.getEvalOptions();
-        EvalTaskRunner runner = new EvalTaskRunner(taskOptions);
-
-        File f = options.getConfigFile();
+        File f = options.getScriptFile();
         logger.info("loading evaluation from {}", f);
-        EvalEnvironment env;
         try {
-            env = config.load(f);
-        } catch (EvaluatorConfigurationException e) {
+            engine.execute(f, options.getArgs());
+        } catch (CommandException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
             return;
         } catch (IOException e) {
             reportError(e, "%s: %s", f.getPath(), e.getMessage());
             return;
-        }
-        logger.info("loaded {} tasks", env.getTasks().size());
-
-        List<String> taskNames = options.getTasks();
-        List<EvalTask> toRun;
-        if (taskNames.isEmpty()) {
-            EvalTask task = env.getDefaultTask();
-            if (task == null) {
-                reportError(null, "%s: no default task", f);
-                return;
-            } else {
-                toRun = Collections.singletonList(env.getDefaultTask());
-            }
-        } else {
-            toRun = new ArrayList<EvalTask>(taskNames.size());
-            for (String n: taskNames) {
-                EvalTask t = env.getTask(n);
-                if (t == null) {
-                    reportError(null, "%s: no task named %s", f, n);
-                } else {
-                    toRun.add(t);
-                }
-            }
-        }
-        
-        for (EvalTask task: toRun) {
-            try{
-                runner.execute(task);
-            } catch (EvalTaskFailedException e) {
-                reportError(e.getCause(), "Execution error: " + e.getMessage());
-            }
         }
     }
 

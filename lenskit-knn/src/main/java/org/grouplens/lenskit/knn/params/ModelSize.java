@@ -27,14 +27,18 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.lenskit.core.Parameter;
 
 /**
  * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
- * similar neighbors are retained for each item in model build.
+ * similar neighbors are retained for each item in model build. If 0, then all
+ * neighbors are retained.
  */
 @Documented
 @DefaultInteger(250)
+@Parameter(Integer.class)
 @Qualifier
-@Target({ ElementType.METHOD, ElementType.PARAMETER })
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ModelSize { }
+public @interface ModelSize {
+}

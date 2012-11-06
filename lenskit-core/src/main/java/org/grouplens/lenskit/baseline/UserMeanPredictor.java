@@ -18,20 +18,20 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static java.lang.Math.abs;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+
+import static java.lang.Math.abs;
 
 /**
  * Rating scorer that returns the user's average rating for all predictions.
@@ -41,11 +41,12 @@ import org.slf4j.LoggerFactory;
  * the global mean for the returned prediction.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultProvider(UserMeanPredictor.Provider.class)
+@Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
+
     /**
      * A builder that creates UserMeanPredictors.
      *
@@ -54,7 +55,13 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
-        
+
+        /**
+         * Create a new user mean predictor.
+         *
+         * @param dao     The DAO.
+         * @param damping The damping term.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -66,7 +73,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
-            logger.debug("smoothing = {}", smoothing);
+            logger.debug("damping = {}", smoothing);
             double mean = GlobalMeanPredictor.computeMeanRating(dao);
             logger.debug("Computed global mean {}", mean);
             return new UserMeanPredictor(mean, smoothing);
@@ -76,46 +83,49 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final long serialVersionUID = 1L;
 
     private final double globalMean;
-    private final double smoothing;
-
-    @Inject
-    public UserMeanPredictor(@Transient DataAccessObject dao,
-                             @Damping double damping) {
-        this(computeMeanRating(dao), damping);
-    }
+    private final double damping;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
-        * @param globalMean The mean rating value for all items.
-        * @param damping A damping term for the calculations.
+     *
+     * @param mean The global mean rating.
+     * @param damp A damping term for the calculations.
      */
-    public UserMeanPredictor(double globalMean, double damping) {
-        super(globalMean);
-    	this.globalMean = globalMean;
-        this.smoothing = damping;
+    public UserMeanPredictor(double mean, double damp) {
+        super(mean);
+        globalMean = mean;
+        damping = damp;
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
-        if (ratings.isEmpty()) return globalMean;
-        return (ratings.sum() + smoothing*globalMean) / (ratings.size() + smoothing);
+        if (ratings.isEmpty()) {
+            return globalMean;
+        }
+        return (ratings.sum() + smoothing * globalMean) / (ratings.size() + smoothing);
     }
 
     /* (non-Javadoc)
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user,
-                                       SparseVector ratings,
-                                       Collection<Long> items) {
-        double mean = average(ratings, globalMean, smoothing);
-        assert smoothing != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
-        return ConstantPredictor.constantPredictions(items, mean);
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output, boolean predictSet) {
+        double mean = average(ratings, globalMean, damping);
+        //noinspection AssertWithSideEffects
+        assert damping != 0 || ratings.isEmpty() || abs(mean - ratings.mean()) < 1.0e-6;
+        if (predictSet) {
+            output.fill(mean);
+        } else {
+            for (VectorEntry e : output.fast(VectorEntry.State.UNSET)) {
+                output.set(e, mean);
+            }
+        }
     }
 
     @Override
     public String toString() {
         String cls = getClass().getSimpleName();
-        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, smoothing);
+        return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
     }
 
 }

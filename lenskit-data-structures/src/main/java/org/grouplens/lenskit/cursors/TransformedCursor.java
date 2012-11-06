@@ -18,34 +18,44 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Function;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Implementation of transformed cursors.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @see Cursors#transform(Cursor, Function)
  */
-class TransformedCursor<S,T> extends AbstractCursor<T> {
-	private final Cursor<S> cursor;
-	private final Function<? super S, ? extends T> function;
+class TransformedCursor<S, T> extends AbstractCursor<T> {
+    private final Cursor<S> cursor;
+    private final Function<? super S, ? extends T> function;
 
-	public TransformedCursor(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
-	    super(cursor.getRowCount());
-		this.cursor = cursor;
-		this.function = function;
-	}
-	
-	@Override
-	public void close() {
-		cursor.close();
-	}
+    /**
+     * Construct a transformed cursor.
+     *
+     * @param cur The underlying cursor.
+     * @param fun The transformation function.
+     */
+    public TransformedCursor(@WillCloseWhenClosed Cursor<S> cur, Function<? super S, ? extends T> fun) {
+        super(cur.getRowCount());
+        cursor = cur;
+        function = fun;
+    }
+
+    @Override
+    public void close() {
+        cursor.close();
+    }
 
     @Override
     public boolean hasNext() {
         return cursor.hasNext();
     }
-    
+
+    @Nonnull
     @Override
     public T next() {
         return function.apply(cursor.next());

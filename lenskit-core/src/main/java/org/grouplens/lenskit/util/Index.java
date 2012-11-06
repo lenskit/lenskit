@@ -29,26 +29,35 @@ import java.io.Serializable;
  * Indexes must be serializable.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public interface Index extends Serializable {
     /**
      * Get the index of an id.  If the object has not been interned,
      * returns a negative number.
+     *
      * @param id The id to query.
      * @return The id's index or a negative value if the id does not exist.
      */
     int getIndex(long id);
+
     /**
      * Get the key for an index.
-     * @param idx
-     * @return The ID for the given <var>idx</var>
+     *
+     * @param idx The index of the ID to retrieve.
+     * @return The ID for the given {@var idx}
      */
     long getId(int idx);
 
+    /**
+     * Get the number of ID in the index.
+     *
+     * @return The number of indexed keys.
+     */
     int getObjectCount();
+
     /**
      * Get the list of IDs.
+     *
      * @return The list of (unique) IDs in the index.
      */
     LongList getIds();

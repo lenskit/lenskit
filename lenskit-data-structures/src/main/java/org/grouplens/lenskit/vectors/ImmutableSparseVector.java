@@ -18,288 +18,121 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleLists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.BitSet;
+import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.symbols.Symbol;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
- * 
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @compat Public
  */
 @Immutable
-public class ImmutableSparseVector extends SparseVector implements Serializable {
-    private static final long serialVersionUID = -4740588973577998934L;
-    
-    protected final long[] keys;
-    protected double[] values;
-    protected final int size;
+public final class ImmutableSparseVector extends SparseVector implements Serializable {
+    private static final long serialVersionUID = -4740588973577998935L;
+
+    private final Map<Symbol, ImmutableSparseVector> channelMap;
 
     /**
      * Create a new, empty immutable sparse vector.
      */
     public ImmutableSparseVector() {
-        keys = new long[0];
-        values = null;
-        size = 0;
+        this(new long[0], new double[0]);
     }
 
     /**
      * Create a new immutable sparse vector from a map of ratings.
-     * 
+     *
      * @param ratings The ratings to make a vector from. Its key set is used as
-     *        the vector's key domain.
+     *                the vector's key domain.
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
-        keys = ratings.keySet().toLongArray();
-        size = keys.length;
-        Arrays.sort(keys);
-        assert keys.length == ratings.size();
-        assert MoreArrays.isSorted(keys, 0, size);
-        values = new double[keys.length];
-        final int len = keys.length;
-        for (int i = 0; i < len; i++) {
-            values[i] = ratings.get(keys[i]);
-        }
+        super(ratings);
+        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
-    
+
+    /**
+     * Construct a new vector from existing arrays.  It is assumed that the keys
+     * are sorted and duplicate-free, and that the values is the same length. The
+     * key array is the key domain, and all keys are considered used.
+     * No new keys can be added to this vector.  Clients should call
+     * the wrap() method rather than directly calling this constructor.
+     *
+     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param vs The array of values backing this vector.
+     */
+    protected ImmutableSparseVector(long[] ks, double[] vs) {
+        this(ks, vs, ks.length);
+    }
+
     /**
      * Construct a new sparse vector from pre-existing arrays. These arrays must
      * be sorted in key order and cannot contain duplicate keys; this condition
      * is not checked.
-     * 
-     * @param keys The key array (will be the key domain).
-     * @param values The value array.
-     * @param size The length to actually use.
+     *
+     * @param ks The key array (will be the key domain).
+     * @param vs The value array.
+     * @param sz The length to actually use.
      */
-    protected ImmutableSparseVector(long[] keys, double[] values, int size) {    
-        this.keys = keys;
-        this.values = values;
-        this.size = size;
-        assert MoreArrays.isSorted(keys, 0, size);
+    protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
+        super(ks, vs, sz);
+        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
     }
-    
-    @Override
-    public final double get(long key, double dft) {
-        int idx = Arrays.binarySearch(keys, 0, size, key);
-        if (idx >= 0)
-            return values[idx];
-        else
-            return dft;
-    }
-    
-    @Override
-    public final boolean containsKey(long key) {
-        return Arrays.binarySearch(keys, 0, size, key) >= 0;
-    }
-    
-    @Override
-    public Iterator<Long2DoubleMap.Entry> iterator() {
-        return new IterImpl();
-    }
-    
-    @Override
-    public Iterator<Long2DoubleMap.Entry> fastIterator() {
-        return new FastIterImpl();
-    }
-    
-    @Override
-    public LongSortedSet keySet() {
-        return LongSortedArraySet.wrap(keys, size);
-    }
-    
-    @Override
-    public LongSortedSet keyDomain() {
-        return keySet();
-    }
-    
-    @Override
-    public DoubleList values() {
-        return DoubleLists.unmodifiable(new DoubleArrayList(values, 0, size));
-    }
-    
-    @Override
-    public int size() {
-        return size;
-    }
-    
+
     /**
-     * Reimplement {@link SparseVector#dot(SparseVector)} to use an optimized
-     * implementation when computing the dot product of two immutable sparse
-     * vectors.
-     * @see SparseVector#dot(SparseVector)
+     * Construct a new sparse vector from pre-existing arrays. These arrays must
+     * be sorted in key order and cannot contain duplicate keys; this condition
+     * is not checked.  The new vector will have a copy of the
+     * channels that are passed into it.
+     *
+     * @param ks   the key array (will be the key domain).
+     * @param vs   the value array.
+     * @param sz   the length to actually use.
+     * @param used the keys that actually have values currently.
      */
-    @Override
-    public double dot(SparseVector o) {
-        if (o instanceof ImmutableSparseVector) {
-            // we can speed this up a lot
-            ImmutableSparseVector iv = (ImmutableSparseVector) o;
-            double dot = 0;
-            
-            final int sz = size;
-            final int osz = iv.size;
-            int i = 0, j = 0;
-            while (i < sz && j < osz) {
-                final long k1 = keys[i];
-                final long k2 = iv.keys[j];
-                if (k1 == k2) {
-                    dot += values[i] * iv.values[j];
-                    i++;
-                    j++;
-                } else if (k1 < k2) {
-                    i++;
-                } else {
-                    j++;
-                }
-            }
-            
-            return dot;
-        } else {
-            return super.dot(o);
-        }
-    }
-    
-    /**
-     * Reimplement {@link SparseVector#countCommonKeys(SparseVector)} to be more
-     * efficient when computing common keys of two immutable sparse vectors.
-     * @see SparseVector#countCommonKeys(SparseVector)
-     */
-    @Override
-    public int countCommonKeys(SparseVector o) {
-        if (o instanceof ImmutableSparseVector) {
-            // we can speed this up a lot
-            ImmutableSparseVector iv = (ImmutableSparseVector) o;
-            int n = 0;
-            
-            final int sz = size;
-            final int osz = iv.size;
-            int i = 0, j = 0;
-            while (i < sz && j < osz) {
-                final long k1 = keys[i];
-                final long k2 = iv.keys[j];
-                if (k1 == k2) {
-                    n += 1;
-                    i++;
-                    j++;
-                } else if (k1 < k2) {
-                    i++;
-                } else {
-                    j++;
-                }
-            }
-            
-            return n;
-        } else {
-            return super.countCommonKeys(o);
-        }
+    protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
+                                    Map<Symbol, ImmutableSparseVector> inChannelMap) {
+        super(ks, vs, sz, used);
+        channelMap = inChannelMap;
     }
 
     @Override
     public ImmutableSparseVector immutable() {
         return this;
     }
-    
+
     @Override
     public MutableSparseVector mutableCopy() {
-        return new MutableSparseVector(keys, Arrays.copyOf(values, size), size);
-    }
-    
-    final class IterImpl implements Iterator<Long2DoubleMap.Entry> {
-        int pos = 0;
-        @Override
-        public boolean hasNext() {
-            return pos < size;
+        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
+                                                             domainSize, (BitSet) usedKeys.clone());
+        for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
+            result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
-        @Override
-        public Entry next() {
-            if (hasNext())
-                return new Entry(pos++);
-            else
-                throw new NoSuchElementException();
-        }
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+        return result;
     }
 
-    final class FastIterImpl implements Iterator<Long2DoubleMap.Entry> {
-        Entry entry = new Entry(-1);
-        @Override
-        public boolean hasNext() {
-            return entry.pos < size - 1;
-        }
-        @Override
-        public Entry next() {
-            if (hasNext()) {
-                entry.pos += 1;
-                return entry;
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
+    @Override
+    public boolean hasChannel(Symbol channelSymbol) {
+        return channelMap.containsKey(channelSymbol);
     }
 
-    private final class Entry implements Long2DoubleMap.Entry {
-        int pos;
-        public Entry(int p) {
-            pos = p;
+    @Override
+    public ImmutableSparseVector channel(Symbol channelSymbol) {
+        if (hasChannel(channelSymbol)) {
+            return channelMap.get(channelSymbol);
         }
-        @Override
-        public double getDoubleValue() {
-            return values[pos];
-        }
-        @Override
-        public long getLongKey() {
-            return keys[pos];
-        }
-        @Override
-        public double setValue(double value) {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public Long getKey() {
-            return getLongKey();
-        }
-        @Override
-        public Double getValue() {
-            return getDoubleValue();
-        }
-        @Override
-        public Double setValue(Double value) {
-            throw new UnsupportedOperationException();
-        }
+        throw new IllegalArgumentException("No existing channel under name " +
+                                                   channelSymbol.getName());
     }
 
-    /**
-     * @see MutableSparseVector#wrap(long[], double[])
-     */
-    public static ImmutableSparseVector wrap(long[] keys, double[] values) {
-        return MutableSparseVector.wrap(keys, values).freeze();
-    }
-
-    /**
-     * @see MutableSparseVector#wrap(long[], double[], int)
-     */
-    public static ImmutableSparseVector wrap(long[] keys, double[] values, int size) {
-        return MutableSparseVector.wrap(keys, values, size).freeze();
-    }
 }

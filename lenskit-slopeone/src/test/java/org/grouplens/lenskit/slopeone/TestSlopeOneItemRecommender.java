@@ -18,47 +18,46 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
-
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+
 public class TestSlopeOneItemRecommender {
-    private DAOFactory manager;
-    private RecommenderEngine engine;
+    private LenskitRecommenderEngine engine;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 5, 2));
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        manager = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(RatingPredictor.class).to(SlopeOneRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
-        factory.bind(PreferenceDomain.class).to(new PreferenceDomain(1,5));
+        factory.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
         factory.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
         engine = factory.create();
@@ -69,12 +68,37 @@ public class TestSlopeOneItemRecommender {
         Recommender rec = engine.open();
 
         try {
-            // These assert instanceof's are also assertNotNull's
-            Assert.assertTrue(rec.getItemScorer() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getRatingPredictor() instanceof SlopeOneRatingPredictor);
-            Assert.assertTrue(rec.getItemRecommender() instanceof SlopeOneRecommender);
+            assertThat(rec.getItemScorer(),
+                       instanceOf(SlopeOneRatingPredictor.class));
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(SlopeOneRatingPredictor.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(SlopeOneRecommender.class));
         } finally {
             rec.close();
+        }
+    }
+
+    @Test
+    public void testConfigSeparation() {
+        LenskitRecommender rec1 = null;
+        LenskitRecommender rec2 = null;
+        try {
+            rec1 = engine.open();
+            rec2 = engine.open();
+
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(SlopeOneModel.class),
+                       allOf(not(nullValue()),
+                             sameInstance(rec2.get(SlopeOneModel.class))));
+        } finally {
+            if (rec2 != null) {
+                rec2.close();
+            }
+            if (rec1 != null) {
+                rec1.close();
+            }
         }
     }
 }

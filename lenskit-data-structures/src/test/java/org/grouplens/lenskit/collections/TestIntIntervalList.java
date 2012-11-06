@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 
@@ -31,7 +32,6 @@ import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestIntIntervalList {
 
@@ -74,7 +74,7 @@ public class TestIntIntervalList {
 
     @Test
     public void testSimpleIntervalAccess() {
-        IntList list = new IntIntervalList(42,43);
+        IntList list = new IntIntervalList(42, 43);
         assertFalse(list.isEmpty());
         assertEquals(1, list.size());
         assertEquals(42, list.getInt(0));

@@ -6,18 +6,173 @@
 {{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
 #end
 
+#macro ( header $ver )##
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=$ver}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+#end
+
 LensKit Release Notes
 
+* Release 1.1
+
+  #header(1.1)
+
+  * Made <<<Recommender>>> extend <<<Closeable>>>.
+
+  * Added side channel support to sparse vectors (#issue(185)).
+  
+  []
+
+** Algorithms
+
+  * Item-item scorers now report the number of neighbors used for each score as
+    a side channel.
+
+  []
+
+** Evaluator
+
+  * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
+
+  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
+
+  * Eval configuration changes
+
+    * Force and thread count are now runtime parameters, not script parameters. Specify
+      them with <<<--force>>> and <<<--thread-count>>> command line options, or the
+      corresponding eval mojo options.
+
+    * Commands receive the eval configuration via the <<<setConfig>>> method.
+
+    []
+
+  * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
+    values out to the prediction output file.
+
+  []
+
+* Release 1.0.2
+
+  #header("1.0.2")
+
+  This release contains bug fixes against 1.0.1.
+
+  * Fix graph pruning so transient dependencies aren't serialized.
+
+  * Fix transient tags and serializability of item-item recommender models.
+
+  []
+
+* Release 1.0.1
+  
+  #header("1.0.1")
+
+  This release contains bug fixes against 1.0.
+  
+  <<Note>>: recommender engines serialized with LensKit 1.0 are not compatible with
+  LensKit 1.0.1. You will need to re-build and re-serialize your engines.
+
+  * Fix broken rec. engine factory serialization (#issue(221)).
+
+  []
+
+* Release 1.0
+
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=1.0}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  This release includes many documentation improvements and general cleanups from
+  the 0.11.
+
+** Core
+
+   * Added <<<set>>> method for setting parameters.
+
+   * Recommender engine factories now throw a checked <<<RecommenderBuildException>>>.
+
+   []
+
+** Algorithms
+
+   * Factored out FunkSVD stopping conditions, made default now 100 iterations. If you
+     want a delta RMSE threshold, use <<<ThresholdStoppingCondition>>> and set the
+     <<<ThresholdValue>>> parameter.
+
+   * Moved FunkSVD to the <<<o.g.l.mf.funksvd>>> package.
+
+   * Made Slope-One use k-NN, specifically item-item, as the base framework rather than
+     being standalone. Future tasks will further harness and develop this merger.
+
+   * Support item vector normalizers for the item-item similarity matrix (see
+     <<<NormalizingSimilarityMatrixAccumulatorFactory>>>.
+
+   * Move vector similarity code into <<<o.g.l.vectors.similarity>>>.
+
+   * Made item-item clamp predictions to the preference domain, if it is available.
+
+   []
+
+** Evaluator
+
+   * Evaluation scripts now have access to command line arguments (#issue(138)).
+
+   * Added support for a block form of the <<<within>>> directive.
+
+   * Added the <<<dumpGraph>>> command to dump recommender configurations to GraphViz.
+
+   * Added new archetype to aid in creating evaluation projects.
+
+   []
+
+** Cleanup
+
+   * Removed all deprecated methods.
+
+   []
+
 * Release 0.11
+
+  The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
+  rather than PicoContainer, with additional refactorings of components to more
+  effectively take advantage of Grapht. We also made significant improvements to how
+  the evaluator works to allow evaluation scripts to be more flexible, and made a number
+  of other improvements and bug fixes.
+
+  There are a number of backwards-incompatible changes in this release. Configurations and
+  algorithm implementations will definitely need to be updated; other client code may need
+  updates as well.
 
   The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
   {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.11}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 
+  * Made <<<SparseVector>>> return <<<VectorEntry>>> objects when iterated,
+    rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse
+    vectors will need to be updated.
+
+  * Added methods to <<<ItemScorer>>> and <<<GlobalItemScorer>>> to output scores to sparse
+    vectors.
+
+  * Begun documenting {{{./versioning.html}API stability}} (#issue(103)).
+
+  * Events are no longer <<<Cloneable>>>, and the <<<clone>>> method is now a deprecated
+    alias for <<<copy()>>>.
+
+  []
+
 ** Algorithm Changes
 
   * The default user similarity for user-user CF is now cosine rather than Pearson.
+
+  * Item-item models can now have unbounded size and have rows truncated by threshold
+    value rather than size (#issue(171)).
+
+  * FunkSVD now incorporates user ratings at predict time (#issue(174)).
 
   []
 
@@ -27,13 +182,17 @@ LensKit Release Notes
   API is unchanged, but many components and their interfaces have changed. This means that
   custom components and recommender configurations will need to be updated.
 
-  * <<Incompatible>>: Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
+  * Added <<<@Shareable>>> annotation for components that can be put in the model build
+    and shared between recommender sessions. All shareable components must now be annotated
+    with this annotation (or configured via instance bindings), or they will not be pre-built.
+
+  * Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
     Code should use <<<PreferenceDomain>>> instead. See #issue(163).
 
-  * <<Incompatible>>: Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
+  * Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
     since that's what it really is.
 
-  * <<Incompatible>>: Removed many annotations formerly used as dependency qualifiers (see
+  * Removed many annotations formerly used as dependency qualifiers (see
     #issue(168)).
 
     * <<<@NormalizedSnapshot>>>: components that formerly used this qualifier should depend on

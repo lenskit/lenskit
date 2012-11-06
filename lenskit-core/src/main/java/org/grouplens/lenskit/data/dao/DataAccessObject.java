@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * users, items, and event histories to LensKit recommenders.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public interface DataAccessObject extends Closeable {
     /**
@@ -67,7 +67,7 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events from the data set. Equivalent to
-     * <code>getEvents(Event.class, SortOrder.ANY)</code>.
+     * {@code getEvents(Event.class, SortOrder.ANY)}.
      *
      * @return A cursor iterating over all events.
      * @see #getEvents(Class, SortOrder)
@@ -76,23 +76,24 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get all events with a specified sort order. Equivalent to
-     * <code>getEvents(Event.class, order)</code>.
+     * {@code getEvents(Event.class, order)}.
      *
      * @param order The sort to apply for the ratings.
      * @return The events in order.
      * @throws UnsupportedQueryException if the sort order is not supported by
-     *         this data source.
+     *                                   this data source.
      * @see #getEvents(Class, SortOrder)
      */
     Cursor<? extends Event> getEvents(SortOrder order);
 
     /**
      * Get all events of a particular type. Equivalent to
-     * <code>getEvents(type, SortOrder.ANY)</code>.
+     * {@code getEvents(type, SortOrder.ANY)}.
      *
+     * @param <E>  The type of event.
      * @param type The type of event to retrieve. All events of this type,
-     *        including subclasses, are returned.
-     * @return The events of type <var>type</var>.
+     *             including subclasses, are returned.
+     * @return The events of type {@var type}.
      * @see #getEvents(Class, SortOrder)
      */
     <E extends Event> Cursor<E> getEvents(Class<E> type);
@@ -100,17 +101,19 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get all events of a particular type with a specified sort order.
      *
-     * @param type The type of event to retrieve. All events of this type,
-     *        including subclasses, are returned.
+     * @param <E>   The type of event.
+     * @param type  The type of event to retrieve. All events of this type,
+     *              including subclasses, are returned.
      * @param order The sort to apply for the ratings.
-     * @return The events of type <var>type</var> in order.
+     * @return The events of type {@var type} in order.
      * @throws UnsupportedQueryException if the sort order is not supported by
-     *         this data source.
+     *                                   this data source.
      */
     <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order);
 
     /**
      * Get the user history for a user.
+     *
      * @param user The user whose history is needed.
      * @return The history of {@code user}.
      */
@@ -118,10 +121,12 @@ public interface DataAccessObject extends Closeable {
 
     /**
      * Get the user history for a user filtered by type.
+     *
+     * @param <E>  The type of event.
      * @param user The user whose history is needed.
      * @param type The type of events to retrieve.
      * @return The history of {@code user}, filtered to only contain events of the specified
-     * type.
+     *         type.
      */
     <E extends Event> UserHistory<E> getUserHistory(long user, Class<E> type);
 
@@ -139,6 +144,7 @@ public interface DataAccessObject extends Closeable {
      * Get all user event histories from the system, filtering events by type.
      * This serves as a {@link #getEvents(Class)} call grouped by user.
      *
+     * @param <E>  The type of event.
      * @param type The type of event to retrieve.
      * @return A cursor iterating the event history for each user.
      */
@@ -156,8 +162,9 @@ public interface DataAccessObject extends Closeable {
     /**
      * Get events of a particular type for the specified user.
      *
+     * @param <E>    The type of event.
      * @param userId The ID of the user whose ratings are requested.
-     * @param type The type of event to retrieve.
+     * @param type   The type of event to retrieve.
      * @return An iterator over the user's events in timestamp order.
      */
     <E extends Event> Cursor<E> getUserEvents(long userId, Class<E> type);
@@ -166,17 +173,18 @@ public interface DataAccessObject extends Closeable {
      * Get all events related to the specified item.
      *
      * @param itemId The ID of the item whose events are requested. The events
-     *        are first sorted by user, then by timestamp.
-     * @see #getItemEvents(long, Class)
+     *               are first sorted by user, then by timestamp.
      * @return The events involving the specified item.
+     * @see #getItemEvents(long, Class)
      */
     Cursor<? extends Event> getItemEvents(long itemId);
 
     /**
      * Get all ratings for the specified item.
      *
+     * @param <E>    The type of event.
      * @param itemId The ID of the item whose events are requested.
-     * @param type The type of events to retrieve.
+     * @param type   The type of events to retrieve.
      * @return An iterator over the item's events. The events are first sorted
      *         by user, then by timestamp.
      */

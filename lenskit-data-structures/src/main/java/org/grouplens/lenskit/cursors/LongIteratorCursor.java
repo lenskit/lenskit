@@ -20,9 +20,19 @@ package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
-public class LongIteratorCursor extends AbstractLongCursor {
+import javax.annotation.Nonnull;
+
+/**
+ * Cursor backed by a long iterator.
+ */
+class LongIteratorCursor extends AbstractLongCursor {
     private LongIterator iterator;
 
+    /**
+     * Construct a new long iterator cursor.
+     *
+     * @param iter The iterator to wrap.
+     */
     public LongIteratorCursor(LongIterator iter) {
         iterator = iter;
     }
@@ -32,6 +42,7 @@ public class LongIteratorCursor extends AbstractLongCursor {
         return iterator.hasNext();
     }
 
+    @Nonnull
     @Override
     public Long next() {
         return iterator.next();

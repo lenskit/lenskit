@@ -26,36 +26,36 @@ import java.util.List;
  * A table writer that has the initial column values fixed.  It wraps a table
  * writer and presents a writer with fewer columns and constant values put in
  * for the underlying missing columns.  Closing it does nothing.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 class PrefixedTableWriter implements TableWriter {
-    private String[] rowData; // contains fixed values; other columns re-used
+    private Object[] rowData; // contains fixed values; other columns re-used
     private int fixedColumns;
     private TableLayout layout;
     private TableWriter baseWriter;
-    
+
     /**
      * Construct a new prefixed table writer.
-     * 
+     *
      * @param writer The underlying table writer to write to.
      * @param values The initial values to write. Each row written to this table
-     *        writer is written to the base writer with these values prefixed.
+     *               writer is written to the base writer with these values prefixed.
      */
-    public PrefixedTableWriter(TableWriter writer, String[] values) {
+    public PrefixedTableWriter(TableWriter writer, Object[] values) {
         baseWriter = writer;
         TableLayout baseLayout = writer.getLayout();
         if (values.length > baseLayout.getColumnCount()) {
             throw new IllegalArgumentException("Value array too wide");
         }
-        
+
         rowData = Arrays.copyOf(values, baseLayout.getColumnCount());
+
         fixedColumns = values.length;
 
         TableLayoutBuilder bld = new TableLayoutBuilder();
         List<String> bheaders = baseLayout.getColumnHeaders();
-        for (String h: bheaders.subList(fixedColumns, bheaders.size())) {
+        for (String h : bheaders.subList(fixedColumns, bheaders.size())) {
             bld.addColumn(h);
         }
         layout = bld.build();
@@ -67,11 +67,11 @@ class PrefixedTableWriter implements TableWriter {
     }
 
     @Override
-    public synchronized void writeRow(String[] row) throws IOException {
+    public synchronized void writeRow(Object[] row) throws IOException {
         if (row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("Row too wide");
         }
-        
+
         // blit row data to end of re-used array
         System.arraycopy(row, 0, rowData, fixedColumns, row.length);
         // fill remaining elements with null

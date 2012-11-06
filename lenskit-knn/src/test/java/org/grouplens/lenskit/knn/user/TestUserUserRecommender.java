@@ -20,6 +20,7 @@ package org.grouplens.lenskit.knn.user;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -27,17 +28,14 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.knn.PearsonCorrelation;
-import org.grouplens.lenskit.knn.VectorSimilarity;
+import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
+import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +45,7 @@ public class TestUserUserRecommender {
     private EventCollectionDAO dao;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
         rs.add(Ratings.make(2, 6, 2));
@@ -85,7 +83,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector)</tt>.
+     * Tests {@code recommend(long, SparseVector)}.
      */
     @Test
     public void testUserUserRecommender1() {
@@ -116,7 +114,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int)</tt>.
+     * Tests {@code recommend(long, SparseVector, int)}.
      */
     @Test
     public void testUserUserRecommender2() {
@@ -168,7 +166,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, Set)}.
      */
     @Test
     public void testUserUserRecommender3() {
@@ -242,7 +240,7 @@ public class TestUserUserRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, int, Set, Set)}.
      */
     @Test
     public void testUserUserRecommender4() {
@@ -292,7 +290,7 @@ public class TestUserUserRecommender {
         assertEquals(3, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
-        assertEquals(6,recs.getLong(2));
+        assertEquals(6, recs.getLong(2));
 
         recs = recommender.recommend(getUserRatings(5), 2, null, LongSets.EMPTY_SET);
         assertEquals(2, recs.size());

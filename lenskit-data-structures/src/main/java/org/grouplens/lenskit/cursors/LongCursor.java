@@ -25,9 +25,17 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * {@link Cursor} iterating over primitive longs.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public interface LongCursor extends Cursor<Long>, LongIterable {
-    public long nextLong();
+    /**
+     * Get the next value as a primitive long.
+     *
+     * @return The next value in the cursor.
+     * @see #next()
+     */
+    long nextLong();
 }

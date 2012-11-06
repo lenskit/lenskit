@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
@@ -26,14 +27,22 @@ import com.google.common.base.Function;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.concurrent.ThreadSafe;
+import javax.inject.Singleton;
+import java.io.Serializable;
+
 /**
  * Summarize a history by extracting a rating vector.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
-public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector> {
+@Shareable
+@ThreadSafe
+@Singleton
+public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector>, Serializable {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
+
+    private static final long serialVersionUID = 1L;
 
     @Override
     public Class<? extends Event> eventTypeWanted() {

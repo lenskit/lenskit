@@ -18,21 +18,30 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
 import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Algorithm for scoring items given an item-item model and neighborhood scorer.
  * Used by {@link ItemItemScorer} and {@link ItemItemGlobalScorer} to score items.
+ *
  * @author Michael Ekstrand
  * @since 0.10
  */
 @DefaultImplementation(DefaultItemScoreAlgorithm.class)
 public interface ItemScoreAlgorithm {
-    MutableSparseVector scoreItems(ItemItemModel model,
-                                   SparseVector userData, LongSortedSet items,
-                                   NeighborhoodScorer scorer);
+    /**
+     * Score items for a user.
+     *
+     * @param model    The item-item model.
+     * @param userData The user's rating data.
+     * @param scores   The score vector (key domain is items to score). Unscoreable
+     *                 items will be left unchanged.
+     * @param scorer   The scorer to use.
+     */
+    void scoreItems(ItemItemModel model, SparseVector userData,
+                    MutableSparseVector scores,
+                    NeighborhoodScorer scorer);
 }

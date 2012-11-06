@@ -3,12 +3,12 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-knn</artifactId>
   <name>LensKit k-NN Recommenders</name>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>

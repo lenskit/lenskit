@@ -21,13 +21,15 @@ package org.grouplens.lenskit.eval;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
+
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.eval.config.DefaultBuilder;
+import org.grouplens.lenskit.eval.config.BuilderCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,21 +40,25 @@ import java.util.Map;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultBuilder(AlgorithmBuilder.class)
+@BuilderCommand(AlgorithmInstanceCommand.class)
 public class AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
-    private final @Nullable String algoName;
-    private final @Nonnull LenskitRecommenderEngineFactory factory;
-    private final @Nonnull Map<String,Object> attributes;
+    @Nullable
+    private final String algoName;
+    @Nonnull
+    private final LenskitRecommenderEngineFactory factory;
+    @Nonnull
+    private final Map<String, Object> attributes;
     private final boolean preload;
 
     public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
-        this(name, factory, Collections.<String,Object>emptyMap(), false);
+        this(name, factory, Collections.<String, Object>emptyMap(), false);
     }
 
-    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String,Object> attributes, boolean preload) {
+    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String, Object> attributes, boolean preload) {
         algoName = name;
         this.factory = factory;
         this.attributes = attributes;
@@ -62,6 +68,7 @@ public class AlgorithmInstance {
     /**
      * Get the name of this algorithm.  This returns a short name which is
      * used to identify the algorithm or instance.
+     *
      * @return The algorithm's name
      */
     public String getName() {
@@ -70,15 +77,16 @@ public class AlgorithmInstance {
 
     /**
      * Query whether this algorithm is to operate on in-memory data.
-     * @return <tt>true</tt> if the ratings database should be loaded in-memory
-     * prior to running.
+     *
+     * @return {@code true} if the ratings database should be loaded in-memory
+     *         prior to running.
      */
     public boolean getPreload() {
         return preload;
     }
 
     @Nonnull
-    public Map<String,Object> getAttributes() {
+    public Map<String, Object> getAttributes() {
         return attributes;
     }
 
@@ -88,8 +96,8 @@ public class AlgorithmInstance {
     }
 
     public Recommender buildRecommender(DataAccessObject dao,
-                                        final @Nullable Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                        PreferenceDomain dom) {
+                                        @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
+                                        PreferenceDomain dom) throws RecommenderBuildException {
         // Copy the factory & set up a shared rating snapshot
         LenskitRecommenderEngineFactory fac2 = factory.clone();
 
@@ -98,7 +106,6 @@ public class AlgorithmInstance {
         }
 
         if (sharedSnapshot != null) {
-            // FIXME Bind this to a provider
             Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
                 @Override
                 public PreferenceSnapshot get() {

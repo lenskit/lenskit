@@ -25,12 +25,14 @@ import javax.annotation.Nullable;
 
 /**
  * Raised if the recommender cannot be created for some reason.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @SuppressWarnings("serial")
 public class InvalidRecommenderException extends Exception {
-    private final @Nullable URI sourceUri;
+    private final
+    @Nullable
+    URI sourceUri;
 
     /**
      *
@@ -79,7 +81,9 @@ public class InvalidRecommenderException extends Exception {
         sourceUri = uri;
     }
 
-    public @Nullable URI getSourceUri() {
+    public
+    @Nullable
+    URI getSourceUri() {
         return sourceUri;
     }
 

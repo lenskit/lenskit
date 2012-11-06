@@ -23,6 +23,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Compute the similarity between two items.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 public interface ItemSimilarity {
     /**
      * Compute the similarity between two items.
+     *
      * @param i1 The first item ID.
      * @param v1 The first item vector.
      * @param i2 The second item ID.
@@ -40,15 +42,17 @@ public interface ItemSimilarity {
 
     /**
      * Query whether this similarity is sparse.
+     *
      * @return {@code true} if the similarity function is sparse.
-     * @see org.grouplens.lenskit.knn.VectorSimilarity#isSparse()
+     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSparse()
      */
     boolean isSparse();
 
     /**
      * Query whether this similarity is symmetric.
+     *
      * @return {@code true} if the similarity function is symmetric.
-     * @see org.grouplens.lenskit.knn.VectorSimilarity#isSymmetric()
+     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSymmetric()
      */
     boolean isSymmetric();
 }

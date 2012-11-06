@@ -24,11 +24,11 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  * Re-run sparse vector tests with a longer version of the vector.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestSparseVectorSized extends TestMutableSparseVector {
     /**
      * Construct a simple rating vector with three ratings.
+     *
      * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
      */
     @Override

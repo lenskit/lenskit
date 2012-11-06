@@ -23,39 +23,45 @@ import java.util.Iterator;
 /**
  * Simple implementation of an Iterator that wraps a Cursor's data. This is
  * suitable for use with {@link Cursor#iterator()}.
- * 
+ *
+ * @param <T> The type of value in the iterator.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class CursorIterator<T> implements Iterator<T> {
-	
-	private Cursor<T> cursor;
 
-	public CursorIterator(Cursor<T> cursor) {
-		this.cursor = cursor;
-	}
+    private Cursor<T> cursor;
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#hasNext()
-	 */
-	@Override
-	public boolean hasNext() {
-		return cursor.hasNext();
-	}
+    /**
+     * Construct a new iterator from a cursor.
+     *
+     * @param cur The cursor to wrap.
+     */
+    public CursorIterator(Cursor<T> cur) {
+        cursor = cur;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#next()
-	 */
-	@Override
-	public T next() {
-		return cursor.next();
-	}
+    /* (non-Javadoc)
+      * @see java.util.Iterator#hasNext()
+      */
+    @Override
+    public boolean hasNext() {
+        return cursor.hasNext();
+    }
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#remove()
-	 */
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
+    /* (non-Javadoc)
+      * @see java.util.Iterator#next()
+      */
+    @Override
+    public T next() {
+        return cursor.next();
+    }
+
+    /* (non-Javadoc)
+      * @see java.util.Iterator#remove()
+      */
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 
 }

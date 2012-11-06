@@ -18,30 +18,33 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestSlopeOneRatingPredictor {
 
     private static final double EPSILON = 1.0e-6;
-    
+
     private SlopeOneModel getModel(DataAccessObject dao) {
-        PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(dao).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(
-                snapshot, new DefaultUserVectorNormalizer(), null,
-                new PreferenceDomain(1,5), 0);
-        return builder.get();
+        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
+                dao, new DefaultUserVectorNormalizer(), summarizer);
+        SlopeOneModelProvider provider = new SlopeOneModelProvider(
+                dao, null, contextFactory, 0);
+        return provider.get();
     }
 
     @Test
@@ -62,14 +65,15 @@ public class TestSlopeOneRatingPredictor {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
-        
-        assertEquals(7/3.0, predictor.score(2, 9), EPSILON);
-        assertEquals(13/3.0, predictor.score(3, 6), EPSILON);
+        SlopeOneRatingPredictor predictor =
+                new SlopeOneRatingPredictor(dao, model, null);
+
+        assertEquals(7 / 3.0, predictor.score(2, 9), EPSILON);
+        assertEquals(13 / 3.0, predictor.score(3, 6), EPSILON);
         assertEquals(2, predictor.score(4, 6), EPSILON);
         assertEquals(2, predictor.score(4, 9), EPSILON);
         assertEquals(2.5, predictor.score(5, 6), EPSILON);
@@ -90,12 +94,13 @@ public class TestSlopeOneRatingPredictor {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        SlopeOneRatingPredictor predictor = new SlopeOneRatingPredictor(dao, model);
-        
+        SlopeOneRatingPredictor predictor =
+                new SlopeOneRatingPredictor(dao, model, new PreferenceDomain(1,5,1));
+
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);
         assertEquals(5, predictor.score(2, 5), EPSILON);

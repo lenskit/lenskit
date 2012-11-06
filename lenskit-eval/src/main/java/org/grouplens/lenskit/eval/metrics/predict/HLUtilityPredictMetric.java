@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
-    private static final String[] COLUMNS = { "HLUtility" };
-    
+    private static final String[] COLUMNS = {"HLUtility"};
+
     private double alpha;
 
     public HLUtilityPredictMetric(double newAlpha) {
@@ -47,7 +47,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
@@ -65,7 +65,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         while (itemIterator.hasNext()) {
             final double v = values.get(itemIterator.nextLong());
             rank++;
-            utility += v/Math.pow(2,(rank-1)/(alpha-1));
+            utility += v / Math.pow(2, (rank - 1) / (alpha - 1));
         }
         return utility;
     }
@@ -76,26 +76,26 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
-        String[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);
             double actualUtility = computeHLU(actual, ratings);
-            double u = actualUtility/idealUtility;
+            double u = actualUtility / idealUtility;
             total += u;
             nusers++;
-            return new String[]{Double.toString(u)};
+            return new Object[]{u};
         }
 
         @Override
-        public String[] finalResults() {
-            double v = total/nusers;
+        public Object[] finalResults() {
+            double v = total / nusers;
             logger.info("HLU: {}", v);
-            return new String[]{Double.toString(v)};
+            return new Object[]{v};
         }
     }
 }

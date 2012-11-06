@@ -18,7 +18,7 @@
  */
 /**
  * Cursors for iterative data access.
- * 
+ *
  * <p>
  * Cursors (see {@link org.grouplens.lenskit.cursors.Cursor}) are basically
  * closeable iterators, used for accessing data sources. They also expose the

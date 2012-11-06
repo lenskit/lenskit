@@ -21,7 +21,9 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -30,6 +32,7 @@ import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.SoftLazyValue;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
@@ -41,23 +44,23 @@ import java.util.concurrent.Callable;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
 public class TrainTestEvalJobGroup implements JobGroup {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJobGroup.class);
-    
+
     private TTDataSet dataSet;
     private List<Job> jobs;
 
-    private TrainTestEvalTask evaluation;
+    private TrainTestEvalCommand evaluation;
 
-    public TrainTestEvalJobGroup(TrainTestEvalTask eval,
+
+    public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
-                                 TTDataSet data,
+                                 TTDataSet data, int partition,
                                  int numRecs) {
         evaluation = eval;
         dataSet = data;
@@ -76,13 +79,14 @@ public class TrainTestEvalJobGroup implements JobGroup {
                         return snap;
                     }
                 });
-        
+
         jobs = new ArrayList<Job>(algos.size());
-        for (AlgorithmInstance algo: algos) {
+        for (AlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
-                    algo, evals, data, snap,
-                    Suppliers.compose(prefix, evaluation.outputTableSupplier()), numRecs);
+                    algo, evals, eval.getPredictionChannels(), data, snap,
+                    Suppliers.compose(prefix, evaluation.outputTableSupplier()),
+                    numRecs);
             job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
             job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
@@ -108,7 +112,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     public List<Job> getJobs() {
         return jobs;
     }
-    
+
     private SharedPreferenceSnapshot loadSnapshot() {
         DataAccessObject dao = dataSet.getTrainFactory().create();
         try {

@@ -18,17 +18,13 @@
  */
 package org.grouplens.lenskit.knn;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+
+import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Similarity function that assumes the two vectors are paired samples from 2 
@@ -60,7 +56,7 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
      * Caution should be used when using this vector similarity function that your 
      * implementation will accept values in this range.
      * 
-     * @see org.grouplens.lenskit.Similarity#similarity(java.lang.Object, java.lang.Object)
+     * @see VectorSimilarity#similarity(SparseVector, SparseVector)
      */
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
@@ -69,10 +65,10 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
         double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
 
         // this would probably be faster if done with two pointers.
-        for (Long2DoubleMap.Entry e: vec1.fast()) {
-            if (!vec2.containsKey(e.getLongKey())) continue;
-            double val1 = e.getDoubleValue();
-            double val2 = vec2.get(e.getLongKey());
+        for (VectorEntry e: vec1.fast()) {
+            if (!vec2.containsKey(e.getKey())) continue;
+            double val1 = e.getValue();
+            double val2 = vec2.get(e.getKey());
             if (Double.isNaN(val1)) continue;
             if (Double.isNaN(val2)) continue;
             

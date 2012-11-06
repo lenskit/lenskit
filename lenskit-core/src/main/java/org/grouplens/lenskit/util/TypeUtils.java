@@ -32,19 +32,19 @@ import com.google.common.collect.Sets;
 
 /**
  * Various type utilities used in LensKit.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class TypeUtils {
     /**
      * Build the set of types implemented by the objects' classes. This includes
-     * all supertypes which are themselves subclasses of <var>parent</var>.  The
-     * resulting set is the set of all subclasses of <var>parent</var> such that
-     * there exists some object in <var>objects</var> assignable to one of them.
+     * all supertypes which are themselves subclasses of {@var parent}.  The
+     * resulting set is the set of all subclasses of {@var parent} such that
+     * there exists some object in {@var objects} assignable to one of them.
      *
      * @param objects A collection of objects.
-     * @param parent The parent type of interest.
-     * @return The set of types applicable to objects in <var>objects</var>.
+     * @param parent  The parent type of interest.
+     * @return The set of types applicable to objects in {@var objects}.
      */
     public static <T> Set<Class<? extends T>>
     findTypes(Iterable<? extends T> objects, Class<T> parent) {
@@ -52,7 +52,7 @@ public class TypeUtils {
                 Sets.newHashSet(transform(objects, extractClass(parent)));
 
         Set<Class<? extends T>> allTypes = new HashSet<Class<? extends T>>();
-        for (Class<? extends T> t: objTypes) {
+        for (Class<? extends T> t : objTypes) {
             addAll(allTypes, transform(filter(typeClosure(t), isSubclass(parent)),
                                        asSubclass(parent)));
         }
@@ -62,17 +62,19 @@ public class TypeUtils {
     /**
      * Return the supertype closure of a type (the type and all its transitive
      * supertypes).
+     *
      * @param type The type.
      * @return All supertypes of the type, including the type itself.
      */
     public static Set<Class<?>> typeClosure(Class<?> type) {
-        if (type == null)
+        if (type == null) {
             return Collections.emptySet();
+        }
 
         Set<Class<?>> supertypes = new HashSet<Class<?>>();
         supertypes.add(type);
         supertypes.addAll(typeClosure(type.getSuperclass()));
-        for (Class<?> iface: type.getInterfaces()) {
+        for (Class<?> iface : type.getInterfaces()) {
             supertypes.addAll(typeClosure(iface));
         }
 
@@ -91,6 +93,7 @@ public class TypeUtils {
 
     /**
      * Function that gets the class for its argument.
+     *
      * @param supertype A class known to be a valid supertype for any argument.
      */
     public static <T> Function<Class<?>, Class<? extends T>> asSubclass(final Class<T> supertype) {
@@ -104,6 +107,7 @@ public class TypeUtils {
 
     /**
      * Function that gets the class for its argument.
+     *
      * @param supertype A class known to be a valid supertype for any argument.
      */
     public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {

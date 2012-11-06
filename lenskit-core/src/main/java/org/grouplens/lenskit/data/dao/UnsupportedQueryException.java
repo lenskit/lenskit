@@ -23,15 +23,23 @@ package org.grouplens.lenskit.data.dao;
 
 /**
  * Exception thrown when a data source receives an unsupported query.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public class UnsupportedQueryException extends IllegalArgumentException {
     private static final long serialVersionUID = -1340119072527578247L;
 
+    /**
+     * Create a new exception.
+     */
     public UnsupportedQueryException() {
     }
 
+    /**
+     * Create a new exception with a message.
+     * @param message The error description.
+     */
     public UnsupportedQueryException(String message) {
         super(message);
     }

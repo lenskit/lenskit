@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * {@link #getComponent(Class)} method can be useful.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class LenskitRecommender implements Recommender {
     private final Injector injector;
@@ -56,7 +56,7 @@ public class LenskitRecommender implements Recommender {
      * want to use one of the type-specific getters; this method only exists for
      * specialized applications which need deep access to the recommender
      * components.
-     * 
+     *
      * @param <T>
      * @param cls The component class to get.
      * @return The instance of the specified component.
@@ -69,7 +69,7 @@ public class LenskitRecommender implements Recommender {
     public ItemScorer getItemScorer() {
         return get(ItemScorer.class);
     }
-    
+
     @Override
     public GlobalItemScorer getGlobalItemScorer() {
         return get(GlobalItemScorer.class);
@@ -80,27 +80,19 @@ public class LenskitRecommender implements Recommender {
         return get(RatingPredictor.class);
     }
 
-    @Override @Deprecated
-    public RatingPredictor getDynamicRatingPredictor() {
-        return getRatingPredictor();
-    }
-
-    @Override @Deprecated
-    public ItemRecommender getDynamicItemRecommender() {
-        return getItemRecommender();
-    }
-
     @Override
     public void close() {
-        if (shouldCloseDao)
+        if (shouldCloseDao) {
             dao.close();
+        }
     }
 
     /**
      * Get the rating DAO for this recommender session.
-     * @return The DAO, or <var>null</var> if this recommender is not connected
-     * to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
-     * from other frameworks that are adapted to the LensKit API may not be.
+     *
+     * @return The DAO, or {@var null} if this recommender is not connected
+     *         to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
+     *         from other frameworks that are adapted to the LensKit API may not be.
      */
     public DataAccessObject getRatingDataAccessObject() {
         return dao;
@@ -110,7 +102,7 @@ public class LenskitRecommender implements Recommender {
     public ItemRecommender getItemRecommender() {
         return get(ItemRecommender.class);
     }
-    
+
     @Override
     public GlobalItemRecommender getGlobalItemRecommender() {
         return get(GlobalItemRecommender.class);

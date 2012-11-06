@@ -30,8 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * JDBC session, wrapped to provide access to statements, etc.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class JDBCDataSession implements Closeable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -46,7 +47,7 @@ public class JDBCDataSession implements Closeable {
     private PreparedStatement itemStatement;
     private PreparedStatement itemCountStatement;
     private PreparedStatement eventStatements[] =
-        new PreparedStatement[SortOrder.values().length];
+            new PreparedStatement[SortOrder.values().length];
     private PreparedStatement userEventStatement;
     private PreparedStatement itemEventStatement;
 
@@ -61,52 +62,60 @@ public class JDBCDataSession implements Closeable {
     }
 
     public PreparedStatement userStatement() throws SQLException {
-        if (userStatement == null)
+        if (userStatement == null) {
             userStatement = statementFactory.prepareUsers(connection);
+        }
         return userStatement;
     }
 
     public PreparedStatement userCountStatement() throws SQLException {
-        if (userCountStatement == null)
+        if (userCountStatement == null) {
             userCountStatement = statementFactory.prepareUserCount(connection);
+        }
         return userCountStatement;
     }
 
     public PreparedStatement itemStatement() throws SQLException {
-        if (itemStatement == null)
+        if (itemStatement == null) {
             itemStatement = statementFactory.prepareItems(connection);
+        }
         return itemStatement;
     }
 
     public PreparedStatement itemCountStatement() throws SQLException {
-        if (itemCountStatement == null)
+        if (itemCountStatement == null) {
             itemCountStatement = statementFactory.prepareItemCount(connection);
+        }
         return itemCountStatement;
     }
 
     public PreparedStatement eventStatement(SortOrder order) throws SQLException {
         int o = order.ordinal();
-        if (eventStatements[o] == null)
+        if (eventStatements[o] == null) {
             eventStatements[o] = statementFactory.prepareEvents(connection, order);
+        }
         return eventStatements[o];
     }
 
     public PreparedStatement userEventStatement() throws SQLException {
-        if (userEventStatement == null)
+        if (userEventStatement == null) {
             userEventStatement = statementFactory.prepareUserEvents(connection);
+        }
         return userEventStatement;
     }
 
     public PreparedStatement itemEventStatement() throws SQLException {
-        if (itemEventStatement == null)
+        if (itemEventStatement == null) {
             itemEventStatement = statementFactory.prepareItemEvents(connection);
+        }
         return itemEventStatement;
     }
 
     private boolean closeStatement(Statement s) {
         try {
-            if (s != null)
+            if (s != null) {
                 s.close();
+            }
             return true;
         } catch (SQLException e) {
             logger.error("Error closing statement: " + e.getMessage(), e);
@@ -116,6 +125,7 @@ public class JDBCDataSession implements Closeable {
 
     /**
      * Close the connection and all open statements.
+     * @throws IOException if there is an error shutting down the database resources.
      */
     @Override
     public void close() throws IOException {
@@ -125,17 +135,20 @@ public class JDBCDataSession implements Closeable {
             failed = failed || !closeStatement(userCountStatement);
             failed = failed || !closeStatement(itemStatement);
             failed = failed || !closeStatement(itemCountStatement);
-            for (PreparedStatement s: eventStatements)
+            for (PreparedStatement s : eventStatements) {
                 failed = failed || !closeStatement(s);
+            }
             failed = failed || !closeStatement(userEventStatement);
             failed = failed || !closeStatement(itemEventStatement);
-            if (closeConnection)
+            if (closeConnection) {
                 connection.close();
+            }
         } catch (SQLException e) {
             throw new IOException(e);
         }
-        if (failed)
+        if (failed) {
             throw new IOException("Error closing statement (see log for details)");
+        }
     }
 
 }

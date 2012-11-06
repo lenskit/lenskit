@@ -18,40 +18,38 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+
 public class TestItemItemRecommenderBuild {
 
-    private DAOFactory manager;
-    private RecommenderEngine engine;
+    private LenskitRecommenderEngine engine;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 5, 2));
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
-        manager = new EventCollectionDAO.Factory(rs);
+        DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
@@ -67,11 +65,38 @@ public class TestItemItemRecommenderBuild {
     public void testItemItemRecommenderEngineCreate() {
         Recommender rec = engine.open();
 
-        // These assert instanceof's are also assertNotNull's
-        assertTrue(rec.getItemScorer() instanceof ItemItemRatingPredictor);
-        assertTrue(rec.getRatingPredictor() instanceof ItemItemRatingPredictor);
-        assertTrue(rec.getItemRecommender() instanceof ItemItemRecommender);
-        assertTrue(rec.getGlobalItemRecommender() instanceof ItemItemGlobalRecommender);
-        assertTrue(rec.getGlobalItemScorer() instanceof ItemItemGlobalScorer);
+        assertThat(rec.getItemScorer(),
+                   instanceOf(ItemItemRatingPredictor.class));
+        assertThat(rec.getRatingPredictor(),
+                   instanceOf(ItemItemRatingPredictor.class));
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(ItemItemRecommender.class));
+        assertThat(rec.getGlobalItemRecommender(),
+                   instanceOf(ItemItemGlobalRecommender.class));
+        assertThat(rec.getGlobalItemScorer(),
+                   instanceOf(ItemItemGlobalScorer.class));
+    }
+
+    @Test
+    public void testConfigSeparation() {
+        LenskitRecommender rec1 = null;
+        LenskitRecommender rec2 = null;
+        try {
+            rec1 = engine.open();
+            rec2 = engine.open();
+
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(ItemItemModel.class),
+                       allOf(not(nullValue()),
+                             sameInstance(rec2.get(ItemItemModel.class))));
+        } finally {
+            if (rec2 != null) {
+                rec2.close();
+            }
+            if (rec1 != null) {
+                rec1.close();
+            }
+        }
     }
 }

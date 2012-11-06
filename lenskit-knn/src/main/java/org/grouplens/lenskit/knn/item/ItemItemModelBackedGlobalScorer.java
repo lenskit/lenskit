@@ -24,26 +24,26 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.GlobalItemScorer;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 
 /**
- * The  global scorer for the global recommendation backed by a item-item model. 
- * 
- * 
+ * The  global scorer for the global recommendation backed by a item-item model.
+ *
  * @author Shuo Chang <schang@cs.umn.edu>
  * @see{@link ItemItemModelBackedScorer}
- *
  */
 @DefaultImplementation(ItemItemGlobalScorer.class)
 public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer {
-	/**
-	 *  Get the item-item model backing this scorer.
+    /**
+     * Get the item-item model backing this scorer.
      *
      * @return The model this scorer uses to compute scores.
-	 */
-	ItemItemModel getModel();
-	
+     */
+    ItemItemModel getModel();
+
     /**
      * Get the set of scoreable items for a basket of items.
+     *
      * @param queryItems The basket of items to make recommendation.
      * @return The set of items for which scores can be generated.
      */

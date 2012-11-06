@@ -27,16 +27,15 @@ import org.grouplens.lenskit.data.event.Events;
 
 /**
  * Order an event sequence by timestamp.
- * 
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
  * @param <E>
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class TimestampOrder<E extends Event> implements Order<E> {
 
-	@Override
-	public void apply(List<E> list, Random rng) {
-		Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
-	}
+    @Override
+    public void apply(List<E> list, Random rng) {
+        Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
+    }
 
 }

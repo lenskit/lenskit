@@ -3,18 +3,18 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-svd</artifactId>
   <name>LensKit SVD-based Recommenders</name>
   <dependencies>
-  	<dependency>
-  		<groupId>org.grouplens.lenskit</groupId>
-  		<artifactId>lenskit-core</artifactId>
-  		<version>${project.version}</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-core</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>

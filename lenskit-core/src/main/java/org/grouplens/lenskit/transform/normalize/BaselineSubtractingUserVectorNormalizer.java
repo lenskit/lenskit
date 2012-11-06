@@ -18,18 +18,20 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.inject.Inject;
+import java.io.Serializable;
+
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * User vector normalizer that subtracts a user's baseline predictions.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@Shareable
 public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {
     private static final long serialVersionUID = 2L;
 
@@ -53,25 +55,27 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
         return new Transformation(user, ratings);
     }
 
-    protected class Transformation implements VectorTransformation {
+    private class Transformation implements VectorTransformation {
         private final long user;
-        private final SparseVector vector;
+        private final SparseVector reference;
 
         public Transformation(long u, SparseVector r) {
             user = u;
-            vector = r;
+            reference = r;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
+            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            baselinePredictor.predict(user, reference, base);
             vector.subtract(base);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            SparseVector base = baselinePredictor.predict(user, this.vector, vector.keySet());
+            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            baselinePredictor.predict(user, reference, base);
             vector.add(base);
             return vector;
         }

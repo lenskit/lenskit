@@ -31,16 +31,15 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * implementing this interface need to do is accumulate scores.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public interface NeighborhoodScorer {
     /**
      * Compute a score based on similar neighbors and their corresponding
      * scores.
-     * 
+     *
      * @param neighbors A list of neighbors with similarity measures.
-     * @param scores A vector of item scores. It should contain a score for
-     *        every item in <var>neighbors</var>.
+     * @param scores    A vector of item scores. It should contain a score for
+     *                  every item in {@var neighbors}.
      * @return An accumulated score from the neighbors, or {@link Double#NaN} if
      *         no score could be computed.
      */

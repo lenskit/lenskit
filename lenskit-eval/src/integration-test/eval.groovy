@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.baseline.UserMeanPredictor
 import org.grouplens.lenskit.baseline.ItemMeanPredictor
@@ -45,14 +46,13 @@ def ml100k = crossfold("ml-100k") {
     test "${buildDir}/ml-100k.test.%d.csv"
 }
 
-trainTest {
-    depends ml100k
+def result = trainTest {
 
     output "${buildDir}/eval-output/baselines.csv"
     dataset ml100k
 
     numRecs 5
-    
+
     metric CoveragePredictMetric
     metric MAEPredictMetric
     metric RMSEPredictMetric
@@ -63,4 +63,5 @@ trainTest {
             bind BaselinePredictor to bl
         }
     }
+
 }

@@ -18,117 +18,153 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Binding;
-import org.grouplens.grapht.Context;
-import org.grouplens.grapht.InjectionException;
-import org.grouplens.grapht.InjectorConfigurationBuilder;
-import org.grouplens.grapht.Names;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
+import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.ResolverException;
-import org.grouplens.grapht.spi.Desire;
-import org.grouplens.grapht.spi.ProviderSource;
-import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.util.InstanceProvider;
+import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Provider;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.Map.Entry;
+
+import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
+import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
- * 
+ * <p>
+ * This class is final for copying safety. This decision can be revisited.
+ * </p>
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
-public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory, Cloneable, Context {
-    private final InjectorConfigurationBuilder config;
-    private final DAOFactory factory;
-    
+public final class LenskitRecommenderEngineFactory extends AbstractConfigContext implements RecommenderEngineFactory {
+    private static final Class<?>[] INITIAL_ROOTS = {
+            RatingPredictor.class,
+            ItemScorer.class,
+            GlobalItemScorer.class,
+            ItemRecommender.class,
+            GlobalItemRecommender.class
+    };
+
+    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineFactory.class);
+
+    private final BindingFunctionBuilder config;
+    private DAOFactory factory;
+    private final Set<Class<?>> roots;
+
     public LenskitRecommenderEngineFactory() {
         this((DAOFactory) null);
     }
-    
+
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
-        config = new InjectorConfigurationBuilder();
+        config = new BindingFunctionBuilder();
+        roots = new HashSet<Class<?>>();
+        Collections.addAll(roots, INITIAL_ROOTS);
     }
-    
+
     private LenskitRecommenderEngineFactory(LenskitRecommenderEngineFactory engineFactory) {
         factory = engineFactory.factory;
         config = engineFactory.config.clone();
+        roots = new HashSet<Class<?>>(engineFactory.roots);
     }
-    
+
+    /**
+     * Add the specified component type as a root component. This forces it (and its
+     * dependencies) to be resolved, and makes it available from the resulting
+     * recommenders.
+     *
+     * @param componentType The type of component to add as a root (typically an interface).
+     * @see LenskitRecommender#get(Class)
+     */
+    public void addRoot(Class<?> componentType) {
+        roots.add(componentType);
+    }
+
     @Override
     public <T> Binding<T> bind(Class<T> type) {
         return config.getRootContext().bind(type);
     }
 
     @Override
-    public void bind(Class<? extends Annotation> param, Object value) {
-        config.getRootContext().bind(param, value);
-    }
-
     public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
         return bind(type).withQualifier(qualifier);
     }
 
     @Override
-    public Context in(Class<?> type) {
-        return config.getRootContext().in(type);
+    public LenskitConfigContext in(Class<?> type) {
+        return coerce(config.getRootContext().in(type));
     }
 
     @Override
-    public Context in(Class<? extends Annotation> qualifier, Class<?> type) {
-        return config.getRootContext().in(qualifier, type);
+    public LenskitConfigContext in(Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(config.getRootContext().in(qualifier, type));
     }
 
     @Override
-    public Context in(Annotation qualifier, Class<?> type) {
-        return config.getRootContext().in(qualifier, type);
-    }
-
-    public Context in(String name, Class<?> type) {
-        // REVIEW: Do we want to keep this method? Do we want to add it to Grapht?
-        return config.getRootContext().in(Names.named(name), type);
+    public LenskitConfigContext in(Annotation qualifier, Class<?> type) {
+        return coerce(config.getRootContext().in(qualifier, type));
     }
 
     /**
      * Groovy-compatible alias for {@link #in(Class)}.
      */
-    public Context within(Class<?> type) {
+    @SuppressWarnings("unused")
+    public LenskitConfigContext within(Class<?> type) {
         return in(type);
     }
 
     /**
-     * Groovy-compatible alias for {@link #in(Class,Class)}.
+     * Groovy-compatible alias for {@link #in(Class, Class)}.
      */
-    public Context within(Class<? extends Annotation> qualifier, Class<?> type) {
+
+    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
         return in(qualifier, type);
     }
 
-    /**
-     * Groovy-compatible alias for {@link #in(String,Class)}.
-     */
-    public Context within(String name, Class<?> type) {
-        return in(name, type);
-    }
-    
     @Override
     public LenskitRecommenderEngineFactory clone() {
         return new LenskitRecommenderEngineFactory(this);
     }
-    
+
+    /**
+     * Get the DAO factory.
+     *
+     * @return The DAO factory.
+     */
+    public DAOFactory getDAOFactory() {
+        return factory;
+    }
+
+    /**
+     * Set the DAO factory.
+     *
+     * @param f The new DAO factory.
+     */
+    public void setDAOFactory(DAOFactory f) {
+        factory = f;
+    }
+
     @Override
-    public LenskitRecommenderEngine create() {
-        if (factory == null)
+    public LenskitRecommenderEngine create() throws RecommenderBuildException {
+        if (factory == null) {
             throw new IllegalStateException("create() called with no DAOFactory");
+        }
         DataAccessObject dao = factory.snapshot();
         try {
             return create(dao);
@@ -136,142 +172,240 @@ public class LenskitRecommenderEngineFactory implements RecommenderEngineFactory
             dao.close();
         }
     }
-    
+
     private void resolve(Class<?> type, DependencySolver solver) {
         try {
-            solver.resolve(solver.getSPI().desire(null, type, true));
-        } catch(ResolverException e) {
+            solver.resolve(config.getSPI().desire(null, type, true));
+        } catch (SolverException e) {
             throw new InjectionException(type, null, e);
         }
     }
-    
-    public LenskitRecommenderEngine create(DataAccessObject dao) {
-        InjectorConfigurationBuilder config = this.config.clone();
-        config.getRootContext().bind(DataAccessObject.class).to(dao);
-        
-        DependencySolver solver = new DependencySolver(config.build(), 100);
-        
+
+    public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) throws RecommenderBuildException {
+        Graph original;
+        try {
+            original = buildGraph(dao);
+        } catch (RuntimeException ex) {
+            throw new RecommenderConfigurationException("could not build recommender graph", ex);
+        }
+
+        // Get the set of shareable instances.
+        Set<Node> shared = getShareableNodes(original);
+        logger.debug("found {} shared nodes", shared.size());
+
+        // Instantiate and replace shareable nodes
+        Graph modified = original.clone();
+
+        Set<Node> sharedInstances;
+        try {
+            sharedInstances = instantiate(modified, shared);
+        } catch (RuntimeException ex) {
+            throw new RecommenderBuildException("could not instantiate shared components", ex);
+        }
+        logger.debug("found {} shared instances", sharedInstances.size());
+
+        // Remove transient edges and orphaned subgraphs
+        Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
+        Set<Node> removed = removeOrphanSubgraphs(modified, transientTargets);
+        logger.debug("removed {} orphaned nodes", removed.size());
+
+        // Find the DAO node
+        Node daoNode = GraphtUtils.findDAONode(modified);
+        Node daoPlaceholder = null;
+        if (daoNode != null) {
+            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(config.getSPI(),
+                                                                    modified, daoNode);
+        }
+
+        return new LenskitRecommenderEngine(factory, modified, daoPlaceholder,
+                                            config.getSPI());
+    }
+
+    /**
+     * Prune the graph, returning the set of nodes for shareable objects
+     * (objects that will be replaced with instance satisfactions in the
+     * final graph).
+     *
+     * @param graph The graph to analyze. The graph is not modified.
+     * @return The set of root nodes - nodes that need to be instantiated and
+     *         removed. These nodes are in topologically sorted order.
+     */
+    private LinkedHashSet<Node> getShareableNodes(Graph graph) {
+        LinkedHashSet<Node> shared = new LinkedHashSet<Node>();
+
+        List<Node> nodes = graph.sort(graph.getNode(null));
+        for (Node node : nodes) {
+            if (!GraphtUtils.isShareable(node)) {
+                continue;
+            }
+
+            // see if we depend on any non-shared nodes
+            // since nodes are sorted, all shared nodes will have been seen
+            Set<Edge> intransient = GraphtUtils.removeTransient(graph.getOutgoingEdges(node));
+            boolean isShared =
+                    Iterables.all(Iterables.transform(intransient, GraphtUtils.edgeTail()),
+                                  Predicates.in(shared));
+            if (isShared) {
+                shared.add(node);
+            }
+        }
+
+        return shared;
+    }
+
+    /**
+     * Instantiate the shared objects in a graph. This instantiates all shared objects,
+     * and replaces their nodes with nodes wrapping instance satisfactions.
+     *
+     * @param graph     The complete configuration graph. This graph will be modified.
+     * @param toReplace The shared nodes to replace.
+     * @return The new instance nodes, in iteration order from {@code toReplace}.
+     */
+    private Set<Node> instantiate(Graph graph, Set<Node> toReplace) {
+        InjectSPI spi = config.getSPI();
+        StaticInjector injector = new StaticInjector(spi, graph);
+        LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
+        for (Node node : toReplace) {
+            Object obj = injector.instantiate(node);
+            CachedSatisfaction label = node.getLabel();
+            assert label != null;
+            Satisfaction instanceSat;
+            if (obj == null) {
+                instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
+            } else {
+                instanceSat = spi.satisfy(obj);
+            }
+            Node repl = new Node(instanceSat, label.getCachePolicy());
+            graph.replaceNode(node, repl);
+            replacements.add(repl);
+        }
+        return replacements;
+    }
+
+    /**
+     * Simulate an instantiation of the shared objects in a graph.
+     *
+     * @param graph The complete configuration graph.
+     * @return A new graph that is identical to the original graph if it were
+     *         subjected to the instantiation process.
+     */
+    private Graph simulateInstantiation(Graph graph) {
+        Graph modified = graph.clone();
+        Set<Node> toReplace = getShareableNodes(modified);
+        InjectSPI spi = config.getSPI();
+        for (Node node : toReplace) {
+            CachedSatisfaction label = node.getLabel();
+            assert label != null;
+            if (!label.getSatisfaction().hasInstance()) {
+                Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
+                Node repl = new Node(instanceSat, label.getCachePolicy());
+                modified.replaceNode(node, repl);
+            }
+        }
+        return modified;
+    }
+
+    /**
+     * Remove transient edges from a graph.
+     *
+     * @param graph The graph to remove transient edges from.
+     * @param nodes The nodes whose outgoing transient edges should be removed.
+     * @return The set of tail nodes of removed edges.
+     */
+    private Set<Node> removeTransientEdges(Graph graph, Set<Node> nodes) {
+        Set<Node> targets = new HashSet<Node>();
+        Set<Node> seen = new HashSet<Node>();
+        Queue<Node> work = new LinkedList<Node>();
+        work.addAll(nodes);
+        seen.addAll(nodes);
+        while (!work.isEmpty()) {
+            Node node = work.remove();
+            for (Edge e : graph.getOutgoingEdges(node)) {
+                Node nbr = e.getTail();
+
+                // remove transient edges, traverse non-transient ones
+                Desire desire = e.getDesire();
+                assert desire != null;
+                if (GraphtUtils.desireIsTransient(desire)) {
+                    graph.removeEdge(e);
+                    targets.add(nbr);
+                } else if (!seen.contains(nbr)) {
+                    seen.add(nbr);
+                    work.add(nbr);
+                }
+            }
+        }
+        return targets;
+    }
+
+    private Set<Node> removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
+        Set<Node> removed = new HashSet<Node>();
+        Queue<Node> removeQueue = new LinkedList<Node>(candidates);
+        while (!removeQueue.isEmpty()) {
+            Node candidate = removeQueue.poll();
+            Set<Edge> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
+            if (incoming != null && incoming.isEmpty()) {
+                // No other node depends on this node, so we can remove it,
+                // we must also flag its dependencies as removal candidates
+                // Flag each multiple times, as it could become a candidate late
+                for (Edge e : graph.getOutgoingEdges(candidate)) {
+                    removeQueue.add(e.getTail());
+                }
+                logger.debug("removing orphan node {}", candidate);
+                graph.removeNode(candidate);
+                removed.add(candidate);
+            }
+        }
+        return removed;
+    }
+
+    private Graph buildGraph(DataAccessObject dao) {
+        BindingFunctionBuilder cfg = config.clone();
+        if (dao == null) {
+            cfg.getRootContext().bind(DataAccessObject.class).toNull();
+        } else {
+            cfg.getRootContext().bind(DataAccessObject.class).to(dao);
+        }
+
+        return finishBuild(cfg);
+    }
+
+    private Graph buildGraph(Class<? extends DataAccessObject> daoType) {
+        BindingFunctionBuilder cfg = config.clone();
+        if (daoType == null) {
+            cfg.getRootContext().bind(DataAccessObject.class).toNull();
+        } else {
+            cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
+            cfg.getRootContext().bind(daoType).toNull();
+        }
+        return finishBuild(cfg);
+    }
+
+    private Graph finishBuild(BindingFunctionBuilder config) {
+        DependencySolver solver = new DependencySolver(
+                Arrays.asList(config.build(RuleSet.EXPLICIT),
+                              config.build(RuleSet.INTERMEDIATE_TYPES),
+                              config.build(RuleSet.SUPER_TYPES),
+                              new DefaultDesireBindingFunction(config.getSPI())),
+                CachePolicy.MEMOIZE,
+                100);
+
         // Resolve all required types to complete a Recommender
-        resolve(RatingPredictor.class, solver);
-        resolve(ItemScorer.class, solver);
-        resolve(GlobalItemScorer.class, solver);
-        resolve(ItemRecommender.class, solver);
-        resolve(GlobalItemRecommender.class, solver);
+        for (Class<?> root : roots) {
+            resolve(root, solver);
+        }
 
         // At this point the graph contains the dependency state to build a
         // recommender with the current DAO. Any extra bind rules don't matter
         // because they could not have created any Nodes.
-        Graph<Satisfaction, Desire> buildGraph = solver.getGraph();
-        
-        // Instantiate all nodes, and remove transient edges
-        Queue<Node<Satisfaction>> removeQueue = new LinkedList<Node<Satisfaction>>();
-        Map<Node<Satisfaction>, Object> instances = instantiate(buildGraph, removeQueue);
-        
-        // Remove all subgraphs that have been detached by the transient edge removal
-        pruneGraph(buildGraph, removeQueue);
-        
-        Iterator<Entry<Node<Satisfaction>, Object>> i = instances.entrySet().iterator();
-        while(i.hasNext()) {
-            Node<Satisfaction> n = i.next().getKey();
-            if (n.getLabel() != null) {
-                // Remove this instance if it is a DAO, or depends on a DAO,
-                // or if no other node depends on it
-                Set<Edge<Satisfaction, Desire>> incoming = buildGraph.getIncomingEdges(n);
-                
-                if (DataAccessObject.class.isAssignableFrom(n.getLabel().getErasedType())) {
-                    // This is the DAO instance node specific to the build phase,
-                    // we replace it with a special satisfaction so it can be replaced
-                    // per-session by the LenskitRecommenderEngine
-                    Node<Satisfaction> newDAONode = new Node<Satisfaction>(new DAOSatisfaction());
-                    buildGraph.replaceNode(n, newDAONode);
-                    i.remove();
-                } else if (incoming == null || incoming.isEmpty() || requiresDAO(n, buildGraph)) {
-                    // This instance either requires a session DAO, or is no
-                    // longer part of the graph
-                    i.remove();
-                }
-            }
-        }
-        
-        return new LenskitRecommenderEngine(factory, buildGraph, 
-                                            instances, config.getSPI());
+        return solver.getGraph();
     }
-    
-    private boolean requiresDAO(Node<Satisfaction> n, Graph<Satisfaction, Desire> graph) {
-        for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(n)) {
-            Node<Satisfaction> tail = e.getTail();
-            if (DataAccessObject.class.isAssignableFrom(tail.getLabel().getErasedType())) {
-                // The node, n, has a direct dependency on a DAO
-                return true;
-            } else {
-                // Check if it has an indirect dependency on a DAO
-                if (requiresDAO(tail, graph)) {
-                    return true;
-                }
-            }
-        }
-        
-        // The node does not have any dependencies on a DAO
-        return false;
-    }
-    
-    private void pruneGraph(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
-        while(!removeQueue.isEmpty()) {
-            Node<Satisfaction> candidate = removeQueue.poll();
-            Set<Edge<Satisfaction, Desire>> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
-            if (incoming != null && incoming.isEmpty()) {
-                // No other node depends on this node, so we can remove it,
-                // we must also flag its dependencies as removal candidates
-                for (Edge<Satisfaction, Desire> e: graph.getOutgoingEdges(candidate)) {
-                    removeQueue.add(e.getTail());
-                }
-                graph.removeNode(candidate);
-            }
-        }
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Map<Node<Satisfaction>, Object> instantiate(Graph<Satisfaction, Desire> graph, Queue<Node<Satisfaction>> removeQueue) {
-        List<Node<Satisfaction>> sorted = graph.sort(graph.getNode(null));
-        final Map<Node<Satisfaction>, Object> instanceMap = new HashMap<Node<Satisfaction>, Object>();
 
-        for (Node<Satisfaction> n: sorted) {
-            if (n.getLabel() != null && !instanceMap.containsKey(n)) {
-                // instantiate this node
-                final Set<Edge<Satisfaction, Desire>> outgoing = graph.getOutgoingEdges(n);
-                Provider<?> provider = n.getLabel().makeProvider(new ProviderSource() {
-                    @Override
-                    public Provider<?> apply(Desire desire) {
-                        for (Edge<Satisfaction, Desire> e: outgoing) {
-                            if (e.getLabel().equals(desire)) {
-                                // Return the cached instance based on the tail node
-                                Object instance = instanceMap.get(e.getTail());
-                                return new InstanceProvider(instance);
-                            }
-                        }
-                        
-                        // Should not happen
-                        throw new RuntimeException("Could not find instantiated dependency");
-                    }
-                });
-                
-                // Store created instance into the map
-                instanceMap.put(n, provider.get());
-                
-                // Remove all transient outgoing edges from the graph
-                for (Edge<Satisfaction, Desire> e: outgoing) {
-                    if (e.getLabel().isTransient()) {
-                        graph.removeEdge(e);
-                        
-                        // Push the tail node of the transient edge into the queue,
-                        // there's a chance that it can be removed if it has no more
-                        // incoming edges
-                        removeQueue.add(e.getTail());
-                    }
-                }
-            }
-        }
-        
-        return instanceMap;
+    public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
+        return buildGraph(daoType);
+    }
+
+    public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
+        return simulateInstantiation(buildGraph(daoType));
     }
 }

@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 
@@ -33,8 +34,8 @@ import com.google.common.io.Files;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class CSVWriter implements TableWriter {
     private Writer writer;
@@ -42,11 +43,13 @@ public class CSVWriter implements TableWriter {
 
     /**
      * Construct a new CSV writer.
+     *
      * @param w The underlying writer to output to.
      * @param l The table layout, or {@code null} if the table has no headers.
      * @throws IOException if there is an error writing the column headers.
      */
     public CSVWriter(@Nonnull Writer w, @Nullable TableLayout l) throws IOException {
+        Preconditions.checkNotNull(w, "writer must not be null");
         layout = l;
         writer = w;
         if (layout != null) {
@@ -61,8 +64,9 @@ public class CSVWriter implements TableWriter {
     }
 
     String quote(String e) {
-        if (e == null)
+        if (e == null) {
             return "";
+        }
 
         if (e.matches("[\r\n,\"]")) {
             return "\"" + e.replaceAll("\"", "\"\"") + "\"";
@@ -72,7 +76,7 @@ public class CSVWriter implements TableWriter {
     }
 
     @Override
-    public synchronized void writeRow(String[] row) throws IOException {
+    public synchronized void writeRow(Object[] row) throws IOException {
         if (layout != null && row.length > layout.getColumnCount()) {
             throw new IllegalArgumentException("row too long");
         }
@@ -83,7 +87,10 @@ public class CSVWriter implements TableWriter {
                 writer.write(',');
             }
             if (i < row.length) {
-                writer.write(quote(row[i]));
+                Object val = row[i];
+                if (val != null) {
+                    writer.write(quote(val.toString()));
+                }
             }
         }
         writer.write('\n');
@@ -97,8 +104,9 @@ public class CSVWriter implements TableWriter {
 
     /**
      * Open a CSV writer to write to a file.
-     * @param file The file to write to.
-     * @param layout The layout of the table.
+     *
+     * @param file        The file to write to.
+     * @param layout      The layout of the table.
      * @param compression What compression, if any, to use.
      * @return A CSV writer outputting to {@code file}.
      * @throws IOException if there is an error opening the file or writing the column header.
@@ -120,11 +128,12 @@ public class CSVWriter implements TableWriter {
     /**
      * Open a CSV writer to write to an auto-compressed file. The file will be compressed if its
      * name ends in ".gz".
-     * @param file The file.
+     *
+     * @param file   The file.
      * @param layout The table layout.
      * @return The CSV writer.
      * @throws IOException if there is an error opening the file or writing the column header.
-     * @see #open(File,TableLayout,CompressionMode)
+     * @see #open(File, TableLayout, CompressionMode)
      */
     public static CSVWriter open(File file, @Nullable TableLayout layout) throws IOException {
         return open(file, layout, CompressionMode.AUTO);

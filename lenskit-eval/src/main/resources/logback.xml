@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%-5level %logger{24} - %msg%n</pattern>
-        </encoder>
-        <target>System.err</target>
-    </appender>
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-5level %logger{24} - %msg%n</pattern>
+    </encoder>
+    <target>System.err</target>
+  </appender>
 
-    <root level="${logging.level:-INFO}">
-        <appender-ref ref="STDERR"/>
-    </root>
+  <logger name="org.grouplens.grapht"
+          level="WARN"/>
+
+  <root level="${logging.level:-INFO}">
+    <appender-ref ref="STDERR"/>
+  </root>
 </configuration>

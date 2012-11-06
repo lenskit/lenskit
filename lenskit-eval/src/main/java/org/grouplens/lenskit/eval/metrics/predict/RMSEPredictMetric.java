@@ -25,6 +25,7 @@ import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +33,12 @@ import static java.lang.Math.sqrt;
 
 /**
  * Evaluate a recommender's prediction accuracy with RMSE.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final String[] COLUMNS = { "RMSE.ByRating", "RMSE.ByUser" };
+    private static final String[] COLUMNS = {"RMSE.ByRating", "RMSE.ByUser"};
     private static final String[] USER_COLUMNS = {"RMSE"};
 
     @Override
@@ -49,7 +50,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
     public String[] getColumnLabels() {
         return COLUMNS;
     }
-    
+
     @Override
     public String[] getUserColumnLabels() {
         return USER_COLUMNS;
@@ -62,15 +63,17 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             double usse = 0;
             int n = 0;
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
+            for (VectorEntry e : predictions.fast()) {
+                if (Double.isNaN(e.getValue())) {
+                    continue;
+                }
 
-                double err = e.getDoubleValue() - ratings.get(e.getLongKey());
+                double err = e.getValue() - ratings.get(e.getKey());
                 usse += err * err;
                 n++;
             }
@@ -79,22 +82,18 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
             if (n > 0) {
                 double rmse = sqrt(usse / n);
                 totalRMSE += rmse;
-                nusers ++;
-                return new String[]{Double.toString(rmse)};
+                nusers++;
+                return new Object[]{rmse};
             } else {
                 return null;
             }
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = sqrt(sse / nratings);
             logger.info("RMSE: {}", v);
-            return new String[] {
-                    Double.toString(v),
-                    Double.toString(totalRMSE / nusers)
-            };
+            return new Object[]{v, totalRMSE / nusers};
         }
-
     }
 }

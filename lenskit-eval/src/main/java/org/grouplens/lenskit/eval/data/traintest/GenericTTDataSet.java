@@ -31,16 +31,23 @@ import java.util.Map;
 
 /**
  * A train-test data set backed by a pair of factories.
- * 
- * @since 0.8
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @since 0.8
  */
 public class GenericTTDataSet implements TTDataSet {
-    private final @Nonnull String name;
-    private final @Nonnull DataSource trainData;
-    private final @Nonnull DataSource testData;
-    private final @Nullable PreferenceDomain preferenceDomain;
+    private final
+    @Nonnull
+    String name;
+    private final
+    @Nonnull
+    DataSource trainData;
+    private final
+    @Nonnull
+    DataSource testData;
+    private final
+    @Nullable
+    PreferenceDomain preferenceDomain;
     private final Map<String, Object> attributes;
 
     public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
@@ -56,9 +63,10 @@ public class GenericTTDataSet implements TTDataSet {
 
     /**
      * Create a new generic data set.
-     * @param name The data set name.
-     * @param train The training DAO factory.
-     * @param test The test DAO factory.
+     *
+     * @param name   The data set name.
+     * @param train  The training DAO factory.
+     * @param test   The test DAO factory.
      * @param domain The preference domain.
      */
     public GenericTTDataSet(@Nonnull String name, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
@@ -73,18 +81,19 @@ public class GenericTTDataSet implements TTDataSet {
         attributes = Collections.singletonMap("DataSource", (Object) name);
     }
 
-    @Override @Nonnull
+    @Override
+    @Nonnull
     public String getName() {
         return name;
     }
-    
+
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;
     }
-    
+
     @Override
-    public long lastUpdated() {
+    public long lastModified() {
         return Math.max(trainData.lastModified(),
                         testData.lastModified());
     }
@@ -94,7 +103,8 @@ public class GenericTTDataSet implements TTDataSet {
         /* no-op */
     }
 
-    @Override @Nullable
+    @Override
+    @Nullable
     public PreferenceDomain getPreferenceDomain() {
         return preferenceDomain;
     }
@@ -118,7 +128,7 @@ public class GenericTTDataSet implements TTDataSet {
     public DataSource getTrainData() {
         return trainData;
     }
-    
+
     @Override
     public String toString() {
         return String.format("{TTDataSet %s}", name);

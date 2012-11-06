@@ -18,37 +18,72 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import org.grouplens.lenskit.eval.config.BuilderDelegate
-import org.grouplens.lenskit.eval.config.EvalConfigEngine
+import com.google.common.io.Files
+
 import org.grouplens.lenskit.eval.data.CSVDataSource
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
+
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import static org.hamcrest.Matchers.equalTo
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
 import static org.junit.Assert.assertTrue
+import org.grouplens.lenskit.eval.config.CommandDelegate
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.config.EvalScriptEngine
+
+import static org.hamcrest.Matchers.hasKey
+import org.grouplens.lenskit.symbols.Symbol
+import org.apache.commons.lang3.tuple.Pair
+
+import static org.hamcrest.Matchers.hasItem
 
 /**
- * Tests for train-test configurations; they also serve to test the builder delegate
+ * Tests for train-test configurations; they also serve to test the command delegate
  * framework.
  * @author Michael Ekstrand
  */
 class TestTrainTestBuilderConfig {
-    EvalConfigEngine engine
-    TrainTestEvalBuilder builder
-    BuilderDelegate delegate
+    EvalScriptEngine engine
+    TrainTestEvalCommand command
+    CommandDelegate delegate
+
+    def file = File.createTempFile("tempRatings", "csv")
+    def trainTestDir = Files.createTempDir()
+
+    @Before
+    void prepareFile() {
+        file.deleteOnExit()
+        file.append('19,242,3,881250949\n')
+        file.append('296,242,3.5,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+        file.append('196,242,3,881250949\n')
+    }
 
     @Before
     void setupDelegate() {
-        engine = new EvalConfigEngine()
-        builder = new TrainTestEvalBuilder()
-        delegate = new BuilderDelegate(engine, builder)
+        engine = new EvalScriptEngine()
+        command = new TrainTestEvalCommand("TTcommand")
+        delegate = new CommandDelegate(engine, command)
     }
-    
+
+    @After
+    void cleanUpFiles() {
+        file.delete()
+        trainTestDir.deleteDir()
+    }
+
     def eval(Closure cl) {
         cl.setDelegate(delegate)
         cl.setResolveStrategy(Closure.DELEGATE_FIRST)
@@ -61,7 +96,7 @@ class TestTrainTestBuilderConfig {
             metric new CoveragePredictMetric()
             metric new RMSEPredictMetric()
         }
-        def metrics = builder.getMetrics()
+        def metrics = command.getMetrics()
         assertThat(metrics.size(), equalTo(2))
     }
 
@@ -71,7 +106,7 @@ class TestTrainTestBuilderConfig {
             metric CoveragePredictMetric
             metric RMSEPredictMetric
         }
-        def metrics = builder.getMetrics()
+        def metrics = command.getMetrics()
         assertThat(metrics.size(), equalTo(2))
     }
 
@@ -80,7 +115,7 @@ class TestTrainTestBuilderConfig {
         eval {
             output "eval-out.csv"
         }
-        assertThat(builder.getOutput(), equalTo(new File("eval-out.csv")))
+        assertThat(command.getOutput(), equalTo(new File("eval-out.csv")))
     }
 
     @Test
@@ -88,7 +123,7 @@ class TestTrainTestBuilderConfig {
         eval {
             predictOutput "predictions.csv"
         }
-        assertThat(builder.getPredictOutput(), equalTo(new File("predictions.csv")))
+        assertThat(command.getPredictOutput(), equalTo(new File("predictions.csv")))
     }
 
     @Test
@@ -97,9 +132,9 @@ class TestTrainTestBuilderConfig {
         eval {
             dataset {
                 // check some things about our strategy...
-                assertThat(delegate, instanceOf(BuilderDelegate))
+                assertThat(delegate, instanceOf(CommandDelegate))
                 assertThat(resolveStrategy, equalTo(Closure.DELEGATE_FIRST))
-                assertThat(delegate.builder, instanceOf(GenericTTDataBuilder))
+                assertThat(delegate.command, instanceOf(GenericTTDataCommand))
 
                 closureInvoked = true
 
@@ -110,7 +145,7 @@ class TestTrainTestBuilderConfig {
             }
         }
         assertTrue(closureInvoked)
-        def data = builder.dataSources()
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
@@ -132,7 +167,7 @@ class TestTrainTestBuilderConfig {
             }
         }
         assertTrue(closureInvoked)
-        def data = builder.dataSources()
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
@@ -144,13 +179,36 @@ class TestTrainTestBuilderConfig {
 
     @Test
     void testCrossfoldDataSource() {
-        eval {
-            dataset crossfold("ml-100k") {
-                source "ml-100k.csv"
+        def dat = eval {
+            crossfold("tempRatings") {
+                source file
                 partitions 7
+                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
             }
         }
-        def data = builder.dataSources()
+        assertThat(dat.size(), equalTo(7))
+        assertThat(dat[2], instanceOf(TTDataSet))
+        eval {
+            dataset dat
+        }
+        def data = command.dataSources()
         assertThat(data.size(), equalTo(7))
+    }
+
+    @Test
+    void testChannelConfig() {
+        assertThat(command.predictionChannels.size(),
+                   equalTo(0));
+        eval {
+            writePredictionChannel Symbol.of("foo")
+            writePredictionChannel Symbol.of("wombat"), "woozle"
+        }
+        assertThat(command.predictionChannels.size(),
+                   equalTo(2));
+        assertThat(command.predictionChannels,
+                   hasItem(Pair.of(Symbol.of("foo"), "foo")));
+        assertThat(command.predictionChannels,
+                   hasItem(Pair.of(Symbol.of("wombat"), "woozle")));
     }
 }

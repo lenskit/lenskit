@@ -18,8 +18,6 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -29,6 +27,7 @@ import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +78,10 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             // indexed by prediction then rating.
             double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
             
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
-                int pred = quantizer.apply(e.getDoubleValue());
-                int rating = quantizer.apply(ratings.get(e.getLongKey()));
+            for (VectorEntry e: predictions.fast()) {
+                if (Double.isNaN(e.getValue())) continue;
+                int pred = quantizer.apply(e.getValue());
+                int rating = quantizer.apply(ratings.get(e.getKey()));
                 jointDistribution[pred][rating]++;
                 n++;
             }

@@ -36,9 +36,9 @@ package org.grouplens.lenskit.data;
  * {@link #hashCode()} methods.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
-public interface Event extends Cloneable {
+public interface Event {
     /**
      * Get the event's ID. Each event must have a globally-unique ID, and events
      * are considered equal if their IDs are equal.
@@ -56,6 +56,7 @@ public interface Event extends Cloneable {
 
     /**
      * Get the item ID.
+     *
      * @return The item ID of the event.
      */
     abstract long getItemId();
@@ -76,10 +77,10 @@ public interface Event extends Cloneable {
      * Clones of events should generally be independent of any backing store
      * (e.g. an event backed by an index into an array of data should, when
      * cloned, create a new event that stores the data directly). As a result,
-     * the object returned by {@link #clone()} may be of a different concrete
+     * the object returned by {@link #copy()} may be of a different concrete
      * type. They should also always be immutable.
      *
      * @return A copy of the event.
      */
-    Event clone();
+    Event copy();
 }

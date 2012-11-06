@@ -21,23 +21,10 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -45,8 +32,15 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Iterator;
+
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
 /**
  * Rating scorer that returns the item's mean rating for all predictions.
@@ -59,19 +53,26 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
- *
  */
 @DefaultProvider(ItemMeanPredictor.Provider.class)
-public class ItemMeanPredictor implements BaselinePredictor {
+@Shareable
+public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
      *
+     * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
     public static class Provider implements javax.inject.Provider<ItemMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
-        
+
+        /**
+         * Construct a new provider.
+         *
+         * @param dao     The DAO.
+         * @param damping The Bayesian mean damping term. It biases means toward the
+         *                global mean.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double damping) {
@@ -84,10 +85,10 @@ public class ItemMeanPredictor implements BaselinePredictor {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean = computeItemAverages(
-                ratings.fast().iterator(),
-                damping, itemMeans);
+                    ratings.fast().iterator(),
+                    damping, itemMeans);
             ratings.close();
-            
+
             return new ItemMeanPredictor(itemMeans, globalMean, damping);
         }
     }
@@ -102,8 +103,9 @@ public class ItemMeanPredictor implements BaselinePredictor {
     /**
      * Construct a new scorer. This assumes ownership of the provided map.
      *
-     * @param itemMeans A map of item IDs to their mean ratings.
+     * @param itemMeans  A map of item IDs to their mean ratings.
      * @param globalMean The mean rating value for all items.
+     * @param damping    The damping factor.
      */
     public ItemMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
         if (itemMeans instanceof Serializable) {
@@ -124,12 +126,14 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * returning the global mean, so that we can compute the global mean and the
      * item means in a single pass through the data source.
      *
-     * @param ratings The collection of preferences the averages are based on.
+     * @param ratings         The collection of preferences the averages are based on.
      * @param itemMeansResult A map in which the means should be stored.
+     * @param damping         The damping term.
      * @return The global mean rating. The item means are stored in
-     *         <var>itemMeans</var>.
+     *         {@var itemMeans}.
      */
-    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping, Long2DoubleMap itemMeansResult) {
+    public static double computeItemAverages(Iterator<? extends Rating> ratings, double damping,
+                                             Long2DoubleMap itemMeansResult) {
         // We iterate the loop to compute the global and per-item mean
         // ratings.  Subtracting the global mean from each per-item mean
         // is equivalent to averaging the offsets from the global mean, so
@@ -141,12 +145,12 @@ public class ItemMeanPredictor implements BaselinePredictor {
         Long2IntMap itemCounts = new Long2IntOpenHashMap();
         itemCounts.defaultReturnValue(0);
 
-        while(ratings.hasNext()) {
+        while (ratings.hasNext()) {
             Preference r = ratings.next().getPreference();
             if (r == null) {
                 continue; // skip unrates
             }
-            
+
             long i = r.getItemId();
             double v = r.getValue();
             total += v;
@@ -157,7 +161,7 @@ public class ItemMeanPredictor implements BaselinePredictor {
 
         final double mean = count > 0 ? total / count : 0;
         logger.debug("Computed global mean {} for {} items",
-                mean, itemMeansResult.size());
+                     mean, itemMeansResult.size());
 
         logger.debug("Computing item means, smoothing={}", damping);
         LongIterator items = itemCounts.keySet().iterator();
@@ -166,7 +170,9 @@ public class ItemMeanPredictor implements BaselinePredictor {
             double ct = itemCounts.get(iid) + damping;
             double t = itemMeansResult.get(iid) + damping * mean;
             double avg = 0.0;
-            if (ct > 0) avg = t / ct - mean;
+            if (ct > 0) {
+                avg = t / ct - mean;
+            }
             itemMeansResult.put(iid, avg);
         }
         return mean;
@@ -176,16 +182,12 @@ public class ItemMeanPredictor implements BaselinePredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings,
-                                       Collection<Long> items) {
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            preds[i] = getItemMean(keys[i]);
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector items, boolean predictSet) {
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e : items.fast(state)) {
+            items.set(e, getItemMean(e.getKey()));
         }
-        return MutableSparseVector.wrap(keys, preds);
     }
 
     @Override
@@ -193,7 +195,13 @@ public class ItemMeanPredictor implements BaselinePredictor {
         String cls = getClass().getSimpleName();
         return String.format("%s(µ=%.3f, γ=%.2f)", cls, globalMean, damping);
     }
-    
+
+    /**
+     * Get the mean for a particular item.
+     *
+     * @param id The item ID.
+     * @return The item's mean rating.
+     */
     protected double getItemMean(long id) {
         return globalMean + itemMeans.get(id);
     }

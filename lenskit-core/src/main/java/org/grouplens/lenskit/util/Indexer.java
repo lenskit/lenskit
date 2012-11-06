@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.longs.LongLists;
  * Build contiguous 0-based indexes for long IDs.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class Indexer implements Index {
     private static final long serialVersionUID = -8383883342128686850L;
@@ -45,41 +44,21 @@ public class Indexer implements Index {
         ids = new LongArrayList();
     }
 
-    /**
-     * Get the ID for an index.
-     * @param idx The index to query.
-     * @return The ID with index <var>idx</var>.
-     * @throws IndexOutOfBoundsException if the index is invalid.
-     */
     @Override
     public long getId(int idx) {
         return ids.getLong(idx);
     }
 
-    /**
-     * Get the list of all IDs in index order.
-     * @return The list of IDs.
-     */
     @Override
     public LongList getIds() {
         return LongLists.unmodifiable(ids);
     }
 
-    /**
-     * Get the index for an ID.
-     *
-     * @param id The ID o query.
-     * @return The index assigned to <var>id</var>, or -1 if <var>id</var> has
-     *         not been interned.
-     */
     @Override
     public int getIndex(long id) {
         return indexes.get(id);
     }
 
-    /**
-     * Get the number of objects interned in this indexer.
-     */
     @Override
     public int getObjectCount() {
         return ids.size();
@@ -89,7 +68,7 @@ public class Indexer implements Index {
      * Get an index for an ID, generating a new one if necessary.
      *
      * @param id The ID.
-     * @return The index for <var>id</var>. If the ID has already been interned,
+     * @return The index for {@var id}. If the ID has already been interned,
      *         the old index is returned; otherwise, a new index is generated
      *         and returned.
      */

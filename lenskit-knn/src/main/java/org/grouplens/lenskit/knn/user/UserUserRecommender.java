@@ -26,8 +26,8 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 /**
  * A recommender and scorer using user-user collaborative filtering.
  * Neighbor user are aggregated using weighted averaging.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public class UserUserRecommender extends ScoreBasedItemRecommender {
     protected final UserUserRatingPredictor predictor;

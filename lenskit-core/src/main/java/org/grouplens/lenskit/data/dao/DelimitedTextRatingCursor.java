@@ -33,16 +33,33 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Cursor that parses arbitrary delimited text.
+ *
+ * @compat Public
+ */
 public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;
     private MutableRating rating;
     private DelimitedTextCursor rowCursor;
 
+    /**
+     * Construct a rating cursor from a reader.
+     *
+     * @param s The reader to read.
+     */
     public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s) {
         this(s, null, System.getProperty("lenskit.delimiter", "\t"));
     }
 
+    /**
+     * Construct a rating cursor from a reader.
+     *
+     * @param s         The reader to read.
+     * @param name      The file name (for error messages).
+     * @param delimiter The delimiter.
+     */
     public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
                                      @Nullable String name,
                                      @Nonnull String delimiter) {
@@ -73,8 +90,9 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
             rating.setItemId(Long.parseLong(fields[1]));
             rating.setRating(Double.parseDouble(fields[2]));
             rating.setTimestamp(-1);
-            if (fields.length >= 4)
+            if (fields.length >= 4) {
                 rating.setTimestamp(Long.parseLong(fields[3]));
+            }
 
             return rating;
         }

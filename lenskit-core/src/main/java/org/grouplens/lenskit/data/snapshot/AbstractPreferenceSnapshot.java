@@ -28,13 +28,20 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+/**
+ * Base class for implementing preference snapshots.
+ */
 public abstract class AbstractPreferenceSnapshot implements PreferenceSnapshot {
-
+    /**
+     * The user vector cache.
+     */
     protected volatile Long2ObjectMap<SparseVector> cache;
 
+    /**
+     * Initialize the snapshot.
+     */
     public AbstractPreferenceSnapshot() {
-        cache =
-            Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<SparseVector>());
+        cache = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap<SparseVector>());
     }
 
     @Override

@@ -4,17 +4,26 @@
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
+    <relativePath />
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>build-tools</artifactId>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>LensKit Build Tools</name>
   <description>Files &amp; utilities used in LensKit build.</description>
   <url>${lenskit.web.url}/build-tools</url>
+
+  <licenses>
+    <license>
+      <name>LGPLv2+</name>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
@@ -35,16 +44,92 @@
     </snapshotRepository>
   </distributionManagement>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.sun</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.4.2</version>
+      <scope>system</scope>
+      <systemPath>${tools.jar}</systemPath>
+    </dependency>
+  </dependencies>
+
   <build>
     <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.0</version>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.5.1</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <reportPlugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-project-info-reports-plugin</artifactId>
+              <version>2.5</version>
+              <reports>
+                <report>index</report>
+                <report>license</report>
+                <!--<report>dependencies</report>-->
+                <!--<report>dependency-convergence</report>-->
+                <!--<report>dependency-management</report>-->
+                <report>plugins</report>
+              </reports>
+            </plugin>
+          </reportPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>standard-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../lib/tools.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>mac-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../Classes/classes.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../Classes/classes.jar</tools.jar>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>win-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../jdk${java.version}/lib/tools.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../jdk${java.version}/lib/tools.jar</tools.jar>
+      </properties>
+    </profile>
+  </profiles>
 </project>

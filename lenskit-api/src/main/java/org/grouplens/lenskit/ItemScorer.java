@@ -24,13 +24,13 @@ import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Score items for users.  These scores can be predicted ratings, relevance
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a particular user.
- *
  * <p>
  * This method provides two flavors of score methods: those that take a user ID,
  * loading data from the database as appropriate, and those that take a user
@@ -38,13 +38,13 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * in a model for the user.  The {@link #canUseHistory()} method allows client
  * code to query whether the history can actually be used by the underlying
  * recommender.  Both methods will work, but if {@link #canUseHistory()} returns
- * <tt>false</tt>, then the history-based methods will be equivalent to calling
+ * {@code false}, then the history-based methods will be equivalent to calling
  * the ID-based methods.
- *
- * @since 0.4
+ * </p>
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
+ * @since 0.4
  */
 public interface ItemScorer {
     /**
@@ -54,25 +54,39 @@ public interface ItemScorer {
      * @param item The item ID to score.
      * @return The preference, or {@link Double#NaN} if no preference can be
      *         predicted.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     double score(long user, long item);
 
     /**
      * Score a collection of items.
      *
-     * @param user The user ID for whom to generate scores.
+     * @param user  The user ID for whom to generate scores.
      * @param items The item to score.
      * @return A mapping from item IDs to predicted preference. This mapping may
      *         not contain all requested items.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     @Nonnull
-    SparseVector score(long user, Collection<Long> items);
+    SparseVector score(long user, @Nonnull Collection<Long> items);
+
+    /**
+     * Score items in a vector. The key domain of the provided vector is the
+     * items to score, and the score method sets the values for each item to
+     * its score (or unsets it, if no score can be provided). The previous
+     * values are discarded.
+     *
+     * @param user   The user ID.
+     * @param scores The score vector.
+     * @see #score(UserHistory, MutableSparseVector)
+     */
+    void score(long user, @Nonnull MutableSparseVector scores);
 
     /**
      * Query whether this scorer can actually use user history.
      *
-     * @return <tt>true</tt> if the history passed to one of the history-based
-     *         methods may be used, and <tt>false</tt> if it will be ignored.
+     * @return {@code true} if the history passed to one of the history-based
+     *         methods may be used, and {@code false} if it will be ignored.
      */
     boolean canUseHistory();
 
@@ -82,10 +96,11 @@ public interface ItemScorer {
      * model.
      *
      * @param profile The user's profile.
-     * @param item The item to score.
+     * @param item    The item to score.
      * @return The score, or {@link Double#NaN} if no score can be computed.
+     * @see #score(UserHistory, MutableSparseVector)
      */
-    double score(UserHistory<? extends Event> profile, long item);
+    double score(@Nonnull UserHistory<? extends Event> profile, long item);
 
     /**
      * Score a collection of items for the user using a history. If possible,
@@ -93,11 +108,30 @@ public interface ItemScorer {
      * database or model.
      *
      * @param profile The user's profile
-     * @param items The items to score.
+     * @param items   The items to score.
      * @return A mapping from item IDs to scores. This mapping may not contain
      *         all requested items — ones for which the scorer cannot compute a
      *         score will be omitted.
+     * @see #score(UserHistory, MutableSparseVector)
      */
     @Nonnull
-    SparseVector score(UserHistory<? extends Event> profile, Collection<Long> items);
+    SparseVector score(@Nonnull UserHistory<? extends Event> profile,
+                       @Nonnull Collection<Long> items);
+
+    /**
+     * Score items in a vector. The key domain of the provided vector is the
+     * items to score, and the score method sets the values for each item to
+     * its score (or unsets it, if no score can be provided). The previous
+     * values are discarded.
+     * <p>
+     * If the user has rated any items to be scored, the algorithm should not
+     * just use their rating as the score — it should compute a score in the
+     * normal fashion. If client code wants to substitute ratings, it is easy
+     * to do so as a separate step or wrapper interface.
+     *
+     * @param profile The user history.
+     * @param scores  The score vector.
+     */
+    void score(@Nonnull UserHistory<? extends Event> profile,
+               @Nonnull MutableSparseVector scores);
 }

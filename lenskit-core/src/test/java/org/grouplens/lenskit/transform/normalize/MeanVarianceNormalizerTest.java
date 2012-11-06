@@ -18,15 +18,10 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer;
-import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.After;
@@ -34,10 +29,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
- *
  */
 public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;
@@ -110,9 +106,9 @@ public class MeanVarianceNormalizerTest {
         Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
         trans.unapply(nUR);
         //Test unapply
-        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
     }
 
     @Test
@@ -123,14 +119,14 @@ public class MeanVarianceNormalizerTest {
         MutableSparseVector nUR = userRatings.mutableCopy();
         trans.apply(nUR);
         //Test apply
-        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 0.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 0.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(0.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(0.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
         trans.unapply(nUR);
         //Test unapply
-        Assert.assertEquals( 2.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 2.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
     }
 
     @Test
@@ -140,7 +136,7 @@ public class MeanVarianceNormalizerTest {
         VectorTransformation trans = urvn.makeTransformation(userRatings);
         MutableSparseVector nUR = userRatings.mutableCopy();
         final double mean = 2.0;
-        final double stdev = Math.sqrt(7.0/3.0);
+        final double stdev = Math.sqrt(7.0 / 3.0);
         trans.apply(nUR);
         //Test apply
         Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
@@ -148,8 +144,8 @@ public class MeanVarianceNormalizerTest {
         Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
         trans.unapply(nUR);
         //Test unapply
-        Assert.assertEquals( 0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
-        Assert.assertEquals( 4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
     }
 }

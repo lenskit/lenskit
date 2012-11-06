@@ -7,7 +7,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -31,17 +31,22 @@
     <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
     <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
     <url>https://bitbucket.org/grouplens/lenskit</url>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
-    <cite.database>${basedir}/etc/references.rdf</cite.database>
-    <groovy.version>1.8.6</groovy.version>
+    <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
+    <groovy.version>1.8.7</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
+    <grapht.version>0.4.3</grapht.version>
+    <grouplens.common.version>0.6.1</grouplens.common.version>
+    <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
   <distributionManagement>
@@ -63,11 +68,13 @@
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
     <module>lenskit-eval</module>
+    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
-    <module>lenskit-eval-demo</module>
     <module>lenskit-package</module>
+    <module>lenskit-archetype-simple-analysis</module>
+    <module>lenskit-archetype-fancy-analysis</module>    
   </modules>
 
   <build>
@@ -77,7 +84,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.3.2</version>
+          <version>2.5.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
@@ -114,22 +121,22 @@
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.8.1</version>
           <!--<configuration>-->
-            <!--<quiet>true</quiet>-->
-            <!--<tags>-->
-              <!--<tag>-->
-                <!--<name>todo</name>-->
-                <!--<placement>a</placement>-->
-                <!--<head>To Do:</head>-->
-              <!--</tag>-->
-              <!--<tag>-->
-                <!--<name>review</name>-->
-                <!--<placement>a</placement>-->
-                <!--<head>Review:</head>-->
-              <!--</tag>-->
-            <!--</tags>-->
-            <!--<footer><![CDATA[-->
-              <!--<script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>-->
-            <!--]]></footer>-->
+          <!--<quiet>true</quiet>-->
+          <!--<tags>-->
+          <!--<tag>-->
+          <!--<name>todo</name>-->
+          <!--<placement>a</placement>-->
+          <!--<head>To Do:</head>-->
+          <!--</tag>-->
+          <!--<tag>-->
+          <!--<name>review</name>-->
+          <!--<placement>a</placement>-->
+          <!--<head>Review:</head>-->
+          <!--</tag>-->
+          <!--</tags>-->
+          <!--<footer><![CDATA[-->
+          <!--<script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>-->
+          <!--]]></footer>-->
           <!--</configuration>-->
         </plugin>
 
@@ -137,12 +144,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.12</version>
+          <version>2.12.2</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.3.2</version>
+          <version>2.5.2</version>
           <configuration>
             <effort>Max</effort>
           </configuration>
@@ -150,7 +157,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
-          <version>2.7</version>
+          <version>2.7.1</version>
           <configuration>
             <format>xml</format>
             <targetJdk>1.6</targetJdk>
@@ -159,7 +166,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>2.8</version>
+          <version>2.9.1</version>
           <dependencies>
             <dependency>
               <groupId>org.grouplens.lenskit</groupId>
@@ -167,10 +174,6 @@
               <version>${project.version}</version>
             </dependency>
           </dependencies>
-          <configuration>
-            <includeTestSourceDirectory>true</includeTestSourceDirectory>
-            <configLocation>lenskit/checkstyle.xml</configLocation>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -187,7 +190,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>2.2.2</version>
+          <version>2.3.2</version>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
           </configuration>
@@ -195,7 +198,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>1.5</version>
+          <version>1.7.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -212,27 +215,32 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.2.1</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-archetype-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
 
         <!-- Site generation -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.0</version>
+          <version>3.1</version>
           <configuration>
             <reportPlugins>
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.5</version>
                 <reports>
                   <report>index</report>
-                  <report>dependencies</report>
-                  <report>dependency-convergence</report>
-                  <report>dependency-management</report>
-                  <report>plugins</report>
+                  <!--<report>dependencies</report>-->
+                  <!--<report>dependency-convergence</report>-->
+                  <!--<report>dependency-management</report>-->
+                  <!--<report>plugins</report>-->
                 </reports>
               </plugin>
-              
+
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -252,25 +260,42 @@
                     </tag>
                   </tags>
 
+                  <!--<additionalparam>-->
+                  <!--"-J-Djavadoc.cite.database=${cite.database}"-->
+                  <!--</additionalparam>-->
                   <additionalJOption>
-                    "-J-Djavadoc.cite.database=${cite.database}"
+                    "-J-Dgrouplens.javadoc.versioning.url=${lenskit.web.url}/versioning.html"
                   </additionalJOption>
 
                   <taglets>
+                    <!--<taglet>-->
+                    <!--<tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass>-->
+                    <!--<tagletArtifact>-->
+                    <!--<groupId>org.grouplens.common</groupId>-->
+                    <!--<artifactId>javadoc-citation-taglet</artifactId>-->
+                    <!--<version>0.4</version>-->
+                    <!--</tagletArtifact>-->
+                    <!--</taglet>-->
                     <taglet>
-                      <tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass>
+                      <tagletClass>org.grouplens.javadoc.taglets.CompatTaglet</tagletClass>
                       <tagletArtifact>
-                        <groupId>org.grouplens.common</groupId>
-                        <artifactId>javadoc-citation-taglet</artifactId>
-                        <version>0.4</version>
+                        <groupId>org.grouplens.lenskit</groupId>
+                        <artifactId>build-tools</artifactId>
+                        <version>${project.version}</version>
                       </tagletArtifact>
+                    </taglet>
+                    <taglet>
+                      <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
+                    </taglet>
+                    <taglet>
+                      <tagletClass>org.grouplens.javadoc.taglets.TracIssueTaglet</tagletClass>
                     </taglet>
                   </taglets>
 
                   <footer><![CDATA[
                   <script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>
                   ]]></footer>
-                  <excludePackageNames>org.grouplens.lenskit.pico</excludePackageNames>
+                  <excludePackageNames>org.grouplens.javadoc.taglets</excludePackageNames>
                   <detectJavaApiLink>true</detectJavaApiLink>
                   <detectJavaLinks>true</detectJavaLinks>
                   <links>
@@ -280,7 +305,7 @@
                   <useStandardDocletOptions>true</useStandardDocletOptions>
                 </configuration>
               </plugin>
-              
+
               <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jdepend-maven-plugin</artifactId>
@@ -299,7 +324,7 @@
                   <linkJavadoc>true</linkJavadoc>
                 </configuration>
               </plugin>
-              
+
             </reportPlugins>
           </configuration>
         </plugin>
@@ -314,10 +339,12 @@
         <!-- LensKit requires Java 1.6 or better. -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.0.1</version>
+        <version>1.1.1</version>
         <configuration>
           <rules>
-            <requireJavaVersion><version>[1.6.0,)</version></requireJavaVersion>
+            <requireJavaVersion>
+              <version>[1.6.0,)</version>
+            </requireJavaVersion>
           </rules>
         </configuration>
       </plugin>
@@ -326,12 +353,12 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <inherited>false</inherited>
-        
+
         <configuration>
           <templateFile>src/site/site.vm</templateFile>
 
           <reportPlugins combine.children="append">
-            
+
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jxr-plugin</artifactId>
@@ -343,34 +370,34 @@
             </plugin>
 
             <!--<plugin>-->
-              <!--<groupId>org.apache.maven.plugins</groupId>-->
-              <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-              <!--<configuration>-->
-                <!--<groups>-->
-                  <!--<group>-->
-                    <!--<title>Core API</title>-->
-                    <!--<packages>org.grouplens.lenskit:org.grouplens.lenskit.core</packages>-->
-                  <!--</group>-->
-                  <!--<group>-->
-                    <!--<title>Data Access</title>-->
-                    <!--<packages>org.grouplens.lenskit.data*:org.grouplens.lenskit.cursors</packages>-->
-                  <!--</group>-->
-                  <!--<group>-->
-                    <!--<title>Recommender Implementations</title>-->
-                    <!--<packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.svd*:org.grouplens.slopeone*</packages>-->
-                  <!--</group>-->
-                  <!--<group>-->
-                    <!--<title>Recommender Evaluation</title>-->
-                    <!--<packages>org.grouplens.lenskit.eval*</packages>-->
-                  <!--</group>-->
-                  <!--<group>-->
-                    <!--<title>Utility Classes</title>-->
-                    <!--<packages>org.grouplens.lenskit.util*</packages>-->
-                  <!--</group>-->
-                <!--</groups>-->
-              <!--</configuration>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-javadoc-plugin</artifactId>-->
+            <!--<configuration>-->
+            <!--<groups>-->
+            <!--<group>-->
+            <!--<title>Core API</title>-->
+            <!--<packages>org.grouplens.lenskit:org.grouplens.lenskit.core</packages>-->
+            <!--</group>-->
+            <!--<group>-->
+            <!--<title>Data Access</title>-->
+            <!--<packages>org.grouplens.lenskit.data*:org.grouplens.lenskit.cursors</packages>-->
+            <!--</group>-->
+            <!--<group>-->
+            <!--<title>Recommender Implementations</title>-->
+            <!--<packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.mf.funksvdksvd*:org.grouplens.slopeone*</packages>-->
+            <!--</group>-->
+            <!--<group>-->
+            <!--<title>Recommender Evaluation</title>-->
+            <!--<packages>org.grouplens.lenskit.eval*</packages>-->
+            <!--</group>-->
+            <!--<group>-->
+            <!--<title>Utility Classes</title>-->
+            <!--<packages>org.grouplens.lenskit.util*</packages>-->
+            <!--</group>-->
+            <!--</groups>-->
+            <!--</configuration>-->
             <!--</plugin>-->
-            
+
           </reportPlugins>
         </configuration>
       </plugin>
@@ -383,7 +410,9 @@
           <execution>
             <id>compile-sass</id>
             <phase>site</phase>
-            <goals><goal>exec</goal></goals>
+            <goals>
+              <goal>exec</goal>
+            </goals>
             <configuration>
               <executable>sass</executable>
               <arguments>
@@ -397,27 +426,29 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <version>1.9.0</version>
         <inherited>false</inherited>
-        <executions>
-          <execution>
-            <id>default-single</id>
-            <phase>site</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/site</outputDirectory>
-              <tarLongFileMode>gnu</tarLongFileMode>
-              <descriptors>
-                <descriptor>src/assemble/source-package.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
+        <configuration>
+          <basedir>${basedir}</basedir>
+          <header>${basedir}/etc/header.txt</header>
+          <aggregate>true</aggregate>
+          <strictCheck>true</strictCheck>
+          <includes>
+            <include>*/src/**/*.java</include>
+            <include>*/src/**/*.groovy</include>
+          </includes>
+          <excludes>
+            <exclude>lenskit-archetype*/src/**</exclude>
+          </excludes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+            <groovy>SLASHSTAR_STYLE</groovy>
+          </mapping>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -434,12 +465,12 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.6</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.6.4</version>
+        <version>1.6.6</version>
       </dependency>
 
       <!-- metadata -->
@@ -460,12 +491,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>13.0.1</version>
       </dependency>
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>6.4.4</version>
+        <version>6.4.6</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -473,21 +504,14 @@
         <version>3.1</version>
       </dependency>
 
-      <!-- DI -->
-      <dependency>
-        <groupId>org.picocontainer</groupId>
-        <artifactId>picocontainer</artifactId>
-        <version>2.13.3</version>
-      </dependency>
-
       <!-- I/O support -->
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.1</version>
+        <version>2.4</version>
       </dependency>
 
-      <!-- Groovy -->
+      <!-- Groovy & Ant -->
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy</artifactId>
@@ -497,6 +521,11 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
         <version>${groovy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.8.4</version>
       </dependency>
 
       <!-- test libraries -->
@@ -518,7 +547,7 @@
       <dependency>
         <groupId>org.grouplens.common</groupId>
         <artifactId>common-test</artifactId>
-        <version>0.6-SNAPSHOT</version>
+        <version>${grouplens.common.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -581,9 +610,31 @@
         </pluginManagement>
 
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>default-single</id>
+                <phase>site</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/site</outputDirectory>
+                  <tarLongFileMode>gnu</tarLongFileMode>
+                  <descriptors>
+                    <descriptor>src/assemble/source-package.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
+
     <profile>
       <id>develop</id>
       <activation>
@@ -605,7 +656,7 @@
                   <goal>remove-project-artifact</goal>
                 </goals>
                 <configuration>
-                  <removeAll>false</removeAll>
+                  <removeAll>${lenskit.clean.removeAll}</removeAll>
                 </configuration>
               </execution>
             </executions>
@@ -614,10 +665,15 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <showWarnings>true</showWarnings>
-              <showDeprecation>true</showDeprecation>
-            </configuration>
+            <executions>
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <showWarnings>true</showWarnings>
+                  <showDeprecation>true</showDeprecation>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
         </plugins>
@@ -630,18 +686,25 @@
 
     <profile>
       <id>lint</id>
+      <properties>
+        <lenskit.clean.removeAll>true</lenskit.clean.removeAll>
+      </properties>
       <build>
         <plugins>
 
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArguments>
-                <Xlint />
-              </compilerArguments>
-              <fork>true</fork>
-            </configuration>
+            <executions>
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <compilerArguments>
+                    <Xlint />
+                  </compilerArguments>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
           <plugin>
@@ -664,19 +727,19 @@
             </executions>
           </plugin>
 
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-pmd-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>lint</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>pmd</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
+          <!--<plugin>-->
+          <!--<groupId>org.apache.maven.plugins</groupId>-->
+          <!--<artifactId>maven-pmd-plugin</artifactId>-->
+          <!--<executions>-->
+          <!--<execution>-->
+          <!--<id>lint</id>-->
+          <!--<phase>verify</phase>-->
+          <!--<goals>-->
+          <!--<goal>pmd</goal>-->
+          <!--</goals>-->
+          <!--</execution>-->
+          <!--</executions>-->
+          <!--</plugin>-->
 
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -691,6 +754,8 @@
                 <configuration>
                   <failOnViolation>false</failOnViolation>
                   <failOnError>false</failOnError>
+                  <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                  <configLocation>lenskit/checkstyle.xml</configLocation>
                 </configuration>
               </execution>
             </executions>
@@ -699,22 +764,7 @@
           <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
-            <version>1.9.0</version>
             <inherited>false</inherited>
-            <configuration>
-              <basedir>${basedir}</basedir>
-              <header>${basedir}/etc/header.txt</header>
-              <aggregate>true</aggregate>
-              <strictCheck>true</strictCheck>
-              <includes>
-                <include>*/src/**/*.java</include>
-                <include>*/src/**/*.groovy</include>
-              </includes>
-              <mapping>
-                <java>SLASHSTAR_STYLE</java>
-                <groovy>SLASHSTAR_STYLE</groovy>
-              </mapping>
-            </configuration>
             <executions>
               <execution>
                 <id>check-headers</id>
@@ -728,6 +778,19 @@
 
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>integration-tests</id>
+      <activation>
+        <!-- REVIEW: Do we really want to auto-activate on .hg/branch? -->
+        <file>
+          <exists>.hg/branch</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>lenskit-integration-tests</module>
+      </modules>
     </profile>
   </profiles>
 </project>

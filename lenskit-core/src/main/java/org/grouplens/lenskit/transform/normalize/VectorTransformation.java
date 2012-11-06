@@ -22,15 +22,15 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Reversible in-place vector transformations.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface VectorTransformation {
     /**
      * Apply the vector transformation in-place to a vector.
      *
      * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
+     * @return {@var vector} (for chaining).
      */
     MutableSparseVector apply(MutableSparseVector vector);
 
@@ -40,7 +40,7 @@ public interface VectorTransformation {
      * that do not have values.
      *
      * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
+     * @return {@var vector} (for chaining).
      */
     MutableSparseVector unapply(MutableSparseVector vector);
 }

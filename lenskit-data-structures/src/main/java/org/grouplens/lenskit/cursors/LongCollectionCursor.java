@@ -20,9 +20,17 @@ package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 
-public class LongCollectionCursor extends LongIteratorCursor {
+/**
+ * Long cursor implementation backed by a collection.
+ */
+class LongCollectionCursor extends LongIteratorCursor {
     private final int size;
 
+    /**
+     * Construct a new cursor around a collection.
+     *
+     * @param collection The collection to wrap.
+     */
     public LongCollectionCursor(LongCollection collection) {
         super(collection.iterator());
         size = collection.size();

@@ -20,8 +20,8 @@ package org.grouplens.lenskit.data.pref;
 
 /**
  * A Preference that also provides 0-based indices for the user, item, and itself.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public abstract class IndexedPreference extends Preference {
     /**
@@ -30,6 +30,7 @@ public abstract class IndexedPreference extends Preference {
      * has a unique, contiguous, zero-based index. This is to make it easy to
      * store additional information related to preferences for efficient learning
      * scenarios.
+     *
      * @return The preference's index.
      */
     public abstract int getIndex();
@@ -37,6 +38,7 @@ public abstract class IndexedPreference extends Preference {
     /**
      * Get the item index. This is a zero-based index for the item, used for making
      * item data easy to store in arrays.
+     *
      * @return The item index.
      */
     public abstract int getItemIndex();
@@ -44,6 +46,7 @@ public abstract class IndexedPreference extends Preference {
     /**
      * Get the user index. This is a zero-based index for the user, used for making
      * user data easy to store in arrays.
+     *
      * @return The user index.
      */
     public abstract int getUserIndex();

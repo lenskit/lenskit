@@ -21,6 +21,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Supplier;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -32,11 +33,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Rating-only data source backed by a simple delimited file.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     /**
@@ -50,9 +53,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
         /**
          * Create a new DAO factory from a file.
-         * @param file The name of the file toopen.
+         *
+         * @param file      The name of the file toopen.
          * @param delimiter The delimiter to use.
-         * @param comp Whether the file is compressed.
+         * @param comp      Whether the file is compressed.
          */
         public Factory(File file, String delimiter, CompressionMode comp) {
             compression = comp;
@@ -62,7 +66,8 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
         /**
          * Create a factory inferring compression from the file name.
-         * @param file The file name to read from.
+         *
+         * @param file      The file name to read from.
          * @param delimiter The delimiter.
          * @see #Factory(File, String, CompressionMode)
          */
@@ -71,14 +76,38 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         }
 
         /**
-         * Open a file with the delimiter read from the <tt>lenskit.delimiter</tt>
+         * Open a file with the delimiter read from the {@code lenskit.delimiter}
          * property (defaults to "\t" if not found).
+         *
          * @param file The file to read.
-         * @see #Factory(File,String,CompressionMode)
          * @throws java.io.FileNotFoundException if {@code file} is not found.
+         * @see #Factory(File, String, CompressionMode)
          */
         public Factory(File file) throws FileNotFoundException {
             this(file, System.getProperty("lenskit.delimiter", "\t"));
+        }
+
+        /**
+         * Create a caching DAO factory.
+         * @param file The input file
+         * @param delimiter The text delimiter
+         * @return A factory that caches the data in memory.
+         * @see #Factory(java.io.File, String)
+         */
+        public static DAOFactory caching(File file, String delimiter) {
+            final Factory f = new Factory(file, delimiter);
+            Supplier<List<Rating>> sup = new Supplier<List<Rating>>() {
+                @Override
+                public List<Rating> get() {
+                    DataAccessObject dao = f.create();
+                    try {
+                        return Cursors.makeList(dao.getEvents(Rating.class));
+                    } finally {
+                        dao.close();
+                    }
+                }
+            };
+            return new EventCollectionDAO.SoftFactory(sup);
         }
 
         public String getDelimiter() {
@@ -104,9 +133,10 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
 
     /**
      * Create a URL reading from the specified file/URL and delimiter.
-     * @param file The file (if <tt>null</tt>, the URL is used).
+     *
+     * @param file      The file (if {@code null}, the URL is used).
      * @param delimiter The delimiter to look for in the file.
-     * @param comp Whether the input is compressed.
+     * @param comp      Whether the input is compressed.
      */
     public SimpleFileRatingDAO(File file, String delimiter, CompressionMode comp) {
         this.file = file;
@@ -127,8 +157,9 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         // if they don't want ratings, they get nothing
-        if (!type.isAssignableFrom(Rating.class))
+        if (!type.isAssignableFrom(Rating.class)) {
             return Cursors.empty();
+        }
 
         @SuppressWarnings("rawtypes")
         Comparator comp = getComparator(order);
@@ -158,7 +189,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         if (comp == null) {
             return (Cursor<E>) cursor;
         } else {
-            return (Cursor) Cursors.sort(cursor, comp);
+            return Cursors.sort(cursor, comp);
         }
     }
 

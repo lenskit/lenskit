@@ -21,38 +21,39 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Arrays;
-import java.util.Collection;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.inject.Inject;
+import javax.inject.Qualifier;
+import javax.inject.Singleton;
+import java.lang.annotation.*;
+
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
 /**
  * Rating scorer that predicts a constant rating for all items.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class ConstantPredictor implements BaselinePredictor {
+@Shareable
+@Singleton
+public class ConstantPredictor extends AbstractBaselinePredictor {
     /**
      * Parameter: the value used by the constant scorer.
      */
     @Documented
     @DefaultDouble(0.0)
-    @Target({ ElementType.METHOD, ElementType.PARAMETER })
+    @Qualifier
+    @Parameter(Double.class)
+    @Target({ElementType.METHOD, ElementType.PARAMETER})
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface Value { }
+    public @interface Value {
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -61,40 +62,28 @@ public class ConstantPredictor implements BaselinePredictor {
     /**
      * Construct a new constant scorer.  This is exposed so other code
      * can use it as a fallback.
-     * @param value
+     *
+     * @param val The value to use.
      */
     @Inject
-    public ConstantPredictor(@Value double value) {
-        this.value = value;
+    public ConstantPredictor(@Value double val) {
+        this.value = val;
     }
 
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings, Collection<Long> items) {
-        return constantPredictions(items, value);
-    }
-    
-
-    /**
-     * Construct a rating vector with the same rating for all items.
-     *
-     * @param items The items to include in the vector.
-     * @param value The rating/prediction to give.
-     * @return A rating vector mapping all items in <var>items</var> to
-     *         <var>value</var>.
-     */
-    public static MutableSparseVector constantPredictions(Collection<Long> items, double value) {
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        DoubleArrays.fill(preds, value);
-        return MutableSparseVector.wrap(keys, preds);
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output, boolean predictSet) {
+        if (predictSet) {
+            output.fill(value);
+        } else {
+            for (VectorEntry e : output.fast(State.UNSET)) {
+                output.set(e, value);
+            }
+        }
     }
 
     @Override
     public String toString() {
         return String.format("%s(%.3f)", getClass().getCanonicalName(), value);
     }
-
-
 }

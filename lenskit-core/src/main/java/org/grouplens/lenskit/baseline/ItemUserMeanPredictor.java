@@ -20,23 +20,21 @@ package org.grouplens.lenskit.baseline;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.Transient;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.inject.Inject;
+import java.util.Collection;
+
+import static org.grouplens.lenskit.vectors.VectorEntry.State;
 
 /**
  * Predictor that returns the user's mean offset from item mean rating for all
@@ -50,9 +48,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * <p>It supports mean smoothing (see {@link Damping}).
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultProvider(ItemUserMeanPredictor.Provider.class)
+@Shareable
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
@@ -62,7 +60,14 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     public static class Provider implements javax.inject.Provider<ItemUserMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
-        
+
+        /**
+         * Construct a new provider.
+         *
+         * @param dao The DAO.
+         * @param d   The Bayesian mean damping term. A positive value biases means
+         *            towards the global mean.
+         */
         @Inject
         public Provider(@Transient DataAccessObject dao,
                         @Damping double d) {
@@ -86,30 +91,32 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * Create a new scorer, this assumes ownership of the given map.
      *
-     * @param itemMeans
-     * @param globalMean
-     * @param damping
+     * @param itemMeans  The map of item means.
+     * @param globalMean The global mean rating.
+     * @param damping    The damping term.
      */
     public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
+        // FIXME Make this use a sparse vector
         super(itemMeans, globalMean, damping);
     }
 
     /**
      * Compute the mean offset in user rating from item mean rating.
+     *
      * @param ratings the user's rating profile
      * @return the mean offset from item mean rating.
      */
     protected double computeUserAverage(SparseVector ratings) {
-        if (ratings.isEmpty()) return 0;
+        if (ratings.isEmpty()) {
+            return 0;
+        }
 
         Collection<Double> values = ratings.values();
         double total = 0;
 
-        Iterator<Long2DoubleMap.Entry> iter = ratings.fastIterator();
-        while (iter.hasNext()) {
-            Long2DoubleMap.Entry rating = iter.next();
-            double r = rating.getDoubleValue();
-            long iid = rating.getLongKey();
+        for (VectorEntry rating : ratings.fast()) {
+            double r = rating.getValue();
+            long iid = rating.getKey();
             total += r - getItemMean(iid);
         }
         return total / (values.size() + damping);
@@ -119,16 +126,12 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
      */
     @Override
-    public MutableSparseVector predict(long user, SparseVector ratings,
-                                       Collection<Long> items) {
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector scores, boolean predictSet) {
         double meanOffset = computeUserAverage(ratings);
-        long[] keys = CollectionUtils.fastCollection(items).toLongArray();
-        if (!(items instanceof LongSortedSet))
-            Arrays.sort(keys);
-        double[] preds = new double[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            preds[i] = meanOffset + getItemMean(keys[i]);
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e : scores.fast(state)) {
+            scores.set(e, meanOffset + getItemMean(e.getKey()));
         }
-        return MutableSparseVector.wrap(keys, preds);
     }
 }

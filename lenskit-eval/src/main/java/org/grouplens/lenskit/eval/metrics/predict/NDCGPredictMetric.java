@@ -45,11 +45,10 @@ import static java.lang.Math.log;
  * <p>nDCG is computed per-user and then averaged over all users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class NDCGPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
-    private static final String[] COLUMNS = { "nDCG" };
+    private static final String[] COLUMNS = {"nDCG"};
 
     @Override
     public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -80,10 +79,11 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             final long item = iit.nextLong();
             final double v = values.get(item);
             rank++;
-            if (rank < 2)
+            if (rank < 2) {
                 gain += v;
-            else
+            } else {
                 gain += v * lg2 / log(rank);
+            }
         }
 
         return gain;
@@ -94,11 +94,11 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
-        String[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealGain = computeDCG(ideal, ratings);
@@ -106,14 +106,14 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             double score = gain / idealGain;
             total += score;
             nusers += 1;
-            return new String[]{Double.toString(score)};
+            return new Object[]{score};
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = total / nusers;
             logger.info("nDCG: {}", v);
-            return new String[]{ Double.toString(v) };
+            return new Object[]{v};
         }
     }
 }

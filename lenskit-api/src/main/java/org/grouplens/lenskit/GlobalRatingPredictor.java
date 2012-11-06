@@ -24,9 +24,9 @@ package org.grouplens.lenskit;
  * ratings.
  *
  * @author Steven Chang <schang@cs.umn.edu>
- *
+ * @compat Public
+ * @since 0.10
  */
-
 public interface GlobalRatingPredictor extends GlobalItemScorer {
 
 }

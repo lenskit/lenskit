@@ -31,6 +31,7 @@ import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
 
 /**
  * Build a packed rating data structure.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -56,6 +57,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     /**
      * Allocate (or re-allocate) the internal packed storage.
+     *
      * @param nchunks The number of chunks to have space for.
      */
     private void allocate(int nchunks) {
@@ -80,6 +82,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     /**
      * Get the size of this data pack.
+     *
      * @return The number of preferences in the data pack.
      */
     public int size() {
@@ -88,8 +91,9 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     /**
      * Internal set method that takes individual indexes.
-     * @param ci The chunk index.
-     * @param ei The element index.
+     *
+     * @param ci   The chunk index.
+     * @param ei   The element index.
      * @param pref The preference data to set.
      */
     private void set(int ci, int ei, Preference pref) {
@@ -100,7 +104,8 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     /**
      * Set the preference data at a particular index.
-     * @param idx The index.
+     *
+     * @param idx  The index.
      * @param pref The preference data.
      */
     public void set(int idx, Preference pref) {
@@ -112,6 +117,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     /**
      * Add a preference to the pack.
+     *
      * @param pref The preference to add
      * @return The index of the newly-added preference.
      */
@@ -151,6 +157,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     /**
      * Release the specified index. The index can then be re-used by a later call
      * to {@link #add(Preference)}.
+     *
      * @param idx The index to remove.
      */
     public void release(int idx) {
@@ -160,7 +167,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     private PackedPreferenceData internalBuild() {
         return new PackedPreferenceData(users, items, values,
-                                    nprefs, userIndex, itemIndex);
+                                        nprefs, userIndex, itemIndex);
     }
 
     private void repack() {
@@ -195,7 +202,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
          * We then start with the last free index, and copy into it if it
          * isn't at the end of the array.
          */
-        for (int i: fidxes) {
+        for (int i : fidxes) {
             final int lasti = n - 1;    // the index of the last preference
             assert i <= lasti;          // only way for this to fail is duplicate fidxes
             if (i < lasti) {
@@ -296,8 +303,10 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     /**
      * Build the packed rating data. This first moves records from the end to fill
      * any released but not reused slots.
+     *
      * @return The packed rating data structure.
      */
+    @Override
     public PackedPreferenceData build() {
         repack();
         trim();

@@ -19,11 +19,13 @@
 package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
@@ -35,13 +37,15 @@ import static org.junit.Assert.assertEquals;
 public class TestSlopeOneModelBuilder {
 
     public static final double EPSILON = 1.0e-6;
-    
+
     private SlopeOneModel getModel(DAOFactory factory) {
-        PackedPreferenceSnapshot snapshot = new PackedPreferenceSnapshot.Provider(factory.create()).get();
-        SlopeOneModelProvider builder = new SlopeOneModelProvider(
-                snapshot, new DefaultUserVectorNormalizer(), null,
-                new PreferenceDomain(0, 0), 0);
-        return builder.get();
+        DataAccessObject dao = factory.create();
+        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
+                dao, new DefaultUserVectorNormalizer(), summarizer);
+        SlopeOneModelProvider provider = new SlopeOneModelProvider(
+                dao, null, contextFactory, 0);
+        return provider.get();
     }
 
     @Test
@@ -52,14 +56,14 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(2, 5, 4));
         rs.add(Ratings.make(1, 3, 5));
         rs.add(Ratings.make(2, 3, 4));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         SlopeOneModel model1 = getModel(manager);
-        
+
         assertEquals(2, model1.getCoratings(5, 3));
         assertEquals(2, model1.getCoratings(3, 5));
-        assertEquals(-1.5, model1.getDeviation(5, 3),EPSILON);
-        assertEquals(1.5, model1.getDeviation(3,5), EPSILON);
+        assertEquals(-1.5, model1.getDeviation(5, 3), EPSILON);
+        assertEquals(1.5, model1.getDeviation(3, 5), EPSILON);
     }
 
     @Test
@@ -75,20 +79,20 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(1, 6, 1));
         rs.add(Ratings.make(2, 6, 5));
         rs.add(Ratings.make(3, 6, 3));
-        
+
         EventCollectionDAO.Factory factory = new EventCollectionDAO.Factory(rs);
         SlopeOneModel model2 = getModel(factory);
-        
+
         assertEquals(3, model2.getCoratings(4, 5));
         assertEquals(3, model2.getCoratings(5, 4));
         assertEquals(3, model2.getCoratings(4, 6));
         assertEquals(3, model2.getCoratings(6, 4));
         assertEquals(3, model2.getCoratings(5, 6));
         assertEquals(3, model2.getCoratings(6, 5));
-        assertEquals(4/3.0, model2.getDeviation(4, 6), EPSILON);
-        assertEquals(-4/3.0, model2.getDeviation(6, 4), EPSILON);
-        assertEquals(4/3.0, model2.getDeviation(4, 5), EPSILON);
-        assertEquals(-4/3.0, model2.getDeviation(5, 4), EPSILON);
+        assertEquals(4 / 3.0, model2.getDeviation(4, 6), EPSILON);
+        assertEquals(-4 / 3.0, model2.getDeviation(6, 4), EPSILON);
+        assertEquals(4 / 3.0, model2.getDeviation(4, 5), EPSILON);
+        assertEquals(-4 / 3.0, model2.getDeviation(5, 4), EPSILON);
         assertEquals(0, model2.getDeviation(5, 6), EPSILON);
         assertEquals(0, model2.getDeviation(6, 5), EPSILON);
     }
@@ -111,10 +115,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         SlopeOneModel model3 = getModel(manager);
-        
+
         assertEquals(2, model3.getCoratings(6, 7));
         assertEquals(2, model3.getCoratings(7, 6));
         assertEquals(2, model3.getCoratings(6, 8));
@@ -151,10 +155,10 @@ public class TestSlopeOneModelBuilder {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
-        
+
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         SlopeOneModel model4 = getModel(manager);
-        
+
         assertEquals(0, model4.getCoratings(4, 5));
         assertEquals(0, model4.getCoratings(5, 4));
         assertEquals(1, model4.getCoratings(4, 6));

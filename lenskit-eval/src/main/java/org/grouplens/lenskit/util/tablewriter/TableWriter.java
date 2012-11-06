@@ -25,33 +25,35 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Write rows to a table.
- * 
+ *
  * <p>
  * Instances of this class are used to actually write rows to a table. Once the
  * table has finished, call {@link #close()} to finish the table and close the
  * underlying output.
- * 
- * @see TableWriterBuilder
+ *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * 
+ * @see TableWriterBuilder
  */
 @ThreadSafe
 public interface TableWriter extends Closeable {
     /**
      * Get the layout of this table.
+     *
      * @return The table's layout.
      */
     TableLayout getLayout();
 
     /**
      * Write a row to the table. This method is thread-safe.
+     *
      * @param row A row of values.  If the table requires more columns, the
-     * remaining columns are org.grouplens.lenskit.eval.config.empty.
-     * @throws IOException if an error occurs writing the row.
+     *            remaining columns are empty. The row is copied if necessary;
+     *            the caller is free to re-use the same array for future calls.
+     * @throws IOException              if an error occurs writing the row.
      * @throws IllegalArgumentException if {@code row} has more items than the table has
-     * columns.
+     *                                  columns.
      */
-    void writeRow(String[] row) throws IOException;
+    void writeRow(Object[] row) throws IOException;
 
     /**
      * Finish the table.  Depending on how it was constructed, some underlying

@@ -28,16 +28,17 @@ import java.io.Serializable;
  * Efficient representation of intervals as an integer list.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public
  */
 public class IntIntervalList extends AbstractIntList implements Serializable {
     private static final long serialVersionUID = -914440213158448384L;
 
-    private final int start;
-    private final int end;
+    private final int startIndex;
+    private final int endIndex;
 
     /**
      * Create the half-open interval [0,size).
+     *
      * @param size The size of the interval.
      */
     public IntIntervalList(int size) {
@@ -45,41 +46,39 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
     }
 
     private static void checkIndex(int idx, int start, int end) {
-        if (idx < 0 || start + idx >= end)
+        if (idx < 0 || start + idx >= end) {
             throw new IndexOutOfBoundsException(String.format("%d not in [%d,%d)", idx, start, end));
+        }
     }
 
     /**
      * Create the half-open interval [start,end).
+     *
      * @param start The interval start point (inclusive).
-     * @param end The interval end point (exclusive).
+     * @param end   The interval end point (exclusive).
      */
     public IntIntervalList(int start, int end) {
-        if (end < start)
+        if (end < start) {
             throw new IllegalArgumentException("end < start");
-        this.start = start;
-        this.end = end;
+        }
+        startIndex = start;
+        endIndex = end;
     }
 
     @Override
     public int getInt(int index) {
-        checkIndex(index, start, end);
-        return start + index;
+        checkIndex(index, startIndex, endIndex);
+        return startIndex + index;
     }
 
     @Override
     public int size() {
-        return end - start;
+        return endIndex - startIndex;
     }
 
-    /**
-     * Use {@link IntIterators#fromTo(int, int)} to build an iterator.  The other
-     * iterator methods in {@link AbstractIntList} delegate to this one, so this
-     * is the good injection point.
-     */
     @Override
     public IntListIterator listIterator(int idx) {
-        checkIndex(idx, start, end + 1); // this index can be one past the end
-        return IntIterators.fromTo(start + idx, end);
+        checkIndex(idx, startIndex, endIndex + 1); // this index can be one past the end
+        return IntIterators.fromTo(startIndex + idx, endIndex);
     }
 }

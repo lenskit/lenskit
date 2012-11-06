@@ -12,6 +12,8 @@ LensKit Documentation
 
     * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted}Getting Started}}
 
+    * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Configuration}Configuring Recommenders}}
+
     * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Evaluator}Using the Evaluator}}
 
     []
@@ -24,11 +26,10 @@ LensKit Documentation
   LensKit is divided into several modules.  Some of these modules can
   be used independently (e.g. <<<lenskit-data-structures>>> can be
   used to take advantage of LensKit's <<<SparseVector>>>, etc. in
-  other projects).  Their individual Maven-generated sites, with per-module JavaDoc and reporting, are linked here:
+  other projects).  For most purposes the combined API documentation
+  (above) is more valuable, but their individual Maven-generated
+  sites, with per-module JavaDoc and reporting, are
+  {{{./modules.html}linked here}}.
 
-#foreach ($proj in $project.modules)
-  * {{{./${proj}/}${proj}}}
-
-#end
   []
 

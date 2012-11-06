@@ -21,6 +21,8 @@ package org.grouplens.lenskit.collections;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongListIterator;
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+
 import org.junit.Test;
 
 import java.io.*;
@@ -36,7 +38,6 @@ import static org.junit.Assert.*;
  * Tests for {@link ScoredLongArrayList}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class TestScoredLongArrayList {
     @Test
@@ -54,8 +55,8 @@ public class TestScoredLongArrayList {
     public void emptyEquals() {
         ScoredLongList l1 = new ScoredLongArrayList();
         ScoredLongList l2 = new ScoredLongArrayList();
-        assertEquals(l1,l1);
-        assertEquals(l1,l2);
+        assertEquals(l1, l1);
+        assertEquals(l1, l2);
     }
 
     @Test
@@ -101,7 +102,7 @@ public class TestScoredLongArrayList {
         assertEquals(1, l.size());
         assertEquals(5, l.getLong(0));
         assertEquals(5, l.get(0).longValue());
-        assertTrue(isNaN(l.getScore(0)));
+        assertThat(l.getScore(0), notANumber());
     }
 
     @Test
@@ -112,7 +113,7 @@ public class TestScoredLongArrayList {
         assertEquals(1, l.size());
         assertEquals(5, l.getLong(0));
         assertEquals(5, l.get(0).longValue());
-        assertTrue(isNaN(l.getScore(0)));
+        assertThat(l.getScore(0), notANumber());
     }
 
     @Test
@@ -143,7 +144,7 @@ public class TestScoredLongArrayList {
         assertEquals(3, l.getLong(1));
         assertEquals(10, l.getLong(2));
         assertEquals(Math.PI, l.getScore(0), 1.0e-5);
-        assertTrue(isNaN(l.getScore(1)));
+        assertThat(l.getScore(1), notANumber());
         assertEquals(Math.E, l.getScore(2), 1.0e-5);
     }
 
@@ -165,7 +166,7 @@ public class TestScoredLongArrayList {
 
     @Test
     public void testUnscoredArrayConstruct() {
-        long[] items = { 1, 2, 5 };
+        long[] items = {1, 2, 5};
         ScoredLongArrayList l = new ScoredLongArrayList(items);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
@@ -173,14 +174,14 @@ public class TestScoredLongArrayList {
             assertEquals(items[i], l.getLong(i));
         }
         for (int i = 0; i < 3; i++) {
-            assertTrue(isNaN(l.getScore(i)));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
     @Test
     public void testScoredArrayConstruct() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
@@ -197,8 +198,8 @@ public class TestScoredLongArrayList {
 
     @Test
     public void testGetElements() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         long[] iout = new long[3];
         l.getElements(0, iout, 0, 3);
@@ -211,14 +212,14 @@ public class TestScoredLongArrayList {
         assertEquals(42, iout[0]);
         assertEquals(42, iout[4]);
         for (int i = 0; i < 3; i++) {
-            assertEquals(items[i], iout[i+1]);
+            assertEquals(items[i], iout[i + 1]);
         }
     }
 
     @Test
     public void testGetElementsScored() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         long[] iout = new long[3];
         double[] sout = new double[3];
@@ -234,29 +235,29 @@ public class TestScoredLongArrayList {
         assertEquals(42, iout[0]);
         assertEquals(42, iout[4]);
         for (int i = 0; i < 3; i++) {
-            assertEquals(items[i], iout[i+1]);
-            assertEquals(scores[i], sout[i+1], 1.0e-5);
+            assertEquals(items[i], iout[i + 1]);
+            assertEquals(scores[i], sout[i + 1], 1.0e-5);
         }
     }
 
     @Test
     public void addElements() {
         ScoredLongArrayList l = new ScoredLongArrayList();
-        long[] items = { 1, 2, 5 };
+        long[] items = {1, 2, 5};
         l.addElements(0, items);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
         for (int i = 0; i < items.length; i++) {
             assertEquals(items[i], l.getLong(i));
-            assertTrue(isNaN(l.getScore(i)));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
     @Test
     public void addElementsScored() {
         ScoredLongArrayList l = new ScoredLongArrayList();
-        long[] items = { 1, 2, 5 };
-        double[] scores = { PI, E, 42 };
+        long[] items = {1, 2, 5};
+        double[] scores = {PI, E, 42};
         l.addElements(0, items, scores);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
@@ -269,36 +270,36 @@ public class TestScoredLongArrayList {
     @Test
     public void addUnscoredElementsOffset() {
         ScoredLongArrayList l = new ScoredLongArrayList();
-        long[] items = { 42, 1, 2, 5, 37};
+        long[] items = {42, 1, 2, 5, 37};
         l.addElements(0, items, 1, 3);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
         for (int i = 0; i < 3; i++) {
-            assertEquals(items[i+1], l.getLong(i));
-            assertTrue(isNaN(l.getScore(i)));
+            assertEquals(items[i + 1], l.getLong(i));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
     @Test
     public void addElementsOffset() {
         ScoredLongArrayList l = new ScoredLongArrayList();
-        long[] items = { 42, 1, 2, 5, 37};
-        double[] scores = { -1, PI, E, 42, -7 };
+        long[] items = {42, 1, 2, 5, 37};
+        double[] scores = {-1, PI, E, 42, -7};
         l.addElements(0, items, scores, 1, 3);
         assertFalse(l.isEmpty());
         assertEquals(3, l.size());
         for (int i = 0; i < 3; i++) {
-            assertEquals(items[i+1], l.getLong(i));
-            assertEquals(scores[i+1], l.getScore(i), 1.0e-5);
+            assertEquals(items[i + 1], l.getLong(i));
+            assertEquals(scores[i + 1], l.getScore(i), 1.0e-5);
         }
     }
 
     @Test
     public void addElementsShift() {
-        long[] items = { 42, 1, 2, 5, 37};
-        double[] scores = { -1, PI, E, 42, -7 };
+        long[] items = {42, 1, 2, 5, 37};
+        double[] scores = {-1, PI, E, 42, -7};
         ScoredLongList l = new ScoredLongArrayList(items, scores);
-        long[] ni = { 8, 4, 6 };
+        long[] ni = {8, 4, 6};
         l.addElements(2, ni);
         assertEquals(8, l.size());
 
@@ -310,18 +311,18 @@ public class TestScoredLongArrayList {
         assertArrayEquals(scores, oss, 1.0e-5);
 
         for (int i = 0; i < 3; i++) {
-            assertEquals(ni[i], l.getLong(i+2));
-            assertTrue(isNaN(l.getScore(i+2)));
+            assertEquals(ni[i], l.getLong(i + 2));
+            assertThat(l.getScore(i + 2), notANumber());
         }
     }
 
     @Test
     public void addScoredElementsShift() {
-        long[] items = { 42, 1, 2, 5, 37};
-        double[] scores = { -1, PI, E, 42, -7 };
+        long[] items = {42, 1, 2, 5, 37};
+        double[] scores = {-1, PI, E, 42, -7};
         ScoredLongList l = new ScoredLongArrayList(items, scores);
-        long[] ni = { 8, 4, 6 };
-        double[] ns = { 75, -923, 47.8 };
+        long[] ni = {8, 4, 6};
+        double[] ns = {75, -923, 47.8};
         l.addElements(2, ni, ns);
         assertEquals(8, l.size());
 
@@ -333,15 +334,15 @@ public class TestScoredLongArrayList {
         assertArrayEquals(scores, oss, 1.0e-5);
 
         for (int i = 0; i < 3; i++) {
-            assertEquals(ni[i], l.getLong(i+2));
-            assertEquals(ns[i], l.getScore(i+2), 1.0e-5);
+            assertEquals(ni[i], l.getLong(i + 2));
+            assertEquals(ns[i], l.getScore(i + 2), 1.0e-5);
         }
     }
 
     @Test
     public void setScore() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         assertEquals(0.3, l.setScore(1, PI), 1.0e-5);
         assertEquals(PI, l.getScore(1), 1.0e-5);
@@ -349,12 +350,12 @@ public class TestScoredLongArrayList {
 
     @Test
     public void setScoreNaN() {
-        long[] items = { 1, 2, 5 };
+        long[] items = {1, 2, 5};
         ScoredLongArrayList l = new ScoredLongArrayList(items);
-        assertTrue(isNaN(l.setScore(1, PI)));
+        assertThat(l.setScore(1, PI), notANumber());
         assertEquals(PI, l.getScore(1), 1.0e-5);
-        assertTrue(isNaN(l.getScore(0)));
-        assertTrue(isNaN(l.getScore(2)));
+        assertThat(l.getScore(0), notANumber());
+        assertThat(l.getScore(2), notANumber());
     }
 
     @Test
@@ -392,7 +393,7 @@ public class TestScoredLongArrayList {
 
     @Test
     public void itemIterator() {
-        long[] items = { 1, 2, 5 };
+        long[] items = {1, 2, 5};
         ScoredLongArrayList l = new ScoredLongArrayList(items);
         assertArrayEquals(items, LongIterators.unwrap(l.iterator()));
 
@@ -409,8 +410,8 @@ public class TestScoredLongArrayList {
 
     @Test
     public void itemScoredIterator() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 7, 42, 9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {7, 42, 9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         assertArrayEquals(items, LongIterators.unwrap(l.iterator()));
 
@@ -433,8 +434,8 @@ public class TestScoredLongArrayList {
     public void testSerialize() throws IOException, ClassNotFoundException {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bo);
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 7, Double.NaN, 9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {7, Double.NaN, 9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         out.writeObject(l);
         out.close();
@@ -449,8 +450,8 @@ public class TestScoredLongArrayList {
 
     @Test
     public void remove() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         assertEquals(2, l.remove(1).longValue());
         assertEquals(2, l.size());
@@ -462,8 +463,8 @@ public class TestScoredLongArrayList {
 
     @Test
     public void removeElements() {
-        long[] items = { 1, 2, 5 };
-        double[] scores = { 1.5, 0.3, 7.9 };
+        long[] items = {1, 2, 5};
+        double[] scores = {1.5, 0.3, 7.9};
         ScoredLongArrayList l = new ScoredLongArrayList(items, scores);
         l.removeElements(0, 2);
         assertEquals(1, l.size());

@@ -18,71 +18,68 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.util.Collection;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
- * A <tt>RatingPredictor</tt> that implements a weighted Slope One algorithm.
+ * A {@code RatingPredictor} that implements a weighted Slope One algorithm.
  */
 public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
     @Inject
-    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model) {
-        super(dao, model);
+    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model,
+                                           @Nullable PreferenceDomain dom) {
+        super(dao, model, dom);
     }
 
     @Override
-    public SparseVector score(UserHistory<? extends Event> history, Collection<Long> items) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        LongSortedSet iset;
-        if (items instanceof LongSortedSet) {
-            iset = (LongSortedSet) items;
-        } else {
-            iset = new LongSortedArraySet(items);
-        }
-        MutableSparseVector preds = new MutableSparseVector(iset, Double.NaN);
-        LongArrayList unpreds = new LongArrayList();
-        for (long predicteeItem : items) {
+        int nUnpred = 0;
+        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+            final long predicteeItem = e.getKey();
             if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;
                 int nusers = 0;
-                for (long currentItem : ratings.keySet()) {
+                LongIterator ratingIter = ratings.keySet().iterator();
+                while (ratingIter.hasNext()) {
+                    long currentItem = ratingIter.nextLong();
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);
-                        total += (currentDev +ratings.get(currentItem))* weight;
+                        total += (currentDev + ratings.get(currentItem)) * weight;
                         nusers += weight;
                     }
                 }
                 if (nusers == 0) {
-                    unpreds.add(predicteeItem);
+                    nUnpred += 1;
+                    scores.clear(e);
                 } else {
-                    double predValue = total/nusers;
-                    predValue = model.getDomain().clampValue(predValue);
-                    preds.set(predicteeItem, predValue);
+                    double predValue = total / nusers;
+                    if (domain != null) {
+                        predValue = domain.clampValue(predValue);
+                    }
+                    scores.set(e, predValue);
                 }
             }
         }
-        
+
         final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && !unpreds.isEmpty()) {
-            SparseVector basePreds = baseline.predict(history.getUserId(), ratings, unpreds);
-            preds.set(basePreds);
+        if (baseline != null && nUnpred > 0) {
+            baseline.predict(history.getUserId(), ratings, scores, false);
         }
-        
-        return preds;
     }
 }

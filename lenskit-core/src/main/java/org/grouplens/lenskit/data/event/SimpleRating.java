@@ -21,29 +21,31 @@ package org.grouplens.lenskit.data.event;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
  * This class is not intended to be derived, so its key methods are
- * <code>final</code>.
+ * {@code final}.
  *
  * <p>This implementation only supports set ratings; for null ratings (unrate
  * events), use {@link SimpleNullRating}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @Immutable
-public class SimpleRating extends AbstractEvent implements Rating {
+public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
     final long eventId;
     final long timestamp;
-    final @Nonnull Preference preference;
+    @Nonnull
+    final Preference preference;
 
     /**
      * Construct a rating without a timestamp.
-     * @param eid The event ID.
+     *
+     * @param eid  The event ID.
      * @param pref The preference.
      */
     public SimpleRating(long eid, @Nonnull Preference pref) {
@@ -52,11 +54,13 @@ public class SimpleRating extends AbstractEvent implements Rating {
 
     /**
      * Construct a rating with a timestamp.
-     * @param eid The event ID.
-     * @param ts The event timestamp.
+     *
+     * @param eid  The event ID.
+     * @param ts   The event timestamp.
      * @param pref The preference.
      */
     public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
+        Preconditions.checkNotNull(pref);
         eventId = eid;
         timestamp = ts;
         preference = pref;
@@ -68,19 +72,20 @@ public class SimpleRating extends AbstractEvent implements Rating {
      * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param v The rating value.
+     * @param v   The rating value.
      */
-   public SimpleRating(long eid, long uid, long iid, double v) {
-       this(eid, uid, iid, v, -1L);
-   }
+    public SimpleRating(long eid, long uid, long iid, double v) {
+        this(eid, uid, iid, v, -1L);
+    }
 
     /**
      * Construct a rating with a timestamp and value.
+     *
      * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param v The rating value.
-     * @param ts The event timestamp.
+     * @param v   The rating value.
+     * @param ts  The event timestamp.
      */
     public SimpleRating(long eid, long uid, long iid, double v, long ts) {
         eventId = eid;
@@ -103,6 +108,7 @@ public class SimpleRating extends AbstractEvent implements Rating {
         return preference.getItemId();
     }
 
+    @Nonnull
     @Override
     final public Preference getPreference() {
         return preference;
@@ -113,22 +119,17 @@ public class SimpleRating extends AbstractEvent implements Rating {
         return timestamp;
     }
 
-    /**
-     * Implement {@link Rating#getRating()} by delegating to
-     * {@link #getPreference()}.
-     */
     @Override
-    @Deprecated
-    public double getRating() {
-        Preference p = getPreference();
-        if (p != null)
-            return p.getValue();
-        else
-            return Double.NaN;
+    public Rating copy() {
+        return clone();
     }
 
     @Override
-    public Rating clone() {
-        return (Rating) super.clone();
+    protected Rating clone() {
+        try {
+            return (Rating) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("clone error", e);
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 import javax.inject.Inject;
@@ -25,11 +26,13 @@ import javax.inject.Inject;
 /**
  * Quantizer that uses a range and precision to determine discrete values.
  * Values are rounded to the closest discrete value.
+ *
  * @author Michael Ekstrand
  */
+@Shareable
 public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
     private static final long serialVersionUID = 8258336921679357985L;
-    
+
     private final PreferenceDomain domain;
 
     static double[] makeValues(PreferenceDomain domain) {
@@ -47,15 +50,16 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
         if (n == 0) {
             throw new IllegalArgumentException("range has no elements");
         }
-        double[] values = new double[n+1];
+        double[] values = new double[n + 1];
         for (int i = 0; i <= n; i++) {
-            values[i] = min + (prec*i);
+            values[i] = min + (prec * i);
         }
         return values;
     }
 
     /**
      * Create a new quantizer from a discrete preference domain.
+     *
      * @param dom The preference domain.
      * @throws IllegalArgumentException if the domain is not discrete.
      */
@@ -67,13 +71,15 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
 
     /**
      * Create a new preference domain quantizer.
-     * 
+     *
      * @see PreferenceDomain#PreferenceDomain(double, double, double)
      */
+    @SuppressWarnings("unused")
     public PreferenceDomainQuantizer(double min, double max, double prec) {
         this(new PreferenceDomain(min, max, prec));
     }
 
+    @SuppressWarnings("unused")
     public PreferenceDomain getPreferenceDomain() {
         return domain;
     }

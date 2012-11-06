@@ -19,10 +19,9 @@
 package org.grouplens.lenskit.core;
 
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -35,8 +34,9 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
-import com.google.common.collect.Iterables;
+import javax.inject.Inject;
 
 /**
  * Base class for recommenders that recommend the top N items by a scorer.
@@ -45,11 +45,11 @@ import com.google.common.collect.Iterables;
  *
  * <p>
  * Recommendations are returned in descending order of score.
- *
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender{
+public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
 
+    @Inject
     public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
@@ -95,14 +95,13 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
     }
-    
 
     /**
-     * Pick the top <var>n</var> items from a score vector.
+     * Pick the top {@var n} items from a score vector.
      *
-     * @param n The number of items to recommend.
+     * @param n      The number of items to recommend.
      * @param scores The scored item vector.
-     * @return The top <var>n</var> items from <var>scores</var>, in descending
+     * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
     protected ScoredLongList recommend(int n, SparseVector scores) {
@@ -113,11 +112,11 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
         if (n < 0) {
             n = scores.size();
         }
-        
+
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (Long2DoubleMap.Entry pred: scores.fast()) {
-            final double v = pred.getDoubleValue();
-            accum.put(pred.getLongKey(), v);
+        for (VectorEntry pred : scores.fast()) {
+            final double v = pred.getValue();
+            accum.put(pred.getKey(), v);
         }
 
         return accum.finish();
@@ -143,12 +142,12 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
      */
     protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
         LongSet excludes = new LongOpenHashSet();
-        for (Rating r: Iterables.filter(user, Rating.class)) {
+        for (Rating r : Iterables.filter(user, Rating.class)) {
             excludes.add(r.getItemId());
         }
         return excludes;
     }
-    
+
     /**
      * Determine the items for which predictions can be made for a certain user.
      * This implementation is naive and asks the DAO for all items; subclasses
@@ -160,7 +159,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
     protected LongSet getPredictableItems(long user) {
         return Cursors.makeSet(dao.getItems());
     }
-  
 
     /**
      * Determine the items for which predictions can be made for a certain user.
@@ -173,5 +171,4 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender{
     protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return Cursors.makeSet(dao.getItems());
     }
-
 }

@@ -27,18 +27,29 @@ import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * Default implementation of the SQL statement factory.
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@SuppressWarnings("unused")
 public class BasicSQLStatementFactory implements SQLStatementFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(BasicSQLStatementFactory.class);
+    @Nonnull
     private String tableName = "ratings";
+    @Nonnull
     private String idColumn = "id";
+    @Nonnull
     private String userColumn = "user";
+    @Nonnull
     private String itemColumn = "item";
+    @Nonnull
     private String ratingColumn = "rating";
+    @Nullable
     private String timestampColumn = "timestamp";
 
     /**
@@ -53,14 +64,15 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating table.
      *
-     * @param tableName the tableName to set
+     * @param name The name of the rating table.
      */
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public void setTableName(@Nonnull String name) {
+        tableName = name;
     }
 
     /**
      * Get the column of the event ID in the rating table.
+     *
      * @return The name of the event ID column.
      */
     public String getIdColumn() {
@@ -69,9 +81,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the event ID column in the rating table.
+     *
      * @param col The name of the event ID column.
      */
-    public void setIdColumn(String col) {
+    public void setIdColumn(@Nonnull String col) {
         idColumn = col;
     }
 
@@ -87,10 +100,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the user ID column in the rating table.
      *
-     * @param userColumn the userColumn to set
+     * @param col The name of the user column.
      */
-    public void setUserColumn(String userColumn) {
-        this.userColumn = userColumn;
+    public void setUserColumn(@Nonnull String col) {
+        userColumn = col;
     }
 
     /**
@@ -105,10 +118,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the item ID column in the rating table.
      *
-     * @param itemColumn the itemColumn to set
+     * @param col The name of the item column.
      */
-    public void setItemColumn(String itemColumn) {
-        this.itemColumn = itemColumn;
+    public void setItemColumn(@Nonnull String col) {
+        itemColumn = col;
     }
 
     /**
@@ -123,15 +136,15 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating column in the rating table.
      *
-     * @param ratingColumn the ratingColumn to set
+     * @param col The name of the rating column.
      */
-    public void setRatingColumn(String ratingColumn) {
-        this.ratingColumn = ratingColumn;
+    public void setRatingColumn(@Nonnull String col) {
+        ratingColumn = col;
     }
 
     /**
      * Get the name of the timestamp column in the rating table (or
-     * <tt>null</tt> if there is no timestamp column).
+     * {@code null} if there is no timestamp column).
      *
      * @return the timestampColumn
      */
@@ -141,50 +154,48 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
 
     /**
      * Set the name of the timestamp column in the rating table. Set to
-     * <tt>null</tt> if there is no timestamp column.
+     * {@code null} if there is no timestamp column.
      *
-     * @param timestampColumn the timestampColumn to set
+     * @param col The name of the timestamp column, or {@code null}.
      */
-    public void setTimestampColumn(String timestampColumn) {
-        this.timestampColumn = timestampColumn;
+    public void setTimestampColumn(@Nullable String col) {
+        timestampColumn = col;
     }
 
     @Override
     public PreparedStatement prepareUsers(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
+                String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
-    public PreparedStatement prepareUserCount(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareUserCount(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
-                          tableName);
+                String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
+                              tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
     public PreparedStatement prepareItems(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
+                String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
         return dbc.prepareStatement(query);
     }
 
     @Override
-    public PreparedStatement prepareItemCount(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareItemCount(Connection dbc) throws SQLException {
         String query =
-            String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
-                          tableName);
+                String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
+                              tableName);
         return dbc.prepareStatement(query);
     }
 
     /**
-     * Add the SELECT and FROM clauses to the query
+     * Add the SELECT and FROM clauses to the query.
      *
-     * @param query
+     * @param query The query accumulator.
      */
     protected void rqAddSelectFrom(StringBuilder query) {
         query.append("SELECT ");
@@ -204,7 +215,10 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     /**
-     * Add an ORDER BY clause to a query
+     * Add an ORDER BY clause to a query.
+     *
+     * @param query The query accumulator
+     * @param order The sort order.
      */
     protected void rqAddOrder(StringBuilder query, SortOrder order) {
         switch (order) {
@@ -219,7 +233,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             }
             break;
         case USER:
-            query.append(" ORDER BY " + userColumn);
+            query.append(" ORDER BY ").append(userColumn);
             if (timestampColumn != null) {
                 query.append(", ");
                 query.append(timestampColumn);
@@ -228,7 +242,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         case TIMESTAMP:
             /* If we don't have timestamps, we return in any order. */
             if (timestampColumn != null) {
-                query.append(" ORDER BY " + timestampColumn);
+                query.append(" ORDER BY ").append(timestampColumn);
             }
             break;
         default:
@@ -236,13 +250,17 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         }
     }
 
+    /**
+     * Finish a query (append a semicolon).
+     *
+     * @param query The query accumulator
+     */
     protected void rqFinish(StringBuilder query) {
         query.append(";");
     }
 
     @Override
-    public PreparedStatement prepareEvents(Connection dbc, SortOrder order)
-            throws SQLException {
+    public PreparedStatement prepareEvents(Connection dbc, SortOrder order) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         rqAddOrder(query, order);
@@ -252,22 +270,20 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareUserEvents(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareUserEvents(Connection dbc) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
-        query.append(" WHERE " + userColumn + " = ?");
+        query.append(" WHERE ").append(userColumn).append(" = ?");
         rqFinish(query);
         logger.debug("User rating query: {}", query);
         return dbc.prepareStatement(query.toString());
     }
 
     @Override
-    public PreparedStatement prepareItemEvents(Connection dbc)
-            throws SQLException {
+    public PreparedStatement prepareItemEvents(Connection dbc) throws SQLException {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
-        query.append(" WHERE " + itemColumn + " = ?");
+        query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
         return dbc.prepareStatement(query.toString());

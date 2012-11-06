@@ -15,3 +15,6 @@
 \.chg\..*$
 \.rej$
 \.conflict\~$
+
+(^|/)TAGS$
+(^|/)ERRS$

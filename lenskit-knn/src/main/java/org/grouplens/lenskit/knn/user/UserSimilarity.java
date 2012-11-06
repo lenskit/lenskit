@@ -23,6 +23,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Compute the similarity between two users.
+ *
  * @author Michael Ekstrand
  * @since 0.11
  */
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 public interface UserSimilarity {
     /**
      * Compute the similarity between two users.
+     *
      * @param u1 The first user ID.
      * @param v1 The first user vector.
      * @param u2 The second user ID.
@@ -40,15 +42,21 @@ public interface UserSimilarity {
 
     /**
      * Query whether this similarity is sparse.
+     *
      * @return {@code true} if the similarity function is sparse.
-     * @see org.grouplens.lenskit.knn.VectorSimilarity#isSparse()
+     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSparse()
      */
     boolean isSparse();
 
     /**
      * Query whether this similarity is symmetric.
+     * <p>
+     * <b>Warning:</b> At present, asymmetric similarity functions may not produce
+     * correct results. In practice, this is not a problem, as most similarity functions
+     * are symmetric. Watch {@bug 151} for updates on this issue.
+     *
      * @return {@code true} if the similarity function is symmetric.
-     * @see org.grouplens.lenskit.knn.VectorSimilarity#isSymmetric()
+     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSymmetric()
      */
     boolean isSymmetric();
 }

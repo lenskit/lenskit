@@ -18,16 +18,20 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
  * Identity normalization (makes no change).
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@Shareable
+@Singleton
 public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -6708410675383598691L;
 

@@ -18,26 +18,34 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import org.grouplens.lenskit.core.Shareable;
+
 import java.io.Serializable;
 
 /**
  * Abstract quantizer implementation using a pre-generated array of possible
  * values. Values are quantized to their closest discrete possibility.
+ *
  * @author Michael Ekstrand
  */
+@Shareable
 public class ValueArrayQuantizer implements Quantizer, Serializable {
     private static final long serialVersionUID = 2150927895689488171L;
-    
+
     protected final double[] values;
 
     /**
      * Construct a new quantizer using the specified array of values.
+     *
      * @param vs The discrete values to quantize to.
      */
     public ValueArrayQuantizer(double[] vs) {
-        if (vs.length <= 0) throw new IllegalArgumentException("must have at least one value");
+        if (vs.length <= 0) {
+            throw new IllegalArgumentException("must have at least one value");
+        }
         values = vs;
     }
+
     @Override
     public double[] getValues() {
         return values;

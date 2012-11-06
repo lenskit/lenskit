@@ -28,7 +28,6 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * scores.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private final int count;
@@ -39,13 +38,14 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private DoubleHeapIndirectPriorityQueue heap;
 
     /**
-     * Create a new accumulator to accumulate the top <var>n</var> IDs.
+     * Create a new accumulator to accumulate the top {@var n} IDs.
+     *
      * @param n The number of IDs to retain.
      */
     public TopNScoredItemAccumulator(int n) {
         this.count = n;
-        scores = new double[n+1];
-        items = new long[n+1];
+        scores = new double[n + 1];
+        items = new long[n + 1];
         slot = 0;
         size = 0;
         heap = new DoubleHeapIndirectPriorityQueue(scores);
@@ -93,7 +93,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
             indices[i] = heap.dequeue();
         }
         ScoredLongList l = new ScoredLongArrayList(size);
-        for (int i: indices) {
+        for (int i : indices) {
             l.add(items[i], scores[i]);
         }
 

@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
@@ -31,9 +32,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * rating to be subtracted from a set of ratings.
  *
  * @param <V> The type of reference vectors.
- *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 @DefaultImplementation(IdentityVectorNormalizer.class)
 public interface VectorNormalizer {
@@ -42,24 +41,25 @@ public interface VectorNormalizer {
      * Normalize a vector in-place with a reference vector.
      *
      * <p>
-     * To understand the relationship of <var>reference</var> and
-     * <var>vector</var>, consider wanting to subtract the user's mean rating
+     * To understand the relationship of {@var reference} and
+     * {@var vector}, consider wanting to subtract the user's mean rating
      * from a set of ratings. To do that, the user's rating vector is
-     * <var>reference</var>, and the vector of ratings to be adjusted is
-     * <var>vector</var>.
+     * {@var reference}, and the vector of ratings to be adjusted is
+     * {@var vector}.
      *
      * <p>
      * This method is equivalent to
      * <code>makeTransformation(reference).apply(target)</code).
      *
      * @param reference The reference used to compute whatever transformation is
-     *            needed (e.g. the mean value).
-     * @param target The vector to normalize. If <tt>null</tt>, a new mutable
-     *            copy of <var>reference</var> is created.
-     * @return <var>target</var>, or a normalized mutable copy of
-     *         <var>reference</var> if <var>target</var> is <tt>null</tt>.
+     *                  needed (e.g. the mean value).
+     * @param target    The vector to normalize. If {@code null}, a new mutable
+     *                  copy of {@var reference} is created.
+     * @return {@var target}, or a normalized mutable copy of
+     *         {@var reference} if {@var target} is {@code null}.
      */
-    MutableSparseVector normalize(SparseVector reference, @Nullable MutableSparseVector target);
+    MutableSparseVector normalize(@Nonnull SparseVector reference,
+                                  @Nullable MutableSparseVector target);
 
     /**
      * Create a vector transformation that normalizes and denormalizes vectors

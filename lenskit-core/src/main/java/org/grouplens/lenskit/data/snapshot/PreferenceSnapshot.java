@@ -19,6 +19,7 @@
 package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -54,27 +55,32 @@ import java.io.Closeable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @ThreadSafe
+@DefaultImplementation(PackedPreferenceSnapshot.class)
 public interface PreferenceSnapshot extends Closeable {
     /**
      * Get the set of user IDs in the snapshot.
+     *
      * @return A set of all known user IDs.
      */
     LongCollection getUserIds();
 
     /**
      * Get the set of item IDs in the snapshot.
+     *
      * @return A set of all known item IDs.
      */
     LongCollection getItemIds();
 
     /**
      * Get the user ID index.
+     *
      * @return The index mapping between user IDs and user indices.
      */
     Index userIndex();
 
     /**
      * Get the item ID index.
+     *
      * @return The index mapping between user IDs and user indices.
      */
     Index itemIndex();

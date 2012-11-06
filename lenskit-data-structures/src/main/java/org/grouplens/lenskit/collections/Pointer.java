@@ -18,36 +18,39 @@
  */
 package org.grouplens.lenskit.collections;
 
+import java.util.NoSuchElementException;
+
 /**
  * A pointer is at an element and can be advanced and range-tested. It is useful
  * in certain cases where advance/get is a more meaningful abstraction than
  * hasNext/next.
- * 
+ *
+ * @param <E> The type of element in the pointer.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  * @since 0.9
- * 
  */
 public interface Pointer<E> {
     /**
      * Advance the pointer.
-     * 
-     * @return <tt>true</tt> if the advancing yielded another element;
-     *         <tt>false</tt> if the pointer is at the end after advancing.
+     *
+     * @return {@code true} if the advancing yielded another element;
+     *         {@code false} if the pointer is at the end after advancing.
      */
     boolean advance();
-    
+
     /**
      * Get the current value of the pointer.
-     * 
+     *
      * @return The value at the pointer.
-     * @throw NoSuchElementException if the pointer is out-of-bounds.
+     * @throws NoSuchElementException if the pointer is out-of-bounds.
      */
     E get();
-    
+
     /**
      * Query whether the pointer has reached its endpoint.
-     * 
-     * @return <tt>true</tt> if the pointer is at the end.
+     *
+     * @return {@code true} if the pointer is at the end.
      */
     boolean isAtEnd();
 }

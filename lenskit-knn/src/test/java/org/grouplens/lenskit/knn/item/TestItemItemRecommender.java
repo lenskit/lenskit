@@ -18,22 +18,12 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -42,10 +32,24 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.common.test.MoreMatchers.closeTo;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.*;
 
 public class TestItemItemRecommender {
 
@@ -53,7 +57,7 @@ public class TestItemItemRecommender {
     private ItemRecommender recommender;
 
     @Before
-    public void setup() {
+    public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
         rs.add(Ratings.make(2, 6, 2));
@@ -74,21 +78,24 @@ public class TestItemItemRecommender {
         factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
-        // FIXME Let this work @mludwig
-        /*factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
-                             IdentityVectorNormalizer.class);*/
+        factory.bind(UserVectorNormalizer.class)
+               .to(DefaultUserVectorNormalizer.class);
+        factory.bind(VectorNormalizer.class)
+               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = factory.create();
         session = engine.open();
         recommender = session.getItemRecommender();
     }
 
     /**
-     * Check that we score items but do not provide rating scores.
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously.
      */
     @Test
     public void testItemScorerNoRating() {
         UserHistory<Rating> history = getRatings(5);
-        long[] items = { 7, 8 };
+        long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
         SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
@@ -100,7 +107,36 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector)</tt>.
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously.
+     */
+    @Test
+    public void testItemScorerChannels() {
+        UserHistory<Rating> history = getRatings(5);
+        long[] items = {7, 8};
+        ItemItemScorer scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        assertThat(scores, notNullValue());
+        assertThat(scores.size(), equalTo(1));
+        assertThat(scores.get(7), not(notANumber()));
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(7), closeTo(1.0));
+        assertThat(scores.get(8), notANumber());
+        assertThat(scores.containsKey(8), equalTo(false));
+
+        history = getRatings(2);  // has rated 7, and 8
+        long[] items2 = {7, 8, 9};
+        scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        scores = scorer.score(history, LongArrayList.wrap(items2));
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(9), closeTo(3.0));  // 1, 7, 8
+    }
+
+    /**
+     * Tests {@code recommend(long, SparseVector)}.
      */
     @Test
     public void testItemItemRecommender1() {
@@ -134,7 +170,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int)</tt>.
+     * Tests {@code recommend(long, SparseVector, int)}.
      */
     @Test
     public void testItemItemRecommender2() {
@@ -153,7 +189,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, Set)}.
      */
     @Test
     public void testItemItemRecommender3() {
@@ -210,7 +246,7 @@ public class TestItemItemRecommender {
     }
 
     /**
-     * Tests <tt>recommend(long, SparseVector, int, Set, Set)</tt>.
+     * Tests {@code recommend(long, SparseVector, int, Set, Set)}.
      */
     @Test
     public void testItemItemRecommender4() {
@@ -255,7 +291,7 @@ public class TestItemItemRecommender {
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(7);
         recs = recommender.recommend(getRatings(5), 2, candidates, exclude);
-        assertEquals(1,recs.size());
+        assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
         recs = recommender.recommend(getRatings(5), 0, candidates, null);

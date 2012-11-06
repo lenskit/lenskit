@@ -24,7 +24,7 @@ package org.grouplens.lenskit.data.dao;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
+ * @compat Public (but may add orders)
  */
 public enum SortOrder {
     /**

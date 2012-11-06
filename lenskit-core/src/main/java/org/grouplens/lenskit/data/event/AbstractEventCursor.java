@@ -22,29 +22,37 @@ import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.data.Event;
 
 /**
- * Polling-based cursor implementation for events with fast poll methods. This class
- * assumes that {@link #poll()} reuses objects, and overrides {@link #copy(E)} to copy
- * them using {@link Event#clone()}.
+ * Helper for making event cursors.
  *
+ * @param <E> The type of event the cursor returns.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public abstract class AbstractEventCursor<E extends Event> extends AbstractPollingCursor<E> {
+    /**
+     * Construct a cursor of unknown size.
+     */
     public AbstractEventCursor() {
         super();
     }
 
+    /**
+     * Construct a cursor with a known number of rows.
+     *
+     * @param rowCount The number of rows.
+     */
     public AbstractEventCursor(int rowCount) {
         super(rowCount);
     }
 
     /**
-     * Copy an event using {@link Event#clone()}.
+     * Copy an event using {@link Event#copy()}.
+     *
      * @param event The event to copy.
      * @return A copy of {@code event}.
      */
+    @Override
     @SuppressWarnings("unchecked")
     protected E copy(E event) {
-        return (E) event.clone();
+        return (E) event.copy();
     }
 }

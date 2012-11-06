@@ -18,13 +18,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +40,10 @@ import static java.lang.Math.abs;
  * over all users.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- *
  */
 public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
-    private static final String[] COLUMNS = { "MAE", "MAE.ByUser" };
+    private static final String[] COLUMNS = {"MAE", "MAE.ByUser"};
     private static final String[] USER_COLUMNS = {"MAE"};
 
     @Override
@@ -69,15 +68,17 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             double err = 0;
             int n = 0;
-            for (Long2DoubleMap.Entry e: predictions.fast()) {
-                if (Double.isNaN(e.getDoubleValue())) continue;
+            for (VectorEntry e : predictions.fast()) {
+                if (Double.isNaN(e.getValue())) {
+                    continue;
+                }
 
-                err += abs(e.getDoubleValue() - ratings.get(e.getLongKey()));
+                err += abs(e.getValue() - ratings.get(e.getKey()));
                 n++;
             }
 
@@ -87,21 +88,18 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
                 double errRate = err / n;
                 totalUserError += errRate;
                 nusers += 1;
-                return new String[]{Double.toString(errRate)};
+                return new Object[]{errRate};
             } else {
                 return null;
             }
         }
 
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
             double v = totalError / nratings;
             double uv = totalUserError / nusers;
             logger.info("MAE: {}", v);
-            return new String[]{
-            		Double.toString(v),
-            		Double.toString(uv)
-            };
+            return new Object[]{v, uv};
         }
 
     }

@@ -23,21 +23,21 @@ import java.util.Map;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.config.DefaultBuilder;
+import org.grouplens.lenskit.eval.config.BuilderCommand;
 
 import javax.annotation.Nullable;
 
 /**
  * Interface for train-test data sets.  This is a single train-test pair.
- * 
- * @since 0.8
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  *
+ * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @since 0.8
  */
-@DefaultBuilder(GenericTTDataBuilder.class)
+@BuilderCommand(GenericTTDataCommand.class)
 public interface TTDataSet {
     /**
      * Get the data set name.
+     *
      * @return A name for the data set.  Used as the job group name.
      * @see JobGroup#getName()
      */
@@ -45,37 +45,44 @@ public interface TTDataSet {
 
     /**
      * Get the preference domain for this data set.
+     *
      * @return The data set preference domain.
      */
     @Nullable
     PreferenceDomain getPreferenceDomain();
-    
+
     /**
      * Get the data set attributes (used for identification in output).
-     * 
+     *
      * @return A key -> value map of the attributes used to identify this data
      *         set. For example, a crossfold data set may include the source
      *         name and fold number.
      */
-    Map<String,Object> getAttributes();
+    Map<String, Object> getAttributes();
 
     /**
      * Release the data set. Called when the train-test job group using this
      * data set is finished.
      */
     void release();
-    
+
     /**
      * Get the training data.
+     *
      * @return A DAO factory returning the training data.
      */
     DAOFactory getTrainFactory();
-    
+
     /**
      * Get the test data.
+     *
      * @return A DAO factory returning the test data.
      */
     DAOFactory getTestFactory();
 
-    long lastUpdated();
+    /**
+     * Get the last modification time of this data set.
+     * @return The last modification time, in milliseconds since the epoch.
+     */
+    long lastModified();
 }
