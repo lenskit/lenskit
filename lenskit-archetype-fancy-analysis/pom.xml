@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <project
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>lenskit</artifactId>
@@ -11,7 +10,6 @@
   </parent>
   <artifactId>lenskit-archetype-fancy-analysis</artifactId>
   <name>Archetype - lenskit-archetype-fancy-analysis</name>
-  <url>http://lenskit.grouplens.org</url>
   <packaging>maven-archetype</packaging>
 
   <build>
@@ -21,13 +19,13 @@
       <extension>
         <groupId>org.apache.maven.archetype</groupId>
         <artifactId>archetype-packaging</artifactId>
-        <version>2.2</version>
       </extension>
     </extensions>
 
-    <!-- This code turns on filtering for the archetype-resources pom.xml file, so we can set 
-      the version numbers at the time we install the archetype. We turn OFF filtering for all other 
-      files, so they can avoid substitution until the archetype is used to create a new project. -->
+    <!-- This code turns on filtering for the archetype-resources pom.xml 
+      file, so we can set the version numbers at the time we install the archetype. 
+      We turn OFF filtering for all other files, so they can avoid substitution 
+      until the archetype is used to create a new project. -->
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -57,9 +55,10 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>2.5</version>
-          <!-- We create an escape character so we can avoid substituting some of the ${} occurrences 
-            in our pom.xml file, since some of them are things that should only be filtered at at project 
-            creation time, not at archetype install time. -->
+          <!-- We create an escape character so we can avoid substituting 
+            some of the ${} occurrences in our pom.xml file, since some of them are things 
+            that should only be filtered at at project creation time, not at archetype 
+            install time. -->
           <configuration>
             <escapeString>\</escapeString>
           </configuration>

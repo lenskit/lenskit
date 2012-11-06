@@ -30,73 +30,73 @@ import java.io.Serializable;
  */
 @Shareable
 public class ValueArrayQuantizer implements Quantizer, Serializable {
-	private static final long serialVersionUID = 2150927895689488171L;
+    private static final long serialVersionUID = 2150927895689488171L;
 
-	protected final double[] values;
+    protected final double[] values;
 
-	/**
-	 * Construct a new quantizer using the specified array of values.
-	 *
-	 * @param vs The discrete values to quantize to.
-	 */
-	public ValueArrayQuantizer(double[] vs) {
-		if (vs.length <= 0) {
-			throw new IllegalArgumentException("must have at least one value");
-		}
-		values = vs;
-	}
+    /**
+     * Construct a new quantizer using the specified array of values.
+     *
+     * @param vs The discrete values to quantize to.
+     */
+    public ValueArrayQuantizer(double[] vs) {
+        if (vs.length <= 0) {
+            throw new IllegalArgumentException("must have at least one value");
+        }
+        values = vs;
+    }
 
-	@Override
-	public double[] getValues() {
-		return values;
-	}
+    @Override
+    public double[] getValues() {
+        return values;
+    }
 
-	@Override
-	public double getValue(int i) {
-		return indexToValue(i);
-	}
+    @Override
+    public double getValue(int i) {
+        return indexToValue(i);
+    }
 
-	@Override
-	public int apply(double v) {
-		return index(v);
-	}
+    @Override
+    public int apply(double v) {
+        return index(v);
+    }
 
-	@Override
-	public int getCount() {
-		return values.length;
-	}
+    @Override
+    public int getCount() {
+        return values.length;
+    }
 
-	@Override
-	public double indexToValue(int i) {
-		try {
-			return values[i];
-		} catch (IndexOutOfBoundsException e) {
-			throw new IllegalArgumentException("invalid discrete value", e);
-		}
-	}
+    @Override
+    public double indexToValue(int i) {
+        try {
+            return values[i];
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("invalid discrete value", e);
+        }
+    }
 
-	@Override
-	public int index(double val) {
-		final int n = values.length;
-		assert n > 0;
-		int closest = -1;
-		double closev = Double.MAX_VALUE;
-		for (int i = 0; i < n; i++) {
-			double diff = Math.abs(val - values[i]);
-			if (diff <= closev) { // <= to round up
-					closev = diff;
-					closest = i;
-			}
-		}
-		if (closest < 0) {
-			throw new RuntimeException("could not quantize value");
-		} else {
-			return closest;
-		}
-	}
+    @Override
+    public int index(double val) {
+        final int n = values.length;
+        assert n > 0;
+        int closest = -1;
+        double closev = Double.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            double diff = Math.abs(val - values[i]);
+            if (diff <= closev) { // <= to round up
+                closev = diff;
+                closest = i;
+            }
+        }
+        if (closest < 0) {
+            throw new RuntimeException("could not quantize value");
+        } else {
+            return closest;
+        }
+    }
 
-	@Override
-	public double value(double val) {
-		return indexToValue(index(val));
-	}
+    @Override
+    public double quantize(double val) {
+        return indexToValue(index(val));
+    }
 }

@@ -79,11 +79,11 @@ public interface Quantizer {
      * @deprecated Use {@link #index(double val)}
      */
     int apply(double val);
-    
+
     /**
      * Convert a value into a quantized value, returning the quantized value.
      * @param val A value to quantize.
      * @return The quantized value.
      */
-    double value(double val);
+    double quantize(double val);
 }

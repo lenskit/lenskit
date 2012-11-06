@@ -54,8 +54,8 @@ public class TestPreferenceDomainQuantizer {
         assertThat(q.indexToValue(q.index(4.9)), closeTo(5.0, 1.0e-6));
         assertThat(q.indexToValue(q.index(4.7)), closeTo(4.5, 1.0e-6));
         assertThat(q.indexToValue(q.index(3.42)), closeTo(3.5, 1.0e-6));
-        assertThat(q.value(4.9), closeTo(5.0, 1.0e-6));
-        assertThat(q.value(4.7), closeTo(4.5, 1.0e-6));
-        assertThat(q.value(3.42), closeTo(3.5, 1.0e-6));
+        assertThat(q.quantize(4.9), closeTo(5.0, 1.0e-6));
+        assertThat(q.quantize(4.7), closeTo(4.5, 1.0e-6));
+        assertThat(q.quantize(3.42), closeTo(3.5, 1.0e-6));
     }
 }

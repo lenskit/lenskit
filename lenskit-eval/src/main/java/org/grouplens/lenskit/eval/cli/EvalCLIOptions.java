@@ -102,34 +102,34 @@ public class EvalCLIOptions {
         }
     }
 
-    @SuppressWarnings({"static-access"})
+    @SuppressWarnings({"static-access", "AccessStaticViaInstance"})
     private static Options makeOptions() {
         Options opts = new Options();
         opts.addOption(OptionBuilder.withDescription("print this help")
-                                    .withLongOpt("help")
-                                    .create("h"));
+                .withLongOpt("help")
+                .create("h"));
         opts.addOption(OptionBuilder.withDescription("force eval tasks to run")
-                                    .withLongOpt("force")
-                                    .create("F"));
+                .withLongOpt("force")
+                .create("F"));
         opts.addOption(OptionBuilder.withDescription("number of threads to use")
-                                    .hasOptionalArg().withArgName("N")
-                                    .withLongOpt("thread-count")
-                                    .create("j"));
+                .hasOptionalArg().withArgName("N")
+                .withLongOpt("thread-count")
+                .create("j"));
         opts.addOption(OptionBuilder.withDescription("specify the eval configuration script")
-                                    .hasArg().withArgName("FILE")
-                                    .create("f"));
+                .hasArg().withArgName("FILE")
+                .create("f"));
         opts.addOption(OptionBuilder.withDescription("add a JAR or directory to the classpath")
-                                    .withLongOpt("add-to-classpath")
-                                    .hasArg()
-                                    .create("C"));
+                .withLongOpt("add-to-classpath")
+                .hasArg()
+                .create("C"));
         opts.addOption(OptionBuilder.withDescription("throw exceptions rather than exiting")
-                                    .withLongOpt("throw-errors")
-                                    .create());
+                .withLongOpt("throw-errors")
+                .create());
         opts.addOption(OptionBuilder.withDescription("define a property")
-                                    .withArgName("property=value")
-                                    .withValueSeparator()
-                                    .hasArgs(2)
-                                    .create("D"));
+                .withArgName("property=value")
+                .withValueSeparator()
+                .hasArgs(2)
+                .create("D"));
         return opts;
     }
 
