@@ -5,9 +5,9 @@ import com.google.common.base.Preconditions;
 import java.util.Arrays;
 
 /**
- * Accumulate mutual information over two discrete variables.
+ * Accumulate mutual information over two discrete variables.  Slightly incorrectly,
+ * this reports 0 as the entropy and mutual information of empty sets.
  *
- * @author Daniel Kluver
  * @author Michael Ekstrand
  */
 public class MutualInformationAccumulator {
@@ -59,6 +59,10 @@ public class MutualInformationAccumulator {
      * Get the mutual information.
      */
     public double getMutualInformation() {
+        if (total == 0) {
+            return 0;
+        }
+
         double mi = 0;
         final double nlog = Math.log(total);
         for (int i = tbl1.length - 1; i >= 0; i--) {
@@ -82,12 +86,16 @@ public class MutualInformationAccumulator {
      * @param n The total number of events.
      */
     private double entropy(int[] counts, int n) {
+        if (n == 0) return 0;
         double entropy = 0;
         final double nd = (double) n;
         for (int i = counts.length - 1; i >= 0; i--) {
-            final double p = counts[i] / nd;
-            final double logP = Math.log(p) * INV_LOG_2;
-            entropy -= p * logP;
+            final int ni = counts[i];
+            if (ni != 0) {
+                final double p = counts[i] / nd;
+                final double logP = Math.log(p) * INV_LOG_2;
+                entropy -= p * logP;
+            }
         }
         return entropy;
     }
@@ -104,6 +112,13 @@ public class MutualInformationAccumulator {
      */
     public double getV2Entropy() {
         return entropy(tbl2, total);
+    }
+
+    /**
+     * Get the number of events.
+     */
+    public int getCount() {
+        return total;
     }
 
     /**

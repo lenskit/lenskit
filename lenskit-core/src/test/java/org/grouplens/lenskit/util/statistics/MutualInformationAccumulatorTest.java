@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -22,11 +21,11 @@ public class MutualInformationAccumulatorTest {
     public void testNoData() {
         // if there is no data, entropy is undefined
         assertThat(accum.getMutualInformation(),
-                   notANumber());
+                   closeTo(0));
         assertThat(accum.getV1Entropy(),
-                   notANumber());
+                   closeTo(0));
         assertThat(accum.getV2Entropy(),
-                   notANumber());
+                   closeTo(0));
     }
 
     /**

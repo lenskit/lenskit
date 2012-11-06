@@ -16,11 +16,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn;
+package org.grouplens.lenskit.vectors.similarity;
 
 import org.grouplens.lenskit.transform.quantize.Quantizer;
+import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.Vectors;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import javax.inject.Inject;
@@ -39,6 +41,7 @@ import java.io.Serializable;
 public class MutualInformationVectorSimilarity implements VectorSimilarity, Serializable {
 
     private static final long serialVersionUID = 1L;
+
     private final Quantizer quantizer;
 
     /**
@@ -59,53 +62,14 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
      */
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
-        double n = 0.0;
-        // indexed by vec1 then vec2
-        double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
+        MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
 
-        // this would probably be faster if done with two pointers.
-        for (VectorEntry e : vec1.fast()) {
-            if (!vec2.containsKey(e.getKey())) { continue; }
-            double val1 = e.getValue();
-            double val2 = vec2.get(e.getKey());
-            if (Double.isNaN(val1)) { continue; }
-            if (Double.isNaN(val2)) { continue; }
-
-            int val1Index = quantizer.apply(val1);
-            int val2Index = quantizer.apply(val2);
-            jointDistribution[val1Index][val2Index]++;
-            n++;
+        for (Vectors.EntryPair e: Vectors.paired(vec1, vec2)) {
+            accum.count(quantizer.apply(e.getValue1()),
+                        quantizer.apply(e.getValue2()));
         }
 
-        if (n == 0) {
-            return 0;
-        }
-
-        double[] vec1Distribution = new double[quantizer.getCount()];
-        double[] vec2Distribution = new double[quantizer.getCount()];
-
-        for (int val1 = 0; val1 < quantizer.getCount(); val1++) {
-            for (int val2 = 0; val2 < quantizer.getCount(); val2++) {
-                // divide by n to get joint probability from our frequency counts.
-                jointDistribution[val1][val2] /= n;
-                vec1Distribution[val1] += jointDistribution[val1][val2];
-                vec2Distribution[val2] += jointDistribution[val1][val2];
-            }
-        }
-        return mutualInfo(vec1Distribution, vec2Distribution, jointDistribution);
-    }
-
-    private double mutualInfo(double[] vec1Distribution, double[] vec2Distribution, double[][] jointDistribution) {
-        double info = 0.0;
-        for (int val1 = 0; val1 < quantizer.getCount(); val1++) {
-            for (int val2 = 0; val2 < quantizer.getCount(); val2++) {
-                double joint = jointDistribution[val1][val2];
-                if (joint != 0) {
-                    info += joint * Math.log(joint / (vec1Distribution[val2] * vec2Distribution[val1])) / Math.log(2);
-                }
-            }
-        }
-        return info;
+        return accum.getMutualInformation();
     }
 
     @Override

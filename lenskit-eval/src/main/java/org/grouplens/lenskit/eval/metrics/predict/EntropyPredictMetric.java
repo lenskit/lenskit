@@ -26,8 +26,9 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
+import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,71 +75,30 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
 
-            double n = 0.0;
-            // indexed by prediction then rating.
-            double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
+            // TODO Re-use accumulators
+            MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
 
-            for (VectorEntry e : predictions.fast()) {
-                if (Double.isNaN(e.getValue())) { continue; }
-                int pred = quantizer.apply(e.getValue());
-                int rating = quantizer.apply(ratings.get(e.getKey()));
-                jointDistribution[pred][rating]++;
-                n++;
+            for (Vectors.EntryPair e: Vectors.paired(ratings, predictions)) {
+                accum.count(quantizer.apply(e.getValue1()),
+                            quantizer.apply(e.getValue2()));
             }
 
-            if (n > 0) {
-                double[] ratingDistribution = new double[quantizer.getCount()];
-                double[] predDistribution = new double[quantizer.getCount()];
-
-                for (int pred = 0; pred < quantizer.getCount(); pred++) {
-                    for (int rating = 0; rating < quantizer.getCount(); rating++) {
-                        // divide by n to get joint probability from our frequency counts.
-                        jointDistribution[pred][rating] /= n;
-                        ratingDistribution[rating] += jointDistribution[pred][rating];
-                        predDistribution[pred] += jointDistribution[pred][rating];
-                    }
-                }
-                double information = mutualInfo(ratingDistribution, predDistribution, jointDistribution);
-                double ratingEntropy = entropy(ratingDistribution);
-                double predictionEntropy = entropy(predDistribution);
-
-                informationSum += information;
+            if (accum.getCount() > 0) {
+                double ratingEntropy = accum.getV1Entropy();
+                double predEntropy = accum.getV2Entropy();
+                double info = accum.getMutualInformation();
+                informationSum += info;
                 ratingEntropySum += ratingEntropy;
-                predictionEntropySum += predictionEntropy;
-                nusers++;
-
-                return new String[]{
+                predictionEntropySum += predEntropy;
+                nusers += 1;
+                return new String[] {
                         Double.toString(ratingEntropy),
-                        Double.toString(predictionEntropy),
-                        Double.toString(information)
+                        Double.toString(predEntropy),
+                        Double.toString(info)
                 };
             } else {
                 return null;
             }
-
-        }
-
-        private double entropy(double[] distribution) {
-            double result = 0.0;
-            for (int i = 0; i < quantizer.getCount(); i++) {
-                if (distribution[i] != 0.0) {
-                    result += distribution[i] * Math.log(distribution[i]) / Math.log(2);
-                }
-            }
-            return -result;
-        }
-
-        private double mutualInfo(double[] ratingDistribution, double[] predDistribution, double[][] jointDistribution) {
-            double info = 0.0;
-            for (int pred = 0; pred < quantizer.getCount(); pred++) {
-                for (int rating = 0; rating < quantizer.getCount(); rating++) {
-                    double joint = jointDistribution[pred][rating];
-                    if (joint != 0) {
-                        info += joint * Math.log(joint / (ratingDistribution[rating] * predDistribution[pred])) / Math.log(2);
-                    }
-                }
-            }
-            return info;
         }
 
         @Override
