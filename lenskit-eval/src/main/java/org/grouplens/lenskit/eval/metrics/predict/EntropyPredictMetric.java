@@ -32,15 +32,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Evaluate a recommender's prediction accuracy by computing the mutual 
+ * Evaluate a recommender's prediction accuracy by computing the mutual
  * information between the ratings and the prediction. This tells us the amount
- * of information our predictions can tell the user about our ratings. 
- * @author Daniel Kluver <kluver@cs.umn.edu>
+ * of information our predictions can tell the user about our ratings.
  *
+ * @author Daniel Kluver <kluver@cs.umn.edu>
  */
 public class EntropyPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
-    private static final String[] COLUMNS = {"Entropy.ofRating.ByUser","Entropy.ofPredictions.byUser", "Information.ByUser"};
+    private static final String[] COLUMNS = {"Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser"};
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
@@ -51,20 +51,20 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
     public String[] getUserColumnLabels() {
         return COLUMNS;
     }
-    
+
     @Override
     public String[] getColumnLabels() {
         return COLUMNS;
     }
-    
+
     class Accum implements TestUserMetricAccumulator {
         private Quantizer quantizer;
-                
+
         private double informationSum = 0.0;
         private double ratingEntropySum = 0.0;
         private double predictionEntropySum = 0.0;
         private int nusers = 0;
-        
+
         public Accum(PreferenceDomain preferenceDomain) {
             quantizer = new PreferenceDomainQuantizer(preferenceDomain);
         }
@@ -77,19 +77,19 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             double n = 0.0;
             // indexed by prediction then rating.
             double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
-            
-            for (VectorEntry e: predictions.fast()) {
-                if (Double.isNaN(e.getValue())) continue;
+
+            for (VectorEntry e : predictions.fast()) {
+                if (Double.isNaN(e.getValue())) { continue; }
                 int pred = quantizer.apply(e.getValue());
                 int rating = quantizer.apply(ratings.get(e.getKey()));
                 jointDistribution[pred][rating]++;
                 n++;
             }
-            
+
             if (n > 0) {
                 double[] ratingDistribution = new double[quantizer.getCount()];
                 double[] predDistribution = new double[quantizer.getCount()];
-                
+
                 for (int pred = 0; pred < quantizer.getCount(); pred++) {
                     for (int rating = 0; rating < quantizer.getCount(); rating++) {
                         // divide by n to get joint probability from our frequency counts.
@@ -101,29 +101,28 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
                 double information = mutualInfo(ratingDistribution, predDistribution, jointDistribution);
                 double ratingEntropy = entropy(ratingDistribution);
                 double predictionEntropy = entropy(predDistribution);
-                
+
                 informationSum += information;
                 ratingEntropySum += ratingEntropy;
                 predictionEntropySum += predictionEntropy;
-                nusers ++;
-                            
-                return new String[] {
-                    Double.toString(ratingEntropy),
-                    Double.toString(predictionEntropy),
-                    Double.toString(information)
+                nusers++;
+
+                return new String[]{
+                        Double.toString(ratingEntropy),
+                        Double.toString(predictionEntropy),
+                        Double.toString(information)
                 };
             } else {
                 return null;
             }
-            
-            
+
         }
 
         private double entropy(double[] distribution) {
             double result = 0.0;
-            for(int i = 0; i < quantizer.getCount(); i++) {
-                if(distribution[i] != 0.0) {
-                    result += distribution[i]*Math.log(distribution[i])/Math.log(2);
+            for (int i = 0; i < quantizer.getCount(); i++) {
+                if (distribution[i] != 0.0) {
+                    result += distribution[i] * Math.log(distribution[i]) / Math.log(2);
                 }
             }
             return -result;
@@ -132,10 +131,10 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
         private double mutualInfo(double[] ratingDistribution, double[] predDistribution, double[][] jointDistribution) {
             double info = 0.0;
             for (int pred = 0; pred < quantizer.getCount(); pred++) {
-                for (int rating = 0; rating < quantizer.getCount() ; rating++) {
+                for (int rating = 0; rating < quantizer.getCount(); rating++) {
                     double joint = jointDistribution[pred][rating];
-                    if(joint != 0) {
-                        info += joint * Math.log(joint/(ratingDistribution[rating]*predDistribution[pred]))/Math.log(2);
+                    if (joint != 0) {
+                        info += joint * Math.log(joint / (ratingDistribution[rating] * predDistribution[pred])) / Math.log(2);
                     }
                 }
             }
@@ -147,7 +146,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             logger.info("H(rating|user): {}", ratingEntropySum / nusers);
             logger.info("H(prediction|user): {}", predictionEntropySum / nusers);
             logger.info("I(rating;prediction): {}", informationSum / nusers);
-            return new String[] {
+            return new String[]{
                     Double.toString(ratingEntropySum / nusers),
                     Double.toString(predictionEntropySum / nusers),
                     Double.toString(informationSum / nusers)

@@ -27,15 +27,14 @@ import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * Similarity function that assumes the two vectors are paired samples from 2 
+ * Similarity function that assumes the two vectors are paired samples from 2
  * correlated random variables. Using this we estimate the mutual information
  * between the two variables.
- * 
- * Note, this uses the naive estimator of mutual information, which can be 
- * heavily biased when the two vectors have little overlap.
- * 
- * @author Daniel Kluver <kluver@cs.umn.edu>
  *
+ * Note, this uses the naive estimator of mutual information, which can be
+ * heavily biased when the two vectors have little overlap.
+ *
+ * @author Daniel Kluver <kluver@cs.umn.edu>
  */
 public class MutualInformationVectorSimilarity implements VectorSimilarity, Serializable {
 
@@ -43,7 +42,7 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
     private final Quantizer quantizer;
 
     /**
-     * @review should this take 2 quantizers?
+     * Construct a new mutual information similarity.
      */
     @Inject
     public MutualInformationVectorSimilarity(Quantizer quantizer) {
@@ -53,9 +52,9 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
     /**
      * Note, this similarity function measures the absolute correlation between two vectors.
      * Because of this it ranges from [0,inf), not [-1,1] as specified by superclass.
-     * Caution should be used when using this vector similarity function that your 
+     * Caution should be used when using this vector similarity function that your
      * implementation will accept values in this range.
-     * 
+     *
      * @see VectorSimilarity#similarity(SparseVector, SparseVector)
      */
     @Override
@@ -65,13 +64,13 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
         double[][] jointDistribution = new double[quantizer.getCount()][quantizer.getCount()];
 
         // this would probably be faster if done with two pointers.
-        for (VectorEntry e: vec1.fast()) {
-            if (!vec2.containsKey(e.getKey())) continue;
+        for (VectorEntry e : vec1.fast()) {
+            if (!vec2.containsKey(e.getKey())) { continue; }
             double val1 = e.getValue();
             double val2 = vec2.get(e.getKey());
-            if (Double.isNaN(val1)) continue;
-            if (Double.isNaN(val2)) continue;
-            
+            if (Double.isNaN(val1)) { continue; }
+            if (Double.isNaN(val2)) { continue; }
+
             int val1Index = quantizer.apply(val1);
             int val2Index = quantizer.apply(val2);
             jointDistribution[val1Index][val2Index]++;
@@ -81,7 +80,7 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
         if (n == 0) {
             return 0;
         }
-        
+
         double[] vec1Distribution = new double[quantizer.getCount()];
         double[] vec2Distribution = new double[quantizer.getCount()];
 
@@ -92,17 +91,17 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
                 vec1Distribution[val1] += jointDistribution[val1][val2];
                 vec2Distribution[val2] += jointDistribution[val1][val2];
             }
-        }        
+        }
         return mutualInfo(vec1Distribution, vec2Distribution, jointDistribution);
     }
 
     private double mutualInfo(double[] vec1Distribution, double[] vec2Distribution, double[][] jointDistribution) {
         double info = 0.0;
         for (int val1 = 0; val1 < quantizer.getCount(); val1++) {
-            for (int val2 = 0; val2 < quantizer.getCount() ; val2++) {
+            for (int val2 = 0; val2 < quantizer.getCount(); val2++) {
                 double joint = jointDistribution[val1][val2];
-                if(joint != 0) {
-                    info += joint * Math.log(joint/(vec1Distribution[val2]*vec2Distribution[val1]))/Math.log(2);
+                if (joint != 0) {
+                    info += joint * Math.log(joint / (vec1Distribution[val2] * vec2Distribution[val1])) / Math.log(2);
                 }
             }
         }
