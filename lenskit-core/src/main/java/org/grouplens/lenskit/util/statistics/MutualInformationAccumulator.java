@@ -108,9 +108,8 @@ public class MutualInformationAccumulator {
         double acc = 0;
         final double logN = Math.log(n);
         for (int i = counts.length - 1; i >= 0; i--) {
-            final int ni = counts[i];
-            if (ni != 0) {
-                final int m = counts[i];
+            final int m = counts[i];
+            if (m != 0) {
                 final double logP = Math.log(m) - logN;
                 acc -= m * logP;
             }
