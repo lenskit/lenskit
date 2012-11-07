@@ -29,7 +29,7 @@ import java.util.Arrays;
  * @author Michael Ekstrand
  */
 public class MutualInformationAccumulator {
-    private static final double INV_LOG_2 = 1 / Math.log(2);
+    private static final double RECIP_LOG_2 = 1 / Math.log(2);
 
     private int[][] joint;
     private int[] tbl1;
@@ -90,7 +90,7 @@ public class MutualInformationAccumulator {
                 if (nij != 0) {
                     final double njLog = Math.log(tbl2[j]);
                     double lg = Math.log(nij) - niLog - njLog + nlog;
-                    lg *= INV_LOG_2;
+                    lg *= RECIP_LOG_2;
                     mi += lg * nij;
                 }
             }
@@ -115,7 +115,7 @@ public class MutualInformationAccumulator {
                 acc -= m * logP;
             }
         }
-        return (acc * INV_LOG_2) / n;
+        return (acc * RECIP_LOG_2) / n;
     }
 
     /**
