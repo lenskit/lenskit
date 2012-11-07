@@ -105,17 +105,17 @@ public class MutualInformationAccumulator {
      */
     private double entropy(int[] counts, int n) {
         if (n == 0) return 0;
-        double entropy = 0;
-        final double nd = (double) n;
+        double acc = 0;
+        final double logN = Math.log(n);
         for (int i = counts.length - 1; i >= 0; i--) {
             final int ni = counts[i];
             if (ni != 0) {
-                final double p = counts[i] / nd;
-                final double logP = Math.log(p) * INV_LOG_2;
-                entropy -= p * logP;
+                final int m = counts[i];
+                final double logP = Math.log(m) - logN;
+                acc -= m * logP;
             }
         }
-        return entropy;
+        return (acc * INV_LOG_2) / n;
     }
 
     /**
