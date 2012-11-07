@@ -122,6 +122,12 @@ repository, so they are available for any of the other projects to use.
 After that, you can easily run tests in any of the other projects directly from Eclipse,
 which is faster and prettier.  Just right click a project, select "Run As" / "JUnit Test".
 
+Mercurial on Windows is sometimes a little tricky to get set up.  If you do not have a Mercurial.ini
+file, Mercurial will not know the user name to use for commits.  Here is a stackoverflow Q&A that 
+explains how to set it up:
+
+    http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied
+
 You will need to install a Java Development Kit to build some parts of LensKit.  On Linux or Mac, setting
 the Java HOME will let LensKit find it. On Windows if you install the JDK next to the JRE,
 LensKit will probably be able to find it.
