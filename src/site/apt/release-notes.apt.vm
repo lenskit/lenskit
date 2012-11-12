@@ -43,6 +43,9 @@ LensKit Release Notes
       of <<<ThresholdValue>>>.  If you configure the threshold valud, update your configuration
       accordingly.
 
+    * The FunkSVD <<<LearningRate>>> and <<<RegularizationTerm>>> have been moved to
+      the new iterative parameters package.
+
     []
 
   []

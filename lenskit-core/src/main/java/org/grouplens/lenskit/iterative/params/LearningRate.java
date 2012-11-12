@@ -16,24 +16,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.mf.funksvd.params;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
+package org.grouplens.lenskit.iterative.params;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * The learning rate for gradient descent.
- *
- * @see FunkSVDModelProvider
+ * Learning rate for iterative methods.
  */
 @Documented
 @DefaultDouble(1e-3)
