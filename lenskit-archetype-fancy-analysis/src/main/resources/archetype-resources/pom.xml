@@ -26,9 +26,9 @@
 
   <dependencies>
 
-    <!-- You will automatically get a version of LensKit for your project, pulled in transitively 
-      by the lenskit-eval-maven-plugin. The version you get is based on the version of the archetype 
-      you used to create this project. -->
+    <!-- You will automatically get a version of LensKit for your project, 
+      pulled in transitively by the lenskit-eval-maven-plugin. The version you 
+      get is based on the version of the archetype you used to create this project. -->
 
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
@@ -41,6 +41,12 @@
       <version>\${lenskit.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.grouplens.common</groupId>
+      <artifactId>common-test</artifactId>
+      <version>0.6.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.10</version>
@@ -49,10 +55,11 @@
 
   </dependencies>
 
-  <!-- Now we specify the build that will actually execute to make our project do something 
-    cool. The build is a collection of plugins that we execute to do the work. Note that we run 
-    the evaluations using the lenskit-lifecycle, because we use the lenskit-eval-maven-plugin. 
-    The phases of this lifecycle are lenskit-pre-eval, lenskit-eval, lenskit-post-eval, and lenskit-analyze, 
+  <!-- Now we specify the build that will actually execute to make our project 
+    do something cool. The build is a collection of plugins that we execute to 
+    do the work. Note that we run the evaluations using the lenskit-lifecycle, 
+    because we use the lenskit-eval-maven-plugin. The phases of this lifecycle 
+    are lenskit-pre-eval, lenskit-eval, lenskit-post-eval, and lenskit-analyze, 
     in that order. -->
 
   <build>
@@ -69,8 +76,8 @@
         </configuration>
       </plugin>
 
-      <!-- This use of the ant plugin first creates the data directory and then fetches the 
-        ml-100k dataset. -->
+      <!-- This use of the ant plugin first creates the data directory and 
+        then fetches the ml-100k dataset. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -106,8 +113,8 @@
         </executions>
       </plugin>
 
-      <!-- Run the lenskit eval plugin that does the work of evaluating the recommenders you 
-        are comparing, by running your Groovy script. -->
+      <!-- Run the lenskit eval plugin that does the work of evaluating the 
+        recommenders you are comparing, by running your Groovy script. -->
       <plugin>
         <artifactId>lenskit-eval-maven-plugin</artifactId>
         <groupId>org.grouplens.lenskit</groupId>
@@ -120,9 +127,9 @@
         </configuration>
       </plugin>
 
-
-      <!-- This plugin executes the R data analysis to produce the graphs from our runs. We 
-        use an execution so we can tie this plugin to the appropriate phase of the lenskit lifecycle. -->
+      <!-- This plugin executes the R data analysis to produce the graphs 
+        from our runs. We use an execution so we can tie this plugin to the appropriate 
+        phase of the lenskit lifecycle. -->
       <plugin>
         <artifactId>exec-maven-plugin</artifactId>
         <groupId>org.codehaus.mojo</groupId>

@@ -114,6 +114,12 @@ If you're tired of typing -Dgrouplens-mldata-acknowledge-yes each
 time, you can uncomment the grouplens.mldata.acknowledgement property
 in pom.xml, and change the value to "yes".  
 
+## Example Predictor
+
+There is a simple example predictor in src/main/java.  This predictor includes a model that generates
+item means, and a predictor based on that model.  You may find the model and predictor useful as 
+starting points for your own predictors.
+
 ## Next steps
 
 The next steps are up to you!  You can explore LensKit evaluations by
