@@ -16,10 +16,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.iterative;
+package org.grouplens.lenskit.iterative;
 
-import org.grouplens.lenskit.params.MinimumIterations;
-import org.grouplens.lenskit.params.ThresholdValue;
+import org.grouplens.lenskit.iterative.params.MinimumIterations;
+import org.grouplens.lenskit.iterative.params.StoppingThreshold;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
@@ -45,7 +45,7 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
      * @param minIter The minimum number of iterations.
      */
     @Inject
-    public ThresholdStoppingCondition(@ThresholdValue double thresh,
+    public ThresholdStoppingCondition(@StoppingThreshold double thresh,
                                       @MinimumIterations int minIter) {
         threshold = thresh;
         minIterations = minIter;

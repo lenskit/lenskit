@@ -16,22 +16,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.iterative;
 
-import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.lenskit.core.Parameter;
-
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
- * The minimum number of iterations to use.
+ * Stopping condition for iterative updates
  */
-@Documented
-@DefaultInteger(25)
-@Parameter(Integer.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface MinimumIterations {
+@DefaultImplementation(IterationCountStoppingCondition.class)
+public interface StoppingCondition {
+    /**
+     * Query whether the computation should stop.
+     *
+     * @param niters The number of iterations done so far.
+     * @param delta  The last delta. The delta may be {@link Double#NaN} before the first iteration.
+     * @return {@code true} if the computation is finished.
+     */
+    boolean isFinished(int niters, double delta);
 }

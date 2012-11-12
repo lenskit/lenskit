@@ -16,9 +16,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.iterative;
+package org.grouplens.lenskit.iterative;
 
-import org.grouplens.lenskit.params.IterationCount;
+import org.grouplens.lenskit.iterative.params.IterationCount;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
