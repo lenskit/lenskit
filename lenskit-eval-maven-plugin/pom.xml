@@ -56,25 +56,8 @@
     </dependency>
   </dependencies>
 
-  <!-- The configuration of the reportPlugins with
-  combine.children="append" is a hack to work around a bug in
-  maven 3.0 inheritance of maven-site-plugin configuration from
-  the parent.  We should check whether this is still needed. -->
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <reportPlugins combine.children="append">
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-plugin-plugin</artifactId>
-            </plugin>
-          </reportPlugins>
-        </configuration>
-      </plugin>
-
       <!-- extra setup needed to make the annotation-based mojo
            configuration work. -->
       <plugin>
@@ -93,6 +76,15 @@
       </plugin>
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <dependencyManagement>
     <dependencies>

@@ -31,5 +31,18 @@ LensKit Documentation
   sites, with per-module JavaDoc and reporting, are
   {{{./modules.html}linked here}}.
 
+* Additional Reports
+
+  These are mostly useful for development, but here are some of the standard Maven reports
+  generated for LensKit:
+
+  * {{{./dependencies.html}Dependencies}}
+
+  * {{{./dependency-management.html}Dependency Management}}
+
+  * {{{./dependency-convergence.html}Dependency Convergence}}
+
+  * {{{./plugins.html}Plugins}}
+
   []
 
