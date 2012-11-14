@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archetype-descriptor name="fancy-analysis">
-	<id>lenskit-archetype-fancy-analysis</id>
+  <id>lenskit-archetype-fancy-analysis</id>
 
-	<!-- These resources will be copied out of the archetype-resources directory 
-		into the newly created target project. -->
-	<fileSets>
-		<fileSet filtered="true" packaged="true">
-			<directory>src/test/java</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
-		<fileSet filtered="true" packaged="true">
-			<directory>src/main/java</directory>
-			<includes>
-				<include>**/*.java</include>
-			</includes>
-		</fileSet>
+  <!-- These resources will be copied out of the archetype-resources directory 
+    into the newly created target project. -->
+  <fileSets>
+    <fileSet filtered="true" packaged="true">
+      <directory>src/test/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" packaged="true">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
 
-		<!-- These are the files we want at the top-level that actually do the 
-			script work for running the eval and analysis. -->
-		<fileSet filtered="true">
-			<directory></directory>
-			<includes>
-				<include>src/eval/*.xml</include>
-				<include>src/eval/*.groovy</include>
-				<include>src/eval/*.R</include>
-			</includes>
-		</fileSet>
-	</fileSets>
+    <!-- These are the files we want at the top-level that actually do the 
+      script work for running the eval and analysis. -->
+    <fileSet filtered="true">
+      <directory></directory>
+      <includes>
+        <include>src/eval/*.xml</include>
+        <include>src/eval/*.groovy</include>
+        <include>src/eval/*.R</include>
+      </includes>
+    </fileSet>
+  </fileSets>
 </archetype-descriptor>
 
