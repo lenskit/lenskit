@@ -1,27 +1,15 @@
 # LensKit
 
 LensKit is an implementation of collaborative filtering algorithms and
-a set of tools for benchmarking them.  For more information about
-LensKit and its documentation, visit the [web site][] or [wiki][].
+a set of tools for benchmarking them.  This readme is about working with
+the LensKit source code.  For more information about
+LensKit and its documentation, visit the [web site][] or [wiki][].  You 
+can also find information on the [wiki][] about how to use LensKit 
+without downloading the source code.
 
 [web site]: http://lenskit.grouplens.org
 [wiki]: http://dev.grouplens.org/trac/lenskit
 
-If you just want to use LensKit, you don't need the source code; just use
-Maven (or Ivy or any other Maven-compatible dependency manager) and declare
-a dependency on LensKit:
-
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-core</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <!-- to get the k-NN recommenders -->
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-knn</artifactId>
-      <version>1.0</version>
-    </dependency>
 
 ## Installation and Dependency Management
 
