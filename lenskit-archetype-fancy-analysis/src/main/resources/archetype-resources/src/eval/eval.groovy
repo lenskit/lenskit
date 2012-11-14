@@ -11,7 +11,7 @@ import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 
-import ${project}.ExtendedItemUserMeanPredictor
+import ${package}.ExtendedItemUserMeanPredictor
 
 def ml100k = crossfold {
    source csvfile("${config.dataDir}/ml100k/u.data") {
