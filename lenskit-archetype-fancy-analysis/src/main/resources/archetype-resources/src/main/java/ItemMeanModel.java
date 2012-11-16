@@ -61,11 +61,11 @@ public class ItemMeanModel implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanModel.class);
     private final double globalMean;
-    private final Long2DoubleMap itemMeans;
+    private final Long2DoubleMap itemOffsets;
 
-    public ItemMeanModel(Long2DoubleMap computeItemMeans, double computeGlobalMean) {
-        itemMeans = computeItemMeans;
-        globalMean = computeGlobalMean;
+    public ItemMeanModel(Long2DoubleMap inItemOffsets, double inGlobalMean) {
+        itemOffsets = inItemOffsets;
+        globalMean = inGlobalMean;
     }
 
     /**
@@ -79,7 +79,7 @@ public class ItemMeanModel implements Serializable {
      * @return the itemMeans
      */
     public Long2DoubleMap getItemOffsets() {
-        return itemMeans;
+        return itemOffsets;
     }
 
     public static class Provider implements javax.inject.Provider<ItemMeanModel> {
@@ -163,14 +163,13 @@ public class ItemMeanModel implements Serializable {
 
         @Override
         public ItemMeanModel get() {
-            Long2DoubleMap computeItemMeans = new Long2DoubleOpenHashMap();
+            Long2DoubleMap itemOffsetsResult = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
-            double computeGlobalMean = computeItemOffsets(ratings.fast().iterator(), damping, computeItemMeans);
+            double globalMeanResult = computeItemOffsets(ratings.fast().iterator(), damping, itemOffsetsResult);
             ratings.close();
 
-            return new ItemMeanModel(computeItemMeans, computeGlobalMean);
+            return new ItemMeanModel(itemOffsetsResult, globalMeanResult);
         }
     }
-
 
 }
