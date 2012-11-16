@@ -51,9 +51,9 @@ public class TestPreferenceDomainQuantizer {
     public void testHalfStars() {
         Quantizer q = new PreferenceDomainQuantizer(domain);
         assertThat(q.getCount(), equalTo(10));
-        assertThat(q.indexToValue(q.index(4.9)), closeTo(5.0, 1.0e-6));
-        assertThat(q.indexToValue(q.index(4.7)), closeTo(4.5, 1.0e-6));
-        assertThat(q.indexToValue(q.index(3.42)), closeTo(3.5, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(4.9)), closeTo(5.0, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(4.7)), closeTo(4.5, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(3.42)), closeTo(3.5, 1.0e-6));
         assertThat(q.quantize(4.9), closeTo(5.0, 1.0e-6));
         assertThat(q.quantize(4.7), closeTo(4.5, 1.0e-6));
         assertThat(q.quantize(3.42), closeTo(3.5, 1.0e-6));

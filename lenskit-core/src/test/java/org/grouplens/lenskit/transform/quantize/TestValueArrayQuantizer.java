@@ -33,7 +33,7 @@ public class TestValueArrayQuantizer {
     public void testFindSingle() {
         Quantizer q = new ValueArrayQuantizer(new double[]{5.0});
         assertThat(q.getCount(), equalTo(1));
-        assertThat(q.indexToValue(0), equalTo(5.0));
+        assertThat(q.getIndexValue(0), equalTo(5.0));
         assertThat(q.index(2.5), equalTo(0));
         assertThat(q.index(5.0), equalTo(0));
     }
@@ -42,7 +42,7 @@ public class TestValueArrayQuantizer {
     public void testSomeElements() {
         Quantizer q = new ValueArrayQuantizer(new double[]{1.0, 2.0, 3.0, 4.0, 5.0});
         assertThat(q.getCount(), equalTo(5));
-        assertThat(q.indexToValue(0), equalTo(1.0));
+        assertThat(q.getIndexValue(0), equalTo(1.0));
         assertThat(q.index(2.5), equalTo(2));
         assertThat(q.index(5.0), equalTo(4));
         assertThat(q.index(1.73), equalTo(1));

@@ -53,7 +53,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public double getValue(int i) {
-        return indexToValue(i);
+        return getIndexValue(i);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
     }
 
     @Override
-    public double indexToValue(int i) {
+    public double getIndexValue(int i) {
         try {
             return values[i];
         } catch (IndexOutOfBoundsException e) {
@@ -97,6 +97,6 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public double quantize(double val) {
-        return indexToValue(index(val));
+        return getIndexValue(index(val));
     }
 }

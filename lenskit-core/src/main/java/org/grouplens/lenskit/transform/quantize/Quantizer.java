@@ -41,7 +41,7 @@ public interface Quantizer {
      *          possible discrete values (see {@link #getCount()}).
      * @return The value corresponding to quantum {@code i}.
      * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
-     * @deprecated Use {@link #indexToValue(int i)}
+     * @deprecated Use {@link #getIndexValue(int i)}
      */
     double getValue(int i);
 
@@ -54,7 +54,7 @@ public interface Quantizer {
      * @return The value corresponding to quantum {@code i}.
      * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
      */
-    double indexToValue(int i);
+    double getIndexValue(int i);
 
     /**
      * Get the number of discrete values the output can take.

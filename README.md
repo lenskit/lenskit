@@ -5,11 +5,12 @@ a set of tools for benchmarking them.  This readme is about working with
 the LensKit source code.  For more information about
 LensKit and its documentation, visit the [web site][] or [wiki][].  You 
 can also find information on the [wiki][] about how to use LensKit 
-without downloading the source code.
+without downloading the source code.  If this is your first time working
+with LensKit we recommend checking out the [Getting Started][] guide.
 
 [web site]: http://lenskit.grouplens.org
 [wiki]: http://dev.grouplens.org/trac/lenskit
-
+[Getting Started]: http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted
 
 ## Installation and Dependency Management
 
@@ -126,6 +127,12 @@ probably be able to find it.
 At the bottom of the LensKit Code Guidelines
 (http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is
 an XML file that will set your Eclipse up to follow the LensKit style.
+
+Eclipse and IntelliJ disagree about some uses of @SuppressWarnings.  You can
+ask Eclipse not to nag you about uses of @SuppressWarnings that it considers
+unnecessary by following directions at this StackOverflow discussion:
+
+    http://stackoverflow.com/questions/9531467/unnecessary-suppresswarningsunused
 
 # LensKit Archetypes
 
