@@ -70,7 +70,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
     public double getIndexValue(int i) {
         try {
             return values[i];
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) { // have to catch and rethrow to avoid RuntimeException
             throw new IllegalArgumentException("invalid discrete value", e);
         }
     }
