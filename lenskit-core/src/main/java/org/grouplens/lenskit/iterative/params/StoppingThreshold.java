@@ -16,28 +16,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
+package org.grouplens.lenskit.iterative.params;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Threshold value for transformations.
- * @see org.grouplens.lenskit.transform.threshold
+ * Stopping threshold.
+ * @see org.grouplens.lenskit.iterative.ThresholdStoppingCondition
+ * @since 1.1
  */
 @Documented
-@DefaultDouble(0.0)
+@DefaultDouble(0.01)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ThresholdValue {
+public @interface StoppingThreshold {
 }

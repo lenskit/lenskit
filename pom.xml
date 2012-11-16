@@ -45,7 +45,7 @@
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.7</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
-    <grapht.version>0.4.3</grapht.version>
+    <grapht.version>0.5.0-SNAPSHOT</grapht.version>
     <grouplens.common.version>0.6.1</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
@@ -62,6 +62,16 @@
       <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
     </snapshotRepository>
   </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>grouplens-devel</id>
+      <url>http://dev.grouplens.org/maven</url>
+      <layout>default</layout>
+      <snapshots><enabled>true</enabled></snapshots>
+      <releases><enabled>false</enabled></releases>
+    </repository>
+  </repositories>
 
   <modules>
     <module>build-tools</module>

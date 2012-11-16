@@ -18,8 +18,10 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.mf.funksvd.params.LearningRate;
-import org.grouplens.lenskit.mf.funksvd.params.RegularizationTerm;
+import org.grouplens.lenskit.iterative.params.LearningRate;
+import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.iterative.params.LearningRate;
+import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 import javax.inject.Inject;
