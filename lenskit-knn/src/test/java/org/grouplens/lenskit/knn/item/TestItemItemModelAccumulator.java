@@ -135,6 +135,7 @@ public class TestItemItemModelAccumulator {
     @Test
     public void testNormalizingTruncate() {
         SimilarityMatrixAccumulator accum = normalizingAccumulator();
+        // Load up the accumulator matrix with some reproducible values
         for (long i = 1; i <= 10; i++) {
             for (long j = 1; j <= 10; j += (i % 3) + 1) {
                 accum.put(i, j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
@@ -144,8 +145,11 @@ public class TestItemItemModelAccumulator {
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
+        
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
+        
+        // Iterate the row for item 4, checking the values
         ScoredLongListIterator iter = nbrs.iterator();
         while (iter.hasNext()) {
             long j = iter.nextLong();
