@@ -44,6 +44,14 @@ import org.grouplens.lenskit.core.Parameter;
 
 import com.google.common.io.Files;
 
+/**
+ * Class for writing a graph out to a file in a format suitable for processing with the 
+ * Graph Viz (gv) graph visualization framework.
+ * 
+ * To use create an instance with the desired file.  Then start the output by calling start().
+ * Then add one or more graphs to the instance with addGraph.  Finally, call finish() to
+ * complete the graph and close the file.
+ */
 public class GraphVizWriter implements GraphWriter {
 
     private File outputFile;
