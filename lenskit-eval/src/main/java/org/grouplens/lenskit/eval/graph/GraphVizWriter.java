@@ -42,6 +42,7 @@ import org.grouplens.grapht.spi.reflect.ProviderClassSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderInstanceSatisfaction;
 import org.grouplens.lenskit.core.Parameter;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
 
 /**
@@ -71,6 +72,24 @@ public class GraphVizWriter implements GraphWriter {
         singlePortNodes = new ArrayList<Node>();
     }
 
+    /**
+     * A simple way to dump a single graph to a file.
+     * 
+     * @param name Text that you would like to appear next to the graph in visualizations.  Can be an empty string.  Should not 
+     *              be null.
+     * @param output The output file the graph should be written to.  
+     * @param graph The graph that should be written to the file.  The dump will start from the root node of the graph.
+     */
+    public static void dumpGraph(String name, File output, Graph graph) {
+        Preconditions.checkNotNull(name, "The name argument must not be null.");
+        Preconditions.checkNotNull(graph, "The graph argument must not be null.");
+        System.out.println("dumpGraph: " + name + output.toString() + graph.toString());
+        GraphVizWriter gvw = new GraphVizWriter(output);
+        gvw.start();
+        gvw.addGraph(name, graph, graph.getNode(null));
+        gvw.finish();        
+    }
+    
     @Override
     public void start() {
         try {

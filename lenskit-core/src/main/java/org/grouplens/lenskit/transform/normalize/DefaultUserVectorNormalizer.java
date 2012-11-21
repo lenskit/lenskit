@@ -55,6 +55,10 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
         delegate = norm;
     }
 
+    public VectorNormalizer getVectorNormalizer() {
+        return delegate;
+    }
+    
     @Override
     public MutableSparseVector normalize(long user, @Nonnull SparseVector vector, @Nullable MutableSparseVector target) {
         return delegate.normalize(vector, target);
