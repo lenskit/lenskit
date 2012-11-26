@@ -27,7 +27,6 @@ import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
@@ -53,7 +52,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private IsolationLevel isolationLevel;
-    private boolean always = false;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -155,21 +153,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return this;
     }
 
-    /**
-     * Set whether this should always run.
-     * @param force If {@code true}, always run. Can also be set with the <tt>force</tt>
-     *              evaluation config option.
-     * @return The command for chaining.
-     */
-    public TrainTestEvalCommand setForce(boolean force) {
-        always = force;
-        return this;
-    }
-
-    public boolean getForce() {
-        return always || getConfig().force();
-    }
-
     List<TTDataSet> dataSources() {
         return dataSources;
     }
@@ -204,35 +187,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     }
 
     /**
-     * Query whether the command should run at all.
-     *
-     * @return {@code true} if the command should run, {@code false} if it should
-     *         leave existing results alone.
-     */
-    private boolean shouldRun() {
-        if (getForce()) {
-            return true;
-        }
-        if (outputFile == null) {
-            return true;
-        }
-        UpToDateChecker check = new UpToDateChecker();
-        for (TTDataSet src: dataSources()) {
-            check.addInput(src.lastModified());
-        }
-        if (outputFile != null) {
-            check.addOutput(outputFile);
-        }
-        if (userOutputFile != null) {
-            check.addOutput(userOutputFile);
-        }
-        if (predictOutputFile != null) {
-            check.addOutput(predictOutputFile);
-        }
-        return !check.isUpToDate();
-    }
-
-    /**
      * Run the evaluation on the train test data source files
      *
      * @return The summary output table.
@@ -241,10 +195,6 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      */
     @Override
     public Table call() throws CommandException {
-        if (!shouldRun()) {
-            // FIXME Read the table from the output file and return it
-            return null;
-        }
         this.setupJobs();
         int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
