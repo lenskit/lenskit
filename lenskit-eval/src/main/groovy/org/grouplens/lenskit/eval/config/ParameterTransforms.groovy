@@ -25,6 +25,7 @@ import com.google.common.base.Function
  * Helper methods for transforming parameters.
  * @author Michael Ekstrand
  */
+@SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class ParameterTransforms {
     abstract static class Transform {
         final Class resultType
