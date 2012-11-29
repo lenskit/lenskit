@@ -20,6 +20,8 @@ package org.grouplens.lenskit.transform.quantize;
 
 import org.grouplens.lenskit.core.Shareable;
 
+import com.google.common.base.Preconditions;
+
 import java.io.Serializable;
 
 /**
@@ -40,9 +42,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      * @param vs The discrete values to quantize to.
      */
     public ValueArrayQuantizer(double[] vs) {
-        if (vs.length <= 0) {
-            throw new IllegalArgumentException("must have at least one value");
-        }
+        Preconditions.checkArgument(vs.length > 0, "must have at least one value");
         values = vs;
     }
 

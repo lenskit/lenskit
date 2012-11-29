@@ -72,7 +72,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
     }
 
     /**
-     * Configure the baseline predictor for unpredicatble items. If an item
+     * Configure the baseline predictor for unpredictable items. If an item
      * cannot be have its preference predicted (e.g. no neighborhood is found),
      * the prediction is supplied from this baseline.
      *

@@ -54,6 +54,10 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
         super(dao);
         this.scorer = scorer;
     }
+    
+    public ItemScorer getScorer() {
+        return scorer;
+    }
 
     /**
      * Implement the ID-based recommendation in terms of the scorer. This method

@@ -58,7 +58,7 @@ public interface Recommender extends Closeable {
     /**
      * Get the recommender's rating scorer.
      *
-     * @return The rating scorer for this recommender configuration, or
+     * @return The rating predictor for this recommender configuration, or
      *         {@code null} if rating prediction is not supported.
      */
     @Nullable
