@@ -19,6 +19,8 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,6 +30,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -176,10 +179,9 @@ public class TrainTestEvalJob implements Job {
                     evalAccums.add(accum);
                 }
 
-                Cursor<UserHistory<Rating>> userProfiles =
-                        testDao.getUserHistories(Rating.class);
+                Cursor<UserHistory<Event>> userProfiles = testDao.getUserHistories();
                 try {
-                    for (UserHistory<Rating> p : userProfiles) {
+                    for (UserHistory<Event> p : userProfiles) {
                         long uid = p.getUserId();
                         SparseVector ratings =
                                 RatingVectorUserHistorySummarizer.makeRatingVector(p);
@@ -189,8 +191,9 @@ public class TrainTestEvalJob implements Job {
                         Supplier<ScoredLongList> recs =
                                 new RecommendationSupplier(recommender, uid, ratings.keySet());
                         Supplier<UserHistory<Rating>> hist = new HistorySupplier(dao, uid);
+                        Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
-                        TestUser test = new TestUser(uid, ratings, hist, preds, recs);
+                        TestUser test = new TestUser(uid, hist, testHist, preds, recs);
 
                         int upos = 0;
                         for (TestUserMetricAccumulator accum : evalAccums) {
