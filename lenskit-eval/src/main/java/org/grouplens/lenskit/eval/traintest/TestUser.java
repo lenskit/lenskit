@@ -73,11 +73,22 @@ public class TestUser {
      * Return this user's training history.
      *
      * @return The history of the user from the training/query set.
+     * @deprecated use {@link #getTrainHistory()}
      */
+    @Deprecated 
     public UserHistory<Event> getHistory() {
         return historySupplier.get();
     }
     
+    /**
+     * Return this user's training history.
+     *
+     * @return The history of the user from the training/query set.
+     */
+    public UserHistory<Event> getTrainHistory() {
+        return historySupplier.get();
+    }
+  
     /**
      * Return this user's test history.
      * 
