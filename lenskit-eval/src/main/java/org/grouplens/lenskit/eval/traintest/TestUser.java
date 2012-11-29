@@ -18,14 +18,14 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * A user in a test set, with the results of their recommendations or predictions.
@@ -34,7 +34,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public class TestUser {
     private final long userId;
-    private Supplier<UserHistory<Rating>> historySupplier;
+    private Supplier<UserHistory<Event>> historySupplier;
     private Supplier<UserHistory<Event>> testHistorySupplier;
     private Supplier<SparseVector> predSupplier;
     private Supplier<ScoredLongList> recSupplier;
@@ -49,7 +49,7 @@ public class TestUser {
      * @param recommendations Supplier of recommendations (will be memoized)
      */
     public TestUser(long id, 
-                    Supplier<UserHistory<Rating>> hist,
+                    Supplier<UserHistory<Event>> hist,
                     Supplier<UserHistory<Event>> testHist,
                     Supplier<SparseVector> predictions,
                     Supplier<ScoredLongList> recommendations) {
@@ -74,7 +74,7 @@ public class TestUser {
      *
      * @return The history of the user from the training/query set.
      */
-    public UserHistory<Rating> getHistory() {
+    public UserHistory<Event> getHistory() {
         return historySupplier.get();
     }
     

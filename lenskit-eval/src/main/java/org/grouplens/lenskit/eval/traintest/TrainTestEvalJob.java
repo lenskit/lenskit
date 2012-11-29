@@ -190,7 +190,7 @@ public class TrainTestEvalJob implements Job {
                                 new PredictionSupplier(predictor, uid, ratings.keySet());
                         Supplier<ScoredLongList> recs =
                                 new RecommendationSupplier(recommender, uid, ratings.keySet());
-                        Supplier<UserHistory<Rating>> hist = new HistorySupplier(dao, uid);
+                        Supplier<UserHistory<Event>> hist = new HistorySupplier(dao, uid);
                         Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
                         TestUser test = new TestUser(uid, hist, testHist, preds, recs);
@@ -333,7 +333,7 @@ public class TrainTestEvalJob implements Job {
         }
     }
 
-    private class HistorySupplier implements Supplier<UserHistory<Rating>> {
+    private class HistorySupplier implements Supplier<UserHistory<Event>> {
         private final DataAccessObject dao;
         private final long user;
 
@@ -343,8 +343,8 @@ public class TrainTestEvalJob implements Job {
         }
 
         @Override
-        public UserHistory<Rating> get() {
-            return dao.getUserHistory(user, Rating.class);
+        public UserHistory<Event> get() {
+            return dao.getUserHistory(user);
         }
     }
 }
