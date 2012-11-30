@@ -25,6 +25,7 @@ import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Configuration for computing FunkSVD updates.
@@ -32,7 +33,8 @@ import javax.inject.Inject;
  * @since 1.0
  */
 @Shareable
-public final class FunkSVDUpdateRule {
+public final class FunkSVDUpdateRule implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final double learningRate;
     private final double trainingRegularization;
