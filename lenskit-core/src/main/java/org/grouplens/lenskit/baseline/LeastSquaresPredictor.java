@@ -34,44 +34,47 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.VectorEntry.State;
 
+
 /**
  * Generate baseline predictions with regularization
  *
  * @author Ark Xu <xuxxx728@umn.edu>
  */
 public class LeastSquaresPredictor extends AbstractBaselinePredictor implements Serializable {
-        private final MutableSparseVector uoff;
-        private final MutableSparseVector ioff;
-        private final double globalMeanRating;
-        
+        private final MutableSparseVector userOffsets;
+        private final MutableSparseVector itemOffsets;
+        private final double mean;
+
         /**
          * Construct a new LeastSquaresPredictor
          * 
-         * @param uoff the user's mean offset
-         * @param ioff the item's mean offset
+         * @param uoff the user offsets
+         * @param ioff the item offsets
+         * @param mean the global mean rating
          */
-        public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double globalMeanRating) {
-                this.uoff = uoff;
-                this.ioff = ioff;
-                this.globalMeanRating = globalMeanRating;
+        public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double mean) {
+                this.userOffsets = uoff;
+                this.itemOffsets = ioff;
+                this.mean = mean;
         }
-        
+
         @Override
         public void predict(long user, SparseVector ratings,
                         MutableSparseVector output, boolean predictSet) {
                 State state = predictSet ? State.EITHER : State.UNSET;
                 for (VectorEntry e: ratings.fast(state)) {
-                        final long item = e.getKey(); 
-                        double scoure = globalMeanRating + uoff.get(user) + ioff.get(item);
-                        output.set(e, scoure);
+                        final long item = e.getKey();
+                        double score = mean + userOffsets.get(user) + itemOffsets.get(item);
+                        output.set(e, score);
                 }
         }
+
         /**
-         *  A builder that creates LeastSquaresPredictor
+         *  A builder that creates a regularizationFactor
          */
         public static class Builder implements Provider<LeastSquaresPredictor> {
                 private final double learningRate;
-                private final double lambda;
+                private final double regularizationFactor;
                 private final double mean;
                 
                 private PreferenceSnapshot snapshot;
@@ -83,19 +86,19 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                  * @param data
                  */
                 @Inject
-                public Builder(double lambda, double learningRate, @Transient PreferenceSnapshot data,
-                			   StoppingCondition traningStop) {
-                        this.lambda = lambda;
-                        this.learningRate = learningRate;
+                public Builder(/*@RegularizationTerm*/ double regFactor, /*@LearningRate*/ double lrate, @Transient PreferenceSnapshot data,
+                			   StoppingCondition stop) {
+                        this.regularizationFactor = regFactor;
+                        this.learningRate = lrate;
                         this.snapshot = data;
-                        this.trainingStop = traningStop;
+                        this.trainingStop = stop;
 
-                        double tmp = 0.0;
-                        for (IndexedPreference r : CollectionUtils.fast(data.getRatings())) {
-                                tmp += r.getValue();
+                        double sum = 0.0;
+                        FastCollection<IndexedPreference> n = data.getRatings();
+                        for (IndexedPreference r : CollectionUtils.fast(n)) {
+                                sum += r.getValue();
                         }
-                        tmp /= data.getRatings().size();
-                        mean = tmp;
+                        mean = sum / n.size();
                 }
                 
                 @Override
@@ -111,14 +114,12 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                                 ++niters;
                                 double sse = 0;
                                 for (IndexedPreference r : CollectionUtils.fast(ratings)) {
-                                        final long user = r.getUserId();
-                                        final long item = r.getItemId();
-                                        final int uid = snapshot.userIndex().getIndex(user);
-                                        final int iid = snapshot.itemIndex().getIndex(item); 
-                                        final double p = mean + uoff[uid] + ioff[iid];
+                                        final int uidx = r.getUserIndex();
+                                        final int iidx = r.getItemIndex(); 
+                                        final double p = mean + uoff[uidx] + ioff[iidx];
                                         final double err = r.getValue() - p;
-                                        uoff[uid] += learningRate * (err - lambda*uoff[uid]);
-                                        ioff[iid] += learningRate * (err - lambda*ioff[iid]);
+                                        uoff[uidx] += learningRate * (err - regularizationFactor*uoff[uidx]);
+                                        ioff[iidx] += learningRate * (err - regularizationFactor*ioff[iidx]);
                                         sse += err*err;
                                 }
                                 oldRmse = rmse;
