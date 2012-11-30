@@ -18,8 +18,8 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.iterative.params.LearningRate;
-import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.params.LearningRate;
 import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
@@ -31,11 +31,13 @@ import javax.inject.Inject;
  *
  * @since 1.0
  */
+@Shareable
 public final class FunkSVDUpdateRule {
 
     private final double learningRate;
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
+    private final StoppingCondition stoppingCondition;
 
     /**
      * Construct a new FunkSVD configuration.
@@ -47,10 +49,12 @@ public final class FunkSVDUpdateRule {
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
-                             ClampingFunction clamp) {
+                             ClampingFunction clamp,
+                             StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
         clampingFunction = clamp;
+        stoppingCondition = stop;
     }
 
     public double getLearningRate() {
@@ -63,6 +67,10 @@ public final class FunkSVDUpdateRule {
 
     public ClampingFunction getClampingFunction() {
         return clampingFunction;
+    }
+
+    public StoppingCondition getStoppingCondition() {
+        return stoppingCondition;
     }
 
     /**

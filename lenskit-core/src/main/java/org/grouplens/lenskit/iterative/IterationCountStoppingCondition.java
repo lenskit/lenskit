@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.iterative;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.iterative.params.IterationCount;
 
 import javax.annotation.concurrent.Immutable;
@@ -30,6 +31,7 @@ import java.io.Serializable;
  * @author Michael Ekstrand
  */
 @Immutable
+@Shareable
 public class IterationCountStoppingCondition implements StoppingCondition, Serializable {
     private static final long serialVersionUID = 1L;
 

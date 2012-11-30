@@ -64,15 +64,12 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     private final PreferenceSnapshot snapshot;
 
     private FunkSVDUpdateRule rule;
-    private StoppingCondition stoppingCondition;
 
     @Inject
     public FunkSVDModelProvider(@Transient @Nonnull PreferenceSnapshot snapshot,
                                 @Transient @Nonnull FunkSVDUpdateRule rule,
                                 @Nonnull BaselinePredictor baseline,
-                                @Transient StoppingCondition stop,
                                 @FeatureCount int featureCount) {
-        stoppingCondition = stop;
         this.featureCount = featureCount;
         this.baseline = baseline;
         this.snapshot = snapshot;
@@ -131,7 +128,8 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         double oldRMSE = Double.NaN;
         double rmse = Double.MAX_VALUE;
         int niters = 0;
-        while (!stoppingCondition.isFinished(niters, oldRMSE - rmse)) {
+        StoppingCondition stop = rule.getStoppingCondition();
+        while (!stop.isFinished(niters, oldRMSE - rmse)) {
             oldRMSE = rmse;
             rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
 

@@ -18,6 +18,7 @@
  */
 package org.grouplens.lenskit.iterative;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.iterative.params.MinimumIterations;
 import org.grouplens.lenskit.iterative.params.StoppingThreshold;
 
@@ -32,6 +33,7 @@ import java.io.Serializable;
  * @since 0.11
  */
 @Immutable
+@Shareable
 public class ThresholdStoppingCondition implements StoppingCondition, Serializable {
     private static final long serialVersionUID = 1L;
 
