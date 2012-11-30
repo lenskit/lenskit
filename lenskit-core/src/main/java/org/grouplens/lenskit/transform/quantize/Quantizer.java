@@ -41,8 +41,20 @@ public interface Quantizer {
      *          possible discrete values (see {@link #getCount()}).
      * @return The value corresponding to quantum {@code i}.
      * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
+     * @deprecated Use {@link #getIndexValue(int i)}
      */
     double getValue(int i);
+
+    /**
+     * Get the value corresponding to a quantized value, based on the index into
+     * the list of possible values.
+     *
+     * @param i The quantized value number, in the range [0,n) where n is the number of
+     *          possible discrete values (see {@link #getCount()}).
+     * @return The value corresponding to quantum {@code i}.
+     * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
+     */
+    double getIndexValue(int i);
 
     /**
      * Get the number of discrete values the output can take.
@@ -57,5 +69,21 @@ public interface Quantizer {
      * @param val A value to quantize.
      * @return The index of the discrete value to which {@code val} is mapped.
      */
+    int index(double val);
+
+    /**
+     * Convert a value into an index to one of the discrete, quantized values.
+     *
+     * @param val A value to quantize.
+     * @return The index of the discrete value to which {@code val} is mapped.
+     * @deprecated Use {@link #index(double val)}
+     */
     int apply(double val);
+
+    /**
+     * Convert a value into a quantized value, returning the quantized value.
+     * @param val A value to quantize.
+     * @return The quantized value.
+     */
+    double quantize(double val);
 }

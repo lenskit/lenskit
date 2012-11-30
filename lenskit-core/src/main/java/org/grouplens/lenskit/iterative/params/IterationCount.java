@@ -16,32 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.mf.funksvd.params;
+package org.grouplens.lenskit.iterative.params;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider;
+import java.lang.annotation.*;
 
 /**
- * The regularization factor applied in the gradient descent update for learning
- * features in FunkSVD.  For a regularization term \(\lambda\) and current value,
- * \(x\), the update for each step is decreased by \(\lambda x\).
- *
- * @see FunkSVDModelProvider
+ * The number of iterations to use in an iterative update.
  */
 @Documented
-@DefaultDouble(0.015)
+@DefaultInteger(100)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RegularizationTerm {
+public @interface IterationCount {
 }

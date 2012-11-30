@@ -96,7 +96,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     private static final long serialVersionUID = 2L;
     private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
 
-    private final Long2DoubleMap itemMeans;
+    private final Long2DoubleMap itemMeans;  // offsets from the global mean
     protected final double globalMean;
     protected final double damping;
 
@@ -118,8 +118,9 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     }
 
     /**
-     * Compute item averages from a rating data source. Used to construct
-     * predictors that need this data.
+     * Compute item averages from a rating data source. Used in
+     * predictors that need this data.  Note that item averages 
+     * are actually offsets from the global mean.
      *
      * <p>
      * This method's interface is a little weird, using an output parameter and
@@ -163,7 +164,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         logger.debug("Computed global mean {} for {} items",
                      mean, itemMeansResult.size());
 
-        logger.debug("Computing item means, smoothing={}", damping);
+        logger.debug("Computing item means, damping={}", damping);
         LongIterator items = itemCounts.keySet().iterator();
         while (items.hasNext()) {
             long iid = items.nextLong();

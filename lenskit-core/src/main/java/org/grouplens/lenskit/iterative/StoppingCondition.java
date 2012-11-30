@@ -16,30 +16,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.mf.funksvd.params;
+package org.grouplens.lenskit.iterative;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.mf.funksvd.FunkSVDModelProvider;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
- * The learning rate for gradient descent.
- *
- * @see FunkSVDModelProvider
+ * Stopping condition for iterative updates
  */
-@Documented
-@DefaultDouble(1e-3)
-@Parameter(Double.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LearningRate {
+@DefaultImplementation(IterationCountStoppingCondition.class)
+public interface StoppingCondition {
+    /**
+     * Query whether the computation should stop.
+     *
+     * @param niters The number of iterations done so far.
+     * @param delta  The last delta. The delta may be {@link Double#NaN} before the first iteration.
+     * @return {@code true} if the computation is finished.
+     */
+    boolean isFinished(int niters, double delta);
 }

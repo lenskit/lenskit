@@ -24,11 +24,11 @@
 <!-- Generated for $alignedFileName ($relativePath) -->
 <title>LensKit Recommender Framework &mdash; $title</title>
 <link rel="stylesheet" type="text/css"
-      href="http://kernest.com/fonts/pt-sans.css">
+      href="/fonts/pt-sans/stylesheet.css">
 <link rel="stylesheet" type="text/css"
-      href="http://kernest.com/fonts/liberation-serif.css">
+      href="/fonts/liberation/stylesheet.css">
 <link rel="stylesheet" type="text/css"
-      href="http://kernest.com/fonts/inconsolata.css">
+      href="/fonts/inconsolata/stylesheet.css">
 <link rel="stylesheet" type="text/css" href="main.css">
 <link rel="icon" type="image/png" href="lenskit-mini.png">
 <script type="text/javascript" src="http://widgets.twimg.com/j/2/widget.js"></script>

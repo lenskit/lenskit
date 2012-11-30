@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.params.IterationCount;
+import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.junit.Before;
 import org.junit.Test;
 

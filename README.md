@@ -1,27 +1,16 @@
 # LensKit
 
 LensKit is an implementation of collaborative filtering algorithms and
-a set of tools for benchmarking them.  For more information about
-LensKit and its documentation, visit the [web site][] or [wiki][].
+a set of tools for benchmarking them.  This readme is about working with
+the LensKit source code.  For more information about
+LensKit and its documentation, visit the [web site][] or [wiki][].  You 
+can also find information on the [wiki][] about how to use LensKit 
+without downloading the source code.  If this is your first time working
+with LensKit we recommend checking out the [Getting Started][] guide.
 
 [web site]: http://lenskit.grouplens.org
 [wiki]: http://dev.grouplens.org/trac/lenskit
-
-If you just want to use LensKit, you don't need the source code; just use
-Maven (or Ivy or any other Maven-compatible dependency manager) and declare
-a dependency on LensKit:
-
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-core</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <!-- to get the k-NN recommenders -->
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-knn</artifactId>
-      <version>1.0</version>
-    </dependency>
+[Getting Started]: http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted
 
 ## Installation and Dependency Management
 
@@ -60,7 +49,7 @@ and dependencies.  The other modules are as follows:
   offline evaluations.
 * `lenskit-package` -- a metapackage for preparing binary distributions, including
   scripts for running the evaluator.
-
+* `lenskit-archetype-fancy-analysis` and `lenskit-archetype-simple-analysis` -- archetypes for creating user projects using LensKit.
 
 ## Notes for Eclipse
 
@@ -79,7 +68,8 @@ problems can be frustrating to debug.  To get the tools:
 * Mercurial: Help / Marketplace and search for MercurialEclipse.  Install the option for 
   your version of Eclipse.
 * Groovy: Help / Marketplace and search for Groovy.  It's fine to install the full version 
-  including Grails from springsource, but all you need is Groovy-Eclipse.
+  including Grails from springsource, but all you need is
+  Groovy-Eclipse, which is smaller and less intrusive.
  
 Then do the following:
 
@@ -122,9 +112,44 @@ repository, so they are available for any of the other projects to use.
 After that, you can easily run tests in any of the other projects directly from Eclipse,
 which is faster and prettier.  Just right click a project, select "Run As" / "JUnit Test".
 
-You will need to install a Java Development Kit to build some parts of LensKit.  On Linux or Mac, setting
-the Java HOME will let LensKit find it. On Windows if you install the JDK next to the JRE,
-LensKit will probably be able to find it.
+Mercurial on Windows is sometimes a little tricky to get set up.  If
+you do not have a Mercurial.ini file, Mercurial will not know the user
+name to use for commits.  Here is a stackoverflow Q&A that explains
+how to set it up:
 
-At the bottom of the LensKit Code Guidelines (http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is 
+    http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied
+
+You will need to install a Java Development Kit to build some parts of
+LensKit.  On Linux or Mac, setting the Java HOME will let LensKit find
+it. On Windows if you install the JDK next to the JRE, LensKit will
+probably be able to find it.
+
+At the bottom of the LensKit Code Guidelines
+(http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is
 an XML file that will set your Eclipse up to follow the LensKit style.
+
+Eclipse and IntelliJ disagree about some uses of @SuppressWarnings.  You can
+ask Eclipse not to nag you about uses of @SuppressWarnings that it considers
+unnecessary by following directions at this StackOverflow discussion:
+
+    http://stackoverflow.com/questions/9531467/unnecessary-suppresswarningsunused
+
+# LensKit Archetypes
+
+These archetypes are to build simple
+(`lenskit-archetype-simple-analysis`) or more sophisticated
+(`lenskit-archetype-fancy-analysis`) projects for doing analysis of
+recommender algorithms.  Detailed information about using these
+archetypes are in the src/main/resources/archetype-resources/Readme.md
+file, which are installed in the top-level directory when a user uses
+this archetype to generate a project.
+
+* Be careful editing the pom in src/main/resources/archetype-resources, 
+  because its variables are substituted
+  at two different times.  Variables like ${project.version} are
+  substituted at the time the archetype is run by a user to create a
+  project.  Variables with backslashes in front of them like
+  \${version} are left as variables by the archetype, so they can be
+  substituted at project build time.
+
+

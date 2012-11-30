@@ -18,19 +18,21 @@
  */
 package org.grouplens.lenskit.eval
 
-import static org.junit.Assert.*
-import static org.hamcrest.Matchers.*
-import org.grouplens.lenskit.eval.config.ConfigTestBase
-import org.junit.Test
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
+
 import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor
 import org.grouplens.lenskit.baseline.BaselinePredictor
+import org.grouplens.lenskit.baseline.BaselineRatingPredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
-import org.grouplens.lenskit.transform.threshold.RealThreshold
-import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition
-import org.grouplens.lenskit.params.ThresholdValue
-import org.grouplens.lenskit.params.MinimumIterations
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.iterative.params.MinimumIterations
+import org.grouplens.lenskit.iterative.params.StoppingThreshold
+import org.grouplens.lenskit.transform.threshold.RealThreshold
+import org.junit.Test
+
+import static org.hamcrest.Matchers.*
+import static org.junit.Assert.assertThat
 
 /**
  * @author Michael Ekstrand
@@ -59,10 +61,10 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
                 root RealThreshold
                 root ThresholdStoppingCondition
                 within(RealThreshold) {
-                    set ThresholdValue to 0.1d
+                    set StoppingThreshold to 0.1d
                 }
                 within(ThresholdStoppingCondition) {
-                    set ThresholdValue to 0.001d
+                    set StoppingThreshold to 0.001d
                     set MinimumIterations to 42
                 }
             }

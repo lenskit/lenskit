@@ -18,12 +18,11 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
@@ -32,15 +31,14 @@ import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.SoftLazyValue;
 import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.

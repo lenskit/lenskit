@@ -19,21 +19,11 @@
 package org.grouplens.lenskit.vectors;
 
 import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertThat;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
-import java.util.Set;
-
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.junit.Test;
-
-import com.google.common.collect.Sets;
 
 /**
  * @author John Riedl <riedl@cs.umn.edu>

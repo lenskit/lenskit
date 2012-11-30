@@ -43,6 +43,15 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
     private Long2ObjectMap<ScoredItemAccumulator> rows;
     private LongSortedSet itemUniverse;
 
+    /**
+     * Construct an instance.
+     * 
+     * @param entities The item universe for the resulting SimilarityMatrixModel.
+     * @param threshold The Threshold to choose similarities to be retained in the model.  
+     *                  Similarities rejected by the Threshold will be ignored.
+     * @param modelSize The maximum number of similar items to be retained for any item in the model.
+     *                  The items with the strongest similarity will be retained for each item.
+     */
     public SimpleSimilarityMatrixAccumulator(LongSortedSet entities, Threshold threshold, int modelSize) {
         logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
         itemUniverse = entities;
@@ -60,14 +69,6 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
         }
     }
 
-    /**
-     * Store an entry in the similarity matrix.
-     *
-     * @param i   The matrix row (an item ID).
-     * @param j   The matrix column (an item ID).
-     * @param sim The similarity between items {@code j} and {@code i}. As documented in the
-     *            {@link org.grouplens.lenskit.knn.item package docs}, this is \(s(j,i)\).
-     */
     @Override
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void put(long i, long j, double sim) {
@@ -89,18 +90,13 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
      * Does nothing. Similarity values were accumulated and truncated
      * upon receipt, no further processing is done here upon the result.
      *
-     * @param rowId The long id of the row which has been completed.
+     * {@inheritDoc}
      */
     @Override
     public void completeRow(long rowId) {
         // no-op
     }
 
-    /**
-     * Moves the result matrix into a SimilarityMatrixModel.
-     *
-     * @return The resulting SimilarityMatrixModel.
-     */
     @Override
     public SimilarityMatrixModel build() {
         Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
@@ -108,7 +104,7 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
             data.put(row.getLongKey(), row.getValue().finish());
         }
         SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-        rows = null;
+        rows = null;  // Mark that this model has already been built.
         return model;
     }
 

@@ -9,7 +9,6 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit-eval-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>LensKit Evaluation Maven Plugin</name>
@@ -54,7 +53,6 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.0.6</version>
     </dependency>
   </dependencies>
 

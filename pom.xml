@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -44,7 +45,7 @@
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.7</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
-    <grapht.version>0.4.3</grapht.version>
+    <grapht.version>0.5.0-SNAPSHOT</grapht.version>
     <grouplens.common.version>0.6.1</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
@@ -62,6 +63,16 @@
     </snapshotRepository>
   </distributionManagement>
 
+  <repositories>
+    <repository>
+      <id>grouplens-devel</id>
+      <url>http://dev.grouplens.org/maven</url>
+      <layout>default</layout>
+      <snapshots><enabled>true</enabled></snapshots>
+      <releases><enabled>false</enabled></releases>
+    </repository>
+  </repositories>
+
   <modules>
     <module>build-tools</module>
     <module>lenskit-api</module>
@@ -74,7 +85,7 @@
     <module>lenskit-slopeone</module>
     <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
-    <module>lenskit-archetype-fancy-analysis</module>    
+    <module>lenskit-archetype-fancy-analysis</module>
   </modules>
 
   <dependencyManagement>
@@ -255,29 +266,11 @@
           </dependencies>
         </plugin>
 
-        <!--JavaDoc-->
+        <!--JavaDoc -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.8.1</version>
-          <!--<configuration>-->
-          <!--<quiet>true</quiet>-->
-          <!--<tags>-->
-          <!--<tag>-->
-          <!--<name>todo</name>-->
-          <!--<placement>a</placement>-->
-          <!--<head>To Do:</head>-->
-          <!--</tag>-->
-          <!--<tag>-->
-          <!--<name>review</name>-->
-          <!--<placement>a</placement>-->
-          <!--<head>Review:</head>-->
-          <!--</tag>-->
-          <!--</tags>-->
-          <!--<footer><![CDATA[-->
-          <!--<script type=\"text/javascript\" src=\"${mathjax.source}/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>-->
-          <!--]]></footer>-->
-          <!--</configuration>-->
         </plugin>
 
         <!-- Testing and verification -->
@@ -391,10 +384,8 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <!--
-         Don't inherit top-level-only site settings. Inherited settings will go
-         in pluginManagement.
-        -->
+        <!-- Don't inherit top-level-only site settings. Inherited settings 
+          will go in pluginManagement. -->
         <inherited>false</inherited>
 
         <configuration>
@@ -475,6 +466,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.8.1</version>
         <configuration>
           <quiet>true</quiet>
 
@@ -491,22 +483,22 @@
             </tag>
           </tags>
 
-          <!--<additionalparam>-->
-          <!--"-J-Djavadoc.cite.database=${cite.database}"-->
-          <!--</additionalparam>-->
+          <!--<additionalparam> -->
+          <!--"-J-Djavadoc.cite.database=${cite.database}" -->
+          <!--</additionalparam> -->
           <additionalJOption>
             "-J-Dgrouplens.javadoc.versioning.url=${lenskit.web.url}/versioning.html"
           </additionalJOption>
 
           <taglets>
-            <!--<taglet>-->
-            <!--<tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass>-->
-            <!--<tagletArtifact>-->
-            <!--<groupId>org.grouplens.common</groupId>-->
-            <!--<artifactId>javadoc-citation-taglet</artifactId>-->
-            <!--<version>0.4</version>-->
-            <!--</tagletArtifact>-->
-            <!--</taglet>-->
+            <!--<taglet> -->
+            <!--<tagletClass>org.grouplens.common.javadoc.cite.CitationTaglet</tagletClass> -->
+            <!--<tagletArtifact> -->
+            <!--<groupId>org.grouplens.common</groupId> -->
+            <!--<artifactId>javadoc-citation-taglet</artifactId> -->
+            <!--<version>0.4</version> -->
+            <!--</tagletArtifact> -->
+            <!--</taglet> -->
             <taglet>
               <tagletClass>org.grouplens.javadoc.taglets.CompatTaglet</tagletClass>
               <tagletArtifact>
@@ -715,7 +707,7 @@
                 <id>default-compile</id>
                 <configuration>
                   <compilerArguments>
-                    <Xlint />
+                    <Xlint/>
                   </compilerArguments>
                 </configuration>
               </execution>
@@ -742,19 +734,19 @@
             </executions>
           </plugin>
 
-          <!--<plugin>-->
-          <!--<groupId>org.apache.maven.plugins</groupId>-->
-          <!--<artifactId>maven-pmd-plugin</artifactId>-->
-          <!--<executions>-->
-          <!--<execution>-->
-          <!--<id>lint</id>-->
-          <!--<phase>verify</phase>-->
-          <!--<goals>-->
-          <!--<goal>pmd</goal>-->
-          <!--</goals>-->
-          <!--</execution>-->
-          <!--</executions>-->
-          <!--</plugin>-->
+          <!--<plugin> -->
+          <!--<groupId>org.apache.maven.plugins</groupId> -->
+          <!--<artifactId>maven-pmd-plugin</artifactId> -->
+          <!--<executions> -->
+          <!--<execution> -->
+          <!--<id>lint</id> -->
+          <!--<phase>verify</phase> -->
+          <!--<goals> -->
+          <!--<goal>pmd</goal> -->
+          <!--</goals> -->
+          <!--</execution> -->
+          <!--</executions> -->
+          <!--</plugin> -->
 
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

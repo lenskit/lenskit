@@ -39,7 +39,6 @@ public class TestUserVector {
     /**
      * Test method for {@link org.grouplens.lenskit.data.event.Ratings#userRatingVector(java.util.Collection)}.
      */
-    @SuppressWarnings("deprecation")
     @Test
     public void testUserRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();

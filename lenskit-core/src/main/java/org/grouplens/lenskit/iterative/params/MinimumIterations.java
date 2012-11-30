@@ -16,8 +16,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.iterative.params;
+
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.lenskit.core.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Utilities for iterative methods.
+ * The minimum number of iterations to use.
  */
-package org.grouplens.lenskit.util.iterative;
+@Documented
+@DefaultInteger(25)
+@Parameter(Integer.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MinimumIterations {
+}

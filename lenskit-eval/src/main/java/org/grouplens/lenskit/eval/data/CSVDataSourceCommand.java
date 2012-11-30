@@ -31,7 +31,6 @@ import java.io.File;
  *
  * @author Michael Ekstrand
  */
-@SuppressWarnings("UnusedDeclaration")
 public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     String delimiter = ",";
     String sourceName;

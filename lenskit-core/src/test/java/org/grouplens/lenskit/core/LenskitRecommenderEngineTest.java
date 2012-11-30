@@ -35,14 +35,13 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.params.ThresholdValue;
-import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition;
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -151,7 +150,7 @@ public class LenskitRecommenderEngineTest {
                    closeTo(0.01, 1.0e-6));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     private void assertNodeNotEVDao(Node node) {
         CachedSatisfaction lbl = node.getLabel();
         if (lbl == null) {
@@ -194,7 +193,7 @@ public class LenskitRecommenderEngineTest {
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = new LenskitRecommenderEngine(daoFactory, tfile);
+            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(daoFactory, tfile);
             verifyBasicRecommender(e2);
         } finally {
             tfile.delete();

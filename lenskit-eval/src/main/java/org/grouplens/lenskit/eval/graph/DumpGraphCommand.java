@@ -28,8 +28,12 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.cli.EvalCLI;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 public class DumpGraphCommand extends AbstractCommand<File> {
+    private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
 
     private AlgorithmInstance algorithm;
     private GraphWriter writer;
@@ -74,6 +78,11 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
     @Override
     public File call() throws CommandException {
+        if (writer == null) {
+            logger.warn("dumpGraph command given with no output file specified."
+                    + " Use 'output <filename>' to create output.");
+            throw new IllegalArgumentException("dumpGraph command given with no output file specified.");
+        }
         LenskitRecommenderEngineFactory factory = algorithm.getFactory().clone();
         if (domain != null) {
             factory.bind(PreferenceDomain.class).to(domain);

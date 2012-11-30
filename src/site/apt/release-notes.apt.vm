@@ -30,6 +30,24 @@ LensKit Release Notes
   * Item-item scorers now report the number of neighbors used for each score as
     a side channel.
 
+  * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
+    changed parameters. The <<<StoppingCondition>>> interface and implementations now live
+    in this package; common iterative method parameters are now defined by annotations in
+    <<<o.g.l.iterative.params>>>.
+
+    * <<<IterationCount>>> is moved to the new package.
+
+    * <<<MinimumIterations>>> is moved to the new package.
+
+    * Threshold stopping conditions now use <<<StoppingThreshold>>> in this package instead
+      of <<<ThresholdValue>>>.  If you configure the threshold valud, update your configuration
+      accordingly.
+
+    * The FunkSVD <<<LearningRate>>> and <<<RegularizationTerm>>> have been moved to
+      the new iterative parameters package.
+
+    []
+
   []
 
 ** Evaluator

@@ -45,6 +45,10 @@ public class ItemItemRecommender extends ScoreBasedItemRecommender {
         super(dao, scorer);
         this.scorer = scorer;
     }
+    
+    public ItemItemModelBackedScorer getScorer() {
+        return scorer;
+    }
 
     @Override
     public LongSet getPredictableItems(UserHistory<? extends Event> user) {

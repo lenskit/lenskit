@@ -20,6 +20,8 @@ package org.grouplens.lenskit.transform.quantize;
 
 import org.grouplens.lenskit.core.Shareable;
 
+import com.google.common.base.Preconditions;
+
 import java.io.Serializable;
 
 /**
@@ -40,9 +42,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      * @param vs The discrete values to quantize to.
      */
     public ValueArrayQuantizer(double[] vs) {
-        if (vs.length <= 0) {
-            throw new IllegalArgumentException("must have at least one value");
-        }
+        Preconditions.checkArgument(vs.length > 0, "must have at least one value");
         values = vs;
     }
 
@@ -53,21 +53,36 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public double getValue(int i) {
+        return getIndexValue(i);
+    }
+
+    @Override
+    public int apply(double v) {
+        return index(v);
+    }
+
+    @Override
+    public int getCount() {
+        return values.length;
+    }
+
+    @Override
+    public double getIndexValue(int i) {
         try {
             return values[i];
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) { // have to catch and rethrow to avoid RuntimeException
             throw new IllegalArgumentException("invalid discrete value", e);
         }
     }
 
     @Override
-    public int apply(double v) {
+    public int index(double val) {
         final int n = values.length;
         assert n > 0;
         int closest = -1;
         double closev = Double.MAX_VALUE;
         for (int i = 0; i < n; i++) {
-            double diff = Math.abs(v - values[i]);
+            double diff = Math.abs(val - values[i]);
             if (diff <= closev) { // <= to round up
                 closev = diff;
                 closest = i;
@@ -81,7 +96,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
     }
 
     @Override
-    public int getCount() {
-        return values.length;
+    public double quantize(double val) {
+        return getIndexValue(index(val));
     }
 }

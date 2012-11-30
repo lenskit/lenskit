@@ -52,7 +52,7 @@ public class QuantizedRatingPredictor extends AbstractItemScorer implements Rati
 
     private void quantize(MutableSparseVector scores) {
         for (VectorEntry e: scores.fast()) {
-            scores.set(e, quantizer.getValue(quantizer.apply(e.getValue())));
+            scores.set(e, quantizer.getIndexValue(quantizer.index(e.getValue())));
         }
     }
 
