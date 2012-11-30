@@ -58,7 +58,6 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     @Nullable
     private final FunkSVDUpdateRule rule;
 
-
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
                                   @Nullable FunkSVDUpdateRule rule) {
@@ -71,6 +70,10 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         clamp = model.clampingFunction;
     }
 
+    @Nullable
+    public FunkSVDUpdateRule getUpdateRule() {
+        return rule;
+    }
 
     /**
      * Predict for a user using their preference array and history vector.
