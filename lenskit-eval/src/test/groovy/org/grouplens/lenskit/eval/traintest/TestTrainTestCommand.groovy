@@ -48,7 +48,7 @@ import static org.hamcrest.Matchers.hasItem
  * framework.
  * @author Michael Ekstrand
  */
-class TestTrainTestBuilderConfig {
+class TestTrainTestCommand {
     EvalScriptEngine engine
     TrainTestEvalCommand command
     CommandDelegate delegate
