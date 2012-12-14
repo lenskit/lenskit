@@ -121,6 +121,21 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return coerce(config.getRootContext().in(qualifier, type));
     }
 
+    @Override
+    public LenskitConfigContext at(Class<?> type) {
+        return coerce(config.getRootContext().at(type));
+    }
+
+    @Override
+    public LenskitConfigContext at(Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(config.getRootContext().at(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext at(Annotation qualifier, Class<?> type) {
+        return coerce(config.getRootContext().at(qualifier, type));
+    }
+
     /**
      * Groovy-compatible alias for {@link #in(Class)}.
      */
