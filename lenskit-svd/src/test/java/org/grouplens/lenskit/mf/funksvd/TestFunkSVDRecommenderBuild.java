@@ -120,14 +120,9 @@ public class TestFunkSVDRecommenderBuild {
                .to(ItemUserMeanPredictor.class);
         factory.set(IterationCount.class)
                .to(10);
-        factory.in(FunkSVDRatingPredictor.class)
+        factory.at(FunkSVDRatingPredictor.class)
                .bind(FunkSVDUpdateRule.class)
                .toNull();
-        // FIXME This should work with FunkSVDModelProvider
-        factory.in(FunkSVDModel.class)
-               .bind(FunkSVDUpdateRule.class)
-               .finalBinding()
-               .to(FunkSVDUpdateRule.class);
 
         LenskitRecommenderEngine engine = factory.create();
 
