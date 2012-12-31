@@ -10,7 +10,7 @@ $rounding: 10px;
 $margin: 10px;
 
 $logo_height: 64px;
-$sidebar_width: 250px;
+$sidebar_width: 300px;
 $sidebar_margin: $margin;
 
 $menu_sel_bg: #666;
@@ -142,8 +142,9 @@ ul.navbar {
         margin-bottom: 10px;
     }
 
-    .twtr-doc {
-        @include shadow;
+    .twitterbox {
+      border-radius: 5px 5px 5px 5px;
+      @include shadow;
     }
 
     .sidebox {
