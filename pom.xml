@@ -56,11 +56,6 @@
       <name>LensKit Website</name>
       <url>${lenskit.web.path}</url>
     </site>
-    <snapshotRepository>
-      <id>grouplens.org</id>
-      <name>GroupLens Maven repository</name>
-      <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <repositories>
