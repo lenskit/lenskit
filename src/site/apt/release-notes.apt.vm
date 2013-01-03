@@ -66,6 +66,10 @@ LensKit Release Notes
 
     []
 
+  * Train-test evaluator always runs, even if output is up-to-date with respect to input;
+    use the <<<lenskit.eval.skip>>> Maven property to disable the evaluator when it via
+    Maven and you only want to run post-eval analysis phases.
+
   * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
     values out to the prediction output file.
 

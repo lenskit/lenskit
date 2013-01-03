@@ -57,23 +57,23 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
 
     @Nullable
     private final FunkSVDUpdateRule rule;
-    private final StoppingCondition trainingStop;
-
 
     @Inject
     public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
-                                  StoppingCondition stop,
                                   @Nullable FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
         this.model = model;
-        trainingStop = stop;
         this.rule = rule;
 
         featureCount = model.featureCount;
         clamp = model.clampingFunction;
     }
 
+    @Nullable
+    public FunkSVDUpdateRule getUpdateRule() {
+        return rule;
+    }
 
     /**
      * Predict for a user using their preference array and history vector.
@@ -160,7 +160,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
         double oldRMSE = Double.NaN;
         double rmse = Double.MAX_VALUE;
         int niters = 0;
-        while (!trainingStop.isFinished(niters, oldRMSE - rmse)) {
+        StoppingCondition stop = rule.getStoppingCondition();
+        while (!stop.isFinished(niters, oldRMSE - rmse)) {
             oldRMSE = rmse;
             rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
             niters += 1;

@@ -56,11 +56,6 @@
       <name>LensKit Website</name>
       <url>${lenskit.web.path}</url>
     </site>
-    <snapshotRepository>
-      <id>grouplens.org</id>
-      <name>GroupLens Maven repository</name>
-      <url>scpexe://dev.grouplens.org/export/scratch/maven</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <repositories>
@@ -604,18 +599,6 @@
     <profile>
       <id>release</id>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                <optimize>true</optimize>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -629,11 +612,34 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/site</outputDirectory>
+                  <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
                   <tarLongFileMode>gnu</tarLongFileMode>
                   <descriptors>
                     <descriptor>src/assemble/source-package.xml</descriptor>
                   </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>copy-binary-package</id>
+                <phase>post-site</phase>
+                <goals><goal>run</goal></goals>
+                <configuration>
+                  <target>
+                    <copy todir="${project.build.directory}/site/downloads">
+                      <fileset dir="${basedir}/lenskit-package/target">
+                        <include name="lenskit-${project.version}.zip"/>
+                        <include name="lenskit-${project.version}.tar.gz"/>
+                      </fileset>
+                    </copy>
+                  </target>
                 </configuration>
               </execution>
             </executions>

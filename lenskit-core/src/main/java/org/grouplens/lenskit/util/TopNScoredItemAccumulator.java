@@ -44,6 +44,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
      */
     public TopNScoredItemAccumulator(int n) {
         this.count = n;
+        // arrays must have n+1 slots to hold extra item before removing smallest
         scores = new double[n + 1];
         items = new long[n + 1];
         slot = 0;

@@ -23,6 +23,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
@@ -44,7 +45,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class TestFunkSVDRecommenderBuild {
-    private LenskitRecommenderEngine engine;
+    private DAOFactory daoFactory;
 
     @Before
     public void setup() throws RecommenderBuildException {
@@ -54,20 +55,23 @@ public class TestFunkSVDRecommenderBuild {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        DAOFactory daof = new EventCollectionDAO.Factory(rs);
+        daoFactory = new EventCollectionDAO.Factory(rs);
+    }
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
+    private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(IterationCount.class).to(10);
 
-        engine = factory.create();
+        return factory.create();
     }
 
     @Test
-    public void testFunkSVDRecommenderEngineCreate() {
+    public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
+        LenskitRecommenderEngine engine = makeEngine();
         Recommender rec = engine.open();
 
         try {
@@ -81,7 +85,8 @@ public class TestFunkSVDRecommenderBuild {
     }
 
     @Test
-    public void testConfigSeparation() {
+    public void testConfigSeparation() throws RecommenderBuildException {
+        LenskitRecommenderEngine engine = makeEngine();
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
         try {
@@ -91,8 +96,7 @@ public class TestFunkSVDRecommenderBuild {
             assertThat(rec1.getItemScorer(),
                        not(sameInstance(rec2.getItemScorer())));
             assertThat(rec1.get(FunkSVDModel.class),
-                       allOf(not(nullValue()),
-                             sameInstance(rec2.get(FunkSVDModel.class))));
+                       sameInstance(rec2.get(FunkSVDModel.class)));
         } finally {
             if (rec2 != null) {
                 rec2.close();
@@ -100,6 +104,37 @@ public class TestFunkSVDRecommenderBuild {
             if (rec1 != null) {
                 rec1.close();
             }
+        }
+    }
+
+    /**
+     * Test whether we can build a recommender without predict-time updates.
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testNoPredictUpdates() throws RecommenderBuildException {
+        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
+        factory.bind(RatingPredictor.class)
+               .to(FunkSVDRatingPredictor.class);
+        factory.bind(BaselinePredictor.class)
+               .to(ItemUserMeanPredictor.class);
+        factory.set(IterationCount.class)
+               .to(10);
+        factory.at(FunkSVDRatingPredictor.class)
+               .bind(FunkSVDUpdateRule.class)
+               .toNull();
+
+        LenskitRecommenderEngine engine = factory.create();
+
+        LenskitRecommender rec = engine.open();
+        try {
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(FunkSVDRatingPredictor.class));
+            FunkSVDRatingPredictor fsvd = (FunkSVDRatingPredictor) pred;
+            assertThat(fsvd.getUpdateRule(),
+                       nullValue());
+        } finally {
+            rec.close();
         }
     }
 }

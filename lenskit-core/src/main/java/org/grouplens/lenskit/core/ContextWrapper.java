@@ -79,4 +79,19 @@ public class ContextWrapper extends AbstractConfigContext {
     public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
         return coerce(base.in(qualifier, type));
     }
+
+    @Override
+    public LenskitConfigContext at(Class<?> type) {
+        return coerce(base.at(type));
+    }
+
+    @Override
+    public LenskitConfigContext at(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(base.at(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext at(@Nullable Annotation qualifier, Class<?> type) {
+        return coerce(base.at(qualifier, type));
+    }
 }

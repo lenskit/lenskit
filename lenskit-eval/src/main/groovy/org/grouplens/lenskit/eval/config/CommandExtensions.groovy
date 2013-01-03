@@ -31,6 +31,7 @@ import org.grouplens.lenskit.eval.Command
  *
  * @author Michael Ekstrand
  */
+@SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class CommandExtensions {
     private static final def logger = LoggerFactory.getLogger(CommandExtensions)
 

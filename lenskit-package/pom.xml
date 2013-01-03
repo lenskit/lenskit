@@ -104,10 +104,10 @@
                         <include name="bin/*" />
                       </fileset>
                     </chmod>
-                    <tar destfile="${project.build.directory}/site/lenskit-${project.version}.tar.gz" compression="gzip">
+                    <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
                       <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                     </tar>
-                    <zip destfile="${project.build.directory}/site/lenskit-${project.version}.zip">
+                    <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
                       <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                     </zip>
                   </target>

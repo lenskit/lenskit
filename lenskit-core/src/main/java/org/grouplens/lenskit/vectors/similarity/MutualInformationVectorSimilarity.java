@@ -65,8 +65,8 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
         MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
 
         for (Vectors.EntryPair e: Vectors.paired(vec1, vec2)) {
-            accum.count(quantizer.apply(e.getValue1()),
-                        quantizer.apply(e.getValue2()));
+            accum.count(quantizer.index(e.getValue1()),
+                        quantizer.index(e.getValue2()));
         }
 
         return accum.getMutualInformation();

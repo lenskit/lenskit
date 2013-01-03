@@ -43,6 +43,7 @@ public interface Quantizer {
      * @throws IllegalArgumentException if {@code i} is an invalid discrete value.
      * @deprecated Use {@link #getIndexValue(int i)}
      */
+    @Deprecated
     double getValue(int i);
 
     /**
@@ -78,6 +79,7 @@ public interface Quantizer {
      * @return The index of the discrete value to which {@code val} is mapped.
      * @deprecated Use {@link #index(double val)}
      */
+    @Deprecated
     int apply(double val);
 
     /**

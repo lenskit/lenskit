@@ -49,7 +49,7 @@ import java.util.Properties;
       requiresDependencyResolution = ResolutionScope.RUNTIME,
       threadSafe = true)
 @Execute(lifecycle = "",
-	 phase = LifecyclePhase.PACKAGE)
+         phase = LifecyclePhase.PACKAGE)
 public class EvalScriptMojo extends AbstractMojo {
     /**
      * The project.  Gives access to Maven state.
@@ -98,11 +98,26 @@ public class EvalScriptMojo extends AbstractMojo {
     /**
      * Turn on to force eval steps to run.
      */
+    @SuppressWarnings("FieldCanBeLocal")
     @Parameter(property="lenskit.eval.force")
     private boolean force = false;
 
+    /**
+     * Skip running the evaluator. This parameter allows the evaluator to be skipped,
+     * useful if you just want to re-run later phases (e.g. the analysis) without
+     * re-running the entire evaluation.
+     * To do that, run with <tt>mvn -Dlenskit.eval.skip=true</tt>.
+     */
+    @SuppressWarnings("FieldCanBeLocal")
+    @Parameter(property = "lenskit.eval.skip")
+    private boolean skip = false;
+
     @Override
     public void execute() throws MojoExecutionException {
+        if (skip) {
+            getLog().info("skipping LensKit evaluation");
+            return;
+        }
         getLog().info("Running with thread count " + threadCount);
         getLog().info("The data directory is " + dataDir);
         getLog().info("The analysis directory is " + analysisDir);

@@ -11,6 +11,10 @@ with LensKit we recommend checking out the [Getting Started][] guide.
 [web site]: http://lenskit.grouplens.org
 [wiki]: http://dev.grouplens.org/trac/lenskit
 [Getting Started]: http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted
+[mailing list]: https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit
+
+LensKit is made available under the GNU Lesser General Public License
+(LGPL), version 2.1 or later.
 
 ## Installation and Dependency Management
 
@@ -50,6 +54,23 @@ and dependencies.  The other modules are as follows:
 * `lenskit-package` -- a metapackage for preparing binary distributions, including
   scripts for running the evaluator.
 * `lenskit-archetype-fancy-analysis` and `lenskit-archetype-simple-analysis` -- archetypes for creating user projects using LensKit.
+  
+## Contributing to LensKit
+  
+We welcome contribution to LensKit.  If you are looking for something
+to work on, we recommend perusing the open tickets on our [Trac][wiki]
+or asking on the [mailing list][].
+
+We prefer to receive code submissions as BitBucket pull requests.  To
+do this:
+
+1. Fork the LensKit repository (`grouplens/lenskit`) on BitBucket
+2. Push your changes to your fork
+3. Submit a pull request via th eBitBucket web interface
+   
+When submitting a pull request via BitBucket, you warrant that you
+either own the code or have appropriate authority to submit it, and
+license your changes under LensKit's copyright license (LGPLv2.1+).
 
 ## Notes for Eclipse
 
@@ -134,7 +155,7 @@ unnecessary by following directions at this StackOverflow discussion:
 
     http://stackoverflow.com/questions/9531467/unnecessary-suppresswarningsunused
 
-# LensKit Archetypes
+## LensKit Archetypes
 
 These archetypes are to build simple
 (`lenskit-archetype-simple-analysis`) or more sophisticated
@@ -151,5 +172,3 @@ this archetype to generate a project.
   project.  Variables with backslashes in front of them like
   \${version} are left as variables by the archetype, so they can be
   substituted at project build time.
-
-
