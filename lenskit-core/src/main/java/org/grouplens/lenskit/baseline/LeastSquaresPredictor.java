@@ -28,7 +28,9 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.util.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.params.LearningRate;
+import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -62,10 +64,10 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         public void predict(long user, SparseVector ratings,
                         MutableSparseVector output, boolean predictSet) {
                 State state = predictSet ? State.EITHER : State.UNSET;
-                for (VectorEntry e: ratings.fast(state)) {
-                        final long item = e.getKey();
-                        double score = mean + userOffsets.get(user) + itemOffsets.get(item);
-                        output.set(e, score);
+                for (VectorEntry e: output.fast(state)) {
+                    final long item = e.getKey();
+                    double score = mean + userOffsets.get(user) + itemOffsets.get(item);
+                    output.set(e, score);
                 }
         }
 
@@ -86,7 +88,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                  * @param data
                  */
                 @Inject
-                public Builder(/*@RegularizationTerm*/ double regFactor, /*@LearningRate*/ double lrate, @Transient PreferenceSnapshot data,
+                public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
                 			   StoppingCondition stop) {
                         this.regularizationFactor = regFactor;
                         this.learningRate = lrate;
@@ -128,7 +130,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                         
                         // Convert the uoff array to a SparseVector
                         MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
-                        for (VectorEntry e: svuoff.fast()) {
+                        for (VectorEntry e: svuoff.fast(State.EITHER)) {
                                 final long k = e.getKey();
                                 final int uid = snapshot.userIndex().getIndex(k);
                                 svuoff.set(e, uoff[uid]);
@@ -136,7 +138,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                         
                         // Convert the ioff array to a SparseVector
                         MutableSparseVector svioff = new MutableSparseVector(snapshot.getItemIds());
-                        for (VectorEntry e: svioff.fast()) {
+                        for (VectorEntry e: svioff.fast(State.EITHER)) {
                                 final long k = e.getKey();
                                 final int iid = snapshot.itemIndex().getIndex(k);
                                 svioff.set(e, ioff[iid]);
