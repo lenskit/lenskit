@@ -30,36 +30,39 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
-import org.grouplens.lenskit.vectors.VectorEntry.State;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestLeastSquarePredictor {
 
-    private static final double EPSILON = 1.0e-6;
+    private static final double EPSILON = 1.0e-2;
     private PackedPreferenceSnapshot snapshot;
     private LeastSquaresPredictor predictor;
     
     @Before
     public void createPredictor() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 6, 4));
-        rs.add(Ratings.make(2, 6, 2));
-        rs.add(Ratings.make(1, 7, 3));
-        rs.add(Ratings.make(2, 7, 2));
-        rs.add(Ratings.make(3, 7, 5));
-        rs.add(Ratings.make(4, 7, 2));
-        rs.add(Ratings.make(1, 8, 3));
-        rs.add(Ratings.make(2, 8, 4));
-        rs.add(Ratings.make(3, 8, 3));
-        rs.add(Ratings.make(4, 8, 2));
-        rs.add(Ratings.make(5, 8, 3));
-        rs.add(Ratings.make(6, 8, 2));
-        rs.add(Ratings.make(1, 9, 3));
-        rs.add(Ratings.make(3, 9, 4));
+        rs.add(Ratings.make(2, 1, 3));
+        rs.add(Ratings.make(3, 1, 4));
+        rs.add(Ratings.make(4, 1, 3));
+        rs.add(Ratings.make(5, 1, 5));
+        rs.add(Ratings.make(5, 2, 2));
+        rs.add(Ratings.make(2, 2, 2));
+        rs.add(Ratings.make(2, 3, 3));
+        rs.add(Ratings.make(3, 3, 2));
+        rs.add(Ratings.make(1, 4, 3));
+        rs.add(Ratings.make(3, 4, 2));
+        rs.add(Ratings.make(4, 4, 2));
+        rs.add(Ratings.make(3, 5, 4));
+        rs.add(Ratings.make(4, 5, 5));
+        rs.add(Ratings.make(5, 6, 4));
+        rs.add(Ratings.make(6, 6, 2));
+        rs.add(Ratings.make(1, 6, 3));
+        rs.add(Ratings.make(3, 6, 4));
 
         final EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         final DataAccessObject dao = manager.create();
@@ -78,23 +81,31 @@ public class TestLeastSquarePredictor {
     public void testPrediction1() {
     	final long user = 1;
         SparseVector ratings = snapshot.userRatingVector(user);
-        MutableSparseVector output = new MutableSparseVector();
+
+        ArrayList<Long> key = new ArrayList<Long>();
+        key.add(1L); key.add(2L); key.add(3L);
+        MutableSparseVector output = new MutableSparseVector(key);
+
         predictor.predict(user, ratings, output, true);
         
-        assertEquals(0.0, output.get(6), EPSILON);
-        assertEquals(0.0, output.get(7), EPSILON);
-        assertEquals(0.0, output.get(8), EPSILON);
+        assertEquals(3.18, output.get(1), EPSILON);
+        assertEquals(3.04, output.get(2), EPSILON);
+        assertEquals(3.07, output.get(3), EPSILON);
     }
 
     @Test
     public void testPrediction2() {
     	final long user = 2;
     	SparseVector ratings = snapshot.userRatingVector(user);
-        MutableSparseVector output = new MutableSparseVector();
+
+        ArrayList<Long> key = new ArrayList<Long>();
+        key.add(4L); key.add(5L); key.add(6L);
+        MutableSparseVector output = new MutableSparseVector(key);
+
         predictor.predict(user, ratings, output, true);
         
-        assertEquals(0.0, output.get(6), EPSILON);
-        assertEquals(0.0, output.get(7), EPSILON);
-        assertEquals(0.0, output.get(8), EPSILON);
+        assertEquals(3.01, output.get(4), EPSILON);
+        assertEquals(3.15, output.get(5), EPSILON);
+        assertEquals(3.09, output.get(6), EPSILON);
     }
 }
