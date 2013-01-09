@@ -18,11 +18,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import java.io.Serializable;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
@@ -35,6 +31,12 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.VectorEntry.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import java.io.Serializable;
 
 
 /**
@@ -42,109 +44,119 @@ import org.grouplens.lenskit.vectors.VectorEntry.State;
  *
  * @author Ark Xu <xuxxx728@umn.edu>
  */
+@DefaultProvider(LeastSquaresPredictor.Builder.class)
 public class LeastSquaresPredictor extends AbstractBaselinePredictor implements Serializable {
-        private final MutableSparseVector userOffsets;
-        private final MutableSparseVector itemOffsets;
+    private final MutableSparseVector userOffsets;
+    private final MutableSparseVector itemOffsets;
+    private final double mean;
+
+    private static final Logger logger = LoggerFactory.getLogger(LeastSquaresPredictor.class);
+
+    /**
+     * Construct a new LeastSquaresPredictor
+     *
+     * @param uoff the user offsets
+     * @param ioff the item offsets
+     * @param mean the global mean rating
+     */
+    public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double mean) {
+        this.userOffsets = uoff;
+        this.itemOffsets = ioff;
+        this.mean = mean;
+    }
+
+    @Override
+    public void predict(long user, SparseVector ratings,
+                        MutableSparseVector output, boolean predictSet) {
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e : output.fast(state)) {
+            final long item = e.getKey();
+            double uoff = userOffsets.containsKey(user) ? userOffsets.get(user) : (0.0);
+            double ioff = itemOffsets.containsKey(item) ? itemOffsets.get(item) : (0.0);
+            double score = mean + uoff + ioff;
+            output.set(e, score);
+        }
+    }
+
+    /**
+     * A builder that creates a regularizationFactor
+     */
+    public static class Builder implements Provider<LeastSquaresPredictor> {
+        private final double learningRate;
+        private final double regularizationFactor;
         private final double mean;
+        private PreferenceSnapshot snapshot;
+        private StoppingCondition trainingStop;
 
         /**
-         * Construct a new LeastSquaresPredictor
-         * 
-         * @param uoff the user offsets
-         * @param ioff the item offsets
-         * @param mean the global mean rating
+         * Create a new builder
+         *
+         * @param data
          */
-        public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double mean) {
-                this.userOffsets = uoff;
-                this.itemOffsets = ioff;
-                this.mean = mean;
+        @Inject
+        public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
+                       StoppingCondition stop) {
+            this.regularizationFactor = regFactor;
+            this.learningRate = lrate;
+            this.snapshot = data;
+            this.trainingStop = stop;
+
+            double sum = 0.0;
+            FastCollection<IndexedPreference> n = data.getRatings();
+            for (IndexedPreference r : CollectionUtils.fast(n)) {
+                sum += r.getValue();
+            }
+            mean = sum / n.size();
         }
 
         @Override
-        public void predict(long user, SparseVector ratings,
-                        MutableSparseVector output, boolean predictSet) {
-                State state = predictSet ? State.EITHER : State.UNSET;
-                for (VectorEntry e: output.fast(state)) {
-                    final long item = e.getKey();
-                    double score = mean + userOffsets.get(user) + itemOffsets.get(item);
-                    output.set(e, score);
-                }
-        }
+        public LeastSquaresPredictor get() {
+            double rmse = 0.0;
+            double oldRmse = Double.POSITIVE_INFINITY;
+            double uoff[] = new double[snapshot.getUserIds().size()];
+            double ioff[] = new double[snapshot.getItemIds().size()];
+            FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
-        /**
-         *  A builder that creates a regularizationFactor
-         */
-        public static class Builder implements Provider<LeastSquaresPredictor> {
-                private final double learningRate;
-                private final double regularizationFactor;
-                private final double mean;
-                
-                private PreferenceSnapshot snapshot;
-                private StoppingCondition trainingStop;
-                
-                /**
-                 * Create a new builder
-                 * 
-                 * @param data
-                 */
-                @Inject
-                public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
-                			   StoppingCondition stop) {
-                        this.regularizationFactor = regFactor;
-                        this.learningRate = lrate;
-                        this.snapshot = data;
-                        this.trainingStop = stop;
+            logger.debug("training predictor on {} ratings", ratings.size());
 
-                        double sum = 0.0;
-                        FastCollection<IndexedPreference> n = data.getRatings();
-                        for (IndexedPreference r : CollectionUtils.fast(n)) {
-                                sum += r.getValue();
-                        }
-                        mean = sum / n.size();
+            int niters = 0;
+            while (!trainingStop.isFinished(niters, oldRmse - rmse)) {
+                ++niters;
+                double sse = 0;
+                for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+                    final int uidx = r.getUserIndex();
+                    final int iidx = r.getItemIndex();
+                    final double p = mean + uoff[uidx] + ioff[iidx];
+                    final double err = r.getValue() - p;
+                    uoff[uidx] += learningRate * (err - regularizationFactor * uoff[uidx]);
+                    ioff[iidx] += learningRate * (err - regularizationFactor * ioff[iidx]);
+                    sse += err * err;
                 }
-                
-                @Override
-                public LeastSquaresPredictor get() {
-                    	double rmse = Double.MAX_VALUE;
-                    	double oldRmse = 0.0;
-                    	double uoff[] = new double[snapshot.getUserIds().size()];
-                    	double ioff[] = new double[snapshot.getItemIds().size()];
-                    	FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-                    	
-                        int niters = 0;
-                        while (!trainingStop.isFinished(niters, oldRmse - rmse)) {
-                                ++niters;
-                                double sse = 0;
-                                for (IndexedPreference r : CollectionUtils.fast(ratings)) {
-                                        final int uidx = r.getUserIndex();
-                                        final int iidx = r.getItemIndex(); 
-                                        final double p = mean + uoff[uidx] + ioff[iidx];
-                                        final double err = r.getValue() - p;
-                                        uoff[uidx] += learningRate * (err - regularizationFactor*uoff[uidx]);
-                                        ioff[iidx] += learningRate * (err - regularizationFactor*ioff[iidx]);
-                                        sse += err*err;
-                                }
-                                oldRmse = rmse;
-                                rmse = Math.sqrt(sse/ratings.size());
-                        }
-                        
-                        // Convert the uoff array to a SparseVector
-                        MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
-                        for (VectorEntry e: svuoff.fast(State.EITHER)) {
-                                final long k = e.getKey();
-                                final int uid = snapshot.userIndex().getIndex(k);
-                                svuoff.set(e, uoff[uid]);
-                        }
-                        
-                        // Convert the ioff array to a SparseVector
-                        MutableSparseVector svioff = new MutableSparseVector(snapshot.getItemIds());
-                        for (VectorEntry e: svioff.fast(State.EITHER)) {
-                                final long k = e.getKey();
-                                final int iid = snapshot.itemIndex().getIndex(k);
-                                svioff.set(e, ioff[iid]);
-                        }
-                        
-                        return new LeastSquaresPredictor(svuoff, svioff, mean);
-                }
+                oldRmse = rmse;
+                rmse = Math.sqrt(sse / ratings.size());
+
+                logger.debug("finished iteration {} (RMSE={})", niters, rmse);
+            }
+
+            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), niters, rmse);
+
+            // Convert the uoff array to a SparseVector
+            MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
+            for (VectorEntry e : svuoff.fast(State.EITHER)) {
+                final long k = e.getKey();
+                final int uid = snapshot.userIndex().getIndex(k);
+                svuoff.set(e, uoff[uid]);
+            }
+
+            // Convert the ioff array to a SparseVector
+            MutableSparseVector svioff = new MutableSparseVector(snapshot.getItemIds());
+            for (VectorEntry e : svioff.fast(State.EITHER)) {
+                final long k = e.getKey();
+                final int iid = snapshot.itemIndex().getIndex(k);
+                svioff.set(e, ioff[iid]);
+            }
+
+            return new LeastSquaresPredictor(svuoff, svioff, mean);
         }
+    }
 }

@@ -18,13 +18,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Provider;
-
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -37,12 +30,18 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
 public class TestLeastSquarePredictor {
 
     private static final double EPSILON = 1.0e-2;
     private PackedPreferenceSnapshot snapshot;
     private LeastSquaresPredictor predictor;
-    
+
     @Before
     public void createPredictor() {
         List<Rating> rs = new ArrayList<Rating>();
@@ -78,34 +77,56 @@ public class TestLeastSquarePredictor {
     }
 
     @Test
-    public void testPrediction1() {
-    	final long user = 1;
+    public void testKnownUserItem() {
+        final long user = 1;
         SparseVector ratings = snapshot.userRatingVector(user);
 
         ArrayList<Long> key = new ArrayList<Long>();
-        key.add(1L); key.add(2L); key.add(3L);
+        key.add(1L);
+        key.add(2L);
+        key.add(3L);
         MutableSparseVector output = new MutableSparseVector(key);
 
         predictor.predict(user, ratings, output, true);
-        
+
         assertEquals(3.18, output.get(1), EPSILON);
         assertEquals(3.04, output.get(2), EPSILON);
         assertEquals(3.07, output.get(3), EPSILON);
     }
 
     @Test
-    public void testPrediction2() {
-    	final long user = 2;
-    	SparseVector ratings = snapshot.userRatingVector(user);
+    public void testUnknownItem() {
+        final long user = 2;
+        SparseVector ratings = snapshot.userRatingVector(user);
 
         ArrayList<Long> key = new ArrayList<Long>();
-        key.add(4L); key.add(5L); key.add(6L);
+        key.add(14L);
+        key.add(15L);
+        key.add(16L);
         MutableSparseVector output = new MutableSparseVector(key);
 
         predictor.predict(user, ratings, output, true);
-        
-        assertEquals(3.01, output.get(4), EPSILON);
-        assertEquals(3.15, output.get(5), EPSILON);
-        assertEquals(3.09, output.get(6), EPSILON);
+
+        assertEquals(3.07, output.get(14), EPSILON);
+        assertEquals(3.07, output.get(15), EPSILON);
+        assertEquals(3.07, output.get(16), EPSILON);
+    }
+
+    @Test
+    public void testUnknownUser() {
+        final long user = 11;
+        SparseVector ratings = snapshot.userRatingVector(user);
+
+        ArrayList<Long> key = new ArrayList<Long>();
+        key.add(4L);
+        key.add(5L);
+        key.add(6L);
+        MutableSparseVector output = new MutableSparseVector(key);
+
+        predictor.predict(user, ratings, output, true);
+
+        assertEquals(3.05, output.get(4), EPSILON);
+        assertEquals(3.20, output.get(5), EPSILON);
+        assertEquals(3.13, output.get(6), EPSILON);
     }
 }
