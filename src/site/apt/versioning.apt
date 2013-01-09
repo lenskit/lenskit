@@ -46,3 +46,19 @@ Versioning and API change policy
     identified in the release notes.
 
   []
+
+* Deprecation
+
+  As we develop LensKit, we deprecate methods (and entire classes) from time to time.
+  To preserve backwards compatibility, when these methods appear on “Compatibility: Public”
+  components, they will stick around until the next major release. However, they <<will>> be
+  deleted in the next major release. Deprecated methods on more internal/unstable components
+  may be deleted in a subsequent minor release.
+
+  Our goal is for all X.0 releases of LensKit to contain no deprecated methods.
+
+  Also, if we intend to replace a method with an incompatible method of the same name in the
+  next X.0 release, we we'll try to make sure that method either changes its signature or gets
+  deprecated in a minor release in advance of the major release. So it's good, as you update
+  your LensKit-based code, to clear up deprecation warnings when you upgrade to a new LensKit
+  version, but we'll keep the methods around and working.
