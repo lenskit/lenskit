@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,7 +18,6 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 /**
  * Common utilities for iterative methods.
  * @since 1.1
