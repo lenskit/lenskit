@@ -120,7 +120,9 @@ public class ItemItemBuildContext {
         public FastIteratorImpl(LongSortedSet list1, LongSortedSet list2) {
             itemVecPair = new ItemVecPair();
             iter1 = list1.iterator();
-            itemVecPair.setItem1(iter1.nextLong());
+            if (iter1.hasNext()) {
+            	itemVecPair.setItem1(iter1.nextLong());
+            }
             this.list2 = list2;
             iter2 = list2.iterator();
         }
