@@ -71,9 +71,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : output.fast(state)) {
             final long item = e.getKey();
-            double uoff = userOffsets.containsKey(user) ? userOffsets.get(user) : (0.0);
-            double ioff = itemOffsets.containsKey(item) ? itemOffsets.get(item) : (0.0);
-            double score = mean + uoff + ioff;
+            double score = mean + userOffsets.get(user, 0) + itemOffsets.get(item, 0);
             output.set(e, score);
         }
     }
