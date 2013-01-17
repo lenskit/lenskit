@@ -70,8 +70,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                         MutableSparseVector output, boolean predictSet) {
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : output.fast(state)) {
-            final long item = e.getKey();
-            double score = mean + userOffsets.get(user, 0) + itemOffsets.get(item, 0);
+            double score = mean + userOffsets.get(user, 0) + itemOffsets.get(e.getKey(), 0);
             output.set(e, score);
         }
     }
@@ -141,16 +140,14 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
             // Convert the uoff array to a SparseVector
             MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
             for (VectorEntry e : svuoff.fast(State.EITHER)) {
-                final long k = e.getKey();
-                final int uid = snapshot.userIndex().getIndex(k);
+                final int uid = snapshot.userIndex().getIndex(e.getKey());
                 svuoff.set(e, uoff[uid]);
             }
 
             // Convert the ioff array to a SparseVector
             MutableSparseVector svioff = new MutableSparseVector(snapshot.getItemIds());
             for (VectorEntry e : svioff.fast(State.EITHER)) {
-                final long k = e.getKey();
-                final int iid = snapshot.itemIndex().getIndex(k);
+                final int iid = snapshot.itemIndex().getIndex(e.getKey());
                 svioff.set(e, ioff[iid]);
             }
 
