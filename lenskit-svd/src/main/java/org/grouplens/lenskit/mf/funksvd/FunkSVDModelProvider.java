@@ -30,6 +30,7 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -127,21 +128,17 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         StopWatch timer = new StopWatch();
         timer.start();
 
-        double oldRMSE = Double.NaN;
         double rmse = Double.MAX_VALUE;
-        int niters = 0;
-        StoppingCondition stop = rule.getStoppingCondition();
-        while (!stop.isFinished(niters, oldRMSE - rmse)) {
-            oldRMSE = rmse;
+        TrainingLoopController controller = rule.getTrainingLoopController();
+        while (controller.keepTraining(rmse)) {
             rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
 
-            niters += 1;
-            logger.trace("iteration {} finished with RMSE {}", niters, rmse);
+            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
         }
 
         timer.stop();
         logger.debug("Finished feature {} in {} epochs (took {})",
-                     new Object[]{feature, niters, timer});
+                     new Object[]{feature, controller.getIterationCount(), timer});
     }
 
     private double doFeatureIteration(double[] estimates, FastCollection<IndexedPreference> ratings,
