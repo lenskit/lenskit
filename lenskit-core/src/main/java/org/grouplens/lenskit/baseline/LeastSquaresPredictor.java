@@ -27,6 +27,7 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.iterative.params.LearningRate;
 import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -85,7 +86,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         private final double regularizationFactor;
         private final double mean;
         private PreferenceSnapshot snapshot;
-        private StoppingCondition trainingStop;
+        private TrainingLoopController trainingController;
 
         /**
          * Create a new builder
@@ -94,11 +95,11 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
          */
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
-                       StoppingCondition stop) {
-            this.regularizationFactor = regFactor;
-            this.learningRate = lrate;
-            this.snapshot = data;
-            this.trainingStop = stop;
+                       TrainingLoopController controller) {
+            regularizationFactor = regFactor;
+            learningRate = lrate;
+            snapshot = data;
+            trainingController = controller;
 
             double sum = 0.0;
             FastCollection<IndexedPreference> n = data.getRatings();
@@ -111,16 +112,13 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         @Override
         public LeastSquaresPredictor get() {
             double rmse = 0.0;
-            double oldRmse = Double.POSITIVE_INFINITY;
             double uoff[] = new double[snapshot.getUserIds().size()];
             double ioff[] = new double[snapshot.getItemIds().size()];
             FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
             logger.debug("training predictor on {} ratings", ratings.size());
 
-            int niters = 0;
-            while (!trainingStop.isFinished(niters, oldRmse - rmse)) {
-                ++niters;
+            while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
                 for (IndexedPreference r : CollectionUtils.fast(ratings)) {
                     final int uidx = r.getUserIndex();
@@ -131,13 +129,12 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                     ioff[iidx] += learningRate * (err - regularizationFactor * ioff[iidx]);
                     sse += err * err;
                 }
-                oldRmse = rmse;
                 rmse = Math.sqrt(sse / ratings.size());
 
-                logger.debug("finished iteration {} (RMSE={})", niters, rmse);
+                logger.debug("finished iteration {} (RMSE={})", trainingController.getIterationCount(), rmse);
             }
 
-            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), niters, rmse);
+            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
 
             // Convert the uoff array to a SparseVector
             MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());

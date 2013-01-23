@@ -74,7 +74,7 @@ public class TestLeastSquarePredictor {
         final double regFactor = 0.001;
         final double lrate = 0.003;
         final Provider<LeastSquaresPredictor> builder =
-                new LeastSquaresPredictor.Builder(regFactor, lrate, snapshot, stop);
+                new LeastSquaresPredictor.Builder(regFactor, lrate, snapshot, stop.newLoop());
         predictor = builder.get();
     }
 

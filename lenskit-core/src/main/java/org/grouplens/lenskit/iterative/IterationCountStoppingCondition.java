@@ -62,4 +62,31 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
     public boolean isFinished(int n, double delta) {
         return n >= iterCount;
     }
+
+    @Override
+    public TrainingLoopController newLoop() {
+        return new IterationCountTrainingLoopController();
+    }
+
+    /**
+     * Iteration Count Training Loop controller for iterative updates
+     */
+    private class IterationCountTrainingLoopController implements TrainingLoopController {
+        private int iterations = 0;
+
+        @Override
+        public boolean keepTraining(double error) {
+            if (iterations >= iterCount) {
+                return false;
+            } else {
+                ++iterations;
+                return true;
+            }
+        }
+
+        @Override
+        public int getIterationCount() {
+            return iterations;
+        }
+    }
 }
