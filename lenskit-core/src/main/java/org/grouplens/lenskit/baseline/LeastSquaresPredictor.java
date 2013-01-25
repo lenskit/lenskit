@@ -86,7 +86,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         private final double regularizationFactor;
         private final double mean;
         private PreferenceSnapshot snapshot;
-        private TrainingLoopController trainingController;
+        private StoppingCondition stoppingCondition;
 
         /**
          * Create a new builder
@@ -95,11 +95,11 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
          */
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
-                       TrainingLoopController controller) {
+                       StoppingCondition stop) {
             regularizationFactor = regFactor;
             learningRate = lrate;
             snapshot = data;
-            trainingController = controller;
+            stoppingCondition = stop;
 
             double sum = 0.0;
             FastCollection<IndexedPreference> n = data.getRatings();
@@ -118,6 +118,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
 
             logger.debug("training predictor on {} ratings", ratings.size());
 
+            final TrainingLoopController trainingController = stoppingCondition.newLoop();
             while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
                 for (IndexedPreference r : CollectionUtils.fast(ratings)) {

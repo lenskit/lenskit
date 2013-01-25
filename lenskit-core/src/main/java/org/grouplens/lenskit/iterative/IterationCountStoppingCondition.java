@@ -65,13 +65,13 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
 
     @Override
     public TrainingLoopController newLoop() {
-        return new IterationCountTrainingLoopController();
+        return new Controller();
     }
 
     /**
      * Iteration Count Training Loop controller for iterative updates
      */
-    private class IterationCountTrainingLoopController implements TrainingLoopController {
+    private class Controller implements TrainingLoopController {
         private int iterations = 0;
 
         @Override

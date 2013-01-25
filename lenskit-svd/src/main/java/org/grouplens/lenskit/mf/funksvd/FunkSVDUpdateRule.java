@@ -42,7 +42,7 @@ public final class FunkSVDUpdateRule implements Serializable {
     private final double learningRate;
     private final double trainingRegularization;
     private final ClampingFunction clampingFunction;
-    private final TrainingLoopController trainingLoopController;
+    private final StoppingCondition stoppingCondition;
 
     /**
      * Construct a new FunkSVD configuration.
@@ -50,17 +50,17 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @param lrate The learning rate.
      * @param reg   The regularization term.
      * @param clamp The clamping function.
-     * @param controller
+     * @param stop  The stopping condition
      */
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
                              ClampingFunction clamp,
-                             TrainingLoopController controller) {
+                             StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
         clampingFunction = clamp;
-        trainingLoopController = controller;
+        stoppingCondition = stop;
     }
 
     public double getLearningRate() {
@@ -76,7 +76,7 @@ public final class FunkSVDUpdateRule implements Serializable {
     }
 
     public TrainingLoopController getTrainingLoopController() {
-        return trainingLoopController;
+        return stoppingCondition.newLoop();
     }
 
     /**
