@@ -41,7 +41,7 @@ import org.grouplens.lenskit.symbols.Symbol;
  */
 @Immutable
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
-    private static final long serialVersionUID = -4740588973577998935L;
+    private static final long serialVersionUID = -2L;
 
     private final Map<Symbol, ImmutableSparseVector> channelMap;
 

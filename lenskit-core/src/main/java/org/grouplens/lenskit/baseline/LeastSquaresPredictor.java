@@ -23,12 +23,14 @@ package org.grouplens.lenskit.baseline;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.params.LearningRate;
 import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -47,9 +49,12 @@ import java.io.Serializable;
  * @author Ark Xu <xuxxx728@umn.edu>
  */
 @DefaultProvider(LeastSquaresPredictor.Builder.class)
+@Shareable
 public class LeastSquaresPredictor extends AbstractBaselinePredictor implements Serializable {
-    private final MutableSparseVector userOffsets;
-    private final MutableSparseVector itemOffsets;
+    private static final long serialVersionUID = 1L;
+
+    private final ImmutableSparseVector userOffsets;
+    private final ImmutableSparseVector itemOffsets;
     private final double mean;
 
     private static final Logger logger = LoggerFactory.getLogger(LeastSquaresPredictor.class);
@@ -61,7 +66,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
      * @param ioff the item offsets
      * @param mean the global mean rating
      */
-    public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double mean) {
+    public LeastSquaresPredictor(ImmutableSparseVector uoff, ImmutableSparseVector ioff, double mean) {
         this.userOffsets = uoff;
         this.itemOffsets = ioff;
         this.mean = mean;
@@ -83,7 +88,6 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     public static class Builder implements Provider<LeastSquaresPredictor> {
         private final double learningRate;
         private final double regularizationFactor;
-        private final double mean;
         private PreferenceSnapshot snapshot;
         private StoppingCondition trainingStop;
 
@@ -99,13 +103,6 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
             this.learningRate = lrate;
             this.snapshot = data;
             this.trainingStop = stop;
-
-            double sum = 0.0;
-            FastCollection<IndexedPreference> n = data.getRatings();
-            for (IndexedPreference r : CollectionUtils.fast(n)) {
-                sum += r.getValue();
-            }
-            mean = sum / n.size();
         }
 
         @Override
@@ -117,6 +114,15 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
             FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
             logger.debug("training predictor on {} ratings", ratings.size());
+
+            double sum = 0.0;
+            double n = 0;
+            for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+                sum += r.getValue();
+                n += 1;
+            }
+            final double mean = sum / n;
+            logger.debug("mean rating is {}", mean);
 
             int niters = 0;
             while (!trainingStop.isFinished(niters, oldRmse - rmse)) {
@@ -153,7 +159,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                 svioff.set(e, ioff[iid]);
             }
 
-            return new LeastSquaresPredictor(svuoff, svioff, mean);
+            return new LeastSquaresPredictor(svuoff.freeze(), svioff.freeze(), mean);
         }
     }
 }
