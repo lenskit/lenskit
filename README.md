@@ -95,7 +95,9 @@ problems can be frustrating to debug.  To get the tools:
 Then do the following:
 
 * Check out the LensKit source tree by selecting File / Import / "Clone existing repository".
-  Enter the URL and authentication information, and clone the repository into your workspace.
+  Enter the repository URL (the master repository is at `http://bitbucket.org/grouplens/lenskit`)
+  and your BitBucket authentication information (if you want to be able to push), and clone the
+  repository into your workspace.
 * Once the project is imported, right-click it and select "Configure" -> "Convert to Maven project"
   to activate Maven support on the LensKit parent project.
 * Finally, right-click the `lenskit` project, choose "Import", and select "Maven" / "Existing
