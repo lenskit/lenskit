@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -76,7 +77,8 @@ import com.google.common.primitives.Longs;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @compat Public
  */
-public abstract class SparseVector implements Iterable<VectorEntry> {
+public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {
+    private static final long serialVersionUID = 1L;
 
     protected final long[] keys;
     protected final BitSet usedKeys;
