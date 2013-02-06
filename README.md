@@ -66,7 +66,7 @@ do this:
 
 1. Fork the LensKit repository (`grouplens/lenskit`) on BitBucket
 2. Push your changes to your fork
-3. Submit a pull request via th eBitBucket web interface
+3. Submit a pull request via the BitBucket web interface
    
 When submitting a pull request via BitBucket, you warrant that you
 either own the code or have appropriate authority to submit it, and
