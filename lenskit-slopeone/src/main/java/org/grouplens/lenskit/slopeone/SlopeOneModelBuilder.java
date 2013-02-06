@@ -39,7 +39,7 @@ import javax.inject.Provider;
  * {@code CoratingMatrix}. These matrices are later used by a
  * {@code SlopeOneRatingPredictor}.
  */
-public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
+public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
 
     private final BaselinePredictor predictor;
@@ -47,10 +47,10 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final Indexer itemIndex;
 
     @Inject
-    public SlopeOneModelProvider(@Transient @Nonnull DataAccessObject dao,
-                                 @Nullable BaselinePredictor predictor,
-                                 @Transient ItemItemBuildContextFactory contextFactory,
-                                 @Damping double damping) {
+    public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
+                                @Nullable BaselinePredictor predictor,
+                                @Transient ItemItemBuildContextFactory contextFactory,
+                                @Damping double damping) {
 
         this.predictor = predictor;
         this.contextFactory = contextFactory;

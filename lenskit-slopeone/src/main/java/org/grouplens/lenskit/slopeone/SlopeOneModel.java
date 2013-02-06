@@ -33,7 +33,7 @@ import org.grouplens.lenskit.util.Index;
  * Also contains a {@code BaselinePredictor} and the minimum and maximum rating values
  * for use by a scorer.
  */
-@DefaultProvider(SlopeOneModelProvider.class)
+@DefaultProvider(SlopeOneModelBuilder.class)
 @Shareable
 public class SlopeOneModel {
 
