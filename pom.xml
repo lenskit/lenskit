@@ -524,6 +524,7 @@
           <links>
             <link>http://fastutil.dsi.unimi.it/docs/</link>
             <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+            <link>http://dev.grouplens.org/grapht/apidocs/</link>
           </links>
           <useStandardDocletOptions>true</useStandardDocletOptions>
         </configuration>
