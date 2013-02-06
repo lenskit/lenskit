@@ -137,19 +137,19 @@ which is faster and prettier.  Just right click a project, select "Run As" / "JU
 
 Mercurial on Windows is sometimes a little tricky to get set up.  If
 you do not have a Mercurial.ini file, Mercurial will not know the user
-name to use for commits.  Here is a stackoverflow Q&A that explains
-how to set it up:
-
-    http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied
+name to use for commits.  Fortunately, this has been
+[covered on StackOverflow](http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied).
 
 You will need to install a Java Development Kit to build some parts of
 LensKit.  On Linux or Mac, setting the Java HOME will let LensKit find
 it. On Windows if you install the JDK next to the JRE, LensKit will
 probably be able to find it.
 
-At the bottom of the LensKit Code Guidelines
-(http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is
-an XML file that will set your Eclipse up to follow the LensKit style.
+The `etc/eclipse-codestyle.xml` file contains an Eclipse code style
+that will configure most of the LensKit style guidelines.  See the
+[Code Guidelines][] for more details on our coding style.
+
+[Code Guidelines]: https://bitbucket.org/grouplens/lenskit/wiki/CodeGuidelines
 
 Eclipse and IntelliJ disagree about some uses of @SuppressWarnings.  You can
 ask Eclipse not to nag you about uses of @SuppressWarnings that it considers
