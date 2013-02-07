@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.results;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 
 /**
  * Result accumulator for test runs.
@@ -28,5 +28,5 @@ import org.grouplens.lenskit.eval.AlgorithmInstance;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public interface ResultAccumulator {
-    AlgorithmTestAccumulator makeAlgorithmAccumulator(AlgorithmInstance algo);
+    AlgorithmTestAccumulator makeAlgorithmAccumulator(LenskitAlgorithmInstance algo);
 }

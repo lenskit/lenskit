@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval
 
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 
 import org.grouplens.lenskit.RatingPredictor
@@ -50,8 +51,8 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
                 attributes["wombat"] = "global"
             }
         }
-        assertThat(obj, instanceOf(AlgorithmInstance))
-        def algo = obj as AlgorithmInstance
+        assertThat(obj, instanceOf(LenskitAlgorithmInstance))
+        def algo = obj as LenskitAlgorithmInstance
         assertThat(algo.name, equalTo("GlobalMean"))
         assertThat(algo.attributes["wombat"] as String, equalTo("global"))
     }
@@ -71,7 +72,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
                 }
             }
         }
-        def algo = obj as AlgorithmInstance
+        def algo = obj as LenskitAlgorithmInstance
         def fact = algo.getFactory()
         fact.setDAOFactory(new EventCollectionDAO.Factory([]))
         def engine = fact.create()

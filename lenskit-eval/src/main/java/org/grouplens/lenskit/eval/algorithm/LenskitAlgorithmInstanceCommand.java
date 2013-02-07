@@ -18,11 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.config.AlgorithmInstanceCommandDelegate;
+import org.grouplens.lenskit.eval.AbstractCommand;
+import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceCommandDelegate;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
 
 import javax.annotation.Nonnull;
@@ -35,16 +37,16 @@ import java.util.Map;
  * @author Michael Ekstrand
  */
 @ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
-public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance> {
+public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgorithmInstance> {
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
     private LenskitRecommenderEngineFactory factory;
 
-    public AlgorithmInstanceCommand() {
+    public LenskitAlgorithmInstanceCommand() {
         this("Unnamed");
     }
 
-    public AlgorithmInstanceCommand(String name) {
+    public LenskitAlgorithmInstanceCommand(String name) {
         super(name);
         factory = new LenskitRecommenderEngineFactory();
     }
@@ -56,7 +58,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
      * @return The command for chaining.
      */
     @Override
-    public AlgorithmInstanceCommand setName(String n) {
+    public LenskitAlgorithmInstanceCommand setName(String n) {
         name = n;
         return this;
     }
@@ -77,7 +79,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
      * @param pl {@code true} to pre-load input data when running this algorithm.
      * @return The command for chaining.
      */
-    public AlgorithmInstanceCommand setPreload(boolean pl) {
+    public LenskitAlgorithmInstanceCommand setPreload(boolean pl) {
         preload = pl;
         return this;
     }
@@ -90,7 +92,7 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public AlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public LenskitAlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -117,8 +119,8 @@ public class AlgorithmInstanceCommand extends AbstractCommand<AlgorithmInstance>
     }
 
     @Override
-    public AlgorithmInstance call() throws CommandException {
-        return new AlgorithmInstance(name, factory, attributes, preload);
+    public LenskitAlgorithmInstance call() throws CommandException {
+        return new LenskitAlgorithmInstance(name, factory, attributes, preload);
     }
 
 }

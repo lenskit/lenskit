@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.eval.algorithm;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,9 +45,9 @@ import java.util.Map;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@BuilderCommand(AlgorithmInstanceCommand.class)
-public class AlgorithmInstance {
-    private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
+@BuilderCommand(LenskitAlgorithmInstanceCommand.class)
+public class LenskitAlgorithmInstance {
+    private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstance.class);
     @Nullable
     private final String algoName;
     @Nonnull
@@ -56,11 +56,11 @@ public class AlgorithmInstance {
     private final Map<String, Object> attributes;
     private final boolean preload;
 
-    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
+    public LenskitAlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
         this(name, factory, Collections.<String, Object>emptyMap(), false);
     }
 
-    public AlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String, Object> attributes, boolean preload) {
+    public LenskitAlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String, Object> attributes, boolean preload) {
         algoName = name;
         this.factory = factory;
         this.attributes = attributes;

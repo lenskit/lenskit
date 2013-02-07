@@ -35,9 +35,8 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -68,7 +67,7 @@ public class TrainTestEvalJob implements Job {
     private final int numRecs;
 
     @Nonnull
-    private final AlgorithmInstance algorithm;
+    private final LenskitAlgorithmInstance algorithm;
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
@@ -98,7 +97,7 @@ public class TrainTestEvalJob implements Job {
      *                and eval outputProvider needs to be written.
      * @param numRecs The number of recommendations to compute.
      */
-    public TrainTestEvalJob(AlgorithmInstance algo,
+    public TrainTestEvalJob(LenskitAlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             List<Pair<Symbol,String>> chans,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,

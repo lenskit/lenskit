@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -46,7 +46,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(LenskitAlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 

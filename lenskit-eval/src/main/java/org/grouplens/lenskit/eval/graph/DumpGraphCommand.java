@@ -28,7 +28,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.cli.EvalCLI;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 public class DumpGraphCommand extends AbstractCommand<File> {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
 
-    private AlgorithmInstance algorithm;
+    private LenskitAlgorithmInstance algorithm;
     private GraphWriter writer;
     private File output;
     private PreferenceDomain domain = null;
@@ -52,7 +52,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         super(name);
     }
 
-    public DumpGraphCommand setAlgorithm(AlgorithmInstance algorithm) {
+    public DumpGraphCommand setAlgorithm(LenskitAlgorithmInstance algorithm) {
         this.algorithm = algorithm;
         return this;
     }

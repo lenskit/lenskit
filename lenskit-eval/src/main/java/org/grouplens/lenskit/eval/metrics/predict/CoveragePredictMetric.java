@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -46,7 +46,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
     };
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(LenskitAlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 

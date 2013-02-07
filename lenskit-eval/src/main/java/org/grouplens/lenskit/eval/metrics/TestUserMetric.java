@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 
@@ -50,7 +50,7 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      * @return The result accumulator for aggregating prediction results over a single
      *         evaluation.
      */
-    TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
+    TestUserMetricAccumulator makeAccumulator(LenskitAlgorithmInstance algorithm, TTDataSet dataSet);
 
     /**
      * Get labels for the aggregate columns output by this evaluator.

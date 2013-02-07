@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
@@ -58,7 +58,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
 
 
     public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
-                                 List<AlgorithmInstance> algos,
+                                 List<LenskitAlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
                                  TTDataSet data, int partition,
                                  int numRecs) {
@@ -81,7 +81,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
                 });
 
         jobs = new ArrayList<Job>(algos.size());
-        for (AlgorithmInstance algo : algos) {
+        for (LenskitAlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, eval.getPredictionChannels(), data, snap,
