@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -49,7 +49,7 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final String[] USER_COLUMNS = {"MAE"};
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(LenskitAlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 

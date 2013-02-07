@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -46,7 +46,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
     private static final String[] COLUMNS = {"Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser"};
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(LenskitAlgorithmInstance algorithm, TTDataSet dataSet) {
+    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
         return new Accum(dataSet.getPreferenceDomain());
     }
 

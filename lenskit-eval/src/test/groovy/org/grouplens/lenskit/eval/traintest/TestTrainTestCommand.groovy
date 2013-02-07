@@ -129,6 +129,15 @@ class TestTrainTestCommand {
     }
 
     @Test
+    void testPredictOutputAndInternalGetter() {
+        eval {
+            predictOutput "predictions.csv"
+            assertThat(predictOutput, equalTo(new File("predictions.csv")))
+        }
+        assertThat(command.getPredictOutput(), equalTo(new File("predictions.csv")))
+    }
+
+    @Test
     void testGenericInput() {
         boolean closureInvoked = false
         eval {
