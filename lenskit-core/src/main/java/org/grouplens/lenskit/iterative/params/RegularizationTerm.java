@@ -31,7 +31,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @DefaultDouble(0.015)
-@Parameter(Integer.class)
+@Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
