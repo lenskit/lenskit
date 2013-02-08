@@ -22,13 +22,9 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -36,9 +32,9 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
@@ -68,7 +64,7 @@ public class TrainTestEvalJob implements Job {
     private final int numRecs;
 
     @Nonnull
-    private final LenskitAlgorithmInstance algorithm;
+    private final AlgorithmInstance algorithm;
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
@@ -98,7 +94,7 @@ public class TrainTestEvalJob implements Job {
      *                and eval outputProvider needs to be written.
      * @param numRecs The number of recommendations to compute.
      */
-    public TrainTestEvalJob(LenskitAlgorithmInstance algo,
+    public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             List<Pair<Symbol,String>> chans,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
@@ -306,7 +302,11 @@ public class TrainTestEvalJob implements Job {
             if (predictor == null) {
                 throw new IllegalArgumentException("cannot compute predictions without a predictor");
             }
-            return predictor.getPredictions(user, items);
+            SparseVector preds = predictor.getPredictions(user, items);
+            if (preds == null) {
+                throw new IllegalArgumentException("no predictions");
+            }
+            return preds;
         }
     }
 
@@ -326,7 +326,11 @@ public class TrainTestEvalJob implements Job {
             if (recommender == null) {
                 throw new IllegalArgumentException("cannot compute recommendations without a recommender");
             }
-            return recommender.getRecommendations(user, items, numRecs);
+            ScoredLongList recs = recommender.getRecommendations(user, items, numRecs);
+            if (recs == null) {
+                throw new IllegalArgumentException("no recommendations");
+            }
+            return recs;
         }
     }
 

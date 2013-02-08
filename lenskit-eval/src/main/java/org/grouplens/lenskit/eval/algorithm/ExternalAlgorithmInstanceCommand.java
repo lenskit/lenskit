@@ -25,6 +25,7 @@ import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,8 @@ import java.util.Map;
  */
 public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAlgorithmInstance> {
     private Map<String, Object> attributes = new HashMap<String, Object>();
+    private File workDir = new File(".");
+    private String outputDelimiter = "\t";
     private List<String> command;
 
     public ExternalAlgorithmInstanceCommand() {
@@ -87,7 +90,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * strings will be substituted in command arguments:
      *
      * <ul>
-     *     <li><code>{OUTPUT}</code> &mdash; the output file name
+     *     <li><code>{OUTPUT}</code> &mdash; the output file name (should be delimited text).
      *     <li><code>{TRAIN_DATA}</code> &mdash; the training CSV file name
      *     <li><code>{TEST_DATA}</code> &mdash; the test data CSV file name
      * </ul>
@@ -100,12 +103,32 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
         return this;
     }
 
+    /**
+     * Set the working directory for the external recommender.
+     * @param dir The working directory.
+     * @return The working directory.
+     */
+    public ExternalAlgorithmInstanceCommand setWorkDir(File dir) {
+        workDir = dir;
+        return this;
+    }
+
+    /***
+     * Set the delimiter of the recommender's output file.
+     * @param delim The output delimiter.
+     * @return The input delimiter.
+     */
+    public ExternalAlgorithmInstanceCommand setOutputDelimiter(String delim) {
+        outputDelimiter = delim;
+        return this;
+    }
+
     @Override
     public ExternalAlgorithmInstance call() throws CommandException {
         if (command == null) {
             throw new IllegalStateException("no command specified");
         }
-        return new ExternalAlgorithmInstance(name, attributes, command);
+        return new ExternalAlgorithmInstance(name, attributes, command, workDir, outputDelimiter);
     }
 
 }
