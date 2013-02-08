@@ -727,6 +727,30 @@
           </plugin>
 
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>sloccount</id>
+                <phase>process-sources</phase>
+                <goals><goal>run</goal></goals>
+                <configuration>
+                  <target>
+                    <exec executable="sloccount"
+                          output="${project.build.directory}/sloccount.sc"
+                          logError="true">
+                      <arg value="--wide"/>
+                      <arg value="--details"/>
+                      <arg value="${project.basedir}"/>
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
             <executions>
