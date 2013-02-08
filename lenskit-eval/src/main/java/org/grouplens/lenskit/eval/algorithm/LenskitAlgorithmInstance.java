@@ -144,7 +144,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
 
     @Override
     public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException {
-        return new RecInstance(buildRecommender(data.getTestFactory().create(),
+        return new RecInstance(buildRecommender(data.getTrainFactory().create(),
                                                 snapshot,
                                                 data.getPreferenceDomain(),
                                                 true));
