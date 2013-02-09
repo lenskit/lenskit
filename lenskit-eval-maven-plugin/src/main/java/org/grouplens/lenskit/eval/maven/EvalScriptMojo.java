@@ -28,6 +28,7 @@ import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
@@ -161,8 +162,14 @@ public class EvalScriptMojo extends AbstractMojo {
             getLog().info("Loading evalution script from " + f.getPath());
             engine.execute(f);
         } catch (CommandException e) {
+            Throwable report = StackTraceUtils.deepSanitize(e).getCause();
+            if (report == null) {
+                report = e;
+            }
+            getLog().error("Evaluation script failed:", report);
             throw new MojoExecutionException("Invalid evaluation script", e);
         } catch (IOException e) {
+            getLog().error(script + ": IO error", e);
             throw new MojoExecutionException("IO Exception on script", e);
         }
     }
