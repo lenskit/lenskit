@@ -20,23 +20,13 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import javax.annotation.concurrent.Immutable;
 
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.SortOrder;
 
 /**
- * Interface for producing prepared statements for rating DAO queries.
- *
- * <p>
- * Methods on this interface prepare SQL statements to be used by
- * {@link JDBCDataSession} to satisfy queries. The data session implementation
- * takes care of caching prepared statements, so these methods should always
- * prepare new statements.
+ * Interface for producing sql strings rating DAO queries.
  *
  * <p>
  * The JDBC DAO framework operates by expecting a statement factory to construct
@@ -51,38 +41,37 @@ public interface SQLStatementFactory {
      * Querying the statement should return one column per row containing the
      * numeric user ID.
      *
-     * @return A {@code PreparedStatement} containing user ID data.
+     * @return A string for a sql query containing user ID data.
      */
-    PreparedStatement prepareUsers(Connection dbc) throws SQLException;
+    String prepareUsers();
 
     /**
      * Prepare a statement to satisfy {@link DataAccessObject#getUserCount()}.
      * The result set should contain a single row whose first column contains
      * the number of users.
      *
-     * @return A {@code PreparedStatement} containing the total number of
+     * @return A string for a sql query containing the total number of
      *         users.
      */
-    PreparedStatement prepareUserCount(Connection dbc) throws SQLException;
+    String prepareUserCount();
 
     /**
      * Prepare a statement to satisfy {@link DataAccessObject#getItems()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
      *
-     * @return A {@code PreparedStatement} containing item ID data.
+     * @return A string for a sql query containing item ID data.
      */
-    PreparedStatement prepareItems(Connection dbc) throws SQLException;
+    String prepareItems();
 
     /**
      * Prepare a statement to satisfy {@link DataAccessObject#getItemCount()}.
      * The result set should contain a single row whose first column contains
      * the number of items.
      *
-     * @return A {@code PreparedStatement} containing the total number of
-     *         items.
+     * @return A string for a sql query containing the total number of items.
      */
-    PreparedStatement prepareItemCount(Connection dbc) throws SQLException;
+    String prepareItemCount();
 
     /**
      * Prepare a statement to satisfy
@@ -92,11 +81,9 @@ public interface SQLStatementFactory {
      * contain NULL values or to be omitted entirely. ID, user, item, and rating
      * columns must be non-null.
      *
-     * @param dbc   The database connection
      * @param order The sort order
      */
-    PreparedStatement prepareEvents(Connection dbc, SortOrder order)
-            throws SQLException;
+    String prepareEvents(SortOrder order);
 
     /**
      * Prepare a statement to satisfy
@@ -104,11 +91,10 @@ public interface SQLStatementFactory {
      * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
      * statement should take a single parameter for the user ID.
      *
-     * @param dbc
-     * @return A {@code PreparedStatement} returning user rating data. The
-     *         ratings must be in timestamp order.
+     * @return A string for a sql query returning user rating data. The ratings
+     *         must be in timestamp order.
      */
-    PreparedStatement prepareUserEvents(Connection dbc) throws SQLException;
+    String prepareUserEvents();
 
     /**
      * Prepare a statement to satisfy
@@ -116,9 +102,8 @@ public interface SQLStatementFactory {
      * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
      * statement should take a single parameter for the item ID.
      *
-     * @param dbc
-     * @return A {@code PreparedStatement} returning item rating data. The
-     *         ratings must be ordered first by user ID, then by timestamp.
+     * @return A string for a sql query returning item rating data. The ratings
+     *         must be ordered first by user ID, then by timestamp.
      */
-    PreparedStatement prepareItemEvents(Connection dbc) throws SQLException;
+    String prepareItemEvents();
 }
