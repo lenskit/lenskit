@@ -22,13 +22,9 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -36,9 +32,10 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -67,7 +64,7 @@ public class TrainTestEvalJob implements Job {
     private final int numRecs;
 
     @Nonnull
-    private final LenskitAlgorithmInstance algorithm;
+    private final AlgorithmInstance algorithm;
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
@@ -97,7 +94,7 @@ public class TrainTestEvalJob implements Job {
      *                and eval outputProvider needs to be written.
      * @param numRecs The number of recommendations to compute.
      */
-    public TrainTestEvalJob(LenskitAlgorithmInstance algo,
+    public TrainTestEvalJob(AlgorithmInstance algo,
                             List<TestUserMetric> evals,
                             List<Pair<Symbol,String>> chans,
                             TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
@@ -141,7 +138,6 @@ public class TrainTestEvalJob implements Job {
 
     @Override
     public void run() {
-        DataAccessObject dao = data.getTrainFactory().snapshot();
         TableWriter userTable = null;
         TableWriter predictTable = null;
 
@@ -153,11 +149,7 @@ public class TrainTestEvalJob implements Job {
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            Recommender rec = algorithm.buildRecommender(dao, snapshot,
-                                                         data.getPreferenceDomain());
-            RatingPredictor predictor = rec.getRatingPredictor();
-            ItemRecommender recommender = rec.getItemRecommender();
-
+            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot);
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
@@ -184,14 +176,13 @@ public class TrainTestEvalJob implements Job {
                 try {
                     for (UserHistory<Event> p : userProfiles) {
                         long uid = p.getUserId();
-                        SparseVector ratings =
-                                RatingVectorUserHistorySummarizer.makeRatingVector(p);
+                        LongSet testItems = p.itemSet();
 
                         Supplier<SparseVector> preds =
-                                new PredictionSupplier(predictor, uid, ratings.keySet());
+                                new PredictionSupplier(rec, uid, testItems);
                         Supplier<ScoredLongList> recs =
-                                new RecommendationSupplier(recommender, uid, ratings.keySet());
-                        Supplier<UserHistory<Event>> hist = new HistorySupplier(dao, uid);
+                                new RecommendationSupplier(rec, uid, testItems);
+                        Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getDAO(), uid);
                         Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
                         TestUser test = new TestUser(uid, hist, testHist, preds, recs);
@@ -214,7 +205,9 @@ public class TrainTestEvalJob implements Job {
                         }
 
                         if (predictTable != null) {
-                            writePredictions(predictTable, uid, ratings, test.getPredictions());
+                            writePredictions(predictTable, uid,
+                                             RatingVectorUserHistorySummarizer.makeRatingVector(p),
+                                             test.getPredictions());
                         }
                     }
                 } finally {
@@ -236,7 +229,6 @@ public class TrainTestEvalJob implements Job {
             throw new RuntimeException(e);
         } finally {
             LKFileUtils.close(userTable, predictTable);
-            dao.close();
         }
     }
 
@@ -295,11 +287,11 @@ public class TrainTestEvalJob implements Job {
     }
 
     private class PredictionSupplier implements Supplier<SparseVector> {
-        private final RatingPredictor predictor;
+        private final RecommenderInstance predictor;
         private final long user;
         private final LongSet items;
 
-        public PredictionSupplier(RatingPredictor pred, long id, LongSet is) {
+        public PredictionSupplier(RecommenderInstance pred, long id, LongSet is) {
             predictor = pred;
             user = id;
             items = is;
@@ -310,16 +302,20 @@ public class TrainTestEvalJob implements Job {
             if (predictor == null) {
                 throw new IllegalArgumentException("cannot compute predictions without a predictor");
             }
-            return predictor.score(user, items);
+            SparseVector preds = predictor.getPredictions(user, items);
+            if (preds == null) {
+                throw new IllegalArgumentException("no predictions");
+            }
+            return preds;
         }
     }
 
     private class RecommendationSupplier implements Supplier<ScoredLongList> {
-        private final ItemRecommender recommender;
+        private final RecommenderInstance recommender;
         private final long user;
         private final LongSet items;
 
-        public RecommendationSupplier(ItemRecommender rec, long id, LongSet is) {
+        public RecommendationSupplier(RecommenderInstance rec, long id, LongSet is) {
             recommender = rec;
             user = id;
             items = is;
@@ -330,7 +326,11 @@ public class TrainTestEvalJob implements Job {
             if (recommender == null) {
                 throw new IllegalArgumentException("cannot compute recommendations without a recommender");
             }
-            return recommender.recommend(user, numRecs, items, null);
+            ScoredLongList recs = recommender.getRecommendations(user, items, numRecs);
+            if (recs == null) {
+                throw new IllegalArgumentException("no recommendations");
+            }
+            return recs;
         }
     }
 

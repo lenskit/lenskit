@@ -21,13 +21,13 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.config.ConfigDelegate;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,19 +35,18 @@ import java.util.Map;
  *
  * @author Michael Ekstrand
  */
-@ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
-public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgorithmInstance> {
+public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAlgorithmInstance> {
     private Map<String, Object> attributes = new HashMap<String, Object>();
-    private boolean preload;
-    private LenskitRecommenderEngineFactory factory;
+    private File workDir = new File(".");
+    private String outputDelimiter = "\t";
+    private List<String> command;
 
-    public LenskitAlgorithmInstanceCommand() {
+    public ExternalAlgorithmInstanceCommand() {
         this("Unnamed");
     }
 
-    public LenskitAlgorithmInstanceCommand(String name) {
+    public ExternalAlgorithmInstanceCommand(String name) {
         super(name);
-        factory = new LenskitRecommenderEngineFactory();
     }
 
     /**
@@ -57,29 +56,8 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      * @return The command for chaining.
      */
     @Override
-    public LenskitAlgorithmInstanceCommand setName(String n) {
+    public ExternalAlgorithmInstanceCommand setName(String n) {
         name = n;
-        return this;
-    }
-
-    /**
-     * Get whether this algorithm will require ratings to be pre-loaded.
-     *
-     * @return {@code true} if the algorithm should have ratings pre-loaded into memory.
-     */
-    public Boolean getPreload() {
-        return preload;
-    }
-
-    /**
-     * Set whether the algorithm wants ratings pre-loaded. Use this for algorithms that
-     * are too slow reading on a CSV file if you have enough memory to load them all.
-     *
-     * @param pl {@code true} to pre-load input data when running this algorithm.
-     * @return The command for chaining.
-     */
-    public LenskitAlgorithmInstanceCommand setPreload(boolean pl) {
-        preload = pl;
         return this;
     }
 
@@ -91,7 +69,7 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public ExternalAlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -108,18 +86,49 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
     }
 
     /**
-     * Get the factory for this instance.
+     * Set the command to run. In order to have access to the relevant files, the following
+     * strings will be substituted in command arguments:
      *
-     * @return The factory for this recommender instance. Each instance has the factory
-     *         instantiated to a fresh, empty factory.
+     * <ul>
+     *     <li><code>{OUTPUT}</code> &mdash; the output file name (should be delimited text).
+     *     <li><code>{TRAIN_DATA}</code> &mdash; the training CSV file name
+     *     <li><code>{TEST_DATA}</code> &mdash; the test data CSV file name
+     * </ul>
+     *
+     * @param cmd The command to run (name and arguments).
+     * @return The command (for chaining)
      */
-    public LenskitRecommenderEngineFactory getFactory() {
-        return factory;
+    public ExternalAlgorithmInstanceCommand setCommand(List<String> cmd) {
+        command = cmd;
+        return this;
+    }
+
+    /**
+     * Set the working directory for the external recommender.
+     * @param dir The working directory.
+     * @return The working directory.
+     */
+    public ExternalAlgorithmInstanceCommand setWorkDir(File dir) {
+        workDir = dir;
+        return this;
+    }
+
+    /***
+     * Set the delimiter of the recommender's output file.
+     * @param delim The output delimiter.
+     * @return The input delimiter.
+     */
+    public ExternalAlgorithmInstanceCommand setOutputDelimiter(String delim) {
+        outputDelimiter = delim;
+        return this;
     }
 
     @Override
-    public LenskitAlgorithmInstance call() throws CommandException {
-        return new LenskitAlgorithmInstance(name, factory, attributes, preload);
+    public ExternalAlgorithmInstance call() throws CommandException {
+        if (command == null) {
+            throw new IllegalStateException("no command specified");
+        }
+        return new ExternalAlgorithmInstance(name, attributes, command, workDir, outputDelimiter);
     }
 
 }

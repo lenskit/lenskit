@@ -20,17 +20,13 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Default implementation of the SQL statement factory.
@@ -165,33 +161,23 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareUsers(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
-        return dbc.prepareStatement(query);
+    public String prepareUsers() {
+        return String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareUserCount(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
-                              tableName);
-        return dbc.prepareStatement(query);
+    public String prepareUserCount() {
+        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareItems(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
-        return dbc.prepareStatement(query);
+    public String prepareItems() {
+        return String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareItemCount(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
-                              tableName);
-        return dbc.prepareStatement(query);
+    public String prepareItemCount() {
+        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn, tableName);
     }
 
     /**
@@ -262,32 +248,32 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareEvents(Connection dbc, SortOrder order) throws SQLException {
+    public String prepareEvents(SortOrder order) {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         rqAddOrder(query, order);
         rqFinish(query);
         logger.debug("Rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 
     @Override
-    public PreparedStatement prepareUserEvents(Connection dbc) throws SQLException {
+    public String prepareUserEvents() {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         query.append(" WHERE ").append(userColumn).append(" = ?");
         rqFinish(query);
         logger.debug("User rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 
     @Override
-    public PreparedStatement prepareItemEvents(Connection dbc) throws SQLException {
+    public String prepareItemEvents() {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 }

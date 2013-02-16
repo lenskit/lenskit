@@ -18,10 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval
-
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance
-import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
+package org.grouplens.lenskit.eval.algorithm
 
 import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.baseline.BaselinePredictor
@@ -29,6 +26,7 @@ import org.grouplens.lenskit.baseline.BaselineRatingPredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.params.MinimumIterations
 import org.grouplens.lenskit.iterative.params.StoppingThreshold
 import org.grouplens.lenskit.transform.threshold.RealThreshold
@@ -88,5 +86,21 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         } finally {
             rec.close()
         }
+    }
+
+    @Test
+    void testExternalAlgorithm() {
+        def obj = eval {
+            externalAlgorithm("Cheater") {
+                command (["cat", "{TEST_DATA}"])
+
+                attributes["wombat"] = "global"
+            }
+        }
+        assertThat(obj, instanceOf(ExternalAlgorithmInstance))
+        def algo = obj as ExternalAlgorithmInstance
+        assertThat(algo.name, equalTo("Cheater"))
+        assertThat(algo.attributes["wombat"] as String, equalTo("global"))
+        assertThat(algo.command, equalTo(["cat", "{TEST_DATA}"].toList()))
     }
 }

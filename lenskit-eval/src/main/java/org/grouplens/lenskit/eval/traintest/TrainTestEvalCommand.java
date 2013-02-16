@@ -26,6 +26,8 @@ import com.google.common.base.Supplier;
 import com.google.common.io.Closeables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
@@ -51,7 +53,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
 
     private List<TTDataSet> dataSources;
-    private List<LenskitAlgorithmInstance> algorithms;
+    private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private IsolationLevel isolationLevel;
@@ -84,7 +86,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     public TrainTestEvalCommand(String name) {
         super(name);
         dataSources = new LinkedList<TTDataSet>();
-        algorithms = new LinkedList<LenskitAlgorithmInstance>();
+        algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
         predictChannels = new LinkedList<Pair<Symbol, String>>();
         outputFile = new File("train-test-results.csv");
@@ -97,6 +99,11 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     }
 
     public TrainTestEvalCommand addAlgorithm(LenskitAlgorithmInstance algorithm) {
+        algorithms.add(algorithm);
+        return this;
+    }
+
+    public TrainTestEvalCommand addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
@@ -160,7 +167,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return dataSources;
     }
 
-    List<LenskitAlgorithmInstance> getAlgorithms() {
+    List<AlgorithmInstance> getAlgorithms() {
         return algorithms;
     }
 
@@ -243,7 +250,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         }
 
         algoColumns = new HashMap<String, Integer>();
-        for (LenskitAlgorithmInstance algo : algorithms) {
+        for (AlgorithmInstance algo : algorithms) {
             for (String attr : algo.getAttributes().keySet()) {
                 if (!algoColumns.containsKey(attr)) {
                     algoColumns.put(attr, master.addColumn(attr));
@@ -417,11 +424,11 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     }
 
     /**
-     * Function version of {@link #prefixTable(TableWriter, org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance, TTDataSet)}. Intended
+     * Function version of {@link #prefixTable(TableWriter, org.grouplens.lenskit.eval.algorithm.AlgorithmInstance, TTDataSet)}. Intended
      * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function, Supplier)}.
      */
     public Function<TableWriter, TableWriter> prefixFunction(
-            final LenskitAlgorithmInstance algorithm,
+            final AlgorithmInstance algorithm,
             final TTDataSet dataSet) {
         return new Function<TableWriter, TableWriter>() {
             @Override
@@ -441,7 +448,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      *         {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
      */
     public TableWriter prefixTable(TableWriter base,
-                                   LenskitAlgorithmInstance algorithm, TTDataSet dataSet) {
+                                   AlgorithmInstance algorithm, TTDataSet dataSet) {
         if (base == null) {
             return null;
         }

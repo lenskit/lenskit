@@ -40,6 +40,11 @@
       <artifactId>lenskit-svd</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-eval</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -86,6 +91,7 @@
           <systemPropertyVariables>
             <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
             <buildDirectory>${project.build.directory}</buildDirectory>
+            <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>
           </systemPropertyVariables>
           <includes>
             <include>**/Test*.java</include>

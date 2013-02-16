@@ -20,24 +20,32 @@
  */
 package org.grouplens.lenskit.data.sql;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+
 import org.grouplens.lenskit.cursors.AbstractLongCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.dao.*;
+import org.grouplens.lenskit.data.dao.AbstractDataAccessObject;
+import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.MoreFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.sql.*;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Properties;
 
 /**
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
@@ -105,6 +113,10 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                 throw new UnsupportedOperationException("Cannot open session w/o URL");
             }
 
+            return new JDBCRatingDAO(getConnection(), factory, true);
+        }
+
+        protected Connection getConnection() {
             Connection dbc;
             try {
                 if (properties == null) {
@@ -115,7 +127,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            return new JDBCRatingDAO(new JDBCDataSession(dbc, factory), true);
+            return dbc;
         }
 
         @Override
@@ -140,37 +152,88 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
          * @return A DAO backed by the connection.
          */
         public JDBCRatingDAO open(Connection cxn) {
-            return new JDBCRatingDAO(new JDBCDataSession(cxn, factory), false);
+            return new JDBCRatingDAO(cxn, factory, false);
         }
     }
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final JDBCDataSession session;
-    protected final boolean ownsSession;
+    protected final Connection connection;
+    protected final boolean closeConnection;
 
-    public JDBCRatingDAO(JDBCDataSession session, boolean ownsSession) {
-        this.session = session;
-        this.ownsSession = ownsSession;
+    private final SQLStatementFactory statementFactory;
+
+    private final CachedPreparedStatement userStatement;
+    private final CachedPreparedStatement userCountStatement;
+    private final CachedPreparedStatement itemStatement;
+    private final CachedPreparedStatement itemCountStatement;
+    private final CachedPreparedStatement eventStatements[] =
+            new CachedPreparedStatement[SortOrder.values().length];
+    private final CachedPreparedStatement userEventStatement;
+    private final CachedPreparedStatement itemEventStatement;
+
+    public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac) {
+        this(dbc, sfac, true);
     }
 
+    public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac, boolean close) {
+        connection = dbc;
+        closeConnection = close;
+        statementFactory = sfac;
+        userStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUsers());
+        userCountStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUserCount());
+        itemStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItems());
+        itemCountStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItemCount());
+        for (SortOrder order : SortOrder.values()) {
+            eventStatements[ order.ordinal()] = new CachedPreparedStatement(dbc,
+                statementFactory.prepareEvents(order));
+        }
+        userEventStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUserEvents());
+        itemEventStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItemEvents());
+        
+    }
+
+    private boolean closeStatement(CachedPreparedStatement s) {
+        try {
+            s.close();
+            return true;
+        } catch (IOException e) {
+            logger.error("Error closing statement: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Close the connection and all open statements.
+     */
     @Override
     public void close() {
-        if (!ownsSession) {
-            return;
-        }
-
+        boolean failed = false;
         try {
-            session.close();
-        } catch (IOException e) {
+            failed = failed || !closeStatement(userStatement);
+            failed = failed || !closeStatement(userCountStatement);
+            failed = failed || !closeStatement(itemStatement);
+            failed = failed || !closeStatement(itemCountStatement);
+            for (CachedPreparedStatement s : eventStatements) {
+                failed = failed || !closeStatement(s);
+            }
+            failed = failed || !closeStatement(userEventStatement);
+            failed = failed || !closeStatement(itemEventStatement);
+            if (closeConnection) {
+                connection.close();
+            }
+        } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+        if (failed) {
+            throw new RuntimeException("Error closing statement (see log for details)");
         }
     }
 
     @Override
     public LongCursor getUsers() {
         try {
-            PreparedStatement s = session.userStatement();
+            PreparedStatement s = userStatement.call();
             return new IDCursor(s);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -196,7 +259,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public int getUserCount() {
         try {
-            return getCount(session.userCountStatement());
+            return getCount(userCountStatement.call());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -205,7 +268,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public LongCursor getItems() {
         try {
-            PreparedStatement s = session.itemStatement();
+            PreparedStatement s = itemStatement.call();
             return new IDCursor(s);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -215,7 +278,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public int getItemCount() {
         try {
-            return getCount(session.itemCountStatement());
+            return getCount(itemCountStatement.call());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -229,7 +292,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public Cursor<Rating> getEvents(SortOrder order) {
         try {
-            PreparedStatement s = session.eventStatement(order);
+            PreparedStatement s = eventStatements[order.ordinal()].call();
             return new RatingCursor(s);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -248,7 +311,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public Cursor<Rating> getUserEvents(long userId) {
         try {
-            PreparedStatement s = session.userEventStatement();
+            PreparedStatement s = userEventStatement.call();
             s.setLong(1, userId);
             return new RatingCursor(s);
         } catch (SQLException e) {
@@ -268,7 +331,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public Cursor<Rating> getItemEvents(long itemId) {
         try {
-            PreparedStatement s = session.itemEventStatement();
+            PreparedStatement s = itemEventStatement.call();
             s.setLong(1, itemId);
             return new RatingCursor(s);
         } catch (SQLException e) {

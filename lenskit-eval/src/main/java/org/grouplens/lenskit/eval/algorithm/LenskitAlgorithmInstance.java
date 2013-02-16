@@ -20,23 +20,28 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Provider;
-
-import org.grouplens.lenskit.Recommender;
+import com.google.common.base.Supplier;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Supplier;
-
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Provider;
 import java.util.Collections;
 import java.util.Map;
 
@@ -46,7 +51,7 @@ import java.util.Map;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @BuilderCommand(LenskitAlgorithmInstanceCommand.class)
-public class LenskitAlgorithmInstance {
+public class LenskitAlgorithmInstance implements AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstance.class);
     @Nullable
     private final String algoName;
@@ -73,6 +78,7 @@ public class LenskitAlgorithmInstance {
      *
      * @return The algorithm's name
      */
+    @Override
     public String getName() {
         return algoName;
     }
@@ -87,6 +93,7 @@ public class LenskitAlgorithmInstance {
         return preload;
     }
 
+    @Override
     @Nonnull
     public Map<String, Object> getAttributes() {
         return attributes;
@@ -97,28 +104,85 @@ public class LenskitAlgorithmInstance {
         return factory;
     }
 
-    public Recommender buildRecommender(DataAccessObject dao,
-                                        @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                        PreferenceDomain dom) throws RecommenderBuildException {
-        // Copy the factory & set up a shared rating snapshot
-        LenskitRecommenderEngineFactory fac2 = factory.clone();
+    public LenskitRecommender buildRecommender(DataAccessObject dao,
+                                               @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
+                                               PreferenceDomain dom,
+                                               boolean shouldClose) throws RecommenderBuildException {
+        try {
+            // Copy the factory & set up a shared rating snapshot
+            LenskitRecommenderEngineFactory fac2 = factory.clone();
 
-        if (dom != null) {
-            fac2.bind(PreferenceDomain.class).to(dom);
+            if (dom != null) {
+                fac2.bind(PreferenceDomain.class).to(dom);
+            }
+
+            if (sharedSnapshot != null) {
+                Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
+                    @Override
+                    public PreferenceSnapshot get() {
+                        return sharedSnapshot.get();
+                    }
+                };
+                fac2.bind(PreferenceSnapshot.class).toProvider(prv);
+            }
+
+            LenskitRecommenderEngine engine = fac2.create(dao);
+
+            return engine.open(dao, shouldClose);
+        } catch (RuntimeException e) {
+            if (shouldClose) {
+                dao.close();
+            }
+            throw e;
+        } catch (RecommenderBuildException e) {
+            if (shouldClose) {
+                dao.close();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException {
+        return new RecInstance(buildRecommender(data.getTrainFactory().create(),
+                                                snapshot,
+                                                data.getPreferenceDomain(),
+                                                true));
+    }
+
+    private static class RecInstance implements RecommenderInstance {
+        private final LenskitRecommender recommender;
+
+        public RecInstance(LenskitRecommender rec) {
+            recommender = rec;
         }
 
-        if (sharedSnapshot != null) {
-            Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
-                @Override
-                public PreferenceSnapshot get() {
-                    return sharedSnapshot.get();
-                }
-            };
-            fac2.bind(PreferenceSnapshot.class).toProvider(prv);
+        @Override
+        public DataAccessObject getDAO() {
+            return recommender.getDataAccessObject();
         }
 
-        LenskitRecommenderEngine engine = fac2.create(dao);
+        @Override
+        public SparseVector getPredictions(long uid, LongSet testItems) {
+            RatingPredictor rp = recommender.getRatingPredictor();
+            if (rp == null) return null;
 
-        return engine.open(dao, false);
+            return rp.score(uid, testItems);
+        }
+
+        @Override
+        public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+            ItemRecommender irec = recommender.getItemRecommender();
+            if (irec == null) {
+                return null;
+            }
+
+            return irec.recommend(uid, n, testItems, null);
+        }
+
+        @Override
+        public void close() {
+            recommender.close();
+        }
     }
 }
