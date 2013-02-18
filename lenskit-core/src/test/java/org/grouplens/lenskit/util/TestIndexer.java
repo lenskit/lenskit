@@ -23,7 +23,6 @@ package org.grouplens.lenskit.util;
 
 import org.grouplens.lenskit.util.Indexer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -35,28 +34,23 @@ import static org.junit.Assert.assertThat;
  *
  */
 public class TestIndexer {
-	Indexer ind;
-	double[] values;
-	MutableSparseVector vector;
-	
-	@Before
-	public void creates(){
-		ind = new Indexer();
-		vector = new MutableSparseVector();
-		values = new double[] {1,2,3};
-	}
-	
-	@Test
-	public void testConvertArrayToVector(){
-		assertThat(ind.getObjectCount(), equalTo(0));
-		ind.internId(0);
-		ind.internId(1);
-		ind.internId(2);
-		assertThat(ind.getObjectCount(), equalTo(3));
-		vector = ind.convertArrayToVector(values);
-		assertThat(vector.get(0), equalTo(1.0));
-		assertThat(vector.get(1), equalTo(2.0));
-		assertThat(vector.get(2), equalTo(3.0));
-	}
+
+    @Test
+    public void testConvertArrayToVector(){
+        Indexer ind = new Indexer();
+        MutableSparseVector vector = new MutableSparseVector();
+        double[] values = {1.0, 2.0, 3.0};
+        assertThat(ind.getObjectCount(), equalTo(0));
+        
+        ind.internId(0);
+        ind.internId(1);
+        ind.internId(2);
+        assertThat(ind.getObjectCount(), equalTo(3));
+        
+        vector = ind.convertArrayToVector(values);
+        assertThat(vector.get(0), equalTo(1.0));
+        assertThat(vector.get(1), equalTo(2.0));
+        assertThat(vector.get(2), equalTo(3.0));
+    }
 
 }

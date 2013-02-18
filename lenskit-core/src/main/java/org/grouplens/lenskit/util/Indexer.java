@@ -87,27 +87,19 @@ public class Indexer implements Index {
         }
         return idx;
     }
-    
-    /**
-     * This method is used to convert arrays to sparse arrays.
-     * It takes an array of `double` values corresponding to the ids 
-     * interned in the index and converts it to a sparse vector whose
-     * keys are the IDs.
-     * 
-     * @param values A array of double value.
-     * @return A new sparse vector that is converted from the Array.
-     */
+
+    @Override
     public MutableSparseVector convertArrayToVector(double[] values) {
-    	if(values.length != getObjectCount()){
-    		throw new IllegalArgumentException
-    		("The length of the values don't match the size of ids");
-    	}
-    	
-    	MutableSparseVector newSparseVector = new MutableSparseVector(ids);
-    	for(VectorEntry e : newSparseVector.fast(State.EITHER)){
-    		final int iid = getIndex(e.getKey());
-    		newSparseVector.set(e, values[iid]);
-    	}
-    	return newSparseVector;
+        if(values.length != getObjectCount()){
+            throw new IllegalArgumentException
+            ("The length of the values don't match the size of ids");
+        }
+
+        MutableSparseVector newSparseVector = new MutableSparseVector(ids);
+        for(VectorEntry e : newSparseVector.fast(State.EITHER)){
+            final int iid = getIndex(e.getKey());
+            newSparseVector.set(e, values[iid]);
+        }
+        return newSparseVector;
     }
 }
