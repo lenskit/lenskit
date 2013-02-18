@@ -43,7 +43,7 @@ import org.grouplens.lenskit.core.Shareable;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.10
  */
-@DefaultProvider(ItemItemModelProvider.class)
+@DefaultProvider(ItemItemModelBuilder.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = -5986236982760043379L;

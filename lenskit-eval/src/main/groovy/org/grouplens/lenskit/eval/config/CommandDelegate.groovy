@@ -56,6 +56,10 @@ class CommandDelegate<T> {
         this.command = command
     }
 
+    def propertyMissing(String name) {
+        command.getMetaClass().getProperty(command, name)
+    }
+
     def methodMissing(String name, args) {
         Closure method = null
         use(CommandExtensions) {

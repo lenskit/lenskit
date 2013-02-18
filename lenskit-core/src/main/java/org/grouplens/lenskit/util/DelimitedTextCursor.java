@@ -25,8 +25,7 @@ import org.grouplens.lenskit.util.io.LKFileUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.regex.Pattern;
 
 /**
@@ -61,6 +60,11 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
     public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
                                @Nonnull String delim) {
         this(in, Pattern.compile(Pattern.quote(delim)));
+    }
+
+    public DelimitedTextCursor(File file, @Nonnull String delim) throws FileNotFoundException {
+        // REVIEW This doesn't handle an error constructing the BufferedReader
+        this(new BufferedReader(new FileReader(file)), delim);
     }
 
     @Override

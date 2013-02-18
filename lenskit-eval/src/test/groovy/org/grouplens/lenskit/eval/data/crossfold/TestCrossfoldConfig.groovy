@@ -77,7 +77,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
         assertThat(obj.size(), equalTo(10))
         assertThat(obj[1], instanceOf(TTDataSet))
         def tt = obj as List<TTDataSet>
-        assertThat(tt[1].name, equalTo("TTData"))
+        assertThat(tt[1].name, equalTo("tempRatings.1"))
         assertThat(tt[2].attributes.get("Partition"), equalTo(2))
         assertThat(tt[3].testFactory, instanceOf(DAOFactory))
     }

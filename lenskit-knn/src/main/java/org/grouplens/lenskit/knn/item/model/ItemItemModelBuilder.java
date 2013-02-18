@@ -35,8 +35,8 @@ import javax.inject.Provider;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 @NotThreadSafe
-public class ItemItemModelProvider implements Provider<ItemItemModel> {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
+public class ItemItemModelBuilder implements Provider<ItemItemModel> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private final ItemSimilarity itemSimilarity;
     private final ItemItemBuildContextFactory contextFactory;
@@ -44,12 +44,12 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
 
     @Inject
-    public ItemItemModelProvider(ItemSimilarity similarity,
-                                 @Transient ItemItemBuildContextFactory contextFactory,
-                                 @Transient SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory) {
+    public ItemItemModelBuilder(ItemSimilarity similarity,
+                                @Transient ItemItemBuildContextFactory ctxFactory,
+                                @Transient SimilarityMatrixAccumulatorFactory matrixFactory) {
         itemSimilarity = similarity;
-        this.contextFactory = contextFactory;
-        this.simMatrixAccumulatorFactory = simMatrixAccumulatorFactory;
+        contextFactory = ctxFactory;
+        simMatrixAccumulatorFactory = matrixFactory;
     }
 
     @Override

@@ -47,7 +47,7 @@ import javax.inject.Inject;
  * item based on their other ratings.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see org.grouplens.lenskit.knn.item.model.ItemItemModelProvider
+ * @see org.grouplens.lenskit.knn.item.model.ItemItemModelBuilder
  * @see ItemItemScorer
  */
 public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPredictor {

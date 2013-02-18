@@ -66,7 +66,7 @@ do this:
 
 1. Fork the LensKit repository (`grouplens/lenskit`) on BitBucket
 2. Push your changes to your fork
-3. Submit a pull request via th eBitBucket web interface
+3. Submit a pull request via the BitBucket web interface
    
 When submitting a pull request via BitBucket, you warrant that you
 either own the code or have appropriate authority to submit it, and
@@ -95,7 +95,9 @@ problems can be frustrating to debug.  To get the tools:
 Then do the following:
 
 * Check out the LensKit source tree by selecting File / Import / "Clone existing repository".
-  Enter the URL and authentication information, and clone the repository into your workspace.
+  Enter the repository URL (the master repository is at `http://bitbucket.org/grouplens/lenskit`)
+  and your BitBucket authentication information (if you want to be able to push), and clone the
+  repository into your workspace.
 * Once the project is imported, right-click it and select "Configure" -> "Convert to Maven project"
   to activate Maven support on the LensKit parent project.
 * Finally, right-click the `lenskit` project, choose "Import", and select "Maven" / "Existing
@@ -135,19 +137,19 @@ which is faster and prettier.  Just right click a project, select "Run As" / "JU
 
 Mercurial on Windows is sometimes a little tricky to get set up.  If
 you do not have a Mercurial.ini file, Mercurial will not know the user
-name to use for commits.  Here is a stackoverflow Q&A that explains
-how to set it up:
-
-    http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied
+name to use for commits.  Fortunately, this has been
+[covered on StackOverflow](http://stackoverflow.com/questions/2329023/mercurial-error-abort-no-username-supplied).
 
 You will need to install a Java Development Kit to build some parts of
 LensKit.  On Linux or Mac, setting the Java HOME will let LensKit find
 it. On Windows if you install the JDK next to the JRE, LensKit will
 probably be able to find it.
 
-At the bottom of the LensKit Code Guidelines
-(http://dev.grouplens.org/trac/lenskit/wiki/CodeGuidelines) there is
-an XML file that will set your Eclipse up to follow the LensKit style.
+The `etc/eclipse-codestyle.xml` file contains an Eclipse code style
+that will configure most of the LensKit style guidelines.  See the
+[Code Guidelines][] for more details on our coding style.
+
+[Code Guidelines]: https://bitbucket.org/grouplens/lenskit/wiki/CodeGuidelines
 
 Eclipse and IntelliJ disagree about some uses of @SuppressWarnings.  You can
 ask Eclipse not to nag you about uses of @SuppressWarnings that it considers

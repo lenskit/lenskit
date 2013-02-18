@@ -22,6 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.iterative.params.LearningRate;
 import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
@@ -49,6 +50,7 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @param lrate The learning rate.
      * @param reg   The regularization term.
      * @param clamp The clamping function.
+     * @param stop  The stopping condition
      */
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
@@ -73,8 +75,8 @@ public final class FunkSVDUpdateRule implements Serializable {
         return clampingFunction;
     }
 
-    public StoppingCondition getStoppingCondition() {
-        return stoppingCondition;
+    public TrainingLoopController getTrainingLoopController() {
+        return stoppingCondition.newLoop();
     }
 
     /**

@@ -18,11 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.algorithm
 
-import org.grouplens.lenskit.eval.AlgorithmInstanceCommand
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand
 
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
+import org.grouplens.lenskit.eval.config.ContextConfigDelegate
 
 /**
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
@@ -30,9 +31,9 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
  * @since 0.10
  */
 class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
-    private AlgorithmInstanceCommand command
+    private LenskitAlgorithmInstanceCommand command
 
-    AlgorithmInstanceCommandDelegate(AlgorithmInstanceCommand builder) {
+    AlgorithmInstanceCommandDelegate(LenskitAlgorithmInstanceCommand builder) {
         super(builder.getFactory())
         this.command = builder
     }

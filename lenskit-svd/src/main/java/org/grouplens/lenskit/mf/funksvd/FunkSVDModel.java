@@ -28,7 +28,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
-@DefaultProvider(FunkSVDModelProvider.class)
+@DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
 public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;

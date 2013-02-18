@@ -30,6 +30,7 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -159,14 +160,10 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
 
-        double oldRMSE = Double.NaN;
         double rmse = Double.MAX_VALUE;
-        int niters = 0;
-        StoppingCondition stop = rule.getStoppingCondition();
-        while (!stop.isFinished(niters, oldRMSE - rmse)) {
-            oldRMSE = rmse;
+        TrainingLoopController controller = rule.getTrainingLoopController();
+        while (controller.keepTraining(rmse)) {
             rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
-            niters += 1;
         }
 
         // After training this feature, we need to update each rating's cached

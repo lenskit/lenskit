@@ -69,6 +69,11 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
         return n >= minIterations && Math.abs(d) < threshold;
     }
 
+    @Override
+    public TrainingLoopController newLoop() {
+        return new Controller();
+    }
+
     /**
      * Get the stopper's threshold.
      *
@@ -85,5 +90,29 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
      */
     public int getMinimumIterations() {
         return minIterations;
+    }
+
+    /**
+     * Threshold Training Loop controller for iterative updates
+     */
+    private class Controller implements TrainingLoopController {
+        private int iterations = 0;
+        private double oldError = Double.POSITIVE_INFINITY;
+
+        @Override
+        public boolean keepTraining(double error) {
+            if (iterations >= minIterations && Math.abs(error-oldError) < threshold) {
+                return false;
+            } else {
+                ++iterations;
+                oldError = error;
+                return true;
+            }
+        }
+
+        @Override
+        public int getIterationCount() {
+            return iterations;
+        }
     }
 }

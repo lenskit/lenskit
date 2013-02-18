@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;

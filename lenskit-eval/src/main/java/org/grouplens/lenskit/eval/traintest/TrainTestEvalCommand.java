@@ -26,6 +26,9 @@ import com.google.common.base.Supplier;
 import com.google.common.io.Closeables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -95,7 +98,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return this;
     }
 
-    public TrainTestEvalCommand addAlgorithm(AlgorithmInstance algorithm) {
+    public TrainTestEvalCommand addAlgorithm(LenskitAlgorithmInstance algorithm) {
+        algorithms.add(algorithm);
+        return this;
+    }
+
+    public TrainTestEvalCommand addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
@@ -416,7 +424,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     }
 
     /**
-     * Function version of {@link #prefixTable(TableWriter, AlgorithmInstance, TTDataSet)}. Intended
+     * Function version of {@link #prefixTable(TableWriter, org.grouplens.lenskit.eval.algorithm.AlgorithmInstance, TTDataSet)}. Intended
      * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function, Supplier)}.
      */
     public Function<TableWriter, TableWriter> prefixFunction(

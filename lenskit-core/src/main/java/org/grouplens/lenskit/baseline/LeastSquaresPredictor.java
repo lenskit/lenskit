@@ -23,12 +23,15 @@ package org.grouplens.lenskit.baseline;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.iterative.params.LearningRate;
 import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -47,9 +50,12 @@ import java.io.Serializable;
  * @author Ark Xu <xuxxx728@umn.edu>
  */
 @DefaultProvider(LeastSquaresPredictor.Builder.class)
+@Shareable
 public class LeastSquaresPredictor extends AbstractBaselinePredictor implements Serializable {
-    private final MutableSparseVector userOffsets;
-    private final MutableSparseVector itemOffsets;
+    private static final long serialVersionUID = 1L;
+
+    private final ImmutableSparseVector userOffsets;
+    private final ImmutableSparseVector itemOffsets;
     private final double mean;
 
     private static final Logger logger = LoggerFactory.getLogger(LeastSquaresPredictor.class);
@@ -61,7 +67,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
      * @param ioff the item offsets
      * @param mean the global mean rating
      */
-    public LeastSquaresPredictor(MutableSparseVector uoff, MutableSparseVector ioff, double mean) {
+    public LeastSquaresPredictor(ImmutableSparseVector uoff, ImmutableSparseVector ioff, double mean) {
         this.userOffsets = uoff;
         this.itemOffsets = ioff;
         this.mean = mean;
@@ -83,9 +89,8 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     public static class Builder implements Provider<LeastSquaresPredictor> {
         private final double learningRate;
         private final double regularizationFactor;
-        private final double mean;
         private PreferenceSnapshot snapshot;
-        private StoppingCondition trainingStop;
+        private StoppingCondition stoppingCondition;
 
         /**
          * Create a new builder
@@ -95,32 +100,32 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
                        StoppingCondition stop) {
-            this.regularizationFactor = regFactor;
-            this.learningRate = lrate;
-            this.snapshot = data;
-            this.trainingStop = stop;
-
-            double sum = 0.0;
-            FastCollection<IndexedPreference> n = data.getRatings();
-            for (IndexedPreference r : CollectionUtils.fast(n)) {
-                sum += r.getValue();
-            }
-            mean = sum / n.size();
+            regularizationFactor = regFactor;
+            learningRate = lrate;
+            snapshot = data;
+            stoppingCondition = stop;
         }
 
         @Override
         public LeastSquaresPredictor get() {
             double rmse = 0.0;
-            double oldRmse = Double.POSITIVE_INFINITY;
             double uoff[] = new double[snapshot.getUserIds().size()];
             double ioff[] = new double[snapshot.getItemIds().size()];
             FastCollection<IndexedPreference> ratings = snapshot.getRatings();
 
             logger.debug("training predictor on {} ratings", ratings.size());
 
-            int niters = 0;
-            while (!trainingStop.isFinished(niters, oldRmse - rmse)) {
-                ++niters;
+            double sum = 0.0;
+            double n = 0;
+            for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+                sum += r.getValue();
+                n += 1;
+            }
+            final double mean = sum / n;
+            logger.debug("mean rating is {}", mean);
+
+            final TrainingLoopController trainingController = stoppingCondition.newLoop();
+            while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
                 for (IndexedPreference r : CollectionUtils.fast(ratings)) {
                     final int uidx = r.getUserIndex();
@@ -131,13 +136,12 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                     ioff[iidx] += learningRate * (err - regularizationFactor * ioff[iidx]);
                     sse += err * err;
                 }
-                oldRmse = rmse;
                 rmse = Math.sqrt(sse / ratings.size());
 
-                logger.debug("finished iteration {} (RMSE={})", niters, rmse);
+                logger.debug("finished iteration {} (RMSE={})", trainingController.getIterationCount(), rmse);
             }
 
-            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), niters, rmse);
+            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
 
             // Convert the uoff array to a SparseVector
             MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
@@ -153,7 +157,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
                 svioff.set(e, ioff[iid]);
             }
 
-            return new LeastSquaresPredictor(svuoff, svioff, mean);
+            return new LeastSquaresPredictor(svuoff.freeze(), svioff.freeze(), mean);
         }
     }
 }

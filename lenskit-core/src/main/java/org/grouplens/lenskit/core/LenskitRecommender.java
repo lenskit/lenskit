@@ -90,12 +90,22 @@ public class LenskitRecommender implements Recommender {
     }
 
     /**
-     * Get the rating DAO for this recommender session.
+     * Get the DAO for this recommender session.
      *
      * @return The DAO, or {@var null} if this recommender is not connected
      *         to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
      *         from other frameworks that are adapted to the LensKit API may not be.
      */
+    public DataAccessObject getDataAccessObject() {
+        return dao;
+    }
+
+    /**
+     * Get the DAO.
+     * @return The DAO.
+     * @deprecated Use {@link #getDataAccessObject()}.
+     */
+    @Deprecated
     public DataAccessObject getRatingDataAccessObject() {
         return dao;
     }

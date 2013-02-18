@@ -22,7 +22,7 @@
  * Implementation of item-item collaborative filtering.
  * <p/>
  * The item-item CF implementation is built up of several pieces. The
- * {@linkplain org.grouplens.lenskit.knn.item.model.ItemItemModelProvider model builder} takes the rating data
+ * {@linkplain org.grouplens.lenskit.knn.item.model.ItemItemModelBuilder model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain org.grouplens.lenskit.vectors.similarity.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
  * and computes the {@linkplain org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel similarity matrix}. The

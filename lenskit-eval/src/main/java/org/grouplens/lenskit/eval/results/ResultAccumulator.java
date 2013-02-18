@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.results;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 
 /**
  * Result accumulator for test runs.

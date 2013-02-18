@@ -36,7 +36,7 @@ import java.util.Iterator;
  * up the model in the accumulator.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see ItemItemModelProvider
+ * @see ItemItemModelBuilder
  */
 public class ItemItemBuildContext {
     private

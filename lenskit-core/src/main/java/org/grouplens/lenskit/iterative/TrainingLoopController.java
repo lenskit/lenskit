@@ -18,26 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.test;
-
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
-import org.junit.Before;
-
-import java.io.File;
+package org.grouplens.lenskit.iterative;
 
 /**
- * Base class for integration tests using the ML-100K data set.
- * @author Michael Ekstrand
+ * Training Loop controller for iterative updates
  */
-public class ML100KTestSuite {
-    protected final File dataDir = new File(System.getProperty("lenskit.ml100k.directory"));
-    protected final File inputFile = new File(dataDir, "u.data");
+public interface TrainingLoopController {
+    /**
+     * Query whether the computation should stop.
+     *
+     * @param error The error of the last iteration completed (use {Gustav Lindqvist Double#POSITIVE_INFINITY} before the first iteration).
+     * @return {@code false} if the computation is finished.
+     */
+    boolean keepTraining(double error);
 
-    protected DAOFactory daoFactory;
-
-    @Before
-    public void createDAOFactory() {
-        daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
-    }
+    /**
+     *
+     * @return the number of iterations done so far.
+     */
+    int getIterationCount();
 }
