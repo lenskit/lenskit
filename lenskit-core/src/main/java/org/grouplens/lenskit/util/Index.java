@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.LongList;
 
 import java.io.Serializable;
 
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+
 /**
  * An index mapping long IDs to consecuitive 0-based integers.  The indexes
  * fall in the range [0,{@linkplain #getObjectCount()}).
@@ -63,4 +65,15 @@ public interface Index extends Serializable {
      * @return The list of (unique) IDs in the index.
      */
     LongList getIds();
+    
+    /**
+     * This method is used to convert arrays to sparse arrays.
+     * It takes an array of `double` values corresponding to the ids 
+     * interned in the index and converts it to a sparse vector whose
+     * keys are the IDs.
+     * 
+     * @param values A array of double value.
+     * @return A new sparse vector that is converted from the Array.
+     */
+    MutableSparseVector convertArrayToVector(double[] values);
 }

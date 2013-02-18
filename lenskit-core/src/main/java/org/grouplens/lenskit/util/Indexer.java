@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.VectorEntry.State;
+
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -82,5 +86,28 @@ public class Indexer implements Index {
             indexes.put(id, idx);
         }
         return idx;
+    }
+    
+    /**
+     * This method is used to convert arrays to sparse arrays.
+     * It takes an array of `double` values corresponding to the ids 
+     * interned in the index and converts it to a sparse vector whose
+     * keys are the IDs.
+     * 
+     * @param values A array of double value.
+     * @return A new sparse vector that is converted from the Array.
+     */
+    public MutableSparseVector convertArrayToVector(double[] values) {
+    	if(values.length != getObjectCount()){
+    		throw new IllegalArgumentException
+    		("The length of the values don't match the size of ids");
+    	}
+    	
+    	MutableSparseVector newSparseVector = new MutableSparseVector(ids);
+    	for(VectorEntry e : newSparseVector.fast(State.EITHER)){
+    		final int iid = getIndex(e.getKey());
+    		newSparseVector.set(e, values[iid]);
+    	}
+    	return newSparseVector;
     }
 }
