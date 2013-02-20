@@ -144,19 +144,9 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
             logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
 
             // Convert the uoff array to a SparseVector
-            MutableSparseVector svuoff = new MutableSparseVector(snapshot.getUserIds());
-            for (VectorEntry e : svuoff.fast(State.EITHER)) {
-                final int uid = snapshot.userIndex().getIndex(e.getKey());
-                svuoff.set(e, uoff[uid]);
-            }
-
+            MutableSparseVector svuoff = snapshot.userIndex().convertArrayToVector(uoff);
             // Convert the ioff array to a SparseVector
-            MutableSparseVector svioff = new MutableSparseVector(snapshot.getItemIds());
-            for (VectorEntry e : svioff.fast(State.EITHER)) {
-                final int iid = snapshot.itemIndex().getIndex(e.getKey());
-                svioff.set(e, ioff[iid]);
-            }
-
+            MutableSparseVector svioff = snapshot.itemIndex().convertArrayToVector(ioff);
             return new LeastSquaresPredictor(svuoff.freeze(), svioff.freeze(), mean);
         }
     }
