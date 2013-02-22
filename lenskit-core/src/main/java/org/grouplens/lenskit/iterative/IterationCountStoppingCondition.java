@@ -68,6 +68,11 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
         return new Controller();
     }
 
+    @Override
+    public String toString() {
+        return String.format("Stop(iterations=%d)", iterCount);
+    }
+
     /**
      * Iteration Count Training Loop controller for iterative updates
      */

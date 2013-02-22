@@ -92,6 +92,11 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
         return minIterations;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Stop(threshold=%f, minIters=%d)", threshold, minIterations);
+    }
+
     /**
      * Threshold Training Loop controller for iterative updates
      */

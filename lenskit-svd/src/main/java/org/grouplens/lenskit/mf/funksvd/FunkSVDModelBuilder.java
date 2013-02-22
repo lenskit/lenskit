@@ -130,6 +130,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         timer.start();
 
         double rmse = Double.MAX_VALUE;
+        logger.debug("starting feature {} loop, stop condition is {}",
+                     feature, rule.getStoppingCondition());
         TrainingLoopController controller = rule.getTrainingLoopController();
         while (controller.keepTraining(rmse)) {
             rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
@@ -139,7 +141,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         timer.stop();
         logger.debug("Finished feature {} in {} epochs (took {})",
-                     new Object[]{feature, controller.getIterationCount(), timer});
+                     feature, controller.getIterationCount(), timer);
     }
 
     private double doFeatureIteration(double[] estimates, FastCollection<IndexedPreference> ratings,
