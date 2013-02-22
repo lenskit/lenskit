@@ -37,7 +37,7 @@ import org.grouplens.lenskit.core.Parameter;
  * neighbors are retained.
  */
 @Documented
-@DefaultInteger(250)
+@DefaultInteger(0)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
