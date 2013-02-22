@@ -3,12 +3,12 @@
                         ---------------------
 
 #macro ( issue $id )##
-{{{http://dev.grouplens.org/trac/lenskit/ticket/$id}#$id}}##
+{{{http://bitbucket.org/grouplens/lenskit/issue/$id}#$id}}##
 #end
 
 #macro ( header $ver )##
   The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=$ver}list
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=$ver&status=resolved}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
 #end
