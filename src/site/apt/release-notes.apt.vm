@@ -22,6 +22,10 @@ LensKit Release Notes
   * Made <<<Recommender>>> extend <<<Closeable>>>.
 
   * Added side channel support to sparse vectors (#issue(185)).
+
+  * Added support for <<at>> context matchers (via Grapht), to make it easier to configure
+    complex configurations. See the {{{http://bitbucket.org/grouplens/lenskit/wiki/Configuration}manual}}
+    for more details.
   
   []
 
