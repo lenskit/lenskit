@@ -29,6 +29,7 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.params.MinimumIterations
 import org.grouplens.lenskit.iterative.params.StoppingThreshold
+import org.grouplens.lenskit.params.ThresholdValue
 import org.grouplens.lenskit.transform.threshold.RealThreshold
 import org.junit.Test
 
@@ -62,7 +63,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
                 root RealThreshold
                 root ThresholdStoppingCondition
                 within(RealThreshold) {
-                    set StoppingThreshold to 0.1d
+                    set ThresholdValue to 0.1d
                 }
                 within(ThresholdStoppingCondition) {
                     set StoppingThreshold to 0.001d
@@ -78,11 +79,44 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
-                       closeTo(0.001d, 1.0e-1))
+                       closeTo(0.001d, 1.0e-6))
             assertThat(stop.minimumIterations, equalTo(42))
             def thresh = rec.get(RealThreshold)
             assertThat(thresh.value,
-                       closeTo(0.1d, 1.0e-1));
+                       closeTo(0.1d, 1.0e-6));
+        } finally {
+            rec.close()
+        }
+    }
+
+    @Test
+    void testAtBlock() {
+        def obj = eval {
+            algorithm("TestFoo") {
+                root RealThreshold
+                root ThresholdStoppingCondition
+                at(RealThreshold) {
+                    set ThresholdValue to 0.1d
+                }
+                at(ThresholdStoppingCondition) {
+                    set StoppingThreshold to 0.001d
+                    set MinimumIterations to 42
+                }
+            }
+        }
+        def algo = obj as LenskitAlgorithmInstance
+        def fact = algo.getFactory()
+        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
+        def engine = fact.create()
+        def rec = engine.open()
+        try {
+            def stop = rec.get(ThresholdStoppingCondition)
+            assertThat(stop.threshold,
+                       closeTo(0.001d, 1.0e-6))
+            assertThat(stop.minimumIterations, equalTo(42))
+            def thresh = rec.get(RealThreshold)
+            assertThat(thresh.value,
+                       closeTo(0.1d, 1.0e-6));
         } finally {
             rec.close()
         }
