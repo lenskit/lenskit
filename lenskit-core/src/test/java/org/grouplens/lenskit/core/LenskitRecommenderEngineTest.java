@@ -174,7 +174,7 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = factory.create();
 
-        Graph g = engine.dependencies;
+        Graph g = engine.getDependencies();
         // make sure we have no record of an instance dao
         for (Node n: g.getNodes()) {
             assertNodeNotEVDao(n);

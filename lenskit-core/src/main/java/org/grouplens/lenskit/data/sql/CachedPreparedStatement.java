@@ -62,14 +62,16 @@ public class CachedPreparedStatement implements Callable<PreparedStatement>, Clo
 
     /**
      * Close the prepared statement.
+     *
+     * @throws IOException if there is an error closing the statement.
      */
     @Override
-    public void close() {
+    public void close() throws IOException {
         if (cache != null) {
             try {
                 cache.close();
             } catch (SQLException e) {
-                throw new RuntimeException("error closing statement", e);
+                throw new IOException("error closing statement", e);
             } finally {
                 cache = null;
             }

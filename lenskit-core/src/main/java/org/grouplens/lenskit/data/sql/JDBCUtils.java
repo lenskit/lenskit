@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class JDBCUtils {
+public final class JDBCUtils {
     private JDBCUtils() {
     }
 

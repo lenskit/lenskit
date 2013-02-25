@@ -50,7 +50,9 @@
     <module name="MutableException">
       &error;
     </module>
-    <module name="ThrowsCount"/>
+    <module name="ThrowsCount">
+      <property name="max" value="2"/>
+    </module>
 
     <!-- coding checks -->
     <!--<module name="AvoidInlineConditionals"/>-->
@@ -70,7 +72,9 @@
     <module name="InnerAssignment">
       &error;
     </module>
-    <module name="MagicNumber"/>
+    <module name="MagicNumber">
+      <property name="ignoreAnnotation" value="true"/>
+    </module>
     <module name="MissingSwitchDefault"/>
     <module name="ModifiedControlVariable"/>
     <module name="RedundantThrows"/>
@@ -99,7 +103,6 @@
       &error;
     </module>
     <module name="FallThrough"/>
-    <module name="MultipleStringLiterals"/>
     <module name="MultipleVariableDeclarations"/>
     <module name="OneStatementPerLine"/>
 
@@ -151,7 +154,9 @@
 
     <!-- naming -->
     <module name="ClassTypeParameterName"/>
-    <module name="ConstantName"/>
+    <module name="ConstantName">
+      <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|logger)$"/>
+    </module>
     <module name="LocalVariableName"/>
     <module name="LocalFinalVariableName"/>
     <module name="MemberName"/>
@@ -161,9 +166,7 @@
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
     </module>
     <module name="ParameterName"/>
-    <module name="StaticVariableName">
-      <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|logger)$"/>
-    </module>
+    <module name="StaticVariableName"/>
     <module name="TypeName"/>
 
     <!-- size checks -->
