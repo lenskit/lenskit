@@ -61,7 +61,9 @@
       &error;
     </module>
     <!--<module name="FinalLocalVariable"/>-->
-    <module name="HiddenField"/>
+    <module name="HiddenField">
+      <property name="ignoreConstructorParameter" value="true"/>
+    </module>
     <!--<module name="IllegalToken">-->
     <!--<property name="tokens" value="LITERAL_CONTINUE, LITERAL_BREAK"/>-->
     <!--</module>-->
@@ -159,7 +161,9 @@
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
     </module>
     <module name="ParameterName"/>
-    <module name="StaticVariableName"/>
+    <module name="StaticVariableName">
+      <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|logger)$"/>
+    </module>
     <module name="TypeName"/>
 
     <!-- size checks -->
