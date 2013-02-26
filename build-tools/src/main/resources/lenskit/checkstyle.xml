@@ -77,7 +77,10 @@
     </module>
     <module name="MissingSwitchDefault"/>
     <module name="ModifiedControlVariable"/>
-    <module name="RedundantThrows"/>
+    <module name="RedundantThrows">
+      <property name="allowUnchecked"
+                value="true"/>
+    </module>
     <module name="SimplifyBooleanExpression"/>
     <module name="SimplifyBooleanReturn"/>
     <module name="StringLiteralEquality">
@@ -90,8 +93,12 @@
       <property name="max" value="2"/>
     </module>
     <module name="SuperFinalize"/>
-    <module name="SuperClone"/>
-    <module name="IllegalCatch"/>
+    <!--<module name="SuperClone"/>-->
+    <module name="IllegalCatch">
+      <!-- REVIEW Would be nice to flag catching Exception? -->
+      <property name="illegalClassNames"
+                value="java.lang.Throwable"/>
+    </module>
     <module name="IllegalThrows"/>
     <module name="PackageDeclaration">
       &error;
@@ -141,10 +148,10 @@
     <!--<property name="javaStyle" value="true"/>-->
     <!--&error;-->
     <!--</module>-->
-    <module name="Indentation">
-      <property name="caseIndent" value="0"/>
-      &error;
-    </module>
+    <!--<module name="Indentation">-->
+      <!--<property name="caseIndent" value="0"/>-->
+      <!--&error;-->
+    <!--</module>-->
     <module name="OuterTypeFilename">
       &error;
     </module>
@@ -186,4 +193,7 @@
     </module>
   </module>
   <module name="SuppressionCommentFilter"/>
+  <module name="SuppressWithNearbyCommentFilter">
+    <property name="influenceFormat" value="1"/>
+  </module>
 </module>

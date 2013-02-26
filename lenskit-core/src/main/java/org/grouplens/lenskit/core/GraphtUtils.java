@@ -188,11 +188,11 @@ final class GraphtUtils {
      * @return A function extracting the tail of a node.
      */
     public static Function<Edge, Node> edgeTail() {
-        return EdgeTail.instance;
+        return EdgeTail.INSTANCE;
     }
 
     private static class EdgeTail implements Function<Edge, Node> {
-        public static final EdgeTail instance = new EdgeTail();
+        public static final EdgeTail INSTANCE = new EdgeTail();
 
         @Override
         public Node apply(@Nullable Edge input) {

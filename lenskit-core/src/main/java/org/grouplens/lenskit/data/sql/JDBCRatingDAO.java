@@ -445,6 +445,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             rating = new MutableRating();
             resultSet = stmt.executeQuery();
             try {
+                // SUPPRESS CHECKSTYLE MagicNumber
                 hasTimestampColumn = resultSet.getMetaData().getColumnCount() > 4;
             } catch (SQLException e) {
                 resultSet.close();

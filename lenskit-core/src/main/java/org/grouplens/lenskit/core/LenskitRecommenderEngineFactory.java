@@ -422,12 +422,12 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return finishBuild(cfg);
     }
 
-    private Graph finishBuild(BindingFunctionBuilder config) {
+    private Graph finishBuild(BindingFunctionBuilder cfg) {
         DependencySolver solver = new DependencySolver(
-                Arrays.asList(config.build(RuleSet.EXPLICIT),
-                              config.build(RuleSet.INTERMEDIATE_TYPES),
-                              config.build(RuleSet.SUPER_TYPES),
-                              new DefaultDesireBindingFunction(config.getSPI())),
+                Arrays.asList(cfg.build(RuleSet.EXPLICIT),
+                              cfg.build(RuleSet.INTERMEDIATE_TYPES),
+                              cfg.build(RuleSet.SUPER_TYPES),
+                              new DefaultDesireBindingFunction(cfg.getSPI())),
                 CachePolicy.MEMOIZE,
                 RESOLVE_DEPTH_LIMIT);
 
@@ -442,10 +442,26 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return solver.getGraph();
     }
 
+    /**
+     * Get a mockup of the full recommender graph. This fully resolves the graph so that
+     * it can be analyzed, but does not create any objects.
+     *
+     * @param daoType The type of the DAO (so resolution can be successful in the face of
+     *                dependencies on DAO subtypes).
+     * @return The full graph.
+     */
     public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
         return buildGraph(daoType);
     }
 
+    /**
+     * Get a mockup of the instantiated (per-session) recommender graph. This fully resolves the
+     * graph so that it can be analyzed, but does not create any objects.
+     *
+     * @param daoType The type of the DAO (so resolution can be successful in the face of
+     *                dependencies on DAO subtypes).
+     * @return The recommender graph.
+     */
     public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
         return simulateInstantiation(buildGraph(daoType));
     }
