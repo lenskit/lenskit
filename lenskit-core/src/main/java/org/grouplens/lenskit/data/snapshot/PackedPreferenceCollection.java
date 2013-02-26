@@ -45,8 +45,8 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
         // JavaDoc warnings incorrectly flag PackedPreferenceData
 class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
-    final private PackedPreferenceData data;
-    final private IntList indices;
+    private final PackedPreferenceData data;
+    private final IntList indices;
 
     /**
      * Construct a preference collection view of the entire packed data set.
