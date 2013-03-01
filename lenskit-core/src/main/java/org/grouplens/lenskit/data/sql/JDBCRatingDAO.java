@@ -69,7 +69,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
      */
     public static class Factory implements DAOFactory {
         private final String cxnUrl;
-        private final SQLStatementFactory factory;
+        protected final SQLStatementFactory factory;
         private volatile boolean takeSnapshot = false;
         private final Properties properties;
 
@@ -109,14 +109,13 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public JDBCRatingDAO create() {
-            if (cxnUrl == null) {
-                throw new UnsupportedOperationException("Cannot open session w/o URL");
-            }
-
-            return new JDBCRatingDAO(getConnection(), factory, true);
+                        return new JDBCRatingDAO(getConnection(), factory, true);
         }
 
         protected Connection getConnection() {
+            if (cxnUrl == null) {
+                throw new UnsupportedOperationException("Cannot open session w/o URL");
+            }
             Connection dbc;
             try {
                 if (properties == null) {
