@@ -145,8 +145,9 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     /**
-     * @see #setHoldoutFraction(double)
+     * @deprecated use {@link #setHoldoutFraction(double)} instead.
      */
+    @Deprecated
     public CrossfoldCommand setHoldout(double f) {
         partition = new FractionPartition<Rating>(f);
         return this;
