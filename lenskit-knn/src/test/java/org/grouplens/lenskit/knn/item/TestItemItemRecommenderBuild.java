@@ -52,7 +52,7 @@ public class TestItemItemRecommenderBuild {
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(RatingPredictor.class).to(ItemItemRatingPredictor.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
