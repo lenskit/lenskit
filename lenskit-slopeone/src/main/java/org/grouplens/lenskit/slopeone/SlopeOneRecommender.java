@@ -35,7 +35,9 @@ import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * A {@code RatingRecommender} that uses the Slope One algorithm.
+ * @deprecated Just use {@link ScoreBasedItemRecommender}.
  */
+@Deprecated
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
     private SlopeOneRatingPredictor predictor;
 
