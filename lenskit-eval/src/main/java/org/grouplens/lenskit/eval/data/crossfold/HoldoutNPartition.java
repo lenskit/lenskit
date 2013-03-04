@@ -25,12 +25,12 @@ import static java.lang.Math.max;
 import java.util.List;
 
 /**
- * Partition a list by holding out a fixed number of elements.
+ * Partition the last part of list by holding out a fixed number of elements.
  *
  * @param <E>
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class CountPartition<E> implements PartitionAlgorithm<E> {
+public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
 
     private int count;
 
@@ -39,7 +39,7 @@ public class CountPartition<E> implements PartitionAlgorithm<E> {
      *
      * @param n The number of items to put in the second partition.
      */
-    public CountPartition(int n) {
+    public HoldoutNPartition(int n) {
         count = n;
     }
 
