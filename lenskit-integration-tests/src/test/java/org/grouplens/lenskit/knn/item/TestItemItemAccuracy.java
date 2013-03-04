@@ -62,7 +62,7 @@ public class TestItemItemAccuracy extends CrossfoldTestSuite {
     @Override
     protected void checkResults(Table table) {
         assertThat(table.column("MAE").average(),
-                   closeTo(0.70, 0.02));
+                   closeTo(0.70, 0.025));
         assertThat(table.column("RMSE.ByUser").average(),
                    closeTo(0.90 , 0.05));
     }

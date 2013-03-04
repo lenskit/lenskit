@@ -51,8 +51,27 @@ class ContextConfigDelegate {
         ctx
     }
 
+    def at(Object... args) {
+        if (args.length == 0) {
+            throw new NoSuchMethodException("ContextConfigDelegate.within()")
+        }
+        Object[] reals = args
+        Closure block = null
+        if (args[args.length - 1] instanceof Closure) {
+            block = args[args.length - 1]
+            reals = Arrays.copyOf(args, args.length - 1)
+        }
+        LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "at", reals)
+        if (block != null) {
+            use(ConfigHelpers) {
+                block.callWithDelegate(new ContextConfigDelegate(ctx))
+            }
+        }
+        ctx
+    }
+
     def methodMissing(String name, args) {
-        if (name in ["bind", "in", "within", "set"]) {
+        if (name in ["bind", "in", "set"]) {
             context.metaClass.invokeMethod(context, name, args)
         } else {
             null

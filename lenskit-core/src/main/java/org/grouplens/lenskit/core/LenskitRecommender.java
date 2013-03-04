@@ -47,6 +47,13 @@ public class LenskitRecommender implements Recommender {
     private final DataAccessObject dao;
     private final boolean shouldCloseDao;
 
+    /**
+     * Create a new LensKit recommender.
+     *
+     * @param injector       The injector housing this recommender's configuration.
+     * @param dao            The DAO backing this recommender session.
+     * @param shouldCloseDao Whether the session should close the DAO.
+     */
     public LenskitRecommender(Injector injector, DataAccessObject dao, boolean shouldCloseDao) {
         this.injector = injector;
         this.dao = dao;
@@ -59,7 +66,7 @@ public class LenskitRecommender implements Recommender {
      * specialized applications which need deep access to the recommender
      * components.
      *
-     * @param <T>
+     * @param <T> The type of component to get.
      * @param cls The component class to get.
      * @return The instance of the specified component.
      */

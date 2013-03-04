@@ -23,13 +23,11 @@ package org.grouplens.lenskit.core;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
-import org.grouplens.grapht.spi.reflect.ReflectionDesire;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
@@ -190,11 +188,11 @@ final class GraphtUtils {
      * @return A function extracting the tail of a node.
      */
     public static Function<Edge, Node> edgeTail() {
-        return EdgeTail.instance;
+        return EdgeTail.INSTANCE;
     }
 
     private static class EdgeTail implements Function<Edge, Node> {
-        public static final EdgeTail instance = new EdgeTail();
+        public static final EdgeTail INSTANCE = new EdgeTail();
 
         @Override
         public Node apply(@Nullable Edge input) {

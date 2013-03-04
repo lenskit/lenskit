@@ -33,6 +33,7 @@ import java.util.Iterator;
  *
  * @author Michael Ekstrand
  * @since 1.1
+ * @param <E> The element type of the collection.
  */
 public abstract class CopyingFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
     private final Function<E, E> copyFunction = new Function<E, E>() {

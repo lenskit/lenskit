@@ -77,6 +77,8 @@ public class MutualInformationAccumulator {
 
     /**
      * Get the mutual information.
+     *
+     * @return The mutual information accumulated so far.
      */
     public double getMutualInformation() {
         if (total == 0) {
@@ -106,7 +108,9 @@ public class MutualInformationAccumulator {
      * @param n The total number of events.
      */
     private double entropy(int[] counts, int n) {
-        if (n == 0) return 0;
+        if (n == 0) {
+            return 0;
+        }
         double acc = 0;
         final double logN = Math.log(n);
         for (int i = counts.length - 1; i >= 0; i--) {
@@ -121,6 +125,8 @@ public class MutualInformationAccumulator {
 
     /**
      * Get the entropy of the first variable.
+     *
+     * @return The accumulated entropy of the first variable.
      */
     public double getV1Entropy() {
         return entropy(tbl1, total);
@@ -128,6 +134,8 @@ public class MutualInformationAccumulator {
 
     /**
      * Get the entropy of the second variable.
+     *
+     * @return The accumulated entropy of the second variable.
      */
     public double getV2Entropy() {
         return entropy(tbl2, total);
@@ -135,6 +143,8 @@ public class MutualInformationAccumulator {
 
     /**
      * Get the number of events.
+     *
+     * @return The number of events accumulated.
      */
     public int getCount() {
         return total;

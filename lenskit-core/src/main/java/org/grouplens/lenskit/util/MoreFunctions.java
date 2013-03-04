@@ -29,11 +29,14 @@ import com.google.common.base.Functions;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @since 0.9
  */
-public class MoreFunctions {
+public final class MoreFunctions {
+    private MoreFunctions() {}
 
     /**
      * Identity function casting its arguments to a particular type.
      *
+     * @param <F> The function's input type.
+     * @param <T> The type to which to cast arguments.
      * @param target The target type for arguments.
      * @return A function which, when applied to an object, casts it to type
      *         {@var target}.

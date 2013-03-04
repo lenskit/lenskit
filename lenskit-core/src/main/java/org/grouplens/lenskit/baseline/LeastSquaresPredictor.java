@@ -45,7 +45,7 @@ import java.io.Serializable;
 
 
 /**
- * Generate baseline predictions with regularization
+ * Generate baseline predictions with regularization.
  *
  * @author Ark Xu <xuxxx728@umn.edu>
  */
@@ -61,7 +61,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     private static final Logger logger = LoggerFactory.getLogger(LeastSquaresPredictor.class);
 
     /**
-     * Construct a new LeastSquaresPredictor
+     * Construct a new LeastSquaresPredictor.
      *
      * @param uoff the user offsets
      * @param ioff the item offsets
@@ -84,7 +84,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     }
 
     /**
-     * A builder that creates a regularizationFactor
+     * The builder for the least squares predictor.
      */
     public static class Builder implements Provider<LeastSquaresPredictor> {
         private final double learningRate;
@@ -93,12 +93,16 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         private StoppingCondition stoppingCondition;
 
         /**
-         * Create a new builder
+         * Create a new builder.
          *
-         * @param data
+         * @param regFactor The regularization term
+         * @param lrate     The learning rate
+         * @param data      The preference data
+         * @param stop      The training loop condition.
          */
         @Inject
-        public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate, @Transient PreferenceSnapshot data,
+        public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate,
+                       @Transient PreferenceSnapshot data,
                        StoppingCondition stop) {
             regularizationFactor = regFactor;
             learningRate = lrate;

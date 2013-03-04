@@ -75,6 +75,10 @@ public final class FunkSVDUpdateRule implements Serializable {
         return clampingFunction;
     }
 
+    public StoppingCondition getStoppingCondition() {
+        return stoppingCondition;
+    }
+
     public TrainingLoopController getTrainingLoopController() {
         return stoppingCondition.newLoop();
     }

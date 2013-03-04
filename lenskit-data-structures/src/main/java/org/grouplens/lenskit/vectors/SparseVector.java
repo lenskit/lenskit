@@ -150,6 +150,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param ks     The array of keys backing the vector. It must be sorted.
      * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
+     * @param used   The used entry set.
      */
     protected SparseVector(long[] ks, double[] vs, int length, BitSet used) {
         assert MoreArrays.isSorted(ks, 0, length);
@@ -372,9 +373,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            boolean is_set = usedKeys.get(pos);
-            double v = is_set ? values[pos] : Double.NaN;
-            entry.set(pos, keys[pos], v, is_set);
+            boolean isSet = usedKeys.get(pos);
+            double v = isSet ? values[pos] : Double.NaN;
+            entry.set(pos, keys[pos], v, isSet);
             return entry;
         }
 

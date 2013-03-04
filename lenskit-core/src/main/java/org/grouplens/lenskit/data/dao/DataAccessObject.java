@@ -86,7 +86,7 @@ public interface DataAccessObject extends Closeable {
      *                                   this data source.
      * @see #getEvents(Class, SortOrder)
      */
-    Cursor<? extends Event> getEvents(SortOrder order);
+    Cursor<? extends Event> getEvents(SortOrder order) throws UnsupportedQueryException;
 
     /**
      * Get all events of a particular type. Equivalent to
@@ -111,7 +111,7 @@ public interface DataAccessObject extends Closeable {
      * @throws UnsupportedQueryException if the sort order is not supported by
      *                                   this data source.
      */
-    <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order);
+    <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) throws UnsupportedQueryException;
 
     /**
      * Get the user history for a user.
