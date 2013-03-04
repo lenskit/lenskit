@@ -49,27 +49,4 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
         super(dao, predictor);
         this.predictor = predictor;
     }
-
-    @Override
-    protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        if (predictor.getModel().getBaselinePredictor() != null) {
-            return new LongSortedArraySet(predictor.getModel().getItemIndex().getIds());
-        } else {
-            LongSet predictable = new LongOpenHashSet();
-            LongIterator iter1 = predictor.getModel().getItemIndex().getIds().iterator();
-            while (iter1.hasNext()) {
-                long id1 = iter1.nextLong();
-                LongIterator iter2 = user.filter(Rating.class).itemSet().iterator();
-                int nusers = 0;
-                while (iter2.hasNext() && nusers == 0) {
-                    long id2 = iter2.nextLong();
-                    nusers += predictor.getModel().getCoratings(id1, id2);
-                }
-                if (nusers > 0) {
-                    predictable.add(id1);
-                }
-            }
-            return predictable;
-        }
-    }
 }
