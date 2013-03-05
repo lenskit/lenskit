@@ -13,18 +13,25 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 
 public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
 
-    private EvalConfig config = new EvalConfig(new Properties());
+    private EvalConfig config                                          = new EvalConfig(new Properties());
     private ArrayList<LenskitAlgorithmInstanceCommand> algoCommandList = new ArrayList<LenskitAlgorithmInstanceCommand>();
-    private ArrayList<CrossfoldCommand> crossfoldList = new ArrayList<CrossfoldCommand>();
-    private TrainTestEvalCommand result = new TrainTestEvalCommand();
+    private ArrayList<CrossfoldCommand> crossfoldList                  = new ArrayList<CrossfoldCommand>();
+    private TrainTestEvalCommand result;
 
-    public SimpleConfigCommand(String name){
-        super(name);
+    public SimpleConfigCommand(String commandName, String trainName){
+        super(commandName);
+        result = new TrainTestEvalCommand(trainName);
+    }
+    public SimpleConfigCommand(String trainName){
+        super("train-test-builder");
+        result = new TrainTestEvalCommand(trainName);
+        result.setOutput(null);
     }
 
     // Eval config
@@ -53,6 +60,11 @@ public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
     }
     public LenskitRecommenderEngineFactory addAlgorithm(String algo){
         LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand(algo);
+        algoCommandList.add(command);
+        return command.getFactory();
+    }
+    public LenskitRecommenderEngineFactory addAlgorithm(){
+        LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand();
         algoCommandList.add(command);
         return command.getFactory();
     }
@@ -87,6 +99,7 @@ public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
     }
     public CrossfoldCommand addCrossfold(String name) {
         CrossfoldCommand newCross = new CrossfoldCommand(name);
+        newCross.setConfig(config);
         crossfoldList.add(newCross);
         return newCross;
     }
@@ -94,6 +107,33 @@ public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
     // Metrics
     public SimpleConfigCommand addMetric(TestUserMetric metric) {
         result.addMetric(metric);
+        return this;
+    }
+
+    //Output
+    public SimpleConfigCommand setOutput(File file){
+        result.setOutput(file);
+        return this;
+    }
+
+    public SimpleConfigCommand setPredictOutput(File file){
+        result.setPredictOutput(file);
+        return this;
+    }
+
+
+    public SimpleConfigCommand setUserOutput(File file){
+        result.setUserOutput(file);
+        return this;
+    }
+
+    public SimpleConfigCommand setPredictOutput(String name){
+        result.setPredictOutput(new File(name));
+        return this;
+    }
+
+    public SimpleConfigCommand setUserOutput(String name){
+        result.setUserOutput(new File(name));
         return this;
     }
 
