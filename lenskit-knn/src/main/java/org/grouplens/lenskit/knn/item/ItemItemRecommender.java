@@ -20,15 +20,11 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongSet;
-
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * Recommend items using item-item collaborative filtering.
