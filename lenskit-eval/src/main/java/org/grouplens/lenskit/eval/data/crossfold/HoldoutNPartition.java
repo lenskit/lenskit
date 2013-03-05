@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
 
-    private int count;
+    final private int count;
 
     /**
      * Create a count partitioner.

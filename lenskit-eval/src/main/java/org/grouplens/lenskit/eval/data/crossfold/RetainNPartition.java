@@ -25,15 +25,14 @@ import static java.lang.Math.min;
 import java.util.List;
 
 /**
- * Partition the last part of list by holding out a fixed number of elements.
- * Using the number of retain part of items to hold out.
+ * Partition the event list by retaining a fixed number of elements.
  *
  * @param <E>
  * @author Lingfei He <Lingfei@cs.umn.edu>
  */
 public class RetainNPartition<E> implements PartitionAlgorithm<E> {
 
-    private int count;
+    final private int count;
 
     /**
      * Create a count partitioner.
