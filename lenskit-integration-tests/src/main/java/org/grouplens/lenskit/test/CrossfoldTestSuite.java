@@ -55,19 +55,22 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         if (workDirName == null) {
             throw new IllegalStateException("must configure lenskit.temp.dir");
         }
-        File work = new File(workDirName);
-        SimpleConfigCommand builder = new SimpleConfigCommand("builder", "train-test");
-        configureAlgorithm(builder.addAlgorithm());
-        CrossfoldCommand cross = builder.addCrossfold("ml-100k");
-        cross.setSource(new GenericDataSource("ml-100k", daoFactory));
-        cross.setPartitions(5);
-        cross.setHoldout(0.2);
-        cross.setTrain(new File(work, "train.%d.csv").getAbsolutePath());
-        cross.setTest(new File(work, "test.%d.csv").getAbsolutePath());
 
-        builder.addMetric(new CoveragePredictMetric());
-        builder.addMetric(new RMSEPredictMetric());
-        builder.addMetric(new MAEPredictMetric());
+        File work = new File(workDirName);
+        SimpleConfigCommand builder = new SimpleConfigCommand("train-test");
+
+        configureAlgorithm(builder.addAlgorithm());
+
+        builder.addCrossfold("ml-100k")
+               .setSource(new GenericDataSource("ml-100k", daoFactory))
+               .setPartitions(5)
+               .setHoldout(0.2)
+               .setTrain(new File(work, "train.%d.csv").getAbsolutePath())
+               .setTest(new File(work, "test.%d.csv").getAbsolutePath());
+
+        builder.addMetric(new CoveragePredictMetric())
+               .addMetric(new RMSEPredictMetric())
+               .addMetric(new MAEPredictMetric());
 
 
         Table result = builder.call().call();
