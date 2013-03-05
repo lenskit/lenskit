@@ -32,7 +32,6 @@ import org.grouplens.lenskit.knn.item.model.ItemItemModel;
  * The  global scorer for the global recommendation backed by a item-item model.
  *
  * @author Shuo Chang <schang@cs.umn.edu>
- * @see{@link ItemItemModelBackedScorer}
  */
 @DefaultImplementation(ItemItemGlobalScorer.class)
 public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer {

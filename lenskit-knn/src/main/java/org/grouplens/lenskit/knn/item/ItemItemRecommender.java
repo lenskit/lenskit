@@ -20,40 +20,27 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongSet;
-
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * Recommend items using item-item collaborative filtering.
  *
+ * @deprecated Just use {@link ScoreBasedItemRecommender} instead.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@Deprecated
 public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemModelBackedScorer scorer;
-
     /**
      * Construct a new item-item recommender from a scorer.
      *
      * @param scorer The scorer to use.
      */
     @Inject
-    public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
+    public ItemItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao, scorer);
-        this.scorer = scorer;
-    }
-    
-    public ItemItemModelBackedScorer getScorer() {
-        return scorer;
-    }
-
-    @Override
-    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return scorer.getScoreableItems(user);
     }
 }

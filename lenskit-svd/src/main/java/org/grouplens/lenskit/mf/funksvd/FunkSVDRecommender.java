@@ -28,7 +28,9 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 /**
  * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
  * recommendation is not supported.
+ * @deprecated Just use {@link ScoreBasedItemRecommender}.
  */
+@Deprecated
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
     @Inject
     public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
