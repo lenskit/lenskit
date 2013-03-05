@@ -66,7 +66,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private String trainFilePattern;
     private String testFilePattern;
     private Order<Rating> order = new RandomOrder<Rating>();
-    private PartitionAlgorithm<Rating> partition = new CountPartition<Rating>(10);
+    private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
 
     @Nullable
@@ -140,7 +140,27 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @return The CrossfoldCommand object  (for chaining)
      */
     public CrossfoldCommand setHoldout(int n) {
-        partition = new CountPartition<Rating>(n);
+        partition = new HoldoutNPartition<Rating>(n);
+        return this;
+    }
+
+    /**
+     * @deprecated use {@link #setHoldoutFraction(double)} instead.
+     */
+    @Deprecated
+    public CrossfoldCommand setHoldout(double f) {
+        partition = new FractionPartition<Rating>(f);
+        return this;
+    }
+    
+    /**
+     * Set holdout from using the retain part to a fixed number of items.
+     * 
+     * @param n The number of items to train data set from each user's profile.
+     * @return The CrossfoldCommand object  (for chaining)
+     */
+    public CrossfoldCommand setRetain(int n) {
+        partition = new RetainNPartition<Rating>(n);
         return this;
     }
 
@@ -150,11 +170,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @param f The fraction of a user's ratings to hold out.
      * @return The CrossfoldCommand object  (for chaining)
      */
-    public CrossfoldCommand setHoldout(double f) {
+    public CrossfoldCommand setHoldoutFraction(double f){
         partition = new FractionPartition<Rating>(f);
         return this;
     }
-
+    
     /**
      * Set the input data source.
      *
