@@ -63,6 +63,9 @@ LensKit Release Notes
 
     []
 
+  * Added <<<LeastSquaresPredictor>>>, a baseline predictor that uses gradient descent to
+    train per-item and per-user baseline values (à la Koren et al.).
+
   []
 
 ** Evaluator
