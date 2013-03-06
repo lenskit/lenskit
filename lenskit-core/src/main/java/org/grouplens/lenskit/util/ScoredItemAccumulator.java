@@ -20,7 +20,9 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.ids.ScoredId;
+
+import java.util.List;
 
 /**
  * Accumulate a sorted list of scored items.
@@ -62,5 +64,5 @@ public interface ScoredItemAccumulator {
      *
      * @return The sorted, scored list of items.
      */
-    ScoredLongList finish();
+    List<ScoredId> finish();
 }

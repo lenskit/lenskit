@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -83,7 +84,9 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
         LongIterator iter = LongIterators.asLongIterator(queryItems.iterator());
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
+            for (ScoredId id : model.getNeighbors(item)) {
+                items.add(id.getId());
+            }
         }
         return items;
     }

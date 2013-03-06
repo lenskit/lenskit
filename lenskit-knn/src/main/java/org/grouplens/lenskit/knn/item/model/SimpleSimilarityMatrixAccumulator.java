@@ -27,12 +27,15 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Accumulator for item similarities that go into the item-item CF model.
@@ -101,7 +104,7 @@ public class SimpleSimilarityMatrixAccumulator implements SimilarityMatrixAccumu
 
     @Override
     public SimilarityMatrixModel build() {
-        Long2ObjectMap<ScoredLongList> data = new Long2ObjectOpenHashMap<ScoredLongList>(rows.size());
+        Long2ObjectMap<List<ScoredId>> data = new Long2ObjectOpenHashMap<List<ScoredId>>(rows.size());
         for (Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
             data.put(row.getLongKey(), row.getValue().finish());
         }

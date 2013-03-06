@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.util.List;
 
 /**
  * Compute scores from neighborhoods and score vectors.
@@ -45,5 +47,5 @@ public interface NeighborhoodScorer {
      * @return An accumulated score from the neighbors, or {@link Double#NaN} if
      *         no score could be computed.
      */
-    double score(ScoredLongList neighbors, SparseVector scores);
+    double score(List<ScoredId> neighbors, SparseVector scores);
 }

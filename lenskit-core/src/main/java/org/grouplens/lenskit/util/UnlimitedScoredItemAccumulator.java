@@ -23,6 +23,12 @@ package org.grouplens.lenskit.util;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.ids.ScoredId;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Scored item accumulator with no upper bound.
@@ -30,7 +36,7 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * @author Michael Ekstrand
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
-    private ScoredLongArrayList scores;
+    private List<ScoredId> scores;
 
     @Override
     public boolean isEmpty() {
@@ -45,19 +51,24 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
     @Override
     public void put(long item, double score) {
         if (scores == null) {
-            scores = new ScoredLongArrayList();
+            scores = new ArrayList<ScoredId>();
         }
-        scores.add(item, score);
+        scores.add(new ScoredId(item, score));
     }
 
     @Override
-    public ScoredLongList finish() {
+    public List<ScoredId> finish() {
         if (scores == null) {
-            return new ScoredLongArrayList();
+            return new ArrayList<ScoredId>();
         }
 
-        scores.sort(DoubleComparators.OPPOSITE_COMPARATOR);
-        ScoredLongList r = scores;
+        Collections.sort(scores, new Comparator<ScoredId>() {
+            @Override
+            public int compare(ScoredId o1, ScoredId o2) {
+                return DoubleComparators.OPPOSITE_COMPARATOR.compare(o1.getScore(), o2.getScore());
+            }
+        });
+        List<ScoredId> r = scores;
         scores = null;
         return r;
     }

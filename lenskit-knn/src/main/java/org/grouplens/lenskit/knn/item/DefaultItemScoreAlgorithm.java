@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -36,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -74,15 +77,15 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             final long item = e.getKey();
 
             // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
+            List<ScoredId> neighbors = model.getNeighbors(item);
             final int nnbrs = neighbors.size();
 
             // filter and truncate the neighborhood
-            ScoredLongListIterator niter = neighbors.iterator();
+            Iterator<ScoredId> niter = neighbors.iterator();
             while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
+                ScoredId id = niter.next();
+                long oi = id.getId();
+                double score = id.getScore();
                 if (userData.containsKey(oi)) {
                     accum.put(oi, score);
                 }

@@ -20,10 +20,13 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -31,6 +34,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.ids.ScoredId;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.
@@ -48,9 +52,7 @@ import org.grouplens.lenskit.core.Shareable;
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = -5986236982760043379L;
 
-    private static final ScoredLongList EMPTY_LIST = new ScoredLongArrayList();
-
-    private final Long2ObjectMap<ScoredLongList> similarityMatrix;
+    private final Long2ObjectMap<List<ScoredId>> similarityMatrix;
     private final LongSortedSet itemUniverse;
 
     /**
@@ -60,7 +62,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *                 of the matrix.
      * @param matrix   The similarity matrix columns (maps item ID to column)
      */
-    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
+    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<List<ScoredId>> matrix) {
         itemUniverse = universe;
         similarityMatrix = matrix;
     }
@@ -72,10 +74,10 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     @Nonnull
-    public ScoredLongList getNeighbors(long item) {
-        ScoredLongList nbrs = similarityMatrix.get(item);
+    public List<ScoredId> getNeighbors(long item) {
+        List<ScoredId> nbrs = similarityMatrix.get(item);
         if (nbrs == null) {
-            nbrs = EMPTY_LIST;
+            nbrs = Collections.EMPTY_LIST;
         }
         return nbrs;
     }

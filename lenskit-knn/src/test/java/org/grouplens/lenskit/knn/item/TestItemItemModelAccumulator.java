@@ -24,11 +24,15 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.knn.item.model.*;
 import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
 import org.junit.Test;
+
+import java.util.Iterator;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -84,14 +88,14 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(1);
         accum.completeRow(7);
         ItemItemModel model = accum.build();
-        ScoredLongList nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0), equalTo(2L));
-        assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
+        assertThat(nbrs.get(0).getId(), equalTo(2L));
+        assertThat(nbrs.get(0).getScore(), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0), equalTo(3L));
-        assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
+        assertThat(nbrs.get(0).getId(), equalTo(3L));
+        assertThat(nbrs.get(0).getScore(), closeTo(Math.E, 1.0e-6));
     }
 
     @Test
@@ -102,14 +106,14 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(1);
         accum.completeRow(7);
         ItemItemModel model = accum.build();
-        ScoredLongList nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0), equalTo(2L));
-        assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
+        assertThat(nbrs.get(0).getId(), equalTo(2L));
+        assertThat(nbrs.get(0).getScore(), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0), equalTo(3L));
-        assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
+        assertThat(nbrs.get(0).getId(), equalTo(3L));
+        assertThat(nbrs.get(0).getScore(), closeTo(Math.E, 1.0e-6));
     }
 
     @Test
@@ -122,14 +126,15 @@ public class TestItemItemModelAccumulator {
             accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
-        ScoredLongList nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
-        ScoredLongListIterator iter = nbrs.iterator();
+        Iterator<ScoredId> iter = nbrs.iterator();
         while (iter.hasNext()) {
-            long j = iter.nextLong();
-            double s = iter.getScore();
+            ScoredId id = iter.next();
+            long j = id.getId();
+            double s = id.getScore();
             assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
         }
     }
@@ -145,17 +150,18 @@ public class TestItemItemModelAccumulator {
             accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
-        ScoredLongList nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
         
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
         
         // Iterate the row for item 4, checking the values
-        ScoredLongListIterator iter = nbrs.iterator();
+        Iterator<ScoredId> iter = nbrs.iterator();
         while (iter.hasNext()) {
-            long j = iter.nextLong();
-            double s = iter.getScore();
+            ScoredId id = iter.next();
+            long j = id.getId();
+            double s = id.getScore();
             assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
         }
     }

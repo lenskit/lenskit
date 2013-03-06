@@ -28,6 +28,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
@@ -147,7 +148,9 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
         LongIterator iter = summary.keySet().iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
+            for (ScoredId id : model.getNeighbors(item)) {
+                items.add(id.getId());
+            }
         }
         return items;
     }

@@ -21,11 +21,11 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.lenskit.ids.ScoredId;
 
 import javax.annotation.Nonnull;
-
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.collections.ScoredLongList;
+import java.util.List;
 
 /**
  * Item-item similarity model. It makes available the similarities
@@ -56,5 +56,5 @@ public interface ItemItemModel {
      *         list is returned.
      */
     @Nonnull
-    ScoredLongList getNeighbors(long item);
+    List<ScoredId> getNeighbors(long item);
 }
