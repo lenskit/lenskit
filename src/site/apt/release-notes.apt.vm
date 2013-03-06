@@ -91,6 +91,12 @@ LensKit Release Notes
   * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
     values out to the prediction output file.
 
+  * Added <<<retain>>> directive to the <<<trainTest>>> command to retain a fixed number
+    of items per user.
+
+  * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
+    of the clearer <<<holdoutFraction>>> directive.
+
   []
 
 * Release 1.0.2
