@@ -37,6 +37,14 @@ LensKit Release Notes
   * <<Default change>>: changed default <<<ModelSize>>> to 0 (all neighbors retained); by
     default, item-item models now retain all neighbors with nonnegative similarities.
 
+  * Deprecated algorithm-specific item recommenders in favor of using
+    <<<ScoreBasedItemRecommender>>> directly.
+
+  * <<Config change>>: Refactored the item-item recommender to get rid of
+    <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
+    Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;
+    using <<<ItemItemRecommender>>> no longer forces that.
+
   * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
     changed parameters. The <<<StoppingCondition>>> interface and implementations now live
     in this package; common iterative method parameters are now defined by annotations in
