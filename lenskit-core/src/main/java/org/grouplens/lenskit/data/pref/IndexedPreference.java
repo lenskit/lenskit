@@ -52,4 +52,9 @@ public abstract class IndexedPreference extends Preference {
      * @return The user index.
      */
     public abstract int getUserIndex();
+
+    @Override
+    public IndexedPreference copy() {
+        return IndexedPreferenceBuilder.copy(this).build();
+    }
 }

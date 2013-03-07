@@ -96,4 +96,17 @@ public abstract class Preference {
     public String toString() {
         return String.format("Preference(u=%d, i=%d, v=%.2f", getUserId(), getItemId(), getValue());
     }
+
+    /**
+     * Copy this preference. The resulting preference is guaranteed to be immutable,
+     * so this method can be used to save an object in fast iteration.  It may be the
+     * same object as {@var this}, if it is already immutable.  The copy should also be
+     * isolated from any backing store so it can be retained without holding references
+     * to large objects.
+     *
+     * @return The copied preference.
+     */
+    public Preference copy() {
+        return PreferenceBuilder.copy(this).build();
+    }
 }
