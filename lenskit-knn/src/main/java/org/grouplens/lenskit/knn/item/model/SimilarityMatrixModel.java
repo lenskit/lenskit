@@ -20,21 +20,16 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.ids.ScoredId;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.Nonnull;
-
-import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.ids.ScoredId;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.

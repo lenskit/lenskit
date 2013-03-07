@@ -1,5 +1,6 @@
 package org.grouplens.lenskit.ids;
 
+import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import org.grouplens.lenskit.symbols.Symbol;
 
@@ -10,8 +11,12 @@ import org.grouplens.lenskit.symbols.Symbol;
  */
 public class MutableScoredId extends ScoredId {
 
-    public MutableScoredId(long id, double score) {
-        super(id, score);
+    public MutableScoredId(ScoredId sid) {
+        this.id = sid.id;
+        this.score = sid.score;
+        if (sid.channelMap != null) {
+            this.channelMap = new Reference2DoubleArrayMap<Symbol>(sid.channelMap);
+        }
     }
 
     public void setId(long id) {
@@ -24,5 +29,9 @@ public class MutableScoredId extends ScoredId {
 
     public void setChannelMap(Reference2DoubleMap<Symbol> channelMap) {
         this.channelMap = channelMap;
+    }
+
+    public Reference2DoubleMap<Symbol> getChannelMap() {
+        return channelMap;
     }
 }

@@ -20,15 +20,12 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -44,10 +41,8 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     @Override
     public double score(List<ScoredId> neighbors, SparseVector scores) {
         double sum = 0;
-        Iterator<ScoredId> nIter = neighbors.iterator();
-        while (nIter.hasNext()) {
-            ScoredId id = nIter.next();
-            double sim = id.getScore();
+        for (ScoredId neighbor : neighbors) {
+            double sim = neighbor.getScore();
             sum += sim;
         }
         return sum;

@@ -22,8 +22,6 @@ package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.ids.ScoredId;
 
 import java.util.ArrayList;
@@ -101,7 +99,8 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         ArrayList<ScoredId> l = new ArrayList<ScoredId>(size);
         for (int i : indices) {
-            l.add(new ScoredId(items[i], scores[i]));
+            ScoredId id = new ScoredId.Builder(items[i], scores[i]).build();
+            l.add(id);
         }
 
         assert heap.isEmpty();

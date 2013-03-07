@@ -20,18 +20,15 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static java.lang.Math.abs;
-
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
+
+import static java.lang.Math.abs;
 
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
@@ -47,11 +44,9 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
     public double score(List<ScoredId> neighbors, SparseVector scores) {
         double sum = 0;
         double weight = 0;
-        Iterator<ScoredId> nIter = neighbors.iterator();
-        while (nIter.hasNext()) {
-            ScoredId id = nIter.next();
-            long oi = id.getId();
-            double sim = id.getScore();
+        for (ScoredId neighbor : neighbors) {
+            long oi = neighbor.getId();
+            double sim = neighbor.getScore();
             weight += abs(sim);
             sum += sim * scores.get(oi);
         }

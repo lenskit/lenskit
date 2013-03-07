@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.ids.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
@@ -82,10 +80,9 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
 
             // filter and truncate the neighborhood
             Iterator<ScoredId> niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                ScoredId id = niter.next();
-                long oi = id.getId();
-                double score = id.getScore();
+            for (ScoredId neighbor : neighbors) {
+                long oi = neighbor.getId();
+                double score = neighbor.getScore();
                 if (userData.containsKey(oi)) {
                     accum.put(oi, score);
                 }
