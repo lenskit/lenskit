@@ -36,6 +36,7 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * events), use {@link SimpleNullRating}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 @Immutable
 public final class SimpleRating extends AbstractEvent implements Rating {

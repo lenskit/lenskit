@@ -29,6 +29,7 @@ import org.grouplens.lenskit.data.pref.Preference;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see SimpleRating
+ * @compat Public
  */
 @Immutable
 public final class SimpleNullRating implements Rating {

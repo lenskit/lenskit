@@ -34,6 +34,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * contexts such as fast iteration.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public abstract class Preference {
     /**
