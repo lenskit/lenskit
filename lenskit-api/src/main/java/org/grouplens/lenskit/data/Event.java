@@ -29,9 +29,9 @@ package org.grouplens.lenskit.data;
  * recommenders, then it should not affect the recommenders.
  *
  * <p>
- * Events should be immutable. Deviations should be clearly documented and only
- * used in a few cases (e.g. to implement fast iterators). The {@link #clone()}
- * should always return an immutable event.
+ * Events should be immutable. Deviations must be clearly documented and only
+ * used in a few cases (e.g. to implement fast iterators). The {@link #copy()}
+ * should return an immutable event.
  *
  * <p>
  * Implementations must also have well-defined {@link #equals(Object)} and
@@ -73,14 +73,15 @@ public interface Event {
     long getTimestamp();
 
     /**
-     * Clone the event.
+     * Copy this events.
      *
      * <p>
-     * Clones of events should generally be independent of any backing store
+     * Copied events should generally be independent of any backing store
      * (e.g. an event backed by an index into an array of data should, when
-     * cloned, create a new event that stores the data directly). As a result,
-     * the object returned by {@link #copy()} may be of a different concrete
-     * type. They should also always be immutable.
+     * copied, create a new event that stores the data directly). As a result,
+     * the object returned by this method may be of a different concrete
+     * type. They should also always be immutable. If the event is already
+     * immutable, it should return itself.
      *
      * @return A copy of the event.
      */

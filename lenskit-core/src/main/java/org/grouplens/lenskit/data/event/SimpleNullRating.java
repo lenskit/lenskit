@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.pref.Preference;
  * @see SimpleRating
  */
 @Immutable
-public class SimpleNullRating implements Rating {
+public final class SimpleNullRating implements Rating {
     private final long id;
     private final long userId;
     private final long itemId;
