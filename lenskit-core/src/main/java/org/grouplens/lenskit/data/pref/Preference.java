@@ -66,9 +66,7 @@ public abstract class Preference {
      */
     @Override
     public final boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        } else if (obj == this) {
+        if (obj == this) {
             return true;
         } else if (obj instanceof Preference) {
             Preference op = (Preference) obj;
