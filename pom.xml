@@ -801,12 +801,6 @@
 
     <profile>
       <id>integration-tests</id>
-      <activation>
-        <!-- REVIEW: Do we really want to auto-activate on .hg/branch? -->
-        <file>
-          <exists>.hg/branch</exists>
-        </file>
-      </activation>
       <modules>
         <module>lenskit-integration-tests</module>
       </modules>
