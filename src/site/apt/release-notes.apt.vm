@@ -26,6 +26,9 @@ LensKit Release Notes
   * Added support for <<at>> context matchers (via Grapht), to make it easier to configure
     complex configurations. See the {{{http://bitbucket.org/grouplens/lenskit/wiki/Configuration}manual}}
     for more details.
+
+  * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
+    model construction to support side channels (#issue(219)).
   
   []
 
