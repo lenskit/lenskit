@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.ids.ScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.ids.ScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
 
 import java.util.ArrayList;
 import java.util.Collections;

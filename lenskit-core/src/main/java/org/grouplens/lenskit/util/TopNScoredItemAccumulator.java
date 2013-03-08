@@ -22,7 +22,7 @@ package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 
-import org.grouplens.lenskit.ids.ScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
 
 import java.util.ArrayList;
 import java.util.List;

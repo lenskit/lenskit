@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.ids.ScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import java.util.List;
