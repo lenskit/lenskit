@@ -84,14 +84,14 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
-                       closeTo(0.001d, 1.0e-6))
+                       closeTo(0.001d, 1.0e-6d))
             assertThat(stop.minimumIterations, equalTo(42))
             def thresh = rec.get(RealThreshold)
             assertThat(thresh.value,
-                       closeTo(0.1d, 1.0e-6))
+                       closeTo(0.1d, 1.0e-6d))
             def athresh = rec.get(AbsoluteThreshold)
             assertThat(athresh.value,
-                       closeTo(0.5d, 1.0e-6))
+                       closeTo(0.5d, 1.0e-6d))
         } finally {
             rec.close()
         }
@@ -124,14 +124,14 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
-                       closeTo(0.001d, 1.0e-6))
+                       closeTo(0.001d, 1.0e-5d))
             assertThat(stop.minimumIterations, equalTo(42))
             def thresh = rec.get(RealThreshold)
             assertThat(thresh.value,
-                       closeTo(0.1d, 1.0e-6))
+                       closeTo(0.1d, 1.0e-5d))
             def athresh = rec.get(AbsoluteThreshold)
             assertThat(athresh.value,
-                       closeTo(0.5d, 1.0e-6))
+                       closeTo(0.5d, 1.0e-5d))
         } finally {
             rec.close()
         }
