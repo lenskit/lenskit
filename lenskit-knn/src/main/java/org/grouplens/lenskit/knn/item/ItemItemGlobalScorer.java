@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
@@ -39,14 +36,13 @@ import java.util.Collection;
  *
  * @author Shuo Chang <schang@cs.umn.edu>
  */
-public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
-        ItemItemModelBackedGlobalScorer {
+public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     protected final ItemItemModel model;
-    protected final
     @Nonnull
+    protected final
     NeighborhoodScorer scorer;
-    protected final
     @Nonnull
+    protected final
     ItemScoreAlgorithm algorithm;
 
     @Inject
@@ -60,11 +56,6 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
     }
 
     @Override
-    public ItemItemModel getModel() {
-        return model;
-    }
-
-    @Override
     public void globalScore(@Nonnull Collection<Long> queryItems,
                             @Nonnull MutableSparseVector output) {
         // create the unary rating for the items
@@ -73,18 +64,5 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
 
         output.clear();
         algorithm.scoreItems(model, basket, output, scorer);
-    }
-
-
-    @Override
-    public LongSet getScoreableItems(Collection<Long> queryItems) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        LongSet items = new LongOpenHashSet();
-        LongIterator iter = LongIterators.asLongIterator(queryItems.iterator());
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
-        }
-        return items;
     }
 }

@@ -38,30 +38,23 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongSet;
-
+import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.core.ScoreBasedGlobalItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * Global recommendation with item-item CF.
  *
  * @author Shuo Chang <schang@cs.umn.edu>
+ * @deprecated Use {@link ScoreBasedGlobalItemRecommender} directly instead.
  */
+@Deprecated
 public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
-    protected final ItemItemModelBackedGlobalScorer scorer;
-
     @Inject
     public ItemItemGlobalRecommender(DataAccessObject dao,
-                                     ItemItemModelBackedGlobalScorer scorer) {
+                                     GlobalItemScorer scorer) {
         super(dao, scorer);
-        this.scorer = scorer;
-    }
-
-    @Override
-    public LongSet getPredictableItems(LongSet items) {
-        return scorer.getScoreableItems(items);
     }
 }

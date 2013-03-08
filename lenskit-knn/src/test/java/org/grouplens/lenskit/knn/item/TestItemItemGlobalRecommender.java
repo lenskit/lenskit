@@ -68,12 +68,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class TestItemItemGlobalRecommender {
     private LenskitRecommender session;
     private GlobalItemRecommender gRecommender;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -175,7 +177,7 @@ public class TestItemItemGlobalRecommender {
         HashSet<Long> excludes = new HashSet<Long>();
         LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
         assertThat(recs, hasSize(0));
-        candidates.add(1L);
+        candidates.add(7L);
         candidates.add(5L);
         excludes.add(5L);
         recs = gRecommender.globalRecommend(LongSets.singleton(1), 2, candidates, excludes);
