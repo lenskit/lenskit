@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.junit.Assert.assertThat;
 
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -48,14 +49,14 @@ public class TestSimilaritySumNeighborhoodScorer {
     public void testEmpty() {
         ScoredLongList nbrs = new ScoredLongArrayList();
         SparseVector scores = new MutableSparseVector();
-        assertThat(scorer.score(nbrs, scores), closeTo(0));
+        assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testEmptyNbrs() {
         ScoredLongList nbrs = new ScoredLongArrayList();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
-        assertThat(scorer.score(nbrs, scores), closeTo(0));
+        assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
