@@ -47,6 +47,19 @@ public class ScoredId {
         }
     };
 
+    public ScoredId(long id, double score) {
+        this.id = id;
+        this.score = score;
+    }
+
+    private ScoredId(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
+        this.id = id;
+        this.score = score;
+        if (channelMap != null) {
+            this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
+        }
+    }
+
     public long getId() {
         return id;
     }
@@ -100,17 +113,63 @@ public class ScoredId {
      */
     public static class Builder implements org.apache.commons.lang3.builder.Builder {
 
-        private ScoredId sid;
+        private long id;
+        private double score;
+        private Reference2DoubleArrayMap<Symbol> channelMap;
 
         /**
-         * Create a new builder to construct a {@code ScoredId}.
-         * @param id A numerical identifier.
-         * @param score A score associated with this identifier.
+         * Create a {@code ScoredId.Builder}. Any {@code ScoredId} objects
+         * created by this builder will have the default ID of 0 and default
+         * score of 0 unless they are explicitly set by the user.
+         */
+        public Builder() {
+            this(0, 0);
+        }
+
+        /**
+         * Create a {@code ScoredId.Builder}. Any {@code ScoredId} objects
+         * created by this builder will have the specified ID and a default
+         * score of 0 unless they are explicitly changed by the user.
+         * @param id The numerical ID of {@code ScoredId} objects produced
+         *           by this builder.
+         */
+        public Builder(long id) {
+            this(id, 0);
+        }
+
+        /**
+         * Create a {@code ScoredId.Builder}. Any {@code ScoredId} objects
+         * created by this builder will have the specifed ID and score unless
+         * they are explicitly changed by the user.
+         * @param id The numerical ID of {@code ScoredId} objects produced by
+         *           this builder.
+         * @param score The score for {@code ScoredId} objects produced by
+         *              this builder.
          */
         public Builder(long id, double score) {
-            sid = new ScoredId();
-            sid.id = id;
-            sid.score = score;
+            this.id = id;
+            this.score = score;
+            channelMap = new Reference2DoubleArrayMap<Symbol>();
+        }
+
+        /**
+         * Change the ID of {@code ScoredID} object under construction.
+         * @param id The ID to be used for new {@code ScoredId} objects.
+         * @return This builder (for chaining)
+         */
+        public Builder setId(long id) {
+            this.id = id;
+            return this;
+        }
+
+        /**
+         * Change the score of the {@code ScoredId} object under construction.
+         * @param score The score to be used for new {@code ScoredId} objects.
+         * @return This builder (for chaining)
+         */
+        public Builder setScore(double score) {
+            this.score = score;
+            return this;
         }
 
         /**
@@ -120,11 +179,15 @@ public class ScoredId {
          * @return This builder (for chaining)
          */
         public Builder addChannel(Symbol s, double value) {
-            if (sid.channelMap == null) {
-                sid.channelMap = new Reference2DoubleArrayMap<Symbol>();
-            }
-            sid.channelMap.put(s, value);
+            channelMap.put(s, value);
             return this;
+        }
+
+        /**
+         * Removes all channels from new {@code ScoredId} objects produced by the builder.
+         */
+        public void clearChannels() {
+            channelMap.clear();
         }
 
         /**
@@ -133,7 +196,11 @@ public class ScoredId {
          */
         @Override
         public ScoredId build() {
-            return sid;
+            if (channelMap.isEmpty()) {
+                return new ScoredId(id, score, null);
+            } else {
+                return new ScoredId(id, score, channelMap);
+            }
         }
     }
 }

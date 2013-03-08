@@ -98,8 +98,9 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
             indices[i] = heap.dequeue();
         }
         ArrayList<ScoredId> l = new ArrayList<ScoredId>(size);
+        ScoredId.Builder idBuilder = new ScoredId.Builder();
         for (int i : indices) {
-            ScoredId id = new ScoredId.Builder(items[i], scores[i]).build();
+            ScoredId id = idBuilder.setId(items[i]).setScore(scores[i]).build();
             l.add(id);
         }
 

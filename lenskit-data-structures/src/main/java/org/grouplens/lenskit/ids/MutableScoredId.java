@@ -32,12 +32,8 @@ import org.grouplens.lenskit.symbols.Symbol;
  */
 public class MutableScoredId extends ScoredId {
 
-    public MutableScoredId(ScoredId sid) {
-        this.id = sid.id;
-        this.score = sid.score;
-        if (sid.channelMap != null) {
-            this.channelMap = new Reference2DoubleArrayMap<Symbol>(sid.channelMap);
-        }
+    public MutableScoredId(long id, double score) {
+        super(id, score);
     }
 
     public void setId(long id) {
