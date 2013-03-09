@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -51,7 +52,7 @@ public class TestUnlimitedScoredItemAccumulator {
         accum.put(3, 2.9);
         accum.put(2, 9.8);
         ScoredLongList out = accum.finish();
-        assertThat(out.size(), equalTo(3));
+        assertThat(out, hasSize(3));
         assertThat(out.get(0), equalTo(2L));
         assertThat(out.getScore(0), equalTo(9.8));
         assertThat(out.get(1), equalTo(5L));
