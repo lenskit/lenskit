@@ -20,20 +20,18 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.core.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +46,7 @@ import java.util.Collection;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
-public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelBackedScorer {
+public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
@@ -73,11 +71,6 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
         this.scorer = scorer;
         algorithm = algo;
         logger.info("building item-item scorer with scorer {}", scorer);
-    }
-
-    @Override
-    public ItemItemModel getModel() {
-        return model;
     }
 
     @Nonnull
@@ -137,18 +130,5 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
      */
     protected VectorTransformation makeTransform(long user, SparseVector userData) {
         return normalizer.makeTransformation(user, userData);
-    }
-
-    @Override
-    public LongSet getScoreableItems(UserHistory<? extends Event> user) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        LongSet items = new LongOpenHashSet();
-        SparseVector summary = summarizer.summarize(user);
-        LongIterator iter = summary.keySet().iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
-        }
-        return items;
     }
 }

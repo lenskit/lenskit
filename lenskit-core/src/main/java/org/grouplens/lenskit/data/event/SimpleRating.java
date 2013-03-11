@@ -36,9 +36,10 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * events), use {@link SimpleNullRating}.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 @Immutable
-public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
+public final class SimpleRating extends AbstractEvent implements Rating {
     final long eventId;
     final long timestamp;
     @Nonnull
@@ -101,37 +102,28 @@ public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
     }
 
     @Override
-    final public long getUserId() {
+    public final long getUserId() {
         return preference.getUserId();
     }
 
     @Override
-    final public long getItemId() {
+    public final long getItemId() {
         return preference.getItemId();
     }
 
-    @Nonnull
     @Override
-    final public Preference getPreference() {
+    @Nonnull
+    public final Preference getPreference() {
         return preference;
     }
 
     @Override
-    final public long getTimestamp() {
+    public final long getTimestamp() {
         return timestamp;
     }
 
     @Override
     public Rating copy() {
-        return clone();
-    }
-
-    @Override
-    protected Rating clone() {
-        try {
-            return (Rating) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("clone error", e);
-        }
+        return this;
     }
 }

@@ -70,4 +70,9 @@ public final class SimplePreference extends Preference {
     public double getValue() {
         return value;
     }
+
+    @Override
+    public Preference copy() {
+        return this;
+    }
 }

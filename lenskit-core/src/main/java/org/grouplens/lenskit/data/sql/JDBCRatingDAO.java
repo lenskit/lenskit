@@ -47,6 +47,8 @@ import org.grouplens.lenskit.util.MoreFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.WillCloseWhenClosed;
+
 /**
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
  * no other events are supported.
@@ -69,14 +71,27 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
      */
     public static class Factory implements DAOFactory {
         private final String cxnUrl;
-        protected final SQLStatementFactory factory;
+        private final SQLStatementFactory factory;
         private volatile boolean takeSnapshot = false;
         private final Properties properties;
 
+        /**
+         * Create a new JDBC DAO factory.
+         *
+         * @param url    JDBC URL to connect to.
+         * @param config The database layout configuration.
+         */
         public Factory(String url, SQLStatementFactory config) {
             this(url, config, null);
         }
 
+        /**
+         * Create a new JDBC DAO factory.
+         *
+         * @param url    JDBC URL to connect to.
+         * @param config The database layout configuration.
+         * @param props  Additional properties for configuring the database connection.
+         */
         public Factory(String url, SQLStatementFactory config, Properties props) {
             cxnUrl = url;
             factory = config;
@@ -109,10 +124,15 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public JDBCRatingDAO create() {
-                        return new JDBCRatingDAO(getConnection(), factory, true);
+            return new JDBCRatingDAO(makeConnection(), factory, true);
         }
 
-        protected Connection getConnection() {
+        /**
+         * Get a new database connection.
+         *
+         * @return A new database connection.
+         */
+        protected Connection makeConnection() {
             if (cxnUrl == null) {
                 throw new UnsupportedOperationException("Cannot open session w/o URL");
             }
@@ -171,10 +191,24 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     private final CachedPreparedStatement userEventStatement;
     private final CachedPreparedStatement itemEventStatement;
 
-    public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac) {
+    /**
+     * Create a new JDBC rating DAO.
+     *
+     * @param dbc  The database connection. The connection will be closed
+     *             when the DAO is closed.
+     * @param sfac The statement factory.
+     */
+    public JDBCRatingDAO(@WillCloseWhenClosed Connection dbc, SQLStatementFactory sfac) {
         this(dbc, sfac, true);
     }
 
+    /**
+     * Create a new JDBC rating DAO.
+     *
+     * @param dbc   The database connection.
+     * @param sfac  The statement factory.
+     * @param close Whether to close the database connection when the DAO is closed.
+     */
     public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac, boolean close) {
         connection = dbc;
         closeConnection = close;
@@ -239,6 +273,13 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         }
     }
 
+    /**
+     * Extract a count from a prepared statement.
+     *
+     * @param s A statement that, when executed, should return a single count.
+     * @return The count.
+     * @throws SQLException if there is a database error.
+     */
     protected int getCount(PreparedStatement s) throws SQLException {
         ResultSet rs = null;
 
@@ -403,6 +444,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             rating = new MutableRating();
             resultSet = stmt.executeQuery();
             try {
+                // SUPPRESS CHECKSTYLE MagicNumber
                 hasTimestampColumn = resultSet.getMetaData().getColumnCount() > 4;
             } catch (SQLException e) {
                 resultSet.close();

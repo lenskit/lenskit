@@ -30,7 +30,9 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * Neighbor user are aggregated using weighted averaging.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @deprecated Just use {@link ScoreBasedItemRecommender}.
  */
+@Deprecated
 public class UserUserRecommender extends ScoreBasedItemRecommender {
     protected final UserUserRatingPredictor predictor;
 

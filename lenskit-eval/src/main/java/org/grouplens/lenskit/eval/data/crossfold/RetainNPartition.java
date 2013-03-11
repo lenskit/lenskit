@@ -18,36 +18,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.eval.data.crossfold;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
+import static java.lang.Math.min;
 
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import java.util.List;
 
 /**
- * Item scorer specific to item-item recommenders. It exposes the item-item
- * model as well as the scoring functionality.
+ * Partition the event list by retaining a fixed number of elements.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @param <E>
+ * @author Lingfei He <Lingfei@cs.umn.edu>
  */
-@DefaultImplementation(ItemItemScorer.class)
-public interface ItemItemModelBackedScorer extends ItemScorer {
-    /**
-     * Get the item-item model backing this scorer.
-     *
-     * @return The model this scorer uses to compute scores.
-     */
-    ItemItemModel getModel();
+public class RetainNPartition<E> implements PartitionAlgorithm<E> {
+
+    final private int count;
 
     /**
-     * Get the set of scoreable items for a user.
+     * Create a count partitioner.
      *
-     * @param user The user to query for.
-     * @return The set of items for which scores can be generated.
+     * @param n The number of items to put in the train partition.
      */
-    LongSet getScoreableItems(UserHistory<? extends Event> user);
+    public RetainNPartition(int n) {
+        count = n;
+    }
+
+    @Override
+    public int partition(List<E> data) {
+        return min(count, data.size());
+    }
+
 }

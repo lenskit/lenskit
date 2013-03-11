@@ -40,15 +40,15 @@ import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
 class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     static final int INITIAL_CHUNK_COUNT = 512;
 
-    int[][] users;
-    int[][] items;
-    double[][] values;
-    int nprefs = 0;
+    private int[][] users;
+    private int[][] items;
+    private double[][] values;
+    private int nprefs = 0;
 
-    Indexer itemIndex;
-    Indexer userIndex;
+    private Indexer itemIndex;
+    private Indexer userIndex;
 
-    IntHeapPriorityQueue freeList;
+    private IntHeapPriorityQueue freeList;
 
     public PackedPreferenceDataBuilder() {
         itemIndex = new Indexer();

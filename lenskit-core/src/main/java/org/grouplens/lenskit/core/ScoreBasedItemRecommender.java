@@ -89,7 +89,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
     @Override
     protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = getPredictableItems(user);
+            candidates = Cursors.makeSet(dao.getItems());
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(user);
@@ -163,18 +163,6 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
      * @return All items for which predictions can be generated for the user.
      */
     protected LongSet getPredictableItems(long user) {
-        return Cursors.makeSet(dao.getItems());
-    }
-
-    /**
-     * Determine the items for which predictions can be made for a certain user.
-     * This implementation is naive and asks the DAO for all items; subclasses
-     * should override it with something more efficient if practical.
-     *
-     * @param user The user's ID.
-     * @return All items for which predictions can be generated for the user.
-     */
-    protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
         return Cursors.makeSet(dao.getItems());
     }
 }

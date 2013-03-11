@@ -9,8 +9,8 @@ without downloading the source code.  If this is your first time working
 with LensKit we recommend checking out the [Getting Started][] guide.
 
 [web site]: http://lenskit.grouplens.org
-[wiki]: http://dev.grouplens.org/trac/lenskit
-[Getting Started]: http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted
+[wiki]: http://bitbucket.org/grouplens/lenskit/wiki/
+[Getting Started]: http://bitbucket.org/grouplens/lenskit/wiki/GettingStarted
 [mailing list]: https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit
 
 LensKit is made available under the GNU Lesser General Public License

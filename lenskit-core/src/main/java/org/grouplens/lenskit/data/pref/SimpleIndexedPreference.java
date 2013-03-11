@@ -97,4 +97,9 @@ public final class SimpleIndexedPreference extends IndexedPreference {
     public double getValue() {
         return value;
     }
+
+    @Override
+    public IndexedPreference copy() {
+        return this;
+    }
 }

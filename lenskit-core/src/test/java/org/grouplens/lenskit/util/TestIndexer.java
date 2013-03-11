@@ -18,29 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.params;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.grouplens.lenskit.util;
 
-import javax.inject.Qualifier;
+import org.grouplens.lenskit.util.Indexer;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.junit.Test;
 
-import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.lenskit.core.Parameter;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 /**
- * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
- * similar neighbors are retained for each item in model build. If 0, then all
- * neighbors are retained.
+ * 
+ * @author Lingfei He
+ *
  */
-@Documented
-@DefaultInteger(0)
-@Parameter(Integer.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ModelSize {
+public class TestIndexer {
+
+    @Test
+    public void testConvertArrayToVector(){
+        Indexer ind = new Indexer();
+        MutableSparseVector vector = new MutableSparseVector();
+        double[] values = {1.0, 2.0, 3.0};
+        assertThat(ind.getObjectCount(), equalTo(0));
+        
+        ind.internId(0);
+        ind.internId(1);
+        ind.internId(2);
+        assertThat(ind.getObjectCount(), equalTo(3));
+        
+        vector = ind.convertArrayToVector(values);
+        assertThat(vector.get(0), equalTo(1.0));
+        assertThat(vector.get(1), equalTo(2.0));
+        assertThat(vector.get(2), equalTo(3.0));
+    }
+
 }

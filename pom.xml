@@ -511,7 +511,7 @@
               <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
             </taglet>
             <taglet>
-              <tagletClass>org.grouplens.javadoc.taglets.TracIssueTaglet</tagletClass>
+              <tagletClass>org.grouplens.javadoc.taglets.IssueTaglet</tagletClass>
             </taglet>
           </taglets>
 
@@ -727,30 +727,6 @@
           </plugin>
 
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <id>sloccount</id>
-                <phase>process-sources</phase>
-                <goals><goal>run</goal></goals>
-                <configuration>
-                  <target>
-                    <exec executable="sloccount"
-                          output="${project.build.directory}/sloccount.sc"
-                          logError="true">
-                      <arg value="--wide"/>
-                      <arg value="--details"/>
-                      <arg value="${project.basedir}"/>
-                    </exec>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
             <executions>
@@ -805,6 +781,24 @@
           </plugin>
 
           <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.2.201302030002</version>
+            <executions>
+              <execution>
+                <id>cov-prepare</id>
+                <goals><goal>prepare-agent</goal></goals>
+                <phase>process-test-classes</phase>
+              </execution>
+              <execution>
+                <id>cov-report</id>
+                <goals><goal>report</goal></goals>
+                <phase>prepare-package</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
             <inherited>false</inherited>
@@ -825,12 +819,6 @@
 
     <profile>
       <id>integration-tests</id>
-      <activation>
-        <!-- REVIEW: Do we really want to auto-activate on .hg/branch? -->
-        <file>
-          <exists>.hg/branch</exists>
-        </file>
-      </activation>
       <modules>
         <module>lenskit-integration-tests</module>
       </modules>

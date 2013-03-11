@@ -20,25 +20,17 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.grouplens.lenskit.data.Event;
-
 import com.google.common.collect.ComparisonChain;
 import com.google.common.primitives.Longs;
+import org.grouplens.lenskit.data.Event;
+
+import java.util.Comparator;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public final class Events {
     private Events() {}
-
-    /**
-     * Integer to generate sequential IDs for fresh events.  Used mostly in
-     * test cases.
-     */
-    static final AtomicLong nextEventId = new AtomicLong();
 
     /**
      * Compare two events by timestamp.

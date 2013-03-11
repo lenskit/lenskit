@@ -58,6 +58,11 @@ public class MutableRating implements Rating {
         return eid;
     }
 
+    /**
+     * Set the rating's ID.
+     *
+     * @param eid The rating's new ID.
+     */
     public void setId(long eid) {
         this.eid = eid;
     }
@@ -67,6 +72,10 @@ public class MutableRating implements Rating {
         return uid;
     }
 
+    /**
+     * Set the rating's user ID.
+     * @param uid The new user ID.
+     */
     public void setUserId(long uid) {
         this.uid = uid;
     }
@@ -76,6 +85,11 @@ public class MutableRating implements Rating {
         return iid;
     }
 
+    /**
+     * Set the rating's new item ID.
+     *
+     * @param iid The new item ID.
+     */
     public void setItemId(long iid) {
         this.iid = iid;
     }
@@ -104,6 +118,11 @@ public class MutableRating implements Rating {
         return timestamp;
     }
 
+    /**
+     * Set the rating's new timestamp.
+     *
+     * @param ts The rating's timestamp.
+     */
     public void setTimestamp(long ts) {
         timestamp = ts;
     }

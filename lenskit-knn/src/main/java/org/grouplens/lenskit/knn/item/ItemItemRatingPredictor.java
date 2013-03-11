@@ -20,12 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -183,15 +180,6 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             baseTransform.unapply(vector);
             domain.clampVector(vector);
             return vector;
-        }
-    }
-
-    @Override
-    public LongSet getScoreableItems(UserHistory<? extends Event> user) {
-        if (baseline != null) {
-            return model.getItemUniverse();
-        } else {
-            return super.getScoreableItems(user);
         }
     }
 }

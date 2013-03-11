@@ -62,6 +62,13 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
         this(in, Pattern.compile(Pattern.quote(delim)));
     }
 
+    /**
+     * Construct a delimited text cursor from a file.
+     *
+     * @param file  The name of the file to read.
+     * @param delim The delimiter.
+     * @throws FileNotFoundException if {@var file} is not found.
+     */
     public DelimitedTextCursor(File file, @Nonnull String delim) throws FileNotFoundException {
         // REVIEW This doesn't handle an error constructing the BufferedReader
         this(new BufferedReader(new FileReader(file)), delim);

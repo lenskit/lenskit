@@ -57,6 +57,10 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
         delegate = norm;
     }
 
+    /**
+     * Get the delegate vector normalizer.
+     * @return The vector normalizer used by this UVN.
+     */
     public VectorNormalizer getVectorNormalizer() {
         return delegate;
     }
