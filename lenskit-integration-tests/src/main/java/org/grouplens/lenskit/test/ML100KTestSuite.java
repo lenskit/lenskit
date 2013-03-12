@@ -31,7 +31,7 @@ import java.io.File;
  * @author Michael Ekstrand
  */
 public class ML100KTestSuite {
-    protected final File dataDir = new File(System.getProperty("lenskit.ml100k.directory"));
+    protected final File dataDir = new File(System.getProperty("data.movielens.100k"));
     protected final File inputFile = new File(dataDir, "u.data");
 
     protected DAOFactory daoFactory;

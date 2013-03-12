@@ -101,7 +101,7 @@
         <version>2.12.4</version>
         <configuration>
           <systemPropertyVariables>
-            <lenskit.ml100k.directory>${data.movielens.100k}</lenskit.ml100k.directory>
+            <data.movielens.100k>${data.movielens.100k}</data.movielens.100k>
             <buildDirectory>${project.build.directory}</buildDirectory>
             <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>
           </systemPropertyVariables>
