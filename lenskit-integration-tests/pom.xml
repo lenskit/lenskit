@@ -148,14 +148,6 @@
   <profiles>
     <profile>
       <id>test-archetypes</id>
-      <!-- Run the archetype tests whenever we aren't embedded (i.e., in Eclipse). -->
-      <activation>
-        <property>
-          <name>maven.home</name>
-          <value>!EMBEDDED</value>
-        </property>
-      </activation>
-
       <!-- Depend on the archetypes so they wind up in local repo. -->
       <dependencies>
         <dependency>
