@@ -18,6 +18,7 @@
   <properties>
     <test.repo.directory>${project.build.directory}/test-repo</test.repo.directory>
     <archetype.test.directory>${project.build.directory}/archetype-test</archetype.test.directory>
+    <data.movielens.100k>${project.build.directory}/data/ml100k</data.movielens.100k>
   </properties>
 
   <dependencies>
@@ -69,7 +70,10 @@
             <configuration>
               <target>
                 <ant antfile="${basedir}/src/test/ant/get-data.xml"
-                     target="download-100k"/>
+                     target="fetch-100k">
+                  <property name="data.movielens.100k"
+                            value="${data.movielens.100k}"/>
+                </ant>
               </target>
             </configuration>
           </execution>
@@ -97,7 +101,7 @@
         <version>2.12.4</version>
         <configuration>
           <systemPropertyVariables>
-            <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
+            <lenskit.ml100k.directory>${data.movielens.100k}</lenskit.ml100k.directory>
             <buildDirectory>${project.build.directory}</buildDirectory>
             <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>
           </systemPropertyVariables>
