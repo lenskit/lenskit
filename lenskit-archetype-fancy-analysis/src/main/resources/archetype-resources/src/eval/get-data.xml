@@ -7,7 +7,7 @@
    <property name="mldata.zipfile" value="${lenskit.eval.dataDir}/ml100k.zip"/>
    <property name="mldata.directory" value="${lenskit.eval.dataDir}/ml100k"/>
 
-   <target name="download-100k" unless="data.movielens.100k">
+   <target name="download-100k">
 
       <fail message="This analysis makes use of the MovieLens 100K data
 		     set from GroupLens Research. Use of this data set is restricted to
