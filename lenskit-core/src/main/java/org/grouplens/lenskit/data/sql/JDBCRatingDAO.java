@@ -134,7 +134,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
          */
         protected Connection makeConnection() {
             if (cxnUrl == null) {
-                throw new UnsupportedOperationException("Cannot open session w/o URL");
+                throw new IllegalStateException("no connection URL configured");
             }
             Connection dbc;
             try {
