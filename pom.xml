@@ -81,6 +81,7 @@
     <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
+    <module>lenskit-integration-tests</module>
   </modules>
 
   <dependencyManagement>
@@ -681,6 +682,11 @@
 
     <profile>
       <id>lint</id>
+      <activation>
+        <property>
+          <name>lenskit.ci</name>
+        </property>
+      </activation>
       <properties>
         <lenskit.clean.removeAll>true</lenskit.clean.removeAll>
       </properties>
@@ -791,13 +797,6 @@
 
         </plugins>
       </build>
-    </profile>
-
-    <profile>
-      <id>integration-tests</id>
-      <modules>
-        <module>lenskit-integration-tests</module>
-      </modules>
     </profile>
   </profiles>
 </project>
