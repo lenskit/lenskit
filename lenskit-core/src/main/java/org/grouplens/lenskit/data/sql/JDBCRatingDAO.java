@@ -124,10 +124,6 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
 
         @Override
         public JDBCRatingDAO create() {
-            if (cxnUrl == null) {
-                throw new UnsupportedOperationException("Cannot open session w/o URL");
-            }
-
             return new JDBCRatingDAO(makeConnection(), factory, true);
         }
 
@@ -137,6 +133,9 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
          * @return A new database connection.
          */
         protected Connection makeConnection() {
+            if (cxnUrl == null) {
+                throw new IllegalStateException("no connection URL configured");
+            }
             Connection dbc;
             try {
                 if (properties == null) {
