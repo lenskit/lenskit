@@ -43,7 +43,7 @@
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
-    <groovy.version>1.8.7</groovy.version>
+    <groovy.version>1.8.6</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
     <grapht.version>0.5.0-SNAPSHOT</grapht.version>
     <grouplens.common.version>0.7-SNAPSHOT</grouplens.common.version>
@@ -235,30 +235,6 @@
             <source>1.6</source>
             <target>1.6</target>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>1.4</version>
-          <!-- force the Groovy version we want -->
-          <dependencies>
-            <dependency>
-              <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-${gmaven.runtime}</artifactId>
-              <version>1.4</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>org.codehaus.groovy</groupId>
-                  <artifactId>groovy-all</artifactId>
-                </exclusion>
-              </exclusions>
-            </dependency>
-            <dependency>
-              <groupId>org.codehaus.groovy</groupId>
-              <artifactId>groovy-all</artifactId>
-              <version>${groovy.version}</version>
-            </dependency>
-          </dependencies>
         </plugin>
 
         <!--JavaDoc -->
