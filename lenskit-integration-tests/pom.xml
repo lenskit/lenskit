@@ -71,6 +71,10 @@
               <target>
                 <ant antfile="${basedir}/src/test/ant/get-data.xml"
                      target="fetch-100k">
+                  <!--
+                   Maven only exports POM value to Ant, not command-line value.
+                   re-export here to get the right value.
+                   -->
                   <property name="data.movielens.100k"
                             value="${data.movielens.100k}"/>
                 </ant>
@@ -236,14 +240,21 @@
                 <phase>integration-test</phase>
                 <configuration>
                   <!-- Maven Way is to not fail during integration-test, and check that tests
-             succeeded in the 'verify' phase. -->
+                       succeeded in the 'verify' phase. -->
                   <failOnError>false</failOnError>
                   <!-- FIXME Find a way to detect failure beyond scanning for missing files -->
                   <target>
                     <property name="lenskit.version"
                               value="${project.version}"/>
                     <ant antfile="${basedir}/src/test/ant/test-archetypes.xml"
-                         target="all-tests"/>
+                         target="all-tests">
+                      <!--
+                       Maven only exports POM value to Ant, not command-line value.
+                       re-export here to get the right value.
+                      -->
+                      <property name="data.movielens.100k"
+                                value="${data.movielens.100k}"/>
+                    </ant>
                   </target>
                 </configuration>
               </execution>

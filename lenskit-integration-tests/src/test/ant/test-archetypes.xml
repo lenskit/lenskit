@@ -28,6 +28,7 @@
         <arg value="--settings=${basedir}/src/test/settings.xml"/>
         <arg value="-Dmock.repository.url=${mock.repository.url}"/>
         <arg value="-Dtest.repo.directory=${test.repo.directory}"/>
+        <arg value="-Ddata.movielens.100k=${data.movielens.100k}"/>
         <arg value="-Dgrouplens.mldata.acknowledge=${grouplens.mldata.acknowledge}"/>
         <arg value="lenskit-analyze"/>
       </artifact:mvn>
