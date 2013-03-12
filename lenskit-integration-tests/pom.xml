@@ -142,7 +142,6 @@
                     automatically download the dataset, set the property
                     'grouplens.mldata.acknowledge' to 'yes'.
                     For more information, see http://dev.grouplens.org/trac/lenskit/wiki/ML100K.
-                    To disable integration tests, run with '-P "!integration-tests"'
                   </message>
                 </requireProperty>
               </rules>

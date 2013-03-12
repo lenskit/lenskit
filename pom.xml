@@ -81,6 +81,7 @@
     <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
+    <module>lenskit-integration-tests</module>
   </modules>
 
   <dependencyManagement>
@@ -796,16 +797,6 @@
 
         </plugins>
       </build>
-    </profile>
-
-    <profile>
-      <id>integration-tests</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>lenskit-integration-tests</module>
-      </modules>
     </profile>
   </profiles>
 </project>
