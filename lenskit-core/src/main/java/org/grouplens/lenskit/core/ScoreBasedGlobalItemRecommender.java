@@ -48,7 +48,7 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
     @Override
     protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = getPredictableItems(items);
+            candidates = Cursors.makeSet(dao.getItems());
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(items);
@@ -71,19 +71,6 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
     protected LongSet getDefaultExcludes(LongSet items) {
         return items;
     }
-
-    /**
-     * Determine the items for which predictions can be made for a certain item.
-     * This implementation is naive and asks the DAO for all items; subclasses
-     * should override it with something more efficient if practical.
-     *
-     * @param items IDs of the basket items.
-     * @return All items for which predictions can be generated for the user.
-     */
-    protected LongSet getPredictableItems(LongSet items) {
-        return Cursors.makeSet(dao.getItems());
-    }
-
 
     /**
      * Pick the top {@var n} items from a score vector.

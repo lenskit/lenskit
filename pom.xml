@@ -46,7 +46,7 @@
     <groovy.version>1.8.7</groovy.version>
     <gmaven.runtime>1.8</gmaven.runtime>
     <grapht.version>0.5.0-SNAPSHOT</grapht.version>
-    <grouplens.common.version>0.6.1</grouplens.common.version>
+    <grouplens.common.version>0.7-SNAPSHOT</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -162,17 +162,17 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.10</version>
+        <version>4.11</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-core</artifactId>
-        <version>1.1</version>
+        <version>1.3</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-library</artifactId>
-        <version>1.1</version>
+        <version>1.3</version>
       </dependency>
       <dependency>
         <groupId>org.grouplens.common</groupId>
@@ -275,43 +275,14 @@
           <version>2.12.2</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.5.2</version>
-          <configuration>
-            <effort>Max</effort>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>2.7.1</version>
-          <configuration>
-            <format>xml</format>
-            <targetJdk>1.6</targetJdk>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>2.9.1</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.grouplens.lenskit</groupId>
-              <artifactId>build-tools</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>com.puppycrawl.tools</groupId>
-              <artifactId>checkstyle</artifactId>
-              <version>5.6</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
           <version>1.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.12.4</version>
         </plugin>
 
         <!-- Packaging and build assistance -->
@@ -511,7 +482,7 @@
               <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
             </taglet>
             <taglet>
-              <tagletClass>org.grouplens.javadoc.taglets.TracIssueTaglet</tagletClass>
+              <tagletClass>org.grouplens.javadoc.taglets.IssueTaglet</tagletClass>
             </taglet>
           </taglets>
 
@@ -714,92 +685,27 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-compile</id>
-                <configuration>
-                  <compilerArguments>
-                    <Xlint/>
-                  </compilerArguments>
-                </configuration>
-              </execution>
-            </executions>
+            <configuration>
+              <compilerArguments>
+                <Xlint/>
+              </compilerArguments>
+            </configuration>
           </plugin>
 
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <inherited>false</inherited>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.2.201302030002</version>
             <executions>
               <execution>
-                <id>sloccount</id>
-                <phase>process-sources</phase>
-                <goals><goal>run</goal></goals>
-                <configuration>
-                  <target>
-                    <exec executable="sloccount"
-                          output="${project.build.directory}/sloccount.sc"
-                          logError="true">
-                      <arg value="--wide"/>
-                      <arg value="--details"/>
-                      <arg value="${project.basedir}"/>
-                    </exec>
-                  </target>
-                </configuration>
+                <id>cov-prepare</id>
+                <goals><goal>prepare-agent</goal></goals>
+                <phase>process-test-classes</phase>
               </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <executions>
               <execution>
-                <id>lint</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-                <configuration>
-                  <findbugsXmlOutput>true</findbugsXmlOutput>
-                  <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-                  <xmlOutput>true</xmlOutput>
-                  <failOnError>false</failOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <!--<plugin> -->
-          <!--<groupId>org.apache.maven.plugins</groupId> -->
-          <!--<artifactId>maven-pmd-plugin</artifactId> -->
-          <!--<executions> -->
-          <!--<execution> -->
-          <!--<id>lint</id> -->
-          <!--<phase>verify</phase> -->
-          <!--<goals> -->
-          <!--<goal>pmd</goal> -->
-          <!--</goals> -->
-          <!--</execution> -->
-          <!--</executions> -->
-          <!--</plugin> -->
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>lint</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-                <configuration>
-                  <failOnViolation>false</failOnViolation>
-                  <failOnError>false</failOnError>
-                  <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                  <configLocation>lenskit/checkstyle.xml</configLocation>
-                </configuration>
+                <id>cov-report</id>
+                <goals><goal>report</goal></goals>
+                <phase>prepare-package</phase>
               </execution>
             </executions>
           </plugin>
@@ -825,12 +731,6 @@
 
     <profile>
       <id>integration-tests</id>
-      <activation>
-        <!-- REVIEW: Do we really want to auto-activate on .hg/branch? -->
-        <file>
-          <exists>.hg/branch</exists>
-        </file>
-      </activation>
       <modules>
         <module>lenskit-integration-tests</module>
       </modules>

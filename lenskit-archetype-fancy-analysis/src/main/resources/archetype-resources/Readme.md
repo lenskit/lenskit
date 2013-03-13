@@ -46,4 +46,4 @@ predictor along with some well-known prediction algorithms.
 
 Information on using the archetype is on the LensKit [wiki][] in the Getting Started section.
 
-[wiki]: http://dev.grouplens.org/trac/lenskit
+[wiki]: http://bitbucket.org/grouplens/lenskit/wiki/

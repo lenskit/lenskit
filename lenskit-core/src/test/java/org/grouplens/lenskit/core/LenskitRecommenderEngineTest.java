@@ -41,6 +41,7 @@ import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -174,7 +175,7 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = factory.create();
 
-        Graph g = engine.dependencies;
+        Graph g = engine.getDependencies();
         // make sure we have no record of an instance dao
         for (Node n: g.getNodes()) {
             assertNodeNotEVDao(n);
@@ -199,6 +200,32 @@ public class LenskitRecommenderEngineTest {
             verifyBasicRecommender(e2);
         } finally {
             tfile.delete();
+        }
+    }
+
+    /**
+     * Verify that we can inject subclassed DAOs.
+     */
+    @Test
+    public void testSubclassedDAO() throws RecommenderBuildException {
+        factory.addRoot(SubclassedDAODepComponent.class);
+        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommender rec = engine.open();
+        try {
+            SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);
+            assertThat(dep, notNullValue());
+            assertThat(dep.dao, notNullValue());
+        } finally {
+            rec.close();
+        }
+    }
+
+    public static class SubclassedDAODepComponent {
+        private final EventCollectionDAO dao;
+
+        @Inject
+        public SubclassedDAODepComponent(EventCollectionDAO dao) {
+            this.dao = dao;
         }
     }
 }

@@ -24,6 +24,7 @@ package org.grouplens.lenskit.data.pref;
  * A Preference that also provides 0-based indices for the user, item, and itself.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public abstract class IndexedPreference extends Preference {
     /**
@@ -52,4 +53,9 @@ public abstract class IndexedPreference extends Preference {
      * @return The user index.
      */
     public abstract int getUserIndex();
+
+    @Override
+    public IndexedPreference copy() {
+        return IndexedPreferenceBuilder.copy(this).build();
+    }
 }

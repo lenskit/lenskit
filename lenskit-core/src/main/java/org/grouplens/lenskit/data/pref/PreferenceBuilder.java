@@ -27,6 +27,7 @@ import org.apache.commons.lang3.builder.Builder;
  *
  * @author Michael Ekstrand
  * @since 0.11
+ * @compat Public
  */
 public final class PreferenceBuilder implements Builder<SimplePreference> {
     protected long user;

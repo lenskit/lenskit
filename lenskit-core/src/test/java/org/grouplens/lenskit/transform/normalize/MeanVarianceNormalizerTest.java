@@ -82,14 +82,14 @@ public class MeanVarianceNormalizerTest {
 
     @Test
     public void testBuilderNoSmoothing() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 0).get();
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 0).get();
         Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
     }
 
     @Test
     public void testBuilderSmoothing() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 3).get();
-        Assert.assertEquals(3.0, urvn.getSmoothing(), 0.0);
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3).get();
+        Assert.assertEquals(3.0, urvn.getDamping(), 0.0);
         Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
     }
 
@@ -133,7 +133,7 @@ public class MeanVarianceNormalizerTest {
 
     @Test
     public void testSmoothingDetailed() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Provider(dao, 3.0).get();
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings);
         MutableSparseVector nUR = userRatings.mutableCopy();

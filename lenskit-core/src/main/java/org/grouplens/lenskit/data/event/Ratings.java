@@ -34,6 +34,7 @@ import javax.annotation.WillClose;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utilities for working with ratings.
@@ -41,6 +42,11 @@ import java.util.Comparator;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
 public final class Ratings {
+    /**
+     * Integer to generate sequential IDs for fresh events.  Used mostly in
+     * test cases.
+     */
+    static final AtomicLong nextEventId = new AtomicLong();
 
     public static final Comparator<Rating> ITEM_TIME_COMPARATOR = new Comparator<Rating>() {
         @Override
@@ -155,7 +161,7 @@ public final class Ratings {
      * mostly useful in test cases.
      */
     public static Rating make(long uid, long iid, double value, long ts) {
-        return new SimpleRating(Events.nextEventId.incrementAndGet(),
+        return new SimpleRating(nextEventId.incrementAndGet(),
                                 uid, iid, value, ts);
     }
 }

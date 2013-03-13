@@ -31,6 +31,7 @@ import java.util.concurrent.Callable;
  * to compute it, then caches it.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @param <T> The type of value in the lazy value.
  */
 public class LazyValue<T> implements Supplier<T> {
     private volatile T value;

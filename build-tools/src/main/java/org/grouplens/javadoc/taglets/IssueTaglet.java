@@ -30,8 +30,8 @@ import java.util.Map;
  *
  * @author Michael Ekstrand
  */
-public class TracIssueTaglet implements Taglet {
-    private static String TRAC_URL = "http://dev.grouplens.org/trac/lenskit/";
+public class IssueTaglet implements Taglet {
+    private static String TRAC_URL = "http://bitbucket.org/grouplens/lenskit/issue/";
 
     private String tracUrl;
 
@@ -39,7 +39,7 @@ public class TracIssueTaglet implements Taglet {
      * Register the extra inline taglet.
      * @param url The Trac base URL.
      */
-    public TracIssueTaglet(String url) {
+    public IssueTaglet(String url) {
         tracUrl = url;
     }
 
@@ -49,7 +49,7 @@ public class TracIssueTaglet implements Taglet {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static void register(Map map) {
-        map.put("bug", new TracIssueTaglet(TRAC_URL));
+        map.put("bug", new IssueTaglet(TRAC_URL));
     }
 
     @Override
@@ -97,7 +97,6 @@ public class TracIssueTaglet implements Taglet {
         StringBuilder bld = new StringBuilder();
         bld.append("<a href=\"")
            .append(tracUrl)
-           .append("ticket/")
            .append(tag.text())
            .append("\">")
            .append("issue ")
