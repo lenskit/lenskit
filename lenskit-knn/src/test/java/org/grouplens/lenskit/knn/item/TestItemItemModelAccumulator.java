@@ -46,9 +46,7 @@ public class TestItemItemModelAccumulator {
         for (long i = 1; i <= 10; i++) {
             universe.add(i);
         }
-        SimilarityMatrixAccumulatorFactory accumFactory =
-                new SimpleSimilarityMatrixAccumulatorFactory(new RealThreshold(0.0), 5);
-        return accumFactory.create(universe);
+        return new ItemItemModelBuilder.Accumulator(universe, new RealThreshold(0.0), 5);
     }
 
     public SimilarityMatrixAccumulator normalizingAccumulator() {
@@ -57,9 +55,7 @@ public class TestItemItemModelAccumulator {
             universe.add(i);
         }
         ItemVectorNormalizer normalizer = new DefaultItemVectorNormalizer();
-        SimilarityMatrixAccumulatorFactory accumFactory =
-                new NormalizingSimilarityMatrixAccumulatorFactory(new RealThreshold(0.0), normalizer, 5);
-        return accumFactory.create(universe);
+        return new NormalizingItemItemModelBuilder.Accumulator(universe, new RealThreshold(0.0), normalizer, 5);
     }
 
     @Test

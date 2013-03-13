@@ -20,14 +20,27 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
 
 /**
  * Build an item-item CF model from rating data.
@@ -40,16 +53,18 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
     private final ItemSimilarity itemSimilarity;
     private final ItemItemBuildContextFactory contextFactory;
-    private final SimilarityMatrixAccumulatorFactory simMatrixAccumulatorFactory;
-
+    private final Threshold threshold;
+    private final int modelSize;
 
     @Inject
     public ItemItemModelBuilder(ItemSimilarity similarity,
                                 @Transient ItemItemBuildContextFactory ctxFactory,
-                                @Transient SimilarityMatrixAccumulatorFactory matrixFactory) {
+                                Threshold thresh,
+                                @ModelSize int size) {
         itemSimilarity = similarity;
         contextFactory = ctxFactory;
-        simMatrixAccumulatorFactory = matrixFactory;
+        threshold = thresh;
+        modelSize = size;
     }
 
     @Override
@@ -57,25 +72,84 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         logger.debug("building item-item model");
 
         ItemItemBuildContext buildContext = contextFactory.buildContext();
-        SimilarityMatrixAccumulator accumulator = simMatrixAccumulatorFactory.create(buildContext.getItems());
+        Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
-        for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
-            if (itemSimilarity.isSymmetric() && pair.itemId1 >= pair.itemId2) {
-                continue;
-            }
-            if (pair.itemId1 != pair.itemId2) {
-                double sim = itemSimilarity.similarity(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
-                accumulator.put(pair.itemId1, pair.itemId2, sim);
-                if (itemSimilarity.isSymmetric()) {
-                    accumulator.put(pair.itemId2, pair.itemId1, sim);
+        for (long itemId1 : buildContext.getItems()) {
+            LongIterator itemIter = buildContext.getItems().iterator(itemId1);
+            while (itemIter.hasNext()) {
+                long itemId2 = itemIter.nextLong();
+                if (itemId1 != itemId2) {
+                    SparseVector vec1 = buildContext.itemVector(itemId1);
+                    SparseVector vec2 = buildContext.itemVector(itemId2);
+                    double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
+                    accumulator.put(itemId1, itemId2, sim);
+                    accumulator.put(itemId2, itemId1, sim);
                 }
             }
-            if (pair.lastInRow) {
-                accumulator.completeRow(pair.itemId1);
-            }
+            accumulator.completeRow(itemId1);
         }
 
         return accumulator.build();
     }
 
+    public static class Accumulator implements SimilarityMatrixAccumulator {
+
+        private final Threshold threshold;
+        private Long2ObjectMap<ScoredItemAccumulator> rows;
+        private final LongSortedSet itemUniverse;
+
+        public Accumulator(LongSortedSet entities, Threshold threshold, int modelSize) {
+            logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
+            this.threshold = threshold;
+            itemUniverse = entities;
+            rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
+
+            for (long itemId : itemUniverse) {
+               if (modelSize == 0) {
+                   rows.put(itemId, new UnlimitedScoredItemAccumulator());
+               } else {
+                   rows.put(itemId, new TopNScoredItemAccumulator(modelSize));
+               }
+            }
+        }
+
+        @Override
+        @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+        public void put(long i, long j, double sim) {
+            Preconditions.checkState(rows != null, "model already built");
+
+            if (!threshold.retain(sim)) {
+                return;
+            }
+
+            // concurrent read-only array access permitted
+            ScoredItemAccumulator q = rows.get(i);
+            // synchronize on this row to add item
+            synchronized (q) {
+                q.put(j, sim);
+            }
+        }
+
+        /**
+         * Does nothing. Similarity values were accumulated and truncated
+         * upon receipt, no further processing is done here upon the result.
+         *
+         * {@inheritDoc}
+         */
+        @Override
+        public void completeRow(long rowId) {
+            // no-op
+        }
+
+        @Override
+        public SimilarityMatrixModel build() {
+            Long2ObjectMap<List<ScoredId>> data = new Long2ObjectOpenHashMap<List<ScoredId>>(rows.size());
+            for (Long2ObjectMap.Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
+                data.put(row.getLongKey(), row.getValue().finish());
+            }
+            SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
+            rows = null;  // Mark that this model has already been built.
+            return model;
+        }
+    }
 }
