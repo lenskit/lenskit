@@ -94,7 +94,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.12.4</version>
         <configuration>
           <systemPropertyVariables>
             <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
