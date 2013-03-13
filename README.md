@@ -39,7 +39,6 @@ and dependencies.  The other modules are as follows:
   of its actual implementations.
 * `lenskit-data-structures` -- common data structures used by LensKit.
   These are split from `-core` so the API can depend on them.
-* `build-tools` -- configuration & support files for building LensKit
 * `lenskit-core` -- the core support code and configuration facilities for
   the rest of LensKit. It is the entry point for most of what you want to do with
   LensKit, providing support for configuring and building recommenders.
@@ -127,13 +126,6 @@ SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
 
 while appears to be harmless.
-
-A useful thing to do first is to right click on the build-tools project and select
-"Run As" / "Maven Install".  That will install the build tools in your local Maven
-repository, so they are available for any of the other projects to use.
-
-After that, you can easily run tests in any of the other projects directly from Eclipse,
-which is faster and prettier.  Just right click a project, select "Run As" / "JUnit Test".
 
 Mercurial on Windows is sometimes a little tricky to get set up.  If
 you do not have a Mercurial.ini file, Mercurial will not know the user

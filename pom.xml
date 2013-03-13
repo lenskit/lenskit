@@ -69,7 +69,6 @@
   </repositories>
 
   <modules>
-    <module>build-tools</module>
     <module>lenskit-api</module>
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
@@ -86,12 +85,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.grouplens.lenskit</groupId>
-        <artifactId>build-tools</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
       <!-- logging -->
       <dependency>
         <groupId>ch.qos.logback</groupId>
@@ -217,11 +210,6 @@
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>build-tools</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -273,11 +261,6 @@
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>2.9.1</version>
           <dependencies>
-            <dependency>
-              <groupId>org.grouplens.lenskit</groupId>
-              <artifactId>build-tools</artifactId>
-              <version>${project.version}</version>
-            </dependency>
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
