@@ -435,9 +435,6 @@
             <taglet>
               <tagletClass>org.grouplens.javadoc.taglets.ExtraInlineTaglet</tagletClass>
             </taglet>
-            <taglet>
-              <tagletClass>org.grouplens.javadoc.taglets.IssueTaglet</tagletClass>
-            </taglet>
           </taglets>
 
           <footer><![CDATA[
