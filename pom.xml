@@ -240,38 +240,14 @@
           <version>2.12.2</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>findbugs-maven-plugin</artifactId>
-          <version>2.5.2</version>
-          <configuration>
-            <effort>Max</effort>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>2.7.1</version>
-          <configuration>
-            <format>xml</format>
-            <targetJdk>1.6</targetJdk>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>2.9.1</version>
-          <dependencies>
-            <dependency>
-              <groupId>com.puppycrawl.tools</groupId>
-              <artifactId>checkstyle</artifactId>
-              <version>5.6</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
           <version>1.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.12.4</version>
         </plugin>
 
         <!-- Packaging and build assistance -->
@@ -667,70 +643,11 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-compile</id>
-                <configuration>
-                  <compilerArguments>
-                    <Xlint/>
-                  </compilerArguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>lint</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-                <configuration>
-                  <findbugsXmlOutput>true</findbugsXmlOutput>
-                  <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
-                  <xmlOutput>true</xmlOutput>
-                  <failOnError>false</failOnError>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <!--<plugin> -->
-          <!--<groupId>org.apache.maven.plugins</groupId> -->
-          <!--<artifactId>maven-pmd-plugin</artifactId> -->
-          <!--<executions> -->
-          <!--<execution> -->
-          <!--<id>lint</id> -->
-          <!--<phase>verify</phase> -->
-          <!--<goals> -->
-          <!--<goal>pmd</goal> -->
-          <!--</goals> -->
-          <!--</execution> -->
-          <!--</executions> -->
-          <!--</plugin> -->
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>lint</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-                <configuration>
-                  <failOnViolation>false</failOnViolation>
-                  <failOnError>false</failOnError>
-                  <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                  <configLocation>lenskit/checkstyle.xml</configLocation>
-                </configuration>
-              </execution>
-            </executions>
+            <configuration>
+              <compilerArguments>
+                <Xlint/>
+              </compilerArguments>
+            </configuration>
           </plugin>
 
           <plugin>
