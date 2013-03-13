@@ -651,24 +651,6 @@
           </plugin>
 
           <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.2.201302030002</version>
-            <executions>
-              <execution>
-                <id>cov-prepare</id>
-                <goals><goal>prepare-agent</goal></goals>
-                <phase>process-test-classes</phase>
-              </execution>
-              <execution>
-                <id>cov-report</id>
-                <goals><goal>report</goal></goals>
-                <phase>prepare-package</phase>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
             <inherited>false</inherited>
