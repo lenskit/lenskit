@@ -19,32 +19,49 @@ import java.util.Properties;
 
 public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
 
-    private EvalConfig config                                          = new EvalConfig(new Properties());
+    private EvalConfig config = new EvalConfig(new Properties());
     private ArrayList<LenskitAlgorithmInstanceCommand> algoCommandList = new ArrayList<LenskitAlgorithmInstanceCommand>();
-    private ArrayList<CrossfoldCommand> crossfoldList                  = new ArrayList<CrossfoldCommand>();
+    private ArrayList<CrossfoldCommand> crossfoldList = new ArrayList<CrossfoldCommand>();
     private TrainTestEvalCommand result;
 
+    /**
+     * Constructs a SimpleConfigCommand with a name for the command and the {@code TrainTestEvalCommand}
+     * @param commandName The name of the {@code SimpleConfigCommand}
+     * @param trainName The name of the {@code TrainTestEvalCommand} being created.
+     */
     public SimpleConfigCommand(String commandName, String trainName){
         super(commandName);
         result = new TrainTestEvalCommand(trainName);
     }
+
+    /**
+     * @param commandName The name of the command being constructed
+     * @param trainName The name of the {@code TrainTestEvalCommand}
+     * @param config The EvalConfig supplied to the {@code TrainTestEvalCommand}
+     */
+    public SimpleConfigCommand(String commandName, String trainName, EvalConfig config){
+        super(commandName);
+        this.config = config;
+        result = new TrainTestEvalCommand(trainName);
+    }
+
+    /**
+     * Constructs the command with a default name. Currently this is 'train-test-builder'.
+     * @param trainName The name
+     */
     public SimpleConfigCommand(String trainName){
         super("train-test-builder");
         result = new TrainTestEvalCommand(trainName);
         result.setOutput(null);
     }
 
-    // Eval config
-    public SimpleConfigCommand setConfig(EvalConfig config){
-        this.config = config;
-        return this;
-    }
-    public SimpleConfigCommand setConfig(Properties props){
-        this.config = new EvalConfig(props);
-        return this;
-    }
-
-    // Algorithms
+    /**
+     * Adds a fully configured algorithm command to the {@code TrainTestEvalCommand} being built.
+     *
+     * If any exception is thrown while the command is called it is rethrown as a runtime error.
+     * @param algo The algorithm added to the {@code TrainTestEvalCommand}
+     * @return Itself to allow fluid chaining
+     */
     public SimpleConfigCommand  addCompleteAlgorithm(LenskitAlgorithmInstanceCommand algo){
         try{
             result.addAlgorithm(algo.call());
@@ -54,15 +71,36 @@ public class SimpleConfigCommand extends AbstractCommand<TrainTestEvalCommand>{
         }
         return this;
     }
+
+    /**
+     * Adds a {@code LenskitAlgorithmInstance} to the {@code TrainTestEvalCommand} being built.
+     * This acts as a simple wrapper around TrainTestEval.addAlgorithm
+     *
+     * @param algo The AlgorithmInstance supplied to the {@code TrainTestEvalCommand}
+     * @return
+     */
     public SimpleConfigCommand addCompleteAlgorithm(LenskitAlgorithmInstance algo){
         result.addAlgorithm(algo);
         return this;
     }
+
+    /**
+     * Creates a {@code LenskitAlgorithmInstanceCommand} with {@code algo} as a name.
+     *
+     * It is {@code call}'ed added to the {@code TrainTestEvalCommand} only when the {@code call()} method is called.
+     * @param algo The name of the algorithm to be created
+     * @return The {@code LenskitRecommenderEngineFactory} for the newly created algorithm to allow customization
+     */
     public LenskitRecommenderEngineFactory addAlgorithm(String algo){
         LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand(algo);
         algoCommandList.add(command);
         return command.getFactory();
     }
+
+    /**
+     * This is identical to {@code addAlgorithm(String algo)} except no name is provided to the {@code LenskitAlgorithmInstanceCommand}
+     * @return The factory of the new command for customization.
+     */
     public LenskitRecommenderEngineFactory addAlgorithm(){
         LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand();
         algoCommandList.add(command);
