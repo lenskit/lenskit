@@ -33,6 +33,8 @@ import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.model.FileSet;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,9 +75,14 @@ public class EvalScriptMojo extends AbstractMojo {
     /**
      * Name of recommender script.
      */
-    @Parameter(property="lenskit.eval.script",
-               defaultValue="eval.groovy")
+    @Parameter(property="lenskit.eval.script")
     private String script;
+
+    /**
+     *  Pattern of the set of evaluation files
+     */
+    @Parameter(property = "lenskit.eval.scriptFiles")
+    private FileSet scriptFiles;
 
     /**
      * Location of input data; any train-test sets will be placed
@@ -157,21 +164,76 @@ public class EvalScriptMojo extends AbstractMojo {
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
-        try {
-            File f = new File(script);
-            getLog().info("Loading evalution script from " + f.getPath());
-            engine.execute(f);
-        } catch (CommandException e) {
-            Throwable report = StackTraceUtils.deepSanitize(e).getCause();
-            if (report == null) {
-                report = e;
+        List<File> files = new ArrayList<File>();
+
+        try{
+            List<File> fromFileSet = toFileList(scriptFiles);
+            // neither script source is configured, we go with a default file
+            if(script == null && fromFileSet.isEmpty()) {
+                files.add(new File("eval.groovy"));
             }
-            getLog().error("Evaluation script failed:", report);
-            throw new MojoExecutionException("Invalid evaluation script", e);
+            // add the single script to the list of file first
+            if(script != null) {
+                files.add(new File(script));
+            }
+            // add the fileset to the list of files
+            files.addAll(fromFileSet);
         } catch (IOException e) {
-            getLog().error(script + ": IO error", e);
+            getLog().error("IO error when reading the evaluation script set", e);
             throw new MojoExecutionException("IO Exception on script", e);
         }
+        for(File f:files) {
+            try {
+                getLog().info("Loading evalution script from " + f.getPath());
+                engine.execute(f);
+            } catch (CommandException e) {
+                Throwable report = StackTraceUtils.deepSanitize(e).getCause();
+                if (report == null) {
+                    report = e;
+                }
+                getLog().error("Evaluation script failed:", report);
+                throw new MojoExecutionException("Invalid evaluation script", e);
+            } catch (IOException e) {
+                getLog().error(script + ": IO error", e);
+                throw new MojoExecutionException("IO Exception on script", e);
+            }
+        }
+    }
+
+    /**
+     * Convert fileset to a list of files
+     * @param fileSet
+     * @return  a list of files
+     * @throws IOException
+     */
+    private static List<File> toFileList(FileSet fileSet) throws IOException {
+        if(fileSet.getDirectory() == null) {
+            fileSet.setDirectory("./");
+        }
+        File dir = new File(fileSet.getDirectory());
+        String includes = toString(fileSet.getIncludes());
+        String excludes = toString(fileSet.getExcludes());
+        try{
+            return FileUtils.getFiles(dir, includes, excludes);
+        } catch (IOException e) {
+            throw e;
+        }
+    }
+
+    /**
+     *  Concatenate a list of strings seperated by ','
+     *  @param strings a list of strings
+     *  @return concatenated string
+     *
+     */
+    private static String toString(List<String> strings) {
+        StringBuilder builder = new StringBuilder();
+        for (String string : strings) {
+            if (builder.length() > 0)
+                builder.append(", ");
+            builder.append(string);
+        }
+        return builder.toString();
     }
 
     /**
