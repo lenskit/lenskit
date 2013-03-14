@@ -10,19 +10,9 @@
     <condition property="data.movielens.100k.avail">
       <available file="${data.movielens.100k}/u.data"/>
     </condition>
-    <!-- Check if the ML-100K data dir is outside target/.
-         If it is, we won't download and extract. -->
-    <condition property="data.movielens.100k.external">
-      <scriptcondition language="javascript" value="false">
-        var dir = project.getProperty("data.movielens.100k");
-        var tgtDir = project.getProperty("project.build.directory");
-        self.setValue(!dir.startsWith(tgtDir));
-      </scriptcondition>
-    </condition>
-    <echo message="ML-100K in ${data.movielens.100k}"/>
   </target>
 
-  <target name="download-100k" depends="check-100k" unless="data.movielens.100k.external">
+  <target name="download-100k" depends="check-100k">
 
     <fail message="This analysis makes use of the MovieLens 100K data
          set from GroupLens Research. Use of this data set is restricted to
@@ -30,7 +20,7 @@
          license terms. To use this data in LensKit's automated tests, set the
          `grouplens.mldata.acknowledge' property to `yes' to indicate you
          acknowledge the usage license.  More information is available at
-         &lt;http://www.grouplens.org/node/73&gt;.">
+         &lt;http://bitbucket.org/grouplens/lenskit/wiki/ML100K&gt;.">
 
       <condition>
         <not>
@@ -39,6 +29,9 @@
         </not>
       </condition>
     </fail>
+
+    <echo message="Downloading ML-100K data set"/>
+
     <mkdir dir="${project.build.directory}/data"/>
     <get src="http://www.grouplens.org/system/files/ml-100k.zip"
          dest="${mldata.zipfile}"
@@ -46,10 +39,7 @@
   </target>
 
   <target name="extract-100k" depends="check-100k,download-100k" unless="data.movielens.100k.avail">
-    <!-- If we got this far, and the data is external (not in target/), we don't want to
-         download. Fail with an error message instead. -->
-    <fail message="No ML-100K in ${data.movielens.100k}"
-          if="data.movielens.100k.external"/>
+    <echo message="Extracting ML-100K data set to ${data.movielens.100k}"/>
     <unzip src="${mldata.zipfile}" dest="${data.movielens.100k}">
       <patternset>
         <include name="ml-100k/*"/>
