@@ -29,6 +29,7 @@ import com.google.common.io.Files
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.CSVDataSource
+import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.junit.Ignore
 import org.grouplens.lenskit.eval.data.subsample.SubsampleCommand
 import org.junit.Before
@@ -38,6 +39,9 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DAOFactory
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * Test subsample configuration
@@ -45,47 +49,52 @@ import org.grouplens.lenskit.data.event.Rating;
  */
 class TestSubsampleConfig extends ConfigTestBase {
 
-    def file = File.createTempFile("tempRatings", "csv")
+    def GenericDataSource dataSource = null;
+    def SimplePreference pref = new SimplePreference(1, 2, 3); 
     def trainTestDir = Files.createTempDir()
-
+    def ratings = [
+        new SimpleRating(1, pref),
+        new SimpleRating(2, pref),
+        new SimpleRating(3, pref),
+        new SimpleRating(4, pref),
+        new SimpleRating(5, pref),
+        new SimpleRating(6, pref),
+        new SimpleRating(7, pref),
+        new SimpleRating(8, pref),
+        new SimpleRating(9, pref),
+        new SimpleRating(10, pref),
+        ];
     @Before
     void prepareFile() {
-        file.deleteOnExit()
-        file.append('19,242,3,881250949\n')
-        file.append('296,242,3.5,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
+        DAOFactory factory = new EventCollectionDAO.Factory(ratings);
+        dataSource = new GenericDataSource("sampleSource",factory);
     }
-
+   
     @After
     void cleanUpFiles() {
-        file.delete()
         trainTestDir.deleteDir()
     }
 
     @Test
     void testBasicSubsample() {
         def obj = eval {
-            subsample("tempRatings") {
-                source file
-                subsampleFraction 0.2
+            subsample("sampleSource") {
+                source dataSource
+                fraction 0.2
                 output trainTestDir.getAbsolutePath() + "/subsample.csv"
             }
         }
         
         DAOFactory factory = obj.getDAOFactory();
         DataAccessObject daoSnap = factory.snapshot();
-        Cursor<Rating> events = daoSnap.getEvents(Rating.class);
-        List<Rating> ratings = Cursors.makeList(events);
-        
-        assertThat(ratings.size(), equalTo(2))
-        daoSnap.close();
+        try{
+            Cursor<Rating> events = daoSnap.getEvents(Rating.class);
+            List<Rating> ratings = Cursors.makeList(events);
+     
+            assertThat(ratings.size(), equalTo(2))
+        } finally{
+            daoSnap.close();
+        }
     }
 
 }

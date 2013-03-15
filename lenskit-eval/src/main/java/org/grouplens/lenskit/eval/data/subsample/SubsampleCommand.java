@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+
+import javax.annotation.Nullable;
 /**
  * The command to build and run a Subsample on the data source file and output the partition files
  *
@@ -54,31 +56,28 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
 
     private DataSource source;
     private double subsampleFraction = 0.1;
-    private double randomProportion;
-    private String output;
-    private boolean isForced;
+    
+    @Nullable
+    private File output;
     
     public SubsampleCommand() {
         super("Subsample");
     }
 
     public SubsampleCommand(String name) {
-        super();
-        if (name != null) {
-            setName(name);
-        }
+        super(name);
     }
     
     /**
      * Set the fraction of subsample to generate.
      *
-     * @param fraction The number of percentage
+     * @param fraction The fraction of ratings to keep.
      * @return The SubsampleCommand object  (for chaining)
      */
-    public SubsampleCommand setSubsampleFraction(double fraction) {
+    public SubsampleCommand setFraction(double fraction) {
         if(fraction >= 0 && fraction <= 1){
             subsampleFraction = fraction;
-        }else {
+        } else {
             subsampleFraction = 0.1;
         }
         return this;
@@ -92,7 +91,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @see #setTrain(String)
      */
     public SubsampleCommand setOutput(String pat) {
-        output = pat;
+        output = new File(pat);
         return this;
     }
     
@@ -106,43 +105,15 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         this.source = source;
         return this;
     }
-
-    /**
-     * Set the force running option of the command. The subsample will be forced to
-     * ran with the isForced set to true regardless of whether the partition files
-     * are up to date.
-     *
-     * @param force The force to run option
-     * @return The SubsampleCommand object  (for chaining)
-     */
-    public SubsampleCommand setForce(boolean force) {
-        isForced = force;
-        return this;
-    }
-
-    /**
-     * Get the visible name of this subsample file.
-     *
-     * @return The name of the subsample file.
-     */
-    @Override
-    public String getName() {
-        if (name.equals("Subsample")) {
-            return source.getName();
-        } else {
-            return name;
-        }
-    }
     
     /**
      * Get the output name of subsample file
      * 
      * @return The output name of the subsample file
      */
-    public String getOutput() {
-        if (output == null) {
-            output = name + ".subsample.csv";
-        }
+    public File getOutput() {
+        if(output == null)
+            output = new File(name + ".subsample.csv");
         return output;
     }
 
@@ -160,29 +131,17 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      *
      * @return The number of size in subsample file.
      */
-    public double getSubsampleFraction() {
+    public double getFraction() {
         return subsampleFraction;
     }
 
-    /**
-     * Set the force running option of the command. The subsample will be forced to
-     * ran with the isForced set to true regardless of whether the files
-     * are up to date.
-     *
-     * @param force The force to run option
-     * @return The SubsampleCommand object  (for chaining)
-     */
-    public boolean getForce() {
-        return isForced || getConfig().force();
-    }
-    
     /**
      * Use CSVDataSourceCommand to generate output DataSource file
      * 
      * @return DataSource The subsample DataSource file
      */
-    public DataSource getSubsampleFile() {
-        File subsampleFile = new File(output);
+    private DataSource makeDataSource() {
+        File subsampleFile = getOutput();
         CSVDataSourceCommand sampleCommand = new CSVDataSourceCommand()
                 .setDomain(source.getPreferenceDomain())
                 .setFile(subsampleFile);
@@ -190,19 +149,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     }
     
     /**
-     * Initialize the output file name before call subsampleCommand
-     * 
-     * @return The SubsampleCommand object  (for chaining
-     */
-    private SubsampleCommand initialize() {
-        if (output == null) {
-            output = name + ".subsample.csv";
-        }
-        return this;
-    }
-    
-    /**
-     * Run the Subsample command. Write the subsample files to the disk by reading in the source file.
+     * Run the Subsample command.
      *
      * @return DataSource The subsample DataSource file
      * @throws org.grouplens.lenskit.eval.CommandException
@@ -210,27 +157,24 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      */
     @Override
     public DataSource call() throws CommandException {
-        this.initialize();
-        if (!getForce()) {
-            UpToDateChecker check = new UpToDateChecker();
-            check.addInput(source.lastModified());
-            File subsampleFile = new File(output);
-            check.addOutput(subsampleFile);
-            if (check.isUpToDate()) {
-                logger.info("subsample {} up to date", getName());
-                return getSubsampleFile();
-            }
+        UpToDateChecker check = new UpToDateChecker();
+        check.addInput(source.lastModified());
+        File subsampleFile = getOutput();
+        check.addOutput(subsampleFile);
+        if (check.isUpToDate()) {
+            logger.info("subsample {} up to date", getName());
+            return makeDataSource();
         }
         DAOFactory factory = source.getDAOFactory();
         DataAccessObject daoSnap = factory.snapshot();
         try {
-            logger.info("Set subsample data source {} to {} proportion",
-                        getName(), subsampleFraction);
+            logger.info("sampling {} of {}",
+                        subsampleFraction, source.getName());
             createFile(daoSnap);
         } finally {
             daoSnap.close();
         }
-        return getSubsampleFile();
+        return makeDataSource();
     }
 
     /**
@@ -240,8 +184,8 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Any error
      */
-    protected void createFile(DataAccessObject dao ) throws CommandException {
-        File subsampleFile = new File(output);
+    private void createFile(DataAccessObject dao ) throws CommandException {
+        File subsampleFile = getOutput();
         TableWriter subsampleWriter = null;
         try {
             try {
@@ -253,12 +197,10 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
             List<Rating> ratings = Cursors.makeList(events);
             try {
                 final int n = ratings.size();
-                randomProportion = subsampleFraction * n;
-                final int m = (int)randomProportion;
-                int randomNumber;
+                final int m = (int)(subsampleFraction * n);
                 for (int i = 0; i < m; i++) {
-                    randomNumber = random.nextInt(n-1-i) + i;
-                    ratings.set(i, ratings.set(randomNumber, ratings.get(i)));
+                    int j = random.nextInt(n-1-i) + i;
+                    ratings.set(i, ratings.set(j, ratings.get(i)));
                         
                     writeRating(subsampleWriter, ratings.get(i));     
                 }
@@ -266,7 +208,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
                 throw new CommandException("Error writing to the train test files", e);
             } 
         } finally {
-            LKFileUtils.close(logger, subsampleWriter);
+            LKFileUtils.close(subsampleWriter);
         }
     }
 
@@ -277,7 +219,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param rating The rating event to output
      * @throws IOException The writer IO error
      */
-    protected void writeRating(TableWriter writer, Rating rating) throws IOException {
+    private void writeRating(TableWriter writer, Rating rating) throws IOException {
         String[] row = new String[4];
         row[0] = Long.toString(rating.getUserId());
         row[1] = Long.toString(rating.getItemId());
