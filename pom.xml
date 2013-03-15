@@ -325,7 +325,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <!-- Don't inherit top-level-only site settings. Inherited settings 
+        <!-- Don't inherit top-level-only site settings. Inherited settings
           will go in pluginManagement. -->
         <inherited>false</inherited>
 
@@ -334,31 +334,33 @@
         </configuration>
       </plugin>
 
+      <!-- Build the SASS style sheet for the site. -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
         <inherited>false</inherited>
         <executions>
           <execution>
             <id>compile-sass</id>
-            <phase>site</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
+            <phase>pre-site</phase> <!-- to make sure it's done before the site -->
+            <goals><goal>run</goal></goals>
             <configuration>
-              <executable>sass</executable>
-              <arguments>
-                <argument>--no-cache</argument>
-                <argument>-t</argument>
-                <argument>compact</argument>
-                <argument>src/site/scss/main.scss</argument>
-                <argument>${project.build.directory}/site/main.css</argument>
-              </arguments>
+              <target>
+                <mkdir dir="${project.build.directory}/site"/>
+                <exec executable="sass">
+                  <arg value="--no-cache"/>
+                  <arg value="-t"/>
+                  <arg value="compact"/>
+                  <arg value="src/site/scss/main.scss"/>
+                  <arg value="${project.build.directory}/site/main.css"/>
+                </exec>
+              </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <!-- Format the licensing plugin -->
       <plugin>
         <groupId>com.mycila.maven-license-plugin</groupId>
         <artifactId>maven-license-plugin</artifactId>
