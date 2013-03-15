@@ -74,24 +74,25 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param fraction The fraction of ratings to keep.
      * @return The SubsampleCommand object  (for chaining)
      */
-    public SubsampleCommand setFraction(double fraction) {
-        if(fraction >= 0 && fraction <= 1){
+    public SubsampleCommand setFraction(double fraction) throws IllegalArgumentException {
+        if (fraction >= 0 && fraction <= 1) {
             subsampleFraction = fraction;
         } else {
-            subsampleFraction = 0.1;
+            String msg = String.format("fraction %f not in range [0,1]", fraction);
+            throw new IllegalArgumentException(msg);
         }
         return this;
     }
     
     /**
-     * Set the pattern for the out putsubsample File.
+     * Configure the output file name for the out put subsample File.
      *
      * @param pat The subsample file name pattern.
      * @return The SubsampleCommand object  (for chaining)
      * @see #setTrain(String)
      */
-    public SubsampleCommand setOutput(String pat) {
-        output = new File(pat);
+    public SubsampleCommand setOutput(String name) {
+        output = new File(name);
         return this;
     }
     
@@ -112,8 +113,9 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @return The output name of the subsample file
      */
     public File getOutput() {
-        if(output == null)
-            output = new File(name + ".subsample.csv");
+        if (output == null) {
+            return new File(name + ".subsample.csv");
+        }
         return output;
     }
 
@@ -171,6 +173,8 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
             createFile(daoSnap);
+        } catch (IOException e) {
+            throw new CommandException("Error writing output file", e);
         } finally {
             daoSnap.close();
         }
@@ -184,29 +188,20 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Any error
      */
-    private void createFile(DataAccessObject dao ) throws CommandException {
+    private void createFile(DataAccessObject dao ) throws IOException {
         File subsampleFile = getOutput();
         TableWriter subsampleWriter = null;
         try {
-            try {
-                subsampleWriter = CSVWriter.open(subsampleFile, null);
-            } catch (IOException e) {
-                throw new CommandException("Error creating subsample file writer", e);
-            }
+            subsampleWriter = CSVWriter.open(subsampleFile, null);
             Cursor<Rating> events = dao.getEvents(Rating.class);
             List<Rating> ratings = Cursors.makeList(events);
-            try {
-                final int n = ratings.size();
-                final int m = (int)(subsampleFraction * n);
-                for (int i = 0; i < m; i++) {
-                    int j = random.nextInt(n-1-i) + i;
-                    ratings.set(i, ratings.set(j, ratings.get(i)));
-                        
-                    writeRating(subsampleWriter, ratings.get(i));     
-                }
-            } catch (IOException e) {
-                throw new CommandException("Error writing to the train test files", e);
-            } 
+            final int n = ratings.size();
+            final int m = (int)(subsampleFraction * n);
+            for (int i = 0; i < m; i++) {
+                int j = random.nextInt(n-1-i) + i;
+                ratings.set(i, ratings.set(j, ratings.get(i)));        
+                writeRating(subsampleWriter, ratings.get(i));     
+            }
         } finally {
             LKFileUtils.close(subsampleWriter);
         }

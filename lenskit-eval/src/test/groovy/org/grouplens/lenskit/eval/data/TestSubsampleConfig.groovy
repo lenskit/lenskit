@@ -65,7 +65,7 @@ class TestSubsampleConfig extends ConfigTestBase {
         new SimpleRating(10, pref),
         ];
     @Before
-    void prepareFile() {
+    void prepareDataSource() {
         DAOFactory factory = new EventCollectionDAO.Factory(ratings);
         dataSource = new GenericDataSource("sampleSource",factory);
     }
@@ -81,7 +81,7 @@ class TestSubsampleConfig extends ConfigTestBase {
             subsample("sampleSource") {
                 source dataSource
                 fraction 0.2
-                output trainTestDir.getAbsolutePath() + "/subsample.csv"
+                output new File(trainTestDir, "subsample.csv")
             }
         }
         
