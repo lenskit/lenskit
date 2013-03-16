@@ -51,10 +51,16 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
     @Test
     public void testAlgorithmAccuracy() throws CommandException {
-        if (workDirName == null) {
-            throw new IllegalStateException("must configure lenskit.temp.dir");
+        if (workDirName == null) {  // no property specified
+            workDirName = "data/temp";
         }
-        File work = new File(workDirName);
+        File workDir = new File(workDirName);
+        try {
+            workDir.mkdirs();
+        } catch(SecurityException se) {
+            throw new IllegalStateException("must configure lenskit.temp.dir to refer to a directory "
+                                            + "in which a temp directory can be created");
+        }
 
         EvalConfig config = new EvalConfig();
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
@@ -65,8 +71,8 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         cross.setSource(new GenericDataSource("ml-100k", daoFactory));
         cross.setPartitions(5);
         cross.setHoldout(0.2);
-        cross.setTrain(new File(work, "train.%d.csv").getAbsolutePath());
-        cross.setTest(new File(work, "test.%d.csv").getAbsolutePath());
+        cross.setTrain(new File(workDir, "train.%d.csv").getAbsolutePath());
+        cross.setTest(new File(workDir, "test.%d.csv").getAbsolutePath());
 
         TrainTestEvalCommand tt = new TrainTestEvalCommand("train-test");
         tt.setConfig(config);
