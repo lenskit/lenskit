@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;

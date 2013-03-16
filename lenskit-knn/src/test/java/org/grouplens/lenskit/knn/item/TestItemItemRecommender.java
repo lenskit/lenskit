@@ -47,9 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
@@ -124,7 +124,7 @@ public class TestItemItemRecommender {
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-                get(7), closeTo(1.0));
+                get(7), closeTo(1.0, 1.0e-5));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
 
@@ -134,7 +134,7 @@ public class TestItemItemRecommender {
         assertThat(scorer, notNullValue());
         scores = scorer.score(history, LongArrayList.wrap(items2));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-                get(9), closeTo(3.0));  // 1, 7, 8
+                get(9), closeTo(3.0, 1.0e-5));  // 1, 7, 8
     }
 
     /**
