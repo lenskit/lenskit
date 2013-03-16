@@ -20,22 +20,17 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
-
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-
-import java.util.Set;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
+import java.util.Set;
+
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

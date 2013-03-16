@@ -20,27 +20,21 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.junit.Test;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.*;
 
 public abstract class SparseVectorTestCommon {
     /**
@@ -68,6 +62,10 @@ public abstract class SparseVectorTestCommon {
      * @return A rating vector mapping {3, 5, 8} to {2, 2.3, 1.7}.
      */
     protected abstract SparseVector simpleVector2();
+
+    public static Matcher<Double> closeTo(double v) {
+        return Matchers.closeTo(v, 1.0e-5);
+    }
 
     @Test
     public void testDot() {
