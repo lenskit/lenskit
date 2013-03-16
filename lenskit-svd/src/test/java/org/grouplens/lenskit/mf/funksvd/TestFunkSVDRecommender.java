@@ -52,6 +52,7 @@ public class TestFunkSVDRecommender {
     private static ItemRecommender recommender;
     private static DataAccessObject dao;
 
+    @SuppressWarnings("deprecation")
     @BeforeClass
     public static void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();

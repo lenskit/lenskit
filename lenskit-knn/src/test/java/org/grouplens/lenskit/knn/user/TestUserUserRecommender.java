@@ -46,6 +46,7 @@ public class TestUserUserRecommender {
     private Recommender rec;
     private EventCollectionDAO dao;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();

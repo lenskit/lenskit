@@ -28,9 +28,10 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
@@ -38,7 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -54,7 +54,7 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(FunkSVDRecommender.class);
+               .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
                .to(FunkSVDRatingPredictor.class);
         factory.bind(BaselinePredictor.class)

@@ -70,7 +70,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         cross.setConfig(config);
         cross.setSource(new GenericDataSource("ml-100k", daoFactory));
         cross.setPartitions(5);
-        cross.setHoldout(0.2);
+        cross.setHoldoutFraction(0.2);
         cross.setTrain(new File(workDir, "train.%d.csv").getAbsolutePath());
         cross.setTest(new File(workDir, "test.%d.csv").getAbsolutePath());
 

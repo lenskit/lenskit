@@ -60,6 +60,7 @@ public class TestFunkSVDRecommenderBuild {
         daoFactory = new EventCollectionDAO.Factory(rs);
     }
 
+    @SuppressWarnings("deprecation")
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
@@ -71,6 +72,7 @@ public class TestFunkSVDRecommenderBuild {
         return factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();

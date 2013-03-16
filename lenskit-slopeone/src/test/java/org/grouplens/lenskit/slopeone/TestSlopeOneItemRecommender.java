@@ -46,6 +46,7 @@ import static org.junit.Assert.assertThat;
 public class TestSlopeOneItemRecommender {
     private LenskitRecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -65,6 +66,7 @@ public class TestSlopeOneItemRecommender {
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSlopeOneRecommenderEngineCreate() {
         Recommender rec = engine.open();

@@ -64,7 +64,7 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
         this(thresh, 0);
     }
 
-    @Override
+    @Override @Deprecated
     public boolean isFinished(int n, double d) {
         return n >= minIterations && Math.abs(d) < threshold;
     }

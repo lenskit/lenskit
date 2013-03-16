@@ -28,6 +28,7 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
@@ -54,7 +55,7 @@ public class TestItemItemBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ItemItemRecommender.class);
+               .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
                .to(ItemItemRatingPredictor.class);
         factory.within(ItemVectorSimilarity.class)

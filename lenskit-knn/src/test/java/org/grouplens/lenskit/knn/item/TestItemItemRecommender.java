@@ -58,6 +58,7 @@ public class TestItemItemRecommender {
     private LenskitRecommender session;
     private ItemRecommender recommender;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -327,7 +328,7 @@ public class TestItemItemRecommender {
 
     //Helper method to retrieve user's user and create SparseVector
     private UserHistory<Rating> getRatings(long user) {
-        DataAccessObject dao = session.getRatingDataAccessObject();
+        DataAccessObject dao = session.getDataAccessObject();
         return dao.getUserHistory(user, Rating.class);
     }
 

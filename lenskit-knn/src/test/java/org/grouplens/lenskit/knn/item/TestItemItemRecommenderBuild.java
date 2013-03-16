@@ -42,6 +42,7 @@ public class TestItemItemRecommenderBuild {
 
     private LenskitRecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -63,6 +64,7 @@ public class TestItemItemRecommenderBuild {
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testItemItemRecommenderEngineCreate() {
         Recommender rec = engine.open();

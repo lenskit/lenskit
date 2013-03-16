@@ -42,6 +42,7 @@ import static org.junit.Assert.assertThat;
  * @author Michael Ekstrand
  */
 public class TestItemItemAccuracy extends CrossfoldTestSuite {
+    @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitRecommenderEngineFactory factory) {
         factory.bind(RatingPredictor.class)

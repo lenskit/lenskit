@@ -39,6 +39,7 @@ public class TestUserUserRecommenderBuild {
 
     private static RecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -57,6 +58,7 @@ public class TestUserUserRecommenderBuild {
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testUserUserRecommenderEngineCreate() {
         Recommender rec = engine.open();
