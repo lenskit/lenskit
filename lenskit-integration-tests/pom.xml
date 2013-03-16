@@ -75,8 +75,8 @@
                    Maven only exports POM value to Ant, not command-line value.
                    re-export here to get the right value.
                    -->
-                  <property name="data.movielens.100k"
-                            value="${data.movielens.100k}"/>
+                  <property name="lenskit.movielens.100k"
+                            value="${lenskit.movielens.100k}"/>
                 </ant>
               </target>
             </configuration>
@@ -250,8 +250,8 @@
                        Maven only exports POM value to Ant, not command-line value.
                        re-export here to get the right value.
                       -->
-                      <property name="data.movielens.100k"
-                                value="${data.movielens.100k}"/>
+                      <property name="lenskit.movielens.100k"
+                                value="${lenskit.movielens.100k}"/>
                     </ant>
                   </target>
                 </configuration>
