@@ -50,10 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -106,24 +103,13 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
-        File file = makeCSV(data.getTrainFactory(), data.getName() + ".train.csv", true);
+        File file = makeCSV(data.getTrainFactory(), getName() + ".train.csv", true);
         logger.debug("wrote training file {}", file);
         return file;
     }
 
     private File testFile(TTDataSet data) {
-        try {
-            GenericTTDataSet gds = (GenericTTDataSet) data;
-            CSVDataSource csv = (CSVDataSource) gds.getTestData();
-            if (",".equals(csv.getDelimiter())) {
-                File file = csv.getFile();
-                logger.debug("using test file {}", file);
-                return file;
-            }
-        } catch (ClassCastException e) {
-            /* No-op - this is fine, we will make a file. */
-        }
-        File file = makeCSV(data.getTestFactory(), data.getName() + ".test.csv", true);
+        File file = makeCSV(data.getTestFactory(), getName() + ".test.csv", true);
         logger.debug("wrote test file {}", file);
         return file;
     }
@@ -188,12 +174,14 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         Process proc;
         try {
             proc = new ProcessBuilder().command(args)
-                                               .directory(workDir)
-                                               .start();
+                                       .directory(workDir)
+                                       .redirectError(ProcessBuilder.Redirect.PIPE)
+                                       .start();
         } catch (IOException e) {
             throw new RecommenderBuildException("error creating process", e);
         }
-        // TODO Proxy standard error out to the logger
+        Thread listen = new ProcessErrorHandler(proc.getErrorStream());
+        listen.run();
 
         int result = -1;
         boolean done = false;
@@ -277,6 +265,28 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         @Override
         public void close() {
             dao.close();
+        }
+    }
+
+    private class ProcessErrorHandler extends Thread {
+        private final BufferedReader error;
+
+        public ProcessErrorHandler(InputStream err) {
+            super("external");
+            setDaemon(true);
+            error = new BufferedReader(new InputStreamReader(err));
+        }
+
+        @Override
+        public void run() {
+            String line;
+            try {
+                while ((line = error.readLine()) != null) {
+                    logger.info("external: " + line);
+                }
+            } catch (IOException e) {
+                logger.error("IO error reading error stream", e);
+            }
         }
     }
 }
