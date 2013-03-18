@@ -26,6 +26,9 @@ LensKit Release Notes
   * Added support for <<at>> context matchers (via Grapht), to make it easier to configure
     complex configurations. See the {{{http://bitbucket.org/grouplens/lenskit/wiki/Configuration}manual}}
     for more details.
+
+  * Made <<<SparseVector>>> constructors package-private.  Sparse vectors shouldn't be
+    subclassed by any additional classes.
   
   []
 
