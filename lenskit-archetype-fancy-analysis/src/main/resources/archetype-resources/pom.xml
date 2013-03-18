@@ -14,6 +14,7 @@
     <lenskit.eval.scriptDir>\${basedir}/src/eval/</lenskit.eval.scriptDir>
     <lenskit.eval.dataDir>\${basedir}/target/data/</lenskit.eval.dataDir>
     <lenskit.eval.analysisDir>\${basedir}/target/analysis/</lenskit.eval.analysisDir>
+    <lenskit.eval.publishDir>\${basedir}/src/paper/</lenskit.eval.publishDir>
 
     <!-- The version of LensKit for your project -->
     <!-- Note that we use project.version to pick up the version from the source tree this 
@@ -24,6 +25,11 @@
          in your PATH. If you need to override this, it should probably be done in
          ~/.m2/settings.xml rather than here. -->
     <rscript.executable>Rscript</rscript.executable>
+    
+    <!-- The location of the LaTeX executable. The default is to search for pdflatex
+         in your PATH. If you need to override this, it should probably be done in
+         ~/.m2/settings.xml rather than here. -->
+    <latex.executable>pdflatex</latex.executable>
 
     <!-- Uncomment and change below to 'yes' if you accept the MovieLens data terms of service. 
       <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
@@ -151,6 +157,31 @@
               <workingDirectory>\${lenskit.eval.analysisDir}</workingDirectory>
               <arguments>
                 <argument>\${lenskit.eval.scriptDir}/chart.R</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- This plugin executes the LaTeX executable to produce the PDF version of our paper. 
+        We use an execution so we can tie this plugin to the appropriate 
+        phase of the lenskit lifecycle. -->
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <phase>lenskit-publish</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${latex.executable}</executable>
+              <workingDirectory>\${lenskit.eval.publishDir}</workingDirectory>
+              <arguments>
+                <argument>\${lenskit.eval.publishDir}/main.tex</argument>
               </arguments>
             </configuration>
           </execution>
