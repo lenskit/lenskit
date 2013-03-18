@@ -63,7 +63,8 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 
     /**
      * Get the predictor's baseline.
-     * @return
+     *
+     * @return The baseline predictor for this predictor.
      */
     @Nullable
     public BaselinePredictor getBaseline() {
@@ -177,6 +178,7 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
+            assert domain != null;
             baseTransform.unapply(vector);
             domain.clampVector(vector);
             return vector;
