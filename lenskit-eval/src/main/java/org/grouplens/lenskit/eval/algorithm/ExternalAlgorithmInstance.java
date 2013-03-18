@@ -95,14 +95,14 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             CSVDataSource csv = (CSVDataSource) gds.getTrainData();
             if (",".equals(csv.getDelimiter())) {
                 File file = csv.getFile();
-                logger.debug("using test file {}", file);
+                logger.debug("using training file {}", file);
                 return file;
             }
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
         File file = makeCSV(data.getTrainFactory(), data.getName() + ".train.csv");
-        logger.debug("wrote train file {}", file);
+        logger.debug("wrote training file {}", file);
         return file;
     }
 
@@ -112,14 +112,14 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             CSVDataSource csv = (CSVDataSource) gds.getTestData();
             if (",".equals(csv.getDelimiter())) {
                 File file = csv.getFile();
-                logger.debug("using train file {}", file);
+                logger.debug("using test file {}", file);
                 return file;
             }
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
         File file = makeCSV(data.getTestFactory(), data.getName() + ".train.csv");
-        logger.debug("wrote train file {}", file);
+        logger.debug("wrote test file {}", file);
         return file;
     }
 
