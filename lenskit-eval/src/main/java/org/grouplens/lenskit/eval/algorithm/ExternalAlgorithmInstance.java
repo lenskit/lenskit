@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
@@ -38,6 +39,10 @@ import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
+import org.grouplens.lenskit.util.tablewriter.CSVWriter;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
+import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
+import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -101,7 +106,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
-        File file = makeCSV(data.getTrainFactory(), data.getName() + ".train.csv");
+        File file = makeCSV(data.getTrainFactory(), data.getName() + ".train.csv", true);
         logger.debug("wrote training file {}", file);
         return file;
     }
@@ -118,31 +123,37 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
-        File file = makeCSV(data.getTestFactory(), data.getName() + ".train.csv");
+        File file = makeCSV(data.getTestFactory(), data.getName() + ".test.csv", true);
         logger.debug("wrote test file {}", file);
         return file;
     }
 
-    private File makeCSV(DAOFactory daof, String fn) {
+    private File makeCSV(DAOFactory daof, String fn, boolean writeRatings) {
         // TODO Make this not re-copy data unnecessarily
         File file = new File(workDir, fn);
         DataAccessObject dao = daof.create();
         try {
-            FileWriter w = new FileWriter(file);
+            Object[] row = new Object[writeRatings ? 3 : 2];
+            TableWriter table = CSVWriter.open(file, null);
             try {
                 Cursor<Rating> ratings = dao.getEvents(Rating.class);
                 try {
                     for (Rating r: ratings) {
                         Preference p = r.getPreference();
                         if (p != null) {
-                            w.write(String.format("%d,%d,%f\n", r.getUserId(), r.getItemId(), p.getValue()));
+                            row[0] = r.getUserId();
+                            row[1] = r.getItemId();
+                            if (writeRatings) {
+                                row[2] = p.getValue();
+                            }
+                            table.writeRow(row);
                         }
                     }
                 } finally {
                     ratings.close();
                 }
             } finally {
-                w.close();
+                table.close();
             }
         } catch (IOException e) {
             throw new RuntimeException("error writing " + fn, e);
@@ -172,7 +183,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             }
         });
 
-        logger.info("running {}", args);
+        logger.info("running {}", StringUtils.join(args, " "));
 
         Process proc;
         try {
