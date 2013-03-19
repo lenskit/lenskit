@@ -18,9 +18,9 @@
  */
 package ${package};
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.closeTo;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.util.ArrayList;
@@ -97,26 +97,26 @@ public class TestMeanPredictor {
         // User 1
         MutableSparseVector scores1 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         predictor.score(1L, scores1);
-        assertThat(scores1.get(5), closeTo(3.25));
-        assertThat(scores1.get(7), closeTo(3.75));
-        assertThat(scores1.get(10), closeTo(3.75));  // user overall average
-        assertThat(scores1.get(4), notANumber());
+        assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
+        assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
+        assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
+        assertTrue(Double.isNaN(scores1.get(4)));
 
         // User 8
         long[] items8 = {4, 5, 7};
 
         MutableSparseVector scores8 = MutableSparseVector.wrap(items8, ratings); // ratings ignored
         predictor.score(8L, scores8);
-        assertThat(scores8.get(5), closeTo(3.75));
-        assertThat(scores8.get(7), closeTo(4.25));
-        assertThat(scores8.get(4), closeTo(5.25));
+        assertThat(scores8.get(5), closeTo(3.75, 1.0e-5));
+        assertThat(scores8.get(7), closeTo(4.25, 1.0e-5));
+        assertThat(scores8.get(4), closeTo(5.25, 1.0e-5));
         
         // User 2, not in the set of users in the DAO
         MutableSparseVector scores2 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         predictor.score(2L, scores2);
-        assertThat(scores2.get(5), closeTo(3.5));
-        assertThat(scores2.get(4), notANumber());
-        assertThat(scores2.get(7), closeTo(4));
+        assertThat(scores2.get(5), closeTo(3.5, 1.0e-5));
+        assertTrue(Double.isNaN(scores2.get(4)));
+        assertThat(scores2.get(7), closeTo(4, 1.0e-5));
      }
     
     @Test
@@ -130,9 +130,9 @@ public class TestMeanPredictor {
         MutableSparseVector scores1 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         scores1.clear(5L);  // make sure scores are returned even if the ratings are not set
         predictor.score(1L, scores1);
-        assertThat(scores1.get(5), closeTo(3.25));
-        assertThat(scores1.get(7), closeTo(3.75));
-        assertThat(scores1.get(10), closeTo(3.75));  // user overall average
-        assertThat(scores1.get(4), notANumber());
+        assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
+        assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
+        assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
+        assertTrue(Double.isNaN(scores1.get(4)));
      }
 }
