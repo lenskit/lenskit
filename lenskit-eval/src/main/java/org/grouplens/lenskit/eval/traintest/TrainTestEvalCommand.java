@@ -235,7 +235,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             logger.info("Finishing evaluation");
             this.cleanUp();
         }
-        return outputInMemory.getResult();
+        return outputInMemory.build();
     }
 
     private void setupJobGroups() {

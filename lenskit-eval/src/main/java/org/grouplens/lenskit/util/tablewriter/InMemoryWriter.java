@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableImpl;
 
@@ -30,7 +31,7 @@ import javax.annotation.Nullable;
  *
  * @author Shuo Chang<schang@cs.umn.edu>.
  */
-public class InMemoryWriter implements TableWriter {
+public class InMemoryWriter implements TableWriter, Builder<Table> {
     private TableImpl result;
     private TableLayout layout;
     private Object[] buffer;
@@ -60,7 +61,8 @@ public class InMemoryWriter implements TableWriter {
         return layout;
     }
 
-    public Table getResult() {
+    @Override
+    public Table build() {
         return result;
     }
 }
