@@ -27,7 +27,7 @@
 		<!-- The location of the LaTeX executable. The default is to search for 
 			pdflatex in your PATH. If you need to override this, it should probably be 
 			done in ~/.m2/settings.xml rather than here. -->
-		<latex.executable>pdflatex</latex.executable>
+		<latex.executable>latexmk</latex.executable>
 
 		<!-- Uncomment and change below to 'yes' if you accept the MovieLens data 
 			terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
@@ -182,4 +182,3 @@
 		</plugins>
 	</build>
 </project>
-
