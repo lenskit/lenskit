@@ -29,12 +29,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.groovy.runtime.StackTraceUtils;
+import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.model.FileSet;
-import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.DirectoryScanner;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -73,13 +75,17 @@ public class EvalScriptMojo extends AbstractMojo {
     private File buildDirectory;
 
     /**
-     * Name of recommender script.
+     * Name of recommender script. If none is given and scriptFiles
+     * is not configured, default to use "eval.groovy"
+     *
      */
-    @Parameter(property="lenskit.eval.script")
+    @Parameter(property="lenskit.eval.script",
+                defaultValue = "eval.groovy")
     private String script;
 
     /**
-     *  Pattern of the set of evaluation files
+     *  Pattern of the set of evaluation files. If this is configured,
+     *  scriptFiles takes precedence over script.
      */
     @Parameter(property = "lenskit.eval.scriptFiles")
     private FileSet scriptFiles;
@@ -164,26 +170,20 @@ public class EvalScriptMojo extends AbstractMojo {
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
-        List<File> files = new ArrayList<File>();
-
-        try{
-            List<File> fromFileSet = toFileList(scriptFiles);
-            // neither script source is configured, we go with a default file
-            if(script == null && fromFileSet.isEmpty()) {
-                files.add(new File("eval.groovy"));
-            }
-            // add the single script to the list of file first
-            if(script != null) {
-                files.add(new File(script));
-            }
-            // add the fileset to the list of files
-            files.addAll(fromFileSet);
+        List<String> fileNames = new ArrayList<String>();
+        try {
+            fileNames.addAll(getFileNames(scriptFiles));
         } catch (IOException e) {
-            getLog().error("IO error when reading the evaluation script set", e);
-            throw new MojoExecutionException("IO Exception on script", e);
+            getLog().error("Error reading in scriptFiles");
+        } catch (NullPointerException e) {
+            getLog().info("ScriptFiles not configured");
         }
-        for(File f:files) {
+        if(fileNames.isEmpty()) {
+            fileNames.add(script);
+        }
+        for(String name:fileNames) {
             try {
+                File f = new File(name);
                 getLog().info("Loading evalution script from " + f.getPath());
                 engine.execute(f);
             } catch (CommandException e) {
@@ -201,40 +201,31 @@ public class EvalScriptMojo extends AbstractMojo {
     }
 
     /**
-     * Convert fileset to a list of files
-     * @param fileSet
-     * @return  a list of files
+     *  Get the list of file names from the scriptFiles configuration
+     * @param fileSet Configuration of file set
+     * @return  list of included file names
      * @throws IOException
      */
-    private static List<File> toFileList(FileSet fileSet) throws IOException {
-        if(fileSet.getDirectory() == null) {
-            fileSet.setDirectory("./");
+    private List<String> getFileNames(FileSet fileSet) throws IOException {
+        DirectoryScanner scanner = new DirectoryScanner();
+        String dir = fileSet.getDirectory();
+        scanner.setBasedir(new File(dir));
+        List<String> includes = fileSet.getIncludes();
+        List<String> excludes = fileSet.getExcludes();
+        scanner.setIncludes(includes.toArray(new String[includes.size()]));
+        scanner.setExcludes(excludes.toArray(new String[excludes.size()]));
+        scanner.setCaseSensitive(true);
+        scanner.scan();
+        List<String> result = new ArrayList<String>();
+        String[] files = scanner.getIncludedFiles();
+        for(String f: files) {
+            result.add(dir + FileUtils.FS + f);
         }
-        File dir = new File(fileSet.getDirectory());
-        String includes = toString(fileSet.getIncludes());
-        String excludes = toString(fileSet.getExcludes());
-        try{
-            return FileUtils.getFiles(dir, includes, excludes);
-        } catch (IOException e) {
-            throw e;
-        }
+        return result;
     }
 
-    /**
-     *  Concatenate a list of strings seperated by ','
-     *  @param strings a list of strings
-     *  @return concatenated string
-     *
-     */
-    private static String toString(List<String> strings) {
-        StringBuilder builder = new StringBuilder();
-        for (String string : strings) {
-            if (builder.length() > 0)
-                builder.append(", ");
-            builder.append(string);
-        }
-        return builder.toString();
-    }
+
+
 
     /**
      * Compute the class loader we need in order to run. This is the class's class loader,
