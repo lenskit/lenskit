@@ -33,6 +33,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.Table;
+import org.grouplens.lenskit.util.table.TableBuilder;
 import org.grouplens.lenskit.util.tablewriter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private TableLayout predictLayout;
 
     private TableWriter output;
-    private InMemoryWriter outputInMemory;
+    private TableBuilder outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
@@ -335,7 +336,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private void prepareEval() {
         logger.info("Starting evaluation");
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
-        outputInMemory = new InMemoryWriter(outputLayout);
+        outputInMemory = new TableBuilder(outputLayout);
         tableWriters.add(outputInMemory);
         if (outputFile != null) {
             try {

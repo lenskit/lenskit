@@ -75,7 +75,6 @@ LensKit Release Notes
 
   * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
 
-  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
 
   * Eval configuration changes
 
@@ -99,6 +98,17 @@ LensKit Release Notes
 
   * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
     of the clearer <<<holdoutFraction>>> directive.
+
+  * Table changes (these should affect client code at present):
+
+    * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
+
+    * <<<TableImpl>>> is now package-private and immutable; use <<<TableBuilder>>> to
+      build a table.
+
+    * <<<InMemoryWriter>>> is replaced with <<<TableBuilder>>>, which implements <<<TableWriter>>>.
+
+    []
 
   []
 

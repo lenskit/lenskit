@@ -23,9 +23,15 @@ package org.grouplens.lenskit.util.table;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import javax.annotation.concurrent.Immutable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The implementation of the im memory table, which is the replica of the csv table output to the
@@ -33,27 +39,19 @@ import java.util.*;
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TableImpl extends AbstractList<Row> implements Table {
+@Immutable
+class TableImpl extends AbstractList<Row> implements Table {
     private ArrayList<Row> rows;
-    private final HashMap<String, Integer> header;
-    //To keep the order of the header
-    private final List<String> headerIndex;
 
-    public TableImpl(List<String> hdr) {
-        super();
-        rows = new ArrayList<Row>();
-        headerIndex = hdr;
-        header = new HashMap<String, Integer>();
-        for (int i = 0; i < hdr.size(); i++) {
-            header.put(hdr.get(i), i);
-        }
-    }
+    private final TableLayout layout;
+    // support efficient header lookup
+    private final Object2IntMap<String> headerIndex;
 
-    private TableImpl(HashMap<String, Integer> hdr, List<String> hdrIdx, Iterable<Row> rws) {
+    TableImpl(TableLayout layout, Object2IntMap<String> hdrIdx, Iterable<Row> rws) {
         super();
         rows = Lists.newArrayList(rws);
+        this.layout = layout;
         headerIndex = hdrIdx;
-        header = hdr;
     }
 
     /**
@@ -67,25 +65,12 @@ public class TableImpl extends AbstractList<Row> implements Table {
     public TableImpl filter(final String col, final Object data) {
         Predicate<Row> pred = new Predicate<Row>() {
             @Override
-            public boolean apply(@Nonnull Row input) {
+            public boolean apply(Row input) {
                 return data.equals(input.value(col));
             }
         };
         Iterable<Row> filtered = Iterables.filter(this.rows, pred);
-        return new TableImpl(this.header, this.headerIndex, filtered);
-    }
-
-    /**
-     * Put a new algorithm in the result.
-     *
-     * @param list the list of objects to insert to the result rows
-     */
-    public void addResultRow(Object[] list) {
-        if (list.length > header.size()) {
-            throw new IllegalArgumentException("row too long");
-        }
-        RowImpl row = new RowImpl(header, list);
-        rows.add(row);
+        return new TableImpl(layout, headerIndex, filtered);
     }
 
     @Override
@@ -93,35 +78,51 @@ public class TableImpl extends AbstractList<Row> implements Table {
         return rows.size();
     }
 
-    @Override
+    @Override @Nonnull
     public Iterator<Row> iterator() {
         return rows.iterator();
     }
-
 
     @Override
     public Row get(int i) {
         return rows.get(i);
     }
 
+    @Override
     public ColumnImpl column(String col) {
-        return new ColumnImpl(col);
+        int idx = headerIndex.getInt(col);
+        if (idx < 0) {
+            throw new IllegalArgumentException(col + ": no such column");
+        }
+        return new ColumnImpl(idx);
+    }
+
+    @Override
+    public ColumnImpl column(int idx) {
+        if (idx < 0 || idx >= layout.getColumnCount()) {
+            String msg = String.format("column index %d not in range [%d,%d)",
+                                       idx, 0, layout.getColumnCount());
+            throw new IllegalArgumentException(msg);
+        }
+        return new ColumnImpl(idx);
+    }
+
+    public TableLayout getLayout() {
+        return layout;
     }
 
     public List<String> getHeader() {
-        return Collections.unmodifiableList(headerIndex);
+        return layout.getColumnHeaders();
     }
 
     public class ColumnImpl extends AbstractList<Object> implements Column {
         ArrayList<Object> column;
 
-        ColumnImpl(String col) {
+        ColumnImpl(int col) {
             super();
             column = new ArrayList<Object>();
-            if (header.get(col) != null) {
-                for (Row row : rows) {
-                    column.add(row.value(header.get(col)));
-                }
+            for (Row row : rows) {
+                column.add(row.value(col));
             }
         }
 

@@ -23,19 +23,20 @@ package org.grouplens.lenskit.util.table;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 import java.util.*;
 
 /**
- * The row of result stored in a HashMap. Note that the values are string.
+ * Implementation of a single table row.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 class RowImpl extends AbstractMap<String, Object> implements Row {
     private final ArrayList<Object> row = new ArrayList<Object>();
-    private final HashMap<String, Integer> header;
+    private final Object2IntMap<String> header;
 
-    public RowImpl(HashMap<String, Integer> hdr, Object[] list) {
+    public RowImpl(Object2IntMap<String> hdr, Object[] list) {
         super();
         this.header = hdr;
         Collections.addAll(this.row, list);
