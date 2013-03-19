@@ -24,6 +24,7 @@ import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.lang3.exception.CloneFailedException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 /**
  * Construct a layout for a table.
@@ -32,15 +33,19 @@ import java.util.ArrayList;
  * @since 0.10
  */
 public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
-    private ArrayList<String> columns = new ArrayList<String>();
+    private LinkedHashSet<String> columns = new LinkedHashSet<String>();
 
     /**
      * Add a column to the table layout.
      *
      * @param header The column header.
      * @return The index of the column. Columns are indexed from 0.
+     * @throws IllegalArgumentException if the column already exists.
      */
     public int addColumn(String header) {
+        if (columns.contains(header)) {
+            throw new IllegalArgumentException("column " + header + " already exists");
+        }
         int i = columns.size();
         columns.add(header);
         return i;
@@ -69,7 +74,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new CloneFailedException(e);
         }
-        copy.columns = new ArrayList<String>(columns);
+        copy.columns = new LinkedHashSet<String>(columns);
         return copy;
     }
 

@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,8 +34,8 @@ import java.util.List;
 public class TableLayout {
     private List<String> columnHeaders;
 
-    TableLayout(List<String> headers) {
-        columnHeaders = headers;
+    TableLayout(Collection<String> headers) {
+        columnHeaders = new ArrayList<String>(headers);
     }
 
     /**
