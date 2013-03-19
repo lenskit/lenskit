@@ -205,10 +205,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      */
     @Override
     public Table call() throws CommandException {
-        this.setupJobs();
+        setupJobGroups();
+        setupTableLayouts();
+
         int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
-        this.initialize();
+        this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
         switch (isolationLevel) {
@@ -236,9 +238,32 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return outputInMemory.getResult();
     }
 
-    protected void setupJobs() throws CommandException {
-        TableLayoutBuilder master = new TableLayoutBuilder();
+    private void setupJobGroups() {
+        jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        int idx = 0;
+        for (TTDataSet dataset : dataSources) {
+            TrainTestEvalJobGroup group;
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
+            jobGroups.add(group);
+            idx++;
+        }
+    }
 
+    private void setupTableLayouts() {
+        TableLayoutBuilder master = new TableLayoutBuilder();
+        layoutCommonColumns(master);
+
+        commonColumnCount = master.getColumnCount();
+
+        outputLayout = layoutAggregateOutput(master);
+        userLayout = layoutUserTable(master);
+        predictLayout = layoutPredictionTable(master);
+
+        // FIXME This doesn't seem right in the face of top-N metrics
+        predictMetrics = metrics;
+    }
+
+    private void layoutCommonColumns(TableLayoutBuilder master) {
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds : dataSources) {
@@ -257,35 +282,30 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
                 }
             }
         }
+    }
 
-        jobGroups = new ArrayList<JobGroup>(dataSources.size());
-        int idx = 0;
-        for (TTDataSet dataset : dataSources) {
-            TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
-            jobGroups.add(group);
-            idx++;
-        }
-
-        commonColumnCount = master.getColumnCount();
-
+    private TableLayout layoutAggregateOutput(TableLayoutBuilder master) {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
-        TableLayoutBuilder perUser = master.clone();
-
-        String[] columnLabels;
-        String[] userColumnLabels;
 
         for (TestUserMetric ev : metrics) {
-            columnLabels = ev.getColumnLabels();
+            String[] columnLabels = ev.getColumnLabels();
             if (columnLabels != null) {
                 for (String c : columnLabels) {
                     output.addColumn(c);
                 }
             }
+        }
 
-            userColumnLabels = ev.getUserColumnLabels();
+        return output.build();
+    }
+
+    private TableLayout layoutUserTable(TableLayoutBuilder master) {
+        TableLayoutBuilder perUser = master.clone();
+
+        for (TestUserMetric ev : metrics) {
+            String[] userColumnLabels = ev.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);
@@ -293,9 +313,10 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             }
         }
 
-        outputLayout = output.build();
-        userLayout = perUser.build();
+        return perUser.build();
+    }
 
+    private TableLayout layoutPredictionTable(TableLayoutBuilder master) {
         TableLayoutBuilder eachPred = master.clone();
         eachPred.addColumn("User");
         eachPred.addColumn("Item");
@@ -305,12 +326,13 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             eachPred.addColumn(pair.getRight());
         }
 
-        predictLayout = eachPred.build();
-
-        predictMetrics = metrics;
+        return eachPred.build();
     }
 
-    private void initialize() {
+    /**
+     * Prepare the evaluation by opening all outputs and initializing metrics.
+     */
+    private void prepareEval() {
         logger.info("Starting evaluation");
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
         outputInMemory = new InMemoryWriter(outputLayout);
@@ -345,6 +367,9 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         }
     }
 
+    /**
+     * Finalize metrics and close output files.
+     */
     private void cleanUp() {
         for (TestUserMetric metric : predictMetrics) {
             metric.finishEvaluation();
