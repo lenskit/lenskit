@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.table;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -90,11 +91,7 @@ class TableImpl extends AbstractList<Row> implements Table {
 
     @Override
     public ColumnImpl column(int idx) {
-        if (idx < 0 || idx >= layout.getColumnCount()) {
-            String msg = String.format("column index %d not in range [%d,%d)",
-                                       idx, 0, layout.getColumnCount());
-            throw new IllegalArgumentException(msg);
-        }
+        Preconditions.checkElementIndex(idx, layout.getColumnCount(), "column");
         return new ColumnImpl(idx);
     }
 

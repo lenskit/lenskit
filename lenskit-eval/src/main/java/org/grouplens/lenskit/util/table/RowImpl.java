@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util.table;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -44,9 +45,8 @@ class RowImpl implements Row {
     public RowImpl(TableLayout layout, Object[] entries) {
         super();
         this.layout = layout;
-        if (entries.length > layout.getColumnCount()) {
-            throw new IllegalArgumentException("row has too many cells");
-        }
+        Preconditions.checkArgument(entries.length <= layout.getColumnCount(),
+                                    "row has too many cells");
         row = new ArrayList<Object>(entries.length);
         Collections.addAll(row, entries);
         for (int i = entries.length; i < layout.getColumnCount(); i++) {
@@ -61,6 +61,8 @@ class RowImpl implements Row {
 
     @Override
     public Object value(int idx) {
+        // manually check index to get better error message
+        Preconditions.checkElementIndex(idx, row.size(), "column");
         return row.get(idx);
     }
 
