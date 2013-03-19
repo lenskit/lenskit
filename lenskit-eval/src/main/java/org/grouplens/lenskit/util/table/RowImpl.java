@@ -22,12 +22,15 @@ package org.grouplens.lenskit.util.table;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Implementation of a single table row.
@@ -76,5 +79,19 @@ class RowImpl implements Row {
                                            return value(layout.columnIndex(input));
                                        }
                                    });
+    }
+
+    @Override
+    public Map<String,Object> asMap() {
+        // FIXME Don't create a new set every time this is done.
+        return Maps.asMap(Sets.newHashSet(layout.getColumns()),
+                          new Function<String, Object>() {
+                              @Nullable
+                              @Override
+                              public Object apply(@Nullable String col) {
+                                  assert col != null;
+                                  return value(col);
+                              }
+                          });
     }
 }

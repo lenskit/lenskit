@@ -36,18 +36,22 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
     private LinkedHashSet<String> columns = new LinkedHashSet<String>();
 
     /**
-     * Add a column to the table layout.
+     * Add a column to the table layout.  Each column must have a unique, non-null
+     * name.
      *
-     * @param header The column header.
+     * @param name The column name.
      * @return The index of the column. Columns are indexed from 0.
      * @throws IllegalArgumentException if the column already exists.
      */
-    public int addColumn(String header) {
-        if (columns.contains(header)) {
-            throw new IllegalArgumentException("column " + header + " already exists");
+    public int addColumn(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("column name cannot be null");
+        }
+        if (columns.contains(name)) {
+            throw new IllegalArgumentException("column " + name + " already exists");
         }
         int i = columns.size();
-        columns.add(header);
+        columns.add(name);
         return i;
     }
 

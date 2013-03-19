@@ -61,5 +61,5 @@ public interface Row extends Iterable<Object> {
      *
      * @return A map representing this row.
      */
-    // Map<String,Object> toMap();
+    Map<String,Object> asMap();
 }
