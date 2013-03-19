@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableImpl;
 
 import javax.annotation.Nullable;
@@ -59,7 +60,7 @@ public class InMemoryWriter implements TableWriter {
         return layout;
     }
 
-    public TableImpl getResult() {
+    public Table getResult() {
         return result;
     }
 }
