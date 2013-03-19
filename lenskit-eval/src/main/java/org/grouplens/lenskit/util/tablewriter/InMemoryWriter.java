@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableImpl;
@@ -39,9 +40,12 @@ public class InMemoryWriter implements TableWriter, Builder<Table> {
     /**
      * Construct a new in memory writer.
      *
-     * @param l The table layout, or {@code null} if the table has no headers.
+     * @param l The table layout.
      */
-    public InMemoryWriter(@Nullable TableLayout l) {
+    public InMemoryWriter(TableLayout l) {
+        if (l == null) {
+            throw new IllegalArgumentException("table layout cannot be null");
+        }
         layout = l;
         result = new TableImpl(layout.getColumnHeaders());
     }
