@@ -49,11 +49,11 @@ public class TableTest {
 
     @Test
     public void TestFilter() {
-        assertEquals(table.filter("a", "r1").size(), 1);
-        assertEquals(table.filter("a", "r123").size(), 0);
-        assertEquals(table.filter("b", 1).size(), 2);
-        assertEquals(table.filter("end", 22.2).size(), 1);
-        assertEquals(table.filter("d", 10).filter("b", 1).size(), 1);
+        assertThat(table.filter("a", "r1").size(), equalTo(1));
+        assertThat(table.filter("a", "r123").size(), equalTo(0));
+        assertThat(table.filter("b", 1).size(), equalTo(2));
+        assertThat(table.filter("end", 22.2).size(), equalTo(1));
+        assertThat(table.filter("d", 10).filter("b", 1).size(), equalTo(1));
     }
 
     @Test
