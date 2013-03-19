@@ -22,7 +22,7 @@ public class TableLayoutTest {
     public void testEmpty() {
         TableLayout layout = builder.build();
         assertThat(layout.getColumnCount(), equalTo(0));
-        assertThat(layout.getColumnHeaders(), hasSize(0));
+        assertThat(layout.getColumns(), hasSize(0));
     }
 
     @Test
@@ -32,7 +32,7 @@ public class TableLayoutTest {
         assertThat(builder.getColumnCount(), equalTo(2));
         TableLayout layout = builder.build();
         assertThat(layout.getColumnCount(), equalTo(2));
-        assertThat(layout.getColumnHeaders(),
+        assertThat(layout.getColumns(),
                    contains("foo", "bar"));
     }
 

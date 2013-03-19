@@ -55,7 +55,4 @@ public interface Table extends List<Row> {
      * @return The table layout.
      */
     TableLayout getLayout();
-
-    @Deprecated
-    List<String> getHeader();
 }

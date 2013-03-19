@@ -20,17 +20,46 @@
  */
 package org.grouplens.lenskit.util.table;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Row stores a data row. The user can use it as a map of header string to data object. Internally
- * it keeps the order of the data by using both a map of header string to index number and a list
- * of dat aobject.
+ * One row of a data table.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public interface Row extends Map<String, Object> {
+public interface Row extends Iterable<Object> {
+    /**
+     * Get the value at a particular column.
+     *
+     * @param key The column name.
+     * @return The value at that column.
+     * @throws IllegalArgumentException if {@var key} does not define a column.
+     */
+    @Nullable
     Object value(String key);
 
+    /**
+     * Get the value at a particular column.
+     *
+     * @param idx The column index.
+     * @return The value at that column.
+     * @throws IndexOutOfBoundsException if {@var idx} is not a valid column index.
+     */
+    @Nullable
     Object value(int idx);
+
+    /**
+     * Get the length of this row.
+     *
+     * @return The length of the row.
+     */
+    int length();
+
+    /**
+     * Get a view of this row as a map.
+     *
+     * @return A map representing this row.
+     */
+    // Map<String,Object> toMap();
 }

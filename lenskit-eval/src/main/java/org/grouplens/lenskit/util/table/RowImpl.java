@@ -22,29 +22,38 @@ package org.grouplens.lenskit.util.table;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
-import java.util.*;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * Implementation of a single table row.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-class RowImpl extends AbstractMap<String, Object> implements Row {
-    private final ArrayList<Object> row = new ArrayList<Object>();
-    private final Object2IntMap<String> header;
+class RowImpl implements Row {
+    private final ArrayList<Object> row;
+    private final TableLayout layout;
 
-    public RowImpl(Object2IntMap<String> hdr, Object[] list) {
+    public RowImpl(TableLayout layout, Object[] entries) {
         super();
-        this.header = hdr;
-        Collections.addAll(this.row, list);
+        this.layout = layout;
+        if (entries.length > layout.getColumnCount()) {
+            throw new IllegalArgumentException("row has too many cells");
+        }
+        row = new ArrayList<Object>(entries.length);
+        Collections.addAll(row, entries);
+        for (int i = entries.length; i < layout.getColumnCount(); i++) {
+            row.add(null);
+        }
     }
 
     @Override
-    public Object value(String key) {
-        return row.get(header.get(key));
+    public Object value(String col) {
+        return value(layout.columnIndex(col));
     }
 
     @Override
@@ -53,27 +62,19 @@ class RowImpl extends AbstractMap<String, Object> implements Row {
     }
 
     @Override
-    public Set<Entry<String, Object>> entrySet() {
-        return new EntrySet();
+    public int length() {
+        return row.size();
     }
 
-    private class IteratorWrapper implements Function<Entry<String, Integer>, Entry<String, Object>> {
-        public Entry<String, Object> apply(Entry<String, Integer> entry) {
-            return Maps.immutableEntry(entry.getKey(), row.get(entry.getValue()));
-        }
+    @Override
+    public Iterator<Object> iterator() {
+        return Iterators.transform(layout.getColumns().iterator(),
+                                   new Function<String, Object>() {
+                                       @Nullable
+                                       @Override
+                                       public Object apply(@Nullable String input) {
+                                           return value(layout.columnIndex(input));
+                                       }
+                                   });
     }
-
-    private class EntrySet extends AbstractSet<Entry<String, Object>>
-            implements Set<Entry<String, Object>> {
-        @Override
-        public Iterator<Entry<String, Object>> iterator() {
-            return Iterators.transform(header.entrySet().iterator(), new IteratorWrapper());
-        }
-
-        @Override
-        public int size() {
-            return RowImpl.this.size();
-        }
-    }
-
 }

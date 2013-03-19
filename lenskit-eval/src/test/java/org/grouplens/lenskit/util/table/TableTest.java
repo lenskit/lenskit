@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -74,15 +75,18 @@ public class TableTest {
 
     @Test
     public void TestSum() {
-        assertEquals(table.column("b").sum(), Double.valueOf(5));
-        assertTrue(table.column("a").sum().isNaN());
-        assertEquals(table.column("c").sum(), Double.valueOf(10.92));
+        assertThat(table.column("b").sum(),
+                   closeTo(5, 1.0e-5));
+        assertTrue(Double.isNaN(table.column("a").sum()));
+        assertThat(table.column("c").sum(),
+                   closeTo(10.92, 1.0e-5));
     }
 
     @Test
     public void TestAverage() {
-        assertEquals(table.column("b").average(), Double.valueOf(5 / 4.0));
-        assertTrue(table.column("a").average().isNaN());
+        assertThat(table.column("b").average(),
+                   closeTo(5 / 4.0, 1.0e-5));
+        assertTrue(Double.isNaN(table.column("a").average()));
     }
 
 }

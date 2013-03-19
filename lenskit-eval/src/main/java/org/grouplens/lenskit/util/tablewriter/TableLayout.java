@@ -20,22 +20,33 @@
  */
 package org.grouplens.lenskit.util.tablewriter;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * A layout for a table to be written. Specifies the columns in the table.
+ * A layout for a table to be written.  Specifies the columns in the table.  Column names
+ * must be unique.
  *
  * @author Michael Ekstrand
  * @since 0.10
  */
 public class TableLayout {
-    private List<String> columnHeaders;
+    private List<String> names;
+    private Object2IntMap<String> indexes;
 
-    TableLayout(Collection<String> headers) {
-        columnHeaders = new ArrayList<String>(headers);
+    TableLayout(Collection<String> colNames) {
+        names = new ArrayList<String>(colNames);
+        indexes = new Object2IntOpenHashMap<String>(names.size());
+        for (String col: names) {
+            indexes.put(col, indexes.size());
+        }
+        // default return of -1 to check for nonexistence
+        indexes.defaultReturnValue(-1);
     }
 
     /**
@@ -43,8 +54,24 @@ public class TableLayout {
      *
      * @return The headers of the columns in the table layout.
      */
-    public List<String> getColumnHeaders() {
-        return Collections.unmodifiableList(columnHeaders);
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(names);
+    }
+
+    /**
+     * Get the index of a particular column.
+     *
+     * @param col The column.
+     * @return The index of the specified column, starting from 0.
+     * @throws IllegalArgumentException if the column is not in the layout.
+     */
+    public int columnIndex(String col) {
+        int idx = indexes.getInt(col);
+        if (idx < 0) {
+            throw new IllegalArgumentException(col + ": no such column");
+        } else {
+            return idx;
+        }
     }
 
     /**
@@ -53,6 +80,6 @@ public class TableLayout {
      * @return The number of columns in the table layout.
      */
     public int getColumnCount() {
-        return columnHeaders.size();
+        return names.size();
     }
 }

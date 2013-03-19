@@ -55,7 +55,7 @@ public class CSVWriter implements TableWriter {
         layout = l;
         writer = w;
         if (layout != null) {
-            writeRow(layout.getColumnHeaders().toArray(new String[l.getColumnCount()]));
+            writeRow(layout.getColumns().toArray(new String[l.getColumnCount()]));
         }
     }
 

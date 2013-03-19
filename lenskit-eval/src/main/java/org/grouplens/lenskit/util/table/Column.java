@@ -23,12 +23,22 @@ package org.grouplens.lenskit.util.table;
 import java.util.List;
 
 /**
- * List interface provides the basic functions such as sum and average on the column data.
+ * A view of a column of a table.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public interface Column extends List<Object> {
-    Double sum();
+    /**
+     * Get the sum of this column.
+     *
+     * @return The column's sum, or {@link Double#NaN} if it is not numeric.
+     */
+    double sum();
 
-    Double average();
+    /**
+     * Get the average of this column.
+     *
+     * @return The column's average, or {@link Double#NaN} if it is not numeric.
+     */
+    double average();
 }

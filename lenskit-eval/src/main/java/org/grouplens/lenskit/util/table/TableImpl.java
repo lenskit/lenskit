@@ -23,7 +23,6 @@ package org.grouplens.lenskit.util.table;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
 import javax.annotation.Nonnull;
@@ -31,7 +30,6 @@ import javax.annotation.concurrent.Immutable;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * The implementation of the im memory table, which is the replica of the csv table output to the
@@ -44,14 +42,11 @@ class TableImpl extends AbstractList<Row> implements Table {
     private ArrayList<Row> rows;
 
     private final TableLayout layout;
-    // support efficient header lookup
-    private final Object2IntMap<String> headerIndex;
 
-    TableImpl(TableLayout layout, Object2IntMap<String> hdrIdx, Iterable<Row> rws) {
+    TableImpl(TableLayout layout, Iterable<Row> rws) {
         super();
         rows = Lists.newArrayList(rws);
         this.layout = layout;
-        headerIndex = hdrIdx;
     }
 
     /**
@@ -70,7 +65,7 @@ class TableImpl extends AbstractList<Row> implements Table {
             }
         };
         Iterable<Row> filtered = Iterables.filter(this.rows, pred);
-        return new TableImpl(layout, headerIndex, filtered);
+        return new TableImpl(layout, filtered);
     }
 
     @Override
@@ -90,11 +85,7 @@ class TableImpl extends AbstractList<Row> implements Table {
 
     @Override
     public ColumnImpl column(String col) {
-        int idx = headerIndex.getInt(col);
-        if (idx < 0) {
-            throw new IllegalArgumentException(col + ": no such column");
-        }
-        return new ColumnImpl(idx);
+        return new ColumnImpl(layout.columnIndex(col));
     }
 
     @Override
@@ -107,12 +98,9 @@ class TableImpl extends AbstractList<Row> implements Table {
         return new ColumnImpl(idx);
     }
 
+    @Override
     public TableLayout getLayout() {
         return layout;
-    }
-
-    public List<String> getHeader() {
-        return layout.getColumnHeaders();
     }
 
     public class ColumnImpl extends AbstractList<Object> implements Column {
@@ -126,7 +114,8 @@ class TableImpl extends AbstractList<Row> implements Table {
             }
         }
 
-        public Double sum() {
+        @Override
+        public double sum() {
             double sum = 0;
             if (column.size() == 0 ||
                     !Number.class.isAssignableFrom(column.get(0).getClass())) {
@@ -139,7 +128,8 @@ class TableImpl extends AbstractList<Row> implements Table {
             }
         }
 
-        public Double average() {
+        @Override
+        public double average() {
             if (column.size() == 0) {
                 return Double.NaN;
             }

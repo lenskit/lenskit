@@ -56,7 +56,7 @@ class PrefixedTableWriter implements TableWriter {
         fixedColumns = values.length;
 
         TableLayoutBuilder bld = new TableLayoutBuilder();
-        List<String> bheaders = baseLayout.getColumnHeaders();
+        List<String> bheaders = baseLayout.getColumns();
         for (String h : bheaders.subList(fixedColumns, bheaders.size())) {
             bld.addColumn(h);
         }
