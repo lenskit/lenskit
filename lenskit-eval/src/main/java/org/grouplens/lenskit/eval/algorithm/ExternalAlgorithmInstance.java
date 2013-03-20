@@ -282,7 +282,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             String line;
             try {
                 while ((line = error.readLine()) != null) {
-                    logger.info("external: " + line);
+                    logger.debug("external: " + line);
                 }
             } catch (IOException e) {
                 logger.error("IO error reading error stream", e);
