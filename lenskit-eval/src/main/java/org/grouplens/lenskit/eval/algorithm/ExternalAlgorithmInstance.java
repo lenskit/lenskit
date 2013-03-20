@@ -203,6 +203,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         try {
             vectors = readPredictions(output);
         } catch (FileNotFoundException e) {
+            logger.error("cannot find expected output file {}", output);
             throw new RecommenderBuildException("recommender produced no output", e);
         }
 
