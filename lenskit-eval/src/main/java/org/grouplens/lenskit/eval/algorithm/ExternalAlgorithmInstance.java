@@ -109,7 +109,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
     }
 
     private File testFile(TTDataSet data) {
-        File file = makeCSV(data.getTestFactory(), getName() + ".test.csv", true);
+        File file = makeCSV(data.getTestFactory(), getName() + ".test.csv", false);
         logger.debug("wrote test file {}", file);
         return file;
     }
