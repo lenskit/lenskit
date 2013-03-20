@@ -177,6 +177,22 @@
 							</arguments>
 						</configuration>
 					</execution>
+
+					<execution>
+						<phase>clean</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${latex.executable}</executable>
+							<workingDirectory>${lenskit.eval.publishDir}</workingDirectory>
+							<arguments>
+								<argument>-c</argument>
+								<argument>${lenskit.eval.publishDir}/main.tex</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					
 				</executions>
 			</plugin>
 
