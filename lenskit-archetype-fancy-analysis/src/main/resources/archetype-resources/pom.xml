@@ -172,6 +172,7 @@
 							<executable>${latex.executable}</executable>
 							<workingDirectory>${lenskit.eval.publishDir}</workingDirectory>
 							<arguments>
+								<argument>-pdf</argument>
 								<argument>${lenskit.eval.publishDir}/main.tex</argument>
 							</arguments>
 						</configuration>
