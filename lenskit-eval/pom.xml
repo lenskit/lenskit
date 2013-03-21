@@ -38,8 +38,8 @@
         <version>1.5</version>
         <executions>
           <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
+            <id>add-groovy</id>
+            <phase>validate</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
@@ -50,8 +50,8 @@
             </configuration>
           </execution>
           <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
+            <id>add-test-groovy</id>
+            <phase>validate</phase>
             <goals>
               <goal>add-test-source</goal>
             </goals>
