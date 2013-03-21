@@ -29,6 +29,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.groovy.runtime.StackTraceUtils;
+import org.codehaus.groovy.runtime.WritableFile;
 import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
@@ -170,20 +171,19 @@ public class EvalScriptMojo extends AbstractMojo {
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
-        List<String> fileNames = new ArrayList<String>();
+        List<File> files = new ArrayList<File>();
         try {
-            fileNames.addAll(getFileNames(scriptFiles));
+            files.addAll(getFiles(scriptFiles));
         } catch (IOException e) {
             getLog().error("Error reading in scriptFiles");
         } catch (NullPointerException e) {
             getLog().info("ScriptFiles not configured");
         }
-        if(fileNames.isEmpty()) {
-            fileNames.add(script);
+        if(files.isEmpty()) {
+            files.add(new File(script));
         }
-        for(String name:fileNames) {
+        for(File f:files) {
             try {
-                File f = new File(name);
                 getLog().info("Loading evalution script from " + f.getPath());
                 engine.execute(f);
             } catch (CommandException e) {
@@ -201,25 +201,25 @@ public class EvalScriptMojo extends AbstractMojo {
     }
 
     /**
-     *  Get the list of file names from the scriptFiles configuration
+     *  Get the list of file  from the scriptFiles configuration
      * @param fileSet Configuration of file set
-     * @return  list of included file names
+     * @return  list of included files
      * @throws IOException
      */
-    private List<String> getFileNames(FileSet fileSet) throws IOException {
+    private List<File> getFiles(FileSet fileSet) throws IOException {
         DirectoryScanner scanner = new DirectoryScanner();
-        String dir = fileSet.getDirectory();
-        scanner.setBasedir(new File(dir));
+        File baseDir = new File(fileSet.getDirectory());
+        scanner.setBasedir(baseDir);
         List<String> includes = fileSet.getIncludes();
         List<String> excludes = fileSet.getExcludes();
         scanner.setIncludes(includes.toArray(new String[includes.size()]));
         scanner.setExcludes(excludes.toArray(new String[excludes.size()]));
         scanner.setCaseSensitive(true);
         scanner.scan();
-        List<String> result = new ArrayList<String>();
+        List<File> result = new ArrayList<File>();
         String[] files = scanner.getIncludedFiles();
         for(String f: files) {
-            result.add(dir + FileUtils.FS + f);
+            result.add(new File(baseDir, f));
         }
         return result;
     }
