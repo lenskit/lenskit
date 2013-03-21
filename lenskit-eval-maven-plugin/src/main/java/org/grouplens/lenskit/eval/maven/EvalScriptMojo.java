@@ -29,10 +29,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.groovy.runtime.StackTraceUtils;
+import org.codehaus.groovy.runtime.WritableFile;
+import org.codehaus.plexus.util.FileUtils;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.model.FileSet;
+import org.codehaus.plexus.util.DirectoryScanner;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -71,11 +76,20 @@ public class EvalScriptMojo extends AbstractMojo {
     private File buildDirectory;
 
     /**
-     * Name of recommender script.
+     * Name of recommender script. If none is given and scriptFiles
+     * is not configured, default to use "eval.groovy"
+     *
      */
     @Parameter(property="lenskit.eval.script",
-               defaultValue="eval.groovy")
+                defaultValue = "eval.groovy")
     private String script;
+
+    /**
+     *  Pattern of the set of evaluation files. If this is configured,
+     *  scriptFiles takes precedence over script.
+     */
+    @Parameter(property = "lenskit.eval.scriptFiles")
+    private FileSet scriptFiles;
 
     /**
      * Location of input data; any train-test sets will be placed
@@ -157,22 +171,61 @@ public class EvalScriptMojo extends AbstractMojo {
         dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
+        List<File> files = new ArrayList<File>();
         try {
-            File f = new File(script);
-            getLog().info("Loading evalution script from " + f.getPath());
-            engine.execute(f);
-        } catch (CommandException e) {
-            Throwable report = StackTraceUtils.deepSanitize(e).getCause();
-            if (report == null) {
-                report = e;
-            }
-            getLog().error("Evaluation script failed:", report);
-            throw new MojoExecutionException("Invalid evaluation script", e);
+            files.addAll(getFiles(scriptFiles));
         } catch (IOException e) {
-            getLog().error(script + ": IO error", e);
-            throw new MojoExecutionException("IO Exception on script", e);
+            getLog().error("Error reading in scriptFiles");
+        } catch (NullPointerException e) {
+            getLog().info("ScriptFiles not configured");
+        }
+        if(files.isEmpty()) {
+            files.add(new File(script));
+        }
+        for(File f:files) {
+            try {
+                getLog().info("Loading evalution script from " + f.getPath());
+                engine.execute(f);
+            } catch (CommandException e) {
+                Throwable report = StackTraceUtils.deepSanitize(e).getCause();
+                if (report == null) {
+                    report = e;
+                }
+                getLog().error("Evaluation script failed:", report);
+                throw new MojoExecutionException("Invalid evaluation script", e);
+            } catch (IOException e) {
+                getLog().error(script + ": IO error", e);
+                throw new MojoExecutionException("IO Exception on script", e);
+            }
         }
     }
+
+    /**
+     *  Get the list of file  from the scriptFiles configuration
+     * @param fileSet Configuration of file set
+     * @return  list of included files
+     * @throws IOException
+     */
+    private List<File> getFiles(FileSet fileSet) throws IOException {
+        DirectoryScanner scanner = new DirectoryScanner();
+        File baseDir = new File(fileSet.getDirectory());
+        scanner.setBasedir(baseDir);
+        List<String> includes = fileSet.getIncludes();
+        List<String> excludes = fileSet.getExcludes();
+        scanner.setIncludes(includes.toArray(new String[includes.size()]));
+        scanner.setExcludes(excludes.toArray(new String[excludes.size()]));
+        scanner.setCaseSensitive(true);
+        scanner.scan();
+        List<File> result = new ArrayList<File>();
+        String[] files = scanner.getIncludedFiles();
+        for(String f: files) {
+            result.add(new File(baseDir, f));
+        }
+        return result;
+    }
+
+
+
 
     /**
      * Compute the class loader we need in order to run. This is the class's class loader,
