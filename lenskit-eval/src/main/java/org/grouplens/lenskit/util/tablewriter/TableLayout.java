@@ -45,7 +45,7 @@ public class TableLayout {
         for (String col: names) {
             indexes.put(col, indexes.size());
         }
-        // default return of -1 to check for nonexistence
+        // set default return to -1, so we get an illegal index when looking up a nonexistent column
         indexes.defaultReturnValue(-1);
     }
 

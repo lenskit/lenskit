@@ -33,8 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * The implementation of the im memory table, which is the replica of the csv table output to the
- * file.
+ * In-memory table implementation.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
@@ -44,6 +43,13 @@ class TableImpl extends AbstractList<Row> implements Table {
 
     private final TableLayout layout;
 
+    /**
+     * Construct a new table.  This constructor should only be called from
+     * {@link TableBuilder}.
+     *
+     * @param layout The table layout.
+     * @param rws The table rows. Each row must have the same layout.
+     */
     TableImpl(TableLayout layout, Iterable<Row> rws) {
         super();
         rows = Lists.newArrayList(rws);
@@ -100,7 +106,11 @@ class TableImpl extends AbstractList<Row> implements Table {
         return layout;
     }
 
-    public class ColumnImpl extends AbstractList<Object> implements Column {
+    /**
+     * Implementation of a column.
+     */
+    class ColumnImpl extends AbstractList<Object> implements Column {
+        // TODO Make ColumnImpl a standalone class
         ArrayList<Object> column;
 
         ColumnImpl(int col) {
