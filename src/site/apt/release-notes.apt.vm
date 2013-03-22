@@ -101,12 +101,16 @@ LensKit Release Notes
 
   * Table changes (these should affect client code at present):
 
-    * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
+    * Tables now live in <<<o.g.l.util.table>>>.
 
     * <<<TableImpl>>> is now package-private and immutable; use <<<TableBuilder>>> to
       build a table.
 
     * <<<InMemoryWriter>>> is replaced with <<<TableBuilder>>>, which implements <<<TableWriter>>>.
+
+    * Table layouts now live directly in the table package.
+
+    * Table writers now live in <<<o.g.l.util.table.writer>>>.
 
     []
 
