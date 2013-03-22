@@ -29,16 +29,20 @@ import java.util.List;
  */
 public interface Column extends List<Object> {
     /**
-     * Get the sum of this column.
+     * Get the sum of this column.  Null entries result in a sum of NaN.
      *
-     * @return The column's sum, or {@link Double#NaN} if it is not numeric.
+     * @return The column's sum.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
      */
     double sum();
 
     /**
-     * Get the average of this column.
+     * Get the average of this column. Null entries and empty tables result in NaN.
      *
-     * @return The column's average, or {@link Double#NaN} if it is not numeric.
+     * @return The column's average.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
      */
     double average();
 }
