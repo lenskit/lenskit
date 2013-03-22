@@ -92,65 +92,17 @@ class TableImpl extends AbstractList<Row> implements Table {
 
     @Override
     public ColumnImpl column(String col) {
-        return new ColumnImpl(layout.columnIndex(col));
+        return new ColumnImpl(this, layout.columnIndex(col), col);
     }
 
     @Override
     public ColumnImpl column(int idx) {
         Preconditions.checkElementIndex(idx, layout.getColumnCount(), "column");
-        return new ColumnImpl(idx);
+        return new ColumnImpl(this, idx, layout.getColumns().get(idx));
     }
 
     @Override
     public TableLayout getLayout() {
         return layout;
-    }
-
-    /**
-     * Implementation of a column.
-     */
-    class ColumnImpl extends AbstractList<Object> implements Column {
-        // TODO Make ColumnImpl a standalone class
-        ArrayList<Object> column;
-
-        ColumnImpl(int col) {
-            super();
-            column = new ArrayList<Object>();
-            for (Row row : rows) {
-                column.add(row.value(col));
-            }
-        }
-
-        @Override
-        public double sum() {
-            double sum = 0;
-            if (column.size() == 0 ||
-                    !Number.class.isAssignableFrom(column.get(0).getClass())) {
-                return Double.NaN;
-            } else {
-                for (Object v : column) {
-                    sum += ((Number) v).doubleValue();
-                }
-                return sum;
-            }
-        }
-
-        @Override
-        public double average() {
-            if (column.size() == 0) {
-                return Double.NaN;
-            }
-            return sum() / column.size();
-        }
-
-        @Override
-        public int size() {
-            return column.size();  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public Object get(int i) {
-            return column.get(i);  //To change body of implemented methods use File | Settings | File Templates.
-        }
     }
 }

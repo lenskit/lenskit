@@ -77,7 +77,12 @@ public class TableTest {
     public void TestSum() {
         assertThat(table.column("b").sum(),
                    closeTo(5, 1.0e-5));
-        assertTrue(Double.isNaN(table.column("a").sum()));
+        try {
+            table.column("a").sum();
+            fail("summing non-numeric column should throw exception");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
         assertThat(table.column("c").sum(),
                    closeTo(10.92, 1.0e-5));
     }
@@ -86,7 +91,12 @@ public class TableTest {
     public void TestAverage() {
         assertThat(table.column("b").average(),
                    closeTo(5 / 4.0, 1.0e-5));
-        assertTrue(Double.isNaN(table.column("a").average()));
+        try {
+            table.column("a").average();
+            fail("summing non-numeric column should throw exception");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
     }
 
 }
