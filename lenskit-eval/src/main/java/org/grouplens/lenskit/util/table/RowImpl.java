@@ -74,26 +74,20 @@ class RowImpl implements Row {
     @Override
     public Iterator<Object> iterator() {
         return Iterators.transform(layout.getColumns().iterator(),
-                                   new Function<String, Object>() {
-                                       @Nullable
-                                       @Override
-                                       public Object apply(@Nullable String input) {
-                                           return value(layout.columnIndex(input));
-                                       }
-                                   });
+                                   VALUE_FUNCTION);
     }
 
     @Override
     public Map<String,Object> asMap() {
         // FIXME Don't create a new set every time this is done.
         return Maps.asMap(Sets.newHashSet(layout.getColumns()),
-                          new Function<String, Object>() {
-                              @Nullable
-                              @Override
-                              public Object apply(@Nullable String col) {
-                                  assert col != null;
-                                  return value(col);
-                              }
-                          });
+                          VALUE_FUNCTION);
     }
+
+    private final Function<String,Object> VALUE_FUNCTION = new Function<String,Object>() {
+        @Override
+        public Object apply(@Nullable String column) {
+            return value(column);
+        }
+    };
 }
