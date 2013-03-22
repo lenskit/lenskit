@@ -18,12 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.tablewriter;
+package org.grouplens.lenskit.util.table;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.lang3.exception.CloneFailedException;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**

@@ -33,8 +33,8 @@ import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.grouplens.lenskit.util.tablewriter.CSVWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

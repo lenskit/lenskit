@@ -34,7 +34,9 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableBuilder;
-import org.grouplens.lenskit.util.tablewriter.*;
+import org.grouplens.lenskit.util.table.TableLayout;
+import org.grouplens.lenskit.util.table.TableLayoutBuilder;
+import org.grouplens.lenskit.util.table.writer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

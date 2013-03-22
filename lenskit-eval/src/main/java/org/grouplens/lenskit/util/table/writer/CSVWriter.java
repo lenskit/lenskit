@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.tablewriter;
+package org.grouplens.lenskit.util.table.writer;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +33,7 @@ import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 
 import com.google.common.io.Files;
+import org.grouplens.lenskit.util.table.TableLayout;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.

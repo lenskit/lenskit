@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.util.table;
 
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
-
 import java.util.List;
 
 /**

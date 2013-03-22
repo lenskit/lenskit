@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;

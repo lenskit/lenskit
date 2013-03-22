@@ -21,9 +21,7 @@
 package org.grouplens.lenskit.util.table;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
-import org.grouplens.lenskit.util.tablewriter.TableLayoutBuilder;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -21,4 +21,4 @@
 /**
  * Utilities for writing two-dimensional tables of data.
  */
-package org.grouplens.lenskit.util.tablewriter;
+package org.grouplens.lenskit.util.table.writer;

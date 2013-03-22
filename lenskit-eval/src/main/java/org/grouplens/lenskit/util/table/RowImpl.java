@@ -25,7 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.grouplens.lenskit.util.tablewriter.TableLayout;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
