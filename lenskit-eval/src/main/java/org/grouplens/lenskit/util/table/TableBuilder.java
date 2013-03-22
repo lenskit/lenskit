@@ -76,6 +76,7 @@ public class TableBuilder implements Builder<Table>, TableWriter {
      * Add a row to the table.
      *
      * @param row The row to add.
+     * @throws IllegalArgumentException if the row has the wrong length.
      */
     public synchronized void addRow(Object[] row) {
         rows.add(new RowImpl(layout, row));

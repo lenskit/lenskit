@@ -70,7 +70,7 @@ class PrefixedTableWriter implements TableWriter {
 
     @Override
     public synchronized void writeRow(Object[] row) throws IOException {
-        if (row.length > layout.getColumnCount()) {
+        if (row.length != layout.getColumnCount()) {
             throw new IllegalArgumentException("Row too wide");
         }
 

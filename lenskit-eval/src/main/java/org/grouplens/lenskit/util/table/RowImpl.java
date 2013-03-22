@@ -42,16 +42,20 @@ class RowImpl implements Row {
     private final ArrayList<Object> row;
     private final TableLayout layout;
 
+    /**
+     * Construct a new row implementation.
+     * @param layout The table layout.
+     * @param entries The row's contents. The array elements are copied.
+     */
     public RowImpl(TableLayout layout, Object[] entries) {
         super();
         this.layout = layout;
-        Preconditions.checkArgument(entries.length <= layout.getColumnCount(),
-                                    "row has too many cells");
+        Preconditions.checkArgument(
+                entries.length == layout.getColumnCount(),
+                String.format("row has incorrect length (was %d, expected %d)",
+                              entries.length, layout.getColumnCount()));
         row = new ArrayList<Object>(entries.length);
         Collections.addAll(row, entries);
-        for (int i = entries.length; i < layout.getColumnCount(); i++) {
-            row.add(null);
-        }
     }
 
     @Override

@@ -48,12 +48,11 @@ public interface TableWriter extends Closeable {
     /**
      * Write a row to the table. This method is thread-safe.
      *
-     * @param row A row of values.  If the table requires more columns, the
-     *            remaining columns are empty. The row is copied if necessary;
-     *            the caller is free to re-use the same array for future calls.
+     * @param row A row of values.  If the table requires more columns, the remaining columns are
+     *            empty. The row is copied if necessary; the caller is free to re-use the same array
+     *            for future calls.
      * @throws IOException              if an error occurs writing the row.
-     * @throws IllegalArgumentException if {@code row} has more items than the table has
-     *                                  columns.
+     * @throws IllegalArgumentException if {@code row} has the incorrect number of columns.
      */
     void writeRow(Object[] row) throws IOException;
 
