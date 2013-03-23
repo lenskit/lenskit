@@ -1,6 +1,7 @@
 package org.grouplens.lenskit.basic;
 
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -75,6 +76,35 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         scorer.score(profile, predictions);
         if (domain != null) {
             domain.clampVector(predictions);
+        }
+    }
+
+    /**
+     * An intelligent provider for simple rating predictors. It provides a simple rating predictor
+     * if there is an {@link ItemScorer} available, and returns {@code null} otherwise.  This is
+     * the default provider for {@link RatingPredictor}
+     */
+    public static class Provider implements javax.inject.Provider<RatingPredictor> {
+        private final DataAccessObject dao;
+        private final ItemScorer scorer;
+        private final PreferenceDomain domain;
+
+        @Inject
+        public Provider(DataAccessObject dao,
+                        @Nullable ItemScorer s,
+                        @Nullable PreferenceDomain dom) {
+            this.dao = dao;
+            scorer = s;
+            domain = dom;
+        }
+
+        @Override
+        public RatingPredictor get() {
+            if (scorer == null) {
+                return null;
+            } else {
+                return new SimpleRatingPredictor(dao, scorer, domain);
+            }
         }
     }
 }
