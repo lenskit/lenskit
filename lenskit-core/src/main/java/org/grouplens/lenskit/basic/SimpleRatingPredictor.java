@@ -3,6 +3,7 @@ package org.grouplens.lenskit.basic;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -26,8 +27,10 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final PreferenceDomain domain;
 
     @Inject
-    public SimpleRatingPredictor(ItemScorer scorer, @Nullable PreferenceDomain domain) {
-        super(null); // safe to use null ctor, as we override all methods that need it.
+    public SimpleRatingPredictor(DataAccessObject dao, ItemScorer scorer,
+                                 @Nullable PreferenceDomain domain) {
+        // TODO Make abstract rating predictors & item scorers not need the DAO
+        super(dao);
         this.scorer = scorer;
         this.domain = domain;
     }
