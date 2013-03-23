@@ -22,7 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import javax.inject.Inject;
 
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**

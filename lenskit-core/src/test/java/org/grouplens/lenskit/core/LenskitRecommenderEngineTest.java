@@ -33,6 +33,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.BaselineRatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;

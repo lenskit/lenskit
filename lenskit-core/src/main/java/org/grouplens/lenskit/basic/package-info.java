@@ -18,27 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.user;
-
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-
 /**
- * A recommender and scorer using user-user collaborative filtering.
- * Neighbor user are aggregated using weighted averaging.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @deprecated Just use {@link ScoreBasedItemRecommender}.
+ * Basic component implementations.  Most of these won't do any good without another,
+ * more sophisticated implementation of some component backing them.
  */
-@Deprecated
-public class UserUserRecommender extends ScoreBasedItemRecommender {
-    protected final UserUserRatingPredictor predictor;
-
-    @Inject
-    public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
-        super(dao, pred);
-        predictor = pred;
-    }
-}
+package org.grouplens.lenskit.basic;

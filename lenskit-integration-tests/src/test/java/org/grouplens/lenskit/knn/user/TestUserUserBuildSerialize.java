@@ -28,7 +28,7 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;

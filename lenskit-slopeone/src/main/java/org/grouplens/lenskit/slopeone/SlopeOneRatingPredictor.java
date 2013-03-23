@@ -23,7 +23,7 @@ package org.grouplens.lenskit.slopeone;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.core.AbstractRatingPredictor;
+import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

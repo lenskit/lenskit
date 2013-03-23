@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;

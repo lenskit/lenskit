@@ -22,16 +22,8 @@ package org.grouplens.lenskit.slopeone;
 
 import javax.inject.Inject;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * A {@code RatingRecommender} that uses the Slope One algorithm.

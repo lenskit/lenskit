@@ -31,14 +31,10 @@ import java.io.IOException;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor;
-import org.grouplens.lenskit.baseline.LeastSquaresPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 

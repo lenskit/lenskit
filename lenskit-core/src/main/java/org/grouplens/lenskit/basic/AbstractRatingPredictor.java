@@ -18,29 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-
-import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
+import java.util.Collection;
+
 /**
- * Base class to make item scorers easier to implement. Delegates single-item
- * score methods to collection-based ones, and {@link #score(long, MutableSparseVector)}
- * to {@link #score(UserHistory, MutableSparseVector)}.
+ * Base class to make rating predictors easier to implement. Delegates single-item predict methods
+ * to collection-based ones, and {@link #predict(long, MutableSparseVector)} to {@link
+ * #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}. It also delegates all
+ * deprecated {@code score} methods to their corresponding {@code predict} methods.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public abstract class AbstractItemScorer implements ItemScorer {
+public abstract class AbstractRatingPredictor implements RatingPredictor {
     /**
      * The DAO passed to the constructor.
      */
@@ -52,7 +51,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
      *
      * @param dao The data access object to use for retrieving histories.
      */
-    protected AbstractItemScorer(@Nonnull DataAccessObject dao) {
+    protected AbstractRatingPredictor(@Nonnull DataAccessObject dao) {
         this.dao = dao;
     }
 
@@ -69,33 +68,33 @@ public abstract class AbstractItemScorer implements ItemScorer {
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(long, MutableSparseVector)}.
+     * <p>Delegates to {@link #predict(long, MutableSparseVector)}.
      */
     @Nonnull
     @Override
-    public SparseVector score(long user, @Nonnull Collection<Long> items) {
+    public SparseVector predict(long user, @Nonnull Collection<Long> items) {
         MutableSparseVector scores = new MutableSparseVector(items);
-        score(user, scores);
+        predict(user, scores);
         // FIXME Create a more efficient way of "releasing" mutable sparse vectors
         return scores.freeze();
     }
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(UserHistory, MutableSparseVector)}.
+     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}.
      */
     @Nonnull
     @Override
-    public SparseVector score(@Nonnull UserHistory<? extends Event> history,
-                              @Nonnull Collection<Long> items) {
+    public SparseVector predict(@Nonnull UserHistory<? extends Event> history,
+                                @Nonnull Collection<Long> items) {
         MutableSparseVector scores = new MutableSparseVector(items);
-        score(history, scores);
+        predict(history, scores);
         return scores.freeze();
     }
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(UserHistory, MutableSparseVector)}, with a
+     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}, with a
      * history retrieved from the DAO.
      *
      * @param user   The user ID.
@@ -103,28 +102,28 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * @see #getUserHistory(long)
      */
     @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
+    public void predict(long user, @Nonnull MutableSparseVector scores) {
         UserHistory<? extends Event> profile = getUserHistory(user);
-        score(profile, scores);
+        predict(profile, scores);
     }
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(long, Collection)}.
+     * <p>Delegates to {@link #predict(long, java.util.Collection)}.
      */
     @Override
-    public double score(long user, long item) {
-        SparseVector v = score(user, LongLists.singleton(item));
+    public double predict(long user, long item) {
+        SparseVector v = predict(user, LongLists.singleton(item));
         return v.get(item, Double.NaN);
     }
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link #score(UserHistory, Collection)}.
+     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, java.util.Collection)}.
      */
     @Override
-    public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
-        SparseVector v = score(profile, LongLists.singleton(item));
+    public double predict(@Nonnull UserHistory<? extends Event> profile, long item) {
+        SparseVector v = predict(profile, LongLists.singleton(item));
         return v.get(item, Double.NaN);
     }
 
@@ -136,5 +135,43 @@ public abstract class AbstractItemScorer implements ItemScorer {
     @Override
     public boolean canUseHistory() {
         return true;
+    }
+
+    @Deprecated
+    @Override
+    public double score(long user, long item) {
+        return predict(user, item);
+    }
+
+    @Deprecated
+    @Nonnull
+    @Override
+    public SparseVector score(long user, @Nonnull Collection<Long> items) {
+        return predict(user, items);
+    }
+
+    @Deprecated
+    @Override
+    public void score(long user, @Nonnull MutableSparseVector scores) {
+        predict(user, scores);
+    }
+
+    @Deprecated
+    @Override
+    public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
+        return predict(profile, item);
+    }
+
+    @Deprecated
+    @Nonnull
+    @Override
+    public SparseVector score(@Nonnull UserHistory<? extends Event> profile, @Nonnull Collection<Long> items) {
+        return predict(profile, items);
+    }
+
+    @Deprecated
+    @Override
+    public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
+        predict(profile, scores);
     }
 }

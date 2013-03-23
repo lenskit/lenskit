@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.core.AbstractRatingPredictor;
+import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
