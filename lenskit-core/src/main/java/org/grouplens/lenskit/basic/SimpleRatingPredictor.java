@@ -32,6 +32,15 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         this.domain = domain;
     }
 
+    /**
+     * Get the backing scorer.
+     *
+     * @return The item scorer.
+     */
+    public ItemScorer getScorer() {
+        return scorer;
+    }
+
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         scorer.score(user, scores);
