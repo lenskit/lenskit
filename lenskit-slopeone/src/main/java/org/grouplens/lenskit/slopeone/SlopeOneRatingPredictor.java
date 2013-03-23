@@ -23,7 +23,7 @@ package org.grouplens.lenskit.slopeone;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.core.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -40,7 +40,7 @@ import javax.inject.Inject;
 /**
  * A <tt>RatingPredictor<tt> that implements the Slope One algorithm.
  */
-public class SlopeOneRatingPredictor extends AbstractItemScorer implements RatingPredictor {
+public class SlopeOneRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
 
     protected SlopeOneModel model;
     protected final PreferenceDomain domain;
@@ -55,8 +55,8 @@ public class SlopeOneRatingPredictor extends AbstractItemScorer implements Ratin
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void predict(@Nonnull UserHistory<? extends Event> history,
+                        @Nonnull MutableSparseVector scores) {
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;

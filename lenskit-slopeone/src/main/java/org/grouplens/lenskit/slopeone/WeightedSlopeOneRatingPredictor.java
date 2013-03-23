@@ -46,8 +46,8 @@ public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void predict(@Nonnull UserHistory<? extends Event> history,
+                        @Nonnull MutableSparseVector scores) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;

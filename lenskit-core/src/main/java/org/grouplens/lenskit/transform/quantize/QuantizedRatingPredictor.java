@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.transform.quantize;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.core.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -35,7 +35,7 @@ import javax.inject.Inject;
  * A rating predictor wrapper that quantizes predictions.
  * @author Michael Ekstrand
  */
-public class QuantizedRatingPredictor extends AbstractItemScorer implements RatingPredictor {
+public class QuantizedRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
     private RatingPredictor basePredictor;
     private Quantizer quantizer;
 
@@ -59,14 +59,14 @@ public class QuantizedRatingPredictor extends AbstractItemScorer implements Rati
     }
 
     @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
-        basePredictor.score(user, scores);
+    public void predict(long user, @Nonnull MutableSparseVector scores) {
+        basePredictor.predict(user, scores);
         quantize(scores);
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
-        basePredictor.score(profile, scores);
+    public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
+        basePredictor.predict(profile, scores);
         quantize(scores);
     }
 }

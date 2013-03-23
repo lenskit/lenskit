@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.core.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -40,7 +40,7 @@ import java.util.Collection;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */
-public class BaselineRatingPredictor extends AbstractItemScorer implements RatingPredictor {
+public class BaselineRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
     private BaselinePredictor predictor;
 
     /**
@@ -60,8 +60,8 @@ public class BaselineRatingPredictor extends AbstractItemScorer implements Ratin
      * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
      */
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile,
-                      @Nonnull MutableSparseVector scores) {
+    public void predict(@Nonnull UserHistory<? extends Event> profile,
+                        @Nonnull MutableSparseVector scores) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(profile);
         predictor.predict(profile.getUserId(), ratings, scores);
     }

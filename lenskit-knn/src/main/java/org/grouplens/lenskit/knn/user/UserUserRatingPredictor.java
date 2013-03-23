@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.core.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -48,7 +48,7 @@ import static java.lang.Math.abs;
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class UserUserRatingPredictor extends AbstractItemScorer implements RatingPredictor {
+public class UserUserRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
     protected final NeighborhoodFinder neighborhoodFinder;
@@ -86,8 +86,8 @@ public class UserUserRatingPredictor extends AbstractItemScorer implements Ratin
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void predict(@Nonnull UserHistory<? extends Event> history,
+                        @Nonnull MutableSparseVector scores) {
         logger.trace("Predicting for user {} with {} events",
                      history.getUserId(), history.size());
 

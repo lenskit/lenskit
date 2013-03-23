@@ -23,6 +23,8 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -33,8 +35,10 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * Generate predictions with item-item collaborative filtering. This configures
@@ -183,5 +187,37 @@ public class ItemItemRatingPredictor extends ItemItemScorer implements RatingPre
             domain.clampVector(vector);
             return vector;
         }
+    }
+
+    @Override
+    public double predict(long user, long item) {
+        return score(user, item);
+    }
+
+    @Nonnull
+    @Override
+    public SparseVector predict(long user, @Nonnull Collection<Long> items) {
+        return score(user, items);
+    }
+
+    @Override
+    public void predict(long user, @Nonnull MutableSparseVector predictions) {
+        score(user, predictions);
+    }
+
+    @Override
+    public double predict(@Nonnull UserHistory<? extends Event> profile, long item) {
+        return score(profile, item);
+    }
+
+    @Nonnull
+    @Override
+    public SparseVector predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull Collection<Long> items) {
+        return score(profile, items);
+    }
+
+    @Override
+    public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector predictions) {
+        score(profile, predictions);
     }
 }
