@@ -29,6 +29,9 @@ LensKit Release Notes
 
   * Made <<<SparseVector>>> constructors package-private.  Sparse vectors shouldn't be
     subclassed by any additional classes.
+
+  * Introduced <<<predict>>> methods to <<<RatingPredictor>>>, deprecating the fact that it
+    extends <<<ItemScorer>>>.
   
   []
 
