@@ -79,7 +79,6 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             final int nnbrs = neighbors.size();
 
             // filter and truncate the neighborhood
-            Iterator<ScoredId> niter = neighbors.iterator();
             for (ScoredId neighbor : neighbors) {
                 long oi = neighbor.getId();
                 double score = neighbor.getScore();

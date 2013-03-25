@@ -23,9 +23,11 @@ package org.grouplens.lenskit.scored;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -34,11 +36,12 @@ import java.util.Comparator;
  * class may be used instantiate to a new {@code ScoredId} object, and the
  * {@code MutableScoredId} class may be used to implement fast iteration.
  */
-public class ScoredId {
+public class ScoredId implements Serializable {
 
-    protected long id;
-    protected double score;
-    protected Reference2DoubleMap<Symbol> channelMap;
+    long id;
+    double score;
+    Reference2DoubleMap<Symbol> channelMap;
+    private transient volatile Integer hashCode;
 
     public static final Comparator<ScoredId> DESCENDING_SCORE_COMPARATOR = new Comparator<ScoredId>() {
         @Override
@@ -48,8 +51,7 @@ public class ScoredId {
     };
 
     public ScoredId(long id, double score) {
-        this.id = id;
-        this.score = score;
+        this(id, score, null);
     }
 
     private ScoredId(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
@@ -58,6 +60,7 @@ public class ScoredId {
         if (channelMap != null) {
             this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
         }
+        hashCode = null;
     }
 
     public long getId() {
@@ -95,17 +98,25 @@ public class ScoredId {
     public boolean equals(Object o) {
         if (o instanceof ScoredId) {
             ScoredId oid = (ScoredId) o;
-            return getId() == oid.getId() && getScore() == oid.getScore();
+            return new EqualsBuilder()
+                    .append(id, oid.id)
+                    .append(score, oid.score)
+                    .append(channelMap, oid.channelMap)
+                    .isEquals();
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(score)
-                .toHashCode();
+        if (hashCode == null) {
+            hashCode = new HashCodeBuilder()
+                    .append(id)
+                    .append(score)
+                    .append(channelMap)
+                    .build();
+        }
+        return hashCode;
     }
 
     /**
