@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  */
 @Deprecated
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
-    private SlopeOneRatingPredictor predictor;
+    private SlopeOneItemScorer predictor;
 
     /**
      * Construct a new recommender from a scorer.
@@ -39,7 +39,7 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
      * @param predictor The predictor to use.
      */
     @Inject
-    public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
+    public SlopeOneRecommender(DataAccessObject dao, SlopeOneItemScorer predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

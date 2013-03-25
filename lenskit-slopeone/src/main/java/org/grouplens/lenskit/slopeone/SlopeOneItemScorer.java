@@ -22,6 +22,7 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -36,52 +37,64 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
- * A {@code RatingPredictor} that implements a weighted Slope One algorithm.
+ * An {@link org.grouplens.lenskit.ItemScorer} that implements the Slope One algorithm.
  */
-public class WeightedSlopeOneRatingPredictor extends SlopeOneRatingPredictor {
+public class SlopeOneItemScorer extends AbstractItemScorer {
+
+    protected SlopeOneModel model;
+    protected final PreferenceDomain domain;
+
     @Inject
-    public WeightedSlopeOneRatingPredictor(DataAccessObject dao, SlopeOneModel model,
-                                           @Nullable PreferenceDomain dom) {
-        super(dao, model, dom);
+    public SlopeOneItemScorer(DataAccessObject dao,
+                              SlopeOneModel model,
+                              @Nullable PreferenceDomain dom) {
+        super(dao);
+        this.model = model;
+        domain = dom;
     }
 
     @Override
-    public void predict(@Nonnull UserHistory<? extends Event> history,
-                        @Nonnull MutableSparseVector scores) {
-        SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
+        SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         int nUnpred = 0;
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
-            if (!ratings.containsKey(predicteeItem)) {
+            if (!user.containsKey(predicteeItem)) {
                 double total = 0;
-                int nusers = 0;
-                LongIterator ratingIter = ratings.keySet().iterator();
+                int nitems = 0;
+                LongIterator ratingIter = user.keySet().iterator();
                 while (ratingIter.hasNext()) {
                     long currentItem = ratingIter.nextLong();
-                    double currentDev = model.getDeviation(predicteeItem, currentItem);
-                    if (!Double.isNaN(currentDev)) {
-                        int weight = model.getCoratings(predicteeItem, currentItem);
-                        total += (currentDev + ratings.get(currentItem)) * weight;
-                        nusers += weight;
+                    int nusers = model.getCoratings(predicteeItem, currentItem);
+                    if (nusers != 0) {
+                        double currentDev = model.getDeviation(predicteeItem, currentItem);
+                        total += currentDev + user.get(currentItem);
+                        nitems++;
                     }
                 }
-                if (nusers == 0) {
-                    nUnpred += 1;
-                    scores.clear(e);
-                } else {
-                    double predValue = total / nusers;
+                if (nitems != 0) {
+                    double predValue = total / nitems;
                     if (domain != null) {
                         predValue = domain.clampValue(predValue);
                     }
                     scores.set(e, predValue);
+                } else {
+                    nUnpred += 1;
+                    scores.clear(e);
                 }
             }
         }
 
+        //Use Baseline Predictor if necessary
         final BaselinePredictor baseline = model.getBaselinePredictor();
         if (baseline != null && nUnpred > 0) {
-            baseline.predict(history.getUserId(), ratings, scores, false);
+            baseline.predict(history.getUserId(), user, scores, false);
         }
+    }
+
+    public SlopeOneModel getModel() {
+        return model;
     }
 }
