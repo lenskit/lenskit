@@ -26,6 +26,7 @@
 	       <phase>lenskit-eval</phase>
 	       <phase>lenskit-post-eval</phase>
 	       <phase>lenskit-analyze</phase>
+	       <phase>lenskit-publish</phase>
 	    </phases>
 	    <default-phases>
 	       <lenskit-pre-eval></lenskit-pre-eval>
