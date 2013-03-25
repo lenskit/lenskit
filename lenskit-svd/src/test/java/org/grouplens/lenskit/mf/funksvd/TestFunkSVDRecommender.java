@@ -74,7 +74,7 @@ public class TestFunkSVDRecommender {
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
-        factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);

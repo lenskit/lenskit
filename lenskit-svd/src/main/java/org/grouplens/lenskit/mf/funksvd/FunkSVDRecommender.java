@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 @Deprecated
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
     @Inject
-    public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
+    public FunkSVDRecommender(DataAccessObject dao, FunkSVDItemScorer predictor) {
         super(dao, predictor);
     }
 }

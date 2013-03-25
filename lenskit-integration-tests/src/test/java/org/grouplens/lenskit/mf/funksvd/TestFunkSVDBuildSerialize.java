@@ -56,7 +56,7 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(FunkSVDRatingPredictor.class);
+               .to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
         factory.set(FeatureCount.class).to(10);
@@ -77,8 +77,8 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
         assertThat(loaded, notNullValue());
         LenskitRecommender rec = loaded.open();
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(FunkSVDRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer.class));
             assertThat(rec.get(FunkSVDModel.class),
                        notNullValue());
         } finally {

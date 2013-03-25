@@ -23,8 +23,7 @@ package org.grouplens.lenskit.mf.funksvd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.basic.AbstractRatingPredictor;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -50,7 +49,7 @@ import javax.inject.Inject;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class FunkSVDRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
+public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
     private DataAccessObject dao;
@@ -61,8 +60,8 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor implements R
     private final FunkSVDUpdateRule rule;
 
     @Inject
-    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
-                                  @Nullable FunkSVDUpdateRule rule) {
+    public FunkSVDItemScorer(DataAccessObject dao, FunkSVDModel model,
+                             @Nullable FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
         this.model = model;
@@ -121,8 +120,8 @@ public class FunkSVDRatingPredictor extends AbstractRatingPredictor implements R
     }
 
     @Override
-    public void predict(@Nonnull UserHistory<? extends Event> userHistory,
-                        @Nonnull MutableSparseVector scores) {
+    public void score(@Nonnull UserHistory<? extends Event> userHistory,
+                      @Nonnull MutableSparseVector scores) {
         long user = userHistory.getUserId();
         int uidx = model.userIndex.getIndex(user);
         SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
