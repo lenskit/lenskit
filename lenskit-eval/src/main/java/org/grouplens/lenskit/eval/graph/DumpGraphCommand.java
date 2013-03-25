@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 public class DumpGraphCommand extends AbstractCommand<File> {
-    private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
+    private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
 
     private LenskitAlgorithmInstance algorithm;
     private GraphWriter writer;
@@ -81,9 +81,8 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     @Override
     public File call() throws CommandException {
         if (writer == null) {
-            logger.warn("dumpGraph command given with no output file specified."
-                    + " Use 'output <filename>' to create output.");
-            throw new IllegalArgumentException("dumpGraph command given with no output file specified.");
+            logger.error("no output file specified");
+            throw new IllegalStateException("no graph output file specified");
         }
         LenskitRecommenderEngineFactory factory = algorithm.getFactory().clone();
         if (domain != null) {
