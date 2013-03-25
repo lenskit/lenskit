@@ -38,6 +38,8 @@ import java.util.Comparator;
  */
 public class ScoredId implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     long id;
     double score;
     Reference2DoubleMap<Symbol> channelMap;
@@ -96,7 +98,9 @@ public class ScoredId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ScoredId) {
+        if (o == this) {
+            return true;
+        } else if (o instanceof ScoredId) {
             ScoredId oid = (ScoredId) o;
             return new EqualsBuilder()
                     .append(id, oid.id)
