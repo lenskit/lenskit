@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Predictor that returns the user's mean offset from item mean rating for all
- * predictions.
+ * Scorer that returns the user's mean offset from item mean rating for all
+ * scores.
  *
  * <p>This implements the baseline scorer <i>p<sub>u,i</sub> = mu + b<sub>i</sub> +
  * b<sub>u</sub></i>, where <i>b<sub>i</sub></i> is the item's average rating (less the global
@@ -52,8 +52,8 @@ import org.slf4j.LoggerFactory;
  * @author John Riedl <riedl@cs.umn.edu>
  */
 @Shareable
-public class ExtendedItemUserMeanPredictor extends AbstractItemScorer implements RatingPredictor {
-	/**
+public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
+    /**
      * A builder that creates ItemUserMeanPredictors.
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
@@ -61,7 +61,7 @@ public class ExtendedItemUserMeanPredictor extends AbstractItemScorer implements
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 22L;
-    private static final Logger logger = LoggerFactory.getLogger(ExtendedItemUserMeanPredictor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtendedItemUserMeanScorer.class);
     private final double userDamping;  // damping for computing the user averages; more damping biases toward global.
     private final ItemMeanModel model;
 
@@ -73,13 +73,13 @@ public class ExtendedItemUserMeanPredictor extends AbstractItemScorer implements
      * @param damping    The damping term.
      */
     @Inject
-    public ExtendedItemUserMeanPredictor(DataAccessObject dao, ItemMeanModel inModel, 
-            @Damping double inUserDamping) {
+    public ExtendedItemUserMeanScorer(DataAccessObject dao, ItemMeanModel inModel,
+                                      @Damping double inUserDamping) {
         super(dao);
         model = inModel;
         userDamping = inUserDamping;
     }
-    
+
     /**
      * Compute the mean offset in user rating from item mean rating.
      *
@@ -102,15 +102,15 @@ public class ExtendedItemUserMeanPredictor extends AbstractItemScorer implements
         return total / (values.size() + userDamping);
     }
 
-	@Override
-	public void score(@Nonnull UserHistory<? extends Event> profile,
-			@Nonnull MutableSparseVector scores) {
-	    logger.debug("score called to attempt to score %d elements", scores.size());
+    @Override
+    public void score(@Nonnull UserHistory<? extends Event> profile,
+                      @Nonnull MutableSparseVector scores) {
+        logger.debug("score called to attempt to score %d elements", scores.size());
         double meanOffset = computeUserOffset(RatingVectorUserHistorySummarizer.makeRatingVector(profile));
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             scores.set(e, meanOffset + getItemMean(e.getKey()));
-        }		
-	}
+        }
+    }
 
     /**
      * Get the mean for a particular item.
