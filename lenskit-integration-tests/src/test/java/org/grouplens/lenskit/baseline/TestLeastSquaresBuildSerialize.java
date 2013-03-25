@@ -50,7 +50,7 @@ public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(BaselineRatingPredictor.class);
+               .to(BaselineItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(LeastSquaresPredictor.class);
 
@@ -67,8 +67,8 @@ public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
 
         LenskitRecommender rec = loaded.open();
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(BaselineItemScorer.class));
             assertThat(rec.get(BaselinePredictor.class),
                        instanceOf(LeastSquaresPredictor.class));
         } finally {

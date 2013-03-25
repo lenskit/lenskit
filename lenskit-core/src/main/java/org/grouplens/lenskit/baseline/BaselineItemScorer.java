@@ -20,8 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.basic.AbstractRatingPredictor;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -34,13 +33,13 @@ import javax.inject.Inject;
 import java.util.Collection;
 
 /**
- * {@link RatingPredictor} that delegates to the baseline predictor. This allows
+ * {@link org.grouplens.lenskit.ItemScorer} that delegates to the baseline predictor. This allows
  * baseline predictors to be used as rating predictors in their own right.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see BaselinePredictor
  */
-public class BaselineRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
+public class BaselineItemScorer extends AbstractItemScorer {
     private BaselinePredictor predictor;
 
     /**
@@ -50,7 +49,7 @@ public class BaselineRatingPredictor extends AbstractRatingPredictor implements 
      * @param dao      The DAO.
      */
     @Inject
-    public BaselineRatingPredictor(BaselinePredictor baseline, DataAccessObject dao) {
+    public BaselineItemScorer(BaselinePredictor baseline, DataAccessObject dao) {
         super(dao);
         predictor = baseline;
     }
@@ -60,8 +59,8 @@ public class BaselineRatingPredictor extends AbstractRatingPredictor implements 
      * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
      */
     @Override
-    public void predict(@Nonnull UserHistory<? extends Event> profile,
-                        @Nonnull MutableSparseVector scores) {
+    public void score(@Nonnull UserHistory<? extends Event> profile,
+                      @Nonnull MutableSparseVector scores) {
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(profile);
         predictor.predict(profile.getUserId(), ratings, scores);
     }

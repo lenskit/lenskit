@@ -35,13 +35,15 @@ import java.util.Collection;
  * so that they can be easily written to or read from a file.
  *
  * <p>
- * Note that this class does not implement the {@link RatingPredictor} interface
- * - this is to allow it to operate free of the DAO. If you want to use a
- * baseline scorer as a {@link RatingPredictor}, see
- * {@link BaselineRatingPredictor}.
+ * Note that this class does not implement the {@link RatingPredictor} interface.
+ * If you want to use a baseline scorer as a {@link RatingPredictor}, see
+ * {@link BaselineItemScorer}.
+ * <p>
+ * This class is also misnamed; it generates general item scores, not just rating
+ * predictions.
  *
  * @author Michael Ludwig
- * @see BaselineRatingPredictor
+ * @see BaselineItemScorer
  */
 public interface BaselinePredictor extends Serializable {
     /**
