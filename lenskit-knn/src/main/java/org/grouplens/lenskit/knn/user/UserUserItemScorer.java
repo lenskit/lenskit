@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -48,17 +49,17 @@ import static java.lang.Math.abs;
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class UserUserRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
+public class UserUserItemScorer extends AbstractItemScorer {
     private static final double MINIMUM_SIMILARITY = 0.001;
-    private static final Logger logger = LoggerFactory.getLogger(UserUserRatingPredictor.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserVectorNormalizer normalizer;
     protected final BaselinePredictor baseline;
 
     @Inject
-    public UserUserRatingPredictor(DataAccessObject dao, NeighborhoodFinder nbrf,
-                                   UserVectorNormalizer norm,
-                                   @Nullable BaselinePredictor baseline) {
+    public UserUserItemScorer(DataAccessObject dao, NeighborhoodFinder nbrf,
+                              UserVectorNormalizer norm,
+                              @Nullable BaselinePredictor baseline) {
         super(dao);
         neighborhoodFinder = nbrf;
         normalizer = norm;
@@ -86,8 +87,8 @@ public class UserUserRatingPredictor extends AbstractRatingPredictor implements 
     }
 
     @Override
-    public void predict(@Nonnull UserHistory<? extends Event> history,
-                        @Nonnull MutableSparseVector scores) {
+    public void score(@Nonnull UserHistory<? extends Event> history,
+                      @Nonnull MutableSparseVector scores) {
         logger.trace("Predicting for user {} with {} events",
                      history.getUserId(), history.size());
 

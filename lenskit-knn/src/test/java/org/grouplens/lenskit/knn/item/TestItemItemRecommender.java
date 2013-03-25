@@ -78,7 +78,7 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(3, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
         factory.bind(UserVectorNormalizer.class)
