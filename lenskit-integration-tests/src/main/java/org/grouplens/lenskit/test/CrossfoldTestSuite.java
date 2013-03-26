@@ -23,15 +23,12 @@ package org.grouplens.lenskit.test;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
-import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.eval.traintest.SimpleConfigCommand;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
+import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Test;
 
@@ -57,23 +54,27 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         }
 
         File work = new File(workDirName);
-        SimpleConfigCommand builder = new SimpleConfigCommand("train-test");
+        SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
 
-        configureAlgorithm(builder.addAlgorithm());
+        LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
+        configureAlgorithm(algo.getFactory());
+        evalCommand.addAlgorithm(algo);
 
-        builder.addCrossfold("ml-100k")
-               .setSource(new GenericDataSource("ml-100k", daoFactory))
-               .setPartitions(5)
-               .setHoldout(0.2)
-               .setTrain(new File(work, "train.%d.csv").getAbsolutePath())
-               .setTest(new File(work, "test.%d.csv").getAbsolutePath());
+        evalCommand.addDataset(
+                new CrossfoldCommand("ml-100k")
+                        .setSource(new GenericDataSource("ml-100k", daoFactory))
+                        .setPartitions(5)
+                        .setHoldout(0.2)
+                        .setTrain(new File(work, "train.%d.csv").getAbsolutePath())
+                        .setTest(new File(work, "test.%d.csv").getAbsolutePath())
+        );
 
-        builder.addMetric(new CoveragePredictMetric())
-               .addMetric(new RMSEPredictMetric())
-               .addMetric(new MAEPredictMetric());
+        evalCommand.addMetric(new CoveragePredictMetric())
+                   .addMetric(new RMSEPredictMetric())
+                   .addMetric(new MAEPredictMetric());
 
 
-        Table result = builder.call().call();
+        Table result = evalCommand.call();
         assertThat(result, notNullValue());
         checkResults(result);
     }

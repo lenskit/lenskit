@@ -1,6 +1,5 @@
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
@@ -12,16 +11,15 @@ import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
+public class SimpleEvalCommand extends AbstractCommand<Table>{
 
     private EvalConfig config = new EvalConfig(new Properties());
-    private ArrayList<LenskitAlgorithmInstanceCommand> algoCommandList = new ArrayList<LenskitAlgorithmInstanceCommand>();
-    private ArrayList<CrossfoldCommand> crossfoldList = new ArrayList<CrossfoldCommand>();
     private TrainTestEvalCommand result;
 
     /**
@@ -56,13 +54,23 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
     }
 
     /**
-     * Adds a fully configured algorithm command to the {@code TrainTestEvalCommand} being built.
+     * Adds an algorithm to the {@code TrainTestEvalCommand} being built.
      *
      * If any exception is thrown while the command is called it is rethrown as a runtime error.
      * @param algo The algorithm added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvalCommand addCompleteAlgorithm(LenskitAlgorithmInstanceCommand algo){
+    public SimpleEvalCommand addAlgorithm(LenskitAlgorithmInstance algo){
+        result.addAlgorithm(algo);
+        return this;
+    }
+    /**
+     * Adds a fully configured algorithm command to the {@code TrainTestEvalCommand} being built.
+     *
+     * @param algo The algorithm added to the {@code TrainTestEvalCommand}
+     * @return Itself to allow  chaining
+     */
+    public SimpleEvalCommand addAlgorithm(LenskitAlgorithmInstanceCommand algo){
         try{
             result.addAlgorithm(algo.call());
         }
@@ -72,52 +80,6 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
         return this;
     }
 
-    /**
-     * Adds a {@code LenskitAlgorithmInstance} to the {@code TrainTestEvalCommand} being built.
-     * This acts as a simple wrapper around TrainTestEval.addAlgorithm
-     *
-     * @param algo The AlgorithmInstance supplied to the {@code TrainTestEvalCommand}
-     * @return
-     */
-    public SimpleEvalCommand addCompleteAlgorithm(LenskitAlgorithmInstance algo){
-        result.addAlgorithm(algo);
-        return this;
-    }
-
-    /**
-     * Creates a {@code LenskitAlgorithmInstanceCommand} with {@code algo} as a name.
-     *
-     * It is {@code call}'ed added to the {@code TrainTestEvalCommand} only when the {@code call()} method is called.
-     * @param algo The name of the algorithm to be created
-     * @return The {@code LenskitRecommenderEngineFactory} for the newly created algorithm to allow customization
-     */
-    public LenskitRecommenderEngineFactory addAlgorithm(String algo){
-        LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand(algo);
-        algoCommandList.add(command);
-        return command.getFactory();
-    }
-
-    /**
-     * This is identical to {@code addAlgorithm(String algo)} except no name is provided to the {@code LenskitAlgorithmInstanceCommand}
-     * @return The factory of the new command for customization.
-     */
-    public LenskitRecommenderEngineFactory addAlgorithm(){
-        LenskitAlgorithmInstanceCommand command = new LenskitAlgorithmInstanceCommand();
-        algoCommandList.add(command);
-        return command.getFactory();
-    }
-
-    /**
-     * Adds the prebuilt {@code LenskitAlgorithmInstanceCommand} to the list of {@code AlgorithmInstance} commands.
-     *
-     * The command will be called and added to the {@code TrainTestEvalCommand} when the {@code SimpleConfigCommand} is called.
-     * @param algo The constructed {@code LenskitAlgorithmInstanceCommand}
-     * @return The factory of the command to allow for further customization.
-     */
-    public LenskitRecommenderEngineFactory addAlgorithm(LenskitAlgorithmInstanceCommand algo){
-        algoCommandList.add(algo);
-        return algo.getFactory();
-    }
 
     /**
      * Calls the {@code CrossfoldCommand} and adds the resulting {@code TTDataSet}s to the {@code TrainTestEvalCommand}.
@@ -127,7 +89,7 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
      * @param cross
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalCommand addCompleteDataset(CrossfoldCommand cross){
+    public SimpleEvalCommand addDataset(CrossfoldCommand cross){
         try {
             for (TTDataSet data: cross.call()) {
                 result.addDataset(data);
@@ -146,7 +108,7 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
      * @param data The dataset to be added to the command.
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalCommand addCompleteDataset(TTDataSet data) {
+    public SimpleEvalCommand addDataset(TTDataSet data) {
         result.addDataset(data);
         return this;
     }
@@ -159,34 +121,11 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvalCommand addCompleteDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
+    public SimpleEvalCommand addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
         result.addDataset(new GenericTTDataSet(name, train, test, dom));
         return this;
     }
 
-    /**
-     * Adds a constructed but unconfigured {@code CrossfoldCommand} to a list of commands that are added to the {@code TrainTestEvalCommand}
-     * when the {@code call()} method is called.
-     * @param cross
-     * @return {@code cross} to allow for further configuration.
-     */
-    public CrossfoldCommand addCrossfold(CrossfoldCommand cross) {
-        crossfoldList.add(cross);
-        return cross;
-    }
-
-    /**
-     * Similar to {addCrossfold(CrossfoldCommand)} except this method constructs a new command with the name
-     * {@code name}
-     * @param name The name supplied to the {@code CrossfoldCommand}
-     * @return The newly constructed for configuration.
-     */
-    public CrossfoldCommand addCrossfold(String name) {
-        CrossfoldCommand newCross = new CrossfoldCommand(name);
-        newCross.setConfig(config);
-        crossfoldList.add(newCross);
-        return newCross;
-    }
 
     /**
      * Adds a completed metric to the {@code TrainTestEvalCommand}
@@ -281,16 +220,9 @@ public class SimpleEvalCommand extends AbstractCommand<TrainTestEvalCommand>{
      *
      * @return The fully configured command.
      */
-    public TrainTestEvalCommand call() throws CommandException{
-        for (LenskitAlgorithmInstanceCommand algo : algoCommandList) {
-            result.addAlgorithm(algo.call());
-        }
-        for (CrossfoldCommand cross : crossfoldList) {
-            for(TTDataSet data : cross.call()){
-                result.addDataset(data);
-            }
-        }
+    public Table call() throws CommandException{
         result.setConfig(config);
-        return result;
+        return result.call();
     }
 }
+
