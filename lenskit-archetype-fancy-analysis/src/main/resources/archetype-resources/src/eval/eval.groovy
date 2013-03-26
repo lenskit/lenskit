@@ -6,27 +6,27 @@ import org.grouplens.lenskit.knn.user.*
 
 import org.grouplens.lenskit.transform.normalize.*
 
-import ${package}.ExtendedItemUserMeanPredictor
+import ${package}.ExtendedItemUserMeanScorer
 
 def ml100k = crossfold {
-   source csvfile("${config.dataDir}/ml100k/u.data") {
-      delimiter "\t"
-      domain {
-         minimum 1.0
-         maximum 5.0
-         precision 1.0
-      }
-   }
-   test "${config.dataDir}/ml100k-crossfold/test.%d.csv"
-   train "${config.dataDir}/ml100k-crossfold/train.%d.csv" 
-   order RandomOrder
-   holdout 10
-   partitions 5
+    source csvfile("${config.dataDir}/ml100k/u.data") {
+        delimiter "\t"
+        domain {
+            minimum 1.0
+            maximum 5.0
+            precision 1.0
+        }
+    }
+    test "${config.dataDir}/ml100k-crossfold/test.%d.csv"
+    train "${config.dataDir}/ml100k-crossfold/train.%d.csv"
+    order RandomOrder
+    holdout 10
+    partitions 5
 }
 
 def itemitem = algorithm("ItemItem") {
     // use the item-item rating predictor with a baseline and normalizer
-    bind RatingPredictor to ItemItemRatingPredictor
+    bind ItemScorer to ItemItemScorer
     bind BaselinePredictor to ItemUserMeanPredictor
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
 
@@ -42,7 +42,7 @@ def itemitem = algorithm("ItemItem") {
 
 def useruser = algorithm("UserUser") {
     // use the user-user rating predictor
-    bind RatingPredictor to UserUserRatingPredictor
+    bind ItemScorer to UserUserItemScorer
     bind BaselinePredictor to ItemUserMeanPredictor
     bind VectorNormalizer to MeanVarianceNormalizer
 
@@ -65,27 +65,27 @@ def useruser = algorithm("UserUser") {
 }
 
 def extended = algorithm("ExtendedItemUserMean") {
-	bind RatingPredictor to ExtendedItemUserMeanPredictor
+    bind ItemScorer to ExtendedItemUserMeanScorer
 }
 
 dumpGraph {
-	output "${config.analysisDir}/extended.gv"
-	algorithm extended
+    output "${config.analysisDir}/extended.gv"
+    algorithm extended
 }
 
 trainTest {
-	dataset ml100k
+    dataset ml100k
 
-	// Three different types of output for analysis.
-	output "${config.analysisDir}/eval-results.csv"
-	predictOutput "${config.analysisDir}/eval-preds.csv"
-	userOutput "${config.analysisDir}/eval-user.csv"
+    // Three different types of output for analysis.
+    output "${config.analysisDir}/eval-results.csv"
+    predictOutput "${config.analysisDir}/eval-preds.csv"
+    userOutput "${config.analysisDir}/eval-user.csv"
 
-	metric CoveragePredictMetric
-	metric RMSEPredictMetric
-	metric NDCGPredictMetric
+    metric CoveragePredictMetric
+    metric RMSEPredictMetric
+    metric NDCGPredictMetric
 
-	algorithm itemitem
-	algorithm useruser
-	algorithm extended
+    algorithm itemitem
+    algorithm useruser
+    algorithm extended
 }

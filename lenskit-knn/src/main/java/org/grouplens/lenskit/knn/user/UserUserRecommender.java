@@ -22,7 +22,7 @@ package org.grouplens.lenskit.knn.user;
 
 import javax.inject.Inject;
 
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
@@ -34,10 +34,10 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  */
 @Deprecated
 public class UserUserRecommender extends ScoreBasedItemRecommender {
-    protected final UserUserRatingPredictor predictor;
+    protected final UserUserItemScorer predictor;
 
     @Inject
-    public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
+    public UserUserRecommender(DataAccessObject dao, UserUserItemScorer pred) {
         super(dao, pred);
         predictor = pred;
     }

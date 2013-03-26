@@ -20,13 +20,11 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -64,7 +62,7 @@ public class TestFunkSVDRecommenderBuild {
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
-        factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(IterationCount.class).to(10);
@@ -79,10 +77,14 @@ public class TestFunkSVDRecommenderBuild {
         Recommender rec = engine.open();
 
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(FunkSVDRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer.class));
             assertThat(rec.getItemRecommender(),
                        instanceOf(FunkSVDRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                       sameInstance(rec.getItemScorer()));
         } finally {
             rec.close();
         }
@@ -118,13 +120,13 @@ public class TestFunkSVDRecommenderBuild {
     @Test
     public void testNoPredictUpdates() throws RecommenderBuildException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(RatingPredictor.class)
-               .to(FunkSVDRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
         factory.set(IterationCount.class)
                .to(10);
-        factory.at(FunkSVDRatingPredictor.class)
+        factory.at(FunkSVDItemScorer.class)
                .bind(FunkSVDUpdateRule.class)
                .toNull();
 
@@ -132,9 +134,9 @@ public class TestFunkSVDRecommenderBuild {
 
         LenskitRecommender rec = engine.open();
         try {
-            RatingPredictor pred = rec.getRatingPredictor();
-            assertThat(pred, instanceOf(FunkSVDRatingPredictor.class));
-            FunkSVDRatingPredictor fsvd = (FunkSVDRatingPredictor) pred;
+            ItemScorer scorer = rec.getItemScorer();
+            assertThat(scorer, instanceOf(FunkSVDItemScorer.class));
+            FunkSVDItemScorer fsvd = (FunkSVDItemScorer) scorer;
             assertThat(fsvd.getUpdateRule(),
                        nullValue());
         } finally {

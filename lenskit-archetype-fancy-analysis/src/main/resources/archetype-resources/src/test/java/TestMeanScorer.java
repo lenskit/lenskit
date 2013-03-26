@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -38,11 +38,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test baseline predictors that compute means from data.
+ * Test baseline Scorers that compute means from data.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class TestMeanPredictor {
+public class TestMeanScorer {
     private DataAccessObject dao;
 
     @Before
@@ -88,15 +88,15 @@ public class TestMeanPredictor {
     }
 
     @Test
-    public void testUserItemMeanPredictor() {
-        RatingPredictor predictor = new ExtendedItemUserMeanPredictor(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
+    public void testUserItemMeanScorer() {
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
 
         // User 1
         MutableSparseVector scores1 = MutableSparseVector.wrap(items, ratings); // ratings ignored
-        predictor.score(1L, scores1);
+        scorer.score(1L, scores1);
         assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
         assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
@@ -106,14 +106,14 @@ public class TestMeanPredictor {
         long[] items8 = {4, 5, 7};
 
         MutableSparseVector scores8 = MutableSparseVector.wrap(items8, ratings); // ratings ignored
-        predictor.score(8L, scores8);
+        scorer.score(8L, scores8);
         assertThat(scores8.get(5), closeTo(3.75, 1.0e-5));
         assertThat(scores8.get(7), closeTo(4.25, 1.0e-5));
         assertThat(scores8.get(4), closeTo(5.25, 1.0e-5));
         
         // User 2, not in the set of users in the DAO
         MutableSparseVector scores2 = MutableSparseVector.wrap(items, ratings); // ratings ignored
-        predictor.score(2L, scores2);
+        scorer.score(2L, scores2);
         assertThat(scores2.get(5), closeTo(3.5, 1.0e-5));
         assertTrue(Double.isNaN(scores2.get(4)));
         assertThat(scores2.get(7), closeTo(4, 1.0e-5));
@@ -121,7 +121,7 @@ public class TestMeanPredictor {
     
     @Test
     public void testUserItemMeanMissing() {
-        RatingPredictor predictor = new ExtendedItemUserMeanPredictor(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
@@ -129,7 +129,7 @@ public class TestMeanPredictor {
         // User 1
         MutableSparseVector scores1 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         scores1.clear(5L);  // make sure scores are returned even if the ratings are not set
-        predictor.score(1L, scores1);
+        scorer.score(1L, scores1);
         assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
         assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average

@@ -39,7 +39,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.core.ScoreBasedGlobalItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedGlobalItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Inject;

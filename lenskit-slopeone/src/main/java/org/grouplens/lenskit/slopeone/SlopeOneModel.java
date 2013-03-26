@@ -28,9 +28,9 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.util.Index;
 
 /**
- * A model for a {@code SlopeOneRatingPredictor} or {@code WeightedSlopeOneRatingPredictor}.
+ * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
- * Also contains a {@code BaselinePredictor} and the minimum and maximum rating values
+ * Also contains a {@link BaselinePredictor} and the minimum and maximum rating values
  * for use by a scorer.
  */
 @DefaultProvider(SlopeOneModelBuilder.class)

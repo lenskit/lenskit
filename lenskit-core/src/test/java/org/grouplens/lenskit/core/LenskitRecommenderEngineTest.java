@@ -27,17 +27,19 @@ import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.baseline.BaselineItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.params.ThresholdValue;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
+import org.grouplens.lenskit.params.ThresholdValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,8 +73,8 @@ public class LenskitRecommenderEngineTest {
     }
 
     private void configureBasicRecommender() {
-        factory.bind(RatingPredictor.class)
-               .to(BaselineRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(BaselineItemScorer.class);
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(BaselinePredictor.class)
@@ -84,9 +86,9 @@ public class LenskitRecommenderEngineTest {
             assertThat(rec.getItemRecommender(),
                        instanceOf(ScoreBasedItemRecommender.class));
             assertThat(rec.getItemScorer(),
-                       instanceOf(BaselineRatingPredictor.class));
+                       instanceOf(BaselineItemScorer.class));
             assertThat(rec.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
+                       instanceOf(SimpleRatingPredictor.class));
             assertThat(rec.get(BaselinePredictor.class),
                        instanceOf(ConstantPredictor.class));
         } finally {
@@ -114,20 +116,24 @@ public class LenskitRecommenderEngineTest {
     public void testSeparatePredictor() throws RecommenderBuildException {
         factory.bind(BaselinePredictor.class)
                .to(GlobalMeanPredictor.class);
-        factory.bind(RatingPredictor.class)
-               .to(BaselineRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(BaselineItemScorer.class);
 
         LenskitRecommenderEngine engine = factory.create();
 
         LenskitRecommender rec1 = engine.open();
         LenskitRecommender rec2 = engine.open();
         try {
-            assertThat(rec1.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
-            assertThat(rec2.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
+            assertThat(rec1.getItemScorer(),
+                       instanceOf(BaselineItemScorer.class));
+            assertThat(rec2.getItemScorer(),
+                       instanceOf(BaselineItemScorer.class));
 
-            // verify that recommenders have different predictors
+            // verify that recommenders have different scorers
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+
+            // verify that recommenders have different rating predictors
             assertThat(rec1.getRatingPredictor(),
                        not(sameInstance(rec2.getRatingPredictor())));
 
