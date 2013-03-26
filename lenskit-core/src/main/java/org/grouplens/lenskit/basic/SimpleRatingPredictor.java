@@ -39,8 +39,6 @@ import javax.inject.Inject;
  *
  * @author Michael Ekstrand
  * @since 1.1
- * REVIEW Do we want to add linear scaling to this rating predictor? Or should that be separate?
- * REVIEW Is Simple a good name for this?
  */
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final ItemScorer scorer;
