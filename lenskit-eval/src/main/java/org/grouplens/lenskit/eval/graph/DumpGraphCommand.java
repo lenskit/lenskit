@@ -20,25 +20,25 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
-import java.io.File;
-
+import com.google.common.io.Files;
 import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.cli.EvalCLI;
-import org.slf4j.LoggerFactory;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class DumpGraphCommand extends AbstractCommand<File> {
     private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
 
     private LenskitAlgorithmInstance algorithm;
-    private GraphWriter writer;
     private File output;
     private PreferenceDomain domain = null;
     private Class<? extends DataAccessObject> daoType;
@@ -59,12 +59,6 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
     public DumpGraphCommand setOutput(File f) {
         output = f;
-        writer = new GraphVizWriter(output);
-        return this;
-    }
-
-    public DumpGraphCommand setOutput(GraphWriter w) {
-        writer = w;
         return this;
     }
 
@@ -80,7 +74,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
     @Override
     public File call() throws CommandException {
-        if (writer == null) {
+        if (output == null) {
             logger.error("no output file specified");
             throw new IllegalStateException("no graph output file specified");
         }
@@ -89,13 +83,23 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             factory.bind(PreferenceDomain.class).to(domain);
         }
         Graph initial = factory.getInitialGraph(daoType);
-        Node root = initial.getNode(null);
-        writer.start();
-        writer.addGraph("Initial Graph", initial, root);
-        Graph instantiated = factory.getInstantiatedGraph(daoType);
-        root = instantiated.getNode(null);
-        writer.addGraph("Instantiated Graph", instantiated, root);
-        writer.finish();
+        try {
+            writeGraph(factory.getInitialGraph(daoType), output);
+        } catch (IOException e) {
+            throw new CommandException("error writing graph", e);
+        }
+        // TODO Support dumping the instantiated graph again
         return output;
+    }
+
+    public void writeGraph(Graph g, File file) throws IOException {
+        GraphRepr repr = new GraphRepr(g);
+        Files.createParentDirs(file);
+        FileWriter writer = new FileWriter(file);
+        try {
+            Templates.graphTemplate.execute(repr, writer);
+        } finally {
+            writer.close();
+        }
     }
 }
