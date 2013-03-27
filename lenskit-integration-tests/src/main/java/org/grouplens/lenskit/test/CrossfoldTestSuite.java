@@ -30,6 +30,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
+import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Test;
@@ -62,32 +63,24 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
                                             + "in which a temp directory can be created");
         }
 
-        EvalConfig config = new EvalConfig();
+        SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());
+        evalCommand.addAlgorithm(algo);
 
-        CrossfoldCommand cross = new CrossfoldCommand("ml-100k");
-        cross.setConfig(config);
-        cross.setSource(new GenericDataSource("ml-100k", daoFactory));
-        cross.setPartitions(5);
-        cross.setHoldoutFraction(0.2);
-        cross.setTrain(new File(workDir, "train.%d.csv").getAbsolutePath());
-        cross.setTest(new File(workDir, "test.%d.csv").getAbsolutePath());
+        evalCommand.addDataset(new CrossfoldCommand("ml-100k")
+                                    .setSource(new GenericDataSource("ml-100k", daoFactory))
+                                    .setPartitions(5)
+                                    .setHoldoutFraction(0.2)
+                                    .setTrain(new File(workDir, "train.%d.csv").getAbsolutePath())
+                                    .setTest(new File(workDir, "test.%d.csv").getAbsolutePath()));
 
-        TrainTestEvalCommand tt = new TrainTestEvalCommand("train-test");
-        tt.setConfig(config);
-        tt.addAlgorithm(algo.call());
-        for (TTDataSet data: cross.call()) {
-            tt.addDataset(data);
-        }
+        evalCommand.addMetric(new CoveragePredictMetric())
+                   .addMetric(new RMSEPredictMetric())
+                   .addMetric(new MAEPredictMetric());
 
-        tt.addMetric(new CoveragePredictMetric());
-        tt.addMetric(new RMSEPredictMetric());
-        tt.addMetric(new MAEPredictMetric());
 
-        tt.setOutput(null);
-
-        Table result = tt.call();
+        Table result = evalCommand.call();
         assertThat(result, notNullValue());
         checkResults(result);
     }
