@@ -22,7 +22,7 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
+import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;

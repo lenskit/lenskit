@@ -3,7 +3,8 @@
   <id>lenskit-archetype-fancy-analysis</id>
 
   <!-- These resources will be copied out of the archetype-resources directory 
-    into the newly created target project. -->
+    into the newly created target project.  They are 'packaged' since they 
+    include Java packages that must have correct directory structure.  -->
   <fileSets>
     <fileSet filtered="true" packaged="true">
       <directory>src/test/java</directory>
@@ -19,13 +20,15 @@
     </fileSet>
 
     <!-- These are the files we want at the top-level that actually do the 
-      script work for running the eval and analysis. -->
+      script work for running the eval and analysis. They are not Java files,
+      so they are just copied 'as is'. -->
     <fileSet filtered="true">
       <directory></directory>
       <includes>
         <include>src/eval/*.xml</include>
         <include>src/eval/*.groovy</include>
         <include>src/eval/*.R</include>
+        <include>src/paper/*.tex</include>
       </includes>
     </fileSet>
   </fileSets>

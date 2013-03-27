@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 public class TestUserUserRecommenderBuild {
@@ -51,7 +53,7 @@ public class TestUserUserRecommenderBuild {
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
         factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
 
@@ -64,12 +66,14 @@ public class TestUserUserRecommenderBuild {
         Recommender rec = engine.open();
 
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(UserUserRatingPredictor.class));
             assertThat(rec.getItemScorer(),
-                       instanceOf(UserUserRatingPredictor.class));
+                       instanceOf(UserUserItemScorer.class));
             assertThat(rec.getItemRecommender(),
                        instanceOf(UserUserRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                       sameInstance(rec.getItemScorer()));
         } finally {
             rec.close();
         }

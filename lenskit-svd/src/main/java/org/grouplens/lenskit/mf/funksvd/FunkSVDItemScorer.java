@@ -23,8 +23,7 @@ package org.grouplens.lenskit.mf.funksvd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -32,7 +31,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -51,7 +49,7 @@ import javax.inject.Inject;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-public class FunkSVDRatingPredictor extends AbstractItemScorer implements RatingPredictor {
+public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
     private DataAccessObject dao;
@@ -62,8 +60,8 @@ public class FunkSVDRatingPredictor extends AbstractItemScorer implements Rating
     private final FunkSVDUpdateRule rule;
 
     @Inject
-    public FunkSVDRatingPredictor(DataAccessObject dao, FunkSVDModel model,
-                                  @Nullable FunkSVDUpdateRule rule) {
+    public FunkSVDItemScorer(DataAccessObject dao, FunkSVDModel model,
+                             @Nullable FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
         this.model = model;

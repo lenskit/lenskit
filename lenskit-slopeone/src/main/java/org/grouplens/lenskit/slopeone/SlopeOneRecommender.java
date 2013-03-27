@@ -22,16 +22,8 @@ package org.grouplens.lenskit.slopeone;
 
 import javax.inject.Inject;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * A {@code RatingRecommender} that uses the Slope One algorithm.
@@ -39,7 +31,7 @@ import org.grouplens.lenskit.data.event.Rating;
  */
 @Deprecated
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
-    private SlopeOneRatingPredictor predictor;
+    private SlopeOneItemScorer predictor;
 
     /**
      * Construct a new recommender from a scorer.
@@ -47,7 +39,7 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
      * @param predictor The predictor to use.
      */
     @Inject
-    public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
+    public SlopeOneRecommender(DataAccessObject dao, SlopeOneItemScorer predictor) {
         super(dao, predictor);
         this.predictor = predictor;
     }

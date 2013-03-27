@@ -36,7 +36,7 @@ trainTest {
 
     algorithm("ItemItem") {
         // use the item-item rating predictor with a baseline and normalizer
-        bind RatingPredictor to ItemItemRatingPredictor
+        bind ItemScorer to ItemItemScorer
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
 
@@ -52,7 +52,7 @@ trainTest {
 
     algorithm("UserUser") {
         // use the user-user rating predictor
-        bind RatingPredictor to UserUserRatingPredictor
+        bind ItemScorer to UserUserItemScorer
         bind BaselinePredictor to ItemUserMeanPredictor
         bind VectorNormalizer to MeanVarianceNormalizer
 

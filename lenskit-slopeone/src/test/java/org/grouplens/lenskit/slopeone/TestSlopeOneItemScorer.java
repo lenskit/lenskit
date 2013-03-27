@@ -36,7 +36,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestWeightedSlopeOneRatingPredictor {
+public class TestSlopeOneItemScorer {
 
     private static final double EPSILON = 1.0e-6;
 
@@ -69,13 +69,13 @@ public class TestWeightedSlopeOneRatingPredictor {
         rs.add(Ratings.make(3, 9, 4));
 
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        EventCollectionDAO dao = manager.create();
+        DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        WeightedSlopeOneRatingPredictor predictor =
-                new WeightedSlopeOneRatingPredictor(dao, model, new PreferenceDomain(1, 5, 1));
+        SlopeOneItemScorer predictor =
+                new SlopeOneItemScorer(dao, model, null);
 
-        assertEquals(2.6, predictor.score(2, 9), EPSILON);
-        assertEquals(4.2, predictor.score(3, 6), EPSILON);
+        assertEquals(7 / 3.0, predictor.score(2, 9), EPSILON);
+        assertEquals(13 / 3.0, predictor.score(3, 6), EPSILON);
         assertEquals(2, predictor.score(4, 6), EPSILON);
         assertEquals(2, predictor.score(4, 9), EPSILON);
         assertEquals(2.5, predictor.score(5, 6), EPSILON);
@@ -98,10 +98,10 @@ public class TestWeightedSlopeOneRatingPredictor {
         rs.add(Ratings.make(3, 7, 1.5));
 
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        EventCollectionDAO dao = manager.create();
+        DataAccessObject dao = manager.create();
         SlopeOneModel model = getModel(dao);
-        WeightedSlopeOneRatingPredictor predictor =
-                new WeightedSlopeOneRatingPredictor(dao, model, new PreferenceDomain(1, 5, 1));
+        SlopeOneItemScorer predictor =
+                new SlopeOneItemScorer(dao, model, new PreferenceDomain(1,5,1));
 
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);
