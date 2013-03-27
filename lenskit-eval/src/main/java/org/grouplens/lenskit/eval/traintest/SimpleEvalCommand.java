@@ -7,6 +7,7 @@ import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
 import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -14,7 +15,6 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Properties;
 
 public class SimpleEvalCommand extends AbstractCommand<Table>{
@@ -98,6 +98,43 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
         catch (CommandException e) {
             throw new RuntimeException(e);
         }
+        return this;
+    }
+
+    /**
+     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
+     * to the {@code TrainTestEvalCommand}.
+     *
+     * @param name The name of the crossfold
+     * @param source The source for the crossfold
+     * @param partitions The number of partitions
+     * @param holdout The holdout fraction
+     * @return Itself for chaining.
+     */
+    public SimpleEvalCommand addDataset(String name, DataSource source, int partitions, double holdout){
+        addDataset(new CrossfoldCommand(name)
+                    .setSource(source)
+                    .setPartitions(partitions)
+                    .setHoldoutFraction(holdout));
+        return this;
+    }
+
+    /**
+     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
+     * to the {@code TrainTestEvalCommand}.
+     *
+     * It defaults the holdout to .2
+     *
+     * @param name The name of the crossfold
+     * @param source The source for the crossfold
+     * @param partitions The number of partitions
+     * @return Itself for chaining.
+     */
+    public SimpleEvalCommand addDataset(String name, DataSource source, int partitions){
+        addDataset(new CrossfoldCommand(name)
+                .setSource(source)
+                .setPartitions(partitions)
+                .setHoldoutFraction(.2));
         return this;
     }
 
@@ -213,12 +250,9 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     }
 
     /**
-     * Calls all the stored {@code LenskitAlgorithmInstanceCommand} and {@code CrossfoldCommand} and adds them to the
-     * command.
-     *
      * If this is called more than once it will call of these commands again and most likely throw an exception.
      *
-     * @return The fully configured command.
+     * @return The table resulting from calling the command.
      */
     public Table call() throws CommandException{
         result.setConfig(config);
