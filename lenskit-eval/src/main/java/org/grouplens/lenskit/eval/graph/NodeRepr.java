@@ -2,7 +2,9 @@ package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.Satisfaction;
@@ -10,11 +12,14 @@ import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.grapht.spi.reflect.NullSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderClassSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderInstanceSatisfaction;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
 * Node representation for graph rendering.
@@ -60,48 +65,79 @@ class NodeRepr {
 
     public String getLabel() {
         Satisfaction sat = node.getLabel().getSatisfaction();
-        if (sat instanceof InstanceSatisfaction) {
+        if (DataAccessObject.class.isAssignableFrom(sat.getErasedType())) {
+            return "DAO";
+        } else if (sat instanceof InstanceSatisfaction) {
             return ((InstanceSatisfaction) sat).getInstance().toString();
         } else if (sat instanceof NullSatisfaction) {
             return "null";
         } else if (sat instanceof ProviderInstanceSatisfaction) {
             return "provider " + ((ProviderInstanceSatisfaction) sat).getProvider().toString();
         } else if (sat instanceof ProviderClassSatisfaction) {
-            Type type = ((ProviderClassSatisfaction) sat).getProviderType();
+            Class<?> type = ((ProviderClassSatisfaction) sat).getProviderType();
             return renderComponent(type, false);
         } else {
-            Type type = sat.getErasedType();
+            Class<?> type = sat.getErasedType();
             return renderComponent(type, true);
         }
     }
 
-    private String renderComponent(Type type, boolean provider) {
+    private String renderComponent(Class<?> type, boolean provider) {
         return Templates.labelTemplate.execute(new Description(type, provider));
     }
 
-    private static String shortenClassName(String name) {
-        String[] words = name.split(" ");
-        String fullClassName = words[words.length - 1];
-        String[] path = fullClassName.split("\\.");
-        int i = 0;
-        while (!Character.isUpperCase(path[i + 1].charAt(0))) {
-            path[i] = path[i].substring(0, 1);
-            i++;
+    private static String shortClassName(Class<?> type) {
+        if (ClassUtils.isPrimitiveOrWrapper(type)) {
+            if (!type.isPrimitive()) {
+                type = ClassUtils.wrapperToPrimitive(type);
+            }
+            return type.getName();
+        } else if (type.getPackage().equals(Package.getPackage("java.lang"))) {
+            return type.getSimpleName();
+        } else {
+            String[] words = type.getName().split(" ");
+            String fullClassName = words[words.length - 1];
+            String[] path = fullClassName.split("\\.");
+            int i = 0;
+            while (!Character.isUpperCase(path[i + 1].charAt(0))) {
+                path[i] = path[i].substring(0, 1);
+                i++;
+            }
+            return StringUtils.join(path, ".");
         }
-        return StringUtils.join(path, ".");
+    }
+
+    private static final Pattern ANNOT_PATTERN = Pattern.compile("@[^(]+\\((.*)\\)");
+
+    private static String shortAnnotation(Annotation annot) {
+        Matcher m = ANNOT_PATTERN.matcher(annot.toString());
+        if (m.matches()) {
+            StringBuilder bld = new StringBuilder();
+            bld.append('@');
+            bld.append(shortClassName(annot.annotationType()));
+            String values = m.group(1);
+            if (!values.isEmpty()) {
+                bld.append('(');
+                bld.append(values);
+                bld.append(')');
+            }
+            return bld.toString();
+        } else {
+            throw new RuntimeException("invalid annotation string format");
+        }
     }
 
     private class Description {
-        private final Type type;
+        private final Class<?> type;
         private final boolean provider;
 
-        public Description(Type t, boolean isP) {
+        public Description(Class<?> t, boolean isP) {
             type = t;
             provider = isP;
         }
 
         public String getType() {
-            return shortenClassName(type.toString());
+            return shortClassName(type);
         }
 
         public List<String> getDesires() {
@@ -112,15 +148,17 @@ class NodeRepr {
                         @Nullable
                         @Override
                         public String apply(@Nullable Edge e) {
-                            Type typ = e.getDesire().getDesiredType();
+                            Class<?> typ = e.getDesire().getDesiredType();
                             Annotation qual = e.getDesire()
                                                .getInjectionPoint()
                                                .getAttributes()
                                                .getQualifier();
                             if (qual == null) {
-                                return typ.toString();
+                                return shortClassName(typ);
                             } else {
-                                return String.format("%s: %s", qual, typ);
+                                return String.format("%s: %s",
+                                                     shortAnnotation(qual),
+                                                     shortClassName(typ));
                             }
                         }
                     });
