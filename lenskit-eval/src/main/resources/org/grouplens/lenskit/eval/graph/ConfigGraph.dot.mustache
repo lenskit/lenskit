@@ -1,11 +1,13 @@
 digraph {{name}} {
     node [shape=plaintext];
-{{#componentNodes}}
+{{#nodes}}
+{{#complete}}
+    {{id}} [shape=ellipse,label="{{label}}"];
+{{/complete}}
+{{#component}}
     {{id}} [label=<{{label}}>];
-{{/componentNodes}}
-{{#instanceNodes}}
-    {{id}} [shape=ellipse,label="{{value}}"];
-{{/instanceNodes}}
+{{/component}}
+{{/nodes}}
 {{#edges}}
     {{left}} -> {{right}};
 {{/edges}}

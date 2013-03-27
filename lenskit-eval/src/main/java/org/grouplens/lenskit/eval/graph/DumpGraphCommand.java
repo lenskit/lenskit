@@ -93,7 +93,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     }
 
     public void writeGraph(Graph g, File file) throws IOException {
-        GraphRepr repr = new GraphRepr(g);
+        GraphRepr repr = new GraphRepr(algorithm.getName(), g);
         Files.createParentDirs(file);
         FileWriter writer = new FileWriter(file);
         try {

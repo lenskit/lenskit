@@ -17,8 +17,10 @@ class GraphRepr {
     List<NodeRepr> nodes;
     Map<Node,NodeRepr> nodeMap;
     List<Pair<String,String>> edges;
+    private final String name;
 
-    public GraphRepr(Graph g) {
+    public GraphRepr(String name, Graph g) {
+        this.name = name;
         nodes = new ArrayList<NodeRepr>();
         nodeMap = new HashMap<Node, NodeRepr>();
         edges = new ArrayList<Pair<String, String>>();
@@ -27,7 +29,7 @@ class GraphRepr {
             if (node.getLabel() == null) {
                 continue;
             }
-            NodeRepr repr = new NodeRepr(i, node, g.getOutgoingEdges(node));
+            NodeRepr repr = new NodeRepr(i++, node, g.getOutgoingEdges(node));
             nodes.add(repr);
             nodeMap.put(node, repr);
         }
@@ -50,5 +52,9 @@ class GraphRepr {
                 edges.add(Pair.of(src, dst));
             }
         }
+    }
+
+    public String getName() {
+        return name;
     }
 }

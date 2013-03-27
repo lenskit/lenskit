@@ -54,6 +54,10 @@ class NodeRepr {
         return sat.hasInstance() || sat instanceof ProviderInstanceSatisfaction;
     }
 
+    public boolean component() {
+        return !complete();
+    }
+
     public String getLabel() {
         Satisfaction sat = node.getLabel().getSatisfaction();
         if (sat instanceof InstanceSatisfaction) {
