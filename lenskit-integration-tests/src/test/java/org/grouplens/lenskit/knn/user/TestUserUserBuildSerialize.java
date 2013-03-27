@@ -22,13 +22,15 @@ package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -42,6 +44,7 @@ import java.io.IOException;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -56,7 +59,7 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
         factory.bind(ItemRecommender.class)
                .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(UserUserRatingPredictor.class);
+               .to(UserUserItemScorer.class);
         factory.within(UserVectorSimilarity.class)
                .bind(VectorSimilarity.class)
                .to(CosineVectorSimilarity.class);
@@ -78,8 +81,16 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
 
         LenskitRecommender rec = loaded.open();
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(UserUserRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(UserUserItemScorer.class));
+            ItemRecommender recommender = rec.getItemRecommender();
+            assertThat(recommender, instanceOf(ScoreBasedItemRecommender.class));
+            assertThat(((ScoreBasedItemRecommender) recommender).getScorer(),
+                       sameInstance(rec.getItemScorer()));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                       sameInstance(rec.getItemScorer()));
         } finally {
             rec.close();
         }

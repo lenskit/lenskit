@@ -21,14 +21,16 @@
 package org.grouplens.lenskit;
 
 /**
- * {@link GlobalItemScorer} that scores by predicted rating.  The scores returned by
- * this scorer's methods are predicted ratings in the same scale as the input
- * ratings.
+ * {@link GlobalItemScorer} that scores by predicted rating.  The scores returned by this scorer's
+ * methods are predicted ratings in the same scale as the input ratings.
  *
  * @author Steven Chang <schang@cs.umn.edu>
  * @compat Public
  * @since 0.10
+ * @deprecated It's unclear that this is useful, and it has not been refactored to match {@link
+ *             RatingPredictor}.
  */
+@Deprecated
 public interface GlobalRatingPredictor extends GlobalItemScorer {
 
 }
