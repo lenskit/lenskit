@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.hamcrest.Matcher;
@@ -62,7 +63,7 @@ public class TestSimilaritySumNeighborhoodScorer {
     @Test
     public void testOneNbr() {
         List<ScoredId> nbrs = new ArrayList<ScoredId>();
-        nbrs.add(new ScoredId.Builder(5, 1.0).build());
+        nbrs.add(new ScoredIdBuilder(5, 1.0).build());
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
@@ -70,7 +71,7 @@ public class TestSimilaritySumNeighborhoodScorer {
     @Test
     public void testMultipleNeighbors() {
         List<ScoredId> nbrs = new ArrayList<ScoredId>();
-        ScoredId.Builder idBuilder = new ScoredId.Builder();
+        ScoredIdBuilder idBuilder = new ScoredIdBuilder();
         nbrs.add(idBuilder.setId(5).setScore(1.0).build());
         nbrs.add(idBuilder.setId(7).setScore(0.92).build());
         nbrs.add(idBuilder.setId(2).setScore(0.5).build());

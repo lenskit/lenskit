@@ -23,6 +23,7 @@ package org.grouplens.lenskit.util;
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
             indices[i] = heap.dequeue();
         }
         ArrayList<ScoredId> l = new ArrayList<ScoredId>(size);
-        ScoredId.Builder idBuilder = new ScoredId.Builder();
+        ScoredIdBuilder idBuilder = new ScoredIdBuilder();
         for (int i : indices) {
             ScoredId id = idBuilder.setId(items[i]).setScore(scores[i]).build();
             l.add(id);

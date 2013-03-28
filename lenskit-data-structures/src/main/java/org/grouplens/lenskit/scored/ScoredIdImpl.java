@@ -23,31 +23,51 @@ package org.grouplens.lenskit.scored;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import org.grouplens.lenskit.symbols.Symbol;
 
-/**
- * A mutable version of a {@code ScoredId}.
- * WARNING: This class should not be used under any circumstances, except to
- * implement fast iteration. We make no guarantees about the functionality of
- * this class in any other situation.
- */
-public class MutableScoredId extends ScoredId {
+import java.io.Serializable;
+import java.util.Set;
 
-    public MutableScoredId(long id, double score) {
-        super(id, score);
+class ScoredIdImpl extends AbstractScoredId implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    long id;
+    double score;
+    Reference2DoubleMap<Symbol> channelMap;
+
+    public ScoredIdImpl(long id, double score) {
+        this(id, score, null);
     }
 
-    public void setId(long id) {
+    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
         this.id = id;
-    }
-
-    public void setScore(double score) {
         this.score = score;
-    }
-
-    public void setChannelMap(Reference2DoubleMap<Symbol> channelMap) {
         this.channelMap = channelMap;
     }
 
-    public Reference2DoubleMap<Symbol> getChannelMap() {
-        return channelMap;
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public double getScore() {
+        return score;
+    }
+
+    @Override
+    public boolean hasChannel(Symbol s) {
+        return channelMap != null && channelMap.containsKey(s);
+    }
+
+    @Override
+    public double channel(Symbol s) {
+        if (hasChannel(s)) {
+            return channelMap.get(s);
+        }
+        throw new IllegalArgumentException("No existing channel under name " + s.getName());
+    }
+
+    @Override
+    public Set<Symbol> getChannels() {
+        return channelMap.keySet();
     }
 }
