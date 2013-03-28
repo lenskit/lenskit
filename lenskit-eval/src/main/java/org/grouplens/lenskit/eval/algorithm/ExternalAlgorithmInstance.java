@@ -173,7 +173,6 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         try {
             proc = new ProcessBuilder().command(args)
                                        .directory(workDir)
-                                       .redirectError(ProcessBuilder.Redirect.PIPE)
                                        .start();
         } catch (IOException e) {
             throw new RecommenderBuildException("error creating process", e);

@@ -119,18 +119,18 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     @Override
-    public LenskitConfigContext in(Class<?> type) {
-        return coerce(config.getRootContext().in(type));
+    public LenskitConfigContext within(Class<?> type) {
+        return coerce(config.getRootContext().within(type));
     }
 
     @Override
-    public LenskitConfigContext in(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(config.getRootContext().in(qualifier, type));
+    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(config.getRootContext().within(qualifier, type));
     }
 
     @Override
-    public LenskitConfigContext in(Annotation qualifier, Class<?> type) {
-        return coerce(config.getRootContext().in(qualifier, type));
+    public LenskitConfigContext within(Annotation qualifier, Class<?> type) {
+        return coerce(config.getRootContext().within(qualifier, type));
     }
 
     @Override
@@ -146,30 +146,6 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     @Override
     public LenskitConfigContext at(Annotation qualifier, Class<?> type) {
         return coerce(config.getRootContext().at(qualifier, type));
-    }
-
-    /**
-     * Groovy-compatible alias for {@link #in(Class)}.
-     *
-     * @param type The type of class
-     * @return The configuration context.
-     * @see #in(Class)
-     */
-    @SuppressWarnings("unused")
-    public LenskitConfigContext within(Class<?> type) {
-        return in(type);
-    }
-
-    /**
-     * Groovy-compatible alias for {@link #in(Class, Class)}.
-     *
-     * @param qualifier The qualifier for the context.
-     * @param type The type for the context.
-     * @return The configuration context.
-     * @see #in(java.lang.annotation.Annotation, Class)
-     */
-    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
-        return in(qualifier, type);
     }
 
     @Override
