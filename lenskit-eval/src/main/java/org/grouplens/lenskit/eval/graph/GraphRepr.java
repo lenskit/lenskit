@@ -1,10 +1,14 @@
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.spi.reflect.NullSatisfaction;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +31,9 @@ class GraphRepr {
         int i = 0;
         for (Node node: g.getNodes()) {
             if (node.getLabel() == null) {
+                continue;
+            } else if (node.getLabel().getSatisfaction() instanceof NullSatisfaction
+                    && Iterables.all(g.getIncomingEdges(node), FROM_ROOT)) {
                 continue;
             }
             NodeRepr repr = new NodeRepr(i++, node, g.getOutgoingEdges(node));
@@ -53,6 +60,13 @@ class GraphRepr {
             }
         }
     }
+
+    private static final Predicate<Edge> FROM_ROOT = new Predicate<Edge>() {
+        @Override
+        public boolean apply(@Nullable Edge input) {
+            return input.getHead().getLabel() == null;
+        }
+    };
 
     public String getName() {
         return name;

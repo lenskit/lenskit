@@ -82,6 +82,11 @@ class NodeRepr {
         }
     }
 
+    public String getType() {
+        Satisfaction sat = node.getLabel().getSatisfaction();
+        return shortClassName(sat.getErasedType());
+    }
+
     private String renderComponent(Class<?> type, boolean provider) {
         return Templates.labelTemplate.execute(new Description(type, provider));
     }
