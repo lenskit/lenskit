@@ -30,7 +30,7 @@ import ch.qos.logback.classic.PatternLayout
 
 appender("Maven", MavenLogAppender) {
     layout(PatternLayout) {
-        pattern = "%logger{24} - %msg"
+        pattern = "%date{HH:mm:ss.SSS} %logger{24}: %msg"
     }
 }
 logger("org.grouplens.grapht", WARN)
