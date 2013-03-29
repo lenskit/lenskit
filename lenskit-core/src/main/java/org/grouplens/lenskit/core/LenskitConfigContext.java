@@ -44,14 +44,27 @@ public interface LenskitConfigContext extends Context {
      */
     @SuppressWarnings("rawtypes")
     Binding set(Class<? extends Annotation> param);
-
+    
     @Override
+    @Deprecated
     LenskitConfigContext in(Class<?> type);
+    
+    @Override
+    @Deprecated
+    LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier,
+                                Class<?> type);
+    
+    @Override
+    @Deprecated
+    LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type);
 
     @Override
-    LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier,
+    LenskitConfigContext within(Class<?> type);
+
+    @Override
+    LenskitConfigContext within(@Nullable Class<? extends Annotation> qualifier,
                             Class<?> type);
 
     @Override
-    LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type);
+    LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type);
 }

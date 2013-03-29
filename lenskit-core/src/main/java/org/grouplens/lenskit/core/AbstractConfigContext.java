@@ -22,7 +22,9 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.AbstractContext;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -31,7 +33,7 @@ import java.lang.annotation.Annotation;
  * @author Michael Ekstrand
  * @since 1.0
  */
-public abstract class AbstractConfigContext implements LenskitConfigContext {
+public abstract class AbstractConfigContext extends AbstractContext implements LenskitConfigContext {
     @Override
     @SuppressWarnings("rawtypes")
     public Binding set(Class<? extends Annotation> param) {
@@ -41,5 +43,20 @@ public abstract class AbstractConfigContext implements LenskitConfigContext {
             throw new IllegalArgumentException(param.toString() + "has no Parameter annotation");
         }
         return bind(annot.value()).withQualifier(param);
+    }
+    
+    @Override
+    public LenskitConfigContext in(Class<?> type) {
+        return within(type);
+    }
+    
+    @Override
+    public LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return within(qualifier, type);
+    }
+    
+    @Override
+    public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
+        return within(qualifier, type);
     }
 }
