@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.data.subsample;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.cursors.LongCursor;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
@@ -38,6 +39,7 @@ import org.grouplens.lenskit.util.tablewriter.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -50,12 +52,16 @@ import javax.annotation.Nullable;
  * @author Lingfei He<Lingfei@cs.umn.edu>
  */
 public class SubsampleCommand extends AbstractCommand<DataSource> {
+    public enum Type {
+        USER, ITEM, RATING;
+    }
     private static final Logger logger = LoggerFactory.getLogger(SubsampleCommand.class);
 
     private static final Random random = new Random();
 
     private DataSource source;
     private double subsampleFraction = 0.1;
+    private Type type = Type.RATING;
     
     @Nullable
     private File output;
@@ -108,9 +114,31 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     }
     
     /**
-     * Get the output name of subsample file
+     * Set the type of the subsample, it is user, item or rating.
      * 
-     * @return The output name of the subsample file
+     * @param type The type of the output.
+     * @return The SubsampleCommand object  (for chaining).
+     */
+    public SubsampleCommand setType(String type) throws IllegalArgumentException {
+        if (type.equals("Rating")) {
+            this.type = Type.RATING;
+            return this;
+        } else if (type.equals("User")) {
+            this.type = Type.USER;
+            return this;
+        } else if (type.equals("Item")) {
+            this.type = Type.ITEM;
+            return this;
+        } else {
+            String msg = "The type should be: Rating, Item or User";
+            throw new IllegalArgumentException(msg);
+        }
+    }
+    
+    /**
+     * Get the output name of subsample file.
+     * 
+     * @return The output name of the subsample file.
      */
     public File getOutput() {
         if (output == null) {
@@ -137,6 +165,15 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         return subsampleFraction;
     }
 
+    /**
+     * Get the type of the subsample.
+     * 
+     * @return The type of the subsample
+     */
+    public Type getType() {
+        return type;
+    }
+    
     /**
      * Use CSVDataSourceCommand to generate output DataSource file
      * 
@@ -172,7 +209,14 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         try {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
-            createFile(daoSnap);
+            if (type.equals(Type.ITEM)) {
+                subsampleItem(daoSnap);
+            } else if (type.equals(Type.USER)) {
+                subsampleUser(daoSnap);
+            } else {
+                subsampleRating(daoSnap);
+            }
+            
         } catch (IOException e) {
             throw new CommandException("Error writing output file", e);
         } finally {
@@ -182,13 +226,13 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     }
 
     /**
-     * Randomly create the subsample file from the DAO using shuffle method.
+     * Randomly create the Ratings subsample file from the DAO using shuffle method.
      *
      * @param dao The DAO of the data source file
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Any error
      */
-    private void createFile(DataAccessObject dao ) throws IOException {
+    private void subsampleRating(DataAccessObject dao ) throws IOException {
         File subsampleFile = getOutput();
         TableWriter subsampleWriter = null;
         try {
@@ -201,6 +245,66 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
                 int j = random.nextInt(n-1-i) + i;
                 ratings.set(i, ratings.set(j, ratings.get(i)));        
                 writeRating(subsampleWriter, ratings.get(i));     
+            }
+        } finally {
+            LKFileUtils.close(subsampleWriter);
+        }
+    }
+    
+    /**
+     * Randomly create the Users subsample file from the DAO using shuffle method.
+     *
+     * @param dao The DAO of the data source file
+     * @throws org.grouplens.lenskit.eval.CommandException
+     *          Any error
+     */
+    private void subsampleUser(DataAccessObject dao ) throws IOException {
+        File subsampleFile = getOutput();
+        TableWriter subsampleWriter = null;
+        try {
+            subsampleWriter = CSVWriter.open(subsampleFile, null);
+            LongCursor users = dao.getUsers();
+            LongArrayList userList = Cursors.makeList(users);
+            final int n = userList.size();
+            final int m = (int)(subsampleFraction * n);
+            for (int i = 0; i < m; i++) {
+                int j = random.nextInt(n-1-i) + i;
+                userList.set(i, userList.set(j, userList.get(i)));
+                Cursor<Rating> events = dao.getUserEvents(userList.getLong(i),Rating.class);
+                List<Rating> ratings = Cursors.makeList(events);
+                for (Rating rating: ratings) {
+                    writeRating(subsampleWriter, rating);     
+                }  
+            }
+        } finally {
+            LKFileUtils.close(subsampleWriter);
+        }
+    }
+    
+    /**
+     * Randomly create the Items subsample file from the DAO using shuffle method.
+     *
+     * @param dao The DAO of the data source file
+     * @throws org.grouplens.lenskit.eval.CommandException
+     *          Any error
+     */
+    private void subsampleItem(DataAccessObject dao ) throws IOException {
+        File subsampleFile = getOutput();
+        TableWriter subsampleWriter = null;
+        try {
+            subsampleWriter = CSVWriter.open(subsampleFile, null);
+            LongCursor items = dao.getItems();
+            LongArrayList itemList = Cursors.makeList(items);
+            final int n = itemList.size();
+            final int m = (int)(subsampleFraction * n);
+            for (int i = 0; i < m; i++) {
+                int j = random.nextInt(n-1-i) + i;
+                itemList.set(i, itemList.set(j, itemList.get(i)));
+                Cursor<Rating> events = dao.getItemEvents(itemList.getLong(i),Rating.class);
+                List<Rating> ratings = Cursors.makeList(events);
+                for (Rating rating: ratings) {
+                    writeRating(subsampleWriter, rating);     
+                }  
             }
         } finally {
             LKFileUtils.close(subsampleWriter);
