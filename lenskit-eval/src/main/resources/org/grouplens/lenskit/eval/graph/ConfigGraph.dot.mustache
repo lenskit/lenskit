@@ -1,0 +1,15 @@
+digraph {{name}} {
+    node [shape=plaintext];
+{{#nodes}}
+    /* {{type}} */
+{{#complete}}
+    {{id}} [shape=ellipse,label="{{label}}"];
+{{/complete}}
+{{#component}}
+    {{id}} [label=<{{label}}>];
+{{/component}}
+{{/nodes}}
+{{#edges}}
+    {{left}} -> {{right}};
+{{/edges}}
+}
