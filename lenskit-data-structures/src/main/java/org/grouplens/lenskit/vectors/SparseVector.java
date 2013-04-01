@@ -32,10 +32,7 @@ import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
@@ -44,6 +41,8 @@ import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.IntIntervalList;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.scored.AbstractScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import com.google.common.base.Function;
@@ -246,6 +245,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         } else {
             return dft;
         }
+    }
+
+    /**
+     * Get the rating for the entry's key
+     * @param e A {@code VectorEntry} with the key to look up
+     * @return the key's value (or {@link Double#NaN} if no such value exists)
+     */
+    public double get(VectorEntry e) {
+        return get(e.getKey());
     }
 
     /**
@@ -651,4 +659,92 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public abstract SparseVector channel(Symbol channelSymbol);
 
+    public abstract Set<Symbol> getChannels();
+
+    /**
+     * Return a view of this vector as an iterable list of {@code ScoredId}
+     * objects using a fast iterator. This method delegates to
+     * {@link #fastIdIterator()}
+     *
+     * @return This object wrapped in an iterable that returns a fast iterator
+     * over {@code ScoredId} objects.
+     * @see #fastIdIterator()
+     */
+    public Iterable<ScoredId> asScoredIds() {
+        return new Iterable<ScoredId>() {
+            @Override
+            public Iterator<ScoredId> iterator() {
+                return fastIdIterator();
+            }
+        };
+    }
+
+    /**
+     * Fast iterator over entries as {@code ScoredId} objects.
+     *
+     * @return a fast iterator over all key/value pairs as {@code ScoredId}s.
+     */
+    public Iterator<ScoredId> fastIdIterator() {
+        return new FastIdIterImpl();
+    }
+
+    private class FastIdIterImpl implements Iterator<ScoredId> {
+
+        private Iterator<VectorEntry> entIter;
+        private ScoredIdImpl id;
+
+        public FastIdIterImpl() {
+            entIter = fastIterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return entIter.hasNext();
+        }
+
+        @Override
+        public ScoredId next() {
+            id.setEntry(entIter.next());
+            return id;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class ScoredIdImpl extends AbstractScoredId {
+
+        private VectorEntry ent;
+
+        @Override
+        public long getId() {
+            return ent.getKey();
+        }
+
+        @Override
+        public double getScore() {
+            return ent.getValue();
+        }
+
+        @Override
+        public Set<Symbol> getChannels() {
+            return SparseVector.this.getChannels();
+        }
+
+        @Override
+        public double channel(Symbol s) {
+            return SparseVector.this.channel(s).get(ent);
+        }
+
+        @Override
+        public boolean hasChannel(Symbol s) {
+            return SparseVector.this.hasChannel(s);
+        }
+
+        public void setEntry(VectorEntry e) {
+            ent = e;
+        }
+    }
 }

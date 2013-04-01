@@ -29,10 +29,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.MoreArrays;
@@ -726,6 +723,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
         throw new IllegalArgumentException("No existing channel under name " +
                                                    channelSymbol.getName());
+    }
+
+    @Override
+    public Set<Symbol> getChannels() {
+        return channelMap.keySet();
     }
 
 }

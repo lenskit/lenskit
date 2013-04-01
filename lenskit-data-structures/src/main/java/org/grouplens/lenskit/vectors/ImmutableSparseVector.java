@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -135,6 +136,11 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         }
         throw new IllegalArgumentException("No existing channel under name " +
                                                    channelSymbol.getName());
+    }
+
+    @Override
+    public Set<Symbol> getChannels() {
+        return channelMap.keySet();
     }
 
 }
