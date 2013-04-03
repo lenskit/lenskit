@@ -164,6 +164,7 @@
             appropriate phase of the lenskit lifecycle. -->
 
           <execution>
+            <id>compile-latex</id>
             <phase>lenskit-publish</phase>
             <goals>
               <goal>exec</goal>
@@ -179,6 +180,7 @@
           </execution>
 
           <execution>
+            <id>clean-latex</id>
             <phase>clean</phase>
             <goals>
               <goal>exec</goal>

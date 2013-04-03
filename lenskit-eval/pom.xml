@@ -31,7 +31,14 @@
         </dependencies>
       </plugin>
 
-      <!-- Explicitly add the Groovy source directories so that IntelliJ can find them. -->
+      <!-- no-op GMaven plugin so IntelliJ detects the Groovy nature -->
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>1.5</version>
+      </plugin>
+
+      <!-- Explicitly add the Groovy source directories so that they're defined. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
