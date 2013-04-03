@@ -25,9 +25,11 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +49,7 @@ import java.util.List;
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = -5986236982760043379L;
 
-    private final Long2ObjectMap<List<ScoredId>> similarityMatrix;
+    private final Long2ObjectMap<ImmutableSparseVector> similarityMatrix;
     private final LongSortedSet itemUniverse;
 
     /**
@@ -57,7 +59,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *                 of the matrix.
      * @param matrix   The similarity matrix columns (maps item ID to column)
      */
-    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<List<ScoredId>> matrix) {
+    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ImmutableSparseVector> matrix) {
         itemUniverse = universe;
         similarityMatrix = matrix;
     }
@@ -70,10 +72,11 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     @Override
     @Nonnull
     public List<ScoredId> getNeighbors(long item) {
-        List<ScoredId> nbrs = similarityMatrix.get(item);
-        if (nbrs == null) {
-            nbrs = Collections.EMPTY_LIST;
+        ImmutableSparseVector neighbors = similarityMatrix.get(item);
+        if (neighbors == null) {
+            return Collections.EMPTY_LIST;
         }
-        return nbrs;
+
+        return new ArrayList<ScoredId>(neighbors.asScoredIds());
     }
 }

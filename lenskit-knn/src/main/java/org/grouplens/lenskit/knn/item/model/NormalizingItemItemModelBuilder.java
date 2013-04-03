@@ -117,7 +117,8 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
         @Override
         public SimilarityMatrixModel build() {
-            Long2ObjectMap<List<ScoredId>> data = new Long2ObjectOpenHashMap<List<ScoredId>>(finishedRows.size());
+            Long2ObjectMap<ImmutableSparseVector> data =
+                    new Long2ObjectOpenHashMap<ImmutableSparseVector>(finishedRows.size());
             ScoredItemAccumulator accum;
             if (modelSize > 0) {
                 accum = new TopNScoredItemAccumulator(modelSize);
@@ -129,7 +130,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                 for (VectorEntry e : rowVec.fast()) {
                     accum.put(e.getKey(), e.getValue());
                 }
-                data.put(row.getLongKey(), accum.finish());
+                data.put(row.getLongKey(), accum.vectorFinish().freeze());
             }
             SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
             unfinishedRows = null;
