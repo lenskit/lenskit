@@ -53,6 +53,7 @@ public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatri
      * @param itemUniverse The universe items the accumulator will accumulate.
      * @return a simple SimilarityMatrixAccumulator
      */
+    @Override
     public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
         return new SimpleSimilarityMatrixAccumulator(itemUniverse, threshold, modelSize);
     }
