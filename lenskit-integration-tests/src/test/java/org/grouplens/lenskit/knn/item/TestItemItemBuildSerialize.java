@@ -85,6 +85,8 @@ public class TestItemItemBuildSerialize extends ML100KTestSuite {
                        instanceOf(ItemItemScorer.class));
             assertThat(rec.get(ItemItemModel.class),
                        notNullValue());
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(SimpleRatingPredictor.class));
             SimpleRatingPredictor srp = (SimpleRatingPredictor) rec.getRatingPredictor();
             assertThat(srp.getScorer(), sameInstance(rec.getItemScorer()));
         } finally {

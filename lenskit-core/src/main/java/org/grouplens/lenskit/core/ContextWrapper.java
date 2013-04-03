@@ -68,18 +68,18 @@ public class ContextWrapper extends AbstractConfigContext {
     }
 
     @Override
-    public LenskitConfigContext in(Class<?> type) {
-        return coerce(base.in(type));
+    public LenskitConfigContext within(Class<?> type) {
+        return coerce(base.within(type));
     }
 
     @Override
-    public LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(base.in(qualifier, type));
+    public LenskitConfigContext within(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(base.within(qualifier, type));
     }
 
     @Override
-    public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
-        return coerce(base.in(qualifier, type));
+    public LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type) {
+        return coerce(base.within(qualifier, type));
     }
 
     @Override
