@@ -20,10 +20,14 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
-
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,5 +114,71 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         size = 0;
         slot = 0;
         return l;
+    }
+
+    @Override
+    public MutableSparseVector vectorFinish() {
+        if (scores == null) {
+            return new MutableSparseVector();
+        }
+
+        assert size == heap.size();
+        int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
+        for (int i = size - 1; i >= 0; i--) {
+            indices[i] = heap.dequeue();
+        }
+        assert heap.isEmpty();
+
+        long[] keys = new long[items.length - 1];
+        double[] values = new double[scores.length - 1];
+        for (int i = 0; i < indices.length; i++) {
+            keys[i] = items[indices[i]];
+            values[i] = scores[indices[i]];
+        }
+        size = 0;
+        slot = 0;
+
+        IdComparator comparator = new IdComparator(keys);
+        ParallelSwapper swapper = new ParallelSwapper(keys, values);
+        Arrays.quickSort(0, keys.length, comparator, swapper);
+
+        return MutableSparseVector.wrap(keys, values);
+    }
+
+    private static class IdComparator extends AbstractIntComparator {
+
+        private long[] keys;
+
+        public IdComparator(long[] keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public int compare(int i, int i2) {
+            return LongComparators.NATURAL_COMPARATOR.compare(keys[i], keys[i2]);
+        }
+    }
+
+    private static class ParallelSwapper implements Swapper {
+
+        private long[] keys;
+        private double[] values;
+
+        public ParallelSwapper(long[] keys, double[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        @Override
+        public void swap(int i, int i2) {
+            long lTemp = keys[i];
+            keys[i] = keys[i2];
+            keys[i2] = lTemp;
+
+            double dTemp = values[i];
+            values[i] = values[i2];
+            values[i2] = dTemp;
+        }
     }
 }

@@ -27,6 +27,8 @@ import org.grouplens.lenskit.knn.item.model.*;
 import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
+import org.grouplens.lenskit.transform.truncate.ThresholdTruncator;
+import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -55,7 +57,8 @@ public class TestItemItemModelAccumulator {
             universe.add(i);
         }
         ItemVectorNormalizer normalizer = new DefaultItemVectorNormalizer();
-        return new NormalizingItemItemModelBuilder.Accumulator(universe, new RealThreshold(0.0), normalizer, 5);
+        VectorTruncator truncator = new ThresholdTruncator(new RealThreshold(0.0));
+        return new NormalizingItemItemModelBuilder.Accumulator(universe, normalizer, truncator, 5);
     }
 
     @Test

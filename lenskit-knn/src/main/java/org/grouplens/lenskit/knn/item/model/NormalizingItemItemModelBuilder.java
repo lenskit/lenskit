@@ -9,7 +9,7 @@ import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
-import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
@@ -28,19 +28,19 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
     private final ItemSimilarity similarity;
     private final ItemItemBuildContextFactory contextFactory;
-    private final Threshold threshold;
     private final int modelSize;
     private final ItemVectorNormalizer normalizer;
+    private final VectorTruncator truncator;
 
     public NormalizingItemItemModelBuilder(ItemSimilarity similarity,
                                            @Transient ItemItemBuildContextFactory ctxFactory,
-                                           Threshold threshold,
                                            ItemVectorNormalizer normalizer,
+                                           VectorTruncator truncator,
                                            @ModelSize int modelSize) {
         this.similarity = similarity;
         contextFactory = ctxFactory;
-        this.threshold = threshold;
         this.normalizer = normalizer;
+        this.truncator = truncator;
         this.modelSize = modelSize;
     }
 
@@ -50,7 +50,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         logger.debug("building item-item model");
 
         ItemItemBuildContext context = contextFactory.buildContext();
-        Accumulator accumulator = new Accumulator(context.getItems(), threshold, normalizer, modelSize);
+        Accumulator accumulator = new Accumulator(context.getItems(), normalizer, truncator, modelSize);
 
         for (long itemId1 : context.getItems()) {
             for (long itemId2 : context.getItems()) {
@@ -68,17 +68,20 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     public static class Accumulator implements SimilarityMatrixAccumulator {
 
         private final LongSortedSet itemUniverse;
-        private final Threshold threshold;
         private final ItemVectorNormalizer normalizer;
         private int modelSize;
 
         private Long2ObjectMap<MutableSparseVector> unfinishedRows;
         private Long2ObjectMap<ImmutableSparseVector> finishedRows;
+        private VectorTruncator truncator;
 
-        public Accumulator(LongSortedSet entities, Threshold thresh, ItemVectorNormalizer normalizer, int modelSize) {
+        public Accumulator(LongSortedSet entities,
+                           ItemVectorNormalizer normalizer,
+                           VectorTruncator truncator,
+                           int modelSize) {
             itemUniverse = entities;
-            threshold = thresh;
             this.normalizer = normalizer;
+            this.truncator = truncator;
             this.modelSize = modelSize;
 
             unfinishedRows = new Long2ObjectOpenHashMap<MutableSparseVector>(itemUniverse.size());
@@ -91,10 +94,6 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         @Override
         public void put(long i, long j, double sim) {
             Preconditions.checkState(unfinishedRows != null, "model already built");
-            // Should we get rid of this and do it with truncation?
-            if (!threshold.retain(sim)) {
-                return;
-            }
 
             // concurrent read-only array access permitted
             MutableSparseVector row = unfinishedRows.get(i);
@@ -107,7 +106,12 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         @Override
         public void completeRow(long rowId) {
             MutableSparseVector row = unfinishedRows.get(rowId);
-            finishedRows.put(rowId, normalizer.normalize(rowId, row, null).freeze());
+            MutableSparseVector normalized = normalizer.normalize(rowId, row, null);
+            if (truncator != null) {
+                truncator.truncate(normalized);
+            }
+
+            finishedRows.put(rowId, normalized.freeze());
             unfinishedRows.remove(rowId);
         }
 

@@ -20,9 +20,14 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,5 +77,65 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         List<ScoredId> r = scores;
         scores = null;
         return r;
+    }
+
+    @Override
+    public MutableSparseVector vectorFinish() {
+        if (scores == null) {
+            return new MutableSparseVector();
+        }
+
+        long[] keys = new long[scores.size()];
+        double [] values = new double[scores.size()];
+        int i = 0;
+        for (ScoredId id : scores) {
+            keys[i] = id.getId();
+            values[i] = id.getScore();
+            i++;
+        }
+        scores = null;
+
+        IdComparator comparator = new IdComparator(keys);
+        ParallelSwapper swapper = new ParallelSwapper(keys, values);
+        Arrays.quickSort(0, keys.length, comparator, swapper);
+
+        return MutableSparseVector.wrap(keys, values);
+
+    }
+
+    private static class IdComparator extends AbstractIntComparator {
+
+        private long[] keys;
+
+        public IdComparator(long[] keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public int compare(int i, int i2) {
+            return LongComparators.NATURAL_COMPARATOR.compare(keys[i], keys[i2]);
+        }
+    }
+
+    private static class ParallelSwapper implements Swapper {
+
+        private long[] keys;
+        private double[] values;
+
+        public ParallelSwapper(long[] keys, double[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        @Override
+        public void swap(int i, int i2) {
+            long lTemp = keys[i];
+            keys[i] = keys[i2];
+            keys[i2] = lTemp;
+
+            double dTemp = values[i];
+            values[i] = values[i2];
+            values[i2] = dTemp;
+        }
     }
 }
