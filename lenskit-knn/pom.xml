@@ -24,6 +24,7 @@
 
   <build>
     <plugins>
+      <!-- Dump recommender graphs to disk -->
       <plugin>
         <groupId>org.grouplens.lenskit</groupId>
         <artifactId>lenskit-eval-maven-plugin</artifactId>
@@ -41,22 +42,22 @@
         </executions>
       </plugin>
 
+      <!-- Render recommender graphs with GraphViz (if it's available). -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
             <id>render-configs</id>
             <phase>post-integration-test</phase>
-            <goals><goal>exec</goal></goals>
+            <goals><goal>run</goal></goals>
             <configuration>
-              <executable>dot</executable>
-              <workingDirectory>${project.build.directory}</workingDirectory>
-              <arguments>
-                <argument>-O</argument>
-                <argument>-Tsvg</argument>
-                <argument>item-item.dot</argument>
-              </arguments>
+              <failOnError>false</failOnError>
+              <target>
+                <ant antfile="${basedir}/src/eval/render.xml"
+                     target="render"
+                     dir="${basedir}"/>
+              </target>
             </configuration>
           </execution>
         </executions>
