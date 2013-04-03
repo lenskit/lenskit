@@ -30,12 +30,33 @@
         <version>${project.version}</version>
         <executions>
           <execution>
-            <id>render-configs</id>
+            <id>dump-configs</id>
             <phase>integration-test</phase>
             <goals><goal>run-eval</goal></goals>
             <configuration>
               <analysisDir>${project.build.directory}</analysisDir>
               <script>${basedir}/src/eval/diagram.groovy</script>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>render-configs</id>
+            <phase>post-integration-test</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>dot</executable>
+              <workingDirectory>${project.build.directory}</workingDirectory>
+              <arguments>
+                <argument>-O</argument>
+                <argument>-Tsvg</argument>
+                <argument>item-item.dot</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>
