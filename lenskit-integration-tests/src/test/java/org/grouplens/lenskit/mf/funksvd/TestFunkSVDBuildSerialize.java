@@ -28,9 +28,10 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
@@ -38,7 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -54,9 +54,9 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(FunkSVDRecommender.class);
+               .to(ScoreBasedItemRecommender.class);
         factory.bind(ItemScorer.class)
-               .to(FunkSVDRatingPredictor.class);
+               .to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
         factory.set(FeatureCount.class).to(10);
@@ -77,8 +77,8 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
         assertThat(loaded, notNullValue());
         LenskitRecommender rec = loaded.open();
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(FunkSVDRatingPredictor.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer.class));
             assertThat(rec.get(FunkSVDModel.class),
                        notNullValue());
         } finally {

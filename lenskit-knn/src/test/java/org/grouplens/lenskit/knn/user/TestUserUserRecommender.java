@@ -46,6 +46,7 @@ public class TestUserUserRecommender {
     private Recommender rec;
     private EventCollectionDAO dao;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -69,7 +70,7 @@ public class TestUserUserRecommender {
         rs.add(Ratings.make(5, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
         factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
         factory.in(UserSimilarity.class)

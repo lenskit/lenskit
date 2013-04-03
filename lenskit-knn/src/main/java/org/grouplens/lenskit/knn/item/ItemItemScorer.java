@@ -20,25 +20,24 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.core.AbstractItemScorer;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Collection;
 
@@ -49,52 +48,53 @@ import java.util.Collection;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @see ItemItemRatingPredictor
  */
-public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelBackedScorer {
+public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
     public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
     @Nonnull
-    protected UserVectorNormalizer normalizer;
-    protected UserHistorySummarizer summarizer;
+    protected final UserVectorNormalizer normalizer;
+    protected final UserHistorySummarizer summarizer;
     @Nonnull
-    protected NeighborhoodScorer scorer;
+    protected final NeighborhoodScorer scorer;
     @Nonnull
-    protected ItemScoreAlgorithm algorithm;
+    protected final ItemScoreAlgorithm algorithm;
+    @Nullable
+    private final BaselinePredictor baseline;
 
+    /**
+     * Construct a new item-item scorer.
+     *
+     * @param dao    The DAO.
+     * @param m      The model
+     * @param sum    The history summarizer.
+     * @param scorer The neighborhood scorer.
+     * @param algo   The item scoring algorithm.  It converts neighborhoods to scores.
+     * @param bl     The baseline scorer. If present, it will be used to supply scores that the
+     *               item-item CF algorithm cannot.
+     */
     @Inject
     public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
                           UserHistorySummarizer sum,
                           NeighborhoodScorer scorer,
-                          ItemScoreAlgorithm algo) {
+                          ItemScoreAlgorithm algo,
+                          UserVectorNormalizer norm,
+                          @Nullable BaselinePredictor bl) {
         super(dao);
         model = m;
         summarizer = sum;
         this.scorer = scorer;
         algorithm = algo;
+        normalizer = norm;
+        baseline = bl;
         logger.info("building item-item scorer with scorer {}", scorer);
-    }
-
-    @Override
-    public ItemItemModel getModel() {
-        return model;
     }
 
     @Nonnull
     public UserVectorNormalizer getNormalizer() {
         return normalizer;
-    }
-
-    /**
-     * Set the normalizer to apply to user summaries.
-     *
-     * @param norm The normalizer.
-     * @see UserVectorNormalizer
-     */
-    @Inject
-    public void setNormalizer(UserVectorNormalizer norm) {
-        normalizer = norm;
     }
 
     /**
@@ -106,8 +106,10 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
     @Override
     public void score(@Nonnull UserHistory<? extends Event> history,
                       @Nonnull MutableSparseVector scores) {
+        final long uid = history.getUserId();
+
         SparseVector summary = summarizer.summarize(history);
-        VectorTransformation transform = makeTransform(history.getUserId(), summary);
+        VectorTransformation transform = normalizer.makeTransformation(uid, summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 
@@ -116,42 +118,9 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemItemModelB
 
         // untransform the scores
         transform.unapply(scores);
-    }
 
-    /**
-     * Construct a transformation that is used to pre- and post-process
-     * summarized user data in {@link #score(UserHistory, Collection)}. The
-     * transformation is created from the user summary. It is then applied to
-     * the user summary prior to scoring, and unapplied to the scores. Its
-     * {@link VectorTransformation#unapply(MutableSparseVector)} method is
-     * expected also to populate missing scores as appropriate from the
-     * baseline. The vector passed to unapply the transformation will contain
-     * all items to be predicted in the key domain, and will have values for all
-     * predictable items.
-     *
-     * <p>
-     * The default implementation delegates to the normalizer
-     * ({@link #setNormalizer(UserVectorNormalizer)}).
-     *
-     * @param userData The user summary.
-     * @return The transform to pre- and post-process user data.
-     */
-    protected VectorTransformation makeTransform(long user, SparseVector userData) {
-        return normalizer.makeTransformation(user, userData);
-    }
-
-    @Override
-    public LongSet getScoreableItems(UserHistory<? extends Event> user) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        LongSet items = new LongOpenHashSet();
-        SparseVector summary = summarizer.summarize(user);
-        LongIterator iter = summary.keySet().iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-            for (ScoredId id : model.getNeighbors(item)) {
-                items.add(id.getId());
-            }
+        if (baseline != null) {
+            baseline.predict(uid, summary, scores, false);
         }
-        return items;
     }
 }

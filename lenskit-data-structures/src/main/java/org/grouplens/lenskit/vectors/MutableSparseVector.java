@@ -176,6 +176,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
      * @param used   The entries in use.
+     * @param chs    The initial side channels.
      */
     protected MutableSparseVector(long[] ks, double[] vs, int length, BitSet used,
                                   Map<Symbol, MutableSparseVector> chs) {
@@ -683,8 +684,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             retval = channelMap.remove(channelSymbol);
             return retval;
         }
-        throw new IllegalArgumentException("No existing channel under name " +
-                                                   channelSymbol.getName());
+        throw new IllegalArgumentException("No such channel " +
+                                           channelSymbol.getName());
     }
 
     /**
@@ -708,8 +709,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector addChannel(Symbol channelSymbol) {
         checkMutable();
         if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("There is already a channel with name " +
-                                                       channelSymbol.getName());
+            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
+                                               + " already exists");
         }
         MutableSparseVector theChannel = new MutableSparseVector(keyDomain());
         channelMap.put(channelSymbol, theChannel);
@@ -740,6 +741,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param channelSymbol the symbol under which this new channel
      *                      should be created.
+     * @param theChannel    The channel to add.
      * @return the newly created channel
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
@@ -747,8 +749,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector addChannel(Symbol channelSymbol, SparseVector theChannel) {
         checkMutable();
         if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("There is already a channel with name " +
-                                                       channelSymbol.getName());
+            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
+                                               + " already exists");
         }
         if (!this.keyDomain().containsAll(theChannel.keyDomain())) {
             throw new IllegalArgumentException("The channel you are trying to add to this vector "

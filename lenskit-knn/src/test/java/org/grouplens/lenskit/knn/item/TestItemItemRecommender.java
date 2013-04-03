@@ -47,9 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
@@ -58,6 +58,7 @@ public class TestItemItemRecommender {
     private LenskitRecommender session;
     private ItemRecommender recommender;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -77,7 +78,7 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(3, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
         factory.bind(UserVectorNormalizer.class)
@@ -124,7 +125,7 @@ public class TestItemItemRecommender {
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-                get(7), closeTo(1.0));
+                get(7), closeTo(1.0, 1.0e-5));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
 
@@ -134,7 +135,7 @@ public class TestItemItemRecommender {
         assertThat(scorer, notNullValue());
         scores = scorer.score(history, LongArrayList.wrap(items2));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-                get(9), closeTo(3.0));  // 1, 7, 8
+                get(9), closeTo(3.0, 1.0e-5));  // 1, 7, 8
     }
 
     /**
@@ -327,7 +328,7 @@ public class TestItemItemRecommender {
 
     //Helper method to retrieve user's user and create SparseVector
     private UserHistory<Rating> getRatings(long user) {
-        DataAccessObject dao = session.getRatingDataAccessObject();
+        DataAccessObject dao = session.getDataAccessObject();
         return dao.getUserHistory(user, Rating.class);
     }
 

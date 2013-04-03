@@ -2,24 +2,13 @@
                             Documentation
                 -------------------------------------
 
-#macro ( wiki $name $lbl )##
-{{{http://dev.grouplens.org/trac/lenskit/wiki/$name}#$lbl}}##
-#end
-
 LensKit Documentation
 
-  * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual}Manual}}
+  * {{{http://bitbucket.org/grouplens/lenskit/wiki/GettingStarted}Getting Started}}
 
-    * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/GettingStarted}Getting Started}}
+  * {{{http://bitbucket.org/grouplens/lenskit/wiki/Manual}Manual}}
 
-    * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Configuration}Configuring Recommenders}}
-
-    * {{{http://dev.grouplens.org/trac/lenskit/wiki/Manual/Evaluator}Using the Evaluator}}
-
-    []
-                                       
-  * {{{./apidocs}Combined API documentation}} (merged JavaDoc for all
-    modules)
+  * {{{./apidocs}Combined API documentation}} (merged JavaDoc for all modules)
 
   []
 

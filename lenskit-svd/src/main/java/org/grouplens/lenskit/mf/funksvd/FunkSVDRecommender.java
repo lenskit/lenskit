@@ -22,16 +22,18 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import javax.inject.Inject;
 
-import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
  * recommendation is not supported.
+ * @deprecated Just use {@link ScoreBasedItemRecommender}.
  */
+@Deprecated
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
     @Inject
-    public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
+    public FunkSVDRecommender(DataAccessObject dao, FunkSVDItemScorer predictor) {
         super(dao, predictor);
     }
 }

@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
@@ -38,6 +39,8 @@ import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
+import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -45,10 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -95,54 +95,49 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             CSVDataSource csv = (CSVDataSource) gds.getTrainData();
             if (",".equals(csv.getDelimiter())) {
                 File file = csv.getFile();
-                logger.debug("using test file {}", file);
+                logger.debug("using training file {}", file);
                 return file;
             }
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
-        File file = makeCSV(data.getTrainFactory(), data.getName() + ".train.csv");
-        logger.debug("wrote train file {}", file);
+        File file = makeCSV(data.getTrainFactory(), getName() + ".train.csv", true);
+        logger.debug("wrote training file {}", file);
         return file;
     }
 
     private File testFile(TTDataSet data) {
-        try {
-            GenericTTDataSet gds = (GenericTTDataSet) data;
-            CSVDataSource csv = (CSVDataSource) gds.getTestData();
-            if (",".equals(csv.getDelimiter())) {
-                File file = csv.getFile();
-                logger.debug("using train file {}", file);
-                return file;
-            }
-        } catch (ClassCastException e) {
-            /* No-op - this is fine, we will make a file. */
-        }
-        File file = makeCSV(data.getTestFactory(), data.getName() + ".train.csv");
-        logger.debug("wrote train file {}", file);
+        File file = makeCSV(data.getTestFactory(), getName() + ".test.csv", false);
+        logger.debug("wrote test file {}", file);
         return file;
     }
 
-    private File makeCSV(DAOFactory daof, String fn) {
+    private File makeCSV(DAOFactory daof, String fn, boolean writeRatings) {
         // TODO Make this not re-copy data unnecessarily
         File file = new File(workDir, fn);
         DataAccessObject dao = daof.create();
         try {
-            FileWriter w = new FileWriter(file);
+            Object[] row = new Object[writeRatings ? 3 : 2];
+            TableWriter table = CSVWriter.open(file, null);
             try {
                 Cursor<Rating> ratings = dao.getEvents(Rating.class);
                 try {
                     for (Rating r: ratings) {
                         Preference p = r.getPreference();
                         if (p != null) {
-                            w.write(String.format("%d,%d,%f\n", r.getUserId(), r.getItemId(), p.getValue()));
+                            row[0] = r.getUserId();
+                            row[1] = r.getItemId();
+                            if (writeRatings) {
+                                row[2] = p.getValue();
+                            }
+                            table.writeRow(row);
                         }
                     }
                 } finally {
                     ratings.close();
                 }
             } finally {
-                w.close();
+                table.close();
             }
         } catch (IOException e) {
             throw new RuntimeException("error writing " + fn, e);
@@ -172,17 +167,18 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             }
         });
 
-        logger.info("running {}", args);
+        logger.info("running {}", StringUtils.join(args, " "));
 
         Process proc;
         try {
             proc = new ProcessBuilder().command(args)
-                                               .directory(workDir)
-                                               .start();
+                                       .directory(workDir)
+                                       .start();
         } catch (IOException e) {
             throw new RecommenderBuildException("error creating process", e);
         }
-        // TODO Proxy standard error out to the logger
+        Thread listen = new ProcessErrorHandler(proc.getErrorStream());
+        listen.run();
 
         int result = -1;
         boolean done = false;
@@ -204,6 +200,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         try {
             vectors = readPredictions(output);
         } catch (FileNotFoundException e) {
+            logger.error("cannot find expected output file {}", output);
             throw new RecommenderBuildException("recommender produced no output", e);
         }
 
@@ -266,6 +263,28 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         @Override
         public void close() {
             dao.close();
+        }
+    }
+
+    private class ProcessErrorHandler extends Thread {
+        private final BufferedReader error;
+
+        public ProcessErrorHandler(InputStream err) {
+            super("external");
+            setDaemon(true);
+            error = new BufferedReader(new InputStreamReader(err));
+        }
+
+        @Override
+        public void run() {
+            String line;
+            try {
+                while ((line = error.readLine()) != null) {
+                    logger.debug("external: " + line);
+                }
+            } catch (IOException e) {
+                logger.error("IO error reading error stream", e);
+            }
         }
     }
 }

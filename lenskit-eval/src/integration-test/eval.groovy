@@ -18,16 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor
-import org.grouplens.lenskit.baseline.UserMeanPredictor
-import org.grouplens.lenskit.baseline.ItemMeanPredictor
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor
-import org.grouplens.lenskit.baseline.BaselinePredictor
+
+
+import org.grouplens.lenskit.ItemScorer
+import org.grouplens.lenskit.baseline.*
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 
 def buildDir = System.getProperty("project.build.directory", ".")
 
@@ -60,7 +57,7 @@ def result = trainTest {
 
     for (bl in baselines) {
         algorithm(bl.simpleName) {
-            bind RatingPredictor to BaselineRatingPredictor
+            bind ItemScorer to BaselineItemScorer
             bind BaselinePredictor to bl
         }
     }

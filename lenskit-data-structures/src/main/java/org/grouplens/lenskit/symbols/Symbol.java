@@ -87,7 +87,7 @@ public final class Symbol {
     }
 
     /**
-     * Get the name for a symbol
+     * Get the name for a symbol.
      *
      * @return the string name that was used to create the symbol
      */

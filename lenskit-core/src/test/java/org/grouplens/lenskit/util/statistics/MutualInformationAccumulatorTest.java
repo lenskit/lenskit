@@ -20,10 +20,11 @@
  */
 package org.grouplens.lenskit.util.statistics;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -31,6 +32,10 @@ import static org.junit.Assert.assertThat;
  */
 public class MutualInformationAccumulatorTest {
     MutualInformationAccumulator accum;
+
+    private Matcher<Double> closeTo(double v) {
+        return Matchers.closeTo(v, 1.0e-5);
+    }
 
     @Before
     public void newAccumulator() {

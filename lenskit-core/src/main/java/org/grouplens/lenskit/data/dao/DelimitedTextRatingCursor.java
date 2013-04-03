@@ -76,6 +76,7 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
         rating = null;
     }
 
+    //CHECKSTYLE:OFF MagicNumber
     @Override
     public Rating poll() {
         Preconditions.checkState(rating != null, "cursor is closed");
@@ -101,4 +102,5 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
 
         return null;
     }
+    //CHECKSTYLE:ON
 }

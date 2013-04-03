@@ -27,6 +27,7 @@ import org.apache.commons.lang3.builder.Builder;
  *
  * @author Michael Ekstrand
  * @since 0.11
+ * @compat Public
  */
 public final class IndexedPreferenceBuilder implements Builder<IndexedPreference> {
     private int index;

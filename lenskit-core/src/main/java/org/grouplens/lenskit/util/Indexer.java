@@ -91,8 +91,7 @@ public class Indexer implements Index {
     @Override
     public MutableSparseVector convertArrayToVector(double[] values) {
         if(values.length != getObjectCount()){
-            throw new IllegalArgumentException
-            ("The length of the values don't match the size of ids");
+            throw new IllegalArgumentException("Value array has incorrect length");
         }
 
         MutableSparseVector newSparseVector = new MutableSparseVector(ids);

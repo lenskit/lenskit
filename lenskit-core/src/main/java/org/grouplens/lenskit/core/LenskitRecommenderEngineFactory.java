@@ -22,7 +22,9 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
-import org.grouplens.grapht.*;
+import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -38,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -62,6 +63,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
             ItemRecommender.class,
             GlobalItemRecommender.class
     };
+    private static final int RESOLVE_DEPTH_LIMIT = 100;
 
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineFactory.class);
 
@@ -69,10 +71,18 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     private DAOFactory factory;
     private final Set<Class<?>> roots;
 
+    /**
+     * Create a new recommender engine factory.
+     */
     public LenskitRecommenderEngineFactory() {
         this((DAOFactory) null);
     }
 
+    /**
+     * Create a new recommender engine factory.
+     *
+     * @param factory The DAO factory to get data access.
+     */
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
         config = new BindingFunctionBuilder();
@@ -109,18 +119,18 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     @Override
-    public LenskitConfigContext in(Class<?> type) {
-        return coerce(config.getRootContext().in(type));
+    public LenskitConfigContext within(Class<?> type) {
+        return coerce(config.getRootContext().within(type));
     }
 
     @Override
-    public LenskitConfigContext in(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(config.getRootContext().in(qualifier, type));
+    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(config.getRootContext().within(qualifier, type));
     }
 
     @Override
-    public LenskitConfigContext in(Annotation qualifier, Class<?> type) {
-        return coerce(config.getRootContext().in(qualifier, type));
+    public LenskitConfigContext within(Annotation qualifier, Class<?> type) {
+        return coerce(config.getRootContext().within(qualifier, type));
     }
 
     @Override
@@ -136,22 +146,6 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     @Override
     public LenskitConfigContext at(Annotation qualifier, Class<?> type) {
         return coerce(config.getRootContext().at(qualifier, type));
-    }
-
-    /**
-     * Groovy-compatible alias for {@link #in(Class)}.
-     */
-    @SuppressWarnings("unused")
-    public LenskitConfigContext within(Class<?> type) {
-        return in(type);
-    }
-
-    /**
-     * Groovy-compatible alias for {@link #in(Class, Class)}.
-     */
-
-    public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
-        return in(qualifier, type);
     }
 
     @Override
@@ -198,6 +192,12 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         }
     }
 
+    /**
+     * Create a recommender engine with a specified DAO.
+     * @param dao The DAO.
+     * @return The recommender engine.
+     * @throws RecommenderBuildException if there is an error building the recommender.
+     */
     public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) throws RecommenderBuildException {
         Graph original;
         try {
@@ -398,14 +398,14 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return finishBuild(cfg);
     }
 
-    private Graph finishBuild(BindingFunctionBuilder config) {
+    private Graph finishBuild(BindingFunctionBuilder cfg) {
         DependencySolver solver = new DependencySolver(
-                Arrays.asList(config.build(RuleSet.EXPLICIT),
-                              config.build(RuleSet.INTERMEDIATE_TYPES),
-                              config.build(RuleSet.SUPER_TYPES),
-                              new DefaultDesireBindingFunction(config.getSPI())),
+                Arrays.asList(cfg.build(RuleSet.EXPLICIT),
+                              cfg.build(RuleSet.INTERMEDIATE_TYPES),
+                              cfg.build(RuleSet.SUPER_TYPES),
+                              new DefaultDesireBindingFunction(cfg.getSPI())),
                 CachePolicy.MEMOIZE,
-                100);
+                RESOLVE_DEPTH_LIMIT);
 
         // Resolve all required types to complete a Recommender
         for (Class<?> root : roots) {
@@ -418,10 +418,26 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         return solver.getGraph();
     }
 
+    /**
+     * Get a mockup of the full recommender graph. This fully resolves the graph so that
+     * it can be analyzed, but does not create any objects.
+     *
+     * @param daoType The type of the DAO (so resolution can be successful in the face of
+     *                dependencies on DAO subtypes).
+     * @return The full graph.
+     */
     public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
         return buildGraph(daoType);
     }
 
+    /**
+     * Get a mockup of the instantiated (per-session) recommender graph. This fully resolves the
+     * graph so that it can be analyzed, but does not create any objects.
+     *
+     * @param daoType The type of the DAO (so resolution can be successful in the face of
+     *                dependencies on DAO subtypes).
+     * @return The recommender graph.
+     */
     public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
         return simulateInstantiation(buildGraph(daoType));
     }

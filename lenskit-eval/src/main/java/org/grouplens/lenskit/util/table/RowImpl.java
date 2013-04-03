@@ -21,58 +21,76 @@
 package org.grouplens.lenskit.util.table;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
-import java.util.*;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
- * The row of result stored in a HashMap. Note that the values are string.
+ * Implementation of a single table row.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-class RowImpl extends AbstractMap<String, Object> implements Row {
-    private final ArrayList<Object> row = new ArrayList<Object>();
-    private final HashMap<String, Integer> header;
+class RowImpl implements Row {
+    private final ArrayList<Object> row;
+    private final TableLayout layout;
 
-    public RowImpl(HashMap<String, Integer> hdr, Object[] list) {
+    /**
+     * Construct a new row implementation.
+     * @param layout The table layout.
+     * @param entries The row's contents. The array elements are copied.
+     */
+    public RowImpl(TableLayout layout, Object[] entries) {
         super();
-        this.header = hdr;
-        Collections.addAll(this.row, list);
+        this.layout = layout;
+        Preconditions.checkArgument(
+                entries.length == layout.getColumnCount(),
+                String.format("row has incorrect length (was %d, expected %d)",
+                              entries.length, layout.getColumnCount()));
+        row = new ArrayList<Object>(entries.length);
+        Collections.addAll(row, entries);
     }
 
     @Override
-    public Object value(String key) {
-        return row.get(header.get(key));
+    public Object value(String col) {
+        return value(layout.columnIndex(col));
     }
 
     @Override
     public Object value(int idx) {
+        // manually check index to get better error message
+        Preconditions.checkElementIndex(idx, row.size(), "column");
         return row.get(idx);
     }
 
     @Override
-    public Set<Entry<String, Object>> entrySet() {
-        return new EntrySet();
+    public int length() {
+        return row.size();
     }
 
-    private class IteratorWrapper implements Function<Entry<String, Integer>, Entry<String, Object>> {
-        public Entry<String, Object> apply(Entry<String, Integer> entry) {
-            return Maps.immutableEntry(entry.getKey(), row.get(entry.getValue()));
-        }
+    @Override
+    public Iterator<Object> iterator() {
+        return Iterators.transform(layout.getColumns().iterator(),
+                                   VALUE_FUNCTION);
     }
 
-    private class EntrySet extends AbstractSet<Entry<String, Object>>
-            implements Set<Entry<String, Object>> {
+    @Override
+    public Map<String,Object> asMap() {
+        // FIXME Don't create a new set every time this is done.
+        return Maps.asMap(Sets.newHashSet(layout.getColumns()),
+                          VALUE_FUNCTION);
+    }
+
+    private final Function<String,Object> VALUE_FUNCTION = new Function<String,Object>() {
         @Override
-        public Iterator<Entry<String, Object>> iterator() {
-            return Iterators.transform(header.entrySet().iterator(), new IteratorWrapper());
+        public Object apply(@Nullable String column) {
+            return value(column);
         }
-
-        @Override
-        public int size() {
-            return RowImpl.this.size();
-        }
-    }
-
+    };
 }

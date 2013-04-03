@@ -23,9 +23,7 @@ package org.grouplens.lenskit.vectors.similarity;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -48,6 +46,8 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
 
     /**
      * Construct a new mutual information similarity.
+     *
+     * @param quantizer A quantizer to allow discrete mutual information to be computed.
      */
     @Inject
     public MutualInformationVectorSimilarity(Quantizer quantizer) {
@@ -55,11 +55,17 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
     }
 
     /**
-     * Note, this similarity function measures the absolute correlation between two vectors.
-     * Because of this it ranges from [0,inf), not [-1,1] as specified by superclass.
-     * Caution should be used when using this vector similarity function that your
-     * implementation will accept values in this range.
+     * Compute similarity using mutual information.
+     * <p>
+     *     Note, this similarity function measures the
+     * absolute correlation between two vectors. Because of this it ranges from [0,inf), not [-1,1]
+     * as specified by superclass. Caution should be used when using this vector similarity function
+     * that your implementation will accept values in this range.
+     * </p>
      *
+     * @param vec1 The first vector.
+     * @param vec2 The second vector.
+     * @return The similarity between the two vectors, based on mutual information.
      * @see VectorSimilarity#similarity(SparseVector, SparseVector)
      */
     @Override

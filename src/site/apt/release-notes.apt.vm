@@ -27,6 +27,16 @@ LensKit Release Notes
     complex configurations. See the {{{http://bitbucket.org/grouplens/lenskit/wiki/Configuration}manual}}
     for more details.
 
+  * Made <<<SparseVector>>> constructors package-private.  Sparse vectors shouldn't be
+    subclassed by any additional classes.
+
+  * Introduced <<<predict>>> methods to <<<RatingPredictor>>>, deprecating the fact that it
+    extends <<<ItemScorer>>>.
+
+  * <<Incompatible change>>: moved abstract and simple/score-based implementations of basic
+    recommender components to the new package <<<o.g.l.basic>>>.  This should only be incompatible
+    for people implementing new LensKit components.
+
   * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
     model construction to support side channels (#issue(219)).
   
@@ -39,6 +49,14 @@ LensKit Release Notes
 
   * <<Default change>>: changed default <<<ModelSize>>> to 0 (all neighbors retained); by
     default, item-item models now retain all neighbors with nonnegative similarities.
+
+  * Deprecated algorithm-specific item recommenders in favor of using
+    <<<ScoreBasedItemRecommender>>> directly.
+
+  * <<Config change>>: Refactored the item-item recommender to get rid of
+    <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
+    Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;
+    using <<<ItemItemRecommender>>> no longer forces that.
 
   * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
     changed parameters. The <<<StoppingCondition>>> interface and implementations now live
@@ -58,13 +76,15 @@ LensKit Release Notes
 
     []
 
+  * Added <<<LeastSquaresPredictor>>>, a baseline predictor that uses gradient descent to
+    train per-item and per-user baseline values (à la Koren et al.).
+
   []
 
 ** Evaluator
 
   * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
 
-  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
 
   * Eval configuration changes
 
@@ -82,6 +102,27 @@ LensKit Release Notes
 
   * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
     values out to the prediction output file.
+
+  * Added <<<retain>>> directive to the <<<trainTest>>> command to retain a fixed number
+    of items per user.
+
+  * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
+    of the clearer <<<holdoutFraction>>> directive.
+
+  * Table changes (these should affect client code at present):
+
+    * Tables now live in <<<o.g.l.util.table>>>.
+
+    * <<<TableImpl>>> is now package-private and immutable; use <<<TableBuilder>>> to
+      build a table.
+
+    * <<<InMemoryWriter>>> is replaced with <<<TableBuilder>>>, which implements <<<TableWriter>>>.
+
+    * Table layouts now live directly in the table package.
+
+    * Table writers now live in <<<o.g.l.util.table.writer>>>.
+
+    []
 
   []
 
@@ -112,10 +153,7 @@ LensKit Release Notes
 
 * Release 1.0
 
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=1.0}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header("1.0")
 
   This release includes many documentation improvements and general cleanups from
   the 0.11.
@@ -178,10 +216,7 @@ LensKit Release Notes
   algorithm implementations will definitely need to be updated; other client code may need
   updates as well.
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.11}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.11)
 
   * Made <<<SparseVector>>> return <<<VectorEntry>>> objects when iterated,
     rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse
@@ -271,10 +306,7 @@ LensKit Release Notes
 
 * Release 0.10
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.10}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.10)
 
 ** Evaluation
 
@@ -360,11 +392,7 @@ LensKit Release Notes
 
 * Release 0.9
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.9}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.9)
 
   * Clean up documentation, warnings, and documenting annotations in
     several places. Also made many style fixes.
@@ -436,11 +464,7 @@ LensKit Release Notes
 
 * Release 0.8
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.8}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.8)
 
   * Cleaned up cursor utilities, moving all methods from
     <<<Cursors2>>> to <<<Cursors>>>.  The old <<<Cursors2>>> methods
@@ -469,11 +493,7 @@ LensKit Release Notes
 
 * Release 0.7
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.7}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.7)
 
   * Fixed a couple bugs in the sparse vector copy methods.
 
@@ -524,11 +544,7 @@ LensKit Release Notes
 
 * Release 0.6
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.6}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.6)
 
   * Fixed a bug where FunkSVD crashed when predicting for a user not in
     the model.
@@ -569,11 +585,7 @@ LensKit Release Notes
 
 * Release 0.5
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.5}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.5)
 
   * Reworked <<<IndexedPreference>>>, making it an interface that can
     be backed by indirect implementations in rating snapshots.  This
@@ -593,11 +605,7 @@ LensKit Release Notes
 
 * Release 0.4
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.4}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.4)
 
 * Recommendation and Prediction API
 
@@ -691,8 +699,7 @@ LensKit Release Notes
 
 * Release 0.3.1
 
-  This release just contains a single change that should have been in
-  0.3 (and is, unfortunately, backwards-incompatible):
+  #header(0.3.1)
 
   * Removed the generic parameter from <<<DAOFactory>>>.  We will be
     ensuring in a later release that the dependency injection
@@ -704,11 +711,7 @@ LensKit Release Notes
 
 * Release 0.3
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.3}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.3)
 
 ** Event Infrastructure
 
@@ -792,11 +795,7 @@ LensKit Release Notes
 
 * Release 0.2
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.2}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.2)
 
 ** Core changes
 
@@ -905,11 +904,7 @@ LensKit Release Notes
 
   []
 
-  The {{{http://dev.grouplens.org/hg/lenskit}Mercurial changelog}} and
-  the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.1}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #header(0.1)
 
   Keep watching LensKit for further developments and lots of exciting
   new work this summer.
@@ -951,9 +946,7 @@ LensKit Release Notes
     
   []
 
-  The Mercurial changelog and the
-  {{{http://dev.grouplens.org/trac/lenskit/query?status=closed&group=resolution&milestone=0.0.3}list
-  of closed tickets}} provide more information on what has happened.
+  #header(0.0.3)
 
 * Release 0.0.2 (March 28, 2011)
 

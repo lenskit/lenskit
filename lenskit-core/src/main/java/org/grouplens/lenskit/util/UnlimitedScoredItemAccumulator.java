@@ -41,6 +41,11 @@ import java.util.List;
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
     private List<ScoredId> scores;
+    private ScoredIdBuilder builder;
+
+    public UnlimitedScoredItemAccumulator() {
+        builder = new ScoredIdBuilder();
+    }
 
     @Override
     public boolean isEmpty() {
@@ -57,8 +62,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         if (scores == null) {
             scores = new ArrayList<ScoredId>();
         }
-        ScoredId id = new ScoredIdBuilder(item, score).build();
-        scores.add(id);
+        scores.add(builder.setId(item).setScore(score).build());
     }
 
     @Override

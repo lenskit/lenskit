@@ -34,6 +34,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.Serializable;
 
 /**
@@ -55,7 +56,7 @@ import java.io.Serializable;
  *
  * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
  */
-@DefaultProvider(MeanVarianceNormalizer.Provider.class)
+@DefaultProvider(MeanVarianceNormalizer.Builder.class)
 @Shareable
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
@@ -66,22 +67,29 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
      *
      * @author Michael Ludwig
      */
-    public static class Provider implements javax.inject.Provider<MeanVarianceNormalizer> {
-        private final double smoothing;
+    public static class Builder implements Provider<MeanVarianceNormalizer> {
+        private final double damping;
         private final DataAccessObject dao;
 
+        /**
+         * Create a new mean-variance normalizer builder.
+         *
+         * @param dao The DAO from which to get the global mean.
+         * @param d   A Bayesian damping term.  The normalizer pretends each user has an
+         *            additional {@var d} ratings that are equal to the global mean.
+         */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double d) {
+        public Builder(@Transient DataAccessObject dao,
+                       @Damping double d) {
             this.dao = dao;
-            smoothing = d;
+            damping = d;
         }
 
         @Override
         public MeanVarianceNormalizer get() {
             double variance = 0;
 
-            if (smoothing != 0) {
+            if (damping != 0) {
                 double sum = 0;
 
                 Cursor<Rating> ratings = dao.getEvents(Rating.class);
@@ -110,33 +118,45 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 variance = sum / numRatings;
             }
 
-            return new MeanVarianceNormalizer(smoothing, variance);
+            return new MeanVarianceNormalizer(damping, variance);
         }
     }
 
-    private final double smoothing;
+    private final double damping;
     private final double globalVariance;
 
     /**
-     * Initializes basic normalizer with no smoothing.
+     * Initializes basic normalizer with no damping.
      */
     public MeanVarianceNormalizer() {
         this(0, 0);
     }
 
     /**
-     * @param smoothing      smoothing factor to use. 0 for no smoothing, 5 for Hofmann's implementation.
-     * @param globalVariance global variance to use in the smoothing calculations.
+     * Construct a new mean variance normalizer.
+     *
+     * @param damping      damping factor to use. 0 for no damping, 5 for Hofmann's implementation.
+     * @param globalVariance global variance to use in the damping calculations.
      */
-    public MeanVarianceNormalizer(double smoothing, double globalVariance) {
-        this.smoothing = smoothing;
+    public MeanVarianceNormalizer(double damping, double globalVariance) {
+        this.damping = damping;
         this.globalVariance = globalVariance;
     }
 
-    public double getSmoothing() {
-        return smoothing;
+    /**
+     * Get the damping term.
+     *
+     * @return The damping term.
+     */
+    public double getDamping() {
+        return damping;
     }
 
+    /**
+     * Get the global variance.
+     *
+     * @return The global variance from build time.
+     */
     public double getGlobalVariance() {
         return globalVariance;
     }
@@ -156,10 +176,10 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 var += diff * diff;
             }
 
-            /* smoothing calculation as described in Hofmann '04
+            /* damping calculation as described in Hofmann '04
              * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
              */
-            double stdev = Math.sqrt((var + smoothing * globalVariance) / (reference.size() + smoothing));
+            double stdev = Math.sqrt((var + damping * globalVariance) / (reference.size() + damping));
             return new Transform(mean, stdev);
         }
     }

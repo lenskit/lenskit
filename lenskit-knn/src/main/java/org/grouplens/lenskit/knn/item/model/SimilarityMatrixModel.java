@@ -25,7 +25,10 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -77,6 +80,17 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
             return Collections.EMPTY_LIST;
         }
 
-        return new ArrayList<ScoredId>(neighbors.asScoredIds());
+        ArrayList<ScoredId> ids = new ArrayList<ScoredId>(neighbors.size());
+        ScoredIdBuilder builder = new ScoredIdBuilder();
+        for (VectorEntry e : neighbors.fast()) {
+            builder.setId(e.getKey());
+            builder.setScore(e.getValue());
+            for (Symbol s : neighbors.getChannels()) {
+                builder.addChannel(s, neighbors.channel(s).get(e));
+            }
+            ids.add(builder.build());
+        }
+
+        return ids;
     }
 }

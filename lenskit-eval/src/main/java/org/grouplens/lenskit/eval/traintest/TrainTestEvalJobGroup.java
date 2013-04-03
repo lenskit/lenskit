@@ -20,28 +20,26 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import org.apache.commons.lang3.time.StopWatch;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
-import org.grouplens.lenskit.eval.Job;
-import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.util.SoftLazyValue;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import org.apache.commons.lang3.time.StopWatch;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.Job;
+import org.grouplens.lenskit.eval.JobGroup;
+import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.util.SoftLazyValue;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Run train-test evaluations of several algorithms over a data set.
@@ -87,9 +85,9 @@ public class TrainTestEvalJobGroup implements JobGroup {
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, evals, eval.getPredictionChannels(), data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()),
+                    Suppliers.compose(prefix, evaluation.userTableSupplier()),
+                    Suppliers.compose(prefix, evaluation.predictTableSupplier()),
                     numRecs);
-            job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
-            job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
         }
     }

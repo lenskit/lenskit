@@ -40,7 +40,10 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
 
     @Override
     public double score(List<ScoredId> neighbors, SparseVector scores) {
-        double sum = 0;
+		if (neighbors.isEmpty()) {
+			return Double.NaN;
+		}        
+		double sum = 0;
         for (ScoredId neighbor : neighbors) {
             double sim = neighbor.getScore();
             sum += sim;

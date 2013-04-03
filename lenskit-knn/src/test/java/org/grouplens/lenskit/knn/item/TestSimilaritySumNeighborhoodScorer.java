@@ -32,6 +32,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.junit.Assert.assertThat;
 
 public class TestSimilaritySumNeighborhoodScorer {
@@ -50,14 +51,14 @@ public class TestSimilaritySumNeighborhoodScorer {
     public void testEmpty() {
         List<ScoredId> nbrs = new ArrayList<ScoredId>();
         SparseVector scores = new MutableSparseVector();
-        assertThat(scorer.score(nbrs, scores), closeTo(0));
+        assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testEmptyNbrs() {
         List<ScoredId> nbrs = new ArrayList<ScoredId>();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
-        assertThat(scorer.score(nbrs, scores), closeTo(0));
+        assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test

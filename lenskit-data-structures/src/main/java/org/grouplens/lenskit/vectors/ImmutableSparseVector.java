@@ -98,15 +98,16 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * is not checked.  The new vector will have a copy of the
      * channels that are passed into it.
      *
-     * @param ks   the key array (will be the key domain).
-     * @param vs   the value array.
-     * @param sz   the length to actually use.
-     * @param used the keys that actually have values currently.
+     * @param ks       the key array (will be the key domain).
+     * @param vs       the value array.
+     * @param sz       the length to actually use.
+     * @param used     the keys that actually have values currently.
+     * @param channels The side channel values.
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
-                                    Map<Symbol, ImmutableSparseVector> inChannelMap) {
+                                    Map<Symbol, ImmutableSparseVector> channels) {
         super(ks, vs, sz, used);
-        channelMap = inChannelMap;
+        channelMap = channels;
     }
 
     @Override

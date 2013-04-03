@@ -40,7 +40,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
     private final int iterCount;
 
     /**
-     * Construct a new iteration count stopping condition
+     * Construct a new iteration count stopping condition.
      *
      * @param niter The number of iterations to run.
      */
@@ -58,7 +58,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
         return iterCount;
     }
 
-    @Override
+    @Override @Deprecated
     public boolean isFinished(int n, double delta) {
         return n >= iterCount;
     }
@@ -74,7 +74,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
     }
 
     /**
-     * Iteration Count Training Loop controller for iterative updates
+     * Iteration Count Training Loop controller for iterative updates.
      */
     private class Controller implements TrainingLoopController {
         private int iterations = 0;

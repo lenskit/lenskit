@@ -34,16 +34,16 @@ This structure fits the Maven model: all input files are in the src
 tree, and all generated files are in the target tree, where they may
 be cleaned by the clean target.
 
-## Example Predictor
+## Example Scorer
 
-There is a simple example predictor in src/main/java.  This predictor
-includes a model that generates item means, and a predictor based on
+There is a simple example scorer in src/main/java.  This scorer
+includes a model that generates item mean ratings, and a scorer based on
 that model.  You may find the model and predictor useful as starting
 points for your own predictors.  The analysis script uses this
-predictor along with some well-known prediction algorithms.
+scorer along with some well-known rating prediction algorithms.
 
 # More Information
 
 Information on using the archetype is on the LensKit [wiki][] in the Getting Started section.
 
-[wiki]: http://dev.grouplens.org/trac/lenskit
+[wiki]: http://bitbucket.org/grouplens/lenskit/wiki/

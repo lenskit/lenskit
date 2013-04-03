@@ -32,7 +32,25 @@ import java.util.List;
 public interface Table extends List<Row> {
     Table filter(String header, Object data);
 
+    /**
+     * Get a column by index.
+     * @param idx The column index (starting from 0).
+     * @return The column.
+     * @throws IllegalArgumentException if {@var idx} is out of bounds.
+     */
+    Column column(int idx);
+
+    /**
+     * Get a column by name.
+     * @param col The column name.
+     * @return The column.
+     * @throws IllegalArgumentException if {@var col} is not a valid column.
+     */
     Column column(String col);
 
-    List<String> getHeader();
+    /**
+     * Get the layout of this table.
+     * @return The table layout.
+     */
+    TableLayout getLayout();
 }

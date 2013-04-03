@@ -1,40 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="lenskit-eval">
-  <!-- Set up the MovieLens 100K data. If data.movielens.100k is set, it is used
-       as the location of the data; otherwise, it is downloaded from the GroupLens
-       web site. -->
+  <!-- Set up the MovieLens 100K data, downloading it from the GroupLens
+       web site if it is not yet available. -->
 
-   <property name="mldata.zipfile" value="${lenskit.eval.dataDir}/ml100k.zip"/>
-   <property name="mldata.directory" value="${lenskit.eval.dataDir}/ml100k"/>
+  <property name="mldata.zipfile" value="${lenskit.eval.dataDir}/ml100k.zip"/>
+  <property name="mldata.directory" value="${lenskit.eval.dataDir}/ml100k"/>
 
-   <target name="download-100k" unless="data.movielens.100k">
+  <target name="check-100k">
+    <condition property="mldata.avail">
+      <available file="${mldata.directory}/u.data"/>
+    </condition>
+  </target>
 
-      <fail message="This analysis makes use of the MovieLens 100K data
-		     set from GroupLens Research. Use of this data set is restricted to
-		     non-commercial purposes and is only permitted in accordance with the
-		     license terms. To use this data in LensKit's automated tests, set the
-		     `grouplens.mldata.acknowledge' property to `yes' to indicate you
-		     acknowledge the usage license.  More information is available at
-		     &lt;http://www.grouplens.org/node/73&gt;.">
+  <target name="download-100k" depends="check-100k" unless="mldata.avail">
 
-	 <condition>
-	    <not>
-	       <equals arg1="${grouplens.mldata.acknowledge}" arg2="yes"
-		       trim="true" casesensitive="false"/>
-	    </not>
-	 </condition>
-      </fail>
-      <get src="http://www.grouplens.org/system/files/ml-100k.zip"
-	   dest="${mldata.zipfile}"
-	   skipexisting="true"/>
-      <unzip src="${mldata.zipfile}" dest="${mldata.directory}">
-	 <patternset>
-	    <include name="ml-100k/*"/>
-	 </patternset>
-	 <mapper type="flatten"/>
-      </unzip>
-   </target>
-   
-   <target name="prepare-100k" depends="download-100k"/>
+    <fail message="This analysis makes use of the MovieLens 100K data
+                   set from GroupLens Research. Use of this data set is restricted to
+                   non-commercial purposes and is only permitted in accordance with the
+                   license terms. To use this data in LensKit's automated tests, set the
+                   `grouplens.mldata.acknowledge' property to `yes' to indicate you
+                   acknowledge the usage license.  More information is available at
+                   &lt;http://www.grouplens.org/node/73&gt;.">
+
+      <condition>
+        <not>
+          <equals arg1="${grouplens.mldata.acknowledge}" arg2="yes"
+                  trim="true" casesensitive="false"/>
+        </not>
+      </condition>
+    </fail>
+    <get src="http://www.grouplens.org/system/files/ml-100k.zip"
+         dest="${mldata.zipfile}"
+         skipexisting="true"/>
+  </target>
+
+  <target name="prepare-100k" depends="download-100k" unless="mldata.avail">
+    <unzip src="${mldata.zipfile}" dest="${mldata.directory}">
+      <patternset>
+        <include name="ml-100k/*"/>
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
+  </target>
 </project>
 

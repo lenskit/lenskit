@@ -20,12 +20,10 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -46,6 +44,7 @@ import static org.junit.Assert.assertThat;
 public class TestSlopeOneItemRecommender {
     private LenskitRecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -57,7 +56,7 @@ public class TestSlopeOneItemRecommender {
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(RatingPredictor.class).to(SlopeOneRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
         factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
         factory.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
@@ -65,15 +64,18 @@ public class TestSlopeOneItemRecommender {
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSlopeOneRecommenderEngineCreate() {
         Recommender rec = engine.open();
 
         try {
             assertThat(rec.getItemScorer(),
-                       instanceOf(SlopeOneRatingPredictor.class));
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(SlopeOneRatingPredictor.class));
+                       instanceOf(SlopeOneItemScorer.class));
+            RatingPredictor rp = rec.getRatingPredictor();
+            assertThat(rp, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) rp).getScorer(),
+                       sameInstance(rec.getItemScorer()));
             assertThat(rec.getItemRecommender(),
                        instanceOf(SlopeOneRecommender.class));
         } finally {

@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import org.junit.Test;
+
 import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
-
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-
-import org.junit.Test;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>

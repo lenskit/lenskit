@@ -41,7 +41,7 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.LKFileUtils;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
@@ -74,9 +74,9 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> outputSupplier;
     @Nonnull
-    private Supplier<TableWriter> userOutputSupplier;
+    private final Supplier<TableWriter> userOutputSupplier;
     @Nonnull
-    private Supplier<TableWriter> predictOutputSupplier;
+    private final Supplier<TableWriter> predictOutputSupplier;
     private final Supplier<SharedPreferenceSnapshot> snapshot;
     private final int outputColumnCount;
 
@@ -89,23 +89,32 @@ public class TrainTestEvalJob implements Job {
      * @param ds      The data set to use.
      * @param snap    Supplier providing access to a shared rating snapshot to use in the
      *                build process.
-     * @param out     The table writer to receive outputProvider. This writer is expected to
+     * @param out     The table writer to receive output. This writer is expected to
      *                be prefixed with algorithm and group ID data, so only the times
      *                and eval outputProvider needs to be written.
-     * @param numRecs The number of recommendations to compute.
+     * @param userOut The table writer to receive user output. The supplier may return
+     *                {@code null}.
+     * @param predOut The table writer to receive prediction output. The supplier may
+     *                return {@code null}.
+     * @param nrecs The number of recommendations to compute.
      */
-    public TrainTestEvalJob(AlgorithmInstance algo,
-                            List<TestUserMetric> evals,
-                            List<Pair<Symbol,String>> chans,
-                            TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
-                            Supplier<TableWriter> out, int numRecs) {
+    public TrainTestEvalJob(@Nonnull AlgorithmInstance algo,
+                            @Nonnull List<TestUserMetric> evals,
+                            @Nonnull List<Pair<Symbol,String>> chans,
+                            @Nonnull TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
+                            @Nonnull Supplier<TableWriter> out,
+                            @Nonnull Supplier<TableWriter> userOut,
+                            @Nonnull Supplier<TableWriter> predOut,
+                            int nrecs) {
         algorithm = algo;
         evaluators = evals;
         channels = chans;
         data = ds;
         snapshot = snap;
         outputSupplier = out;
-        this.numRecs = numRecs;
+        userOutputSupplier = userOut;
+        predictOutputSupplier = predOut;
+        numRecs = nrecs;
 
         int ncols = 2;
         for (TestUserMetric eval : evals) {
@@ -114,21 +123,6 @@ public class TrainTestEvalJob implements Job {
             }
         }
         outputColumnCount = ncols;
-    }
-
-    public void setUserOutput(Supplier<TableWriter> out) {
-        userOutputSupplier = out;
-    }
-
-    /**
-     * Set a supplier for the prediction output table. The writer is expected to be
-     * prefixed with algorithm and group ID data; the job will only write user, item,
-     * rating, and prediction.
-     *
-     * @param out The table writer supplier.
-     */
-    public void setPredictOutput(Supplier<TableWriter> out) {
-        predictOutputSupplier = out;
     }
 
     @Override

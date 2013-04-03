@@ -17,6 +17,11 @@
       archetype is being built from. -->
     <lenskit.version>${project.version}</lenskit.version>
 
+    <!-- The location of the Rscript executable. The default is to search for Rscript
+         in your PATH. If you need to override this, it should probably be done in
+         ~/.m2/settings.xml rather than here. -->
+    <rscript.executable>Rscript</rscript.executable>
+
     <!-- Uncomment and change below to 'yes' if you accept the MovieLens data terms of service. 
       <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
   </properties>
@@ -40,7 +45,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
 
@@ -119,7 +124,7 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>Rscript</executable>
+              <executable>${rscript.executable}</executable>
               <arguments>
                 <argument>chart.R</argument>
               </arguments>

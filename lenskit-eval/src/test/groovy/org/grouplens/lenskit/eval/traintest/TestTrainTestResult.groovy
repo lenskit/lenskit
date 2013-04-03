@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
-
+import org.grouplens.lenskit.ItemScorer
 import org.junit.Before
 import org.junit.After
 import org.junit.Test
@@ -29,7 +29,7 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor
+import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 
@@ -87,7 +87,7 @@ class TestTrainTestResult extends ConfigTestBase {
                 metric RMSEPredictMetric
 
                 algorithm("ItemUserMean") {
-                    bind RatingPredictor to BaselineRatingPredictor
+                    bind ItemScorer to BaselineItemScorer
                     bind BaselinePredictor to ItemUserMeanPredictor
                 }
             }

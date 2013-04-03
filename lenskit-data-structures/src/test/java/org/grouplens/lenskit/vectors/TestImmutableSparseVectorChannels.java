@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
+import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.junit.Assert.assertThat;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -191,7 +192,7 @@ public class TestLongSortedArraySet {
         BitSet bits = new BitSet(data.length);
         bits.set(1, data.length);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(7l));
         assertThat(set.last(), equalTo(639l));
         assertTrue(set.contains(7));
@@ -203,7 +204,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 8, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{8, 42, 639}));
-        assertThat(set.headSet(42).size(), equalTo(2));
+        assertThat(set.headSet(42), hasSize(2));
     }
 
     @Test
@@ -213,7 +214,7 @@ public class TestLongSortedArraySet {
         bits.set(0, data.length);
         bits.clear(2);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(2l));
         assertThat(set.last(), equalTo(639l));
         assertTrue(set.contains(7));
@@ -225,7 +226,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{42, 639}));
-        assertThat(set.headSet(42).size(), equalTo(2));
+        assertThat(set.headSet(42), hasSize(2));
         assertThat(set.toLongArray(),
                    equalTo(new long[]{2, 7, 42, 639}));
     }
@@ -236,7 +237,7 @@ public class TestLongSortedArraySet {
         BitSet bits = new BitSet(data.length);
         bits.set(0, data.length - 1);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(2l));
         assertThat(set.last(), equalTo(42l));
         assertTrue(set.contains(8));

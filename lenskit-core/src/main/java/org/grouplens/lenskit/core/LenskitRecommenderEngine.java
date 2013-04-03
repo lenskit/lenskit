@@ -45,7 +45,7 @@ import java.io.*;
  * @see LenskitRecommender
  */
 public class LenskitRecommenderEngine implements RecommenderEngine {
-    final Graph dependencies;
+    private final Graph dependencies;
     private final Node rootNode;
     private final Node daoPlaceholder;
 
@@ -69,8 +69,8 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @param factory The DAO factory.
      * @param file    The file from which to load the recommender engine.
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException            if there's an error reading the file.
+     * @throws ClassNotFoundException if the graph references a missing class.
      * @deprecated Use {@link #load(DAOFactory, File)} instead.
      */
     @SuppressWarnings("unchecked")
@@ -144,7 +144,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * session bindings containing non-serializable types, this will fail.
      *
      * @param file The file to write the rec engine to.
-     * @throws IOException
+     * @throws IOException if there is an error serializing the engine.
      * @see #write(java.io.OutputStream)
      */
     public void write(@Nonnull File file) throws IOException {
@@ -163,7 +163,7 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * containing non-serializable types, this will fail.
      *
      * @param stream The file to write the rec engine to.
-     * @throws IOException
+     * @throws IOException if there is an error serializing the engine.
      * @see #load(DAOFactory, InputStream)
      */
     public void write(@Nonnull OutputStream stream) throws IOException {
@@ -208,5 +208,14 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
         }
         Injector inj = new StaticInjector(spi, sgraph, rootNode);
         return new LenskitRecommender(inj, dao, shouldClose);
+    }
+
+    /**
+     * Get the dependency graph of the recommender engine.
+     *
+     * @return The dependency graph.
+     */
+    Graph getDependencies() {
+        return dependencies;
     }
 }

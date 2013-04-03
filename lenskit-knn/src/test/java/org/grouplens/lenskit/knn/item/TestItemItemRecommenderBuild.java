@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -42,6 +43,7 @@ public class TestItemItemRecommenderBuild {
 
     private LenskitRecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -52,7 +54,7 @@ public class TestItemItemRecommenderBuild {
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
@@ -63,14 +65,15 @@ public class TestItemItemRecommenderBuild {
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testItemItemRecommenderEngineCreate() {
         Recommender rec = engine.open();
 
         assertThat(rec.getItemScorer(),
-                   instanceOf(ItemItemRatingPredictor.class));
+                   instanceOf(ItemItemScorer.class));
         assertThat(rec.getRatingPredictor(),
-                   instanceOf(ItemItemRatingPredictor.class));
+                   instanceOf(SimpleRatingPredictor.class));
         assertThat(rec.getItemRecommender(),
                    instanceOf(ItemItemRecommender.class));
         assertThat(rec.getGlobalItemRecommender(),
