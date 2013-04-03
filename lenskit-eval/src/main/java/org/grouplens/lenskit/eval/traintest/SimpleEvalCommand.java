@@ -54,6 +54,17 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     }
 
     /**
+     * Constructs the command with a default name. Currently this is 'train-test-builder'.
+     *
+     * The command built has the name "train-test-eval"
+     */
+    public SimpleEvalCommand(){
+        super("train-test-builder");
+        result = new TrainTestEvalCommand("train-test-eval");
+        result.setOutput(null);
+    }
+
+    /**
      * Adds an algorithm to the {@code TrainTestEvalCommand} being built.
      *
      * If any exception is thrown while the command is called it is rethrown as a runtime error.
@@ -73,8 +84,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     public SimpleEvalCommand addAlgorithm(LenskitAlgorithmInstanceCommand algo){
         try{
             result.addAlgorithm(algo.call());
-        }
-        catch(CommandException e){
+        } catch(CommandException e){
             throw new RuntimeException(e);
         }
         return this;
@@ -119,6 +129,22 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
         return this;
     }
 
+    /**
+     * Constructs a new {@code CrossfoldCommand} with the same name as its datasource
+     * and configures it before adding the datasets * to the {@code TrainTestEvalCommand}.
+     *
+     * @param source The source for the crossfold
+     * @param partitions The number of partitions
+     * @param holdout The holdout fraction
+     * @return Itself for chaining.
+     */
+    public SimpleEvalCommand addDataset(DataSource source, int partitions, double holdout){
+        addDataset(new CrossfoldCommand(source.getName())
+                .setSource(source)
+                .setPartitions(partitions)
+                .setHoldoutFraction(holdout));
+        return this;
+    }
     /**
      * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
      * to the {@code TrainTestEvalCommand}.
