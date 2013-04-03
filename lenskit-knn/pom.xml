@@ -22,6 +22,27 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.grouplens.lenskit</groupId>
+        <artifactId>lenskit-eval-maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>render-configs</id>
+            <phase>integration-test</phase>
+            <goals><goal>run-eval</goal></goals>
+            <configuration>
+              <analysisDir>${project.build.directory}</analysisDir>
+              <script>${basedir}/src/eval/diagram.groovy</script>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <profile>
       <id>smoketest</id>
