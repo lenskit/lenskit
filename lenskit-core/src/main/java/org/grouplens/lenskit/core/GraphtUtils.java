@@ -44,7 +44,7 @@ import java.util.Set;
  * @author Michael Ekstrand
  * @since 0.11
  */
-final class GraphtUtils {
+public final class GraphtUtils {
     private GraphtUtils() {
     }
 

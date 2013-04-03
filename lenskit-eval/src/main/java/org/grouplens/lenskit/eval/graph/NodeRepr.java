@@ -32,6 +32,7 @@ import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.grapht.spi.reflect.NullSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderClassSatisfaction;
 import org.grouplens.grapht.spi.reflect.ProviderInstanceSatisfaction;
+import org.grouplens.lenskit.core.GraphtUtils;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nullable;
@@ -159,6 +160,14 @@ class NodeRepr {
         public Description(Class<?> t, boolean isP) {
             type = t;
             provider = isP;
+        }
+
+        public String getColor() {
+            if (GraphtUtils.isShareable(node)) {
+                return "forestgreen";
+            } else {
+                return "black";
+            }
         }
 
         public String getType() {
