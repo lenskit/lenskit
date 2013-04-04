@@ -47,6 +47,13 @@ Versioning and API change policy
 
   []
 
+* Serialization
+
+  LensKit makes no attempt to allow models built and serialized with version 1.x to be
+  read in version 1.y, where x != y.  We attempt to keep bug fix releases serialization-compatible,
+  but if a serialization break is necessary to fix a bug, we will break the class (and document
+  such incompatibility in the release notes).
+
 * Deprecation
 
   As we develop LensKit, we deprecate methods (and entire classes) from time to time.
