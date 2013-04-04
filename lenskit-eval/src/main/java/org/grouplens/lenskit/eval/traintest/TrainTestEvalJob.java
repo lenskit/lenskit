@@ -41,7 +41,7 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.LKFileUtils;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;

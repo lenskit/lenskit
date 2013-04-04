@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -42,10 +42,11 @@ import static org.junit.Assert.assertThat;
  * @author Michael Ekstrand
  */
 public class TestItemItemAccuracy extends CrossfoldTestSuite {
+    @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitRecommenderEngineFactory factory) {
-        factory.bind(RatingPredictor.class)
-               .to(ItemItemRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(ItemItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
         factory.bind(UserVectorNormalizer.class)

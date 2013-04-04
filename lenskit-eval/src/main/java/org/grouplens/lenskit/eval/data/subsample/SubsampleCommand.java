@@ -21,6 +21,11 @@
 
 package org.grouplens.lenskit.eval.data.subsample;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.AbstractCommand;
@@ -29,16 +34,10 @@ import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.grouplens.lenskit.util.tablewriter.CSVWriter;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
-import org.grouplens.lenskit.eval.data.subsample.SubsampleMode;
+import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.annotation.Nullable;
 /**
  * The command to build and run a Subsample on the data source file and output the partition files
  *

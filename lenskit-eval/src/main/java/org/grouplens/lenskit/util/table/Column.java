@@ -23,12 +23,26 @@ package org.grouplens.lenskit.util.table;
 import java.util.List;
 
 /**
- * List interface provides the basic functions such as sum and average on the column data.
+ * A view of a column of a table.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public interface Column extends List<Object> {
-    Double sum();
+    /**
+     * Get the sum of this column.  Null entries result in a sum of NaN.
+     *
+     * @return The column's sum.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
+     */
+    double sum();
 
-    Double average();
+    /**
+     * Get the average of this column. Null entries and empty tables result in NaN.
+     *
+     * @return The column's average.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
+     */
+    double average();
 }

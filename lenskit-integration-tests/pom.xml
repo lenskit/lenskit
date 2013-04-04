@@ -18,12 +18,21 @@
   <properties>
     <test.repo.directory>${project.build.directory}/test-repo</test.repo.directory>
     <archetype.test.directory>${project.build.directory}/archetype-test</archetype.test.directory>
+    <lenskit.movielens.100k>${basedir}/data/ml-100k</lenskit.movielens.100k>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
     </dependency>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
@@ -61,7 +70,14 @@
             <configuration>
               <target>
                 <ant antfile="${basedir}/src/test/ant/get-data.xml"
-                     target="download-100k"/>
+                     target="fetch-100k">
+                  <!--
+                   Maven only exports POM value to Ant, not command-line value.
+                   re-export here to get the right value.
+                   -->
+                  <property name="lenskit.movielens.100k"
+                            value="${lenskit.movielens.100k}"/>
+                </ant>
               </target>
             </configuration>
           </execution>
@@ -86,10 +102,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.12.4</version>
         <configuration>
           <systemPropertyVariables>
-            <lenskit.ml100k.directory>${project.build.directory}/data/ml100k</lenskit.ml100k.directory>
+            <lenskit.movielens.100k>${lenskit.movielens.100k}</lenskit.movielens.100k>
             <buildDirectory>${project.build.directory}</buildDirectory>
             <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>
           </systemPropertyVariables>
@@ -126,7 +141,6 @@
                     automatically download the dataset, set the property
                     'grouplens.mldata.acknowledge' to 'yes'.
                     For more information, see http://dev.grouplens.org/trac/lenskit/wiki/ML100K.
-                    To disable integration tests, run with '-P "!integration-tests"'
                   </message>
                 </requireProperty>
               </rules>
@@ -140,14 +154,11 @@
   <profiles>
     <profile>
       <id>test-archetypes</id>
-      <!-- Run the archetype tests whenever we aren't embedded (i.e., in Eclipse). -->
       <activation>
         <property>
-          <name>maven.home</name>
-          <value>!EMBEDDED</value>
+          <name>lenskit.ci</name>
         </property>
       </activation>
-
       <!-- Depend on the archetypes so they wind up in local repo. -->
       <dependencies>
         <dependency>
@@ -227,14 +238,21 @@
                 <phase>integration-test</phase>
                 <configuration>
                   <!-- Maven Way is to not fail during integration-test, and check that tests
-             succeeded in the 'verify' phase. -->
+                       succeeded in the 'verify' phase. -->
                   <failOnError>false</failOnError>
                   <!-- FIXME Find a way to detect failure beyond scanning for missing files -->
                   <target>
                     <property name="lenskit.version"
                               value="${project.version}"/>
                     <ant antfile="${basedir}/src/test/ant/test-archetypes.xml"
-                         target="all-tests"/>
+                         target="all-tests">
+                      <!--
+                       Maven only exports POM value to Ant, not command-line value.
+                       re-export here to get the right value.
+                      -->
+                      <property name="lenskit.movielens.100k"
+                                value="${lenskit.movielens.100k}"/>
+                    </ant>
                   </target>
                 </configuration>
               </execution>

@@ -65,8 +65,7 @@ public class EvalScriptEngine {
     }
 
     public EvalScriptEngine(ClassLoader loader) {
-        this(Thread.currentThread().getContextClassLoader(),
-             new Properties(System.getProperties()));
+        this(loader, new Properties(System.getProperties()));
     }
 
     public EvalScriptEngine(ClassLoader loader, Properties configProperties) {
@@ -225,7 +224,7 @@ public class EvalScriptEngine {
                 return null;
             }
 
-            return Class.forName(className).asSubclass(Command.class);
+            return classLoader.loadClass(className).asSubclass(Command.class);
         } catch (IOException e) {
             throw new RuntimeException("error reading method " + name, e);
         } catch (ClassNotFoundException e) {
@@ -294,7 +293,7 @@ public class EvalScriptEngine {
             String command = prop.getValue().toString();
             Class cls;
             try {
-                cls = Class.forName(name);
+                cls = classLoader.loadClass(name);
             } catch (ClassNotFoundException e) {
                 logger.warn("command registered for nonexistent class {}", name);
                 continue;

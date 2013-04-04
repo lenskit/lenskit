@@ -28,6 +28,7 @@ import org.grouplens.lenskit.data.Event;
  *
  * @param <E> The type of event the cursor returns.
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public abstract class AbstractEventCursor<E extends Event> extends AbstractPollingCursor<E> {
     /**

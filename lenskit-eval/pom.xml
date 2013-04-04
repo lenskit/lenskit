@@ -12,57 +12,65 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerId>groovy-eclipse-compiler</compilerId>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>2.7.0-01</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>1.8.6-01</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <!-- no-op GMaven plugin so IntelliJ detects the Groovy nature -->
+      <plugin>
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
+        <version>1.5</version>
+      </plugin>
+
+      <!-- Explicitly add the Groovy source directories so that they're defined. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.5</version>
         <executions>
           <execution>
+            <id>add-groovy</id>
+            <phase>validate</phase>
             <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
+              <goal>add-source</goal>
             </goals>
+            <configuration>
+              <sources>
+                <source>src/main/groovy</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-groovy</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/test/groovy</source>
+              </sources>
+            </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
-    <pluginManagement>
-      <plugins>
-        <!--This plugin's configuration is used to store Eclipse
-m2e settings only. It has no influence on the Maven build itself. -->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.codehaus.gmaven
-                    </groupId>
-                    <artifactId>
-                      gmaven-plugin
-                    </artifactId>
-                    <versionRange>[1.4,)</versionRange>
-                    <goals>
-                      <goal>generateStubs</goal>
-                      <goal>compile</goal>
-                      <goal>generateTestStubs</goal>
-                      <goal>testCompile</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
 
   <dependencies>
@@ -94,6 +102,12 @@ m2e settings only. It has no influence on the Maven build itself. -->
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.samskivert</groupId>
+      <artifactId>jmustache</artifactId>
+      <version>1.7</version>
     </dependency>
   </dependencies>
 

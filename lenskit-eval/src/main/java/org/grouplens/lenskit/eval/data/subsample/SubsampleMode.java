@@ -21,16 +21,17 @@
 
 package org.grouplens.lenskit.eval.data.subsample;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Random;
+
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
-
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import java.io.IOException;
-import java.util.List;
-import java.util.Random;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 
 /**
  * The mode of the subsample file. It can be chosen as Ratings, Items or Users so that

@@ -61,10 +61,11 @@ public interface GlobalItemScorer {
                              @Nonnull Collection<Long> items);
 
     /**
-     * Score a collection of items based on a collection of items (a shopping basket).
+     * Score items in a vector based on a collection of items (a shopping basket).
      *
      * @param queryItems The items to use as the query.
      * @param output     A vector whose key domain is the items to score.
+     * @see ItemScorer#score(long, MutableSparseVector)
      */
     void globalScore(@Nonnull Collection<Long> queryItems,
                      @Nonnull MutableSparseVector output);

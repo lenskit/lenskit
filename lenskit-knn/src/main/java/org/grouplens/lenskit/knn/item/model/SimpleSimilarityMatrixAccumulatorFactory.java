@@ -26,13 +26,15 @@ import org.grouplens.lenskit.knn.params.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 
 import javax.inject.Inject;
+import java.io.Serializable;
 
 /**
  * Implementation of {@link SimilarityMatrixAccumulatorFactory} which creates
  * and returns a {@link SimpleSimilarityMatrixAccumulator}
  */
 @Shareable
-public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory {
+public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatrixAccumulatorFactory, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final Threshold threshold;
     private final int modelSize;
@@ -51,6 +53,7 @@ public class SimpleSimilarityMatrixAccumulatorFactory implements SimilarityMatri
      * @param itemUniverse The universe items the accumulator will accumulate.
      * @return a simple SimilarityMatrixAccumulator
      */
+    @Override
     public SimilarityMatrixAccumulator create(LongSortedSet itemUniverse) {
         return new SimpleSimilarityMatrixAccumulator(itemUniverse, threshold, modelSize);
     }

@@ -20,40 +20,39 @@
  */
 package org.grouplens.lenskit.util.table;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import javax.annotation.concurrent.Immutable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
- * The implementation of the im memory table, which is the replica of the csv table output to the
- * file.
+ * In-memory table implementation.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
-public class TableImpl extends AbstractList<Row> implements Table {
+@Immutable
+class TableImpl extends AbstractList<Row> implements Table {
     private ArrayList<Row> rows;
-    private final HashMap<String, Integer> header;
-    //To keep the order of the header
-    private final List<String> headerIndex;
 
-    public TableImpl(List<String> hdr) {
-        super();
-        rows = new ArrayList<Row>();
-        headerIndex = hdr;
-        header = new HashMap<String, Integer>();
-        for (int i = 0; i < hdr.size(); i++) {
-            header.put(hdr.get(i), i);
-        }
-    }
+    private final TableLayout layout;
 
-    private TableImpl(HashMap<String, Integer> hdr, List<String> hdrIdx, Iterable<Row> rws) {
+    /**
+     * Construct a new table.  This constructor should only be called from
+     * {@link TableBuilder}.
+     *
+     * @param layout The table layout.
+     * @param rws The table rows. Each row must have the same layout.
+     */
+    TableImpl(TableLayout layout, Iterable<Row> rws) {
         super();
         rows = Lists.newArrayList(rws);
-        headerIndex = hdrIdx;
-        header = hdr;
+        this.layout = layout;
     }
 
     /**
@@ -67,25 +66,12 @@ public class TableImpl extends AbstractList<Row> implements Table {
     public TableImpl filter(final String col, final Object data) {
         Predicate<Row> pred = new Predicate<Row>() {
             @Override
-            public boolean apply(@Nonnull Row input) {
+            public boolean apply(Row input) {
                 return data.equals(input.value(col));
             }
         };
         Iterable<Row> filtered = Iterables.filter(this.rows, pred);
-        return new TableImpl(this.header, this.headerIndex, filtered);
-    }
-
-    /**
-     * Put a new algorithm in the result.
-     *
-     * @param list the list of objects to insert to the result rows
-     */
-    public void addResultRow(Object[] list) {
-        if (list.length > header.size()) {
-            throw new IllegalArgumentException("row too long");
-        }
-        RowImpl row = new RowImpl(header, list);
-        rows.add(row);
+        return new TableImpl(layout, filtered);
     }
 
     @Override
@@ -93,66 +79,29 @@ public class TableImpl extends AbstractList<Row> implements Table {
         return rows.size();
     }
 
-    @Override
+    @Override @Nonnull
     public Iterator<Row> iterator() {
         return rows.iterator();
     }
-
 
     @Override
     public Row get(int i) {
         return rows.get(i);
     }
 
+    @Override
     public ColumnImpl column(String col) {
-        return new ColumnImpl(col);
+        return new ColumnImpl(this, layout.columnIndex(col), col);
     }
 
-    public List<String> getHeader() {
-        return Collections.unmodifiableList(headerIndex);
+    @Override
+    public ColumnImpl column(int idx) {
+        Preconditions.checkElementIndex(idx, layout.getColumnCount(), "column");
+        return new ColumnImpl(this, idx, layout.getColumns().get(idx));
     }
 
-    public class ColumnImpl extends AbstractList<Object> implements Column {
-        ArrayList<Object> column;
-
-        ColumnImpl(String col) {
-            super();
-            column = new ArrayList<Object>();
-            if (header.get(col) != null) {
-                for (Row row : rows) {
-                    column.add(row.value(header.get(col)));
-                }
-            }
-        }
-
-        public Double sum() {
-            double sum = 0;
-            if (column.size() == 0 ||
-                    !Number.class.isAssignableFrom(column.get(0).getClass())) {
-                return Double.NaN;
-            } else {
-                for (Object v : column) {
-                    sum += ((Number) v).doubleValue();
-                }
-                return sum;
-            }
-        }
-
-        public Double average() {
-            if (column.size() == 0) {
-                return Double.NaN;
-            }
-            return sum() / column.size();
-        }
-
-        @Override
-        public int size() {
-            return column.size();  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public Object get(int i) {
-            return column.get(i);  //To change body of implemented methods use File | Settings | File Templates.
-        }
+    @Override
+    public TableLayout getLayout() {
+        return layout;
     }
 }

@@ -85,11 +85,11 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(7);
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs, hasSize(1));
         assertThat(nbrs.get(0), equalTo(2L));
         assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
-        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs, hasSize(1));
         assertThat(nbrs.get(0), equalTo(3L));
         assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
     }
@@ -103,11 +103,11 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(7);
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs, hasSize(1));
         assertThat(nbrs.get(0), equalTo(2L));
         assertThat(nbrs.getScore(0), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
-        assertThat(nbrs.size(), equalTo(1));
+        assertThat(nbrs, hasSize(1));
         assertThat(nbrs.get(0), equalTo(3L));
         assertThat(nbrs.getScore(0), closeTo(Math.E, 1.0e-6));
     }
@@ -123,9 +123,9 @@ public class TestItemItemModelAccumulator {
         }
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs.size(), equalTo(5));
+        assertThat(nbrs, hasSize(5));
         nbrs = model.getNeighbors(4);
-        assertThat(nbrs.size(), equalTo(5));
+        assertThat(nbrs, hasSize(5));
         ScoredLongListIterator iter = nbrs.iterator();
         while (iter.hasNext()) {
             long j = iter.nextLong();
@@ -146,10 +146,10 @@ public class TestItemItemModelAccumulator {
         }
         ItemItemModel model = accum.build();
         ScoredLongList nbrs = model.getNeighbors(1);
-        assertThat(nbrs.size(), equalTo(5));
+        assertThat(nbrs, hasSize(5));
         
         nbrs = model.getNeighbors(4);
-        assertThat(nbrs.size(), equalTo(5));
+        assertThat(nbrs, hasSize(5));
         
         // Iterate the row for item 4, checking the values
         ScoredLongListIterator iter = nbrs.iterator();

@@ -33,7 +33,10 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.Table;
-import org.grouplens.lenskit.util.tablewriter.*;
+import org.grouplens.lenskit.util.table.TableBuilder;
+import org.grouplens.lenskit.util.table.TableLayout;
+import org.grouplens.lenskit.util.table.TableLayoutBuilder;
+import org.grouplens.lenskit.util.table.writer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +72,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private TableLayout predictLayout;
 
     private TableWriter output;
-    private InMemoryWriter outputInMemory;
+    private TableBuilder outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
@@ -205,10 +208,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      */
     @Override
     public Table call() throws CommandException {
-        this.setupJobs();
+        setupJobGroups();
+        setupTableLayouts();
+
         int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
-        this.initialize();
+        this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
         switch (isolationLevel) {
@@ -233,12 +238,35 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             logger.info("Finishing evaluation");
             this.cleanUp();
         }
-        return outputInMemory.getResult();
+        return outputInMemory.build();
     }
 
-    protected void setupJobs() throws CommandException {
-        TableLayoutBuilder master = new TableLayoutBuilder();
+    private void setupJobGroups() {
+        jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        int idx = 0;
+        for (TTDataSet dataset : dataSources) {
+            TrainTestEvalJobGroup group;
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
+            jobGroups.add(group);
+            idx++;
+        }
+    }
 
+    private void setupTableLayouts() {
+        TableLayoutBuilder master = new TableLayoutBuilder();
+        layoutCommonColumns(master);
+
+        commonColumnCount = master.getColumnCount();
+
+        outputLayout = layoutAggregateOutput(master);
+        userLayout = layoutUserTable(master);
+        predictLayout = layoutPredictionTable(master);
+
+        // FIXME This doesn't seem right in the face of top-N metrics
+        predictMetrics = metrics;
+    }
+
+    private void layoutCommonColumns(TableLayoutBuilder master) {
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds : dataSources) {
@@ -257,35 +285,30 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
                 }
             }
         }
+    }
 
-        jobGroups = new ArrayList<JobGroup>(dataSources.size());
-        int idx = 0;
-        for (TTDataSet dataset : dataSources) {
-            TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
-            jobGroups.add(group);
-            idx++;
-        }
-
-        commonColumnCount = master.getColumnCount();
-
+    private TableLayout layoutAggregateOutput(TableLayoutBuilder master) {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
-        TableLayoutBuilder perUser = master.clone();
-
-        String[] columnLabels;
-        String[] userColumnLabels;
 
         for (TestUserMetric ev : metrics) {
-            columnLabels = ev.getColumnLabels();
+            String[] columnLabels = ev.getColumnLabels();
             if (columnLabels != null) {
                 for (String c : columnLabels) {
                     output.addColumn(c);
                 }
             }
+        }
 
-            userColumnLabels = ev.getUserColumnLabels();
+        return output.build();
+    }
+
+    private TableLayout layoutUserTable(TableLayoutBuilder master) {
+        TableLayoutBuilder perUser = master.clone();
+
+        for (TestUserMetric ev : metrics) {
+            String[] userColumnLabels = ev.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);
@@ -293,9 +316,10 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             }
         }
 
-        outputLayout = output.build();
-        userLayout = perUser.build();
+        return perUser.build();
+    }
 
+    private TableLayout layoutPredictionTable(TableLayoutBuilder master) {
         TableLayoutBuilder eachPred = master.clone();
         eachPred.addColumn("User");
         eachPred.addColumn("Item");
@@ -305,15 +329,16 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
             eachPred.addColumn(pair.getRight());
         }
 
-        predictLayout = eachPred.build();
-
-        predictMetrics = metrics;
+        return eachPred.build();
     }
 
-    private void initialize() {
+    /**
+     * Prepare the evaluation by opening all outputs and initializing metrics.
+     */
+    private void prepareEval() {
         logger.info("Starting evaluation");
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
-        outputInMemory = new InMemoryWriter(outputLayout);
+        outputInMemory = new TableBuilder(outputLayout);
         tableWriters.add(outputInMemory);
         if (outputFile != null) {
             try {
@@ -345,6 +370,9 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         }
     }
 
+    /**
+     * Finalize metrics and close output files.
+     */
     private void cleanUp() {
         for (TestUserMetric metric : predictMetrics) {
             metric.finishEvaluation();

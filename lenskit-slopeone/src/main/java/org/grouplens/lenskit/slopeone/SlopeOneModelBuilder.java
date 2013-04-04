@@ -37,7 +37,7 @@ import javax.inject.Provider;
  * Pre-computes the deviations and number of mutual rating users for every pair
  * of items and stores the results in a {@code DeviationMatrix} and
  * {@code CoratingMatrix}. These matrices are later used by a
- * {@code SlopeOneRatingPredictor}.
+ * {@code SlopeOneItemScorer}.
  */
 public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;

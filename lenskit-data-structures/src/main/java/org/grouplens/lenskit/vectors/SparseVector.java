@@ -112,7 +112,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param ks The array of keys backing this vector. They must be sorted.
      * @param vs The array of values backing this vector.
      */
-    protected SparseVector(long[] ks, double[] vs) {
+    SparseVector(long[] ks, double[] vs) {
         this(ks, vs, ks.length);
     }
 
@@ -128,7 +128,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
      */
-    protected SparseVector(long[] ks, double[] vs, int length) {
+    SparseVector(long[] ks, double[] vs, int length) {
         assert MoreArrays.isSorted(ks, 0, length);
         keys = ks;
         values = vs;
@@ -152,7 +152,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param length Number of items to actually use.
      * @param used   The used entry set.
      */
-    protected SparseVector(long[] ks, double[] vs, int length, BitSet used) {
+    SparseVector(long[] ks, double[] vs, int length, BitSet used) {
         assert MoreArrays.isSorted(ks, 0, length);
         keys = ks;
         values = vs;
@@ -166,7 +166,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *
      * @param ratings A map providing the values for the vector.
      */
-    public SparseVector(Long2DoubleMap ratings) {
+    SparseVector(Long2DoubleMap ratings) {
         keys = ratings.keySet().toLongArray();
         domainSize = keys.length;
         Arrays.sort(keys);
@@ -186,7 +186,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *
      * @param domain The key domain.
      */
-    public SparseVector(Collection<Long> domain) {
+    SparseVector(Collection<Long> domain) {
         LongSortedArraySet set;
         // since LSAS is immutable, we'll use its array if we can!
         if (domain instanceof LongSortedArraySet) {

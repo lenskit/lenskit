@@ -26,6 +26,16 @@ LensKit Release Notes
   * Added support for <<at>> context matchers (via Grapht), to make it easier to configure
     complex configurations. See the {{{http://bitbucket.org/grouplens/lenskit/wiki/Configuration}manual}}
     for more details.
+
+  * Made <<<SparseVector>>> constructors package-private.  Sparse vectors shouldn't be
+    subclassed by any additional classes.
+
+  * Introduced <<<predict>>> methods to <<<RatingPredictor>>>, deprecating the fact that it
+    extends <<<ItemScorer>>>.
+
+  * <<Incompatible change>>: moved abstract and simple/score-based implementations of basic
+    recommender components to the new package <<<o.g.l.basic>>>.  This should only be incompatible
+    for people implementing new LensKit components.
   
   []
 
@@ -36,6 +46,14 @@ LensKit Release Notes
 
   * <<Default change>>: changed default <<<ModelSize>>> to 0 (all neighbors retained); by
     default, item-item models now retain all neighbors with nonnegative similarities.
+
+  * Deprecated algorithm-specific item recommenders in favor of using
+    <<<ScoreBasedItemRecommender>>> directly.
+
+  * <<Config change>>: Refactored the item-item recommender to get rid of
+    <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
+    Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;
+    using <<<ItemItemRecommender>>> no longer forces that.
 
   * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
     changed parameters. The <<<StoppingCondition>>> interface and implementations now live
@@ -55,13 +73,15 @@ LensKit Release Notes
 
     []
 
+  * Added <<<LeastSquaresPredictor>>>, a baseline predictor that uses gradient descent to
+    train per-item and per-user baseline values (à la Koren et al.).
+
   []
 
 ** Evaluator
 
   * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
 
-  * Tables now live in <<<org.grouplens.lenskit.util.table>>>.
 
   * Eval configuration changes
 
@@ -79,6 +99,27 @@ LensKit Release Notes
 
   * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
     values out to the prediction output file.
+
+  * Added <<<retain>>> directive to the <<<trainTest>>> command to retain a fixed number
+    of items per user.
+
+  * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
+    of the clearer <<<holdoutFraction>>> directive.
+
+  * Table changes (these should affect client code at present):
+
+    * Tables now live in <<<o.g.l.util.table>>>.
+
+    * <<<TableImpl>>> is now package-private and immutable; use <<<TableBuilder>>> to
+      build a table.
+
+    * <<<InMemoryWriter>>> is replaced with <<<TableBuilder>>>, which implements <<<TableWriter>>>.
+
+    * Table layouts now live directly in the table package.
+
+    * Table writers now live in <<<o.g.l.util.table.writer>>>.
+
+    []
 
   []
 

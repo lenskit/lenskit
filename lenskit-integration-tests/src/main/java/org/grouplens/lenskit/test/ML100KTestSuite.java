@@ -31,13 +31,23 @@ import java.io.File;
  * @author Michael Ekstrand
  */
 public class ML100KTestSuite {
-    protected final File dataDir = new File(System.getProperty("lenskit.ml100k.directory"));
-    protected final File inputFile = new File(dataDir, "u.data");
+    protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
+    protected final String INPUT_FILE_NAME = "u.data";
 
     protected DAOFactory daoFactory;
 
     @Before
     public void createDAOFactory() {
+        String dataDirName = System.getProperty(ML100K_PROPERTY);
+        if (null == dataDirName) dataDirName = "data/ml-100k";
+        File dataDir = new File(dataDirName);
+        File inputFile = new File(dataDir, INPUT_FILE_NAME);
+        if (! inputFile.exists()) {  
+                throw new IllegalStateException("must either put an unzipped copy of the MovieLens dataset in the "
+                        + dataDirName + " directory\n "
+                        + " or configure " + ML100K_PROPERTY
+                        + " to point to an unzipped version of the MovieLens dataset");
+        }
         daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }
 }

@@ -34,6 +34,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * contexts such as fast iteration.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @compat Public
  */
 public abstract class Preference {
     /**
@@ -66,9 +67,7 @@ public abstract class Preference {
      */
     @Override
     public final boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        } else if (obj == this) {
+        if (obj == this) {
             return true;
         } else if (obj instanceof Preference) {
             Preference op = (Preference) obj;
@@ -97,5 +96,18 @@ public abstract class Preference {
     @Override
     public String toString() {
         return String.format("Preference(u=%d, i=%d, v=%.2f", getUserId(), getItemId(), getValue());
+    }
+
+    /**
+     * Copy this preference. The resulting preference is guaranteed to be immutable,
+     * so this method can be used to save an object in fast iteration.  It may be the
+     * same object as {@var this}, if it is already immutable.  The copy should also be
+     * isolated from any backing store so it can be retained without holding references
+     * to large objects.
+     *
+     * @return The copied preference.
+     */
+    public Preference copy() {
+        return PreferenceBuilder.copy(this).build();
     }
 }

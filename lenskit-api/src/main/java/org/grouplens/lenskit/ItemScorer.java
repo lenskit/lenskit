@@ -54,8 +54,7 @@ public interface ItemScorer {
      *
      * @param user The user ID for whom to generate a score.
      * @param item The item ID to score.
-     * @return The preference, or {@link Double#NaN} if no preference can be
-     *         predicted.
+     * @return The score, or {@link Double#NaN} if no score can be generated.
      * @see #score(UserHistory, MutableSparseVector)
      */
     double score(long user, long item);
