@@ -162,12 +162,17 @@ class NodeRepr {
             provider = isP;
         }
 
-        public String getColor() {
+        public String getHeadColor() {
+            // FIXME Detect unshared shareable nodes
             if (GraphtUtils.isShareable(node)) {
-                return "forestgreen";
+                return "#73d216";
             } else {
-                return "black";
+                return "#d3d7cf";
             }
+        }
+
+        public String getColor() {
+            return "black";
         }
 
         public String getType() {
