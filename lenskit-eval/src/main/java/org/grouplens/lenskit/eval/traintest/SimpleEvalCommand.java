@@ -75,6 +75,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
         result.addAlgorithm(algo);
         return this;
     }
+
     /**
      * Adds a fully configured algorithm command to the {@code TrainTestEvalCommand} being built.
      *
@@ -165,6 +166,24 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     }
 
     /**
+     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
+     * to the {@code TrainTestEvalCommand}.
+     *
+     * It defaults the holdout to .2 and the name of the crossfold to the name of the data source.
+     *
+     * @param source The source for the crossfold
+     * @param partitions The number of partitions
+     * @return Itself for chaining.
+     */
+    public SimpleEvalCommand addDataset(DataSource source, int partitions){
+        addDataset(new CrossfoldCommand(source.getName())
+                .setSource(source)
+                .setPartitions(partitions)
+                .setHoldoutFraction(.2));
+        return this;
+    }
+
+    /**
      * Adds a single {@code TTDataSet} to the {@code TrainTestEvalCommand}.
      *
      * This acts a wrapper around {@code TrainTestEvalCommand.addDataset}
@@ -188,7 +207,6 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
         result.addDataset(new GenericTTDataSet(name, train, test, dom));
         return this;
     }
-
 
     /**
      * Adds a completed metric to the {@code TrainTestEvalCommand}
