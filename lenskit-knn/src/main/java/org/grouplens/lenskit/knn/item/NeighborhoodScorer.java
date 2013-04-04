@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -36,6 +37,7 @@ import java.util.List;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
+@DefaultImplementation(WeightedAverageNeighborhoodScorer.class)
 public interface NeighborhoodScorer {
     /**
      * Compute a score based on similar neighbors and their corresponding

@@ -1,11 +1,13 @@
 package org.grouplens.lenskit.transform.truncate;
 
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
- * Truncates a vector
+ * Used to perform truncation on a vector.
  */
+@DefaultImplementation(NoOpTruncator.class)
 public interface VectorTruncator {
 
     /**

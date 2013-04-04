@@ -130,8 +130,8 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         assert heap.isEmpty();
 
-        long[] keys = new long[items.length - 1];
-        double[] values = new double[scores.length - 1];
+        long[] keys = new long[indices.length];
+        double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
             keys[i] = items[indices[i]];
             values[i] = scores[indices[i]];
