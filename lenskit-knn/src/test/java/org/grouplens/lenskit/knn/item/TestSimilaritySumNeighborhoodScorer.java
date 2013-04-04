@@ -49,36 +49,36 @@ public class TestSimilaritySumNeighborhoodScorer {
 
     @Test
     public void testEmpty() {
-        List<ScoredId> nbrs = new ArrayList<ScoredId>();
+        SparseVector nbrs = new MutableSparseVector();
         SparseVector scores = new MutableSparseVector();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testEmptyNbrs() {
-        List<ScoredId> nbrs = new ArrayList<ScoredId>();
+        SparseVector nbrs = new MutableSparseVector();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testOneNbr() {
-        List<ScoredId> nbrs = new ArrayList<ScoredId>();
-        nbrs.add(new ScoredIdBuilder(5, 1.0).build());
+        long[] keys = {5};
+        double[] values = {1.0};
+        SparseVector nbrs = MutableSparseVector.wrap(keys, values).freeze();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
 
     @Test
     public void testMultipleNeighbors() {
-        List<ScoredId> nbrs = new ArrayList<ScoredId>();
-        ScoredIdBuilder idBuilder = new ScoredIdBuilder();
-        nbrs.add(idBuilder.setId(5).setScore(1.0).build());
-        nbrs.add(idBuilder.setId(7).setScore(0.92).build());
-        nbrs.add(idBuilder.setId(2).setScore(0.5).build());
-        long[] keys = {2, 3, 5, 7};
-        double[] ratings = {3.7, 4.2, 1.2, 7.8};
-        SparseVector scores = MutableSparseVector.wrap(keys, ratings).freeze();
+        long[] neighborKeys = {2, 5, 7};
+        double[] neighborValues = {0.5, 1.0, 0.92};
+        SparseVector nbrs = MutableSparseVector.wrap(neighborKeys, neighborValues).freeze();
+
+        long[] scoreKeys = {2, 3, 5, 7};
+        double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
+        SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(2.42));
     }
 }

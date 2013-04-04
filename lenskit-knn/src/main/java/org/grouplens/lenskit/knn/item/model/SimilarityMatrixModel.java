@@ -28,6 +28,7 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
@@ -74,23 +75,12 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     @Nonnull
-    public List<ScoredId> getNeighbors(long item) {
-        ImmutableSparseVector neighbors = similarityMatrix.get(item);
-        if (neighbors == null) {
-            return Collections.EMPTY_LIST;
+    public ImmutableSparseVector getNeighbors(long item) {
+        ImmutableSparseVector v = similarityMatrix.get(item);
+        if (v == null) {
+            return new MutableSparseVector().freeze();
+        } else {
+            return v;
         }
-
-        ArrayList<ScoredId> ids = new ArrayList<ScoredId>(neighbors.size());
-        ScoredIdBuilder builder = new ScoredIdBuilder();
-        for (VectorEntry e : neighbors.fast()) {
-            builder.setId(e.getKey());
-            builder.setScore(e.getValue());
-            for (Symbol s : neighbors.getChannels()) {
-                builder.addChannel(s, neighbors.channel(s).get(e));
-            }
-            ids.add(builder.build());
-        }
-
-        return ids;
     }
 }

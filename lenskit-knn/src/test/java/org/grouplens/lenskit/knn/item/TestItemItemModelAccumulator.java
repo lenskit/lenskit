@@ -29,6 +29,8 @@ import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
 import org.grouplens.lenskit.transform.truncate.ThresholdTruncator;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -36,6 +38,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Michael Ekstrand
@@ -85,14 +88,14 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(1);
         accum.completeRow(7);
         ItemItemModel model = accum.build();
-        List<ScoredId> nbrs = model.getNeighbors(1);
+        ImmutableSparseVector nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0).getId(), equalTo(2L));
-        assertThat(nbrs.get(0).getScore(), closeTo(Math.PI, 1.0e-6));
+        assertTrue(nbrs.containsKey(2));
+        assertThat(nbrs.get(2), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0).getId(), equalTo(3L));
-        assertThat(nbrs.get(0).getScore(), closeTo(Math.E, 1.0e-6));
+        assertThat(nbrs.keySet(), contains(3L));
+        assertThat(nbrs.get(3), closeTo(Math.E, 1.0e-6));
     }
 
     @Test
@@ -103,14 +106,14 @@ public class TestItemItemModelAccumulator {
         accum.completeRow(1);
         accum.completeRow(7);
         ItemItemModel model = accum.build();
-        List<ScoredId> nbrs = model.getNeighbors(1);
+        ImmutableSparseVector nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0).getId(), equalTo(2L));
-        assertThat(nbrs.get(0).getScore(), closeTo(Math.PI, 1.0e-6));
+        assertTrue(nbrs.containsKey(2));
+        assertThat(nbrs.get(2), closeTo(Math.PI, 1.0e-6));
         nbrs = model.getNeighbors(7);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.get(0).getId(), equalTo(3L));
-        assertThat(nbrs.get(0).getScore(), closeTo(Math.E, 1.0e-6));
+        assertTrue(nbrs.containsKey(3));
+        assertThat(nbrs.get(3), closeTo(Math.E, 1.0e-6));
     }
 
     @Test
@@ -123,15 +126,13 @@ public class TestItemItemModelAccumulator {
             accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
-        List<ScoredId> nbrs = model.getNeighbors(1);
+        ImmutableSparseVector nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
-        Iterator<ScoredId> iter = nbrs.iterator();
-        while (iter.hasNext()) {
-            ScoredId id = iter.next();
-            long j = id.getId();
-            double s = id.getScore();
+        for (VectorEntry e : nbrs.fast()) {
+            long j = e.getKey();
+            double s = e.getValue();
             assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
         }
     }
@@ -147,18 +148,16 @@ public class TestItemItemModelAccumulator {
             accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
-        List<ScoredId> nbrs = model.getNeighbors(1);
+        ImmutableSparseVector nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
         
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
         
         // Iterate the row for item 4, checking the values
-        Iterator<ScoredId> iter = nbrs.iterator();
-        while (iter.hasNext()) {
-            ScoredId id = iter.next();
-            long j = id.getId();
-            double s = id.getScore();
+        for (VectorEntry e : nbrs.fast()) {
+            long j = e.getKey();
+            double s = e.getValue();
             assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
         }
     }
