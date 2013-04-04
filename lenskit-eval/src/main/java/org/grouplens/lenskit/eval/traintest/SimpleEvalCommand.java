@@ -209,6 +209,21 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     }
 
     /**
+     * This constructs a new {@code TTDataSet} and passes it to the {@code TrainTestEvalCommand}.
+     *
+     * The name for the data source will default to 'generic-data-source'. Because of this,
+     * be careful of calling this method more than once.
+     *
+     * @param train The {@code DAOFactory} with the train data.
+     * @param test The {@code DAOFactory} with the test data.
+     * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
+     * @return Itself for  method chaining.
+     */
+    public SimpleEvalCommand addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
+        result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom));
+        return this;
+    }
+    /**
      * Adds a completed metric to the {@code TrainTestEvalCommand}
      * @param metric The metric to be added.
      * @return Itself for  method chaining.
