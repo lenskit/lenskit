@@ -176,6 +176,7 @@ class GraphDumper {
             ComponentNodeBuilder cnb;
             cnb = new ComponentNodeBuilder(nodeId, satisfaction.getErasedType());
             cnb.setShareable(GraphtUtils.isShareable(node))
+               //.setShared(!unsharedNodes.contains(node))
                .setIsProvided(true);
             GVNode node = cnb.build();
             writer.putNode(node);
@@ -209,7 +210,7 @@ class GraphDumper {
             String id = pid == null ? nodeId : pid;
             ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
             bld.setShareable(pid == null && GraphtUtils.isShareable(node));
-            // bld.setShared(!unsharedNodes.contains(node));
+            //bld.setShared(!unsharedNodes.contains(node));
             bld.setIsProvider(pid != null);
             for (Edge e: graph.getOutgoingEdges(node)) {
                 Desire dep = e.getDesire();

@@ -310,6 +310,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
         Graph modified = graph.clone();
         Set<Node> toReplace = getShareableNodes(modified);
         InjectSPI spi = config.getSPI();
+        Set<Node> replacements = new LinkedHashSet<Node>();
         for (Node node : toReplace) {
             CachedSatisfaction label = node.getLabel();
             assert label != null;
@@ -317,8 +318,11 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
                 Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
                 Node repl = new Node(instanceSat, label.getCachePolicy());
                 modified.replaceNode(node, repl);
+                replacements.add(repl);
             }
         }
+        Set<Node> tts = removeTransientEdges(modified, replacements);
+        removeOrphanSubgraphs(modified, tts);
         return modified;
     }
 
