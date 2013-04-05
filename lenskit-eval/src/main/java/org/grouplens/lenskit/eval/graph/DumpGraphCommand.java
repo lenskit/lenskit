@@ -20,8 +20,13 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
-import com.google.common.io.Files;
+import com.google.common.io.Closer;
+import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
+import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
+import org.grouplens.grapht.spi.CachedSatisfaction;
+import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -92,14 +97,49 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         return output;
     }
 
-    public void writeGraph(Graph g, File file) throws IOException {
-        GraphRepr repr = new GraphRepr(algorithm.getName(), g);
-        Files.createParentDirs(file);
-        FileWriter writer = new FileWriter(file);
+    private void writeGraph(Graph g, File file) throws IOException, CommandException {
+        Closer close = Closer.create();
         try {
-            Templates.graphTemplate.execute(repr, writer);
+            FileWriter writer = close.register(new FileWriter(file));
+            GraphWriter gw = close.register(new GraphWriter(writer));
+            renderGraph(g, gw);
+        } catch (Throwable th) {
+            throw close.rethrow(th, CommandException.class);
         } finally {
-            writer.close();
+            close.close();
         }
     }
+
+    private void renderGraph(final Graph g, final GraphWriter gw) throws CommandException {
+        // Handle the root node
+        Node root = g.getNode(null);
+        if (root == null) {
+            throw new CommandException("no root node for graph");
+        }
+        GraphDumper dumper = new GraphDumper(g, gw);
+        String rid = dumper.setRoot(root);
+
+        for (Edge e: g.getOutgoingEdges(root)) {
+            Node target = e.getTail();
+            CachedSatisfaction csat = target.getLabel();
+            assert csat != null;
+            if (!satIsNull(csat.getSatisfaction())) {
+                String id = dumper.enqueue(target);
+                gw.putEdgeDepends(rid, id);
+            }
+        }
+
+        // and run the queue
+        dumper.run();
+    }
+
+    private boolean satIsNull(Satisfaction sat) {
+        return sat.visit(new AbstractSatisfactionVisitor<Boolean>(false) {
+            @Override
+            public Boolean visitNull() {
+                return true;
+            }
+        });
+    }
+
 }
