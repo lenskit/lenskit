@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.io.Closer;
+import com.google.common.io.Files;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -33,6 +34,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +100,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     }
 
     private void writeGraph(Graph g, File file) throws IOException, CommandException {
+        Files.createParentDirs(output);
         Closer close = Closer.create();
         try {
             FileWriter writer = close.register(new FileWriter(file));
