@@ -209,7 +209,7 @@ class GraphDumper {
             String id = pid == null ? nodeId : pid;
             ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
             bld.setShareable(pid == null && GraphtUtils.isShareable(node));
-            bld.setShared(!unsharedNodes.contains(node));
+            // bld.setShared(!unsharedNodes.contains(node));
             bld.setIsProvider(pid != null);
             for (Edge e: graph.getOutgoingEdges(node)) {
                 Desire dep = e.getDesire();

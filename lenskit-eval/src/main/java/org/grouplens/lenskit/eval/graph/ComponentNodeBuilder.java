@@ -38,8 +38,10 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
  * Build a component label.
  */
 class ComponentNodeBuilder implements Builder<GVNode> {
-    static final String SHAREABLE_COLOR = "#73d216";
-    static final String UNSHARED_COLOR = "#cc0000";
+    static final String SHAREABLE_BGCOLOR = "#73d216";
+    static final String UNSHARED_BGCOLOR = "#cc0000";
+    static final String SHARED_COLOR = "#888a85";
+    static final String UNSHARED_COLOR = "black";
 
     private final String nodeId;
     private final String label;
@@ -126,9 +128,9 @@ class ComponentNodeBuilder implements Builder<GVNode> {
     private String fillColor() {
         if (shareable) {
             if (isShared) {
-                return SHAREABLE_COLOR;
+                return SHAREABLE_BGCOLOR;
             } else {
-                return UNSHARED_COLOR;
+                return UNSHARED_BGCOLOR;
             }
         } else {
             return "white";
@@ -143,18 +145,28 @@ class ComponentNodeBuilder implements Builder<GVNode> {
               .setShape("box")
               .set("fillcolor", fillColor())
               .add("style", "filled");
-            if (isProvided) {
-                nb.add("style", "dashed");
+            if (isShared) {
+                nb.set("color", SHARED_COLOR)
+                  .set("fontcolor", SHARED_COLOR);
             }
         } else {
             StringBuilder lbl = new StringBuilder();
-            lbl.append("<TABLE CELLSPACING=\"0\" BORDER=\"0\">");
+            lbl.append("<FONT COLOR=\"")
+               .append(isShared ? SHARED_COLOR : UNSHARED_COLOR)
+               .append("\">");
+            lbl.append("<TABLE CELLSPACING=\"0\" BORDER=\"1\" STYLE=\"ROUNDED\" ROWS=\"*\"");
+            if (isShared) {
+                lbl.append(" COLOR=\"")
+                   .append(SHARED_COLOR)
+                   .append("\"");
+            }
+            lbl.append(">");
 
             lbl.append("<TR><TD PORT=\"H\" ALIGN=\"CENTER\" BORDER=\"2\"")
                .append(" BGCOLOR=\"")
                .append(fillColor())
-               .append("\"")
-               .append(">")
+               .append("\"");
+            lbl.append(">")
                .append("<B>")
                .append(escapeHtml4(label))
                .append("</B>")
@@ -170,12 +182,14 @@ class ComponentNodeBuilder implements Builder<GVNode> {
             }
 
             for (String param: parameters) {
-                lbl.append("<TR><TD BORDER=\"1\" ALIGN=\"LEFT\">")
+                lbl.append("<TR><TD ALIGN=\"LEFT\"");
+                lbl.append(">")
                    .append(escapeHtml4(param))
                    .append("</TD></TR>");
             }
 
-            lbl.append("</TABLE>");
+            lbl.append("</TABLE>")
+               .append("</FONT>");
             nb.setLabel(new HTMLLabel(lbl.toString()))
               .setTarget(nodeId + ":H")
               .setShape("plaintext")
