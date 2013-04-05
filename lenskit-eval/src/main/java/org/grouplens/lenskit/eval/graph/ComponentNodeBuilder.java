@@ -39,12 +39,14 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
  */
 class ComponentNodeBuilder implements Builder<GVNode> {
     static final String SHAREABLE_COLOR = "#73d216";
+    static final String UNSHARED_COLOR = "#cc0000";
 
     private final String nodeId;
     private final String label;
     private final List<String> dependencies = new ArrayList<String>();
     private final List<String> parameters = new ArrayList<String>();
     private boolean shareable = false;
+    private boolean isShared = false;
     private boolean isProvider = false;
     private boolean isProvided = false;
     private boolean isInterface = false;
@@ -106,6 +108,11 @@ class ComponentNodeBuilder implements Builder<GVNode> {
         return this;
     }
 
+    public ComponentNodeBuilder setShared(boolean yn) {
+        isShared = yn;
+        return this;
+    }
+
     public ComponentNodeBuilder setIsProvider(boolean yn) {
         isProvider = yn;
         return this;
@@ -116,16 +123,26 @@ class ComponentNodeBuilder implements Builder<GVNode> {
         return this;
     }
 
+    private String fillColor() {
+        if (shareable) {
+            if (isShared) {
+                return SHAREABLE_COLOR;
+            } else {
+                return UNSHARED_COLOR;
+            }
+        } else {
+            return "white";
+        }
+    }
+
     @Override
     public GVNode build() {
         NodeBuilder nb = new NodeBuilder(nodeId);
         if (dependencies.isEmpty() && parameters.isEmpty()) {
             nb.setLabel(label)
-              .setShape("box");
-            if (shareable) {
-                nb.set("fillcolor", SHAREABLE_COLOR)
-                  .add("style", "filled");
-            }
+              .setShape("box")
+              .set("fillcolor", fillColor())
+              .add("style", "filled");
             if (isProvided) {
                 nb.add("style", "dashed");
             }
@@ -133,13 +150,11 @@ class ComponentNodeBuilder implements Builder<GVNode> {
             StringBuilder lbl = new StringBuilder();
             lbl.append("<TABLE CELLSPACING=\"0\" BORDER=\"0\">");
 
-            lbl.append("<TR><TD PORT=\"H\" ALIGN=\"CENTER\" BORDER=\"2\"");
-            if (shareable) {
-                lbl.append(" BGCOLOR=\"")
-                   .append(SHAREABLE_COLOR)
-                   .append("\"");
-            }
-            lbl.append(">")
+            lbl.append("<TR><TD PORT=\"H\" ALIGN=\"CENTER\" BORDER=\"2\"")
+               .append(" BGCOLOR=\"")
+               .append(fillColor())
+               .append("\"")
+               .append(">")
                .append("<B>")
                .append(escapeHtml4(label))
                .append("</B>")

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Set;
 
 public class DumpGraphCommand extends AbstractCommand<File> {
     private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
@@ -90,8 +91,9 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             factory.bind(PreferenceDomain.class).to(domain);
         }
         Graph initial = factory.getInitialGraph(daoType);
+        Graph unshared = factory.getInstantiatedGraph(daoType);
         try {
-            writeGraph(factory.getInitialGraph(daoType), output);
+            writeGraph(initial, unshared.getNodes(), output);
         } catch (IOException e) {
             throw new CommandException("error writing graph", e);
         }
@@ -99,13 +101,13 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         return output;
     }
 
-    private void writeGraph(Graph g, File file) throws IOException, CommandException {
+    private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, CommandException {
         Files.createParentDirs(output);
         Closer close = Closer.create();
         try {
             FileWriter writer = close.register(new FileWriter(file));
             GraphWriter gw = close.register(new GraphWriter(writer));
-            renderGraph(g, gw);
+            renderGraph(g, unshared, gw);
         } catch (Throwable th) {
             throw close.rethrow(th, CommandException.class);
         } finally {
@@ -113,13 +115,13 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         }
     }
 
-    private void renderGraph(final Graph g, final GraphWriter gw) throws CommandException {
+    private void renderGraph(final Graph g, Set<Node> unshared, final GraphWriter gw) throws CommandException {
         // Handle the root node
         Node root = g.getNode(null);
         if (root == null) {
             throw new CommandException("no root node for graph");
         }
-        GraphDumper dumper = new GraphDumper(g, gw);
+        GraphDumper dumper = new GraphDumper(g, unshared, gw);
         String rid = dumper.setRoot(root);
 
         for (Edge e: g.getOutgoingEdges(root)) {

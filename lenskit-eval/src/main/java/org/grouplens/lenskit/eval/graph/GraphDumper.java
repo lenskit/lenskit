@@ -33,10 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Class to manage traversing nodes. It is not used to handle the root node, but rather handles
@@ -48,13 +45,15 @@ class GraphDumper {
 
     private final GraphWriter writer;
     private final Graph graph;
+    private final Set<Node> unsharedNodes;
     private final Map<Node, String> nodeIds;
     private final Map<String, String> nodeTargets;
     private final Queue<GVEdge> edgeQueue;
 
-    public GraphDumper(Graph g, GraphWriter gw) {
+    public GraphDumper(Graph g, Set<Node> unshared, GraphWriter gw) {
         writer = gw;
         graph = g;
+        unsharedNodes = unshared;
         nodeIds = new HashMap<Node, String>();
         nodeTargets = new HashMap<String, String>();
         edgeQueue = new LinkedList<GVEdge>();
@@ -210,6 +209,7 @@ class GraphDumper {
             String id = pid == null ? nodeId : pid;
             ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
             bld.setShareable(pid == null && GraphtUtils.isShareable(node));
+            bld.setShared(!unsharedNodes.contains(node));
             bld.setIsProvider(pid != null);
             for (Edge e: graph.getOutgoingEdges(node)) {
                 Desire dep = e.getDesire();
