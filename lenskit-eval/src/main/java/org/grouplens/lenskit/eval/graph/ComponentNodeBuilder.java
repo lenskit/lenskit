@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
 /**
  * Build a component label.
@@ -24,6 +25,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     private final String nodeId;
     private final String label;
     private final List<String> dependencies = new ArrayList<String>();
+    private final List<String> parameters = new ArrayList<String>();
     private boolean shareable = false;
     private boolean isProvider = false;
     private boolean isProvided = false;
@@ -50,6 +52,21 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
         } else {
             dependencies.add(shortAnnotation(q) + ": " + shortClassName(type));
         }
+        return this;
+    }
+
+    public ComponentNodeBuilder addParameter(Annotation param, Object value) {
+        StringBuilder lbl = new StringBuilder();
+        lbl.append(shortAnnotation(param))
+           .append(": ");
+        if (value instanceof String) {
+            lbl.append('"')
+               .append(escapeJava(value.toString()))
+               .append('"');
+        } else {
+            lbl.append(value);
+        }
+        parameters.add(lbl.toString());
         return this;
     }
 
@@ -82,7 +99,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     @Override
     public Pair<String, Map<String, Object>> build() {
         NodeBuilder nb = new NodeBuilder(nodeId);
-        if (dependencies.isEmpty()) {
+        if (dependencies.isEmpty() && parameters.isEmpty()) {
             nb.setLabel(label)
               .setShape("box");
             if (shareable) {
@@ -110,9 +127,15 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
             for (String dep: dependencies) {
                 lbl.append("<TR><TD BORDER=\"1\" PORT=\"")
                    .append(i++)
-                   .append("\" ALIGN=\"LEFT\">");
-                lbl.append(escapeHtml4(dep));
-                lbl.append("</TD></TR>");
+                   .append("\" ALIGN=\"LEFT\">")
+                   .append(escapeHtml4(dep))
+                   .append("</TD></TR>");
+            }
+
+            for (String param: parameters) {
+                lbl.append("<TR><TD BORDER=\"1\" ALIGN=\"LEFT\">")
+                   .append(escapeHtml4(param))
+                   .append("</TD></TR>");
             }
 
             lbl.append("</TABLE>");

@@ -3,13 +3,16 @@ package org.grouplens.lenskit.eval.graph;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.grapht.spi.SatisfactionVisitor;
+import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.core.GraphtUtils;
+import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
+import javax.inject.Qualifier;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -20,6 +23,7 @@ import java.util.Queue;
  * the rest of them.
 */
 class GraphDumper implements SatisfactionVisitor<Void> {
+    private static final Logger logger = LoggerFactory.getLogger(GraphDumper.class);
     private static final String ROOT_ID = "root";
 
     private final GraphWriter writer;
@@ -173,13 +177,34 @@ class GraphDumper implements SatisfactionVisitor<Void> {
         lbl.setShareable(pid == null && GraphtUtils.isShareable(currentNode));
         lbl.setIsProvider(pid != null);
         for (Edge e: graph.getOutgoingEdges(currentNode)) {
-            lbl.addDependency(e.getDesire());
+            Desire dep = e.getDesire();
+            assert dep != null;
+            Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
             Node t = e.getTail();
-            String tid = enqueue(t);
-            String port = String.format("%s:%d", id, lbl.getLastDependencyPort());
-            writer.putEdge(new EdgeBuilder(port, tid)
-                                   .set("arrowhead", "vee")
-                                   .build());
+            if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
+                logger.debug("dumping parameter {}", q);
+                CachedSatisfaction tcsat = t.getLabel();
+                assert tcsat != null;
+                Satisfaction tsat = tcsat.getSatisfaction();
+                Object val = tsat.visit(new AbstractSatisfactionVisitor<Object>(null) {
+                    @Override
+                    public Object visitInstance(Object instance) {
+                        return instance;
+                    }
+                });
+                if (val == null) {
+                    logger.warn("parameter {} not bound", q);
+                }
+                lbl.addParameter(q, val);
+            } else {
+                logger.debug("dumping dependency {}", dep);
+                lbl.addDependency(dep);
+                String tid = enqueue(t);
+                String port = String.format("%s:%d", id, lbl.getLastDependencyPort());
+                writer.putEdge(new EdgeBuilder(port, tid)
+                                       .set("arrowhead", "vee")
+                                       .build());
+            }
         }
         writer.putNode(lbl.build());
     }
