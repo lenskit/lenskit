@@ -4,12 +4,16 @@ import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.SatisfactionVisitor;
 
 import javax.inject.Provider;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+
+import static org.grouplens.lenskit.eval.graph.ComponentLabelBuilder.shortClassName;
 
 /**
  * Class to manage traversing nodes. It is not used to handle the root node, but rather handles
@@ -42,7 +46,9 @@ class GraphDumper implements SatisfactionVisitor<Void> {
             throw new IllegalStateException("root node already specificied");
         }
         nodeIds.put(root, ROOT_ID);
-        writer.putRootNode(ROOT_ID);
+        writer.putNode(new NodeBuilder(ROOT_ID).setLabel("root")
+                                               .setShape("diamond")
+                                               .build());
         return ROOT_ID;
     }
 
@@ -97,7 +103,10 @@ class GraphDumper implements SatisfactionVisitor<Void> {
 
     @Override
     public Void visitNull() {
-        writer.putNullNode(currentNodeId(), currentSatisfaction().getErasedType());
+        writer.putNode(new NodeBuilder(currentNodeId())
+                               .setLabel("null")
+                               .setShape("ellipse")
+                               .build());
         return null;
     }
 
@@ -109,38 +118,65 @@ class GraphDumper implements SatisfactionVisitor<Void> {
 
     @Override
     public Void visitInstance(Object instance) {
-        writer.putObjectNode(currentNodeId(), instance, false);
+        writer.putNode(new NodeBuilder(currentNodeId())
+                               .setLabel(instance.toString())
+                               .setShape("ellipse")
+                               .build());
         return null;
+    }
+
+    /**
+     * Output the intermediate "provided" node from the current node.
+     * @return The ID of the provider node.
+     */
+    private String putProvidedNode() {
+        writer.putNode(new NodeBuilder(currentNodeId())
+                               .setLabel(shortClassName(currentSatisfaction().getErasedType()))
+                               .setShape("box")
+                               .build());
+        String pid = currentNodeId() + "P";
+        writer.putEdge(new EdgeBuilder(currentNodeId(), pid)
+                               .set("style", "dashed")
+                               .set("dir", "back")
+                               .set("arrowhead", "empty")
+                               .build());
+        return pid;
     }
 
     @Override
     public Void visitProviderClass(Class<? extends Provider<?>> pclass) {
-        writer.putTypeNode(currentNodeId(), currentSatisfaction().getType());
-        String pid = currentNodeId() + "P";
-        writer.putEdgeProvidedBy(currentNodeId(), pid);
+        String pid = putProvidedNode();
         putComponentNode(pclass, pid);
         return null;
     }
 
     @Override
     public Void visitProviderInstance(Provider<?> provider) {
-        writer.putTypeNode(currentNodeId(), currentSatisfaction().getType());
-        String pid = currentNodeId() + "P";
-        writer.putEdgeProvidedBy(currentNodeId(), pid);
-        writer.putObjectNode(pid, provider, true);
+        String pid = putProvidedNode();
+        writer.putNode(new NodeBuilder(pid)
+                               .setLabel(provider.toString())
+                               .setShape("ellipse")
+                               .set("style", "dashed")
+                               .build());
         return null;
     }
 
     private void putComponentNode(Class<?> type, String pid) {
         String id = pid == null ? currentNodeId() : pid;
-        List<Desire> desires = new ArrayList<Desire>();
+        ComponentLabelBuilder lbl = new ComponentLabelBuilder(type);
         for (Edge e: graph.getOutgoingEdges(currentNode)) {
-            desires.add(e.getDesire());
+            lbl.addDependency(e.getDesire());
             Node t = e.getTail();
             String tid = enqueue(t);
-            String port = String.format("%s:%d", id, desires.size());
-            writer.putEdgeDepends(port, tid);
+            String port = String.format("%s:%d", id, lbl.getLastDependencyPort());
+            writer.putEdge(new EdgeBuilder(port, tid)
+                                   .set("arrowhead", "vee")
+                                   .build());
         }
-        writer.putComponentNode(id, type, desires, pid != null);
+        writer.putNode(new NodeBuilder(id)
+                               .setLabel(lbl.build())
+                               .setShape("plaintext")
+                               .set("style", pid == null ? "solid" : "dashed")
+                               .build());
     }
 }
