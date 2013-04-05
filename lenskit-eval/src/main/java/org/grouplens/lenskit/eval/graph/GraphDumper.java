@@ -7,6 +7,7 @@ import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.SatisfactionVisitor;
 import org.grouplens.lenskit.core.GraphtUtils;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Provider;
 import java.util.HashMap;
@@ -102,10 +103,15 @@ class GraphDumper implements SatisfactionVisitor<Void> {
 
     @Override
     public Void visitNull() {
-        writer.putNode(new NodeBuilder(currentNodeId())
-                               .setLabel("null")
-                               .setShape("ellipse")
-                               .build());
+        NodeBuilder nb = new NodeBuilder(currentNodeId());
+        nb.setShape("ellipse");
+        Class<?> type = currentSatisfaction().getErasedType();
+        if (DataAccessObject.class.isAssignableFrom(type)) {
+            nb.setLabel("DAO");
+        } else {
+            nb.setLabel("null");
+        }
+        writer.putNode(nb.build());
         return null;
     }
 
