@@ -1,18 +1,17 @@
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Build a graph node.
  */
-class EdgeBuilder implements Builder<Pair<Pair<String,String>,Map<String,Object>>> {
-    private final String srcId, tgtId;
-    private final Map<String,Object> attributes = new LinkedHashMap<String, Object>();
+class EdgeBuilder implements Builder<GVEdge> {
+    private String srcId, tgtId;
+    private final Map<String,Object> attributes;
 
     /**
      * Construct a node builder for a specified ID.
@@ -20,8 +19,21 @@ class EdgeBuilder implements Builder<Pair<Pair<String,String>,Map<String,Object>
      * @param tgt The target node ID.
      */
     public EdgeBuilder(String src, String tgt) {
+        Preconditions.checkNotNull(src, "source ID must not be null");
+        Preconditions.checkNotNull(tgt, "target ID must not be null");
         srcId = src;
         tgtId = tgt;
+        attributes = new LinkedHashMap<String, Object>();
+    }
+
+    private EdgeBuilder(String src, String tgt, Map<String,Object> attrs) {
+        srcId = src;
+        tgtId = tgt;
+        attributes = new LinkedHashMap<String, Object>(attrs);
+    }
+
+    public static EdgeBuilder of(GVEdge edge) {
+        return new EdgeBuilder(edge.getSource(), edge.getTarget(), edge.getAttributes());
     }
 
     /**
@@ -35,8 +47,20 @@ class EdgeBuilder implements Builder<Pair<Pair<String,String>,Map<String,Object>
         return this;
     }
 
+    public EdgeBuilder setSource(String src) {
+        Preconditions.checkNotNull(src, "source ID must not be null");
+        srcId = src;
+        return this;
+    }
+
+    public EdgeBuilder setTarget(String tgt) {
+        Preconditions.checkNotNull(tgt, "target ID must not be null");
+        tgtId = tgt;
+        return this;
+    }
+
     @Override
-    public Pair<Pair<String, String>, Map<String, Object>> build() {
-        return Pair.of(Pair.of(srcId, tgtId), Collections.unmodifiableMap(attributes));
+    public GVEdge build() {
+        return new GVEdge(srcId, tgtId, attributes);
     }
 }

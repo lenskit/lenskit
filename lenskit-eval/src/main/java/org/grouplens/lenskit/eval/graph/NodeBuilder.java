@@ -1,18 +1,17 @@
 package org.grouplens.lenskit.eval.graph;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Build a graph node.
  */
-class NodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
+class NodeBuilder implements Builder<GVNode> {
     private final String nodeId;
     private final Map<String,Object> attributes = new LinkedHashMap<String, Object>();
+    private String target;
 
     /**
      * Construct a node builder for a specified ID.
@@ -20,6 +19,17 @@ class NodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
      */
     public NodeBuilder(String id) {
         nodeId = id;
+        target = id;
+    }
+
+    /**
+     * Set this node's target descriptor.
+     * @param tgt The node's target descriptor.
+     * @return The builder (for chaining).
+     */
+    public NodeBuilder setTarget(String tgt) {
+        target = tgt;
+        return this;
     }
 
     /**
@@ -75,7 +85,7 @@ class NodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     }
 
     @Override
-    public Pair<String,Map<String,Object>> build() {
-        return Pair.of(nodeId, Collections.unmodifiableMap(attributes));
+    public GVNode build() {
+        return new GVNode(nodeId, attributes, target);
     }
 }

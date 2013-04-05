@@ -124,15 +124,13 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             CachedSatisfaction csat = target.getLabel();
             assert csat != null;
             if (!satIsNull(csat.getSatisfaction())) {
-                String id = dumper.enqueue(target);
+                String id = dumper.process(target);
                 gw.putEdge(new EdgeBuilder(rid, id)
                                    .set("arrowhead", "vee")
                                    .build());
             }
         }
-
-        // and run the queue
-        dumper.run();
+        dumper.finish();
     }
 
     private boolean satIsNull(Satisfaction sat) {

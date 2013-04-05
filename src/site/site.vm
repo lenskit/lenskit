@@ -74,7 +74,7 @@
     </div>
 #if ( $alignedFileName == "index.html" )
   <div class="twitterbox">
-    <a class="twitter-timeline" data-dnt=true href="https://twitter.com/LensKitRS" data-widget-id="285782633399599104">Tweets by @LensKitRS</a>
+    <a class="twitter-timeline" data-dnt=true href="https://twitter.com/LensKitRS" data-widget-src="285782633399599104">Tweets by @LensKitRS</a>
     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
   </div>
 #end

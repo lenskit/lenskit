@@ -1,5 +1,6 @@
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -11,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
-import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,22 +22,22 @@ import java.util.Queue;
  * Class to manage traversing nodes. It is not used to handle the root node, but rather handles
  * the rest of them.
 */
-class GraphDumper implements SatisfactionVisitor<Void> {
+class GraphDumper {
     private static final Logger logger = LoggerFactory.getLogger(GraphDumper.class);
     private static final String ROOT_ID = "root";
 
     private final GraphWriter writer;
     private final Graph graph;
     private final Map<Node, String> nodeIds;
-    private final Queue<Node> queue;
-
-    private Node currentNode;
+    private final Map<String, String> nodeTargets;
+    private final Queue<GVEdge> edgeQueue;
 
     public GraphDumper(Graph g, GraphWriter gw) {
         writer = gw;
         graph = g;
         nodeIds = new HashMap<Node, String>();
-        queue = new LinkedList<Node>();
+        nodeTargets = new HashMap<String, String>();
+        edgeQueue = new LinkedList<GVEdge>();
     }
 
     /**
@@ -46,10 +46,11 @@ class GraphDumper implements SatisfactionVisitor<Void> {
      * @return The ID of the root node.
      */
     public String setRoot(Node root) {
-        if (!nodeIds.isEmpty()) {
+        if (!nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node already specificied");
         }
         nodeIds.put(root, ROOT_ID);
+        nodeTargets.put(ROOT_ID, ROOT_ID);
         writer.putNode(new NodeBuilder(ROOT_ID).setLabel("root")
                                                .setShape("diamond")
                                                .build());
@@ -57,155 +58,172 @@ class GraphDumper implements SatisfactionVisitor<Void> {
     }
 
     /**
-     * Add a node to the queue.  If the node is already enqueued, the previous ID number
-     * is returned.
-     * @param node The node to enqueue
-     * @return The node's ID.
+     * Process a node.
+     * @param node The node to process
+     * @return The node's target descriptor (ID, possibly with port).
      */
-    public String enqueue(Node node) {
-        if (nodeIds.isEmpty()) {
+    public String process(Node node) {
+        Preconditions.checkNotNull(node, "node must not be null");
+        if (nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node has not been set");
         }
         String id = nodeIds.get(node);
+        String tgt;
         if (id == null) {
-            queue.add(node);
             id = "N" + nodeIds.size();
             nodeIds.put(node, id);
-        }
-        return id;
-    }
-
-    /**
-     * Run the queue.
-     */
-    public void run() {
-        while (!queue.isEmpty()) {
-            currentNode = queue.remove();
-            final CachedSatisfaction csat = currentNode.getLabel();
+            CachedSatisfaction csat = node.getLabel();
             assert csat != null;
-            final Satisfaction sat = csat.getSatisfaction();
-            sat.visit(this);
-        }
-        currentNode = null;
-    }
-
-    private String currentNodeId() {
-        if (currentNode == null) {
-            throw new IllegalStateException("dumper not running");
-        }
-        return nodeIds.get(currentNode);
-    }
-
-    private Satisfaction currentSatisfaction() {
-        if (currentNode == null) {
-            throw new IllegalStateException("dumper not running");
-        }
-        CachedSatisfaction csat = currentNode.getLabel();
-        assert csat != null;
-        return csat.getSatisfaction();
-    }
-
-    @Override
-    public Void visitNull() {
-        NodeBuilder nb = new NodeBuilder(currentNodeId());
-        nb.setShape("ellipse");
-        Class<?> type = currentSatisfaction().getErasedType();
-        if (DataAccessObject.class.isAssignableFrom(type)) {
-            nb.setLabel("DAO");
+            Satisfaction sat = csat.getSatisfaction();
+            tgt = sat.visit(new Visitor(node, id));
+            Preconditions.checkNotNull(tgt, "the returned target was null");
+            nodeTargets.put(id, tgt);
         } else {
-            nb.setLabel("null");
-        }
-        writer.putNode(nb.build());
-        return null;
-    }
-
-    @Override
-    public Void visitClass(Class<?> clazz) {
-        putComponentNode(clazz, null);
-        return null;
-    }
-
-    @Override
-    public Void visitInstance(Object instance) {
-        writer.putNode(new NodeBuilder(currentNodeId())
-                               .setLabel(instance.toString())
-                               .setShape("ellipse")
-                               .build());
-        return null;
-    }
-
-    /**
-     * Output the intermediate "provided" node from the current node.
-     * @return The ID of the provider node.
-     */
-    private String putProvidedNode() {
-        ComponentNodeBuilder cnb;
-        cnb = new ComponentNodeBuilder(currentNodeId(), currentSatisfaction().getErasedType());
-        cnb.setShareable(GraphtUtils.isShareable(currentNode))
-           .setIsProvided(true);
-        writer.putNode(cnb.build());
-        String pid = currentNodeId() + "P";
-        writer.putEdge(new EdgeBuilder(currentNodeId(), pid)
-                               .set("style", "dashed")
-                               .set("dir", "back")
-                               .set("arrowhead", "empty")
-                               .build());
-        return pid;
-    }
-
-    @Override
-    public Void visitProviderClass(Class<? extends Provider<?>> pclass) {
-        String pid = putProvidedNode();
-        putComponentNode(pclass, pid);
-        return null;
-    }
-
-    @Override
-    public Void visitProviderInstance(Provider<?> provider) {
-        String pid = putProvidedNode();
-        writer.putNode(new NodeBuilder(pid)
-                               .setLabel(provider.toString())
-                               .setShape("ellipse")
-                               .set("style", "dashed")
-                               .build());
-        return null;
-    }
-
-    private void putComponentNode(Class<?> type, String pid) {
-        String id = pid == null ? currentNodeId() : pid;
-        ComponentNodeBuilder lbl = new ComponentNodeBuilder(id, type);
-        lbl.setShareable(pid == null && GraphtUtils.isShareable(currentNode));
-        lbl.setIsProvider(pid != null);
-        for (Edge e: graph.getOutgoingEdges(currentNode)) {
-            Desire dep = e.getDesire();
-            assert dep != null;
-            Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
-            Node t = e.getTail();
-            if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
-                logger.debug("dumping parameter {}", q);
-                CachedSatisfaction tcsat = t.getLabel();
-                assert tcsat != null;
-                Satisfaction tsat = tcsat.getSatisfaction();
-                Object val = tsat.visit(new AbstractSatisfactionVisitor<Object>(null) {
-                    @Override
-                    public Object visitInstance(Object instance) {
-                        return instance;
-                    }
-                });
-                if (val == null) {
-                    logger.warn("parameter {} not bound", q);
-                }
-                lbl.addParameter(q, val);
-            } else {
-                logger.debug("dumping dependency {}", dep);
-                lbl.addDependency(dep);
-                String tid = enqueue(t);
-                String port = String.format("%s:%d", id, lbl.getLastDependencyPort());
-                writer.putEdge(new EdgeBuilder(port, tid)
-                                       .set("arrowhead", "vee")
-                                       .build());
+            tgt = nodeTargets.get(id);
+            if (tgt == null) {
+                // tentatively use the node ID, we might remap it later
+                tgt = id;
             }
         }
-        writer.putNode(lbl.build());
+        return tgt;
+    }
+
+    /**
+     * Finish the graph, writing the edges.
+     */
+    public void finish() {
+        while (!edgeQueue.isEmpty()) {
+            GVEdge e = edgeQueue.remove();
+            String newTarget = nodeTargets.get(e.getTarget());
+            if (newTarget != null) {
+                e = EdgeBuilder.of(e).setTarget(newTarget).build();
+            }
+            writer.putEdge(e);
+        }
+    }
+
+    private class Visitor implements SatisfactionVisitor<String> {
+        private final Node node;
+        private final String nodeId;
+        private final Satisfaction satisfaction;
+
+        private Visitor(Node nd, String id) {
+            node = nd;
+            nodeId = id;
+            if (node == null) {
+                throw new IllegalStateException("dumper not running");
+            }
+            CachedSatisfaction csat = node.getLabel();
+            assert csat != null;
+            satisfaction = csat.getSatisfaction();
+        }
+
+        @Override
+        public String visitNull() {
+            NodeBuilder nb = new NodeBuilder(nodeId);
+            nb.setShape("ellipse");
+            Class<?> type = satisfaction.getErasedType();
+            if (DataAccessObject.class.isAssignableFrom(type)) {
+                nb.setLabel("DAO");
+            } else {
+                nb.setLabel("null");
+            }
+            GVNode node = nb.build();
+            writer.putNode(node);
+            return node.getTarget();
+        }
+
+        @Override
+        public String visitClass(Class<?> clazz) {
+            return componentNode(clazz, null).getTarget();
+        }
+
+        @Override
+        public String visitInstance(Object instance) {
+            GVNode node = new NodeBuilder(nodeId)
+                    .setLabel(instance.toString())
+                    .setShape("ellipse")
+                    .build();
+            writer.putNode(node);
+            return node.getId();
+        }
+
+        /**
+         * Output the intermediate "provided" node from the current node.
+         * @param pid The ID of the provider node for targeting the provision edge.
+         * @return The ID of the provided node, for targeting dependency edges.
+         */
+        private String putProvidedNode(String pid) {
+            ComponentNodeBuilder cnb;
+            cnb = new ComponentNodeBuilder(nodeId, satisfaction.getErasedType());
+            cnb.setShareable(GraphtUtils.isShareable(node))
+               .setIsProvided(true);
+            GVNode node = cnb.build();
+            writer.putNode(node);
+            edgeQueue.add(new EdgeBuilder(node.getTarget(), pid)
+                                  .set("style", "dashed")
+                                  .set("dir", "back")
+                                  .set("arrowhead", "empty")
+                                  .build());
+            return node.getTarget();
+        }
+
+        @Override
+        public String visitProviderClass(Class<? extends Provider<?>> pclass) {
+            String pid = nodeId + "P";
+            GVNode pnode = componentNode(pclass, pid);
+            return putProvidedNode(pnode.getTarget());
+        }
+
+        @Override
+        public String visitProviderInstance(Provider<?> provider) {
+            String pid = nodeId + "P";
+            writer.putNode(new NodeBuilder(pid)
+                                   .setLabel(provider.toString())
+                                   .setShape("ellipse")
+                                   .set("style", "dashed")
+                                   .build());
+            return putProvidedNode(pid);
+        }
+
+        private GVNode componentNode(Class<?> type, String pid) {
+            String id = pid == null ? nodeId : pid;
+            ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
+            bld.setShareable(pid == null && GraphtUtils.isShareable(node));
+            bld.setIsProvider(pid != null);
+            for (Edge e: graph.getOutgoingEdges(node)) {
+                Desire dep = e.getDesire();
+                assert dep != null;
+                Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
+                Node targetNode = e.getTail();
+                if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
+                    logger.debug("dumping parameter {}", q);
+                    CachedSatisfaction tcsat = targetNode.getLabel();
+                    assert tcsat != null;
+                    Satisfaction tsat = tcsat.getSatisfaction();
+                    Object val = tsat.visit(new AbstractSatisfactionVisitor<Object>(null) {
+                        @Override
+                        public Object visitInstance(Object instance) {
+                            return instance;
+                        }
+                    });
+                    if (val == null) {
+                        logger.warn("parameter {} not bound", q);
+                    }
+                    bld.addParameter(q, val);
+                } else {
+                    logger.debug("dumping dependency {}", dep);
+                    bld.addDependency(dep);
+                    String tid = process(targetNode);
+                    String port = String.format("%s:%d", id, bld.getLastDependencyPort());
+                    edgeQueue.add(new EdgeBuilder(port, tid)
+                                          .set("arrowhead", "vee")
+                                          .build());
+                }
+            }
+            GVNode node = bld.build();
+            writer.putNode(node);
+            return node;
+        }
     }
 }

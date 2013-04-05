@@ -1,7 +1,6 @@
 package org.grouplens.lenskit.eval.graph;
 
 import groovy.json.StringEscapeUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -55,22 +54,22 @@ class GraphWriter implements Closeable {
         }
     }
 
-    public void putNode(Pair<String, Map<String, Object>> node) {
-        final String id = node.getLeft();
+    public void putNode(GVNode node) {
+        final String id = node.getId();
         output.append("  ")
               .append(id);
-        putAttributes(node.getRight());
+        putAttributes(node.getAttributes());
         output.append(";\n");
     }
 
-    public void putEdge(Pair<Pair<String, String>, Map<String, Object>> node) {
-        final String src = node.getLeft().getLeft();
-        final String dst = node.getLeft().getRight();
+    public void putEdge(GVEdge edge) {
+        final String src = edge.getSource();
+        final String dst = edge.getTarget();
         output.append("  ")
               .append(src)
               .append(" -> ")
               .append(dst);
-        putAttributes(node.getRight());
+        putAttributes(edge.getAttributes());
         output.append(";\n");
     }
 }

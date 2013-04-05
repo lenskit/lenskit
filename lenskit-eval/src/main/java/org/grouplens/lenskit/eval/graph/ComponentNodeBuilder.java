@@ -3,13 +3,11 @@ package org.grouplens.lenskit.eval.graph;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.spi.Desire;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,7 +17,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 /**
  * Build a component label.
  */
-class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
+class ComponentNodeBuilder implements Builder<GVNode> {
     static final String SHAREABLE_COLOR = "#73d216";
 
     private final String nodeId;
@@ -99,7 +97,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     }
 
     @Override
-    public Pair<String, Map<String, Object>> build() {
+    public GVNode build() {
         NodeBuilder nb = new NodeBuilder(nodeId);
         if (dependencies.isEmpty() && parameters.isEmpty()) {
             nb.setLabel(label)
@@ -115,7 +113,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
             StringBuilder lbl = new StringBuilder();
             lbl.append("<TABLE CELLSPACING=\"0\" BORDER=\"0\">");
 
-            lbl.append("<TR><TD PORT=\"0\" ALIGN=\"CENTER\" BORDER=\"2\"");
+            lbl.append("<TR><TD PORT=\"H\" ALIGN=\"CENTER\" BORDER=\"2\"");
             if (shareable) {
                 lbl.append(" BGCOLOR=\"")
                    .append(SHAREABLE_COLOR)
@@ -144,6 +142,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
 
             lbl.append("</TABLE>");
             nb.setLabel(new HTMLLabel(lbl.toString()))
+              .setTarget(nodeId + ":H")
               .setShape("plaintext")
               .set("margin", 0);
         }
