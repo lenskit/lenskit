@@ -3,11 +3,13 @@ package org.grouplens.lenskit.eval.graph;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.spi.Desire;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,15 +18,22 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 /**
  * Build a component label.
  */
-class ComponentLabelBuilder implements Builder<HTMLLabel> {
+class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
+    static final String SHAREABLE_COLOR = "#73d216";
+
+    private final String nodeId;
     private final String label;
     private final List<String> dependencies = new ArrayList<String>();
+    private boolean shareable = false;
+    private boolean isProvider = false;
+    private boolean isProvided = false;
 
     /**
      * Create a new component label builder.
      * @param type The type of component to label.
      */
-    public ComponentLabelBuilder(Class<?> type) {
+    public ComponentNodeBuilder(String id, Class<?> type) {
+        nodeId = id;
         label = shortClassName(type);
     }
 
@@ -33,7 +42,7 @@ class ComponentLabelBuilder implements Builder<HTMLLabel> {
      * @param dep The dependency.
      * @return The builder (for chaining).
      */
-    public ComponentLabelBuilder addDependency(Desire dep) {
+    public ComponentNodeBuilder addDependency(Desire dep) {
         Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
         Class<?> type = dep.getDesiredType();
         if (q == null) {
@@ -55,28 +64,63 @@ class ComponentLabelBuilder implements Builder<HTMLLabel> {
         return dependencies.size();
     }
 
+    public ComponentNodeBuilder setShareable(boolean yn) {
+        shareable = yn;
+        return this;
+    }
+
+    public ComponentNodeBuilder setIsProvider(boolean yn) {
+        isProvider = yn;
+        return this;
+    }
+
+    public ComponentNodeBuilder setIsProvided(boolean yn) {
+        isProvided = yn;
+        return this;
+    }
+
     @Override
-    public HTMLLabel build() {
-        // FIXME Render provider types differently
-        StringBuilder lbl = new StringBuilder();
-        lbl.append("<FONT FACE=\"sans-serif\"><TABLE CELLSPACING=\"0\">");
+    public Pair<String, Map<String, Object>> build() {
+        NodeBuilder nb = new NodeBuilder(nodeId);
+        if (dependencies.isEmpty()) {
+            nb.setLabel(label)
+              .setShape("box");
+            if (shareable) {
+                nb.set("fillcolor", SHAREABLE_COLOR)
+                  .add("style", "filled");
+            }
+            if (isProvided) {
+                nb.add("style", "dashed");
+            }
+        } else {
+            StringBuilder lbl = new StringBuilder();
+            lbl.append("<TABLE CELLSPACING=\"0\" BORDER=\"0\">");
 
-        lbl.append("<TR><TD PORT=\"0\" ALIGN=\"CENTER\" CELLPADDING=\"4\">");
-        lbl.append(escapeHtml4(label));
-        lbl.append("</TD></TR>");
+            lbl.append("<TR><TD PORT=\"0\" ALIGN=\"CENTER\" BORDER=\"2\"");
+            if (shareable) {
+                lbl.append(" BGCOLOR=\"")
+                   .append(SHAREABLE_COLOR)
+                   .append("\"");
+            }
+            lbl.append(">")
+               .append(escapeHtml4(label))
+               .append("</TD></TR>");
 
-        int i = 1;
-        for (String dep: dependencies) {
-            lbl.append("<TR><TD PORT=\"")
-               .append(i++)
-               .append("\" ALIGN=\"LEFT\">");
-            lbl.append(escapeHtml4(dep));
-            lbl.append("</TD></TR>");
+            int i = 1;
+            for (String dep: dependencies) {
+                lbl.append("<TR><TD BORDER=\"1\" PORT=\"")
+                   .append(i++)
+                   .append("\" ALIGN=\"LEFT\">");
+                lbl.append(escapeHtml4(dep));
+                lbl.append("</TD></TR>");
+            }
+
+            lbl.append("</TABLE>");
+            nb.setLabel(new HTMLLabel(lbl.toString()))
+              .setShape("plaintext");
         }
 
-        lbl.append("</TABLE></FONT>");
-
-        return new HTMLLabel(lbl.toString());
+        return nb.build();
     }
 
     static String shortClassName(Class<?> type) {

@@ -6,14 +6,13 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.SatisfactionVisitor;
+import org.grouplens.lenskit.core.GraphtUtils;
 
 import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-
-import static org.grouplens.lenskit.eval.graph.ComponentLabelBuilder.shortClassName;
 
 /**
  * Class to manage traversing nodes. It is not used to handle the root node, but rather handles
@@ -130,10 +129,11 @@ class GraphDumper implements SatisfactionVisitor<Void> {
      * @return The ID of the provider node.
      */
     private String putProvidedNode() {
-        writer.putNode(new NodeBuilder(currentNodeId())
-                               .setLabel(shortClassName(currentSatisfaction().getErasedType()))
-                               .setShape("box")
-                               .build());
+        ComponentNodeBuilder cnb;
+        cnb = new ComponentNodeBuilder(currentNodeId(), currentSatisfaction().getErasedType());
+        cnb.setShareable(GraphtUtils.isShareable(currentNode))
+           .setIsProvided(true);
+        writer.putNode(cnb.build());
         String pid = currentNodeId() + "P";
         writer.putEdge(new EdgeBuilder(currentNodeId(), pid)
                                .set("style", "dashed")
@@ -163,7 +163,9 @@ class GraphDumper implements SatisfactionVisitor<Void> {
 
     private void putComponentNode(Class<?> type, String pid) {
         String id = pid == null ? currentNodeId() : pid;
-        ComponentLabelBuilder lbl = new ComponentLabelBuilder(type);
+        ComponentNodeBuilder lbl = new ComponentNodeBuilder(id, type);
+        lbl.setShareable(pid == null && GraphtUtils.isShareable(currentNode));
+        lbl.setIsProvider(pid != null);
         for (Edge e: graph.getOutgoingEdges(currentNode)) {
             lbl.addDependency(e.getDesire());
             Node t = e.getTail();
@@ -173,10 +175,6 @@ class GraphDumper implements SatisfactionVisitor<Void> {
                                    .set("arrowhead", "vee")
                                    .build());
         }
-        writer.putNode(new NodeBuilder(id)
-                               .setLabel(lbl.build())
-                               .setShape("plaintext")
-                               .set("style", pid == null ? "solid" : "dashed")
-                               .build());
+        writer.putNode(lbl.build());
     }
 }

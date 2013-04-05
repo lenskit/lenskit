@@ -1,5 +1,6 @@
 package org.grouplens.lenskit.eval.graph;
 
+import groovy.json.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Closeable;
@@ -7,11 +8,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Write a graph in GraphViz format.
  */
 class GraphWriter implements Closeable {
+    private static final Pattern SAFE_VALUE = Pattern.compile("\\w+");
     private final PrintWriter output;
 
     public GraphWriter(Writer out) {
@@ -25,6 +28,15 @@ class GraphWriter implements Closeable {
         output.close();
     }
 
+    private String safeValue(Object obj) {
+        String str = obj.toString();
+        if (obj instanceof HTMLLabel || SAFE_VALUE.matcher(str).matches()) {
+            return str;
+        } else {
+            return "\"" + StringEscapeUtils.escapeJava(str) + "\"";
+        }
+    }
+
     private void putAttributes(Map<String, Object> attrs) {
         if (!attrs.isEmpty()) {
             output.append(" [");
@@ -35,7 +47,7 @@ class GraphWriter implements Closeable {
                 }
                 output.append(a.getKey())
                       .append("=")
-                      .append(a.getValue().toString());
+                      .append(safeValue(a.getValue()));
                 first = false;
             }
             output.append("]");

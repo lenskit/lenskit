@@ -34,12 +34,27 @@ class NodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     }
 
     /**
+     * Add to a node attribute.  This accumulates a comma-separated list in the attribute.
+     * @param name The attribute name.
+     * @param value The attribute value.
+     * @return The builder (for chaining).
+     */
+    public NodeBuilder add(String name, Object value) {
+        Object existing = attributes.get(name);
+        if (existing == null) {
+            return set(name, value);
+        } else {
+            return set(name, existing.toString() + "," + value.toString());
+        }
+    }
+
+    /**
      * Set the label of the node.
      * @param label The node label. It will be wrapped in a string label and escaped.
      * @return The builder (for chaining).
      */
     public NodeBuilder setLabel(String label) {
-        return set("label", new StringLabel(label));
+        return set("label", label);
     }
 
     /**
