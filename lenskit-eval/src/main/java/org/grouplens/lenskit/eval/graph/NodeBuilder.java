@@ -70,6 +70,10 @@ class NodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
         return set("shape", shape);
     }
 
+    public NodeBuilder setFont(String font) {
+        return set("fontname", font);
+    }
+
     @Override
     public Pair<String,Map<String,Object>> build() {
         return Pair.of(nodeId, Collections.unmodifiableMap(attributes));

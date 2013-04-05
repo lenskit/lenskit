@@ -29,6 +29,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     private boolean shareable = false;
     private boolean isProvider = false;
     private boolean isProvided = false;
+    private boolean isInterface = false;
 
     /**
      * Create a new component label builder.
@@ -37,6 +38,7 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
     public ComponentNodeBuilder(String id, Class<?> type) {
         nodeId = id;
         label = shortClassName(type);
+        isInterface = type.isInterface();
     }
 
     /**
@@ -120,7 +122,9 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
                    .append("\"");
             }
             lbl.append(">")
+               .append("<B>")
                .append(escapeHtml4(label))
+               .append("</B>")
                .append("</TD></TR>");
 
             int i = 1;

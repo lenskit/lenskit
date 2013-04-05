@@ -20,6 +20,7 @@ class GraphWriter implements Closeable {
     public GraphWriter(Writer out) {
         output = new PrintWriter(out);
         output.println("digraph {");
+        output.println("  node [fontname=\"Helvetica\"]");
     }
 
     @Override
