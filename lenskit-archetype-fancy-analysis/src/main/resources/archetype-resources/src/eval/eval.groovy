@@ -69,7 +69,7 @@ def extended = algorithm("ExtendedItemUserMean") {
 }
 
 dumpGraph {
-    output "${config.analysisDir}/extended.gv"
+    output "${config.analysisDir}/extended.dot"
     algorithm extended
 }
 
