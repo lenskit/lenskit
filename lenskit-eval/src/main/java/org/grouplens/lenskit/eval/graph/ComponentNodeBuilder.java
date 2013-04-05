@@ -144,7 +144,8 @@ class ComponentNodeBuilder implements Builder<Pair<String,Map<String,Object>>> {
 
             lbl.append("</TABLE>");
             nb.setLabel(new HTMLLabel(lbl.toString()))
-              .setShape("plaintext");
+              .setShape("plaintext")
+              .set("margin", 0);
         }
 
         return nb.build();
