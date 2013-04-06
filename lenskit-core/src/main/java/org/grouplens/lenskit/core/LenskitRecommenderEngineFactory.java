@@ -300,25 +300,32 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     /**
-     * Simulate an instantiation of the shared objects in a graph.
+     * Simulate an instantiation of the shared objects in a graph.  This method is made public
+     * only to facilitate analysis of LensKit graphs.
      *
      * @param graph The complete configuration graph.
      * @return A new graph that is identical to the original graph if it were
      *         subjected to the instantiation process.
      */
-    private Graph simulateInstantiation(Graph graph) {
+    public Graph simulateInstantiation(Graph graph) {
         Graph modified = graph.clone();
         Set<Node> toReplace = getShareableNodes(modified);
         InjectSPI spi = config.getSPI();
+        Set<Node> replacements = new LinkedHashSet<Node>();
+        logger.debug("simulating instantation of {} nodes", toReplace.size());
         for (Node node : toReplace) {
             CachedSatisfaction label = node.getLabel();
             assert label != null;
             if (!label.getSatisfaction().hasInstance()) {
                 Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
                 Node repl = new Node(instanceSat, label.getCachePolicy());
+                logger.debug("simulating instantiation of {}", node);
                 modified.replaceNode(node, repl);
+                replacements.add(repl);
             }
         }
+        Set<Node> tts = removeTransientEdges(modified, replacements);
+        removeOrphanSubgraphs(modified, tts);
         return modified;
     }
 

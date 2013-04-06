@@ -20,20 +20,28 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.io.Closer;
 import com.google.common.io.Files;
+import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
+import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
+import org.grouplens.grapht.spi.CachedSatisfaction;
+import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Set;
 
 public class DumpGraphCommand extends AbstractCommand<File> {
     private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
@@ -83,8 +91,11 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             factory.bind(PreferenceDomain.class).to(domain);
         }
         Graph initial = factory.getInitialGraph(daoType);
+        logger.info("initial graph has {} nodes", initial.getNodes().size());
+        Graph unshared = factory.simulateInstantiation(initial);
+        logger.info("unshared graph has {} nodes", unshared.getNodes().size());
         try {
-            writeGraph(factory.getInitialGraph(daoType), output);
+            writeGraph(initial, unshared.getNodes(), output);
         } catch (IOException e) {
             throw new CommandException("error writing graph", e);
         }
@@ -92,14 +103,50 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         return output;
     }
 
-    public void writeGraph(Graph g, File file) throws IOException {
-        GraphRepr repr = new GraphRepr(algorithm.getName(), g);
-        Files.createParentDirs(file);
-        FileWriter writer = new FileWriter(file);
+    private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, CommandException {
+        Files.createParentDirs(output);
+        Closer close = Closer.create();
         try {
-            Templates.graphTemplate.execute(repr, writer);
+            FileWriter writer = close.register(new FileWriter(file));
+            GraphWriter gw = close.register(new GraphWriter(writer));
+            renderGraph(g, unshared, gw);
+        } catch (Throwable th) {
+            throw close.rethrow(th, CommandException.class);
         } finally {
-            writer.close();
+            close.close();
         }
     }
+
+    private void renderGraph(final Graph g, Set<Node> unshared, final GraphWriter gw) throws CommandException {
+        // Handle the root node
+        Node root = g.getNode(null);
+        if (root == null) {
+            throw new CommandException("no root node for graph");
+        }
+        GraphDumper dumper = new GraphDumper(g, unshared, gw);
+        String rid = dumper.setRoot(root);
+
+        for (Edge e: g.getOutgoingEdges(root)) {
+            Node target = e.getTail();
+            CachedSatisfaction csat = target.getLabel();
+            assert csat != null;
+            if (!satIsNull(csat.getSatisfaction())) {
+                String id = dumper.process(target);
+                gw.putEdge(new EdgeBuilder(rid, id)
+                                   .set("arrowhead", "vee")
+                                   .build());
+            }
+        }
+        dumper.finish();
+    }
+
+    private boolean satIsNull(Satisfaction sat) {
+        return sat.visit(new AbstractSatisfactionVisitor<Boolean>(false) {
+            @Override
+            public Boolean visitNull() {
+                return true;
+            }
+        });
+    }
+
 }

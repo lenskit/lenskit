@@ -44,7 +44,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
 
     @Inject
-    public ItemItemModelBuilder(ItemSimilarity similarity,
+    public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
                                 @Transient ItemItemBuildContextFactory ctxFactory,
                                 @Transient SimilarityMatrixAccumulatorFactory matrixFactory) {
         itemSimilarity = similarity;
