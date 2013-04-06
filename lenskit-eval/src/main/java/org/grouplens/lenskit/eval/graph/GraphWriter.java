@@ -39,7 +39,12 @@ class GraphWriter implements Closeable {
     public GraphWriter(Writer out) {
         output = new PrintWriter(out);
         output.println("digraph {");
-        output.println("  node [fontname=\"Helvetica\"]");
+        output.append("  node [fontname=\"Helvetica\"")
+              .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
+              .append("];\n");
+        output.append("  edge [")
+              .append("color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
+              .append("];\n");
     }
 
     @Override

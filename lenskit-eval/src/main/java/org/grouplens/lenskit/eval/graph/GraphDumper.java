@@ -54,6 +54,8 @@ class GraphDumper {
         writer = gw;
         graph = g;
         unsharedNodes = unshared;
+        unsharedNodes.retainAll(g.getNodes());
+        logger.info("{} shared nodes", unsharedNodes.size());
         nodeIds = new HashMap<Node, String>();
         nodeTargets = new HashMap<String, String>();
         edgeQueue = new LinkedList<GVEdge>();
@@ -71,7 +73,8 @@ class GraphDumper {
         nodeIds.put(root, ROOT_ID);
         nodeTargets.put(ROOT_ID, ROOT_ID);
         writer.putNode(new NodeBuilder(ROOT_ID).setLabel("root")
-                                               .setShape("diamond")
+                                               .setShape("box")
+                                               .add("style", "rounded")
                                                .build());
         return ROOT_ID;
     }
@@ -176,14 +179,14 @@ class GraphDumper {
             ComponentNodeBuilder cnb;
             cnb = new ComponentNodeBuilder(nodeId, satisfaction.getErasedType());
             cnb.setShareable(GraphtUtils.isShareable(node))
-               //.setShared(!unsharedNodes.contains(node))
+               .setShared(!unsharedNodes.contains(node))
                .setIsProvided(true);
             GVNode node = cnb.build();
             writer.putNode(node);
             edgeQueue.add(new EdgeBuilder(node.getTarget(), pid)
-                                  .set("style", "dashed")
+                                  .set("style", "dotted")
                                   .set("dir", "back")
-                                  .set("arrowhead", "empty")
+                                  .set("arrowhead", "vee")
                                   .build());
             return node.getTarget();
         }
@@ -210,7 +213,7 @@ class GraphDumper {
             String id = pid == null ? nodeId : pid;
             ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
             bld.setShareable(pid == null && GraphtUtils.isShareable(node));
-            //bld.setShared(!unsharedNodes.contains(node));
+            bld.setShared(!unsharedNodes.contains(node));
             bld.setIsProvider(pid != null);
             for (Edge e: graph.getOutgoingEdges(node)) {
                 Desire dep = e.getDesire();
@@ -237,9 +240,12 @@ class GraphDumper {
                     bld.addDependency(dep);
                     String tid = process(targetNode);
                     String port = String.format("%s:%d", id, bld.getLastDependencyPort());
-                    edgeQueue.add(new EdgeBuilder(port, tid)
-                                          .set("arrowhead", "vee")
-                                          .build());
+                    EdgeBuilder eb = new EdgeBuilder(port, tid)
+                            .set("arrowhead", "vee");
+                    if (GraphtUtils.desireIsTransient(dep)) {
+                        eb.set("style", "dashed");
+                    }
+                    edgeQueue.add(eb.build());
                 }
             }
             GVNode node = bld.build();

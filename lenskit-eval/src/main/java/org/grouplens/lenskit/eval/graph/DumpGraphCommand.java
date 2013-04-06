@@ -92,7 +92,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         }
         Graph initial = factory.getInitialGraph(daoType);
         logger.info("initial graph has {} nodes", initial.getNodes().size());
-        Graph unshared = factory.getInstantiatedGraph(daoType);
+        Graph unshared = factory.simulateInstantiation(initial);
         logger.info("unshared graph has {} nodes", unshared.getNodes().size());
         try {
             writeGraph(initial, unshared.getNodes(), output);
