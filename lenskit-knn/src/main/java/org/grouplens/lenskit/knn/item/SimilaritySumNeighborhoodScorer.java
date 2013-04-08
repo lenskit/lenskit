@@ -43,11 +43,6 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
 		if (neighbors.isEmpty()) {
 			return Double.NaN;
 		}        
-		double sum = 0;
-        for (VectorEntry e : neighbors.fast(VectorEntry.State.SET)) {
-            double sim = e.getValue();
-            sum += sim;
-        }
-        return sum;
+        return neighbors.sum();
     }
 }

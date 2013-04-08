@@ -26,28 +26,17 @@ import org.grouplens.lenskit.symbols.Symbol;
 
 import java.util.Set;
 
+/**
+ * A base class for {@code ScoredId} implementations providing
+ * {@code equals} and {@code hashCode} methods.
+ */
 public abstract class AbstractScoredId implements ScoredId {
 
-    private transient volatile Integer hashCode;
-
-    @Override
-    public abstract long getId();
-
-    @Override
-    public abstract double getScore();
-
-    @Override
-    public abstract Set<Symbol> getChannels();
-
-    @Override
-    public abstract double channel(Symbol s);
-
-    @Override
-    public abstract boolean hasChannel(Symbol s);
+    private transient volatile int hashCode;
 
     @Override
     public int hashCode() {
-        if (hashCode == null) {
+        if (hashCode == 0) {
             HashCodeBuilder builder = new HashCodeBuilder()
                     .append(getId())
                     .append(getScore());

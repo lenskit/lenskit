@@ -5,7 +5,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
- * Used to perform truncation on a vector.
+ * Component that truncates vectors.
  */
 @DefaultImplementation(NoOpTruncator.class)
 public interface VectorTruncator {

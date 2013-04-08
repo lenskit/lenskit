@@ -114,7 +114,6 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         }
 
         @Override
-        @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
         public void put(long i, long j, double sim) {
             Preconditions.checkState(rows != null, "model already built");
 
@@ -122,12 +121,8 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                 return;
             }
 
-            // concurrent read-only array access permitted
             ScoredItemAccumulator q = rows.get(i);
-            // synchronize on this row to add item
-            synchronized (q) {
-                q.put(j, sim);
-            }
+            q.put(j, sim);
         }
 
         /**
