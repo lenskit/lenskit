@@ -20,8 +20,11 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import it.unimi.dsi.fastutil.*;
+import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.grouplens.lenskit.collections.BitSetIterator;
@@ -30,7 +33,6 @@ import org.grouplens.lenskit.symbols.Symbol;
 
 import java.io.Serializable;
 import java.util.*;
-
 /**
  * Mutable version of sparse vector.
  *
@@ -499,7 +501,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public MutableSparseVector mutableCopy() {
-        double[] nvs = Arrays.copyOf(values, domainSize);
+        double[] nvs = java.util.Arrays.copyOf(values, domainSize);
         BitSet nbs = (BitSet) usedKeys.clone();
 
         return new MutableSparseVector(keys, nvs, domainSize, nbs, copyOfChannelMap());
@@ -669,6 +671,26 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Create a new {@code MutableSparseVector} from unsorted key and value
+     * arrays. The provided arrays will be modified and should not be used
+     * by the client after this operation has completed. The key domain of
+     * the new {@code MutableSparseVector} will be the same as {@code keys}.
+     *
+     * @param keys Array of entry keys. This should be duplicate-free.
+     * @param values The values of the vector, in key order.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     *                                  arrays (length mismatch, etc.).
+     */
+    public static MutableSparseVector wrapUnsorted(long[] keys, double[] values) {
+        IdComparator comparator = new IdComparator(keys);
+        ParallelSwapper swapper = new ParallelSwapper(keys, values);
+        Arrays.quickSort(0, keys.length, comparator, swapper);
+
+        return MutableSparseVector.wrap(keys, values);
+    }
+
+    /**
      * Remove the channel stored under a particular symbol.
      *
      * @param channelSymbol the symbol under which the channel was
@@ -783,4 +805,39 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return channelMap.keySet();
     }
 
+    private static class IdComparator extends AbstractIntComparator {
+
+        private long[] keys;
+
+        public IdComparator(long[] keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public int compare(int i, int i2) {
+            return LongComparators.NATURAL_COMPARATOR.compare(keys[i], keys[i2]);
+        }
+    }
+
+    private static class ParallelSwapper implements Swapper {
+
+        private long[] keys;
+        private double[] values;
+
+        public ParallelSwapper(long[] keys, double[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        @Override
+        public void swap(int i, int i2) {
+            long lTemp = keys[i];
+            keys[i] = keys[i2];
+            keys[i2] = lTemp;
+
+            double dTemp = values[i];
+            values[i] = values[i2];
+            values[i2] = dTemp;
+        }
+    }
 }
