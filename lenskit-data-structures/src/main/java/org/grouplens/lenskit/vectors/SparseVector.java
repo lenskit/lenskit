@@ -37,12 +37,10 @@ import java.util.*;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.collections.BitSetIterator;
-import org.grouplens.lenskit.collections.IntIntervalList;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.collections.*;
 import org.grouplens.lenskit.scored.AbstractScoredId;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import com.google.common.base.Function;
@@ -663,30 +661,45 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public abstract Set<Symbol> getChannels();
 
     /**
-     * Return a view of this vector as an iterable list of {@code ScoredId}
-     * objects using a fast iterator. This method delegates to
-     * {@link #fastIdIterator()}
+     * Return a view of this vector as a {@code FastCollection} of
+     * {@code ScoredId} objects.
      *
-     * @return This object wrapped in an iterable that returns a fast iterator
-     * over {@code ScoredId} objects.
-     * @see #fastIdIterator()
+     * @return A fast collection containing this vector's keys and values as
+     * {@code ScoredId} objects.
      */
-    public Iterable<ScoredId> asScoredIds() {
-        return new Iterable<ScoredId>() {
-            @Override
-            public Iterator<ScoredId> iterator() {
-                return fastIdIterator();
-            }
-        };
+    public FastCollection<ScoredId> scoredIds() {
+        return new FastScoredIdCollectionImpl();
     }
 
-    /**
-     * Fast iterator over entries as {@code ScoredId} objects.
-     *
-     * @return a fast iterator over all key/value pairs as {@code ScoredId}s.
-     */
-    public Iterator<ScoredId> fastIdIterator() {
-        return new FastIdIterImpl();
+    private class FastScoredIdCollectionImpl extends CopyingFastCollection<ScoredId> {
+
+        private ScoredIdBuilder builder;
+
+        public FastScoredIdCollectionImpl() {
+            builder = new ScoredIdBuilder();
+        }
+
+        @Override
+        protected ScoredId copy(ScoredId elt) {
+            builder.clearChannels();
+            builder.setId(elt.getId());
+            builder.setScore(elt.getScore());
+            for (Symbol s : elt.getChannels()) {
+                builder.addChannel(s, elt.channel(s));
+            }
+
+            return builder.build();
+        }
+
+        @Override
+        public int size() {
+            return SparseVector.this.size();
+        }
+
+        @Override
+        public Iterator<ScoredId> fastIterator() {
+            return new FastIdIterImpl();
+        }
     }
 
     private class FastIdIterImpl implements Iterator<ScoredId> {
@@ -696,6 +709,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         public FastIdIterImpl() {
             entIter = fastIterator();
+            id = new ScoredIdImpl();
         }
 
         @Override
