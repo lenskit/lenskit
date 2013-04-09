@@ -55,6 +55,14 @@ public class BaselineItemScorer extends AbstractItemScorer {
     }
 
     /**
+     * Get the baseline predictor under this scorer.
+     * @return The baseline predictor.
+     */
+    public BaselinePredictor getBaseline() {
+        return predictor;
+    }
+
+    /**
      * {@inheritDoc}
      * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
      */
