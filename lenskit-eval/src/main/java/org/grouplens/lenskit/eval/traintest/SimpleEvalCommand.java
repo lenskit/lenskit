@@ -19,9 +19,14 @@ import java.util.Properties;
 
 public class SimpleEvalCommand extends AbstractCommand<Table>{
 
-    private EvalConfig config = new EvalConfig(new Properties());
     private TrainTestEvalCommand result;
 
+    /**
+     * Configure any default behaviors for
+     */
+    protected void init(){
+        result.setOutput(null);
+    }
     /**
      * Constructs a SimpleConfigCommand with a name for the command and the {@code TrainTestEvalCommand}
      * @param commandName The name of the {@code SimpleConfigCommand}
@@ -30,17 +35,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     public SimpleEvalCommand(String commandName, String trainName){
         super(commandName);
         result = new TrainTestEvalCommand(trainName);
-    }
-
-    /**
-     * @param commandName The name of the command being constructed
-     * @param trainName The name of the {@code TrainTestEvalCommand}
-     * @param config The EvalConfig supplied to the {@code TrainTestEvalCommand}
-     */
-    public SimpleEvalCommand(String commandName, String trainName, EvalConfig config){
-        super(commandName);
-        this.config = config;
-        result = new TrainTestEvalCommand(trainName);
+        init();
     }
 
     /**
@@ -50,7 +45,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     public SimpleEvalCommand(String trainName){
         super("train-test-builder");
         result = new TrainTestEvalCommand(trainName);
-        result.setOutput(null);
+        init();
     }
 
     /**
@@ -61,7 +56,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
     public SimpleEvalCommand(){
         super("train-test-builder");
         result = new TrainTestEvalCommand("train-test-eval");
-        result.setOutput(null);
+        init();
     }
 
     /**
@@ -123,10 +118,12 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return Itself for chaining.
      */
     public SimpleEvalCommand addDataset(String name, DataSource source, int partitions, double holdout){
-        addDataset(new CrossfoldCommand(name)
-                    .setSource(source)
-                    .setPartitions(partitions)
-                    .setHoldoutFraction(holdout));
+        CrossfoldCommand cross = new CrossfoldCommand(name)
+                .setSource(source)
+                .setPartitions(partitions)
+                .setHoldoutFraction(holdout);
+        cross.setConfig(getConfig());
+        addDataset(cross);
         return this;
     }
 
@@ -140,11 +137,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return Itself for chaining.
      */
     public SimpleEvalCommand addDataset(DataSource source, int partitions, double holdout){
-        addDataset(new CrossfoldCommand(source.getName())
-                .setSource(source)
-                .setPartitions(partitions)
-                .setHoldoutFraction(holdout));
-        return this;
+        return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
      * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
@@ -158,11 +151,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return Itself for chaining.
      */
     public SimpleEvalCommand addDataset(String name, DataSource source, int partitions){
-        addDataset(new CrossfoldCommand(name)
-                .setSource(source)
-                .setPartitions(partitions)
-                .setHoldoutFraction(.2));
-        return this;
+       return addDataset(name, source, partitions, .2);
     }
 
     /**
@@ -176,11 +165,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return Itself for chaining.
      */
     public SimpleEvalCommand addDataset(DataSource source, int partitions){
-        addDataset(new CrossfoldCommand(source.getName())
-                .setSource(source)
-                .setPartitions(partitions)
-                .setHoldoutFraction(.2));
-        return this;
+        return addDataset(source.getName(), source, partitions, .2);
     }
 
     /**
@@ -314,7 +299,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return The table resulting from calling the command.
      */
     public Table call() throws CommandException{
-        result.setConfig(config);
+        result.setConfig(getConfig());
         return result.call();
     }
 }
