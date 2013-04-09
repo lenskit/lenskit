@@ -141,6 +141,7 @@ class TestSubsampleConfig extends ConfigTestBase {
             
         } finally{
             daoSnap.close();
+            sourceDaoSnap.close();
         }
     }
     
@@ -171,6 +172,7 @@ class TestSubsampleConfig extends ConfigTestBase {
             }
         } finally{
             daoSnap.close();
+            sourceDaoSnap.close();
         }
     }
 }

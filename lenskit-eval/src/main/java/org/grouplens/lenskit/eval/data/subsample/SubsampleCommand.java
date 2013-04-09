@@ -106,20 +106,9 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param mode The mode of the output.
      * @return The SubsampleCommand object  (for chaining).
      */
-    public SubsampleCommand  setMode(SubsampleMode mode) throws IllegalArgumentException {
-        if (mode.equals(SubsampleMode.RATING)) {
-            this.mode = mode;
-            return this;
-        } else if (mode.equals(SubsampleMode.USER)) {
-            this.mode = mode;
-            return this;
-        } else if (mode.equals(SubsampleMode.ITEM)) {
-            this.mode = mode;
-            return this;
-        } else {
-            String msg = "The mode should be: Rating, Item or User";
-            throw new IllegalArgumentException(msg);
-        }
+    public SubsampleCommand  setMode(SubsampleMode mode) {
+        this.mode = mode;
+        return this;
     }
     
     /**
