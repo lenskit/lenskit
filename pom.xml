@@ -25,8 +25,8 @@
     </license>
   </licenses>
   <issueManagement>
-    <system>Trac</system>
-    <url>http://dev.grouplens.org/trac/lenskit</url>
+    <system>BitBucket</system>
+    <url>https://bitbucket.org/grouplens/lenskit/issues</url>
   </issueManagement>
   <scm>
     <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
@@ -57,16 +57,6 @@
       <url>${lenskit.web.path}</url>
     </site>
   </distributionManagement>
-
-  <repositories>
-    <repository>
-      <id>grouplens-devel</id>
-      <url>http://dev.grouplens.org/maven</url>
-      <layout>default</layout>
-      <snapshots><enabled>true</enabled></snapshots>
-      <releases><enabled>false</enabled></releases>
-    </repository>
-  </repositories>
 
   <modules>
     <module>lenskit-api</module>
@@ -583,6 +573,8 @@
     </profile>
 
     <profile>
+      <!-- The develop profile is activated when operating in a Mercurial checkout.
+           It is intended to be useful when doing LensKit development. -->
       <id>develop</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -590,6 +582,23 @@
           <exists>.hg/branch</exists>
         </file>
       </activation>
+
+      <repositories>
+        <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
+             that are published to the GroupLens development repository. -->
+        <repository>
+          <id>grouplens-devel</id>
+          <url>http://dev.grouplens.org/maven</url>
+          <layout>default</layout>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases><enabled>false</enabled></releases>
+        </repository>
+      </repositories>
+
       <build>
         <plugins>
           <plugin>
