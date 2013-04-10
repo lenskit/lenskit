@@ -53,7 +53,7 @@ class GraphDumper {
     public GraphDumper(Graph g, Set<Node> unshared, GraphWriter gw) {
         writer = gw;
         graph = g;
-        unsharedNodes = unshared;
+        unsharedNodes = new HashSet<Node>(unshared);
         unsharedNodes.retainAll(g.getNodes());
         logger.info("{} shared nodes", unsharedNodes.size());
         nodeIds = new HashMap<Node, String>();
