@@ -21,12 +21,13 @@
 
 package org.grouplens.lenskit.eval.data.subsample;
 
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
+import java.io.File;
+import java.io.IOException;
+
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
@@ -37,13 +38,6 @@ import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Random;
-
-import javax.annotation.Nullable;
 /**
  * The command to build and run a Subsample on the data source file and output the partition files
  *
@@ -52,10 +46,9 @@ import javax.annotation.Nullable;
 public class SubsampleCommand extends AbstractCommand<DataSource> {
     private static final Logger logger = LoggerFactory.getLogger(SubsampleCommand.class);
 
-    private static final Random random = new Random();
-
     private DataSource source;
     private double subsampleFraction = 0.1;
+    private SubsampleMode mode = SubsampleMode.RATING;
     
     @Nullable
     private File output;
@@ -108,9 +101,20 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     }
     
     /**
-     * Get the output name of subsample file
+     * Set the mode of the subsample, it is user, item or rating.
      * 
-     * @return The output name of the subsample file
+     * @param mode The mode of the output.
+     * @return The SubsampleCommand object  (for chaining).
+     */
+    public SubsampleCommand  setMode(SubsampleMode mode) {
+        this.mode = mode;
+        return this;
+    }
+    
+    /**
+     * Get the output name of subsample file.
+     * 
+     * @return The output name of the subsample file.
      */
     public File getOutput() {
         if (output == null) {
@@ -137,6 +141,15 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         return subsampleFraction;
     }
 
+    /**
+     * Get the mode of the subsample.
+     * 
+     * @return The mode of the subsample
+     */
+    public SubsampleMode getMode() {
+        return mode;
+    }
+    
     /**
      * Use CSVDataSourceCommand to generate output DataSource file
      * 
@@ -172,55 +185,17 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         try {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
-            createFile(daoSnap);
+            TableWriter subsampleWriter = CSVWriter.open(subsampleFile, null);
+            try {
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction);
+            } finally {
+                LKFileUtils.close(subsampleWriter);
+            }
         } catch (IOException e) {
             throw new CommandException("Error writing output file", e);
         } finally {
             daoSnap.close();
         }
         return makeDataSource();
-    }
-
-    /**
-     * Randomly create the subsample file from the DAO using shuffle method.
-     *
-     * @param dao The DAO of the data source file
-     * @throws org.grouplens.lenskit.eval.CommandException
-     *          Any error
-     */
-    private void createFile(DataAccessObject dao ) throws IOException {
-        File subsampleFile = getOutput();
-        TableWriter subsampleWriter = null;
-        try {
-            subsampleWriter = CSVWriter.open(subsampleFile, null);
-            Cursor<Rating> events = dao.getEvents(Rating.class);
-            List<Rating> ratings = Cursors.makeList(events);
-            final int n = ratings.size();
-            final int m = (int)(subsampleFraction * n);
-            for (int i = 0; i < m; i++) {
-                int j = random.nextInt(n-1-i) + i;
-                ratings.set(i, ratings.set(j, ratings.get(i)));        
-                writeRating(subsampleWriter, ratings.get(i));     
-            }
-        } finally {
-            LKFileUtils.close(subsampleWriter);
-        }
-    }
-
-    /**
-     * Writing a rating event to the file using table writer
-     *
-     * @param writer The table writer to output the rating
-     * @param rating The rating event to output
-     * @throws IOException The writer IO error
-     */
-    private void writeRating(TableWriter writer, Rating rating) throws IOException {
-        String[] row = new String[4];
-        row[0] = Long.toString(rating.getUserId());
-        row[1] = Long.toString(rating.getItemId());
-        Preference pref = rating.getPreference();
-        row[2] = pref != null ? Double.toString(pref.getValue()) : "NaN";
-        row[3] = Long.toString(rating.getTimestamp());
-        writer.writeRow(row);
     }
 }
