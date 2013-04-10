@@ -28,24 +28,62 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
+/**
+ * The FunkSVD model class.
+ */
 @DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
 public class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = -5797099617512506185L;
 
+    /**
+     * Number of features in the vector.
+     */
     public final int featureCount;
+    /**
+     * The number of users.
+     */
+    public final int numUser;
+    /**
+     * The number of items.
+     */
+    public final int numItem;
+
+    /**
+     * The item-feature matrix (features, then items).  Do not modify this array.
+     */
     public final double[][] itemFeatures;
+    /**
+     * The user-feature matrix (features, then users).  Do not modify this array.
+     */
     public final double[][] userFeatures;
+    /**
+     * The clamping function used to build this model.
+     */
     public final ClampingFunction clampingFunction;
 
+    /**
+     * The item index.
+     */
     public final Index itemIndex;
+    /**
+     * The user index.
+     */
     public final Index userIndex;
+
+    /**
+     * The baseline predictor used to build this model.
+     */
     public final BaselinePredictor baseline;
 
+    /**
+     * The average feature value for each user.
+     */
     public final double[] averUserFeatures;
+    /**
+     * The average feature value for each item.
+     */
     public final double[] averItemFeatures;
-    public final int numUser;
-    public final int numItem;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
