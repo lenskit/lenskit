@@ -20,10 +20,14 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Utility methods for interacting with vectors.
@@ -38,6 +42,163 @@ public final class Vectors {
     private Vectors() {
     }
 
+    public static Iterable<Pair<VectorEntry,VectorEntry>> union(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<Pair<VectorEntry, VectorEntry>>() {
+            @Override
+            public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
+                return new PairIterImpl(v1, v2);
+            }
+        };
+    }
+
+    public static Iterable<Pair<VectorEntry,VectorEntry>> fastUnion(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<Pair<VectorEntry, VectorEntry>>() {
+            @Override
+            public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
+                return new FastPairIterImpl(v1, v2);
+            }
+        };
+    }
+
+    private static class PairIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
+
+        private Pointer<VectorEntry> p1;
+        private Pointer<VectorEntry> p2;
+
+        public PairIterImpl(SparseVector v1, SparseVector v2) {
+            p1 = CollectionUtils.pointer(v1.iterator());
+            p2 = CollectionUtils.pointer(v2.iterator());
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !p1.isAtEnd() || !p2.isAtEnd();
+        }
+
+        @Override
+        public Pair<VectorEntry, VectorEntry> next() {
+            if (!p1.isAtEnd() && !p2.isAtEnd()) {
+                if (p1.get().getKey() < p2.get().getKey()) {
+                    VectorEntry e = p1.get();
+                    p1.advance();
+                    return new ImmutablePair<VectorEntry, VectorEntry>(e, null);
+                } else if (p2.get().getKey() < p1.get().getKey()) {
+                    VectorEntry e = p2.get();
+                    p2.advance();
+                    return new ImmutablePair<VectorEntry, VectorEntry>(null, e);
+                } else {
+                    VectorEntry e1 = p1.get();
+                    p1.advance();
+                    VectorEntry e2 = p2.get();
+                    p2.advance();
+
+                    return new ImmutablePair<VectorEntry, VectorEntry>(e1, e2);
+                }
+            } else if (!p1.isAtEnd()) {
+                VectorEntry e = p1.get();
+                p1.advance();
+                return new ImmutablePair<VectorEntry, VectorEntry>(e, null);
+            } else if (!p2.isAtEnd()) {
+                VectorEntry e = p2.get();
+                p2.advance();
+                return new ImmutablePair<VectorEntry, VectorEntry>(null, e);
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class FastPairIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
+
+        private Pointer<VectorEntry> p1;
+        private Pointer<VectorEntry> p2;
+        private VectorEntry leftEnt;
+        private VectorEntry rightEnt;
+        private MutablePair<VectorEntry,VectorEntry> pair;
+        private VectorEntry e1;
+        private VectorEntry e2;
+
+        public FastPairIterImpl(SparseVector v1, SparseVector v2) {
+            p1 = CollectionUtils.pointer(v1.fastIterator());
+            p2 = CollectionUtils.pointer(v2.fastIterator());
+            leftEnt = new VectorEntry(v1, -1, 0, 0, false);
+            rightEnt = new VectorEntry(v2, -1, 0, 0, false);
+            pair = new MutablePair<VectorEntry,VectorEntry>(leftEnt, rightEnt);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !p1.isAtEnd() || !p2.isAtEnd();
+        }
+
+        @Override
+        public Pair<VectorEntry, VectorEntry> next() {
+            if (!p1.isAtEnd() && !p2.isAtEnd()) {
+                if (p1.get().getKey() < p2.get().getKey()) {
+                    e1 = p1.get();
+                    leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                    pair.setLeft(leftEnt);
+                    p1.advance();
+
+                    pair.setRight(null);
+
+                    return pair;
+                } else if (p2.get().getKey() < p1.get().getKey()) {
+                    pair.setLeft(null);
+
+                    e2 = p2.get();
+                    rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                    pair.setRight(rightEnt);
+                    p2.advance();
+
+                    return pair;
+                } else {
+                    e1 = p1.get();
+                    leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                    pair.setLeft(leftEnt);
+                    p1.advance();
+
+                    e2 = p2.get();
+                    rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                    pair.setRight(rightEnt);
+                    p2.advance();
+
+                    return pair;
+                }
+            } else if (!p1.isAtEnd()) {
+                e1 = p1.get();
+                leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                pair.setLeft(leftEnt);
+                p1.advance();
+
+                pair.setRight(null);
+
+                return pair;
+            } else if (!p2.isAtEnd()) {
+                pair.setLeft(null);
+
+                e2 = p2.get();
+                rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                pair.setRight(rightEnt);
+                p2.advance();
+
+                return pair;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     /**
      * Provides an Iterable over EntryPairs based off of a fast Iterator.
      *
@@ -45,6 +206,7 @@ public final class Vectors {
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
      */
+    @Deprecated
     public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -63,6 +225,7 @@ public final class Vectors {
      * @return a fast Iterator over EntryPairs, representing a shared
      *         key and the paired values for that key.
      */
+    @Deprecated
     public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
         return new FastIteratorImpl(v1, v2);
     }
@@ -74,6 +237,7 @@ public final class Vectors {
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
      */
+    @Deprecated
     public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -92,6 +256,7 @@ public final class Vectors {
      * @return an Iterator over EntryPairs, representing a shared
      *         key and the paired values for that key.
      */
+    @Deprecated
     public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
         return new IteratorImpl(v1, v2);
     }
