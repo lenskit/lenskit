@@ -2,6 +2,7 @@ package org.grouplens.lenskit.util;
 
 import org.slf4j.MDC;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -26,6 +27,6 @@ public class LogContext {
      * log context was created.
      */
     public void finish() {
-        MDC.setContextMap(memory);
+        MDC.setContextMap(memory == null ? Collections.EMPTY_MAP : memory);
     }
 }
