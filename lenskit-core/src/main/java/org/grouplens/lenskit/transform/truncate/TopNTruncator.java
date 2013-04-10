@@ -1,10 +1,11 @@
 package org.grouplens.lenskit.transform.truncate;
 
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.Vectors;
 
 public class TopNTruncator implements VectorTruncator {
 
@@ -35,10 +36,10 @@ public class TopNTruncator implements VectorTruncator {
         MutableSparseVector truncated = accumulator.vectorFinish();
 
         // Unset all elements in 'v' that are not in 'truncated'
-        LongSortedSet toRemove = v.keySet();
-        toRemove.removeAll(truncated.keySet());
-        for (long id : toRemove) {
-            v.unset(id);
+        for (Pair<VectorEntry,VectorEntry> p : Vectors.fastUnion(v, truncated)) {
+            if (p.getRight() == null) {
+                v.unset(p.getLeft());
+            }
         }
     }
 }
