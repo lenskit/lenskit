@@ -337,13 +337,19 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @return The set of tail nodes of removed edges.
      */
     private Set<Node> removeTransientEdges(Graph graph, Set<Node> nodes) {
+        // Tail nodes of removed edges (return value)
         Set<Node> targets = new HashSet<Node>();
-        Set<Node> seen = new HashSet<Node>();
-        Queue<Node> work = new LinkedList<Node>();
-        work.addAll(nodes);
-        seen.addAll(nodes);
+        // Nodes we have seen in our traversal (set of members of the queue)
+        Set<Node> seen = new HashSet<Node>(nodes);
+        // The work queue
+        Queue<Node> work = new ArrayDeque<Node>(nodes);
+        // Queue of removals, to avoid concurrent modification
+        Queue<Edge> removals = new ArrayDeque<Edge>();
+
+        // Pump the work queue
         while (!work.isEmpty()) {
             Node node = work.remove();
+            // find and queue removals
             for (Edge e : graph.getOutgoingEdges(node)) {
                 Node nbr = e.getTail();
 
@@ -351,14 +357,21 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
                 Desire desire = e.getDesire();
                 assert desire != null;
                 if (GraphtUtils.desireIsTransient(desire)) {
-                    graph.removeEdge(e);
+                    removals.add(e);
                     targets.add(nbr);
                 } else if (!seen.contains(nbr)) {
                     seen.add(nbr);
                     work.add(nbr);
                 }
             }
+
+            // process removals
+            while (!removals.isEmpty()) {
+                graph.removeEdge(removals.remove());
+            }
+            // invariant: removals is empty
         }
+
         return targets;
     }
 
