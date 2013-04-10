@@ -73,7 +73,8 @@ public final class GraphtUtils {
             if (d != null) {
                 lbl = Collections.singletonList(d);
             }
-            graph.updateEdgeLabel(e, lbl);
+            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
+            graph.replaceEdge(e, replacement);
         }
 
         return placeholder;
