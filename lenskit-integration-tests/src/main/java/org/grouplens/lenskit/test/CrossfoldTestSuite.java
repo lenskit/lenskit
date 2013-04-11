@@ -23,6 +23,7 @@ package org.grouplens.lenskit.test;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
@@ -33,6 +34,7 @@ import org.grouplens.lenskit.util.table.Table;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -61,16 +63,14 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         }
 
         SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
+        Properties props =  new Properties();
+        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDirName);
+        evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());
         evalCommand.addAlgorithm(algo);
 
-        evalCommand.addDataset(new CrossfoldCommand("ml-100k")
-                                    .setSource(new GenericDataSource("ml-100k", daoFactory))
-                                    .setPartitions(5)
-                                    .setHoldoutFraction(0.2)
-                                    .setTrain(new File(workDir, "train.%d.csv").getAbsolutePath())
-                                    .setTest(new File(workDir, "test.%d.csv").getAbsolutePath()));
+        evalCommand.addDataset(new GenericDataSource("ml-100k", daoFactory), 5, 0.2);
 
         evalCommand.addMetric(new CoveragePredictMetric())
                    .addMetric(new RMSEPredictMetric())
