@@ -73,6 +73,38 @@
     <module>lenskit-integration-tests</module>
   </modules>
 
+  <repositories>
+    <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
+         that are published to the GroupLens development repository. -->
+    <repository>
+      <id>grouplens-devel</id>
+      <url>http://dev.grouplens.org/maven</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases><enabled>false</enabled></releases>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
+         that are published to the GroupLens development repository. -->
+    <pluginRepository>
+      <id>grouplens-devel</id>
+      <url>http://dev.grouplens.org/maven</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <releases><enabled>false</enabled></releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <dependencyManagement>
     <dependencies>
       <!-- logging -->
@@ -218,6 +250,8 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
           </configuration>
         </plugin>
 
@@ -573,70 +607,6 @@
               </execution>
             </executions>
           </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <!-- The develop profile is activated when operating in a Mercurial checkout.
-           It is intended to be useful when doing LensKit development. -->
-      <id>develop</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-        <file>
-          <exists>.hg/branch</exists>
-        </file>
-      </activation>
-
-      <repositories>
-        <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
-             that are published to the GroupLens development repository. -->
-        <repository>
-          <id>grouplens-devel</id>
-          <url>http://dev.grouplens.org/maven</url>
-          <layout>default</layout>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-            <checksumPolicy>fail</checksumPolicy>
-          </snapshots>
-          <releases><enabled>false</enabled></releases>
-        </repository>
-      </repositories>
-
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>clean-installed</id>
-                <phase>clean</phase>
-                <goals>
-                  <goal>remove-project-artifact</goal>
-                </goals>
-                <configuration>
-                  <removeAll>${lenskit.clean.removeAll}</removeAll>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-compile</id>
-                <configuration>
-                  <showWarnings>true</showWarnings>
-                  <showDeprecation>true</showDeprecation>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
         </plugins>
       </build>
     </profile>
