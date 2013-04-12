@@ -55,7 +55,7 @@ class GraphDumper {
         graph = g;
         unsharedNodes = new HashSet<Node>(unshared);
         unsharedNodes.retainAll(g.getNodes());
-        logger.info("{} shared nodes", unsharedNodes.size());
+        logger.debug("{} shared nodes", unsharedNodes.size());
         nodeIds = new HashMap<Node, String>();
         nodeTargets = new HashMap<String, String>();
         edgeQueue = new LinkedList<GVEdge>();
