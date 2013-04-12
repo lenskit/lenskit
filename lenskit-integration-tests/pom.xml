@@ -19,6 +19,7 @@
     <test.repo.directory>${project.build.directory}/test-repo</test.repo.directory>
     <archetype.test.directory>${project.build.directory}/archetype-test</archetype.test.directory>
     <lenskit.movielens.100k>${basedir}/data/ml-100k</lenskit.movielens.100k>
+    <lenskit.eval.threadCount>1</lenskit.eval.threadCount>
   </properties>
 
   <dependencies>
@@ -252,6 +253,8 @@
                       -->
                       <property name="lenskit.movielens.100k"
                                 value="${lenskit.movielens.100k}"/>
+                      <property name="lenskit.eval.threadCount"
+                                value="${lenskit.eval.threadCount}"/>
                     </ant>
                   </target>
                 </configuration>

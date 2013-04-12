@@ -46,7 +46,7 @@ public class EvalCLIOptions {
     private URL[] classpathUrls;
     private Properties props;
     private boolean force;
-    private int nthreads = -1;
+    private int nthreads = 1;
 
     private EvalCLIOptions(CommandLine cmd) {
         String[] cpadds = cmd.getOptionValues("C");
@@ -74,7 +74,7 @@ public class EvalCLIOptions {
         if (cmd.hasOption("j")) {
             String n = cmd.getOptionValue("j");
             if (n == null) {
-                nthreads = Runtime.getRuntime().availableProcessors();
+                nthreads = 0;
             } else {
                 nthreads = Integer.parseInt(n);
             }

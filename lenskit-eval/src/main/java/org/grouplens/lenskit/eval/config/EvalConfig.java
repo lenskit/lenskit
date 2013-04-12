@@ -45,10 +45,17 @@ public class EvalConfig {
 
     private Properties properties;
 
+    /**
+     * Construct a new eval config using the system properties.
+     */
     public EvalConfig() {
-        this(new Properties());
+        this(System.getProperties());
     }
 
+    /**
+     * Construct a new eval config using the specified properties.
+     * @param props The properties to use.
+     */
     public EvalConfig(Properties props) {
         properties = (Properties) props.clone();
     }
