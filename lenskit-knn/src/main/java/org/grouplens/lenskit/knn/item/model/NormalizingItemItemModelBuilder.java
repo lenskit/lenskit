@@ -47,8 +47,9 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         this.modelSize = modelSize;
     }
 
+
     @Override
-    public ItemItemModel get() {
+    public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
 
         ItemItemBuildContext context = contextFactory.buildContext();

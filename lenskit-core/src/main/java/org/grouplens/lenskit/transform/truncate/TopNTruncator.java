@@ -1,12 +1,17 @@
 package org.grouplens.lenskit.transform.truncate;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
 
+/**
+ * A {@code VectorTruncator} that will retain the top n entries.
+ */
+@Shareable
 public class TopNTruncator implements VectorTruncator {
 
     private ThresholdTruncator threshold;
