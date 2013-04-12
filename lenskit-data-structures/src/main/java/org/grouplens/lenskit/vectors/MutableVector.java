@@ -29,6 +29,15 @@ import com.google.common.base.Preconditions;
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
 public class MutableVector extends Vector {
+    /**
+     * Construct a new mutable vector.  The vector is initialized to all 0's.
+     *
+     * @param dim The dimension of the vector.
+     */
+    public MutableVector(int dim) {
+        this(new double[dim]);
+    }
+
     MutableVector(double[] v) {
         super(v);
     }
