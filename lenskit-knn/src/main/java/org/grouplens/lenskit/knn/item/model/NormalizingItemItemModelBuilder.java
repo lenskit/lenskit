@@ -1,18 +1,15 @@
 package org.grouplens.lenskit.knn.item.model;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.params.ModelSize;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -20,122 +17,70 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.List;
 
+/**
+ * Build an item-item CF model from rating data.
+ * This builder is more advanced than the standard builder. It allows arbitrary
+ * vector truncation and normalization.
+ */
 public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(NormalizingItemItemModelBuilder.class);
 
     private final ItemSimilarity similarity;
     private final ItemItemBuildContextFactory contextFactory;
     private final int modelSize;
-    private final ItemVectorNormalizer normalizer;
+    private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
 
+    @Inject
     public NormalizingItemItemModelBuilder(ItemSimilarity similarity,
                                            @Transient ItemItemBuildContextFactory ctxFactory,
-                                           ItemVectorNormalizer normalizer,
+                                           ItemVectorNormalizer rowNormalizer,
                                            VectorTruncator truncator,
                                            @ModelSize int modelSize) {
         this.similarity = similarity;
         contextFactory = ctxFactory;
-        this.normalizer = normalizer;
+        this.rowNormalizer = rowNormalizer;
         this.truncator = truncator;
         this.modelSize = modelSize;
     }
-
 
     @Override
     public ItemItemModel get() {
         logger.debug("building item-item model");
 
         ItemItemBuildContext context = contextFactory.buildContext();
-        Accumulator accumulator = new Accumulator(context.getItems(), normalizer, truncator, modelSize);
+        MutableSparseVector currentRow = new MutableSparseVector(context.getItems());
 
-        for (long itemId1 : context.getItems()) {
-            for (long itemId2 : context.getItems()) {
-                SparseVector vec1 = context.itemVector(itemId1);
-                SparseVector vec2 = context.itemVector(itemId2);
-                double sim = similarity.similarity(itemId1, vec1, itemId2, vec2);
-                accumulator.put(itemId1, itemId2, sim);
+        LongSortedSet itemUniverse = context.getItems();
+        Long2ObjectMap<ImmutableSparseVector> matrix =
+                new Long2ObjectOpenHashMap<ImmutableSparseVector>(itemUniverse.size());
+
+        LongIterator outer = context.getItems().iterator();
+        while (outer.hasNext()) {
+            final long rowItem = outer.nextLong();
+            final SparseVector vec1 = context.itemVector(rowItem);
+            for (VectorEntry e: currentRow.fast(VectorEntry.State.EITHER)) {
+                final long colItem = e.getKey();
+                final SparseVector vec2 = context.itemVector(colItem);
+                currentRow.set(e, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
-            accumulator.completeRow(itemId1);
-        }
+            MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
+            truncator.truncate(normalized);
 
-        return accumulator.build();
-    }
-
-    public static class Accumulator implements SimilarityMatrixAccumulator {
-
-        private final LongSortedSet itemUniverse;
-        private final ItemVectorNormalizer normalizer;
-        private int modelSize;
-
-        private Long2ObjectMap<MutableSparseVector> unfinishedRows;
-        private Long2ObjectMap<ImmutableSparseVector> finishedRows;
-        private VectorTruncator truncator;
-
-        public Accumulator(LongSortedSet entities,
-                           ItemVectorNormalizer normalizer,
-                           VectorTruncator truncator,
-                           int modelSize) {
-            itemUniverse = entities;
-            this.normalizer = normalizer;
-            this.truncator = truncator;
-            this.modelSize = modelSize;
-
-            unfinishedRows = new Long2ObjectOpenHashMap<MutableSparseVector>(itemUniverse.size());
-            finishedRows = new Long2ObjectOpenHashMap<ImmutableSparseVector>(itemUniverse.size());
-            for (long itemId : itemUniverse) {
-                unfinishedRows.put(itemId, new MutableSparseVector(itemUniverse));
-            }
-        }
-
-        @Override
-        public void put(long i, long j, double sim) {
-            Preconditions.checkState(unfinishedRows != null, "model already built");
-
-            // concurrent read-only array access permitted
-            MutableSparseVector row = unfinishedRows.get(i);
-            // synchronize on this row to add item
-            synchronized (row) {
-                row.set(j, sim);
-            }
-        }
-
-        @Override
-        public void completeRow(long rowId) {
-            MutableSparseVector row = unfinishedRows.get(rowId);
-            MutableSparseVector normalized = normalizer.normalize(rowId, row, null);
-            if (truncator != null) {
-                truncator.truncate(normalized);
-            }
-
-            finishedRows.put(rowId, normalized.freeze());
-            unfinishedRows.remove(rowId);
-        }
-
-        @Override
-        public SimilarityMatrixModel build() {
-            Long2ObjectMap<ImmutableSparseVector> data =
-                    new Long2ObjectOpenHashMap<ImmutableSparseVector>(finishedRows.size());
-            ScoredItemAccumulator accum;
             if (modelSize > 0) {
-                accum = new TopNScoredItemAccumulator(modelSize);
-            } else {
-                accum = new UnlimitedScoredItemAccumulator();
-            }
-            for (Long2ObjectMap.Entry<ImmutableSparseVector> row : finishedRows.long2ObjectEntrySet()) {
-                ImmutableSparseVector rowVec = row.getValue();
-                for (VectorEntry e : rowVec.fast()) {
+                TopNScoredItemAccumulator accum = new TopNScoredItemAccumulator(modelSize);
+                for (VectorEntry e: normalized.fast()) {
                     accum.put(e.getKey(), e.getValue());
                 }
-                data.put(row.getLongKey(), accum.vectorFinish().freeze());
+                matrix.put(rowItem, accum.vectorFinish().freeze());
+            } else {
+                matrix.put(rowItem, normalized.immutable());
             }
-            SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-            unfinishedRows = null;
-            finishedRows = null;
-            return model;
         }
+
+        return new SimilarityMatrixModel(itemUniverse, matrix);
     }
 }

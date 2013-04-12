@@ -44,6 +44,8 @@ import javax.inject.Provider;
 
 /**
  * Build an item-item CF model from rating data.
+ * This builder takes a very simple approach. It does not allow for vector
+ * normalization and truncates on the fly.
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
@@ -75,7 +77,12 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
         for (long itemId1 : buildContext.getItems()) {
-            LongIterator itemIter = buildContext.getItems().iterator(itemId1);
+            LongIterator itemIter;
+            if (itemSimilarity.isSymmetric()) {
+                itemIter = buildContext.getItems().iterator(itemId1);
+            } else {
+                itemIter = buildContext.getItems().iterator();
+            }
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
@@ -83,7 +90,9 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                     SparseVector vec2 = buildContext.itemVector(itemId2);
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     accumulator.put(itemId1, itemId2, sim);
-                    accumulator.put(itemId2, itemId1, sim);
+                    if (itemSimilarity.isSymmetric()) {
+                        accumulator.put(itemId2, itemId1, sim);
+                    }
                 }
             }
             accumulator.completeRow(itemId1);
@@ -92,7 +101,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         return accumulator.build();
     }
 
-    public static class Accumulator implements SimilarityMatrixAccumulator {
+    static class Accumulator {
 
         private final Threshold threshold;
         private Long2ObjectMap<ScoredItemAccumulator> rows;
@@ -113,7 +122,6 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             }
         }
 
-        @Override
         public void put(long i, long j, double sim) {
             Preconditions.checkState(rows != null, "model already built");
 
@@ -131,12 +139,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
          *
          * {@inheritDoc}
          */
-        @Override
         public void completeRow(long rowId) {
             // no-op
         }
 
-        @Override
         public SimilarityMatrixModel build() {
             Long2ObjectMap<ImmutableSparseVector> data = new Long2ObjectOpenHashMap<ImmutableSparseVector>(rows.size());
             for (Long2ObjectMap.Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
