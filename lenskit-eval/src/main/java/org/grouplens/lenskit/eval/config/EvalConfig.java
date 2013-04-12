@@ -111,7 +111,12 @@ public class EvalConfig {
     }
 
     public int getThreadCount() {
-        return Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
+        int count = Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
+        if (count == 0) {
+            return Runtime.getRuntime().availableProcessors();
+        } else {
+            return count;
+        }
     }
 
 }

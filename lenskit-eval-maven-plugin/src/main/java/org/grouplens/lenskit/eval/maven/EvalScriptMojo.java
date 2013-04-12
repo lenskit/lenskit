@@ -107,7 +107,8 @@ public class EvalScriptMojo extends AbstractMojo {
     private String analysisDir;
 
     /**
-     * The number of evaluation threads to run.
+     * The number of evaluation threads to run.  A thread count of 0 uses as many threads
+     * as there are available processors.
      */
     @Parameter(property="lenskit.eval.threadCount")
     private int threadCount = 1;
