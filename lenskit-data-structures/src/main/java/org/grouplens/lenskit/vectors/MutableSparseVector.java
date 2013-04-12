@@ -550,7 +550,13 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return An immutable vector built from this vector's data.
      */
     public ImmutableSparseVector immutable(boolean freeze) {
-        long[] keyDomain = keySet().toLongArray();
+        long[] keyDomain;
+        if (freeze && usedKeys.cardinality() == keys.length) {
+            keyDomain = keys;
+        } else {
+            keyDomain = keySet().toLongArray();
+        }
+
         return immutable(freeze, keyDomain);
     }
 
@@ -574,12 +580,29 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return An immutable vector built from this vector's data.
      */
     private ImmutableSparseVector immutable(boolean freeze, long[] keyDomain) {
-        double[] nvs = new double[keyDomain.length];
-        BitSet newUsedKeys = new BitSet(keyDomain.length);
-        for (int i = 0; i < keyDomain.length; i++) {
-            nvs[i] = get(keyDomain[i]);
-            if (!Double.isNaN(nvs[i])) {
-                newUsedKeys.set(i);
+        double[] nvs;
+        BitSet newUsedKeys;
+
+        if (keyDomain == keys) {
+            // This also means that 'freeze' must be true
+            nvs = values;
+            newUsedKeys = usedKeys;
+        } else {
+            nvs = new double[keyDomain.length];
+            newUsedKeys = new BitSet(keyDomain.length);
+            int i = 0;
+            int j = 0;
+            while (i < nvs.length) {
+                // Skip over irrelevant entries in original, using fact that arrays are sorted
+                while (keys[j] < keyDomain[i]) {
+                    j++;
+                }
+                nvs[i] = values[j];
+                if (!Double.isNaN(nvs[i]) && usedKeys.get(j)) {
+                    newUsedKeys.set(i);
+                }
+                i++;
+                j++;
             }
         }
 
