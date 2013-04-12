@@ -19,7 +19,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * Sparse vectors and their operations. This package provides a sparse vector
+ * Sparse vectors (both sparse and dense) and their operations.
+ *
+ * <h2>Sparse Vectors</h2>
+ * This package provides a sparse vector
  * framework for storing things such as rating vectors. Sparse vectors are
  * stored efficiently and have a key domain fixed at create time. Storage is
  * linear in the size of the key domain. See
@@ -39,15 +42,13 @@
  * threads without concern about the caller mutating it later.
  *
  * <p>
- * There are further versions of immutable vectors with particular information
- * associated with them: {@link org.grouplens.lenskit.data.history.ItemVector},
- * {@link org.grouplens.lenskit.data.history.UserVector}, and their subclasses.
- * These classes are used for vectors of data associated with particular users.
- *
- * <p>
  * The {@link org.grouplens.lenskit.vectors.SparseVector SparseVector} class
  * also provides utility methods for manipulating sparse vectors (e.g. the
  * {@link org.grouplens.lenskit.vectors.SparseVector#immutable()
  * SparseVector.immutable()} method for getting an immutable sparse vector).
+ *
+ * <h2>Vectors</h2>
+ * In addition to sparse vectors, this package provides 0-indexed vectors ({@link Vector}
+ * and its subclasses), providing efficient linear algebra operations over vectors.
  */
 package org.grouplens.lenskit.vectors;
