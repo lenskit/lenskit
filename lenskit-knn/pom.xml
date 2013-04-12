@@ -25,6 +25,11 @@
   <profiles>
     <profile>
       <id>visualize</id>
+      <activation>
+        <property>
+          <name>lenskit.ci</name>
+        </property>
+      </activation>
       <build>
         <plugins>
           <!-- Dump recommender graphs to disk -->
