@@ -36,7 +36,9 @@
  * ({@link MutableVector}) and {@link MutableSparseVector})
  * are mutable and not thread-safe.
  *
- * <p>This allows read-only operations to be performed on any type of vector, while allowing
+ * <p>This design allows read-only operations to be performed on any type of vector, while allowing
  * components to specifically work with and store vectors guaranteed to be immutable.
+ *
+ * <p>The {@link Vectors} class provides utility methods for working with vectors.
  */
 package org.grouplens.lenskit.vectors;
