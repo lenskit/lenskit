@@ -26,15 +26,15 @@ import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
+import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -62,32 +62,22 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
                                             + "in which a temp directory can be created");
         }
 
-        EvalConfig config = new EvalConfig();
+        SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
+        Properties props =  new Properties();
+        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDirName);
+        evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());
+        evalCommand.addAlgorithm(algo);
 
-        CrossfoldCommand cross = new CrossfoldCommand("ml-100k");
-        cross.setConfig(config);
-        cross.setSource(new GenericDataSource("ml-100k", daoFactory));
-        cross.setPartitions(5);
-        cross.setHoldoutFraction(0.2);
-        cross.setTrain(new File(workDir, "train.%d.csv").getAbsolutePath());
-        cross.setTest(new File(workDir, "test.%d.csv").getAbsolutePath());
+        evalCommand.addDataset(new GenericDataSource("ml-100k", daoFactory), 5, 0.2);
 
-        TrainTestEvalCommand tt = new TrainTestEvalCommand("train-test");
-        tt.setConfig(config);
-        tt.addAlgorithm(algo.call());
-        for (TTDataSet data: cross.call()) {
-            tt.addDataset(data);
-        }
+        evalCommand.addMetric(new CoveragePredictMetric())
+                   .addMetric(new RMSEPredictMetric())
+                   .addMetric(new MAEPredictMetric());
 
-        tt.addMetric(new CoveragePredictMetric());
-        tt.addMetric(new RMSEPredictMetric());
-        tt.addMetric(new MAEPredictMetric());
 
-        tt.setOutput(null);
-
-        Table result = tt.call();
+        Table result = evalCommand.call();
         assertThat(result, notNullValue());
         checkResults(result);
     }
