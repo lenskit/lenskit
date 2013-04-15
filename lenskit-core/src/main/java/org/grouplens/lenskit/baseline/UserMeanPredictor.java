@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static java.lang.Math.abs;
 
@@ -44,7 +45,7 @@ import static java.lang.Math.abs;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultProvider(UserMeanPredictor.Provider.class)
+@DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
@@ -54,7 +55,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
+    public static class Builder implements Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
 
@@ -65,8 +66,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
          * @param damping The damping term.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double damping) {
+        public Builder(@Transient DataAccessObject dao,
+                       @Damping double damping) {
             this.dao = dao;
             smoothing = damping;
         }
