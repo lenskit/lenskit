@@ -70,6 +70,11 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
         return getClass().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RatingVectorUserHistorySummarizer";
+    }
+
     /**
      * All rating vector summarizers are equal.
      */
