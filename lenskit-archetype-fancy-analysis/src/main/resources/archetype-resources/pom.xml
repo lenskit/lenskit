@@ -24,11 +24,6 @@
       be done in ~/.m2/settings.xml rather than here. -->
     <rscript.executable>Rscript</rscript.executable>
 
-    <!-- The location of the LaTeX executable. The default is to search for 
-      pdflatex in your PATH. If you need to override this, it should probably be 
-      done in ~/.m2/settings.xml rather than here. -->
-    <latex.executable>latexmk</latex.executable>
-
     <!-- Uncomment and change below to 'yes' if you accept the MovieLens 
       data terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
   </properties>
@@ -60,6 +55,11 @@
       <artifactId>hamcrest-library</artifactId>
       <version>1.3</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>latex-maven-plugin</artifactId>
+      <version>1.1</version>
     </dependency>
 
   </dependencies>
@@ -159,42 +159,24 @@
             </configuration>
           </execution>
 
-          <!-- This execution runs the LaTeX executable to produce the PDF 
-            version of our paper. We use an execution so we can tie this plugin to the 
-            appropriate phase of the lenskit lifecycle. -->
+        </executions>
+      </plugin>
 
+      <!-- This plugin runs LaTeX to produce the PDF version 
+        of our paper. We tie this plugin to the appropriate
+        phase of the lenskit lifecycle. -->
+        
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>latex-maven-plugin</artifactId>
+        <executions>
           <execution>
-            <id>compile-latex</id>
+            <id>do-latex</id>
             <phase>lenskit-publish</phase>
             <goals>
-              <goal>exec</goal>
+              <goal>latex</goal>
             </goals>
-            <configuration>
-              <executable>${latex.executable}</executable>
-              <workingDirectory>${lenskit.eval.publishDir}</workingDirectory>
-              <arguments>
-                <argument>-pdf</argument>
-                <argument>${lenskit.eval.publishDir}/main.tex</argument>
-              </arguments>
-            </configuration>
           </execution>
-
-          <execution>
-            <id>clean-latex</id>
-            <phase>clean</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>${latex.executable}</executable>
-              <workingDirectory>${lenskit.eval.publishDir}</workingDirectory>
-              <arguments>
-                <argument>-c</argument>
-                <argument>${lenskit.eval.publishDir}/main.tex</argument>
-              </arguments>
-            </configuration>
-          </execution>
-
         </executions>
       </plugin>
 
