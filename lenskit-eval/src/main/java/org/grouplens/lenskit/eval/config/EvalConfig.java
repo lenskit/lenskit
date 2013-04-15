@@ -39,6 +39,7 @@ import java.util.Properties;
 public class EvalConfig {
     public static final String FORCE_PROPERTY = "lenskit.eval.force";
     public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
+    public static final String EVAL_SCRIPTFILES_PROPERTY = "lenskit.eval.scripts";
     public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
