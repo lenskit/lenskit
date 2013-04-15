@@ -162,13 +162,13 @@
         </executions>
       </plugin>
 
-      <!-- This plugin runs LaTeX to produce the PDF version 
-        of our paper. We tie this plugin to the appropriate
-        phase of the lenskit lifecycle. -->
-        
+      <!-- This plugin runs LaTeX to produce the PDF version of our paper. 
+        We tie this plugin to the appropriate phase of the lenskit lifecycle. -->
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>latex-maven-plugin</artifactId>
+        <version>1.1</version>
         <executions>
           <execution>
             <id>do-latex</id>
