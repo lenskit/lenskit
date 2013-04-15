@@ -35,20 +35,20 @@ public interface ScoredId {
      * Retrieve the numerical identifier of this {@code ScoredId}.
      * @return An identifier.
      */
-    public long getId();
+    long getId();
 
     /**
      * Retrieve the score of this {@code ScoredId}
      * @return A score.
      */
-    public double getScore();
+    double getScore();
 
     /**
      * Determine the symbols associated with all side channels of a {@code ScoredId}.
      * @return A set of {@code  Symbol} objects, each of which maps to a value in
      * one of the {@code ScoredId}'s side channels.
      */
-    public Set<Symbol> getChannels();
+    Set<Symbol> getChannels();
 
     /**
      * Retrieve the value stored in the {@code ScoredId}'s side channel
@@ -56,7 +56,7 @@ public interface ScoredId {
      * @param s The side channel's symbol.
      * @return The value of the appropriate side channel.
      */
-    public double channel(Symbol s);
+    double channel(Symbol s);
 
     /**
      * Determine if a {@code ScoredId} has a specific channel.
@@ -64,5 +64,5 @@ public interface ScoredId {
      * @return {@code true} if the {@code ScoredId} has a channel associated
      * with this symbol, {@code false} otherwise.
      */
-    public boolean hasChannel(Symbol s);
+    boolean hasChannel(Symbol s);
 }

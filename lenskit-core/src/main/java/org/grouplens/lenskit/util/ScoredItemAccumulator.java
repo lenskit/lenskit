@@ -76,5 +76,5 @@ public interface ScoredItemAccumulator {
      *
      * @return A MutableSparseVector of items.
      */
-    MutableSparseVector vectorFinish();
+    MutableSparseVector finishVector();
 }

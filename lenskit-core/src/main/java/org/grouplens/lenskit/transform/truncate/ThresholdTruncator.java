@@ -25,14 +25,16 @@ import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import java.io.Serializable;
+
 /**
  * A {@code VectorTruncator} that will retain entries with values
  * that are accepted by some {@code Threshold}.
  */
 @Shareable
-public class ThresholdTruncator implements VectorTruncator {
+public class ThresholdTruncator implements VectorTruncator, Serializable {
 
-    private Threshold threshold;
+    private final Threshold threshold;
 
     public ThresholdTruncator(Threshold threshold) {
         this.threshold = threshold;

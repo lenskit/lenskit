@@ -44,7 +44,7 @@ public abstract class AbstractScoredId implements ScoredId {
             double sum = 0;
             for (Symbol s : getChannels()) {
                 sum += s.hashCode();
-                sum += channel(s);
+                sum += new Double(channel(s)).hashCode();
             }
             builder.append(sum);
             hashCode = builder.build();

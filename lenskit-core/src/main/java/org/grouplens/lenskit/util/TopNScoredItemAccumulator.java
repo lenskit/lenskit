@@ -113,7 +113,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     }
 
     @Override
-    public MutableSparseVector vectorFinish() {
+    public MutableSparseVector finishVector() {
         if (scores == null) {
             return new MutableSparseVector();
         }

@@ -80,7 +80,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
     }
 
     @Override
-    public MutableSparseVector vectorFinish() {
+    public MutableSparseVector finishVector() {
         if (scores == null) {
             return new MutableSparseVector();
         }

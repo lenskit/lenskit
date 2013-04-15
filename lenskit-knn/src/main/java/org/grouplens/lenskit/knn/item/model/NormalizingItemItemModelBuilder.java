@@ -55,10 +55,10 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     private final VectorTruncator truncator;
 
     @Inject
-    public NormalizingItemItemModelBuilder(ItemSimilarity similarity,
+    public NormalizingItemItemModelBuilder(@Transient ItemSimilarity similarity,
                                            @Transient ItemItemBuildContextFactory ctxFactory,
-                                           ItemVectorNormalizer rowNormalizer,
-                                           VectorTruncator truncator,
+                                           @Transient ItemVectorNormalizer rowNormalizer,
+                                           @Transient VectorTruncator truncator,
                                            @ModelSize int modelSize) {
         this.similarity = similarity;
         contextFactory = ctxFactory;
@@ -96,7 +96,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                 for (VectorEntry e: normalized.fast()) {
                     accum.put(e.getKey(), e.getValue());
                 }
-                matrix.put(rowItem, accum.vectorFinish().freeze());
+                matrix.put(rowItem, accum.finishVector().freeze());
             } else {
                 matrix.put(rowItem, normalized.immutable());
             }

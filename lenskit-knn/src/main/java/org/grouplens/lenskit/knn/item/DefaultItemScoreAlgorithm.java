@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -36,8 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -87,7 +84,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
                     accum.put(oi, score);
                 }
             }
-            neighbors = accum.vectorFinish().freeze();
+            neighbors = accum.finishVector().freeze();
             if (logger.isTraceEnabled()) { // conditional to avoid alloc
                 logger.trace("using {} of {} neighbors for {}",
                              new Object[]{neighbors.size(), nnbrs, item});

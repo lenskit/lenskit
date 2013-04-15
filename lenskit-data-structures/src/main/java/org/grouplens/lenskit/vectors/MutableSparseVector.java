@@ -314,6 +314,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * removed from the key set.
      *
      * @param key The key to clear.
+     * @deprecated Use {@link #unset(long)} instead.
      */
     @Deprecated
     public void clear(long key) {
@@ -328,6 +329,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param e The entry to clear.
      * @see #clear(long)
+     * @deprecated Use {@link #unset(VectorEntry)} instead.
      */
     @Deprecated
     public void clear(VectorEntry e) {
@@ -584,7 +586,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         BitSet newUsedKeys;
 
         if (keyDomain == keys) {
-            // This also means that 'freeze' must be true
+            assert freeze;
             nvs = values;
             newUsedKeys = usedKeys;
         } else {
@@ -598,7 +600,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                     j++;
                 }
                 nvs[i] = values[j];
-                if (!Double.isNaN(nvs[i]) && usedKeys.get(j)) {
+                if (usedKeys.get(j)) {
                     newUsedKeys.set(i);
                 }
                 i++;

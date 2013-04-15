@@ -28,19 +28,23 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
 
+import java.io.Serializable;
+
 /**
  * A {@code VectorTruncator} that will retain the top n entries.
  */
 @Shareable
-public class TopNTruncator implements VectorTruncator {
+public class TopNTruncator implements VectorTruncator, Serializable {
 
-    private ThresholdTruncator threshold;
-    private int n;
+    private final ThresholdTruncator threshold;
+    private final int n;
 
     public TopNTruncator(int n, Threshold threshold) {
         this.n = n;
         if (threshold != null) {
             this.threshold = new ThresholdTruncator(threshold);
+        } else {
+            this.threshold = null;
         }
     }
 
@@ -58,7 +62,7 @@ public class TopNTruncator implements VectorTruncator {
         for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
             accumulator.put(e.getKey(), e.getValue());
         }
-        MutableSparseVector truncated = accumulator.vectorFinish();
+        MutableSparseVector truncated = accumulator.finishVector();
 
         // Unset all elements in 'v' that are not in 'truncated'
         for (Pair<VectorEntry,VectorEntry> p : Vectors.fastUnion(v, truncated)) {

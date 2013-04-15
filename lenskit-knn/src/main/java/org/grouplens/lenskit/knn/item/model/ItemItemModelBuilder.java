@@ -61,7 +61,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     @Inject
     public ItemItemModelBuilder(ItemSimilarity similarity,
                                 @Transient ItemItemBuildContextFactory ctxFactory,
-                                Threshold thresh,
+                                @Transient Threshold thresh,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
         contextFactory = ctxFactory;
@@ -95,7 +95,6 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                     }
                 }
             }
-            accumulator.completeRow(itemId1);
         }
 
         return accumulator.build();
@@ -133,20 +132,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             q.put(j, sim);
         }
 
-        /**
-         * Does nothing. Similarity values were accumulated and truncated
-         * upon receipt, no further processing is done here upon the result.
-         *
-         * {@inheritDoc}
-         */
-        public void completeRow(long rowId) {
-            // no-op
-        }
-
         public SimilarityMatrixModel build() {
             Long2ObjectMap<ImmutableSparseVector> data = new Long2ObjectOpenHashMap<ImmutableSparseVector>(rows.size());
             for (Long2ObjectMap.Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
-                MutableSparseVector similarities = row.getValue().vectorFinish();
+                MutableSparseVector similarities = row.getValue().finishVector();
                 data.put(row.getLongKey(), similarities.freeze());
             }
             SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);

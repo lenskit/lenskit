@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import org.grouplens.lenskit.symbols.Symbol;
 
@@ -29,8 +30,8 @@ import java.util.Set;
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    long id;
-    double score;
+    private final long id;
+    private final double score;
     Reference2DoubleMap<Symbol> channelMap;
 
     public ScoredIdImpl(long id, double score) {
@@ -40,7 +41,9 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
         this.id = id;
         this.score = score;
-        this.channelMap = channelMap;
+        if (channelMap != null) {
+            this.channelMap = new Reference2DoubleArrayMap(channelMap);
+        }
     }
 
     @Override

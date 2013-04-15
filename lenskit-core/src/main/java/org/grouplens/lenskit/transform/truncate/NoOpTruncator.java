@@ -23,12 +23,14 @@ package org.grouplens.lenskit.transform.truncate;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
+import java.io.Serializable;
+
 /**
  * A {@code VectorTruncator} that does not actually perform any truncation.
  * Any input vector is left unchanged.
  */
 @Shareable
-public class NoOpTruncator implements VectorTruncator {
+public class NoOpTruncator implements VectorTruncator, Serializable {
     @Override
     public void truncate(MutableSparseVector v) {}
 }

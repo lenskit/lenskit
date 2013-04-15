@@ -36,6 +36,6 @@ public interface VectorTruncator {
      * directly.
      * @param v The vector to truncate.
      */
-    public void truncate(MutableSparseVector v);
+    void truncate(MutableSparseVector v);
 
 }

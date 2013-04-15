@@ -58,8 +58,6 @@ public class TestItemItemModelAccumulator {
         ItemItemModelBuilder.Accumulator accum = simpleAccumulator();
         accum.put(1, 2, Math.PI);
         accum.put(7, 3, Math.E);
-        accum.completeRow(1);
-        accum.completeRow(7);
         ItemItemModel model = accum.build();
         ImmutableSparseVector nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
@@ -78,7 +76,6 @@ public class TestItemItemModelAccumulator {
             for (long j = 1; j <= 10; j += (i % 3) + 1) {
                 accum.put(i, j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
             }
-            accum.completeRow(i);
         }
         ItemItemModel model = accum.build();
         ImmutableSparseVector nbrs = model.getNeighbors(1);

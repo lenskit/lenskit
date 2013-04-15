@@ -51,7 +51,7 @@ import java.util.List;
 @DefaultProvider(ItemItemModelBuilder.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
-    private static final long serialVersionUID = -5986236982760043379L;
+    private static final long serialVersionUID = 2L;
 
     private final Long2ObjectMap<ImmutableSparseVector> similarityMatrix;
     private final LongSortedSet itemUniverse;

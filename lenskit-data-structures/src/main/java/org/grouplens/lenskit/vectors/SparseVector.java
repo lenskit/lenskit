@@ -658,6 +658,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public abstract SparseVector channel(Symbol channelSymbol);
 
+    /**
+     * Retrieve all symbols that map to side channels for this vector.
+     * @return A set of symbols, each of which identifies a side channel
+     *         of the vector.
+     */
     public abstract Set<Symbol> getChannels();
 
     /**
