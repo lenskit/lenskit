@@ -132,4 +132,25 @@ public class TestVector {
         assertThat(mv.get(2), closeTo(10));
         assertThat(mv.sum(), closeTo(19));
     }
+
+    @Test
+    public void testScale() {
+        MutableVector mv = MutableVector.wrap(new double[]{1, 2, 3});
+        assertThat(mv.sum(), closeTo(6));
+        mv.scale(2);
+        assertThat(mv.sum(), closeTo(12));
+        assertThat(mv.get(0), closeTo(2));
+        assertThat(mv.get(1), closeTo(4));
+        assertThat(mv.get(2), closeTo(6));
+    }
+
+    @Test
+    public void testNewMutableVector() {
+        MutableVector v = new MutableVector(5);
+        assertThat(v.dim(), equalTo(5));
+        for (int i = 0; i < 5; i++) {
+            assertThat(v.get(i), closeTo(0));
+        }
+        assertThat(v.sum(), closeTo(0));
+    }
 }

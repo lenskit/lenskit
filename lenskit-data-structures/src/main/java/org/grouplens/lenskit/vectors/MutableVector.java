@@ -80,4 +80,16 @@ public class MutableVector extends Vector {
             data[i] += v.data[i];
         }
     }
+
+    /**
+     * Scale this vector.
+     * @param s The scalar to multiply this vector by.
+     */
+    public void scale(double s) {
+        markModified();
+        final int sz = dim();
+        for (int i = 0; i < sz; i++) {
+            data[i] *= s;
+        }
+    }
 }
