@@ -212,11 +212,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     private CrossfoldCommand initialize() {
+        String path = new File(getConfig().getDataDir(), name).getPath();
         if (trainFilePattern == null) {
-            trainFilePattern = name + ".train.%d.csv";
+            trainFilePattern = path + ".train.%d.csv";
         }
         if (testFilePattern == null) {
-            testFilePattern = name + ".test.%d.csv";
+            testFilePattern = path + ".test.%d.csv";
         }
         holdout = new Holdout(order, partition);
         return this;
