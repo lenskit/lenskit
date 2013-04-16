@@ -29,6 +29,7 @@ import com.google.common.base.Function;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -56,8 +57,11 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
         return history.memoize(this);
     }
 
-    @Override
+    @Override @Nonnull
     public SparseVector apply(UserHistory<? extends Event> history) {
+        if (history == null) {
+            throw new IllegalArgumentException("history is null");
+        }
         return Ratings.userRatingVector(history.filter(Rating.class));
     }
 
