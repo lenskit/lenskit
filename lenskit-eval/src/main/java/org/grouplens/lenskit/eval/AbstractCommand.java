@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The abstract class of Command.
@@ -32,14 +33,10 @@ import javax.annotation.Nonnull;
  * @author Shuo Chang<schang@cs.umn.edu>
  */
 public abstract class AbstractCommand<T> implements Command<T> {
-    protected String name;
+    @Nullable protected String name;
     private EvalConfig config;
 
-    public AbstractCommand() {
-        this("unnamed");
-    }
-
-    public AbstractCommand(@Nonnull String name) {
+    public AbstractCommand(String name) {
         this.name = name;
     }
 
@@ -62,9 +59,18 @@ public abstract class AbstractCommand<T> implements Command<T> {
         return this;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     * <p>This implementation returns the {@link #name} field, throwing
+     * {@link IllegalStateException} if it is {@code null}.
+     */
+    @Override @Nonnull
     public String getName() {
-        return name;
+        if (name == null) {
+            throw new IllegalStateException("no name specified");
+        } else {
+            return name;
+        }
     }
 
     @Override

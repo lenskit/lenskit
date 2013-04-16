@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
 
 /**
@@ -30,6 +31,7 @@ import java.util.concurrent.Callable;
  */
 public interface Command<T> extends Callable<T> {
 
+    @Nonnull
     String getName();
 
     T call() throws CommandException;

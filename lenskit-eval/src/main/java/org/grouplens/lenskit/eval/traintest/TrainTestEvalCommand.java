@@ -83,7 +83,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
 
     public TrainTestEvalCommand() {
-        this("Traintest");
+        this("train-test");
     }
 
     public TrainTestEvalCommand(String name) {

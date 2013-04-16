@@ -74,7 +74,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
 
     public CrossfoldCommand() {
-        super("Crossfold");
+        this(null);
     }
 
     public CrossfoldCommand(String n) {
@@ -230,7 +230,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public String getName() {
-        if (name.equals("Crossfold")) {
+        if (name == null) {
             return source.getName();
         } else {
             return name;
