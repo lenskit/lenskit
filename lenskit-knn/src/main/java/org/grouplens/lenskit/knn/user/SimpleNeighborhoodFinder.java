@@ -36,6 +36,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
@@ -113,7 +114,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      */
     @Override
     public Long2ObjectMap<? extends Collection<Neighbor>>
-    findNeighbors(UserHistory<? extends Event> user, LongSet items) {
+    findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
                 new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
