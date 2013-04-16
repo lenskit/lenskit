@@ -62,7 +62,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     private DataSource source;
     private int partitionCount = 5;
-    private Holdout holdout;
     private String trainFilePattern;
     private String testFilePattern;
     private Order<Rating> order = new RandomOrder<Rating>();
@@ -211,18 +210,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         return this;
     }
 
-    private CrossfoldCommand initialize() {
-        String path = new File(getConfig().getDataDir(), name).getPath();
-        if (trainFilePattern == null) {
-            trainFilePattern = path + ".train.%d.csv";
-        }
-        if (testFilePattern == null) {
-            testFilePattern = path + ".test.%d.csv";
-        }
-        holdout = new Holdout(order, partition);
-        return this;
-    }
-
     /**
      * Get the visible name of this crossfold split.
      *
@@ -238,11 +225,21 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public String getTrainPattern() {
-        return trainFilePattern;
+        if (trainFilePattern == null) {
+            String path = new File(getConfig().getDataDir(), getName()).getPath();
+            return path + ".train.%d.csv";
+        } else {
+            return trainFilePattern;
+        }
     }
 
     public String getTestPattern() {
-        return testFilePattern;
+        if (testFilePattern == null) {
+            String path = new File(getConfig().getDataDir(), getName()).getPath();
+            return path + ".train.%d.csv";
+        } else {
+            return testFilePattern;
+        }
     }
 
     /**
@@ -264,7 +261,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public Holdout getHoldout() {
-        return holdout;
+        return new Holdout(order, partition);
     }
 
     public boolean getForce() {
@@ -280,7 +277,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
-        this.initialize();
         if (!getForce()) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
