@@ -83,7 +83,7 @@ public class SlopeOneModelDataAccumulator {
                 new Long2ObjectOpenHashMap<ImmutableSparseVector>(workMatrix.size());
 
         for (MutableSparseVector vec : workMatrix.values()) {
-            for (VectorEntry e : vec.fast(VectorEntry.State.SET)) {
+            for (VectorEntry e : vec.fast()) {
                 double deviation = e.getValue();
                 int coratings = (int)vec.channel(SlopeOneModel.CORATINGS_SYMBOL).get(e);
                 vec.set(e, deviation/coratings);
