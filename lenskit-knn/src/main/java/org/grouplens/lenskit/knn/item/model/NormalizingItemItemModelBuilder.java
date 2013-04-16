@@ -50,7 +50,6 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
     private final ItemSimilarity similarity;
     private final ItemItemBuildContextFactory contextFactory;
-    private final int modelSize;
     private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
 
@@ -58,13 +57,11 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     public NormalizingItemItemModelBuilder(@Transient ItemSimilarity similarity,
                                            @Transient ItemItemBuildContextFactory ctxFactory,
                                            @Transient ItemVectorNormalizer rowNormalizer,
-                                           @Transient VectorTruncator truncator,
-                                           @ModelSize int modelSize) {
+                                           @Transient VectorTruncator truncator) {
         this.similarity = similarity;
         contextFactory = ctxFactory;
         this.rowNormalizer = rowNormalizer;
         this.truncator = truncator;
-        this.modelSize = modelSize;
     }
 
 
@@ -90,16 +87,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
-
-            if (modelSize > 0) {
-                TopNScoredItemAccumulator accum = new TopNScoredItemAccumulator(modelSize);
-                for (VectorEntry e: normalized.fast()) {
-                    accum.put(e.getKey(), e.getValue());
-                }
-                matrix.put(rowItem, accum.finishVector().freeze());
-            } else {
-                matrix.put(rowItem, normalized.immutable());
-            }
+            matrix.put(rowItem, normalized.immutable());
         }
 
         return new SimilarityMatrixModel(itemUniverse, matrix);
