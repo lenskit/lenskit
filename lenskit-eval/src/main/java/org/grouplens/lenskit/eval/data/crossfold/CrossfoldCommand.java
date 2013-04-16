@@ -342,8 +342,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *          Any error
      */
     protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandException {
-        File[] trainFiles = getFiles(trainFilePattern);
-        File[] testFiles = getFiles(testFilePattern);
+        File[] trainFiles = getFiles(getTestPattern());
+        File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
         try {
