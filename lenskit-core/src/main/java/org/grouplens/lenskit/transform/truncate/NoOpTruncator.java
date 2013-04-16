@@ -31,6 +31,9 @@ import java.io.Serializable;
  */
 @Shareable
 public class NoOpTruncator implements VectorTruncator, Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void truncate(MutableSparseVector v) {}
 }

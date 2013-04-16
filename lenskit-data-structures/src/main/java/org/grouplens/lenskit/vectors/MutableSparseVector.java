@@ -595,7 +595,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
             int i = 0;
             int j = 0;
-            while (i < nvs.length && j < keys.length) {
+            while (i < nvs.length && j < domainSize) {
                 if (keyDomain[i] == keys[j]) {
                     nvs[i] = values[j];
                     if (usedKeys.get(j)) {

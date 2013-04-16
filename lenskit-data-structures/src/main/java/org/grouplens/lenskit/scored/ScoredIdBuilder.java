@@ -27,7 +27,7 @@ import org.grouplens.lenskit.symbols.Symbol;
 /**
  * Use a {@code ScoredId.Builder} to instantiate new {@code ScoredId} objects.
  */
-public class ScoredIdBuilder implements Builder {
+public class ScoredIdBuilder implements Builder<ScoredId> {
 
     private long id;
     private double score;

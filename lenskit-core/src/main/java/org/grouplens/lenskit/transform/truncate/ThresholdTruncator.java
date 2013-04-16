@@ -34,6 +34,8 @@ import java.io.Serializable;
 @Shareable
 public class ThresholdTruncator implements VectorTruncator, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final Threshold threshold;
 
     public ThresholdTruncator(Threshold threshold) {

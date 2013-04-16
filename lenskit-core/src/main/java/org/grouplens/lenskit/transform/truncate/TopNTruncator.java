@@ -36,6 +36,8 @@ import java.io.Serializable;
 @Shareable
 public class TopNTruncator implements VectorTruncator, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final ThresholdTruncator threshold;
     private final int n;
 

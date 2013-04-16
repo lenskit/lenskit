@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.primitives.Doubles;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -44,7 +45,7 @@ public abstract class AbstractScoredId implements ScoredId {
             double sum = 0;
             for (Symbol s : getChannels()) {
                 sum += s.hashCode();
-                sum += new Double(channel(s)).hashCode();
+                sum += Doubles.hashCode(channel(s));
             }
             builder.append(sum);
             hashCode = builder.build();
