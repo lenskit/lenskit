@@ -51,7 +51,9 @@ public final class Vectors {
         @Nullable
         @Override
         public ImmutablePair<VectorEntry, VectorEntry> apply(@Nullable Pair<VectorEntry, VectorEntry> p) {
-            return ImmutablePair.of(p.getLeft(), p.getRight());
+            VectorEntry l = (p.getLeft() == null ? null : p.getLeft().clone());
+            VectorEntry r = (p.getRight() == null ? null : p.getRight().clone());
+            return ImmutablePair.of(l, r);
         }
     };
 
@@ -165,6 +167,7 @@ public final class Vectors {
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
+     * @deprecated This can be implemented in terms of {@link #fastUnion(SparseVector, SparseVector)}
      */
     @Deprecated
     public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
@@ -184,6 +187,7 @@ public final class Vectors {
      * @param v2 a SparseVector
      * @return a fast Iterator over EntryPairs, representing a shared
      *         key and the paired values for that key.
+     * @deprecated This can be implemented in terms of {@link #fastUnion(SparseVector, SparseVector)}
      */
     @Deprecated
     public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
@@ -196,6 +200,7 @@ public final class Vectors {
      * @param v1 a SparseVector
      * @param v2 a SparseVector
      * @return an Iterable<EntryPair> wrapping a fast Iterator.
+     * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
      */
     @Deprecated
     public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
@@ -215,6 +220,7 @@ public final class Vectors {
      * @param v2 a SparseVector
      * @return an Iterator over EntryPairs, representing a shared
      *         key and the paired values for that key.
+     * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
      */
     @Deprecated
     public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
