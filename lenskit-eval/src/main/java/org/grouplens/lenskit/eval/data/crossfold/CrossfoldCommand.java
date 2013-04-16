@@ -42,6 +42,7 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -62,8 +63,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     private DataSource source;
     private int partitionCount = 5;
+    @Nullable
     private String trainFilePattern;
+    @Nullable
     private String testFilePattern;
+
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
@@ -224,6 +228,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         }
     }
 
+    @Nonnull
     public String getTrainPattern() {
         if (trainFilePattern == null) {
             String path = new File(getConfig().getDataDir(), getName()).getPath();
@@ -233,6 +238,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         }
     }
 
+    @Nonnull
     public String getTestPattern() {
         if (testFilePattern == null) {
             String path = new File(getConfig().getDataDir(), getName()).getPath();
@@ -280,10 +286,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         if (!getForce()) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
-            for (File f: getFiles(trainFilePattern)) {
+            for (File f: getFiles(getTrainPattern())) {
                 check.addOutput(f);
             }
-            for (File f: getFiles(testFilePattern)) {
+            for (File f: getFiles(getTestPattern())) {
                 check.addOutput(f);
             }
             if (check.isUpToDate()) {
