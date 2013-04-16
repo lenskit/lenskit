@@ -242,7 +242,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     public String getTestPattern() {
         if (testFilePattern == null) {
             String path = new File(getConfig().getDataDir(), getName()).getPath();
-            return path + ".train.%d.csv";
+            return path + ".test.%d.csv";
         } else {
             return testFilePattern;
         }
@@ -342,7 +342,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *          Any error
      */
     protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandException {
-        File[] trainFiles = getFiles(getTestPattern());
+        File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
@@ -432,8 +432,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
     public List<TTDataSet> getTTFiles() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
-        File[] trainFiles = getFiles(trainFilePattern);
-        File[] testFiles = getFiles(testFilePattern);
+        File[] trainFiles = getFiles(getTrainPattern());
+        File[] testFiles = getFiles(getTestPattern());
         for (int i = 0; i < partitionCount; i++) {
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
